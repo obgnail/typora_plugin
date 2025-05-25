@@ -71,10 +71,11 @@
 | 52   | cipher                  | 加密文件                               | ×        |
 | 53   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
 | 54   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
-| 55   | custom                  | 开放平台，用户自定义插件（高级）       |          |
-| 56   | hotkeys                 | 快捷键注册中心（高级）                 |          |
-| 57   | quickButton             | 于右下角添加功能按钮（高级）           |          |
-| 58   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
+| 55   | sortableOutline         | 拖动大纲标题，调整文章结构             | ×        |
+| 56   | custom                  | 开放平台，用户自定义插件（高级）       |          |
+| 57   | hotkeys                 | 快捷键注册中心（高级）                 |          |
+| 58   | quickButton             | 于右下角添加功能按钮（高级）           |          |
+| 59   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -735,6 +736,12 @@ filter_regexp = ""
 Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜索。
 
 > 使用此插件需要您熟悉 ripgrep 工具。此插件默认关闭，需手动开启。
+
+
+
+### sortableOutline：拖动大纲标题，调整文章结构
+
+> 此插件默认关闭，需手动开启。
 
 
 
