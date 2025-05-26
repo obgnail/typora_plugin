@@ -837,7 +837,7 @@ class Searcher {
             [t("modal.example.expression"), t("modal.example.query")],
             [emphasis("pear"), `${t("modal.example.desc1")} ${t("modal.example.equivalentTo")} ${emphasis("default:pear")}`],
             [emphasis("-pear"), `${t("modal.example.desc2")} ${t("modal.example.equivalentTo")} ${emphasis("NOT pear")}`],
-            [emphasis("-sour pear"), `${t("modal.example.desc3")} ${t("modal.example.equivalentTo")} ${emphasis("sour AND pear")}`],
+            [emphasis("sour pear"), `${t("modal.example.desc3")} ${t("modal.example.equivalentTo")} ${emphasis("sour AND pear")}`],
             [emphasis("sour | pear"), `${t("modal.example.desc4")} ${t("modal.example.equivalentTo")} ${emphasis("sour OR pear")}`],
             [emphasis('"sour pear"'), t("modal.example.desc5")],
             [emphasis("/\\bsour\\b/ pear mtime<2024-05-16"), t("modal.example.desc6")],
@@ -915,18 +915,20 @@ class Searcher {
                 { key: "direction", type: "select", label: t("modal.playground.direction"), options: directionOps, ...dep },
                 { key: "translate", type: "switch", label: t("modal.playground.translate"), ...dep },
             ]
+            const deepWikiFields = [{ act: "deepWiki", type: "action", label: t("modal.playground.deepWiki") }]
             const grammarFields = [{ key: "grammar", type: "textarea", rows: 20 }]
             return [
                 { title: undefined, fields: syntaxFields },
                 { title: t("modal.title.example"), fields: exampleFields },
                 { title: t("modal.title.playground"), fields: playgroundFields },
+                { title: undefined, fields: deepWikiFields },
                 { title: t("modal.title.grammar"), fields: grammarFields },
             ]
         }
 
         const defaultData = {
             grammar,
-            expression: "head:sour file:pear ( content:foobar | size>10kb )",
+            expression: "taskdone:sour  file:pear  ( linenum<=200 | size>10kb )",
             presentation: "graph",
             direction: "LR",
             ast: "",
@@ -937,6 +939,9 @@ class Searcher {
             title: t("grammar"),
             schema: await getSchema(defaultData),
             data: defaultData,
+            action: {
+                deepWiki: () => this.utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
+            },
             listener: ({ key, value }) => {
                 if (key === "ast") return
                 this.utils.formDialog.updateModal(async op => {

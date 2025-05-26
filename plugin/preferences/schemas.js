@@ -424,7 +424,8 @@ const SETTING_SCHEMAS = {
     ],
     go_top: [
         pluginLiteBasePropBox,
-        UntitledBox(
+        TitledBox(
+            "hotkey",
             Hotkey("HOTKEY_GO_TOP"),
             Hotkey("HOTKEY_GO_BOTTOM"),
         ),
@@ -534,8 +535,11 @@ const SETTING_SCHEMAS = {
             "LAYOUTS",
             ["name"],
             [
-                UntitledBox(Hint("layoutSyntax", "layoutSyntax")),
-                UntitledBox(Hint("supportedCounter", "supportedCounter")),
+                UntitledBox(
+                    Hint("layoutSyntax", "layoutSyntax"),
+                    Hint("counterNames", "counterNames"),
+                    Hint("counterStyles", "counterStyles"),
+                ),
                 UntitledBox(
                     { type: "switch", key: "selected", label: "$label.LAYOUTS.selected" },
                     { type: "text", key: "name", label: "$label.LAYOUTS.name" },

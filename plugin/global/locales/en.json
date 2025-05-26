@@ -242,10 +242,10 @@
     "modal.hintDetail.combineCond.or": "Use OR to connect conditions where at least one must be satisfied. E.g. {{eg}}",
     "modal.hintDetail.combineCond.not": "Add NOT before a condition to negate it. E.g. {{eg}}",
     "modal.hintDetail.combineCond.parentheses": "Use parentheses to adjust operator precedence. E.g. {{eg}}",
-    "modal.hintHeader.scope": "Scope: Defines which property to search in",
+    "modal.hintHeader.scope": "Scope: Which property to search in",
     "modal.hintDetail.scope.meta": "Supported file metadata fields",
     "modal.hintDetail.scope.content": "Supported file structure elements",
-    "modal.hintHeader.operator": "Operators: Define the relationship between scope and operand",
+    "modal.hintHeader.operator": "Operator: The relationship between scope and operand",
     "modal.hintDetail.operator.colon": "Indicates text contains or regex match",
     "modal.hintDetail.operator.equal": "Indicates strict equality/inequality for text, numbers, or booleans",
     "modal.hintDetail.operator.compare": "Indicates numerical comparison",
@@ -273,6 +273,7 @@
     "modal.playground.presentation.text": "Textual Explanation",
     "modal.playground.translate": "Translate Flowchart Content",
     "modal.playground.direction": "Flowchart Layout Direction",
+    "modal.playground.deepWiki": "Dr.AI, Help me out, please!",
     "$label.RELATIVE_PATH": "Use Relative Path",
     "$label.SHOW_EXT": "Show File Extension",
     "$label.SHOW_MTIME": "Show Last Modified Time",
@@ -470,8 +471,8 @@
   },
   "go_top": {
     "pluginName": "To the top",
-    "$label.HOTKEY_GO_TOP": "Hotkey: Go to Top",
-    "$label.HOTKEY_GO_BOTTOM": "Hotkey: Go to Bottom"
+    "$label.HOTKEY_GO_TOP": "Go to Top",
+    "$label.HOTKEY_GO_BOTTOM": "Go to Bottom"
   },
   "markmap": {
     "pluginName": "Markmap",
@@ -617,8 +618,10 @@
     "$title.autoNumbering": "Auto Numbering",
     "$hintHeader.layoutSyntax": "Numbering Syntax",
     "$hintDetail.layoutSyntax": "Numbering format uses the structure \"Prefix{Name:Style}Suffix\". Here, Prefix and Suffix are arbitrary text, and {} is the counter placeholder. Name specifies the object being numbered, and Style specifies how the number is displayed. You can freely combine text and multiple counters within the format string.",
-    "$hintHeader.supportedCounter": "Counter Names and Counter Styles",
-    "$hintDetail.supportedCounter": "Counter names include: c1~c6 (H1~H6 in Content), o1~o6 (H1~H6 in Outline), t1~t6 (H1~H6 in TOC), t (Table), i (Image), and f (FencedCode); \nCounter styles include: d (Decimal, default), dlz (Decimal Leading Zero), lr (Lower Roman), ur (Upper Roman), la (Lower Alpha), ua (Upper Alpha), lg (Lower Greek), hs (Heavenly Stem), eb (Earthly Branch), cjk (CJK ideographs), di (Disc), ci (Circle), and sq (Square)."
+    "$hintHeader.counterNames": "Counter Names",
+    "$hintDetail.counterNames": "Counter names include: c1~c6 (H1~H6 in Content), o1~o6 (H1~H6 in Outline), t1~t6 (H1~H6 in TOC), t (Table), i (Image), and f (FencedCode)",
+    "$hintHeader.counterStyles": "Counter Styles",
+    "$hintDetail.counterStyles": "Counter styles include: d (Decimal, default), dlz (Decimal Leading Zero), lr (Lower Roman), ur (Upper Roman), la (Lower Alpha), ua (Upper Alpha), lg (Lower Greek), hs (Heavenly Stem), eb (Earthly Branch), cjk (CJK ideographs), di (Disc), ci (Circle), and sq (Square)"
   },
   "fence_enhance": {
     "pluginName": "Enhance Fence",

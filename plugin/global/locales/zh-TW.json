@@ -242,10 +242,10 @@
     "modal.hintDetail.combineCond.or": "條件之間用 OR 連接，表示至少滿足其中一個條件。如 {{eg}}",
     "modal.hintDetail.combineCond.not": "在條件前面添加 NOT，表示不可滿足此條件。如 {{eg}}",
     "modal.hintDetail.combineCond.parentheses": "條件之間用小括號包裹，表示調整優先級。如 {{eg}}",
-    "modal.hintHeader.scope": "搜尋範圍：規定在哪個屬性上搜尋",
+    "modal.hintHeader.scope": "搜尋範圍：在哪個屬性上搜尋",
     "modal.hintDetail.scope.meta": "支援搜尋的檔案元數據",
     "modal.hintDetail.scope.content": "支援搜尋的檔案結構",
-    "modal.hintHeader.operator": "操作符：定義搜尋範圍和搜尋值的匹配關係",
+    "modal.hintHeader.operator": "操作符：搜尋範圍和搜尋值的匹配關係",
     "modal.hintDetail.operator.colon": "表示文本包含或正則匹配",
     "modal.hintDetail.operator.equal": "表示文本、數值或布爾值的嚴格相等/不相等",
     "modal.hintDetail.operator.compare": "表示數值比較",
@@ -273,6 +273,7 @@
     "modal.playground.presentation.text": "説明文本",
     "modal.playground.translate": "翻譯流程圖內容",
     "modal.playground.direction": "流程圖佈局方向",
+    "modal.playground.deepWiki": "AI 博士救救我！",
     "$label.RELATIVE_PATH": "使用相對路徑",
     "$label.SHOW_EXT": "顯示檔案副檔名",
     "$label.SHOW_MTIME": "顯示檔案最後修改時間",
@@ -470,8 +471,8 @@
   },
   "go_top": {
     "pluginName": "一鍵到頂",
-    "$label.HOTKEY_GO_TOP": "快捷鍵：至頂",
-    "$label.HOTKEY_GO_BOTTOM": "快捷鍵：至底"
+    "$label.HOTKEY_GO_TOP": "至頂",
+    "$label.HOTKEY_GO_BOTTOM": "至底"
   },
   "markmap": {
     "pluginName": "Markmap",
@@ -616,9 +617,11 @@
     "$title.LAYOUTS": "編號格式",
     "$title.autoNumbering": "自動編號",
     "$hintHeader.layoutSyntax": "編號規則",
-    "$hintDetail.layoutSyntax": "使用 “前綴{計數器名稱:計數樣式}後綴” 結構來自訂編號格式。其中，前綴和後綴是任意文字，{} 內是計數器佔位符。計數器名稱指定編號對象，計數樣式指定編號的顯示方式。您可以自由組合文字和多個計數器。例如，“圖{i:cjk}” 將產生 “圖一”, “圖二” 等。",
-    "$hintHeader.supportedCounter": "計數器名稱與計數樣式",
-    "$hintDetail.supportedCounter": "計數器名稱包括：c1~c6（正文一到六級標題），o1~o6（大綱一到六級標題），t1~t6（TOC 一到六級標題），t（表格），i（圖片），以及 f（程式碼區塊）；\n計數樣式包括：d（阿拉伯數字，預設值），dlz（前導零阿拉伯數字），lr（小寫羅馬數字），ur（大寫羅馬數字），la（小寫英文字母），ua（大寫英文字母），lg（小寫希臘字母），hs（天干），eb（地支），cjk（漢字數字），di（實心圓點），ci（空心圓點），sq（實心方塊）。"
+    "$hintDetail.layoutSyntax": "使用 “前綴{計數器名稱:計數樣式}後綴” 結構來自訂編號格式。其中，前綴和後綴是任意文字，{} 內是計數器佔位符。計數器名稱指定編號對象，計數樣式指定編號的顯示方式。您可以自由組合文字和多個計數器。例如，“圖{i:cjk}” 將產生 “圖一”, “圖二”。",
+    "$hintHeader.counterNames": "計數器名稱",
+    "$hintDetail.counterNames": "計數器名稱包括：c1~c6（正文一到六級標題），o1~o6（大綱一到六級標題），t1~t6（TOC 一到六級標題），t（表格），i（圖片），以及 f（程式碼區塊）",
+    "$hintHeader.counterStyles": "計數樣式",
+    "$hintDetail.counterStyles": "計數樣式包括：d（阿拉伯數字，預設值），dlz（前導零阿拉伯數字），lr（小寫羅馬數字），ur（大寫羅馬數字），la（小寫英文字母），ua（大寫英文字母），lg（小寫希臘字母），hs（天干），eb（地支），cjk（漢字數字），di（實心圓點），ci（空心圓點），sq（實心方塊）"
   },
   "fence_enhance": {
     "pluginName": "程式碼區塊增強",

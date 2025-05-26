@@ -242,10 +242,10 @@
     "modal.hintDetail.combineCond.or": "条件之间用 OR 连接，表示至少满足其中一个条件。如 {{eg}}",
     "modal.hintDetail.combineCond.not": "在条件前面添加 NOT，表示不可满足此条件。如 {{eg}}",
     "modal.hintDetail.combineCond.parentheses": "条件之间用小括号包裹，表示调整优先级。如 {{eg}}",
-    "modal.hintHeader.scope": "搜索范围：规定在哪个属性上搜索",
+    "modal.hintHeader.scope": "搜索范围：在哪个属性上搜索",
     "modal.hintDetail.scope.meta": "支持搜索的文件元数据",
     "modal.hintDetail.scope.content": "支持搜索的文件结构",
-    "modal.hintHeader.operator": "操作符：定义搜索范围和搜索值的匹配关系",
+    "modal.hintHeader.operator": "操作符：搜索范围和搜索值的匹配关系",
     "modal.hintDetail.operator.colon": "表示文本包含或正则匹配",
     "modal.hintDetail.operator.equal": "表示文本、数值或布尔值的严格相等/不相等",
     "modal.hintDetail.operator.compare": "表示数值比较",
@@ -273,6 +273,7 @@
     "modal.playground.presentation.text": "说明文本",
     "modal.playground.translate": "翻译流程图内容",
     "modal.playground.direction": "流程图布局方向",
+    "modal.playground.deepWiki": "AI 博士救救我！",
     "$label.RELATIVE_PATH": "使用相对路径",
     "$label.SHOW_EXT": "显示文件扩展名",
     "$label.SHOW_MTIME": "显示文件最后修改时间",
@@ -470,8 +471,8 @@
   },
   "go_top": {
     "pluginName": "一键到顶",
-    "$label.HOTKEY_GO_TOP": "快捷键：至顶",
-    "$label.HOTKEY_GO_BOTTOM": "快捷键：至底"
+    "$label.HOTKEY_GO_TOP": "至顶",
+    "$label.HOTKEY_GO_BOTTOM": "至底"
   },
   "markmap": {
     "pluginName": "Markmap",
@@ -616,9 +617,11 @@
     "$title.LAYOUTS": "编号格式",
     "$title.autoNumbering": "自动编号",
     "$hintHeader.layoutSyntax": "编号规则",
-    "$hintDetail.layoutSyntax": "使用 “前缀{计数器名称:计数样式}后缀” 结构来自定义编号格式。其中，前缀和后缀是任意文本，{} 内是计数器占位符。计数器名称指定编号对象，计数样式指定编号的显示方式。您可以自由组合文本和多个计数器。例如，“图{i:cjk}” 将生成 “图一”, “图二” 等。",
-    "$hintHeader.supportedCounter": "计数器名称与计数样式",
-    "$hintDetail.supportedCounter": "计数器名称包括：c1~c6（正文一到六级标题），o1~o6（大纲一到六级标题），t1~t6（TOC 一到六级标题），t（表格），i（图片），以及 f（代码块）；\n计数样式包括：d（阿拉伯数字，默认值），dlz（前导零阿拉伯数字），lr（小写罗马数字），ur（大写罗马数字），la（小写英文字母），ua（大写英文字母），lg（小写希腊字母），hs（天干），eb（地支），cjk（汉字数字），di（实心圆点），ci（空心圆点），sq（实心方块）。"
+    "$hintDetail.layoutSyntax": "使用 “前缀{计数器名称:计数样式}后缀” 结构来自定义编号格式。其中，前缀和后缀是任意文本，{} 内是计数器占位符。计数器名称指定编号对象，计数样式指定编号的显示方式。您可以自由组合文本和多个计数器。例如，“图{i:cjk}” 将生成 “图一”, “图二”。",
+    "$hintHeader.counterNames": "计数器名称",
+    "$hintDetail.counterNames": "计数器名称包括：c1~c6（正文一到六级标题），o1~o6（大纲一到六级标题），t1~t6（TOC 一到六级标题），t（表格），i（图片），以及 f（代码块）",
+    "$hintHeader.counterStyles": "计数样式",
+    "$hintDetail.counterStyles": "计数样式包括：d（阿拉伯数字，默认值），dlz（前导零阿拉伯数字），lr（小写罗马数字），ur（大写罗马数字），la（小写英文字母），ua（大写英文字母），lg（小写希腊字母），hs（天干），eb（地支），cjk（汉字数字），di（实心圆点），ci（空心圆点），sq（实心方块）"
   },
   "fence_enhance": {
     "pluginName": "代码块增强",
