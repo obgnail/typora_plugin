@@ -241,7 +241,11 @@ class ResourceFinder {
         this.utils = plugin.utils
         this.config = plugin.config
 
-        this.htmlImageRegex = /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/gi
+        // This regular expression is from `File.editor.brush.inline.rules.image`
+        // Typora simplifies the image syntax from a context-free grammar to a regular grammar
+        this.imgRegex = /(\!\[((?:\[[^\]]*\]|[^\[\]])*)\]\()(<?((?:\([^)]*\)|[^()])*?)>?[ \t]*((['"])((?:.|\n)*?)\6[ \t]*)?)(\)(?:\s*{([^{}\(\)]*)})?)/g
+        this.imgTagRegex = /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/gi
+
         this.resourceExts = new Set(this.config.RESOURCE_EXT)
         this.markdownExts = new Set(this.config.MARKDOWN_EXT)
 
@@ -317,55 +321,8 @@ class ResourceFinder {
         return [...md, ...html]
     }
 
-    _findHtmlImages = (text) => [...text.matchAll(this.htmlImageRegex)].map(m => m[2])
-
-    /**
-     * Finds all occurrences of Markdown image syntax `![alt](uri)` within a text string.
-     * This function correctly handles arbitrarily nested and balanced parentheses within the `uri` part,
-     * and enforces constraints from the conceptual grammar:
-     *   <Image> ::= '![' <Alt> '](' <Uri> ')'
-     *   <Alt> ::= [^\[\]\n]*
-     *   <Uri> ::= <UriItem> <Uri> | ''
-     *   <UriItem> ::= [^\(\)\n]+ | '(' <Uri> ')'
-     */
-    _findMarkdownImages = (text) => {
-        const parseUri = (text, startIdx) => {
-            let parenLevel = 0
-            let curIdx = startIdx
-            while (curIdx < text.length) {
-                const char = text[curIdx]
-                switch (char) {
-                    case "(":
-                        parenLevel++
-                        break
-                    case ")":
-                        if (parenLevel === 0) {
-                            return curIdx
-                        }
-                        parenLevel--
-                        break
-                    case "\n":
-                        return
-                }
-                curIdx++
-            }
-        }
-
-        const images = []
-        const prefixRegex = /!\[([^\[\]\n]*)\]\(/g
-        let prefixMatch
-        while ((prefixMatch = prefixRegex.exec(text)) !== null) {
-            const uriStartIdx = prefixMatch.index + prefixMatch[0].length
-            const closeParenIdx = parseUri(text, uriStartIdx)
-            if (closeParenIdx !== undefined) {
-                const fullMatchEndIdx = closeParenIdx + 1
-                const uri = text.slice(uriStartIdx, closeParenIdx)
-                images.push(uri)
-                prefixRegex.lastIndex = fullMatchEndIdx
-            }
-        }
-        return images
-    }
+    _findHtmlImages = (text) => [...text.matchAll(this.imgTagRegex)].map(m => m[2])
+    _findMarkdownImages = (text) => text.split("\n").flatMap(e => [...e.matchAll(this.imgRegex)]).map(e => e[4])
 }
 
 module.exports = {
