@@ -469,29 +469,28 @@ class utils {
      */
     static getCurrentFileContent = (shouldSave, contentType, skipSetContent, saveContext) => File.sync(shouldSave, contentType, skipSetContent, saveContext)
 
-    static editCurrentFile = async (replacement, writeFile = File.option.enableAutoSave) => {
+    static editCurrentFile = async (replacement, persistence = File.option.enableAutoSave) => {
         await this.fixScrollTop(async () => {
             const bak = File.presentedItemChanged
             File.presentedItemChanged = this.noop
-
-            const filepath = this.getFilePath()
-            const content = this.getCurrentFileContent()
-            const replaced = replacement instanceof Function
-                ? await replacement(content)
-                : replacement
-            if (replaced !== content) {
-                if (!writeFile) {
-                    File.reloadContent(replaced)
-                } else {
-                    if (filepath) {
-                        const ok = await this.writeFile(filepath, replaced)
-                        if (ok) {
-                            File.reloadContent(replaced, { delayRefresh: true, skipChangeCount: true, skipStore: true })
-                        }
-                    }
+            try {
+                const filepath = this.getFilePath()
+                const content = this.getCurrentFileContent()
+                const replaced = replacement instanceof Function
+                    ? await replacement(content)
+                    : replacement
+                if (replaced === content) return
+                if (persistence && filepath) {
+                    const ok = await this.writeFile(filepath, replaced)
+                    if (!ok) return
                 }
+                const op = persistence ? { delayRefresh: true, skipChangeCount: true, skipStore: true } : undefined
+                File.reloadContent(replaced, op)
+            } catch (e) {
+                console.error(e)
+            } finally {
+                setTimeout(() => File.presentedItemChanged = bak, 1500)
             }
-            setTimeout(() => File.presentedItemChanged = bak, 1500)
         })
     }
 

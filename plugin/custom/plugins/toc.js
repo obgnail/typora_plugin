@@ -103,10 +103,99 @@ class tocPlugin extends BaseCustomPlugin {
             }
             this.utils.resizeFixedModal(this.entities.grip, this.entities.modal, true, false, onMouseDown, onMouseMove);
         }
+        const onDrag = () => {
+            if (!this.config.sortable) return
+
+            let dragItem
+            const that = this
+            const classAbove = "plugin-toc-drag-above"
+            const classBelow = "plugin-toc-drag-below"
+            const classSource = "plugin-toc-drag-source"
+            const isAncestorOf = (ancestor, descendant) => ancestor.parentElement.contains(descendant)
+            const isPreceding = (el, otherEl) => el.compareDocumentPosition(otherEl) === document.DOCUMENT_POSITION_PRECEDING
+            const setStyle = function (ev) {
+                if (isAncestorOf(dragItem, this)) {
+                    ev.originalEvent.dataTransfer.effectAllowed = "none"
+                    ev.originalEvent.dataTransfer.dropEffect = "none"
+                } else {
+                    const cls = isPreceding(dragItem, this) ? classAbove : classBelow
+                    this.parentElement.classList.add(cls)
+                }
+                return false
+            }
+            const getHeader = (cid, tokens) => {
+                const { headers = [] } = File.editor.nodeMap.toc
+                const start = headers.findIndex(h => h.cid === cid)
+                if (start === -1) return
+
+                const header = headers[start]
+                if (!header.attributes) return
+
+                let end = start + 1
+                const depth = header.attributes.depth
+                while (end < headers.length) {
+                    const { attributes } = headers[end]
+                    const _depth = attributes && attributes.depth
+                    if (_depth && _depth <= depth) {
+                        break
+                    }
+                    end++
+                }
+
+                const startLine = tokens[start].map[0]
+                const endLine = tokens.length === end ? Number.MAX_SAFE_INTEGER : tokens[end].map[0]
+                return { depth, startLine, endLine }
+            }
+            const moveSections = (lines, drag, drop) => {
+                const clampIndex = (arr, idx) => Math.max(0, Math.min(idx, arr.length - 1))
+                drag.startLine = clampIndex(lines, drag.startLine)
+                drag.endLine = clampIndex(lines, drag.endLine)
+                drop.startLine = clampIndex(lines, drop.startLine)
+                drop.endLine = clampIndex(lines, drop.endLine)
+
+                const dragLength = drag.endLine - drag.startLine
+                const removed = lines.splice(drag.startLine, dragLength)
+                const isDragDown = drag.startLine < drop.startLine
+                const insertIdx = isDragDown ? drop.endLine - dragLength : drop.startLine
+                lines.splice(insertIdx, 0, ...removed)
+
+                return lines
+            }
+            $(this.entities.list)
+                .on("dragstart", ".toc-node", function (ev) {
+                    dragItem = this
+                    ev.originalEvent.dataTransfer.effectAllowed = "move"
+                    ev.originalEvent.dataTransfer.dropEffect = "move"
+                    this.parentElement.classList.add(classSource)
+                })
+                .on("dragenter", ".toc-node", setStyle)
+                .on("dragover", ".toc-node", setStyle)
+                .on("dragleave", ".toc-node", function () {
+                    this.parentElement.classList.remove(classAbove, classBelow)
+                })
+                .on("drop", ".toc-node", async function () {
+                    if (isAncestorOf(dragItem, this)) return
+                    await that.utils.editCurrentFile(content => {
+                        const tokens = that.utils.parseMarkdownBlock(content).filter(token => token.type === "heading_open")
+                        const drag = getHeader(dragItem.dataset.ref, tokens)
+                        const drop = getHeader(this.dataset.ref, tokens)
+                        return (drag && drop)
+                            ? moveSections(content.split("\n"), drag, drop).join("\n")
+                            : content
+                    })
+                })
+                .on("dragend", function () {
+                    const selector = `.${classAbove}, .${classBelow}, .${classSource}`
+                    that.entities.list.querySelectorAll(selector).forEach(e => {
+                        e.classList.remove(classAbove, classBelow, classSource)
+                    })
+                })
+        }
 
         onEvent();
         onClick();
         onResize();
+        onDrag()
     }
 
     callback = anchorNode => this.toggle()
@@ -150,7 +239,8 @@ class tocPlugin extends BaseCustomPlugin {
             type = type || this.getCurrentType()
             this._setIconActive(type)
             const root = this._getRoot(type)
-            this.entities.list.innerHTML = this._getRootHTML(root)
+            const sortable = this.config.sortable && type === "header"
+            this.entities.list.innerHTML = this._getRootHTML(root, sortable)
             this.highlightVisibleHeader()
         }
     }
@@ -261,18 +351,18 @@ class tocPlugin extends BaseCustomPlugin {
         return root
     }
 
-    _getRootHTML = rootNode => {
+    _getRootHTML = (rootNode, sortable) => {
+        const drag = sortable ? 'draggable="true"' : ""
         const genLi = node => {
             const { text, cid, depth, class_ = "", children = [] } = node
             const t = this.utils.escape(text)
-            let content = `<div class="toc-node ${class_}" data-ref="${cid}"><span class="toc-text">${t}</span></div>`
+            let content = `<div class="toc-node ${class_}" data-ref="${cid}" ${drag}><span class="toc-text">${t}</span></div>`
             if (children.length !== 0) {
                 const li = children.map(genLi).join("")
                 content += `<ul>${li}</ul>`
             }
             return `<li data-depth="${depth}">${content}</li>`
         }
-
         const li = rootNode.children.map(genLi).join("")
         return `<ul class="toc-root">${li}</ul>`
     }

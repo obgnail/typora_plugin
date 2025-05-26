@@ -94,7 +94,22 @@
     text-decoration: underline;
 }
 
-/*preview-threading*/
+/* drag & drop */
+.plugin-toc-drag-source {
+    opacity: 0.4;
+}
+
+.plugin-toc-drag-above {
+    outline: 1px dashed #000;
+    box-shadow: 0 -3px 0 #8d8df0;
+}
+
+.plugin-toc-drag-below {
+    outline: 1px dashed #000;
+    box-shadow: 0 3px 0 #8d8df0;
+}
+
+/* preview-threading */
 #plugin-toc .plugin-toc-list {
     padding-left: 0.8rem;
     --line-width: 0.07rem;

@@ -1185,6 +1185,7 @@
     "math": "公式",
     "$label.default_show_toc": "默认开启",
     "$label.escape_header": "转义标题内容",
+    "$label.sortable": "拖动大纲标题，调整文章结构",
     "$label.right_click_outline_button_to_toggle": "快捷方式：右击侧边栏大纲按钮",
     "$label.width_percent_when_pin_right": "固定到右侧的宽度",
     "$label.toc_font_size": "字体大小",

@@ -1301,6 +1301,7 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Switch("default_show_toc"),
             Switch("escape_header"),
+            Switch("sortable"),
             Switch("right_click_outline_button_to_toggle"),
         ),
         TitledBox(
