@@ -11,7 +11,7 @@ class pluginForm extends HTMLElement {
         this._bindEvents()
     }
 
-    render(schema, data, action = {}) {
+    render(schema, data = {}, action = {}) {
         this.schema = schema
         this.action = action
         this.data = JSON.parse(JSON.stringify(data))
@@ -34,7 +34,7 @@ class pluginForm extends HTMLElement {
 
     _initShadow() {
         const awesomeCSS = this.utils.joinPath("./style/font-awesome-4.1.0/css/font-awesome.min.css")
-        const formCSS = this.utils.joinPath("./plugin/global/styles/dialog-form.css")
+        const formCSS = this.utils.joinPath("./plugin/global/styles/plugin-dialog-form.css")
         const shadowRoot = this.attachShadow({ mode: "open" })
         shadowRoot.innerHTML = `
             <link rel="stylesheet" href="${awesomeCSS}" crossorigin="anonymous">

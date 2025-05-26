@@ -1140,7 +1140,6 @@ const newMixin = (utils) => {
         ...require("./contextMenu"),
         ...require("./notification"),
         ...require("./progressBar"),
-        ...require("./dialog"),
         ...require("./form-dialog"),
         ...require("./diagramParser"),
         ...require("./thirdPartyDiagramParser"),
@@ -1156,7 +1155,7 @@ const getHook = utils => {
 
     const {
         styleTemplater, hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,
-        notification, progressBar, dialog, formDialog, diagramParser, thirdPartyDiagramParser,
+        notification, progressBar, formDialog, diagramParser, thirdPartyDiagramParser,
     } = mixin
 
     const registerMixin = (...ele) => Promise.all(ele.map(h => h.process && h.process()))
@@ -1164,7 +1163,7 @@ const getHook = utils => {
 
     const registerPreMixin = async () => {
         await registerMixin(styleTemplater)
-        await registerMixin(contextMenu, notification, progressBar, dialog, formDialog, stateRecorder, hotkeyHub, exportHelper)
+        await registerMixin(contextMenu, notification, progressBar, formDialog, stateRecorder, hotkeyHub, exportHelper)
     }
 
     const registerPostMixin = async () => {

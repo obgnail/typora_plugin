@@ -369,60 +369,48 @@ class preferencesPlugin extends BasePlugin {
                     await uninstall()
                 }
             },
-            donate: () => {
-                const weChatPay = "8-RWSVREYNE9TCVADDKEGVPNJ1KGAYNZ31KENF2LWDEA3KFHHDRWYEPA4F00KSZT3454M24RD5PVVM21AAJ5DAGMQ3H62CHEQOOT226D49LZR6G1FKOG0G7NUV5GR2HD2B6V3V8DHR2S8027S36ESCU3GJ0IAE7IY9S25URTMZQCZBY8ZTHFTQ45VVGFX3VD1SE9K4Y9K7I1Y7U4FIKZSS2Y87BH4OSASYLS48A6SR2T5YZJNMJ2WCQE0ZBK9OVLGWGWGL1ED400U1BYMZRW7UAS7VECNVL98WKG4PNIF0KFNIVS45KHQXJFH9E9SYRCWYRUX45Q37"
-                const aliPay = "9-CF07WK7ZZ6CKLVC5KX92LZGUL3X93E51RYAL92NHYVQSD6CAH4D1DTCENAJ8HHB0062DU7LS29Q8Y0NT50M8XPFP9N1QE1JPFW39U0CDP2UX9H2WLEYD712FI3C5657LIWMT7K5CCVL509G04FT4N0IJD3KRAVBDM76CWI81XY77LLSI2AZ668748L62IC4E8CYYVNBG4Z525HZ4BXQVV6S81JC0CVABEACU597FNP9OHNC959X4D29MMYXS1V5MWEU8XC4BD5WSLL29VSAQOGLBWAVVTMX75DOSRF78P9LARIJ7J50IK1MM2QT5UXU5Q1YA7J2AVVHMG00E06Q80RCDXVGOFO76D1HCGYKW93MXR5X4H932TYXAXL93BYWV9UH6CTDUDFWACE5G0OM9N"
-                const qrcodeList = [{ color: "#1AAD19", compressed: weChatPay }, { color: "#027AFF", compressed: aliPay }]
-                const size = 140
-                const margin = 60
-                const backgroundColor = "#F3F2EE"
-                const canvasWidth = (size + margin) * qrcodeList.length - margin
+            donate: async () => {
+                const WeChatPay = "8-RWSVREYNE9TCVADDKEGVPNJ1KGAYNZ31KENF2LWDEA3KFHHDRWYEPA4F00KSZT3454M24RD5PVVM21AAJ5DAGMQ3H62CHEQOOT226D49LZR6G1FKOG0G7NUV5GR2HD2B6V3V8DHR2S8027S36ESCU3GJ0IAE7IY9S25URTMZQCZBY8ZTHFTQ45VVGFX3VD1SE9K4Y9K7I1Y7U4FIKZSS2Y87BH4OSASYLS48A6SR2T5YZJNMJ2WCQE0ZBK9OVLGWGWGL1ED400U1BYMZRW7UAS7VECNVL98WKG4PNIF0KFNIVS45KHQXJFH9E9SYRCWYRUX45Q37"
+                const AliPay = "9-CF07WK7ZZ6CKLVC5KX92LZGUL3X93E51RYAL92NHYVQSD6CAH4D1DTCENAJ8HHB0062DU7LS29Q8Y0NT50M8XPFP9N1QE1JPFW39U0CDP2UX9H2WLEYD712FI3C5657LIWMT7K5CCVL509G04FT4N0IJD3KRAVBDM76CWI81XY77LLSI2AZ668748L62IC4E8CYYVNBG4Z525HZ4BXQVV6S81JC0CVABEACU597FNP9OHNC959X4D29MMYXS1V5MWEU8XC4BD5WSLL29VSAQOGLBWAVVTMX75DOSRF78P9LARIJ7J50IK1MM2QT5UXU5Q1YA7J2AVVHMG00E06Q80RCDXVGOFO76D1HCGYKW93MXR5X4H932TYXAXL93BYWV9UH6CTDUDFWACE5G0OM9N"
+                const qrCodeList = [{ label: "WeChat Pay", color: "#1AAD19", compressed: WeChatPay }, { label: "AliPay", color: "#027AFF", compressed: AliPay }]
+                const qrCodeSize = 140
 
                 const _decompress = (compressed) => {
                     const [chunk, raw] = compressed.split("-", 2)
                     const rows = raw.match(new RegExp(`\\w{${chunk}}`, "g"))
                     return rows.map(r => parseInt(r, 36).toString(2).padStart(rows.length, "0"))
                 }
-                const _adaptDPR = (canvas, ctx) => {
-                    const dpr = File.canvasratio || window.devicePixelRatio || 1
-                    const { width, height } = canvas
-                    canvas.width = Math.round(width * dpr)
-                    canvas.height = Math.round(height * dpr)
-                    canvas.style.width = width + "px"
-                    canvas.style.height = height + "px"
-                    ctx.scale(dpr, dpr)
-                }
-                const onload = (dialog = document) => {
-                    const canvas = dialog.querySelector("canvas")
-                    if (!canvas) return
-
-                    const ctx = canvas.getContext("2d")
-                    _adaptDPR(canvas, ctx)
-                    ctx.lineWidth = 0
-                    ctx.strokeStyle = "transparent"
-                    for (const { compressed, color } of qrcodeList) {
-                        ctx.fillStyle = backgroundColor
-                        ctx.fillRect(0, 0, size, size)
-                        ctx.fillStyle = color
-                        const table = _decompress(compressed)
-                        const rectWidth = size / table.length
-                        // Division and canvas pixel magnification issues lead to precision loss. Adding 0.3 makes it look better.
-                        const rectWidth2 = rectWidth + 0.3
-                        for (let cIdx = 0; cIdx < table.length; cIdx++) {
-                            for (let rIdx = 0; rIdx < table[0].length; rIdx++) {
-                                if (table[cIdx][rIdx] === "1") {
-                                    ctx.fillRect(rIdx * rectWidth, cIdx * rectWidth, rectWidth2, rectWidth2)
-                                }
+                const _toSVG = (compressed, fillColor, size) => {
+                    const table = _decompress(compressed)
+                    const numModules = table.length
+                    const moduleSize = (size / numModules).toFixed(2)
+                    const paths = []
+                    for (let rIdx = 0; rIdx < numModules; rIdx++) {
+                        for (let cIdx = 0; cIdx < numModules; cIdx++) {
+                            if (table[rIdx][cIdx] === "1") {
+                                const x = (cIdx * moduleSize).toFixed(2)
+                                const y = (rIdx * moduleSize).toFixed(2)
+                                paths.push(`M${x},${y}h${moduleSize}v${moduleSize}h${-moduleSize}Z`)
                             }
                         }
-                        ctx.translate(size + margin, 0)
                     }
+                    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><path d="${paths.join("")}" fill="${fillColor}" /></svg>`
                 }
-                const canvas = `<canvas width="${canvasWidth}" height="${size}" style="margin: auto; display: block;"></canvas>`
-                const title = this.i18n._t("global", "$label.donate")
-                const components = [{ label: "", type: "span" }, { label: canvas, type: "span" }]
-                const op = { title, components, onload, width: "500px" }
-                this.utils.dialog.modal(op)
+
+                const qrs = qrCodeList.map(qr => {
+                    const svg = _toSVG(qr.compressed, qr.color, qrCodeSize)
+                    return `<div style="display: flex; flex-direction: column; align-items: center">${svg}<div style="font-weight: bold">${qr.label}</div></div>`
+                })
+                const content = `<div style="display: flex; justify-content: space-evenly; padding-top: 8px">${qrs.join("")}</div>`
+                const blessing = `<div style="font-weight: bold; font-style:italic">Mayst thou thy peace discov'r.</div>`
+                const op = {
+                    title: this.i18n._t("global", "$label.donate"),
+                    schema: [
+                        { fields: [{ type: "custom", content: blessing }] },
+                        { fields: [{ type: "custom", content: content }] },
+                    ],
+                }
+                await this.utils.formDialog.modal(op)
             },
         }
     }
