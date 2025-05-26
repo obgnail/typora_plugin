@@ -33,15 +33,14 @@ class hotkeysPlugin extends BasePlugin {
         }
     }
 
-    call = (action, meta) => {
-        const thText = this.i18n.t("registeredHotkey")
-        const trs = [...this.utils.hotkeyHub.map.keys()].sort().map(hk => {
-            const hotkey = hk.toUpperCase().split("+").map(h => `<kbd>${h}</kbd>`).join("+")
-            return [hotkey]
-        })
-        const table = this.utils.buildTable([[thText], ...trs])
-        const components = [{ label: table, type: "p" }]
-        this.utils.dialog.modal({ title: this.pluginName, components })
+    call = async (action, meta) => {
+        const hotkeys = [...this.utils.hotkeyHub.map.keys()].sort()
+        const op = {
+            title: this.i18n.t("registeredHotkey"),
+            schema: [{ fields: [{ type: "textarea", key: "hotkeys", rows: 14 }] }],
+            data: { hotkeys: JSON.stringify(hotkeys, null, "\t") },
+        }
+        await this.utils.formDialog.modal(op)
     }
 }
 

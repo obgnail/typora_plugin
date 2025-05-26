@@ -961,8 +961,8 @@
   },
   "editor_width_slider": {
     "pluginName": "写作区宽度调整",
-    "widthProportion": "宽度占比",
-    "recover": "还原",
+    "tmpAdjust": "临时性调整",
+    "restore": "恢复默认并退出",
     "$label.WIDTH_RATIO": "写作区宽度",
     "$tooltip.minusOneMeansDisable": "-1 表示不启用"
   },

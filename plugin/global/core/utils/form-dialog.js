@@ -94,6 +94,8 @@ class formDialog {
         await fn(options)
         this._updateModal(options)
     }
+
+    exit = () => this.entities.cancel.click()
 }
 
 module.exports = {

@@ -961,8 +961,8 @@
   },
   "editor_width_slider": {
     "pluginName": "Editor Width Slider",
-    "widthProportion": "Width Proportion",
-    "recover": "Restore",
+    "tmpAdjust": "Temporary Adjustment",
+    "restore": "Restore Default And Exit",
     "$label.WIDTH_RATIO": "Editor Width",
     "$tooltip.minusOneMeansDisable": "-1 means disable"
   },

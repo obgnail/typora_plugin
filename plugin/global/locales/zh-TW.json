@@ -961,8 +961,8 @@
   },
   "editor_width_slider": {
     "pluginName": "編輯區寬度調整",
-    "widthProportion": "寬度比例",
-    "recover": "還原",
+    "tmpAdjust": "臨時性調整",
+    "restore": "恢複默認並退出",
     "$label.WIDTH_RATIO": "編輯區寬度",
     "$tooltip.minusOneMeansDisable": "-1 表示不啟用"
   },
