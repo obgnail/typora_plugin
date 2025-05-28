@@ -14,7 +14,6 @@ class sortableOutlinePlugin extends BaseCustomPlugin {
         const classAbove = "plugin-sortable-outline-above"
         const classBelow = "plugin-sortable-outline-below"
         const classSource = "plugin-sortable-outline-source"
-        const autoSaveFile = this.config.auto_save_file
         const isAncestorOf = (ancestor, descendant) => ancestor.parentElement.contains(descendant)
         const isPreceding = (el, otherEl) => el.compareDocumentPosition(otherEl) === document.DOCUMENT_POSITION_PRECEDING
         const getCid = item => item.querySelector(":scope > .outline-label").dataset.ref
@@ -56,7 +55,7 @@ class sortableOutlinePlugin extends BaseCustomPlugin {
                     return (drag && drop)
                         ? that._moveSections(content.split("\n"), drag, drop).join("\n")
                         : content
-                }, autoSaveFile)
+                }, that.config.auto_save_file)
             })
             .on("dragend", clearStyle)
     }
@@ -86,11 +85,8 @@ class sortableOutlinePlugin extends BaseCustomPlugin {
     }
 
     _moveSections = (lines, drag, drop) => {
-        const clampIndex = (arr, idx) => Math.max(0, Math.min(idx, arr.length - 1))
-        drag.startLine = clampIndex(lines, drag.startLine)
-        drag.endLine = clampIndex(lines, drag.endLine)
-        drop.startLine = clampIndex(lines, drop.startLine)
-        drop.endLine = clampIndex(lines, drop.endLine)
+        drag.endLine = Math.min(drag.endLine, lines.length)
+        drop.endLine = Math.min(drop.endLine, lines.length)
 
         const dragLength = drag.endLine - drag.startLine
         const removed = lines.splice(drag.startLine, dragLength)

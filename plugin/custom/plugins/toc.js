@@ -147,11 +147,8 @@ class tocPlugin extends BaseCustomPlugin {
                 return { depth, startLine, endLine }
             }
             const moveSections = (lines, drag, drop) => {
-                const clampIndex = (arr, idx) => Math.max(0, Math.min(idx, arr.length - 1))
-                drag.startLine = clampIndex(lines, drag.startLine)
-                drag.endLine = clampIndex(lines, drag.endLine)
-                drop.startLine = clampIndex(lines, drop.startLine)
-                drop.endLine = clampIndex(lines, drop.endLine)
+                drag.endLine = Math.min(drag.endLine, lines.length)
+                drop.endLine = Math.min(drop.endLine, lines.length)
 
                 const dragLength = drag.endLine - drag.startLine
                 const removed = lines.splice(drag.startLine, dragLength)
