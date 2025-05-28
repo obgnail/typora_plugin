@@ -57,35 +57,15 @@ class fileCounterPlugin extends BasePlugin {
     fileFilter = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath)
     dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
 
-    countFiles = async (dir, fileFilter, dirFilter) => {
-        const { Fs: { promises: { stat, readdir } }, Path } = this.utils.Package
-        let fileCount = 0
-
-        async function walk(dir) {
-            const stats = await stat(dir)
-            if (!stats.isDirectory()) return
-
-            const files = await readdir(dir)
-            const promises = files.map(async file => {
-                const filePath = Path.join(dir, file)
-                const fileStats = await stat(filePath)
-                if (fileStats.isFile() && fileFilter(filePath, fileStats)) {
-                    fileCount++
-                }
-                if (fileStats.isDirectory() && dirFilter(file)) {
-                    await walk(filePath)
-                }
-            })
-            await Promise.all(promises)
-        }
-
-        await walk(dir)
-        return fileCount
+    countFiles = async (dir) => {
+        let count = 0
+        await this.utils.walkDir(dir, this.fileFilter, this.dirFilter, this.utils.noop, () => count++)
+        return count
     }
 
     _countDir = async (node) => {
         const dir = node.dataset.path
-        const fileCount = await this.countFiles(dir, this.fileFilter, this.dirFilter)
+        const fileCount = await this.countFiles(dir)
         let countDiv = node.querySelector(`:scope > .${this.className}`)
         if (fileCount <= this.config.IGNORE_MIN_NUM) {
             this.utils.removeElement(countDiv)

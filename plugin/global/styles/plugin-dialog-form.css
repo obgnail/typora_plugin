@@ -163,7 +163,8 @@ textarea {
     line-height: 24px;
 }
 
-input::placeholder {
+input::placeholder,
+textarea::placeholder {
     color: rgba(60, 60, 67, 0.6);
 }
 

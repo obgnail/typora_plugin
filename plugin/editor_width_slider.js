@@ -32,7 +32,7 @@ class editorWidthSliderPlugin extends BasePlugin {
                 },
                 {
                     fields: [
-                        { act: "restore", type: "action", label: this.i18n.t("restore") },
+                        { key: "restore", type: "action", label: this.i18n.t("restore") },
                     ]
                 },
             ],

@@ -54,11 +54,14 @@
     "uninstallPluginDetail": "您即將卸載插件系統，所有與插件系統相關的設定和資料將被永久刪除。請在下方輸入框中精確鍵入「{{reconfirm}}」以確認您的意願。卸載完成後，请重新啟動軟體以完成卸載流程。",
     "uninstallPluginConfirmInput": "確認文本",
     "success": "執行成功",
-    "success.uninstall": "卸載成功",
+    "success.add": "添加成功",
+    "success.edit": "修改成功",
+    "success.deleted": "刪除成功",
+    "success.copy": "複製成功",
     "success.submit": "提交成功",
+    "success.uninstall": "卸載成功",
     "success.restore": "已恢複默認",
     "success.restoreAll": "已恢複所有默認",
-    "success.copy": "複製成功",
     "error.IncorrectFormatContent": "內容必須爲正確的 {{format}} 格式",
     "error.minItems": "至少選擇 {{minItems}} 項",
     "error.maxItems": "至多選擇 {{maxItems}} 項",
@@ -297,7 +300,7 @@
     "pluginName": "命令行環境",
     "act.toggle_modal": "顯示 / 隱藏",
     "runCommand": "執行命令",
-    "envInfo": "提供以下環境變數:\n$f 當前檔案路徑\n$d 當前檔案目錄\n$m 當前掛載目錄",
+    "envInfo": "環境變數:\n$f 當前檔案路徑\n$d 當前檔案目錄\n$m 當前掛載目錄",
     "$option.QUICK_RUN_DISPLAY.echo": "立即彈出視窗並回顯輸出",
     "$option.QUICK_RUN_DISPLAY.always": "執行結束後彈出視窗並顯示輸出",
     "$option.QUICK_RUN_DISPLAY.error": "僅在錯誤時彈出視窗並顯示輸出",
@@ -319,8 +322,7 @@
     "$title.cmdDisplay": "命令顯示方式",
     "$title.windowInteraction": "視窗互動",
     "$title.BUILTIN": "預設命令",
-    "$title.BUILTIN.cmd": "命令",
-    "$placeholder.builtinEnvVars": "$f: 檔案路徑; $d: 檔案目錄路徑; $m: 掛載目錄路徑"
+    "$title.BUILTIN.cmd": "命令"
   },
   "md_padding": {
     "pluginName": "中英文混排優化",
@@ -436,8 +438,8 @@
     "$label.MODIFIER_KEY.TEMPORARY": "臨時修改圖片大小",
     "$label.MODIFIER_KEY.PERSISTENT": "永久修改圖片大小（轉為 HTML 語法）",
     "$tooltip.modifyKeyExample": "舉例：填入 alt，則 Alt+Wheel 臨時調整圖片大小",
-    "$title.picture": "圖片",
-    "$title.modificationKeys": "滑鼠滾輪的修飾鍵"
+    "$title.image": "圖片",
+    "$title.modifierKeys": "滑鼠滾輪的修飾鍵"
   },
   "resize_table": {
     "pluginName": "表格調整",

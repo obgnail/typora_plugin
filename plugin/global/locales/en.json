@@ -53,12 +53,15 @@
     "uninstallPluginWarning": "Warning: All plugins will be removed. This action is irreversible!",
     "uninstallPluginDetail": "You are about to uninstall the plugin system. All settings and data associated with the plugin system will be permanently deleted. Please accurately type \"{{reconfirm}}\" in the input box below to confirm your intention. After uninstallation is complete, please restart the software to finalize the process.",
     "uninstallPluginConfirmInput": "Confirm Input",
-    "success": "Execution Successful",
-    "success.uninstall": "Uninstall Success",
-    "success.submit": "Submit Success",
-    "success.restore": "Restore Success",
-    "success.restoreAll": "Restore All Success",
-    "success.copy": "Copy Success",
+    "success": "Executed Successfully",
+    "success.add": "Added Successfully",
+    "success.edit": "Edited Successfully",
+    "success.deleted": "Deleted Successfully",
+    "success.copy": "Copied Successfully",
+    "success.submit": "Submit Successfully",
+    "success.uninstall": "Uninstalled Successfully",
+    "success.restore": "Restored Successfully",
+    "success.restoreAll": "Restored All Successfully",
     "error.IncorrectFormatContent": "Content must be valid {{format}}",
     "error.minItems": "At least {{minItems}} items",
     "error.maxItems": "At most {{maxItems}} items",
@@ -297,7 +300,7 @@
     "pluginName": "Commander",
     "act.toggle_modal": "Show / Hide",
     "runCommand": "Run Command",
-    "envInfo": "Provides the following environment variables:\n$f: Current file path\n$d: Directory of the current file\n$m: Current mount directory",
+    "envInfo": "Environment variables:\n$f: Current file path\n$d: Directory of the current file\n$m: Current mount directory",
     "$option.QUICK_RUN_DISPLAY.echo": "Echo Output Immediately",
     "$option.QUICK_RUN_DISPLAY.always": "Show Output After Execution",
     "$option.QUICK_RUN_DISPLAY.error": "Show Output Only on Error",
@@ -319,8 +322,7 @@
     "$title.cmdDisplay": "Command Display",
     "$title.windowInteraction": "Window Interaction",
     "$title.BUILTIN": "Built-in Commands",
-    "$title.BUILTIN.cmd": "Command",
-    "$placeholder.builtinEnvVars": "$f: File path; $d: Directory path; $m: Mount path"
+    "$title.BUILTIN.cmd": "Command"
   },
   "md_padding": {
     "pluginName": "Chinese-English Text Spacer",
@@ -436,8 +438,8 @@
     "$label.MODIFIER_KEY.TEMPORARY": "Temporary Resize",
     "$label.MODIFIER_KEY.PERSISTENT": "Persistent Resize (Convert to HTML)",
     "$tooltip.modifyKeyExample": "Example: Enter 'alt', then Alt+Wheel will trigger the function.",
-    "$title.picture": "Picture",
-    "$title.modificationKeys": "Mouse Wheel Modifier Keys"
+    "$title.image": "Image",
+    "$title.modifierKeys": "Mouse Wheel Modifier Keys"
   },
   "resize_table": {
     "pluginName": "Table Resizer",

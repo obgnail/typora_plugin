@@ -215,10 +215,14 @@ class slashCommandsPlugin extends BasePlugin {
         range.select()
     }
 
-    _runCommand = suggest => {
+    _beforeApply = suggest => {
         let result = ""
-        const cmd = this.matched.get(suggest)
-        if (cmd) {
+
+        try {
+            const cmd = this.matched.get(suggest)
+            if (!cmd) {
+                return result
+            }
             const { anchor } = File.editor.autoComplete.state
             if (cmd.type === this.TYPE.SNIPPET) {
                 result = cmd.callback
@@ -233,14 +237,11 @@ class slashCommandsPlugin extends BasePlugin {
                 this._refresh()
                 this._selectRange(cmd.cursorOffset)
             }, 100)
+        } finally {
+            this.matched.clear()
         }
-        return result
-    }
 
-    _beforeApply = suggest => {
-        const ret = this._runCommand(suggest)
-        this.matched.clear()
-        return ret
+        return result
     }
 }
 

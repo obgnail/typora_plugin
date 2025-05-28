@@ -46,7 +46,7 @@ class formDialog {
 
     _onVisibilityChange = (state = 1) => {
         this.hide()
-        this.resolver({ response: state, data: this.entities.form.data })
+        this.resolver({ response: state, data: this.entities.form.options.data })
         this.resolver = null
         this.listener = null
     }
@@ -58,16 +58,14 @@ class formDialog {
         if (listener) {
             this.listener = listener
         }
-        schema = schema || this.entities.form.schema
-        data = data || this.entities.form.data
-        action = action || this.entities.form.action
-        this.entities.form.render(schema, data, action)
+        const { schema: s, data: d, action: a } = this.entities.form.options
+        this.entities.form.render(schema || s, data || d, action || a)
     }
 
     _getOptions = () => {
         const listener = this.listener
         const title = this.entities.title.textContent
-        const { schema, data, action } = this.entities.form
+        const { schema, data, action } = this.entities.form.options
         return { title, schema, data, action, listener }
     }
 

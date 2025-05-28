@@ -915,7 +915,7 @@ class Searcher {
                 { key: "direction", type: "select", label: t("modal.playground.direction"), options: directionOps, ...dep },
                 { key: "translate", type: "switch", label: t("modal.playground.translate"), ...dep },
             ]
-            const deepWikiFields = [{ act: "deepWiki", type: "action", label: t("modal.playground.deepWiki") }]
+            const deepWikiFields = [{ key: "deepWiki", type: "action", label: t("modal.playground.deepWiki") }]
             const grammarFields = [{ key: "grammar", type: "textarea", rows: 20 }]
             return [
                 { title: undefined, fields: syntaxFields },

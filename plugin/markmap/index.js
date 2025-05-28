@@ -583,7 +583,7 @@ class tocMarkmap {
                 ]
             },
             {
-                fields: [{ type: "action", act: "restoreSettings", label: this.i18n._t("settings", "$label.restoreSettings") }]
+                fields: [{ type: "action", key: "restoreSettings", label: this.i18n._t("settings", "$label.restoreSettings") }]
             },
         ]
 

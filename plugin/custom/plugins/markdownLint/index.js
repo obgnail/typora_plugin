@@ -105,17 +105,15 @@ class markdownLintPlugin extends BaseCustomPlugin {
             fixSingle: infoIdx => this.fixLint([this.fixInfos[infoIdx]]),
             toggleSourceMode: () => File.toggleSourceMode(),
             doc: async () => {
-                const title = this.i18n.t("func.doc")
-                const label = this.i18n.t("$label.viewMarkdownlintRules")
-                const content = Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n")
+                const doc = Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n")
                 const viewRules = () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md")
                 const op = {
-                    title,
+                    title: this.i18n.t("func.doc"),
                     schema: [
                         { fields: [{ type: "textarea", key: "doc", rows: 11 }] },
-                        { fields: [{ type: "action", act: "viewRules", label }] },
+                        { fields: [{ type: "action", key: "viewRules", label: this.i18n.t("$label.viewMarkdownlintRules") }] },
                     ],
-                    data: { doc: content },
+                    data: { doc },
                     action: { viewRules },
                 }
                 await this.utils.formDialog.modal(op)

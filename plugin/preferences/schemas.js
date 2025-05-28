@@ -4,9 +4,9 @@ const Placeholder = (placeholder) => placeholder ? `$placeholder.${placeholder}`
 const HintHeader = (header) => header ? `$hintHeader.${header}` : undefined
 const HintDetail = (detail) => detail ? `$hintDetail.${detail}` : undefined
 
-const Action = (act) => {
-    const label = Label(act)
-    return { type: "action", act, label }
+const Action = (key) => {
+    const label = Label(key)
+    return { type: "action", key, label }
 }
 const Static = (key) => {
     const label = Label(key)
@@ -305,7 +305,7 @@ const SETTING_SCHEMAS = {
                     { type: "select", key: "shell", label: "$label.BUILTIN.shell", options: OPTIONS.commander["BUILTIN.shell"] },
                     { type: "text", key: "name", label: "$label.BUILTIN.name" },
                 ),
-                TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 5, placeholder: "$placeholder.builtinEnvVars" }),
+                TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 5, placeholder: "envInfo" }),
             ],
             {
                 name: "",
@@ -387,13 +387,13 @@ const SETTING_SCHEMAS = {
     resize_image: [
         pluginLiteBasePropBox,
         TitledBox(
-            "picture",
+            "image",
             Switch("RECORD_RESIZE"),
             Switch("ALLOW_EXCEED_LIMIT"),
             Select("IMAGE_ALIGN", OPTIONS.resize_image.IMAGE_ALIGN),
         ),
         TitledBox(
-            "modificationKeys",
+            "modifierKeys",
             Hotkey("MODIFIER_KEY.TEMPORARY", { tooltip: "modifyKeyExample" }),
             Hotkey("MODIFIER_KEY.PERSISTENT"),
         ),

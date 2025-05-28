@@ -1,21 +1,28 @@
-class pluginForm extends HTMLElement {
+customElements.define("dialog-form", class extends HTMLElement {
+    constructor() {
+        super()
+        const root = this.attachShadow({ mode: "open" })
+        root.innerHTML = `
+            <link rel="stylesheet" href="./style/font-awesome-4.1.0/css/font-awesome.min.css" crossorigin="anonymous">
+            <link rel="stylesheet" href="./plugin/global/styles/plugin-dialog-form.css" crossorigin="anonymous">
+            <div id="form"></div>`
+        this.form = root.querySelector("#form")
+        this.options = { objectFormat: "JSON", schema: null, data: null, action: null, prerequisite: null }
+    }
+
     init(utils, options) {
         this.utils = utils
         this.i18n = utils.i18n
-        this.options = options || { objectFormat: "JSON" }
-        this.data = null
-        this.action = null
-        this.prerequisite = null
-        this.form = null
-        this._initShadow()
+        this.options = { ...this.options, ...options }
         this._bindEvents()
     }
 
     render(schema, data = {}, action = {}) {
-        this.schema = schema
-        this.action = action
-        this.data = JSON.parse(JSON.stringify(data))
-        this.prerequisite = this._buildPrerequisite(schema)
+        this.options.schema = schema
+        this.options.action = action
+        this.options.data = JSON.parse(JSON.stringify(data))
+        this.options.prerequisite = this._buildPrerequisite(schema)
+
         this.form.innerHTML = this._fillForm(schema)
     }
 
@@ -24,24 +31,14 @@ class pluginForm extends HTMLElement {
         const customEvent = new CustomEvent("CRUD", { detail: { key, value, type } })
         this.dispatchEvent(customEvent)
         if (type === "action") {
-            const fn = this.action[key]
-            if (fn) fn(this.data)
+            const actFn = this.options.action[key]
+            if (actFn) {
+                actFn(this.options)
+            }
             return
         }
-        this.utils.nestedPropertyHelpers[type](this.data, key, value)
+        this.utils.nestedPropertyHelpers[type](this.options.data, key, value)
         this._toggleReadonly(key)
-    }
-
-    _initShadow() {
-        const awesomeCSS = this.utils.joinPath("./style/font-awesome-4.1.0/css/font-awesome.min.css")
-        const formCSS = this.utils.joinPath("./plugin/global/styles/plugin-dialog-form.css")
-        const shadowRoot = this.attachShadow({ mode: "open" })
-        shadowRoot.innerHTML = `
-            <link rel="stylesheet" href="${awesomeCSS}" crossorigin="anonymous">
-            <link rel="stylesheet" href="${formCSS}" crossorigin="anonymous">
-            <div id="form"></div>
-        `
-        this.form = shadowRoot.querySelector("#form")
     }
 
     _bindEvents() {
@@ -116,7 +113,7 @@ class pluginForm extends HTMLElement {
         }).on("click", ".table-add", async function () {
             const tableEl = this.closest(".table")
             const key = tableEl.dataset.key
-            const targetBox = that.schema.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
+            const targetBox = that.options.schema.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
             const { nestedBoxes, defaultValues, thMap } = targetBox.fields[0]
             const op = { title: targetBox.title, schema: nestedBoxes, data: defaultValues }
             const { response, data } = await that.utils.formDialog.modal(op)
@@ -124,6 +121,7 @@ class pluginForm extends HTMLElement {
                 that._dispatchEvent(key, data, "push")
                 const row = that._createTableRow(thMap, data).map(e => `<td>${e}</td>`).join("")
                 tableEl.querySelector("tbody").insertAdjacentHTML("beforeend", `<tr>${row}</tr>`)
+                that.utils.notification.show(that.i18n.t("global", "success.add"))
             }
         }).on("click", ".table-edit", async function () {
             const btn = this
@@ -131,8 +129,8 @@ class pluginForm extends HTMLElement {
             const tableEl = trEl.closest(".table")
             const idx = [...tableEl.querySelectorAll("tbody tr")].findIndex(e => e === trEl)
             const key = tableEl.dataset.key
-            const rowValue = that.data[key][idx]
-            const targetBox = that.schema.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
+            const rowValue = that.options.data[key][idx]
+            const targetBox = that.options.schema.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
             const { nestedBoxes, defaultValues, thMap } = targetBox.fields[0]
             const modalValues = that.utils.merge(defaultValues, rowValue)  // rowValue may be missing certain attributes
             const op = { title: targetBox.title, schema: nestedBoxes, data: modalValues }
@@ -142,6 +140,7 @@ class pluginForm extends HTMLElement {
                 const row = that._createTableRow(thMap, data)
                 const tds = trEl.querySelectorAll("td")
                 that.utils.zip(row, tds).slice(0, -1).forEach(([val, td]) => td.textContent = val)
+                that.utils.notification.show(that.i18n.t("global", "success.edit"))
             }
         }).on("click", ".table-delete", function () {
             const btn = this
@@ -150,13 +149,13 @@ class pluginForm extends HTMLElement {
             const idx = [...tableEl.querySelectorAll("tbody tr")].findIndex(e => e === trEl)
             that._dispatchEvent(tableEl.dataset.key, Number(idx), "removeIndex")
             trEl.remove()
+            that.utils.notification.show(that.i18n.t("global", "success.deleted"))
         }).on("click", ".object-confirm", function () {
             const textarea = this.closest(".control").querySelector(".object")
             try {
                 const value = that._deserialize(textarea.value)
                 that._dispatchEvent(textarea.dataset.key, value)
-                const msg = that.i18n.t("global", "notification.changesSubmitted")
-                that.utils.notification.show(msg)
+                that.utils.notification.show(that.i18n.t("global", "success.submit"))
             } catch (e) {
                 console.error(e)
                 const msg = that.i18n.t("global", "error.IncorrectFormatContent", { format: that.options.objectFormat })
@@ -309,7 +308,7 @@ class pluginForm extends HTMLElement {
                         </div>
                     `
                 case "action":
-                    return `<div class="action fa fa-angle-right" data-action="${ctl.act}"></div>`
+                    return `<div class="action fa fa-angle-right" data-action="${ctl.key}"></div>`
                 case "static":
                     return `<div class="static" data-key="${ctl.key}">${this.utils.escape(value)}</div>`
                 case "custom":
@@ -417,7 +416,7 @@ class pluginForm extends HTMLElement {
                 field.type = "unit"
             }
             const isBlock = blockControls.has(field.type)
-            const value = this.utils.nestedPropertyHelpers.get(this.data, field.key)
+            const value = this.utils.nestedPropertyHelpers.get(this.options.data, field.key)
             const ctl = createGeneralControl(field, value)
             const label = isBlock ? "" : `<div class="control-left">${field.label}${createTooltip(field)}</div>`
             const control = isBlock ? ctl : `<div class="control-right">${ctl}</div>`
@@ -435,22 +434,22 @@ class pluginForm extends HTMLElement {
     }
 
     _buildPrerequisite(schema) {
-        const prerequisite = {}
+        const result = {}
         schema.forEach(box => {
             box.fields.forEach(field => {
                 const dep = field.dependencies
                 if (!dep || dep.length === 0) return
                 Object.keys(dep).forEach(k => {
-                    prerequisite[k] = prerequisite[k] || []
-                    prerequisite[k].push(field)
+                    result[k] = result[k] || []
+                    result[k].push(field)
                 })
             })
         })
-        return prerequisite
+        return result
     }
 
     _toggleReadonly(key) {
-        const fields = this.prerequisite[key]
+        const fields = this.options.prerequisite[key]
         if (!fields) return
         fields.forEach(field => {
             const k = field.key
@@ -468,7 +467,7 @@ class pluginForm extends HTMLElement {
         if (field.dependencies) {
             // TODO: supports `AND` only now
             const configurable = Object.entries(field.dependencies).every(([k, v]) => {
-                return v === this.utils.nestedPropertyHelpers.get(this.data, k)
+                return v === this.utils.nestedPropertyHelpers.get(this.options.data, k)
             })
             return !configurable
         }
@@ -501,6 +500,4 @@ class pluginForm extends HTMLElement {
         const f = funcMap[this.options.objectFormat] || funcMap.JSON
         return f(str)
     }
-}
-
-customElements.define("dialog-form", pluginForm)
+})
