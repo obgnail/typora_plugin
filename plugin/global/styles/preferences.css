@@ -1,5 +1,5 @@
 /***** dialog *****/
-#plugin-preferences-dialog {
+.plugin-preferences-dialog {
     display: flex;
     position: fixed;
     left: 50%;
@@ -16,34 +16,34 @@
     color: rgb(65, 84, 98);
 }
 
-#plugin-preferences-dialog ::-webkit-scrollbar {
+.plugin-preferences-dialog ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
     background: transparent;
 }
 
-#plugin-preferences-dialog ::-webkit-scrollbar-track {
+.plugin-preferences-dialog ::-webkit-scrollbar-track {
     border-radius: 0;
 }
 
-#plugin-preferences-dialog ::-webkit-scrollbar-thumb {
+.plugin-preferences-dialog ::-webkit-scrollbar-thumb {
     background: #bbb;
     transition: all .2s;
     border-radius: 8px;
 }
 
-#plugin-preferences-dialog ::-webkit-scrollbar-thumb:hover {
+.plugin-preferences-dialog ::-webkit-scrollbar-thumb:hover {
     background-color: rgba(95, 95, 95, 0.7);
 }
 
-#plugin-preferences-dialog-content {
+.plugin-preferences-content {
     flex: 1;
     display: flex;
     overflow: hidden;
     border-radius: 8px;
 }
 
-#plugin-preferences-dialog-left {
+.plugin-preferences-left {
     width: 160px;
     display: flex;
     flex-direction: column;
@@ -52,12 +52,12 @@
 }
 
 /***** search *****/
-#plugin-preferences-menu-search {
+.plugin-preferences-search {
     height: 52px;
     padding: 8px 12px;
 }
 
-#plugin-preferences-menu-search input {
+.plugin-preferences-search input {
     height: 30px;
     top: 50%;
     transform: translate(0, -50%);
@@ -71,7 +71,7 @@
 }
 
 /***** menu *****/
-#plugin-preferences-menu {
+.plugin-preferences-menu {
     flex: 1;
     overflow: hidden auto;
     padding: 8px 12px;
@@ -100,7 +100,7 @@
 }
 
 /***** right *****/
-#plugin-preferences-dialog-right {
+.plugin-preferences-right {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -108,7 +108,7 @@
     background: #F5F5F5;
 }
 
-#plugin-preferences-dialog-title {
+.plugin-preferences-title {
     height: 52px;
     line-height: 52px;
     font-size: 16px;
@@ -119,7 +119,7 @@
     color: rgb(65, 84, 98);
 }
 
-#plugin-preferences-dialog-close {
+.plugin-preferences-close {
     position: absolute;
     right: 0;
     margin: 8px 8px 0 0;
@@ -134,12 +134,12 @@
     text-align: center;
 }
 
-#plugin-preferences-dialog-close:hover {
+.plugin-preferences-close:hover {
     background: #d70015;
     color: #fff;
 }
 
-#plugin-preferences-dialog-main {
+.plugin-preferences-main {
     flex: 1;
     overflow-y: auto;
     padding: 18px;

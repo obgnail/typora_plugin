@@ -7,7 +7,7 @@ class formDialog {
     }
 
     process = async () => {
-        await this.utils.styleTemplater.register("form-dialog")
+        await this.utils.styleTemplater.register("plugin-form-dialog")
         this.utils.insertElement(`
             <div class="form-dialog-cover plugin-common-hidden"></div>
             <div class="form-dialog plugin-common-hidden">
@@ -15,7 +15,7 @@ class formDialog {
                     <div class="form-dialog-title"></div>
                 </div>
                 <div class="form-dialog-body">
-                    <dialog-form class="form-dialog-content"></dialog-form>
+                    <fast-form class="form-dialog-core"></fast-form>
                 </div>
                 <div class="form-dialog-footer">
                     <button type="button" class="form-dialog-btn form-dialog-cancel">${this.i18n.t("global", "cancel")}</button>
@@ -28,9 +28,9 @@ class formDialog {
             cover: document.querySelector(".form-dialog-cover"),
             dialog: document.querySelector(".form-dialog"),
             title: document.querySelector(".form-dialog-title"),
-            form: document.querySelector(".form-dialog-content"),
-            submit: document.querySelector(".form-dialog .form-dialog-submit"),
-            cancel: document.querySelector(".form-dialog .form-dialog-cancel"),
+            form: document.querySelector(".form-dialog-core"),
+            submit: document.querySelector(".form-dialog-submit"),
+            cancel: document.querySelector(".form-dialog-cancel"),
         }
         this.entities.form.init(this.utils, { objectFormat: "JSON" })
 

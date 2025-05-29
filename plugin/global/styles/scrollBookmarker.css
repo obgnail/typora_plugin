@@ -2,7 +2,7 @@
     right: 25px;
     width: 300px;
     max-height: 500px;
-    overflow-y: overlay;
+    overflow-y: auto;
 }
 
 .plugin-scroll-bookmarker-icon-group {
