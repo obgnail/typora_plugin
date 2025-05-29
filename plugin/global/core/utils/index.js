@@ -20,6 +20,7 @@ class utils {
     static nonExistSelector = "#__non_exist__"                // Plugin temporarily unavailable, return this.
     static disableForeverSelector = "#__disabled__"           // Plugin permanently unavailable, return this.
     static stopLoadPluginError = new Error("stopLoadPlugin")  // For plugin's beforeProcess method; return this to stop loading the plugin.
+    static uniqueObject = Object.create(null)
     static Package = Object.freeze({
         OS: OS,
         Path: PATH,
@@ -146,7 +147,7 @@ class utils {
     static safeEval = x => new Function(`return (${x})`)()
     static unsafeEval = x => eval(`(${x})`)
 
-    /** @description param fn cannot be an async function that returns promiseLike object */
+    /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static throttle = (fn, delay) => {
         let timer;
         const isAsync = this.isAsyncFunction(fn);
@@ -163,7 +164,7 @@ class utils {
         }
     }
 
-    /** @description param fn cannot be an async function that returns promiseLike object */
+    /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static debounce = (fn, delay) => {
         let timer;
         const isAsync = this.isAsyncFunction(fn);
@@ -177,20 +178,21 @@ class utils {
         };
     }
 
-    /** @description param fn cannot be an async function that returns promiseLike object */
+    /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static once = fn => {
-        let called = false;
-        const isAsync = this.isAsyncFunction(fn);
+        let cache = this.uniqueObject
+        const isAsync = this.isAsyncFunction(fn)
         return function (...args) {
-            if (called) return;
-            called = true;
-            return isAsync
-                ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
-                : fn(...args);
+            if (cache === utils.uniqueObject) {
+                cache = isAsync
+                    ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
+                    : fn(...args)
+            }
+            return cache
         }
     }
 
-    /** @description param fn cannot be an async function that returns promiseLike object */
+    /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static memorize = fn => {
         const cache = {}
         const isAsync = this.isAsyncFunction(fn)
@@ -207,7 +209,7 @@ class utils {
         }
     }
 
-    /** @description param fn cannot be an async function that returns promiseLike object */
+    /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static memoizeLimited = (fn, cap = 100) => {
         const cache = new Map()
         const isAsync = this.isAsyncFunction(fn)
@@ -489,7 +491,7 @@ class utils {
             } catch (e) {
                 console.error(e)
             } finally {
-                setTimeout(() => File.presentedItemChanged = bak, 1500)
+                File.presentedItemChanged = bak
             }
         })
     }
