@@ -1444,8 +1444,7 @@
     "pluginName": "Block Side By Side"
   },
   "sortableOutline": {
-    "pluginName": "Sortable Outline",
-    "$label.auto_save_file": "Auto Save File"
+    "pluginName": "Sortable Outline"
   },
   "redirectLocalRootUrl": {
     "pluginName": "Redirect Local Root Url",
