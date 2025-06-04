@@ -17,7 +17,7 @@ class updaterPlugin extends BasePlugin {
             await this.manualUpdate()
             return
         }
-        const proxy = await this.getProxy()
+        const proxy = await this.getDefaultProxy()
         const label = this.i18n.t("$label.PROXY")
         const hintHeader = this.i18n.t("hintHeader.PROXY")
         const hintDetail = this.i18n.t("hintDetail.PROXY")
@@ -43,7 +43,7 @@ class updaterPlugin extends BasePlugin {
 
     manualUpdate = async proxy => {
         const timeout = 3 * 60 * 1000
-        const i18n = {
+        const I18N = {
             pleaseWait: this.i18n.t("update.pleaseWait"),
             success: this.i18n.t("update.success"),
             noNeed: this.i18n.t("update.noNeed"),
@@ -51,33 +51,33 @@ class updaterPlugin extends BasePlugin {
             unknownError: this.i18n._t("global", "error.unknown"),
         }
 
-        this.utils.notification.show(i18n.pleaseWait)
+        this.utils.notification.show(I18N.pleaseWait)
         const updater = await this.getUpdater(proxy, timeout)
         const getState = updater.runWithState()
-        const isDone = () => getState()["done"]
+        const isDone = () => getState().done === true
         const notTimeout = await this.utils.progressBar.fake({ timeout, isDone })
 
         let { done, state, info } = getState()
         if (!notTimeout || !done || !state) {
-            state = new Error("timeout")
+            state = new Error(`Timeout! Proxy: ${proxy}`)
         }
 
         let title, detail, redirect
         if (state === "UPDATED") {
-            title = i18n.success
+            title = I18N.success
             detail = JSON.stringify(info, null, "\t")
             redirect = false
         } else if (state === "NO_NEED") {
-            title = i18n.noNeed
+            title = I18N.noNeed
             detail = JSON.stringify(info, null, "\t")
             redirect = false
         } else if (state instanceof Error) {
-            title = i18n.failed
+            title = I18N.failed
             detail = state.stack
             redirect = true
         } else {
-            title = i18n.failed
-            detail = i18n.unknownError
+            title = I18N.failed
+            detail = I18N.unknownError
             redirect = true
         }
 
@@ -92,11 +92,11 @@ class updaterPlugin extends BasePlugin {
         }
     }
 
-    getProxy = async () => (this.config.PROXY || (await new ProxyGetter(this).getProxy()) || "").trim()
+    getDefaultProxy = async () => (this.config.PROXY || (await new ProxyGetter(this).getProxy()) || "").trim()
 
     getUpdater = async (proxy, timeout) => {
         if (proxy === undefined) {
-            proxy = await this.getProxy();
+            proxy = await this.getDefaultProxy()
         }
         if (proxy && !/^https?:\/\//.test(proxy)) {
             proxy = "http://" + proxy;

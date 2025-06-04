@@ -727,8 +727,6 @@ filter_regexp = ""
 
 > 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
 
-> collapse_paragraph （章节折叠功能）可以很好的替代此插件，建议使用 collapse_paragraph。
-
 
 
 ### ripgrep：使用 ripgrep 搜索文件

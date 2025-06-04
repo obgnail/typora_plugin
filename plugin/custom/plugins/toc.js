@@ -285,7 +285,7 @@ class tocPlugin extends BaseCustomPlugin {
         targetNode.classList.add("active");
     }
 
-    _getRoot = type => (type === "header") ? this.utils.getTocTree(this.config.escape_header) : this._getKindRoot([type]);
+    _getRoot = type => (type === "header") ? this.utils.getTocTree(this.config.remove_header_styles) : this._getKindRoot([type]);
 
     _getKindRoot = types => {
         const includeHeadings = types.some(type => this.config.include_headings[type])

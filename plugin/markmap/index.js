@@ -40,17 +40,17 @@ class markmapPlugin extends BasePlugin {
         }
     }
 
-    getToc = (fixIndent = true) => {
-        const tree = this.utils.getTocTree()
-        const preorder = (node, list, indent) => {
-            const head = "#".repeat(fixIndent ? indent : node.depth)
-            list.push(`${head} ${node.text}`)
+    getToc = (fixSkip = this.config.FIX_SKIPPED_LEVEL_HEADERS, removeStyles = this.config.REMOVE_HEADER_STYLES) => {
+        const tree = this.utils.getTocTree(removeStyles)
+        const getHeaders = (node, ret, indent) => {
+            const head = "#".repeat(fixSkip ? indent : node.depth)
+            ret.push(`${head} ${node.text}`)
             for (const child of node.children) {
-                preorder(child, list, indent + 1)
+                getHeaders(child, ret, indent + 1)
             }
-            return list
+            return ret
         }
-        return preorder(tree, [], 0).slice(1).join("\n")
+        return getHeaders(tree, [], 0).slice(1).join("\n")
     }
 
     onButtonClick = () => {
@@ -552,7 +552,8 @@ class tocMarkmap {
             {
                 title: this.i18n.t("settingGroup.behavior"),
                 fields: [
-                    { ...getKey("FIX_ERROR_LEVEL_HEADER"), type: "switch" },
+                    { ...getKey("FIX_SKIPPED_LEVEL_HEADERS"), type: "switch" },
+                    { ...getKey("REMOVE_HEADER_STYLES"), type: "switch" },
                     { ...getKey("DEFAULT_TOC_OPTIONS.zoom"), type: "switch" },
                     { ...getKey("DEFAULT_TOC_OPTIONS.pan"), type: "switch" },
                     { ...getKey("AUTO_UPDATE"), type: "switch" },
@@ -589,9 +590,9 @@ class tocMarkmap {
 
         const attrs = [
             "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
-            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_ERROR_LEVEL_HEADER", "AUTO_UPDATE",
-            "CLICK_TO_POSITIONING", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_RESIZE",
-            "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
+            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "AUTO_UPDATE",
+            "CLICK_TO_POSITIONING", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_RESIZE", "KEEP_FOLD_STATE_WHEN_UPDATE",
+            "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
         ]
         const data = JSON.parse(JSON.stringify(this.utils.pick(this.config, attrs)))
         data.DEFAULT_TOC_OPTIONS.color = arr2Str(tocOptionColor)
@@ -607,6 +608,7 @@ class tocMarkmap {
                 const settings = await this.utils.settings.readBasePluginSettings()
                 this.config = settings[fixedName]
                 this.utils.notification.show(this.i18n._t("global", "success.restore"))
+                this.utils.formDialog.exit()
                 await this.setting()
             },
         }
@@ -776,12 +778,12 @@ class tocMarkmap {
 
     redraw = async options => {
         this.markmap.destroy();
-        const md = this.controller.getToc(this.config.FIX_ERROR_LEVEL_HEADER);
+        const md = this.controller.getToc();
         await this._create(md, options);
     }
 
     draw = async (fit = true, options = null) => {
-        const md = this.controller.getToc(this.config.FIX_ERROR_LEVEL_HEADER);
+        const md = this.controller.getToc();
         if (md !== undefined) {
             await this._draw(md, fit, options);
         }

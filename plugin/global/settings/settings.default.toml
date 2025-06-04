@@ -779,7 +779,12 @@ POSITIONING_VIEWPORT_HEIGHT = 0.2
 # 是否兼容文档中存在的跳级标题（MD001 规范）
 #   true:  允许文档中存在跳级标题，并在思维导图中正确显示
 #   false: 会过滤掉跳级标题，只显示符合规范的连续标题层级
-FIX_ERROR_LEVEL_HEADER = true
+FIX_SKIPPED_LEVEL_HEADERS = true
+
+# 是否移除标题样式
+#   true:  移除。如 **text** 将转成 text
+#   false: 不移除，直接转义
+REMOVE_HEADER_STYLES = true
 
 # 当文档内容更新导致思维导图更新时，是否自动调整图形大小以适配窗口
 #   true:  更新后自动调整图形大小，保持最佳显示效果
@@ -1943,19 +1948,15 @@ MENU_MIN_WIDTH = ""
 #   false: 保留 Typora 原生的右键菜单项
 HIDE_OTHER_OPTIONS = false
 
-# 对于【启用但是没有出现在下面 MENUS 选项】的插件，自动将其加入到最后一个 MENU
-#  控制是否自动将已启用但未在 `MENUS` 中配置的插件添加到最后一个一级菜单中
-#  强烈建议将此选项置为 true，若置为 false，且在 MENUS 中删去那些处于启用状态的插件，那么
-#     1. 那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
-#     2. 如果插件系统后续新增了插件，那么你就根本无法感知到新增插件的存在
+# 是否自动将已启用但未在 `MENUS` 中配置的插件添加到最后一个一级菜单中
 #   true:  自动添加
 #   false: 不自动添加
-FIND_LOST_PLUGIN = true
+FIND_LOST_PLUGINS = true
 
 # ------------------- 自定义右键菜单 -------------------
 # 自定义右键菜单：`MENUS` 数组中的每一项对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
 #   NAME: 一级菜单的名称
-#   LIST: 二级菜单的插件列表，`---` 代表在页面上插入一个分隔横线。允许填入 pluginName (插件，如：easy_modify) 或者 pluginName.callArg (插件的其中一个选项，如：easy_modify.copy_full_path)
+#   LIST: 二级菜单的插件列表，`---` 代表在页面上插入一个分隔横线。允许填入 pluginName (插件，如：easy_modify) 或者 pluginName.action (插件的其中一个选项，如：easy_modify.copy_full_path)
 [[right_click_menu.MENUS]]
 NAME = "__LESS_USED_PLUGINS__"
 LIST = [
