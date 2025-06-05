@@ -51,7 +51,7 @@
     "takesEffectAfterRestart": "Modification Takes effect after restart",
     "incompatibilityWarning": "Typora version is too low, some plugins may not work.\nPlease upgrade to 0.9.98 (the last free version)",
     "uninstallPluginWarning": "Warning: All plugins will be removed. This action is irreversible!",
-    "uninstallPluginDetail": "You are about to uninstall the plugin system. All settings and data associated with the plugin system will be permanently deleted. Please accurately type \"{{reconfirm}}\" in the input box below to confirm your intention. After uninstallation is complete, please restart the software to finalize the process.",
+    "uninstallPluginDetail": "You are about to uninstall the plugin system. All settings and data associated with the plugin system will be permanently deleted. Please accurately type \"{{reconfirm}}\" in the input box below to confirm your intention. After uninstallation is complete, please restart Typora to finalize the process.",
     "uninstallPluginConfirmInput": "Confirm Input",
     "success": "Executed Successfully",
     "success.add": "Added Successfully",
@@ -502,7 +502,8 @@
     "settingGroup.download": "Download",
     "$label.ENABLE_TOC_MARKMAP": "Enable",
     "$label.TOC_HOTKEY": "Hotkey",
-    "$label.FIX_ERROR_LEVEL_HEADER": "Fix Skipped Level Headers",
+    "$label.FIX_SKIPPED_LEVEL_HEADERS": "Fix Skipped Level Headers",
+    "$label.REMOVE_HEADER_STYLES": "Filter Out Header Style",
     "$label.AUTO_UPDATE": "Auto Update on Outline Change",
     "$label.AUTO_FIT_WHEN_RESIZE": "Auto Fit on Window Resize",
     "$label.AUTO_FIT_WHEN_UPDATE": "Auto Fit on Diagram Update",
@@ -841,7 +842,7 @@
     "act.copy_full_path.H5": "H5",
     "act.copy_full_path.H6": "H6",
     "act.copy_full_path.NoHeader": "None",
-    "act.insert_mermaid_mindmap.incompatible": "The mermaid version is too low to support the mindmap component. Please visit https://mermaid.live for more info",
+    "act.insert_mermaid_mindmap.incompatible": "The Mermaid version is too low to support the mindmap component. Please visit https://mermaid.live for more info",
     "actHint.notRecommended": "This action is not recommended unless necessary",
     "actHint.defaultDoc": "If no text is selected, the entire document will be adjusted",
     "$label.HOTKEY_COPY_FULL_PATH": "Copy Title Path at Cursor",
@@ -911,7 +912,7 @@
     "$label.DO_NOT_HIDE": "Do Not Auto-Hide on Blur",
     "$label.HIDE_OTHER_OPTIONS": "Show Plugin Options Only",
     "$label.MENU_MIN_WIDTH": "Min Width of Submenus",
-    "$label.FIND_LOST_PLUGIN": "Auto Find Lost Plugin",
+    "$label.FIND_LOST_PLUGINS": "Auto Find Lost Plugins",
     "$label.MENUS.NAME": "Menu Name",
     "$label.MENUS.LIST": "Plugin List",
     "$title.MENUS": "Custom Right-Click Menus",
@@ -1186,7 +1187,7 @@
     "link": "Link",
     "math": "Math",
     "$label.default_show_toc": "Default On",
-    "$label.escape_header": "Escape Header Content",
+    "$label.remove_header_styles": "Remove Header Styles",
     "$label.sortable": "Drag & Drop outline to rearrange",
     "$label.right_click_outline_button_to_toggle": "Shortcut: Right-click Outline Button",
     "$label.width_percent_when_pin_right": "Width When Pinned Right",
@@ -1438,14 +1439,15 @@
     "$title.buttonStyle": "Button Style",
     "$title.buttons.evil": "Custom Callback",
     "$tooltip.buttons.coordinate.0": "Increments in the upward direction",
-    "$tooltip.buttons.coordinate.1": "Increments in the leftward direction"
+    "$tooltip.buttons.coordinate.1": "Increments in the leftward direction",
+    "tooltip.exclusive": "Mutually exclusive with the option 'Custom Callback'",
+    "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
   },
   "blockSideBySide": {
     "pluginName": "Block Side By Side"
   },
   "sortableOutline": {
-    "pluginName": "Sortable Outline",
-    "$label.auto_save_file": "Auto Save File"
+    "pluginName": "Sortable Outline"
   },
   "redirectLocalRootUrl": {
     "pluginName": "Redirect Local Root Url",

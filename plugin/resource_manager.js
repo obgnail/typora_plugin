@@ -163,7 +163,7 @@ class resourceManagerPlugin extends BasePlugin {
         const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
         const setting = JSON.stringify(output, replacer, "\t")
         const { nonExistInFile, nonExistInFolder } = this.results
-        const i18n = {
+        const I18N = {
             locate: this.i18n.t("func.locate"),
             delete: this.i18n.t("func.delete"),
             setting: this.i18n.t("title.setting"),
@@ -174,8 +174,8 @@ class resourceManagerPlugin extends BasePlugin {
         const btnGroup = `
             <td>
                 <div class="btn-group">
-                    <button type="button" class="btn btn-default" action="locate">${i18n.locate}</button>
-                    <button type="button" class="btn btn-default" action="delete">${i18n.delete}</button>
+                    <button type="button" class="btn btn-default" action="locate">${I18N.locate}</button>
+                    <button type="button" class="btn btn-default" action="delete">${I18N.delete}</button>
                 </div>
             </td>`
         const nonExistInFileRows = [...nonExistInFile].map((row, idx) => {
@@ -189,16 +189,16 @@ class resourceManagerPlugin extends BasePlugin {
 
         this.entities.wrap.innerHTML = `
             <table class="table non-exist-in-file-table">
-                 <caption>${i18n.nonExistInFile}</caption>
+                 <caption>${I18N.nonExistInFile}</caption>
                  <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">preview</th><th>operation</th></tr></thead>
                  <tbody>${tbody1}</tbody>
             </table>
             <table class="table">
-                 <caption>${i18n.nonExistInFolder}</caption>
+                 <caption>${I18N.nonExistInFolder}</caption>
                  <thead><tr><th>#</th><th>resource</th></tr></thead>
                  <tbody>${tbody2}</tbody>
             </table>
-            <div class="plugin-resource-manager-message">${i18n.setting}</div>
+            <div class="plugin-resource-manager-message">${I18N.setting}</div>
             <textarea rows="10" readonly>${setting}</textarea>
         `
     }

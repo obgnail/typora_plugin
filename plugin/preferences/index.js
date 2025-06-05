@@ -4,19 +4,19 @@ class preferencesPlugin extends BasePlugin {
     styleTemplate = () => true
 
     html = () => `
-        <div id="plugin-preferences-dialog" class="plugin-common-hidden">
-            <div id="plugin-preferences-dialog-content">
-                <div id="plugin-preferences-dialog-left">
-                    <div id="plugin-preferences-menu-search">
+        <div class="plugin-preferences-dialog plugin-common-hidden">
+            <div class="plugin-preferences-content">
+                <div class="plugin-preferences-left">
+                    <div class="plugin-preferences-search">
                         <input type="text" placeholder="${this.i18n._t("global", "search")}">
                     </div>
-                    <div id="plugin-preferences-menu"></div>
+                    <div class="plugin-preferences-menu"></div>
                 </div>
-                <div id="plugin-preferences-dialog-right">
-                    <div id="plugin-preferences-dialog-title"></div>
-                    <div id="plugin-preferences-dialog-close" class="ion-close-round"></div>
-                    <div id="plugin-preferences-dialog-main">
-                        <dialog-form id="plugin-preferences-dialog-form" data-plugin="global"></dialog-form>
+                <div class="plugin-preferences-right">
+                    <div class="plugin-preferences-title"></div>
+                    <div class="plugin-preferences-close ion-close-round"></div>
+                    <div class="plugin-preferences-main">
+                        <fast-form class="plugin-preferences-form" data-plugin="global"></fast-form>
                     </div>
                 </div>
             </div>
@@ -25,13 +25,13 @@ class preferencesPlugin extends BasePlugin {
 
     init = () => {
         this.entities = {
-            dialog: document.querySelector("#plugin-preferences-dialog"),
-            menu: document.querySelector("#plugin-preferences-menu"),
-            title: document.querySelector("#plugin-preferences-dialog-title"),
-            form: document.querySelector("#plugin-preferences-dialog-form"),
-            main: document.querySelector("#plugin-preferences-dialog-main"),
-            searchInput: document.querySelector("#plugin-preferences-menu-search input"),
-            closeButton: document.querySelector("#plugin-preferences-dialog-close"),
+            dialog: document.querySelector(".plugin-preferences-dialog"),
+            menu: document.querySelector(".plugin-preferences-menu"),
+            title: document.querySelector(".plugin-preferences-title"),
+            form: document.querySelector(".plugin-preferences-form"),
+            main: document.querySelector(".plugin-preferences-main"),
+            searchInput: document.querySelector(".plugin-preferences-search input"),
+            closeButton: document.querySelector(".plugin-preferences-close"),
         }
         this._initActionHandlers()
         this._initPreProcessors()

@@ -1,10 +1,10 @@
-customElements.define("dialog-form", class extends HTMLElement {
+customElements.define("fast-form", class extends HTMLElement {
     constructor() {
         super()
         const root = this.attachShadow({ mode: "open" })
         root.innerHTML = `
             <link rel="stylesheet" href="./style/font-awesome-4.1.0/css/font-awesome.min.css" crossorigin="anonymous">
-            <link rel="stylesheet" href="./plugin/global/styles/plugin-dialog-form.css" crossorigin="anonymous">
+            <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous">
             <div id="form"></div>`
         this.form = root.querySelector("#form")
         this.options = { objectFormat: "JSON", schema: null, data: null, action: null, prerequisite: null }

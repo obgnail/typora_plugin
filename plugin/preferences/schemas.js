@@ -437,7 +437,8 @@ const SETTING_SCHEMAS = {
             "mindmapDiagram",
             Switch("ENABLE_TOC_MARKMAP"),
             Hotkey("TOC_HOTKEY", markmapTocDep),
-            Switch("FIX_ERROR_LEVEL_HEADER", markmapTocDep),
+            Switch("FIX_SKIPPED_LEVEL_HEADERS", markmapTocDep),
+            Switch("REMOVE_HEADER_STYLES", markmapTocDep),
             Switch("AUTO_UPDATE", markmapTocDep),
             Switch("AUTO_FIT_WHEN_RESIZE", markmapTocDep),
             Switch("AUTO_FIT_WHEN_UPDATE", markmapTocDep),
@@ -874,7 +875,7 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "advanced",
-            Switch("FIND_LOST_PLUGIN"),
+            Switch("FIND_LOST_PLUGINS"),
         ),
         handleSettingsBox,
     ],
@@ -1300,7 +1301,7 @@ const SETTING_SCHEMAS = {
         customPluginFullBasePropBox,
         UntitledBox(
             Switch("default_show_toc"),
-            Switch("escape_header"),
+            Switch("remove_header_styles"),
             Switch("sortable"),
             Switch("right_click_outline_button_to_toggle"),
         ),
@@ -1473,9 +1474,9 @@ const SETTING_SCHEMAS = {
                     { type: "text", key: "color", label: "$label.buttons.color" },
                     { type: "text", key: "bgColor", label: "$label.buttons.bgColor" },
                     { type: "text", key: "hint", label: "$label.buttons.hint" },
-                    { type: "text", key: "callback", label: "$label.buttons.callback" },
+                    { type: "text", key: "callback", label: "$label.buttons.callback", tooltip: "tooltip.exclusive" },
                 ),
-                TitledBox("buttons.evil", { type: "textarea", key: "evil", rows: 5 }),
+                TitledBox("buttons.evil", { type: "textarea", key: "evil", placeholder: "$placeholder.customCallback", rows: 5 }),
             ],
             {
                 disable: true,
@@ -1497,9 +1498,6 @@ const SETTING_SCHEMAS = {
     ],
     sortableOutline: [
         customPluginLiteBasePropBox,
-        UntitledBox(
-            Switch("auto_save_file"),
-        ),
         handleSettingsBox,
     ],
     redirectLocalRootUrl: [

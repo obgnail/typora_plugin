@@ -1,1 +1,1 @@
-require("./dialog-form")
+require("./fast-form")

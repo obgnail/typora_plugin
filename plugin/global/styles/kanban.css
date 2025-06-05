@@ -43,7 +43,7 @@
 .plugin-kanban-content .plugin-kanban-col-item-list {
     display: flex;
     flex-direction: column;
-    overflow-y: overlay;
+    overflow-y: auto;
     padding: 0 4px 4px 4px;
     max-height: ${maxHeight};
 }

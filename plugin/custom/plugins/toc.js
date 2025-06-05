@@ -123,18 +123,17 @@ class tocPlugin extends BaseCustomPlugin {
                 }
                 return false
             }
-            const getHeader = (cid, tokens) => {
-                const { headers = [] } = File.editor.nodeMap.toc
-                const start = headers.findIndex(h => h.cid === cid)
+            const getHeader = (cid, headers, blocks) => {
+                const start = headers.findIndex(h => h.node.cid === cid)
                 if (start === -1) return
 
-                const header = headers[start]
+                const header = headers[start].node
                 if (!header.attributes) return
 
                 let end = start + 1
                 const depth = header.attributes.depth
                 while (end < headers.length) {
-                    const { attributes } = headers[end]
+                    const { attributes } = headers[end].node
                     const _depth = attributes && attributes.depth
                     if (_depth && _depth <= depth) {
                         break
@@ -142,21 +141,9 @@ class tocPlugin extends BaseCustomPlugin {
                     end++
                 }
 
-                const startLine = tokens[start].map[0]
-                const endLine = tokens.length === end ? Number.MAX_SAFE_INTEGER : tokens[end].map[0]
-                return { depth, startLine, endLine }
-            }
-            const moveSections = (lines, drag, drop) => {
-                drag.endLine = Math.min(drag.endLine, lines.length)
-                drop.endLine = Math.min(drop.endLine, lines.length)
-
-                const dragLength = drag.endLine - drag.startLine
-                const removed = lines.splice(drag.startLine, dragLength)
-                const isDragDown = drag.startLine < drop.startLine
-                const insertIdx = isDragDown ? drop.endLine - dragLength : drop.startLine
-                lines.splice(insertIdx, 0, ...removed)
-
-                return lines
+                const startIdx = headers[start].idx
+                const endIdx = headers.length === end ? blocks.length : headers[end].idx
+                return { startIdx, endIdx }
             }
             $(this.entities.list)
                 .on("dragstart", ".toc-node", function (ev) {
@@ -170,16 +157,26 @@ class tocPlugin extends BaseCustomPlugin {
                 .on("dragleave", ".toc-node", function () {
                     this.parentElement.classList.remove(classAbove, classBelow)
                 })
-                .on("drop", ".toc-node", async function () {
+                .on("drop", ".toc-node", function () {
                     if (isAncestorOf(dragItem, this)) return
-                    await that.utils.editCurrentFile(content => {
-                        const tokens = that.utils.parseMarkdownBlock(content).filter(token => token.type === "heading_open")
-                        const drag = getHeader(dragItem.dataset.ref, tokens)
-                        const drop = getHeader(this.dataset.ref, tokens)
-                        return (drag && drop)
-                            ? moveSections(content.split("\n"), drag, drop).join("\n")
-                            : content
-                    })
+
+                    const headers = []
+                    const blocks = File.editor.nodeMap.blocks.toArray()
+                    blocks.forEach((node, idx) => node.attributes.type === Node.TYPE.heading && headers.push({ idx: idx, node: node }))
+
+                    const drag = getHeader(dragItem.dataset.ref, headers, blocks)
+                    const drop = getHeader(this.dataset.ref, headers, blocks)
+
+                    const dragLength = drag.endIdx - drag.startIdx
+                    const removed = blocks.splice(drag.startIdx, dragLength)
+                    const isDragDown = drag.startIdx < drop.startIdx
+                    const insertIdx = isDragDown ? drop.endIdx - dragLength : drop.startIdx
+                    blocks.splice(insertIdx, 0, ...removed)
+
+                    const joiner = File.option.preferCRLF ? "\r\n" : "\n"
+                    const content = blocks.map(node => node.toMark()).join(joiner)
+                    const op = File.option.enableAutoSave ? { delayRefresh: true, skipChangeCount: true, skipStore: true } : undefined
+                    File.reloadContent(content, op)
                 })
                 .on("dragend", function () {
                     const selector = `.${classAbove}, .${classBelow}, .${classSource}`
@@ -288,7 +285,7 @@ class tocPlugin extends BaseCustomPlugin {
         targetNode.classList.add("active");
     }
 
-    _getRoot = type => (type === "header") ? this.utils.getTocTree(this.config.escape_header) : this._getKindRoot([type]);
+    _getRoot = type => (type === "header") ? this.utils.getTocTree(this.config.remove_header_styles) : this._getKindRoot([type]);
 
     _getKindRoot = types => {
         const includeHeadings = types.some(type => this.config.include_headings[type])

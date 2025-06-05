@@ -18,7 +18,7 @@ hide = false
 order = 1
 
 # ------------------- 代码块 -------------------
-# 代码块语言：用于识别看板代码块的语言标识符
+# 代码块语言：用于识别代码块的语言标识符
 #   强烈建议不要修改。如果要修改，请同步修改 TEMPLATE 配置项中的语言标识符
 LANGUAGE = "kanban"
 
@@ -26,7 +26,7 @@ LANGUAGE = "kanban"
 # 严格模式：是否启用严格模式，严格模式下，插件不会忽略存在语法错误的代码行，而是在页面上直接报错
 #   true:  启用严格模式，所有看板都将强制进入严格模式，发生语法错误时会报错
 #   false: 关闭严格模式，所有看板都会忽略语法错误
-# 注意：也可以在代码块首行添加 `use strict`，使得此代码块进入严格模式
+# 也可以在代码块首行添加 `use strict`，使得此代码块进入严格模式
 STRICT_MODE = false
 
 # 交互模式：是否开启交互模式
@@ -74,7 +74,7 @@ KANBAN_COLOR = ["#FFE0B2", "#DAE9F4", "#FEDCCC", "#C6E5D9", "#FFF1B9"]
 TASK_COLOR = ["#FFFDE7", "#F8FAFF", "#FFFFF2", "#FFFCF0", "#FFFFF5"]
 
 # ------------------- 模板 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```kanban
 use strict
 # How to use kanban
@@ -139,7 +139,7 @@ INTERACTIVE_MODE = true
 DEFAULT_OPTIONS = { useStrict = true, showNickname = true, showAvatar = true, notAllowShowTime = false, allowMarkdown = true, senderNickname = "me", timeNickname = "time" }
 
 # ------------------- 模板 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```chat
 ---
 useStrict: false        # Enable strict mode (disables error tolerance).
@@ -189,7 +189,7 @@ hide = false
 order = 1
 
 # ------------------- 代码块 -------------------
-# 代码块语言：用于识别时间线代码块的语言标识符
+# 代码块语言：用于识别代码块的语言标识符
 #   强烈建议不要修改。如果要修改，请同步修改 TEMPLATE 配置项中的语言标识符
 LANGUAGE = "timeline"
 
@@ -231,7 +231,7 @@ CIRCLE_TOP = "0.6em"
 TIME_COLOR = "#555555"
 
 # ------------------- 模板 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```timeline
 # Timeline Title (H1)
 
@@ -270,7 +270,7 @@ hide = false
 order = 1
 
 # ------------------- 代码块 -------------------
-# 代码块语言：用于识别 echarts 代码块的语言标识符
+# 代码块语言：用于识别代码块的语言标识符
 #   强烈建议不要修改。如果要修改，请同步修改 TEMPLATE 配置项中的语言标识符
 LANGUAGE = "echarts"
 
@@ -284,7 +284,7 @@ INTERACTIVE_MODE = true
 #   canvas: 使用 Canvas 渲染
 #   svg:    使用 SVG 渲染
 # 参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/
-# svg 和 Typora 更加亲和，故建议使用 svg
+# svg 和 Typora 更加亲和，建议使用 svg
 RENDERER = "svg"
 
 # 导出时 echarts 转成什么格式
@@ -301,7 +301,7 @@ DEFAULT_FENCE_HEIGHT = "300px"
 DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
 # ------------------- 模板 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```echarts
 // Built-in variables:
 //   1. myChart: ECharts instance
@@ -357,7 +357,7 @@ hide = false
 order = 1
 
 # ------------------- 代码块 -------------------
-# 代码块语言：用于识别图表代码块的语言标识符
+# 代码块语言：用于识别代码块的语言标识符
 #   强烈建议不要修改。如果要修改，请同步修改 TEMPLATE 配置项中的语言标识符
 LANGUAGE = "chart"
 
@@ -375,7 +375,7 @@ DEFAULT_FENCE_HEIGHT = "300px"
 DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
 # ------------------- 模板 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```chart
 // Built-in variables:
 //   1. Chart:   chart Class
@@ -429,7 +429,7 @@ hide = false
 order = 1
 
 # ------------------- 代码块 -------------------
-# 代码块语言：用于识别 wavedrom 代码块的语言标识符
+# 代码块语言：用于识别代码块的语言标识符
 #   强烈建议不要修改。如果要修改，请同步修改 TEMPLATE 配置项中的语言标识符
 LANGUAGE = "wavedrom"
 
@@ -453,7 +453,7 @@ DEFAULT_FENCE_HEIGHT = "auto"
 DEFAULT_FENCE_BACKGROUND_COLOR = "#FFFFFF"
 
 # ------------------- 模板 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```wavedrom
 // tutorial: https://wavedrom.com/tutorial.html
 // All code within this block will be evaluated (eval). Exercise caution.
@@ -496,7 +496,7 @@ hide = false
 order = 1
 
 # ------------------- 代码块 -------------------
-# 代码块语言：用于识别日历代码块的语言标识符
+# 代码块语言：用于识别代码块的语言标识符
 #   强烈建议不要修改。如果要修改，请同步修改 TEMPLATE 配置项中的语言标识符
 LANGUAGE = "calendar"
 
@@ -514,7 +514,7 @@ DEFAULT_FENCE_HEIGHT = "800px"
 DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
 # ------------------- 模板 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```calendar
 // Built-in variables:
 //   1. calendar: calendar instance
@@ -560,7 +560,7 @@ hide = false
 order = 1
 
 # ------------------- 代码块 -------------------
-# 代码块语言：用于识别 ABC 代码块的语言标识符
+# 代码块语言：用于识别代码块的语言标识符
 #   强烈建议不要修改。如果要修改，请同步修改 TEMPLATE 配置项中的语言标识符
 LANGUAGE = "abc"
 
@@ -587,7 +587,7 @@ DEFAULT_FENCE_HEIGHT = "auto"
 DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
 # ------------------- 模板 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```abc
 X:1
 T:Twinkle, Twinkle, Little Star
@@ -626,7 +626,7 @@ order = 1
 RESOURCE_URI = "https://viewer.diagrams.net/js/viewer-static.min.js"
 
 # ------------------- 代码块 -------------------
-# 代码块语言：用于识别 draw.io 代码块的语言标识符
+# 代码块语言：用于识别代码块的语言标识符
 #   强烈建议不要修改。如果要修改，请同步修改 TEMPLATE 配置项中的语言标识符
 LANGUAGE = "drawio"
 
@@ -646,7 +646,7 @@ DEFAULT_FENCE_HEIGHT = "auto"
 DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 
 # ------------------- 模板 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```drawio
 /**
  * Due to frequent changes in the .drawio file format, the draw.io website strongly recommends fetching dependencies via CDN. This plugin defaults to pulling dependencies from the network. If you prefer to store dependencies locally, modify the configuration file.
@@ -688,7 +688,7 @@ hide = false
 order = 1
 
 # ------------------- 代码块 -------------------
-# 代码块语言：用于识别 marp 代码块的语言标识符
+# 代码块语言：用于识别代码块的语言标识符
 #   强烈建议不要修改。如果要修改，请同步修改 TEMPLATE 配置项中的语言标识符
 LANGUAGE = "marp"
 
@@ -699,7 +699,7 @@ LANGUAGE = "marp"
 INTERACTIVE_MODE = true
 
 # ------------------- 模板 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```marp
 ---
 theme: gaia
@@ -865,17 +865,17 @@ template_variables = [
 
 # ------------------- 内置的模板变量 -------------------
 #   {{ formatDate(format, locale) }}    当前格式化的日期时间
-#       参数 1: format: 时间格式化字符串
-#       参数 2: locale: 语言环境
+#       format: 时间格式化字符串
+#       locale: 语言环境
 #   {{ datetime }}             当前日期时间。等同于 {{ formatDate('yyyy-MM-dd HH:mm:ss') }}
 #   {{ date }}                 当前日期。等同于 {{ formatDate('yyyy-MM-dd') }}
 #   {{ time }}                 当前时间。等同于 {{ formatDate('HH:mm:ss') }}
 #   {{ weekday }}              当前周几。等同于 {{ formatDate('ddd') }}
 #   {{ timestamp }}            当前时间戳 (毫秒)
 #   {{ dateOffset(offset, format, locale) }}  指定偏移量后的日期
-#       参数 1: offset: 整数，表示天数的偏移量 (正数表示未来，负数表示过去)
-#       参数 2: format: 时间格式化字符串
-#       参数 3: locale: 语言环境
+#       offset: 整数，表示天数的偏移量 (正数表示未来，负数表示过去)
+#       format: 时间格式化字符串
+#       locale: 语言环境
 #   {{ yesterday }}            昨天日期。等同于 {{ dateOffset(-1) }}
 #   {{ tomorrow }}             明天日期。等同于 {{ dateOffset(1) }}
 #   {{ randomInt(min, max) }}  范围为 min-max 的随机整数
@@ -950,27 +950,27 @@ order = 1
 # ------------------- 功能 -------------------
 # 自动跳过配对符号：当光标在中间，左右两边都是成对符号，如：【|】；且用户键入】时，将光标跳到】的右边
 #   true:  启用此行为
-#   false: 关闭此行为，将直接补全为【】
+#   false: 禁用此行为
 auto_skip = true
 
 # 成对删除符号：当光标在中间，左右两边都是成对符号，如：【|】；且用户键入 Backspace 时，同时删除左右两边的符号
 #   true:  启用此行为
-#   false: 关闭此行为
+#   false: 禁用此行为
 auto_delete_pair = true
 
 # 自动包裹选区：当框选文字时，键入中文符号，自动包裹框选文字
 #   true:  启用此行为
-#   false: 关闭此行为
+#   false: 禁用此行为
 auto_surround_pair = true
 
 # 自动选中包裹内容：自动包裹框选文字后，自动框选文字
 #   true:  启用此行为
-#   false: 关闭此行为
+#   false: 禁用此行为
 auto_select_after_surround = true
 
 # 连续全角转为半角：连续输入两个相同的中文标点符号，转为对应的英文标点符号（双全角标点合成一个半角标点）
 #   true:  启用此行为
-#   false: 关闭此行为
+#   false: 禁用此行为
 auto_swap = false
 
 # ------------------- 符号 -------------------
@@ -1028,10 +1028,10 @@ order = 1
 hotkey = ""
 
 # ------------------- 大纲内容 -------------------
-# 是否转义标题内容中的样式内容
-#   true:  转义样式内容
-#   false: 不转义样式内容，直接显示
-escape_header = true
+# 是否移除标题样式
+#   true:  移除。如 **text** 将转成 text
+#   false: 不移除，转义样式
+remove_header_styles = true
 
 # ------------------- 交互行为 -------------------
 # 是否允许通过拖动大纲里的标题调整文章的结构
@@ -1050,8 +1050,8 @@ right_click_outline_button_to_toggle = true
 width_percent_when_pin_right = 20
 
 # 每次打开 Typora 时，是否默认显示大纲目录
-#   true:  默认显示大纲目录
-#   false: 默认不显示大纲目录
+#   true:  默认显示
+#   false: 默认不显示
 default_show_toc = false
 
 # 大纲目录的字体大小
@@ -1522,7 +1522,7 @@ position_bottom = "50px"
 #   false: 显示按钮的 hint
 hide_button_hint = false
 
-# ------------------- 按钮功能 -------------------
+# ------------------- 按钮列表 -------------------
 # 添加的按钮列表
 #   disable: 是否禁用此按钮
 #   coordinate: 按钮坐标
@@ -1539,9 +1539,9 @@ hide_button_hint = false
 #   hint(可选): 按钮的提示信息，鼠标悬停在按钮上时显示
 #   callback: 按钮的回调函数
 #       格式: "pluginName.MethodName"
-#       pluginName: 插件名称
-#       MethodName: 请通过阅读插件源码查找
-#       如果想添加按钮但不懂代码，可尝试：在【右键菜单 -> 常用插件 -> 二级插件】中的插件，其 MethodName 基本都是 "callback"；其余插件的 MethodName 基本都是 "call"
+#       pluginName: 插件名
+#       MethodName: 方法名，请通过阅读插件源码查找
+#       如果不懂代码，可尝试：在【右键菜单 -> 常用插件 -> 二级插件】中的插件，其 MethodName 基本都是 "callback"；其余插件的 MethodName 基本都是 "call"
 #   evil(危险): 自定义回调函数，功能同 hotkeys 插件的 evil 参数
 #       这里的文本内容会被 eval() 执行，具有潜在的安全风险
 #       如果设置了此参数，callback 参数将会失效

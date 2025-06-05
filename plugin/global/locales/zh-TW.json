@@ -51,7 +51,7 @@
     "takesEffectAfterRestart": "修改將在重啟後生效",
     "incompatibilityWarning": "Typora 版本過低，部分插件可能失效。\n建議升級到 0.9.98 (最後一個免費版本)",
     "uninstallPluginWarning": "警告：即將移除所有插件，此操作不可撤銷！",
-    "uninstallPluginDetail": "您即將卸載插件系統，所有與插件系統相關的設定和資料將被永久刪除。請在下方輸入框中精確鍵入「{{reconfirm}}」以確認您的意願。卸載完成後，请重新啟動軟體以完成卸載流程。",
+    "uninstallPluginDetail": "您即將卸載插件系統，所有與插件系統相關的設定和資料將被永久刪除。請在下方輸入框中精確鍵入「{{reconfirm}}」以確認您的意願。卸載完成後，请重新啟動 Typora 以完成卸載流程。",
     "uninstallPluginConfirmInput": "確認文本",
     "success": "執行成功",
     "success.add": "添加成功",
@@ -502,7 +502,8 @@
     "settingGroup.download": "匯出",
     "$label.ENABLE_TOC_MARKMAP": "啟用",
     "$label.TOC_HOTKEY": "快捷鍵",
-    "$label.FIX_ERROR_LEVEL_HEADER": "相容跳級標題",
+    "$label.FIX_SKIPPED_LEVEL_HEADERS": "相容跳級標題",
+    "$label.REMOVE_HEADER_STYLES": "移除標題樣式",
     "$label.AUTO_UPDATE": "大綱變更後自動更新",
     "$label.AUTO_FIT_WHEN_RESIZE": "調整視窗後自動適配",
     "$label.AUTO_FIT_WHEN_UPDATE": "更新圖形後自動適配",
@@ -841,7 +842,7 @@
     "act.copy_full_path.H5": "五級標題",
     "act.copy_full_path.H6": "六級標題",
     "act.copy_full_path.NoHeader": "無",
-    "act.insert_mermaid_mindmap.incompatible": "mermaid 版本過低，不支援 mindmap 元件，請前往 https://mermaid.live 查看",
+    "act.insert_mermaid_mindmap.incompatible": "Mermaid 版本低，不支援 mindmap 元件，請前往 https://mermaid.live 查看",
     "actHint.notRecommended": "除非有特殊需求，不建議使用此功能",
     "actHint.defaultDoc": "若無選取段落，則調整整份文件",
     "$label.HOTKEY_COPY_FULL_PATH": "複製目前游標所在標題路徑",
@@ -911,7 +912,7 @@
     "$label.DO_NOT_HIDE": "失去焦點不再自動隱藏",
     "$label.HIDE_OTHER_OPTIONS": "只顯示插件選項",
     "$label.MENU_MIN_WIDTH": "二、三級選單的最小寬度",
-    "$label.FIND_LOST_PLUGIN": "自動尋找遺失插件",
+    "$label.FIND_LOST_PLUGINS": "自動尋找遺失插件",
     "$label.MENUS.NAME": "選單名稱",
     "$label.MENUS.LIST": "插件列表",
     "$title.MENUS": "自訂右鍵選單",
@@ -1186,7 +1187,7 @@
     "link": "連結",
     "math": "公式",
     "$label.default_show_toc": "預設啟用",
-    "$label.escape_header": "轉義標題內容",
+    "$label.remove_header_styles": "移除標題樣式",
     "$label.sortable": "拖動大綱標題，調整文章結構",
     "$label.right_click_outline_button_to_toggle": "快捷方式：右鍵點擊側邊欄大綱按鈕",
     "$label.width_percent_when_pin_right": "固定到右側的寬度",
@@ -1438,14 +1439,15 @@
     "$title.buttonStyle": "按鈕樣式",
     "$title.buttons.evil": "自訂回調",
     "$tooltip.buttons.coordinate.0": "向上方向遞增",
-    "$tooltip.buttons.coordinate.1": "向左方向遞增"
+    "$tooltip.buttons.coordinate.1": "向左方向遞增",
+    "tooltip.exclusive": "與「自訂回調」互斥",
+    "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
   },
   "blockSideBySide": {
     "pluginName": "並排顯示活動區塊"
   },
   "sortableOutline": {
-    "pluginName": "大綱拖拽排序",
-    "$label.auto_save_file": "自動保存文件"
+    "pluginName": "大綱拖拽排序"
   },
   "redirectLocalRootUrl": {
     "pluginName": "重新導向本地資源根目錄",

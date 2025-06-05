@@ -42,36 +42,44 @@ class sortableOutlinePlugin extends BaseCustomPlugin {
             .on("dragleave", ".outline-item", function () {
                 this.parentElement.classList.remove(classAbove, classBelow)
             })
-            .on("drop", ".outline-item", async function () {
+            .on("drop", ".outline-item", function () {
                 if (isAncestorOf(dragItem, this)) return
                 const dragCid = getCid(dragItem)
                 const dropCid = getCid(this)
                 if (!dragCid || !dropCid) return
 
-                await that.utils.editCurrentFile(content => {
-                    const tokens = that.utils.parseMarkdownBlock(content).filter(token => token.type === "heading_open")
-                    const drag = that._getHeader(dragCid, tokens)
-                    const drop = that._getHeader(dropCid, tokens)
-                    return (drag && drop)
-                        ? that._moveSections(content.split("\n"), drag, drop).join("\n")
-                        : content
-                }, that.config.auto_save_file)
+                const headers = []
+                const blocks = File.editor.nodeMap.blocks.toArray()
+                blocks.forEach((node, idx) => node.attributes.type === Node.TYPE.heading && headers.push({ idx: idx, node: node }))
+
+                const drag = that._getHeader(dragCid, headers, blocks)
+                const drop = that._getHeader(dropCid, headers, blocks)
+
+                const dragLength = drag.endIdx - drag.startIdx
+                const removed = blocks.splice(drag.startIdx, dragLength)
+                const isDragDown = drag.startIdx < drop.startIdx
+                const insertIdx = isDragDown ? drop.endIdx - dragLength : drop.startIdx
+                blocks.splice(insertIdx, 0, ...removed)
+
+                const joiner = File.option.preferCRLF ? "\r\n" : "\n"
+                const content = blocks.map(node => node.toMark()).join(joiner)
+                const op = File.option.enableAutoSave ? { delayRefresh: true, skipChangeCount: true, skipStore: true } : undefined
+                File.reloadContent(content, op)
             })
             .on("dragend", clearStyle)
     }
 
-    _getHeader = (cid, tokens) => {
-        const { headers = [] } = File.editor.nodeMap.toc
-        const start = headers.findIndex(h => h.cid === cid)
+    _getHeader = (cid, headers, blocks) => {
+        const start = headers.findIndex(h => h.node.cid === cid)
         if (start === -1) return
 
-        const header = headers[start]
+        const header = headers[start].node
         if (!header.attributes) return
 
         let end = start + 1
         const depth = header.attributes.depth
         while (end < headers.length) {
-            const { attributes } = headers[end]
+            const { attributes } = headers[end].node
             const _depth = attributes && attributes.depth
             if (_depth && _depth <= depth) {
                 break
@@ -79,22 +87,9 @@ class sortableOutlinePlugin extends BaseCustomPlugin {
             end++
         }
 
-        const startLine = tokens[start].map[0]
-        const endLine = tokens.length === end ? Number.MAX_SAFE_INTEGER : tokens[end].map[0]
-        return { depth, startLine, endLine }
-    }
-
-    _moveSections = (lines, drag, drop) => {
-        drag.endLine = Math.min(drag.endLine, lines.length)
-        drop.endLine = Math.min(drop.endLine, lines.length)
-
-        const dragLength = drag.endLine - drag.startLine
-        const removed = lines.splice(drag.startLine, dragLength)
-        const isDragDown = drag.startLine < drop.startLine
-        const insertIdx = isDragDown ? drop.endLine - dragLength : drop.startLine
-        lines.splice(insertIdx, 0, ...removed)
-
-        return lines
+        const startIdx = headers[start].idx
+        const endIdx = headers.length === end ? blocks.length : headers[end].idx
+        return { startIdx, endIdx }
     }
 }
 

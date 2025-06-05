@@ -29,7 +29,7 @@ class easyModifyPlugin extends BasePlugin {
     }
 
     getDynamicActions = (anchorNode, meta) => {
-        const i18n = {
+        const I18N = {
             noSelection: this.i18n.t("act.extract_rang_to_new_file.noSelection"),
             positionEmptyLine: this.i18n.t("act.extract_rang_to_new_file.positionEmptyLine")
         }
@@ -41,13 +41,13 @@ class easyModifyPlugin extends BasePlugin {
             act_hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE
         }
         if (extract.act_disabled) {
-            extract.act_hint = i18n.noSelection
+            extract.act_hint = I18N.noSelection
         }
 
         meta.copyAnchor = anchorNode.closest("#write > [cid]")
         meta.insertAnchor = anchorNode.closest('#write > p[mdtype="paragraph"]')
         const act_disabled = !meta.insertAnchor || meta.insertAnchor.querySelector("p > span")
-        const act_hint = act_disabled ? i18n.positionEmptyLine : ""
+        const act_hint = act_disabled ? I18N.positionEmptyLine : ""
         const insert = [
             { act_value: "insert_mermaid_mindmap", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, act_disabled, act_hint },
             { act_value: "insert_mermaid_graph", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, act_disabled, act_hint },

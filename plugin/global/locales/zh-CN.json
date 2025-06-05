@@ -51,7 +51,7 @@
     "takesEffectAfterRestart": "修改将在重启后生效",
     "incompatibilityWarning": "Typora 版本过低，部分插件可能失效。\n建议升级到 0.9.98 (最后一个免费版本)",
     "uninstallPluginWarning": "警告：即将移除所有插件，此操作不可撤销！",
-    "uninstallPluginDetail": "您即将卸载插件系统，所有与插件系统相关的设置和数据将被永久删除。请在下方输入框中精确键入「{{reconfirm}}」以确认您的意愿。卸载完成后，请重启软件以完成卸载流程。",
+    "uninstallPluginDetail": "您即将卸载插件系统，所有与插件系统相关的设置和数据将被永久删除。请在下方输入框中精确键入「{{reconfirm}}」以确认您的意愿。卸载完成后，请重启 Typora 以完成卸载流程。",
     "uninstallPluginConfirmInput": "确认文本",
     "success": "执行成功",
     "success.add": "添加成功",
@@ -502,7 +502,8 @@
     "settingGroup.download": "导出",
     "$label.ENABLE_TOC_MARKMAP": "启用",
     "$label.TOC_HOTKEY": "快捷键",
-    "$label.FIX_ERROR_LEVEL_HEADER": "兼容跳级标题",
+    "$label.FIX_SKIPPED_LEVEL_HEADERS": "兼容跳级标题",
+    "$label.REMOVE_HEADER_STYLES": "移除标题样式",
     "$label.AUTO_UPDATE": "大纲变化后自动更新",
     "$label.AUTO_FIT_WHEN_RESIZE": "调整窗口后自动适配",
     "$label.AUTO_FIT_WHEN_UPDATE": "更新图形后自动适配",
@@ -841,7 +842,7 @@
     "act.copy_full_path.H5": "五级标题",
     "act.copy_full_path.H6": "六级标题",
     "act.copy_full_path.NoHeader": "无",
-    "act.insert_mermaid_mindmap.incompatible": "mermaid 版本低，不支持 mindmap 组件，请前往 https://mermaid.live 查看",
+    "act.insert_mermaid_mindmap.incompatible": "Mermaid 版本低，不支持 mindmap 组件，请前往 https://mermaid.live 查看",
     "actHint.notRecommended": "除非有特殊需求，不建议使用此功能",
     "actHint.defaultDoc": "若无选中文段，则调整整篇文档",
     "$label.HOTKEY_COPY_FULL_PATH": "复制当前光标所在标题路径",
@@ -911,7 +912,7 @@
     "$label.DO_NOT_HIDE": "失焦不再自动隐藏",
     "$label.HIDE_OTHER_OPTIONS": "只显示插件选项",
     "$label.MENU_MIN_WIDTH": "二、三级菜单的最小宽度",
-    "$label.FIND_LOST_PLUGIN": "自动寻找丢失插件",
+    "$label.FIND_LOST_PLUGINS": "自动寻找丢失插件",
     "$label.MENUS.NAME": "菜单名",
     "$label.MENUS.LIST": "插件列表",
     "$title.MENUS": "自定义右键菜单",
@@ -1186,7 +1187,7 @@
     "link": "链接",
     "math": "公式",
     "$label.default_show_toc": "默认开启",
-    "$label.escape_header": "转义标题内容",
+    "$label.remove_header_styles": "移除标题样式",
     "$label.sortable": "拖动大纲标题，调整文章结构",
     "$label.right_click_outline_button_to_toggle": "快捷方式：右击侧边栏大纲按钮",
     "$label.width_percent_when_pin_right": "固定到右侧的宽度",
@@ -1438,14 +1439,15 @@
     "$title.buttonStyle": "按钮样式",
     "$title.buttons.evil": "自定义回调",
     "$tooltip.buttons.coordinate.0": "向上方向递增",
-    "$tooltip.buttons.coordinate.1": "向左方向递增"
+    "$tooltip.buttons.coordinate.1": "向左方向递增",
+    "tooltip.exclusive": "与「自定义回调」互斥",
+    "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
   },
   "blockSideBySide": {
     "pluginName": "并列显示活动块"
   },
   "sortableOutline": {
-    "pluginName": "大纲拖拽排序",
-    "$label.auto_save_file": "自动保存文件"
+    "pluginName": "大纲拖拽排序"
   },
   "redirectLocalRootUrl": {
     "pluginName": "重定向本地资源根目录",

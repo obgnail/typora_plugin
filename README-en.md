@@ -642,8 +642,6 @@ The included functions are as follows:
 
 > Principle: By setting the display style of DOM elements to none, elements are hidden so that they do not occupy a position in the rendering tree, and operations on hidden elements do not cause reflow of other elements.
 
-> collapse_paragraph (Chapter Collapse) can well replace this plugin, it is recommended to use collapse_paragraph.
-
 ### ripgrep: Use Ripgrep to Search Files
 
 Typora comes with ripgrep. This plugin supports using the built-in ripgrep to search files.
