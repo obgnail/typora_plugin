@@ -98,11 +98,6 @@ class preferencesPlugin extends BasePlugin {
                     if (postFn) {
                         await postFn(value, settings)
                     }
-                    return
-                }
-                const actionHandler = type === "action" && this.ACTION_HANDLERS[key]
-                if (actionHandler) {
-                    await actionHandler()
                 }
             })
         }
@@ -142,7 +137,7 @@ class preferencesPlugin extends BasePlugin {
         const settings = await this._getSettings(fixedName)
         const data = await this._preprocess(fixedName, settings)
         this.entities.form.dataset.plugin = fixedName
-        this.entities.form.render(this.SETTING_SCHEMAS[fixedName], data)
+        this.entities.form.render(this.SETTING_SCHEMAS[fixedName], data, this.ACTION_HANDLERS)
         this.entities.menu.querySelectorAll(".active").forEach(e => e.classList.remove("active"))
         const menuItem = this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`)
         menuItem.classList.add("active")
