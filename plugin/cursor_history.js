@@ -26,24 +26,20 @@ class cursorHistoryPlugin extends BasePlugin {
     goBack = () => {
         const cursor = this.cursorHelper.goBack()
         if (cursor) {
-            this._jumpCursor(cursor)
+            this._jump(cursor)
         }
     }
 
     goForward = () => {
         const cursor = this.cursorHelper.goForward()
         if (cursor) {
-            this._jumpCursor(cursor)
+            this._jump(cursor)
         }
     }
 
-    _jumpCursor = (cursor) => {
-        const targetCursor = cursor.start
-            ? { id: cursor.id, start: cursor.start, type: cursor.type }
-            : { id: cursor.id, pos: cursor.pos, type: "fences-pos" }
-        File.editor.undo.exeCommand(targetCursor)
-        const targetEl = File.editor.findElemById(cursor.id)
-        this._scroll(targetEl)
+    _jump = (cursor) => {
+        File.editor.undo.exeCommand(cursor)
+        this._scroll(File.editor.findElemById(cursor.id))
     }
 
     _scroll = ($target, height = -1) => {
@@ -65,19 +61,19 @@ class cursorHistoryPlugin extends BasePlugin {
         let history = []
         let idx = -1
 
-        const isSameCursor = (c1, c2) => {
+        const isSame = (c1, c2) => {
             if (!c1 || !c2) {
                 return false
             }
             const isSameID = c1.id === c2.id
-            const isSameStart = c1.start === c2.start
+            const isSameStart = c1.start && c2.start && c1.start === c2.start
             const isSamePos = c1.pos && c2.pos && c1.pos.line === c2.pos.line && c1.pos.ch === c2.pos.ch
             return isSameID && (isSameStart || isSamePos)
         }
 
         return {
             push: (cursor) => {
-                if (history.length > 0 && isSameCursor(cursor, history[idx])) return
+                if (history.length > 0 && isSame(cursor, history[idx])) return
 
                 // If the current pointer is not at the end of the history record,
                 // it indicates that the user has performed a "back" operation.
@@ -88,6 +84,10 @@ class cursorHistoryPlugin extends BasePlugin {
                 if (history.length >= maxEntries) {
                     history = history.slice(1)
                 }
+
+                cursor = cursor.start
+                    ? { id: cursor.id, type: cursor.type, start: cursor.start }
+                    : { id: cursor.id, type: "fences-pos", pos: cursor.pos }
 
                 history.push(cursor)
                 idx = history.length - 1
