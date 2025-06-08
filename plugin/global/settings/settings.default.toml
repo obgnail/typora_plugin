@@ -1986,6 +1986,7 @@ LIST = [
     "---",
     "slash_commands",
     "file_counter",
+    "cursor_history",
     "json_rpc",
     "test",
 ]
@@ -2358,6 +2359,29 @@ WIDTH_PERCENT = 80
 # 搜索窗口出现时距离页面顶部的距离，以页面百分比表示
 #  例如，20 表示窗口顶部距离页面顶部 20% 的位置
 TOP_PERCENT = 20
+
+
+################### cursor_history ###################
+[cursor_history]
+# ------------------- 基础 -------------------
+# 启用或禁用插件
+#   true:  启用插件
+#   false: 禁用插件
+ENABLE = false
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 快捷键 -------------------
+#  快捷键：光标前进
+HOTKEY_GO_FORWARD = "alt+ArrowRight"
+
+#  快捷键：光标后退
+HOTKEY_GO_BACK = "alt+ArrowLeft"
+
+# ------------------- 行为 -------------------
+# 最大历史记录数
+MAX_HISTORY_ENTRIES = 100
 
 
 ################### json_rpc ###################

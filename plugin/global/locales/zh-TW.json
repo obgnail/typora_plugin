@@ -1009,6 +1009,12 @@
     "$title.windowPosition": "視窗位置",
     "$title.interaction": "互動"
   },
+  "cursor_history": {
+    "pluginName": "光標跳轉",
+    "$label.HOTKEY_GO_FORWARD": "光標前進",
+    "$label.HOTKEY_GO_BACK": "光標後退",
+    "$label.MAX_HISTORY_ENTRIES": "最大曆史記錄數"
+  },
   "json_rpc": {
     "pluginName": "外部操控 Typora",
     "$label.SERVER_OPTIONS.strict": "嚴格模式",

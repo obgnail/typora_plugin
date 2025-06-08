@@ -1025,6 +1025,18 @@ const SETTING_SCHEMAS = {
         ),
         handleSettingsBox,
     ],
+    cursor_history: [
+        pluginLiteBasePropBox,
+        TitledBox(
+            "hotkey",
+            Hotkey("HOTKEY_GO_FORWARD"),
+            Hotkey("HOTKEY_GO_BACK"),
+        ),
+        UntitledBox(
+            Number("MAX_HISTORY_ENTRIES", { min: 1, step: 1 }),
+        ),
+        handleSettingsBox,
+    ],
     json_rpc: [
         pluginLiteBasePropBox,
         TitledBox(

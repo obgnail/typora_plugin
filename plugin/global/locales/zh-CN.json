@@ -1009,6 +1009,12 @@
     "$title.windowPosition": "窗口位置",
     "$title.interaction": "交互"
   },
+  "cursor_history": {
+    "pluginName": "光标跳转",
+    "$label.HOTKEY_GO_FORWARD": "光标前进",
+    "$label.HOTKEY_GO_BACK": "光标后退",
+    "$label.MAX_HISTORY_ENTRIES": "最大历史记录数"
+  },
   "json_rpc": {
     "pluginName": "外部操纵Typora",
     "$label.SERVER_OPTIONS.strict": "严格模式",

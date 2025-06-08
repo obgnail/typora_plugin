@@ -1009,6 +1009,12 @@
     "$title.windowPosition": "Window Position",
     "$title.interaction": "Interaction"
   },
+  "cursor_history": {
+    "pluginName": "Cursor History",
+    "$label.HOTKEY_GO_FORWARD": "Cursor Go Forward",
+    "$label.HOTKEY_GO_BACK": "Cursor Go Back",
+    "$label.MAX_HISTORY_ENTRIES": "Max History Entries"
+  },
   "json_rpc": {
     "pluginName": "Typora Automation",
     "$label.SERVER_OPTIONS.strict": "Strict Mode",
