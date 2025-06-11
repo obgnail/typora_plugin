@@ -36,8 +36,8 @@ class rightClickMenuPlugin extends BasePlugin {
             const caret = noExtraMenu ? "" : '<i class="fa fa-caret-right"></i>'
             const a = `<a role="menuitem"><span data-lg="Menu">${name}</span>${caret}</a>`
             return noExtraMenu
-                ? `<li data-key="${this.noExtraMenuGroupName}" data-value="${LIST[0]}" idx="${idx}">${a}</li>`
-                : `<li class="has-extra-menu" data-key="${this.groupName}" idx="${idx}">${a}</li>`
+                ? `<li data-key="${this.noExtraMenuGroupName}" data-value="${LIST[0]}" data-idx="${idx}">${a}</li>`
+                : `<li class="has-extra-menu" data-key="${this.groupName}" data-idx="${idx}">${a}</li>`
         })
         const html = '<li class="divider"></li>' + items.join("")
         document.querySelector("#context-menu").insertAdjacentHTML("beforeend", html)
@@ -80,7 +80,7 @@ class rightClickMenuPlugin extends BasePlugin {
                     return action ? LiWithAction(plugin, action) : Li(plugin)
                 }
             }).filter(Boolean)
-            return { ele: "ul", role: "menu", className, idx, children }
+            return { ele: "ul", role: "menu", "data-idx": idx, className, children }
         })
         this.utils.entities.eContent.append(...this._createElement(templates))
     }
@@ -94,7 +94,7 @@ class rightClickMenuPlugin extends BasePlugin {
                 .filter(plugin => plugin && (plugin.staticActions || plugin.getDynamicActions))
                 .map(plugin => {
                     const children = (plugin.staticActions || []).map(act => this._thirdLiTemplate(act))
-                    return { ele: "ul", role: "menu", "data-plugin": plugin.fixedName, className, idx, children }
+                    return { ele: "ul", role: "menu", "data-idx":idx, "data-plugin": plugin.fixedName, className, children }
                 })
         })
         this.utils.entities.eContent.append(...this._createElement(templates))
@@ -195,29 +195,25 @@ class rightClickMenuPlugin extends BasePlugin {
         const removeShow = ele => ele.classList.remove("show")
         const removeActive = ele => ele.classList.remove("active")
 
-        // click on the first level menu
+        // Click on the first level menu
         $("#context-menu").on("click", `[data-key="${this.noExtraMenuGroupName}"]`, function () {
-            const value = this.dataset.value
-            if (!value) {
-                return false
-            }
-            const [fixedName, action] = value.split(".")
+            const [fixedName, action] = (this.dataset.value || "").split(".")
             if (!fixedName || !action) {
                 return false
             }
             that.utils.updatePluginDynamicActions(fixedName)
             that.callPluginDynamicAction(fixedName, action)
             that.hideMenuIfNeed()
-            // display the second level menu
+            // Display the second level menu
         }).on("mouseenter", "[data-key]", function () {
             if (that.groupName === this.dataset.key) {
-                const idx = this.getAttribute("idx")
+                const idx = this.dataset.idx
                 if (document.querySelector(".plugin-menu-second.show")) {
-                    document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(removeShow)
+                    document.querySelectorAll(`.plugin-menu-third:not([data-idx="${idx}"])`).forEach(removeShow)
                 }
-                document.querySelectorAll(`.plugin-menu-second:not([idx="${idx}"]) .plugin-menu-item.active`).forEach(removeActive)
-                document.querySelectorAll(`.plugin-menu-second:not([idx="${idx}"])`).forEach(removeShow)
-                that.showMenuItem(document.querySelector(`.plugin-menu-second[idx="${idx}"]`), this)
+                document.querySelectorAll(`.plugin-menu-second:not([data-idx="${idx}"]) .plugin-menu-item.active`).forEach(removeActive)
+                document.querySelectorAll(`.plugin-menu-second:not([data-idx="${idx}"])`).forEach(removeShow)
+                that.showMenuItem(document.querySelector(`.plugin-menu-second[data-idx="${idx}"]`), this)
                 this.classList.add("active")
             } else {
                 document.querySelectorAll(`#context-menu li[data-key="${that.groupName}"]`).forEach(removeActive)
@@ -245,7 +241,7 @@ class rightClickMenuPlugin extends BasePlugin {
             } else {
                 removeActive(document.querySelector(".plugin-menu-second .has-extra-menu"))
             }
-            // call plugins in the second level menu
+            // Call plugins in the second level menu
         }).on("click", "[data-key]", function () {
             const fixedName = this.dataset.key
             const action = this.dataset.value
@@ -264,9 +260,9 @@ class rightClickMenuPlugin extends BasePlugin {
             that.hideMenuIfNeed()
         })
 
-        // call plugins in the third level menu
+        // Call plugins in the third level menu
         $(".plugin-menu-third").on("click", "[data-key]", function () {
-            // click on the disabled option
+            // Click on the disabled option
             if (this.classList.contains("disabled")) {
                 return false
             }

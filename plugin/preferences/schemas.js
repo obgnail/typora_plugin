@@ -833,7 +833,7 @@ const SETTING_SCHEMAS = {
                     { type: "number", key: "cursorOffset.0", label: "$label.COMMANDS.cursorOffset.0" },
                     { type: "number", key: "cursorOffset.1", label: "$label.COMMANDS.cursorOffset.1" },
                 ),
-                TitledBox("COMMANDS.callback", { type: "textarea", key: "callback", rows: 3, placeholder: "$placeholder.callbackType" }),
+                TitledBox("COMMANDS.callback", { type: "textarea", key: "callback", rows: 5, placeholder: "$placeholder.callbackType" }),
             ],
             {
                 enable: true,
@@ -1022,6 +1022,18 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "interaction",
             Switch("BACKSPACE_TO_HIDE"),
+        ),
+        handleSettingsBox,
+    ],
+    cursor_history: [
+        pluginLiteBasePropBox,
+        TitledBox(
+            "hotkey",
+            Hotkey("HOTKEY_GO_FORWARD"),
+            Hotkey("HOTKEY_GO_BACK"),
+        ),
+        UntitledBox(
+            Number("MAX_HISTORY_ENTRIES", { min: 1, step: 1 }),
         ),
         handleSettingsBox,
     ],

@@ -882,7 +882,7 @@ class Searcher {
             })
         }
 
-        const getSchema = async ({ expression, optimize, translate, direction, presentation }) => {
+        const getSchema = async ({ expression, optimize, translate, direction, presentation, grammar }) => {
             const dep = { dependencies: { presentation: "graph" } }
             const directionOps = Object.fromEntries(["TB", "BT", "RL", "LR"].map(e => [e, e]))
             const presentOps = {
@@ -915,19 +915,24 @@ class Searcher {
                 { key: "direction", type: "select", label: t("modal.playground.direction"), options: directionOps, ...dep },
                 { key: "translate", type: "switch", label: t("modal.playground.translate"), ...dep },
             ]
-            const deepWikiFields = [{ key: "deepWiki", type: "action", label: t("modal.playground.deepWiki") }]
-            const grammarFields = [{ key: "grammar", type: "textarea", rows: 20 }]
+            const otherFields = [
+                { key: "deepWiki", type: "action", label: t("modal.playground.deepWiki") },
+                { key: "showGrammar", type: "action", label: t("modal.title.grammar") },
+            ]
+            const grammarBox = grammar
+                ? [{ title: t("modal.title.grammar"), fields: [{ key: "grammar", type: "textarea", readonly: true, rows: 20 }] }]
+                : []
             return [
                 { title: undefined, fields: syntaxFields },
                 { title: t("modal.title.example"), fields: exampleFields },
                 { title: t("modal.title.playground"), fields: playgroundFields },
-                { title: undefined, fields: deepWikiFields },
-                { title: t("modal.title.grammar"), fields: grammarFields },
+                { title: undefined, fields: otherFields },
+                ...grammarBox,
             ]
         }
 
         const defaultData = {
-            grammar,
+            grammar: "",
             expression: "taskdone:sour  file:pear  ( linenum<=200 | size>10kb )",
             presentation: "graph",
             direction: "LR",
@@ -941,6 +946,12 @@ class Searcher {
             data: defaultData,
             action: {
                 deepWiki: () => this.utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
+                showGrammar: () => {
+                    this.utils.formDialog.updateModal(async op => {
+                        op.data.grammar = op.data.grammar ? "" : grammar
+                        op.schema = await getSchema(op.data)
+                    })
+                },
             },
             listener: ({ key, value }) => {
                 if (key === "ast") return

@@ -1549,11 +1549,11 @@ buttons = [
     { disable = false, coordinate = [0, 0], size = "24px", icon = "fa fa-caret-down", callback = "go_top.goBottom" },
     { disable = false, coordinate = [1, 0], size = "24px", icon = "fa fa-caret-up", callback = "go_top.goTop" },
     { disable = false, coordinate = [2, 0], size = "17px", icon = "fa fa-font", callback = "text_stylize.call" },
-    { disable = false, coordinate = [3, 0], size = "17px", icon = "fa fa-align-justify", callback = "md_padding.call" },
+    { disable = false, coordinate = [3, 0], size = "17px", icon = "fa fa-indent", callback = "md_padding.call" },
     { disable = false, coordinate = [4, 0], size = "17px", icon = "fa fa-gear", callback = "preferences.call" },
     { disable = false, coordinate = [0, 1], size = "18px", icon = "fa fa-sitemap", callback = "markmap.onButtonClick" },
     { disable = false, coordinate = [1, 1], size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
-    { disable = false, coordinate = [2, 1], size = "17px", icon = "fa fa-list", callback = "toc.callback" },
+    { disable = false, coordinate = [2, 1], size = "17px", icon = "fa fa-th-list", callback = "toc.callback" },
     { disable = false, coordinate = [3, 1], size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
     # evil 使用示例
     #   弹窗提示

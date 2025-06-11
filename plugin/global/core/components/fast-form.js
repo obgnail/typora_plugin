@@ -26,19 +26,19 @@ customElements.define("fast-form", class extends HTMLElement {
         this.form.innerHTML = this._fillForm(schema)
     }
 
-    // type: set/push/remove/removeIndex/action
+    // type: set/push/remove/removeIndex
     _dispatchEvent(key, value, type = "set") {
         const customEvent = new CustomEvent("CRUD", { detail: { key, value, type } })
         this.dispatchEvent(customEvent)
-        if (type === "action") {
-            const actFn = this.options.action[key]
-            if (actFn) {
-                actFn(this.options)
-            }
-            return
-        }
         this.utils.nestedPropertyHelpers[type](this.options.data, key, value)
         this._toggleReadonly(key)
+    }
+
+    _dispatchAction(key) {
+        const actFn = this.options.action[key]
+        if (actFn) {
+            actFn(this.options)
+        }
     }
 
     _bindEvents() {
@@ -172,7 +172,7 @@ customElements.define("fast-form", class extends HTMLElement {
             that._dispatchEvent(input.dataset.key, input.value)
         }).on("click", '.control[data-type="action"]', function () {
             const icon = this.querySelector(".action")
-            that._dispatchEvent(icon.dataset.action, null, "action")
+            that._dispatchAction(icon.dataset.action)
         }).on("click", ".array-item-delete", function () {
             const itemEl = this.parentElement
             const valueEl = this.previousElementSibling
