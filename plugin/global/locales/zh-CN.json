@@ -311,8 +311,8 @@
     "$option.BUILTIN.shell.powershell": "PowerShell",
     "$option.BUILTIN.shell.gitbash": "Git Bash",
     "$option.BUILTIN.shell.wsl": "WSL",
-    "$label.QUICK_RUN_DISPLAY": "通过快捷方式执行命令时",
-    "$label.COMMIT_RUN_DISPLAY": "通过命令框执行命令时",
+    "$label.QUICK_RUN_DISPLAY": "快捷方式执行命令",
+    "$label.COMMIT_RUN_DISPLAY": "命令框执行命令",
     "$label.BACKSPACE_TO_HIDE": "输入框为空且键入退格键时，隐藏窗口",
     "$label.ALLOW_DRAG": "Ctrl+鼠标拖拽输入框以移动窗口",
     "$label.BUILTIN.name": "名称",
@@ -897,7 +897,7 @@
     "$title.trigger": "命令触发",
     "$placeholder.LettersAndNumbersOnly": "仅限英文字母和数字",
     "$placeholder.emojiOnly": "仅限单个 Emoji 符号",
-    "$placeholder.callbackType": "若类型为 “插入文字片段”，则值为待插入的字符串；若类型为 “插入动态文字片段”，则值为返回字符串的函数；若类型为 “执行逻辑命令”，则值为执行逻辑命令的函数。"
+    "$placeholder.callbackType": "若类型为 “插入文字片段”，则值为待插入的字符串；\n若类型为 “插入动态文字片段”，则值为返回字符串的函数；\n若类型为 “执行逻辑命令”，则值为执行逻辑命令的函数。"
   },
   "right_click_menu": {
     "pluginName": "右键菜单",

@@ -624,6 +624,7 @@ textarea::placeholder {
     border-collapse: collapse;
     font-size: 13px;
     line-height: 1.6em;
+    width: 100%;
 }
 
 .custom-wrap tr {

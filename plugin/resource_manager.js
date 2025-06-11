@@ -112,9 +112,9 @@ class resourceManagerPlugin extends BasePlugin {
         const func = wantClose ? "off" : "on"
         const className = "img"
         this.entities.$wrap
-            [func]("mouseover", className, this._showPopup)
+            [func]("mouseenter", className, this._showPopup)
             [func]("mousemove", className, this._showPopup)
-            [func]("mouseout", className, this._hidePopup)
+            [func]("mouseleave", className, this._hidePopup)
         icon.classList.toggle("ion-eye-disabled", wantClose)
         icon.classList.toggle("ion-eye", !wantClose)
     }
@@ -208,12 +208,14 @@ class resourceManagerPlugin extends BasePlugin {
         const popup = this.entities.popup
         if (!popup) return
 
-        popup.src = ev.target.getAttribute("src")
-        const left = Math.min(window.innerWidth - 10 - popup.offsetWidth, ev.clientX + 10)
-        const top = Math.min(window.innerHeight - 50 - popup.offsetHeight, ev.clientY + 20)
-        popup.style.left = `${left}px`
-        popup.style.top = `${top}px`
         this.utils.show(popup)
+        requestAnimationFrame(() => {
+            popup.src = ev.target.getAttribute("src")
+            const left = Math.min(window.innerWidth - 10 - popup.offsetWidth, ev.clientX + 10)
+            const top = Math.min(window.innerHeight - 50 - popup.offsetHeight, ev.clientY + 20)
+            popup.style.left = `${left}px`
+            popup.style.top = `${top}px`
+        })
     }
 
     _getOutput = (format = "obj") => {

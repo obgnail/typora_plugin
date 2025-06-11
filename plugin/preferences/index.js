@@ -306,7 +306,7 @@ class preferencesPlugin extends BasePlugin {
                 const settings = await this._getSettings(fixedName)
                 const op = {
                     title: this.i18n._t("settings", "$label.runtimeSettings") + `（${this.i18n._t("global", "readonly")}）`,
-                    schema: [{ fields: [{ key: "runtimeSettings", type: "textarea", rows: 14 }] }],
+                    schema: [{ fields: [{ key: "runtimeSettings", type: "textarea", readonly: true, rows: 14 }] }],
                     data: { runtimeSettings: JSON.stringify(settings, null, "\t") },
                 }
                 await this.utils.formDialog.modal(op)

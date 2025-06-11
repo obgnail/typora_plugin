@@ -1632,10 +1632,12 @@ DEFAULT_FORMAT_BRUSH = ""
 # 将设置样式的动作映射为快捷键，方便快速应用样式
 #   hotkey: 快捷键组合，例如："ctrl+shift+c"。为空则禁用快捷键
 #   action: 对应的工具栏按钮 (必须是上方 TOOLBAR 中定义的按钮之一)
-ACTION_HOTKEYS = [
-    { hotkey = "", action = "foregroundColor" },
-    { hotkey = "", action = "backgroundColor" },
-]
+# 举例：
+#   ACTION_HOTKEYS = [
+#       { hotkey = "ctrl+shift+d", action = "foregroundColor" },
+#       { hotkey = "ctrl+shift+e", action = "backgroundColor" },
+#   ]
+ACTION_HOTKEYS = []
 
 # ------------------- 颜色 -------------------
 # 预设的颜色，用于选择文字的前景色、背景色和边框色

@@ -311,8 +311,8 @@
     "$option.BUILTIN.shell.powershell": "PowerShell",
     "$option.BUILTIN.shell.gitbash": "Git Bash",
     "$option.BUILTIN.shell.wsl": "WSL",
-    "$label.QUICK_RUN_DISPLAY": "When executing command via hotkey",
-    "$label.COMMIT_RUN_DISPLAY": "When executing command via command box",
+    "$label.QUICK_RUN_DISPLAY": "Executing Command Via Shortcut",
+    "$label.COMMIT_RUN_DISPLAY": "Executing Command Via Panel",
     "$label.BACKSPACE_TO_HIDE": "Hide Window on Empty and Backspace",
     "$label.ALLOW_DRAG": "Ctrl+Drag to Move Window",
     "$label.BUILTIN.name": "Name",
@@ -897,7 +897,7 @@
     "$title.trigger": "Command Trigger",
     "$placeholder.LettersAndNumbersOnly": "Letters and numbers Only",
     "$placeholder.emojiOnly": "Single Emoji Only",
-    "$placeholder.callbackType": "If the Type is \"Insert Snippet\", the value is the string to be inserted; If the Type is \"Insert Dynamic Snippet\", the value is a function that returns a string; If the Type is \"Execute Command\", the value is a function that executes the logical command."
+    "$placeholder.callbackType": "If the Type is \"Insert Snippet\", the value is the string to be inserted; \nIf the Type is \"Insert Dynamic Snippet\", the value is a function that returns a string; \nIf the Type is \"Execute Command\", the value is a function that executes the logical command."
   },
   "right_click_menu": {
     "pluginName": "Right-Click Menu",
