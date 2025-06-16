@@ -1,6 +1,6 @@
 class markmapPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.MarkmapLib = {};
+        this.Lib = {};
         this.tocMarkmap = this.config.ENABLE_TOC_MARKMAP ? new tocMarkmap(this) : null;
         this.fenceMarkmap = this.config.ENABLE_FENCE_MARKMAP ? new fenceMarkmap(this) : null;
     }
@@ -62,17 +62,17 @@ class markmapPlugin extends BasePlugin {
     assignOptions = (update, old) => {
         const attrs = ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX", "autoFit"]
         const update_ = this.utils.pick(update, attrs)
-        const options = this.MarkmapLib.deriveOptions({ ...old, ...update })
+        const options = this.Lib.deriveOptions({ ...old, ...update })
         return Object.assign(options, update_)
     }
 
     lazyLoad = async () => {
-        if (this.MarkmapLib.Markmap) return
+        if (this.Lib.Markmap) return
 
         const { Transformer, builtInPlugins, transformerVersions } = require("./resource/markmap-lib.js")
         const markmap = require("./resource/markmap-view.js")
         const transformer = new Transformer(builtInPlugins)
-        Object.assign(this.MarkmapLib, markmap, { transformer, Transformer, builtInPlugins, transformerVersions })
+        Object.assign(this.Lib, markmap, { transformer, Transformer, builtInPlugins, transformerVersions })
 
         const { styles, scripts } = transformer.getAssets()
         styles[0].data.href = this.utils.joinPath("./plugin/markmap/resource/katex.min.css")
@@ -89,7 +89,7 @@ class fenceMarkmap {
         this.controller = plugin;
         this.utils = plugin.utils;
         this.config = plugin.config;
-        this.MarkmapLib = plugin.MarkmapLib;
+        this.Lib = plugin.Lib;
         this.instanceMap = new Map(); // {cid: instance}
     }
 
@@ -144,7 +144,7 @@ class fenceMarkmap {
     }
 
     render = async (cid, content, $pre) => {
-        if (!this.MarkmapLib.Markmap) {
+        if (!this.Lib.Markmap) {
             await this.controller.lazyLoad();
         }
         const options = this.getFrontMatter(content);
@@ -172,9 +172,9 @@ class fenceMarkmap {
     };
 
     create = async (cid, svg, md, options) => {
-        const { root } = this.MarkmapLib.transformer.transform(md);
+        const { root } = this.Lib.transformer.transform(md);
         options = this.controller.assignOptions(options);
-        const instance = this.MarkmapLib.Markmap.create(svg[0], options, root);
+        const instance = this.Lib.Markmap.create(svg[0], options, root);
         this.instanceMap.set(cid, instance);
         setTimeout(() => {
             const instance = this.instanceMap.get(cid);
@@ -186,7 +186,7 @@ class fenceMarkmap {
 
     update = async (cid, md, options) => {
         const instance = this.instanceMap.get(cid);
-        const { root } = this.MarkmapLib.transformer.transform(md);
+        const { root } = this.Lib.transformer.transform(md);
         options = this.controller.assignOptions(options, instance.options);
         instance.setOptions(options);
         instance.setData(root);
@@ -200,7 +200,7 @@ class tocMarkmap {
         this.utils = plugin.utils;
         this.i18n = plugin.i18n;
         this.config = plugin.config;
-        this.MarkmapLib = plugin.MarkmapLib;
+        this.Lib = plugin.Lib;
     }
 
     html = () => `
@@ -620,7 +620,7 @@ class tocMarkmap {
         if (response === 1) {
             result.DEFAULT_TOC_OPTIONS.color = str2Arr(result.DEFAULT_TOC_OPTIONS.color)
             Object.entries(result).forEach(([k, v]) => this.config[k] = v)
-            await this.redraw(this.markmap.options)
+            await this.draw()
             await this.utils.settings.saveSettings(this.controller.fixedName, result)
         }
     }
@@ -778,60 +778,36 @@ class tocMarkmap {
         this._setFullScreenIcon(false);
     }
 
-    redraw = async options => {
-        this.markmap.destroy();
-        const md = this.controller.getToc();
-        await this._create(md, options);
-    }
+    draw = async (fit = true) => {
+        const md = this.controller.getToc()
+        if (md === undefined) return
 
-    draw = async (fit = true, options = null) => {
-        const md = this.controller.getToc();
-        if (md !== undefined) {
-            await this._draw(md, fit, options);
+        this.utils.show(this.entities.modal)
+
+        const hasInstance = Boolean(this.markmap)
+        if (!hasInstance) {
+            this._initModalRect()
+            await this.controller.lazyLoad()
+        }
+
+        const options = this.controller.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.markmap && this.markmap.options)
+        this.transformContext = this.Lib.transformer.transform(md)
+        const { root } = this.transformContext
+
+        if (!hasInstance) {
+            this.markmap = this.Lib.Markmap.create(this.entities.svg, options, root)
+            return
+        }
+        if (this.config.AUTO_UPDATE) {
+            this._setFold(root)
+            this.markmap.setData(root, options)
+            if (fit) {
+                await this.markmap.fit()
+            }
         }
     }
 
     isShow = () => this.utils.isShow(this.entities.modal)
-
-    _draw = async (md, fit = true, options) => {
-        this.utils.show(this.entities.modal)
-        if (this.markmap) {
-            if (this.config.AUTO_UPDATE) {
-                await this._update(md, fit)
-            }
-        } else {
-            this._initModalRect()
-            await this.controller.lazyLoad()
-            await this._create(md, options)
-        }
-    }
-
-    _create = async (md, options) => {
-        options = this.controller.assignOptions(this.config.DEFAULT_TOC_OPTIONS, options);
-        this.transformContext = this.MarkmapLib.transformer.transform(md);
-        this.markmap = this.MarkmapLib.Markmap.create(this.entities.svg, options, this.transformContext.root);
-    }
-
-    _update = async (md, fit = true) => {
-        this.transformContext = this.MarkmapLib.transformer.transform(md);
-        const { root } = this.transformContext;
-        this._setFold(root);
-        this.markmap.setData(root);
-        if (fit) {
-            await this.markmap.fit();
-        }
-    }
-
-    _initModalRect = () => {
-        const { left, width, height } = this.entities.content.getBoundingClientRect();
-        const { WIDTH_PERCENT_WHEN_INIT: w, HEIGHT_PERCENT_WHEN_INIT: h } = this.config;
-        const l = (100 - w) / 2;
-        Object.assign(this.entities.modal.style, {
-            left: `${left + width * l / 100}px`,
-            width: `${width * w / 100}px`,
-            height: `${height * h / 100}px`
-        });
-    }
 
     _setFold = newRoot => {
         if (!this.config.KEEP_FOLD_STATE_WHEN_UPDATE) return
@@ -884,6 +860,15 @@ class tocMarkmap {
         }
         const act = (action === "pinTop" || action === "pinRight") ? false : undefined
         await this[action](act)
+    }
+
+    _initModalRect = () => {
+        const { top: t, left: l, width: w, height: h } = this.entities.content.getBoundingClientRect()
+        const { WIDTH_PERCENT_WHEN_INIT: wRatio, HEIGHT_PERCENT_WHEN_INIT: hRatio } = this.config
+        const height = h * hRatio / 100
+        const width = w * wRatio / 100
+        const left = l + (w - width) / 2
+        this._setModalRect({ top: t, height, width, left })
     }
 
     _setModalRect = rect => {
@@ -1171,7 +1156,7 @@ class Downloader {
 </html>`
 
         const run = title => {
-            const { transformer } = plugin.MarkmapLib
+            const { transformer } = plugin.Lib
             const { root, features } = plugin.transformContext
             const { styles, scripts } = transformer.getUsedAssets(features)
             const styleElements = handleStyles(styles)
