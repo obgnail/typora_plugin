@@ -59,11 +59,12 @@ class markmapPlugin extends BasePlugin {
         }
     }
 
-    assignOptions = (update, old) => {
-        const attrs = ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX", "autoFit"]
-        const update_ = this.utils.pick(update, attrs)
-        const options = this.Lib.deriveOptions({ ...old, ...update })
-        return Object.assign(options, update_)
+    assignOptions = (update, origin) => {
+        const options = this.Lib.deriveOptions({ ...origin, ...update })
+        // `autoFit` and `toggleRecursively` are deleted after calling deriveOptions
+        options.autoFit = update.autoFit
+        options.toggleRecursively = update.toggleRecursively
+        return options
     }
 
     lazyLoad = async () => {
@@ -498,6 +499,7 @@ class tocMarkmap {
                     { ...getKey("DEFAULT_TOC_OPTIONS.spacingHorizontal"), type: "range", min: 0, max: 200, step: 1 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.spacingVertical"), type: "range", min: 0, max: 100, step: 1 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.maxWidth", "zero"), type: "range", min: 0, max: 1000, step: 10 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.nodeMinHeight"), type: "range", min: 5, max: 50, step: 1 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.duration"), type: "range", min: 0, max: 1000, step: 10 },
                 ]
             },
@@ -505,6 +507,7 @@ class tocMarkmap {
                 title: this.i18n.t("settingGroup.window"),
                 fields: [
                     { ...getKey("DEFAULT_TOC_OPTIONS.fitRatio"), type: "range", min: 0.5, max: 1, step: 0.01 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.maxInitialScale"), type: "range", min: 0.5, max: 5, step: 0.25 },
                     { ...getKey("WIDTH_PERCENT_WHEN_INIT"), type: "range", min: 20, max: 95, step: 1 },
                     { ...getKey("HEIGHT_PERCENT_WHEN_INIT"), type: "range", min: 20, max: 95, step: 1 },
                     { ...getKey("HEIGHT_PERCENT_WHEN_PIN_TOP"), type: "range", min: 20, max: 95, step: 1 },
@@ -519,6 +522,7 @@ class tocMarkmap {
                     { ...getKey("REMOVE_HEADER_STYLES"), type: "switch" },
                     { ...getKey("DEFAULT_TOC_OPTIONS.zoom"), type: "switch" },
                     { ...getKey("DEFAULT_TOC_OPTIONS.pan"), type: "switch" },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.toggleRecursively"), type: "switch" },
                     { ...getKey("AUTO_UPDATE"), type: "switch" },
                     { ...getKey("CLICK_TO_POSITIONING"), type: "switch" },
                     { ...getKey("DEFAULT_TOC_OPTIONS.autoFit"), type: "switch" },
@@ -864,15 +868,20 @@ class tocMarkmap {
 }
 
 class Downloader {
-    static _toSVG = (plugin, options = {
-        paddingX: plugin.config.DEFAULT_TOC_OPTIONS.paddingX,
-        paddingH: plugin.config.DOWNLOAD_OPTIONS.PADDING_HORIZONTAL,
-        paddingV: plugin.config.DOWNLOAD_OPTIONS.PADDING_VERTICAL,
-        textColor: plugin.config.DOWNLOAD_OPTIONS.TEXT_COLOR,
-        openCircleColor: plugin.config.DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR,
-        removeForeignObject: plugin.config.DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT,
-        removeUselessClasses: plugin.config.DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES,
-    }) => {
+    static _toSVG = (
+        plugin,
+        svg = plugin.entities.svg.cloneNode(true),
+        options = {
+            paddingX: plugin.config.DEFAULT_TOC_OPTIONS.paddingX,
+            paddingH: plugin.config.DOWNLOAD_OPTIONS.PADDING_HORIZONTAL,
+            paddingV: plugin.config.DOWNLOAD_OPTIONS.PADDING_VERTICAL,
+            nodeMinHeight: plugin.config.DEFAULT_TOC_OPTIONS.nodeMinHeight,
+            textColor: plugin.config.DOWNLOAD_OPTIONS.TEXT_COLOR,
+            openCircleColor: plugin.config.DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR,
+            removeForeignObject: plugin.config.DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT,
+            removeUselessClasses: plugin.config.DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES,
+        },
+    ) => {
         const _getRect = svg => {
             const { width, height } = plugin.entities.svg.querySelector("g").getBoundingClientRect()
             const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/)
@@ -958,8 +967,8 @@ class Downloader {
         const removeForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
                 const x = options.paddingX
-                const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4
-                // const y = 16
+                const y = 16  // font size
+                // const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - (options.nodeMinHeight - 16)
                 const text = document.createElement("text")
                 text.setAttribute("x", x)
                 text.setAttribute("y", y)
@@ -978,7 +987,6 @@ class Downloader {
 
         const removeUselessClasses = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
-        const svg = plugin.entities.svg.cloneNode(true)
         fixAttributes(svg)
         fixStyles(svg)
         if (options.removeForeignObject) {
