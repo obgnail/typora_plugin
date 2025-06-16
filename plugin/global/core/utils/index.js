@@ -55,6 +55,9 @@ class utils {
         return _func
     }
 
+    static hasPluginOverride = (plugin, fn) => plugin[fn] !== global.BasePlugin.prototype[fn]
+    static hasCustomPluginOverride = (plugin, fn) => plugin[fn] !== global.BaseCustomPlugin.prototype[fn]
+
     static isUnderMountFolder = path => {
         const mountFolder = PATH.resolve(File.getMountFolder());
         const _path = PATH.resolve(path);

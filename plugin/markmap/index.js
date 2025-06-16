@@ -602,7 +602,9 @@ class tocMarkmap {
                 const fixedName = this.controller.fixedName
                 await this.utils.settings.handleSettings(fixedName, settingObj => {
                     const setting = settingObj[fixedName]
-                    attrs.forEach(attr => delete setting[attr])
+                    if (setting) {
+                        settingObj[fixedName] = this.utils.pickBy(setting, (_, k) => !attrs.includes(k))
+                    }
                     return settingObj
                 })
                 const settings = await this.utils.settings.readBasePluginSettings()
