@@ -35,7 +35,7 @@ class markmapPlugin extends BasePlugin {
             }
         } else if (action === "draw_fence_template" || action === "draw_fence_outline") {
             if (this.fenceMarkmap) {
-                await this.fenceMarkmap.call(action)
+                await this.fenceMarkmap.callback(action)
             }
         }
     }
@@ -90,23 +90,30 @@ class fenceMarkmap {
         this.utils = plugin.utils;
         this.config = plugin.config;
         this.Lib = plugin.Lib;
-        this.instanceMap = new Map(); // {cid: instance}
     }
 
+    hotkey = () => [{ hotkey: this.config.FENCE_HOTKEY, callback: this.callback }]
+
     process = () => {
-        this.utils.diagramParser.register({
+        this.utils.thirdPartyDiagramParser.register({
             lang: this.config.FENCE_LANGUAGE,
             mappingLang: "markdown",
             destroyWhenUpdate: false,
-            renderFunc: this.render,
-            cancelFunc: this.cancel,
-            destroyAllFunc: this.destroyAll,
+            interactiveMode: this.config.INTERACTIVE_MODE,
+            checkSelector: ".plugin-fence-markmap-svg",
+            wrapElement: '<svg class="plugin-fence-markmap-svg"></svg>',
+            lazyLoadFunc: this.controller.lazyLoad,
+            beforeRenderFunc: this.beforeRender,
+            setStyleFunc: this.setStyle,
+            createFunc: this.create,
+            updateFunc: this.update,
+            destroyFunc: this.destroy,
+            beforeExportToNative: null,
+            beforeExportToHTML: null,
             extraStyleGetter: null,
-            interactiveMode: this.config.INTERACTIVE_MODE
-        });
+            versionGetter: this.getVersion,
+        })
     }
-
-    call = async action => this.callback(action)
 
     callback = type => {
         const backQuote = "```"
@@ -117,83 +124,43 @@ class fenceMarkmap {
         this.utils.insertText(null, md)
     }
 
-    hotkey = () => [{ hotkey: this.config.FENCE_HOTKEY, callback: this.callback }]
-
-    render = async (cid, content, $pre) => {
-        if (!this.Lib.Markmap) {
-            await this.controller.lazyLoad()
-        }
-        const ops = this._getOptions(content)
-        const { root } = this.Lib.transformer.transform(content)
-        if (this.instanceMap.has(cid)) {
-            this._updateSVG($pre, ops)
-            const instance = this.instanceMap.get(cid)
-            const options = this.controller.assignOptions(ops, instance.options)
-            instance.setData(root, options)
-            await instance.fit()
-        } else {
-            const svg = this._attachSVG($pre, ops)
-            const options = this.controller.assignOptions(ops)
-            const instance = this.Lib.Markmap.create(svg[0], options, root)
-            this.instanceMap.set(cid, instance)
-            this._fit(cid)
-        }
-    }
-
-    cancel = cid => {
-        const instance = this.instanceMap.get(cid);
-        if (instance) {
-            instance.destroy();
-            this.instanceMap.delete(cid);
-        }
-    }
-
-    destroyAll = () => {
-        for (const instance of this.instanceMap.values()) {
-            instance.destroy();
-        }
-        this.instanceMap.clear();
-    }
-
-    _getOptions = content => {
+    // Get options in fence front-matter
+    beforeRender = (cid, content) => {
         const defaultOptions = this.config.DEFAULT_FENCE_OPTIONS || {}
         const { yamlObject } = this.utils.splitFrontMatter(content)
         if (!yamlObject) {
             return defaultOptions
         }
-        const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap")
-        const fenceOptions = attr ? yamlObject[attr] : yamlObject
+        const key = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap")
+        const fenceOptions = key ? yamlObject[key] : yamlObject
         return { ...defaultOptions, ...fenceOptions }
     }
 
-    _attachSVG = ($pre, options) => {
-        const svg = this._updateSVG($pre, options)
-        $pre.find(".md-diagram-panel-preview").html(svg)
-        return svg
-    }
-
-    _updateSVG = ($pre, options) => {
-        let svg = $pre.find(".plugin-fence-markmap-svg")
-        if (svg.length === 0) {
-            svg = $('<svg class="plugin-fence-markmap-svg"></svg>')
-        }
+    setStyle = ($pre, $wrap, content, ops) => {
         const panelWidth = $pre.find(".md-diagram-panel").css("width")
-        svg.css({
+        $wrap.css({
             width: parseFloat(panelWidth) - 10 + "px",
-            height: options.height || this.config.DEFAULT_FENCE_HEIGHT,
-            "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+            height: ops.height || this.config.DEFAULT_FENCE_HEIGHT,
+            "background-color": ops.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
         })
-        return svg
     }
 
-    _fit = cid => {
-        setTimeout(() => {
-            const instance = this.instanceMap.get(cid)
-            if (instance) {
-                instance.fit()
-            }
-        }, 200)
+    create = ($wrap, content, ops) => {
+        const { root } = this.Lib.transformer.transform(content)
+        const options = this.controller.assignOptions(ops)
+        return this.Lib.Markmap.create($wrap[0], options, root)
     }
+
+    update = async ($wrap, content, instance, ops) => {
+        const { root } = this.Lib.transformer.transform(content)
+        const options = this.controller.assignOptions(ops, instance.options)
+        instance.setData(root, options)
+        await instance.fit()
+    }
+
+    destroy = instance => instance.destroy()
+
+    getVersion = () => this.Lib.transformerVersions["markmap-lib"]
 }
 
 class tocMarkmap {
@@ -474,12 +441,6 @@ class tocMarkmap {
     }
 
     callback = () => this.utils.isShow(this.entities.modal) ? this._onButtonClick("close") : this.draw()
-
-    call = async action => {
-        if (action === "draw_toc") {
-            await this.draw()
-        }
-    }
 
     close = () => {
         this.entities.modal.style = "";

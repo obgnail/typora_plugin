@@ -19,8 +19,8 @@ class thirdPartyDiagramParser {
      * @param {string} checkSelector: Selector to check if the target Element exists under the current fence.
      * @param {string|function($pre):string} wrapElement: If the target Element does not exist, create it.
      * @param {function(): Promise<null>} lazyLoadFunc: Lazy load third-party resources.
-     * @param {function(cid, content, $pre): Promise} setStyleFunc: Set styles.
-     * @param {function(cid, content, $pre): Promise} beforeRenderFunc: Execute before rendering.
+     * @param {function(cid, content, $pre)} beforeRenderFunc: Execute before rendering.
+     * @param {function(cid, content, $pre, meta)} setStyleFunc: Set styles.
      * @param {function($wrap, string, meta): instance} createFunc: Create a diagram instance, passing in the target Element and the content of the fence.
      * @param {function($wrap, string, instance, meta): instance} updateFunc: Update the diagram instance when the content is updated.
      * @param {function(Object): null} destroyFunc: Destroy the diagram instance, passing in the diagram instance.
@@ -31,21 +31,23 @@ class thirdPartyDiagramParser {
      */
     register = ({
                     lang, mappingLang = "", destroyWhenUpdate, interactiveMode = true, checkSelector,
-                    wrapElement, lazyLoadFunc, setStyleFunc, beforeRenderFunc, createFunc, updateFunc, destroyFunc,
-                    beforeExportToNative, beforeExportToHTML, extraStyleGetter, versionGetter
+                    wrapElement, lazyLoadFunc, beforeRenderFunc, setStyleFunc, createFunc,
+                    updateFunc, destroyFunc, beforeExportToNative, beforeExportToHTML, extraStyleGetter,
+                    versionGetter,
                 }) => {
         lang = lang.toLowerCase();
         lazyLoadFunc = this.utils.once(lazyLoadFunc);
         const settingMsg = null;
         this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg,
-            checkSelector, wrapElement, lazyLoadFunc, setStyleFunc, beforeRenderFunc, createFunc, updateFunc, destroyFunc,
-            beforeExportToNative, beforeExportToHTML, versionGetter, instanceMap: new Map(),
-        });
+            checkSelector, wrapElement, lazyLoadFunc, beforeRenderFunc, setStyleFunc,
+            createFunc, updateFunc, destroyFunc, beforeExportToNative, beforeExportToHTML,
+            versionGetter, instanceMap: new Map(),
+        })
         this.utils.diagramParser.register({
             lang, mappingLang, destroyWhenUpdate, extraStyleGetter, interactiveMode,
             renderFunc: this.render, cancelFunc: this.cancel, destroyAllFunc: this.destroyAll,
-        });
+        })
     }
 
     unregister = lang => {
@@ -60,17 +62,21 @@ class thirdPartyDiagramParser {
         await parser.lazyLoadFunc()
         const $wrap = this.getWrap(parser, $pre)
         try {
+            const meta = parser.beforeRenderFunc
+                ? parser.beforeRenderFunc(cid, content, $pre)
+                : undefined
             if (parser.setStyleFunc) {
-                await parser.setStyleFunc($pre, $wrap, content)
+                parser.setStyleFunc($pre, $wrap, content, meta)
             }
-            const meta = parser.beforeRenderFunc ? await parser.beforeRenderFunc(cid, content, $pre) : undefined
             let instance = this.createOrUpdate(parser, cid, content, $wrap, lang, meta)
-            // Why not use `await this.createOrUpdate` instead of `isPromise`?
-            // Answer: Some parsers' createFunc might preempt the element, causing a race condition if await is used.
+            // Q: Why not use `await this.createOrUpdate` instead of `isPromise`?
+            // A: Some parsers' createFunc might preempt the element, causing a race condition if await is used.
             if (this.utils.isPromise(instance)) {
                 instance = await instance
             }
-            instance && parser.instanceMap.set(cid, instance)
+            if (instance) {
+                parser.instanceMap.set(cid, instance)
+            }
         } catch (e) {
             e.stack += this.getSettingMsg(parser)
             this.utils.diagramParser.throwParseError(null, e)
@@ -83,7 +89,9 @@ class thirdPartyDiagramParser {
             const newInstance = parser.updateFunc($wrap, content, oldInstance, meta);
             return newInstance || oldInstance
         } else {
-            oldInstance && this.cancel(cid, lang);
+            if (oldInstance) {
+                this.cancel(cid, lang)
+            }
             return parser.createFunc($wrap, content, meta);
         }
     }
@@ -91,26 +99,28 @@ class thirdPartyDiagramParser {
     getSettingMsg = parser => {
         if (!parser.settingMsg) {
             const settings = {
-                "language": parser.lang,
-                "mappingLanguage": parser.mappingLang,
-                "diagramVersion": (parser.versionGetter && parser.versionGetter()) || "unknown",
-                "interactiveMode": parser.interactiveMode,
-                "destroyWhenUpdate": parser.destroyWhenUpdate,
-                "containerElement": parser.wrapElement,
+                language: parser.lang,
+                mappingLanguage: parser.mappingLang,
+                diagramVersion: (parser.versionGetter && parser.versionGetter()) || "Unknown",
+                interactiveMode: parser.interactiveMode,
+                destroyWhenUpdate: parser.destroyWhenUpdate,
+                containerElement: parser.wrapElement,
             }
             const msg = Object.entries(settings).map(([k, v]) => `    ${k}: ${v}`).join("\n")
-            parser.settingMsg = `\n\ndiagram parser settings:\n${msg}`
+            parser.settingMsg = `\n\nDiagram Parser Settings:\n${msg}`
         }
         return parser.settingMsg
     }
 
     getWrap = (parser, $pre) => {
-        let $wrap = $pre.find(parser.checkSelector);
+        let $wrap = $pre.find(parser.checkSelector)
         if ($wrap.length === 0) {
-            const wrap = (parser.wrapElement instanceof Function) ? parser.wrapElement($pre) : parser.wrapElement
-            $wrap = $(wrap);
+            const wrap = (parser.wrapElement instanceof Function)
+                ? parser.wrapElement($pre)
+                : parser.wrapElement
+            $wrap = $(wrap)
+            $pre.find(".md-diagram-panel-preview").html($wrap)
         }
-        $pre.find(".md-diagram-panel-preview").html($wrap);
         return $wrap
     }
 
@@ -119,14 +129,18 @@ class thirdPartyDiagramParser {
         if (!parser) return;
         const instance = parser.instanceMap.get(cid);
         if (!instance) return;
-        parser.destroyFunc && parser.destroyFunc(instance);
+        if (parser.destroyFunc) {
+            parser.destroyFunc(instance)
+        }
         parser.instanceMap.delete(cid);
     }
 
     destroyAll = () => {
         for (const parser of this.parsers.values()) {
             for (const instance of parser.instanceMap.values()) {
-                parser.destroyFunc && parser.destroyFunc(instance);
+                if (parser.destroyFunc) {
+                    parser.destroyFunc(instance)
+                }
             }
             parser.instanceMap.clear();
         }

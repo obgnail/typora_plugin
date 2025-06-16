@@ -12,18 +12,19 @@ class abcPlugin extends BaseCustomPlugin {
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-notation-content",
             wrapElement: '<div class="plugin-notation-content"></div>',
+            lazyLoadFunc: this.lazyLoad,
+            beforeRenderFunc: null,
             setStyleFunc: parser.STYLE_SETTER_SIMPLE({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
                 "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR
             }),
-            lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: null,
             beforeExportToNative: null,
             beforeExportToHTML: null,
             extraStyleGetter: null,
-            versionGetter: this.versionGetter,
+            versionGetter: this.getVersion,
         })
     }
 
@@ -31,7 +32,7 @@ class abcPlugin extends BaseCustomPlugin {
         this.ABCJS.renderAbc($wrap[0], content, this.config.VISUAL_OPTIONS)
     }
 
-    versionGetter = () => this.ABCJS && this.ABCJS.signature
+    getVersion = () => this.ABCJS && this.ABCJS.signature
 
     lazyLoad = () => this.ABCJS = require("./abcjs-basic-min.js")
 }

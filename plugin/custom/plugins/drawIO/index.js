@@ -14,18 +14,19 @@ class drawIOPlugin extends BaseCustomPlugin {
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-drawio-content",
             wrapElement: '<div class="plugin-drawio-content"></div>',
+            lazyLoadFunc: this.lazyLoad,
+            beforeRenderFunc: null,
             setStyleFunc: parser.STYLE_SETTER({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
                 "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
             }),
-            lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: null,
             beforeExportToNative: null,
             beforeExportToHTML: this.beforeExportToHTML,
             extraStyleGetter: null,
-            versionGetter: this.versionGetter,
+            versionGetter: this.getVersion,
         })
     }
 
@@ -109,7 +110,7 @@ class drawIOPlugin extends BaseCustomPlugin {
         }
     }
 
-    versionGetter = () => "24.8.9"
+    getVersion = () => "24.8.9"
 }
 
 module.exports = {

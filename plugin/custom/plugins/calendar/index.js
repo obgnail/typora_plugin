@@ -12,18 +12,19 @@ class calendarPlugin extends BaseCustomPlugin {
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-calender-content",
             wrapElement: '<div class="plugin-calender-content"></div>',
+            lazyLoadFunc: this.lazyLoad,
+            beforeRenderFunc: null,
             setStyleFunc: parser.STYLE_SETTER({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
                 "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR
             }),
-            lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: this.destroy,
             beforeExportToNative: null,
             beforeExportToHTML: null,
             extraStyleGetter: null,
-            versionGetter: this.versionGetter,
+            versionGetter: this.getVersion,
         })
     }
 
@@ -41,7 +42,7 @@ class calendarPlugin extends BaseCustomPlugin {
         instance.destroy()
     }
 
-    versionGetter = () => "2.1.3"
+    getVersion = () => "2.1.3"
 
     lazyLoad = () => {
         this.utils.insertStyleFile("plugin-calendar-style", "./plugin/custom/plugins/calendar/toastui-calendar.min.css")
