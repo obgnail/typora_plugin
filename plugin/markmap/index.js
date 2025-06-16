@@ -119,40 +119,24 @@ class fenceMarkmap {
 
     hotkey = () => [{ hotkey: this.config.FENCE_HOTKEY, callback: this.callback }]
 
-    getFrontMatter = content => {
-        const fenceOptions = this.config.DEFAULT_FENCE_OPTIONS || {};
-        const { yamlObject } = this.utils.splitFrontMatter(content);
-        if (!yamlObject) return fenceOptions;
-
-        const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
-        const options = attr ? yamlObject[attr] : yamlObject;
-        return Object.assign({}, fenceOptions, options);
-    }
-
-    createSvg = ($pre, options) => {
-        let svg = $pre.find(".plugin-fence-markmap-svg");
-        if (svg.length === 0) {
-            svg = $('<svg class="plugin-fence-markmap-svg"></svg>');
-        }
-        svg.css({
-            width: parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            height: options.height || this.config.DEFAULT_FENCE_HEIGHT,
-            "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
-        });
-        $pre.find(".md-diagram-panel-preview").html(svg);
-        return svg
-    }
-
     render = async (cid, content, $pre) => {
         if (!this.Lib.Markmap) {
-            await this.controller.lazyLoad();
+            await this.controller.lazyLoad()
         }
-        const options = this.getFrontMatter(content);
-        const svg = this.createSvg($pre, options);
+        const ops = this._getOptions(content)
+        const { root } = this.Lib.transformer.transform(content)
         if (this.instanceMap.has(cid)) {
-            await this.update(cid, content, options);
+            this._updateSVG($pre, ops)
+            const instance = this.instanceMap.get(cid)
+            const options = this.controller.assignOptions(ops, instance.options)
+            instance.setData(root, options)
+            await instance.fit()
         } else {
-            await this.create(cid, svg, content, options);
+            const svg = this._attachSVG($pre, ops)
+            const options = this.controller.assignOptions(ops)
+            const instance = this.Lib.Markmap.create(svg[0], options, root)
+            this.instanceMap.set(cid, instance)
+            this._fit(cid)
         }
     }
 
@@ -162,35 +146,53 @@ class fenceMarkmap {
             instance.destroy();
             this.instanceMap.delete(cid);
         }
-    };
+    }
 
     destroyAll = () => {
         for (const instance of this.instanceMap.values()) {
             instance.destroy();
         }
         this.instanceMap.clear();
-    };
+    }
 
-    create = async (cid, svg, md, options) => {
-        const { root } = this.Lib.transformer.transform(md);
-        options = this.controller.assignOptions(options);
-        const instance = this.Lib.Markmap.create(svg[0], options, root);
-        this.instanceMap.set(cid, instance);
+    _getOptions = content => {
+        const defaultOptions = this.config.DEFAULT_FENCE_OPTIONS || {}
+        const { yamlObject } = this.utils.splitFrontMatter(content)
+        if (!yamlObject) {
+            return defaultOptions
+        }
+        const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap")
+        const fenceOptions = attr ? yamlObject[attr] : yamlObject
+        return { ...defaultOptions, ...fenceOptions }
+    }
+
+    _attachSVG = ($pre, options) => {
+        const svg = this._updateSVG($pre, options)
+        $pre.find(".md-diagram-panel-preview").html(svg)
+        return svg
+    }
+
+    _updateSVG = ($pre, options) => {
+        let svg = $pre.find(".plugin-fence-markmap-svg")
+        if (svg.length === 0) {
+            svg = $('<svg class="plugin-fence-markmap-svg"></svg>')
+        }
+        const panelWidth = $pre.find(".md-diagram-panel").css("width")
+        svg.css({
+            width: parseFloat(panelWidth) - 10 + "px",
+            height: options.height || this.config.DEFAULT_FENCE_HEIGHT,
+            "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+        })
+        return svg
+    }
+
+    _fit = cid => {
         setTimeout(() => {
-            const instance = this.instanceMap.get(cid);
+            const instance = this.instanceMap.get(cid)
             if (instance) {
                 instance.fit()
             }
-        }, 200);
-    }
-
-    update = async (cid, md, options) => {
-        const instance = this.instanceMap.get(cid);
-        const { root } = this.Lib.transformer.transform(md);
-        options = this.controller.assignOptions(options, instance.options);
-        instance.setOptions(options);
-        instance.setData(root);
-        await instance.fit();
+        }, 200)
     }
 }
 
