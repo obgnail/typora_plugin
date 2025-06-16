@@ -69,15 +69,15 @@ class markmapPlugin extends BasePlugin {
     lazyLoad = async () => {
         if (this.Lib.Markmap) return
 
-        const { Transformer, builtInPlugins, transformerVersions } = require("./resource/markmap-lib.js")
-        const markmap = require("./resource/markmap-view.js")
-        const transformer = new Transformer(builtInPlugins)
-        Object.assign(this.Lib, markmap, { transformer, Transformer, builtInPlugins, transformerVersions })
+        const { Transformer, transformerVersions, markmap } = require("./resource/markmap.min.js")
+        const transformer = new Transformer()
+        Object.assign(this.Lib, markmap, { transformer, Transformer, transformerVersions })
 
         const { styles, scripts } = transformer.getAssets()
-        styles[0].data.href = this.utils.joinPath("./plugin/markmap/resource/katex.min.css")
-        styles[1].data.href = this.utils.joinPath("./plugin/markmap/resource/default.min.css")
-        scripts[1].data.src = this.utils.joinPath("./plugin/markmap/resource/webfontloader.js")
+        const getPath = file => this.utils.joinPath("./plugin/markmap/resource/", file)
+        styles[0].data.href = getPath("katex.min.css")
+        styles[1].data.href = getPath("default.min.css")
+        scripts[1].data.src = getPath("webfontloader.js")
 
         await markmap.loadCSS(styles)
         await markmap.loadJS(scripts, { getMarkmap: () => markmap })
