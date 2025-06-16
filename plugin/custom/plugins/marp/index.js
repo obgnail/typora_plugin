@@ -14,15 +14,16 @@ class marpPlugin extends BaseCustomPlugin {
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-marp-content",
             wrapElement: '<div class="plugin-marp-content"></div>',
-            setStyleFunc: null,
             lazyLoadFunc: this.lazyLoad,
+            beforeRenderFunc: null,
+            setStyleFunc: null,
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: this.destroy,
             beforeExportToNative: null,
             beforeExportToHTML: null,
             extraStyleGetter: null,
-            versionGetter: this.versionGetter,
+            versionGetter: this.getVersion,
         })
     }
 
@@ -36,7 +37,7 @@ class marpPlugin extends BaseCustomPlugin {
 
     destroy = shadowRoot => shadowRoot.innerHTML = ""
 
-    versionGetter = () => "marp-core@3.9.0"
+    getVersion = () => "marp-core@3.9.0"
 
     lazyLoad = () => this.marpPkg = require("./marp.min.js")
 }

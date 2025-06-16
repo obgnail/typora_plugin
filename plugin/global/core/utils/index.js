@@ -55,6 +55,9 @@ class utils {
         return _func
     }
 
+    static hasPluginOverride = (plugin, fn) => plugin[fn] !== global.BasePlugin.prototype[fn]
+    static hasCustomPluginOverride = (plugin, fn) => plugin[fn] !== global.BaseCustomPlugin.prototype[fn]
+
     static isUnderMountFolder = path => {
         const mountFolder = PATH.resolve(File.getMountFolder());
         const _path = PATH.resolve(path);
@@ -453,12 +456,6 @@ class utils {
         set: (obj, key, val) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey] = val),
         push: (obj, key, item) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].push(item)),
         removeIndex: (obj, key, idx) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].splice(idx, 1)),
-        remove: (obj, key, val) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => {
-            const idx = obj[lastKey].indexOf(val)
-            if (idx !== -1) {
-                return obj[lastKey].splice(idx, 1)
-            }
-        }),
     }
 
     ////////////////////////////// business file operation //////////////////////////////

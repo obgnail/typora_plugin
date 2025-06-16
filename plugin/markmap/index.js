@@ -1,6 +1,6 @@
 class markmapPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.MarkmapLib = {};
+        this.Lib = {};
         this.tocMarkmap = this.config.ENABLE_TOC_MARKMAP ? new tocMarkmap(this) : null;
         this.fenceMarkmap = this.config.ENABLE_FENCE_MARKMAP ? new fenceMarkmap(this) : null;
     }
@@ -35,7 +35,7 @@ class markmapPlugin extends BasePlugin {
             }
         } else if (action === "draw_fence_template" || action === "draw_fence_outline") {
             if (this.fenceMarkmap) {
-                await this.fenceMarkmap.call(action)
+                await this.fenceMarkmap.callback(action)
             }
         }
     }
@@ -59,25 +59,26 @@ class markmapPlugin extends BasePlugin {
         }
     }
 
-    assignOptions = (update, old) => {
-        const attrs = ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX", "autoFit"]
-        const update_ = this.utils.pick(update, attrs)
-        const options = this.MarkmapLib.deriveOptions({ ...old, ...update })
-        return Object.assign(options, update_)
+    assignOptions = (update, origin) => {
+        const options = this.Lib.deriveOptions({ ...origin, ...update })
+        // `autoFit` and `toggleRecursively` are deleted after calling deriveOptions
+        options.autoFit = update.autoFit
+        options.toggleRecursively = update.toggleRecursively
+        return options
     }
 
     lazyLoad = async () => {
-        if (this.MarkmapLib.Markmap) return
+        if (this.Lib.Markmap) return
 
-        const { Transformer, builtInPlugins, transformerVersions } = require("./resource/markmap-lib.js")
-        const markmap = require("./resource/markmap-view.js")
-        const transformer = new Transformer(builtInPlugins)
-        Object.assign(this.MarkmapLib, markmap, { transformer, Transformer, builtInPlugins, transformerVersions })
+        const { Transformer, transformerVersions, markmap } = require("./resource/markmap.min.js")
+        const transformer = new Transformer()
+        Object.assign(this.Lib, markmap, { transformer, Transformer, transformerVersions })
 
         const { styles, scripts } = transformer.getAssets()
-        styles[0].data.href = this.utils.joinPath("./plugin/markmap/resource/katex.min.css")
-        styles[1].data.href = this.utils.joinPath("./plugin/markmap/resource/default.min.css")
-        scripts[1].data.src = this.utils.joinPath("./plugin/markmap/resource/webfontloader.js")
+        const getPath = file => this.utils.joinPath("./plugin/markmap/resource/", file)
+        styles[0].data.href = getPath("katex.min.css")
+        styles[1].data.href = getPath("default.min.css")
+        scripts[1].data.src = getPath("webfontloader.js")
 
         await markmap.loadCSS(styles)
         await markmap.loadJS(scripts, { getMarkmap: () => markmap })
@@ -89,24 +90,31 @@ class fenceMarkmap {
         this.controller = plugin;
         this.utils = plugin.utils;
         this.config = plugin.config;
-        this.MarkmapLib = plugin.MarkmapLib;
-        this.instanceMap = new Map(); // {cid: instance}
+        this.Lib = plugin.Lib;
     }
 
+    hotkey = () => [{ hotkey: this.config.FENCE_HOTKEY, callback: this.callback }]
+
     process = () => {
-        this.utils.diagramParser.register({
+        this.utils.thirdPartyDiagramParser.register({
             lang: this.config.FENCE_LANGUAGE,
             mappingLang: "markdown",
             destroyWhenUpdate: false,
-            renderFunc: this.render,
-            cancelFunc: this.cancel,
-            destroyAllFunc: this.destroyAll,
+            interactiveMode: this.config.INTERACTIVE_MODE,
+            checkSelector: ".plugin-fence-markmap-svg",
+            wrapElement: '<svg class="plugin-fence-markmap-svg"></svg>',
+            lazyLoadFunc: this.controller.lazyLoad,
+            beforeRenderFunc: this.beforeRender,
+            setStyleFunc: this.setStyle,
+            createFunc: this.create,
+            updateFunc: this.update,
+            destroyFunc: this.destroy,
+            beforeExportToNative: null,
+            beforeExportToHTML: null,
             extraStyleGetter: null,
-            interactiveMode: this.config.INTERACTIVE_MODE
-        });
+            versionGetter: this.getVersion,
+        })
     }
-
-    call = async action => this.callback(action)
 
     callback = type => {
         const backQuote = "```"
@@ -117,81 +125,43 @@ class fenceMarkmap {
         this.utils.insertText(null, md)
     }
 
-    hotkey = () => [{ hotkey: this.config.FENCE_HOTKEY, callback: this.callback }]
-
-    getFrontMatter = content => {
-        const fenceOptions = this.config.DEFAULT_FENCE_OPTIONS || {};
-        const { yamlObject } = this.utils.splitFrontMatter(content);
-        if (!yamlObject) return fenceOptions;
-
-        const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
-        const options = attr ? yamlObject[attr] : yamlObject;
-        return Object.assign({}, fenceOptions, options);
+    // Get options in fence front-matter
+    beforeRender = (cid, content) => {
+        const defaultOptions = this.config.DEFAULT_FENCE_OPTIONS || {}
+        const { yamlObject } = this.utils.splitFrontMatter(content)
+        if (!yamlObject) {
+            return defaultOptions
+        }
+        const key = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap")
+        const fenceOptions = key ? yamlObject[key] : yamlObject
+        return { ...defaultOptions, ...fenceOptions }
     }
 
-    createSvg = ($pre, options) => {
-        let svg = $pre.find(".plugin-fence-markmap-svg");
-        if (svg.length === 0) {
-            svg = $('<svg class="plugin-fence-markmap-svg"></svg>');
-        }
-        svg.css({
-            width: parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            height: options.height || this.config.DEFAULT_FENCE_HEIGHT,
-            "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
-        });
-        $pre.find(".md-diagram-panel-preview").html(svg);
-        return svg
+    setStyle = ($pre, $wrap, content, ops) => {
+        const panelWidth = $pre.find(".md-diagram-panel").css("width")
+        $wrap.css({
+            width: parseFloat(panelWidth) - 10 + "px",
+            height: ops.height || this.config.DEFAULT_FENCE_HEIGHT,
+            "background-color": ops.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+        })
     }
 
-    render = async (cid, content, $pre) => {
-        if (!this.MarkmapLib.Markmap) {
-            await this.controller.lazyLoad();
-        }
-        const options = this.getFrontMatter(content);
-        const svg = this.createSvg($pre, options);
-        if (this.instanceMap.has(cid)) {
-            await this.update(cid, content, options);
-        } else {
-            await this.create(cid, svg, content, options);
-        }
+    create = ($wrap, content, ops) => {
+        const { root } = this.Lib.transformer.transform(content)
+        const options = this.controller.assignOptions(ops)
+        return this.Lib.Markmap.create($wrap[0], options, root)
     }
 
-    cancel = cid => {
-        const instance = this.instanceMap.get(cid);
-        if (instance) {
-            instance.destroy();
-            this.instanceMap.delete(cid);
-        }
-    };
-
-    destroyAll = () => {
-        for (const instance of this.instanceMap.values()) {
-            instance.destroy();
-        }
-        this.instanceMap.clear();
-    };
-
-    create = async (cid, svg, md, options) => {
-        const { root } = this.MarkmapLib.transformer.transform(md);
-        options = this.controller.assignOptions(options);
-        const instance = this.MarkmapLib.Markmap.create(svg[0], options, root);
-        this.instanceMap.set(cid, instance);
-        setTimeout(() => {
-            const instance = this.instanceMap.get(cid);
-            if (instance) {
-                instance.fit()
-            }
-        }, 200);
+    update = async ($wrap, content, instance, ops) => {
+        const { root } = this.Lib.transformer.transform(content)
+        const options = this.controller.assignOptions(ops, instance.options)
+        instance.setData(root, options)
+        await instance.fit()
     }
 
-    update = async (cid, md, options) => {
-        const instance = this.instanceMap.get(cid);
-        const { root } = this.MarkmapLib.transformer.transform(md);
-        options = this.controller.assignOptions(options, instance.options);
-        instance.setOptions(options);
-        instance.setData(root);
-        await instance.fit();
-    }
+    destroy = instance => instance.destroy()
+
+    getVersion = () => this.Lib.transformerVersions["markmap-lib"]
 }
 
 class tocMarkmap {
@@ -200,7 +170,7 @@ class tocMarkmap {
         this.utils = plugin.utils;
         this.i18n = plugin.i18n;
         this.config = plugin.config;
-        this.MarkmapLib = plugin.MarkmapLib;
+        this.Lib = plugin.Lib;
     }
 
     html = () => `
@@ -473,12 +443,6 @@ class tocMarkmap {
 
     callback = () => this.utils.isShow(this.entities.modal) ? this._onButtonClick("close") : this.draw()
 
-    call = async action => {
-        if (action === "draw_toc") {
-            await this.draw()
-        }
-    }
-
     close = () => {
         this.entities.modal.style = "";
         this.utils.hide(this.entities.modal);
@@ -535,6 +499,7 @@ class tocMarkmap {
                     { ...getKey("DEFAULT_TOC_OPTIONS.spacingHorizontal"), type: "range", min: 0, max: 200, step: 1 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.spacingVertical"), type: "range", min: 0, max: 100, step: 1 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.maxWidth", "zero"), type: "range", min: 0, max: 1000, step: 10 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.nodeMinHeight"), type: "range", min: 5, max: 50, step: 1 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.duration"), type: "range", min: 0, max: 1000, step: 10 },
                 ]
             },
@@ -542,6 +507,7 @@ class tocMarkmap {
                 title: this.i18n.t("settingGroup.window"),
                 fields: [
                     { ...getKey("DEFAULT_TOC_OPTIONS.fitRatio"), type: "range", min: 0.5, max: 1, step: 0.01 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.maxInitialScale"), type: "range", min: 0.5, max: 5, step: 0.25 },
                     { ...getKey("WIDTH_PERCENT_WHEN_INIT"), type: "range", min: 20, max: 95, step: 1 },
                     { ...getKey("HEIGHT_PERCENT_WHEN_INIT"), type: "range", min: 20, max: 95, step: 1 },
                     { ...getKey("HEIGHT_PERCENT_WHEN_PIN_TOP"), type: "range", min: 20, max: 95, step: 1 },
@@ -556,6 +522,7 @@ class tocMarkmap {
                     { ...getKey("REMOVE_HEADER_STYLES"), type: "switch" },
                     { ...getKey("DEFAULT_TOC_OPTIONS.zoom"), type: "switch" },
                     { ...getKey("DEFAULT_TOC_OPTIONS.pan"), type: "switch" },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.toggleRecursively"), type: "switch" },
                     { ...getKey("AUTO_UPDATE"), type: "switch" },
                     { ...getKey("CLICK_TO_POSITIONING"), type: "switch" },
                     { ...getKey("DEFAULT_TOC_OPTIONS.autoFit"), type: "switch" },
@@ -602,7 +569,9 @@ class tocMarkmap {
                 const fixedName = this.controller.fixedName
                 await this.utils.settings.handleSettings(fixedName, settingObj => {
                     const setting = settingObj[fixedName]
-                    attrs.forEach(attr => delete setting[attr])
+                    if (setting) {
+                        settingObj[fixedName] = this.utils.pickBy(setting, (_, k) => !attrs.includes(k))
+                    }
                     return settingObj
                 })
                 const settings = await this.utils.settings.readBasePluginSettings()
@@ -618,7 +587,7 @@ class tocMarkmap {
         if (response === 1) {
             result.DEFAULT_TOC_OPTIONS.color = str2Arr(result.DEFAULT_TOC_OPTIONS.color)
             Object.entries(result).forEach(([k, v]) => this.config[k] = v)
-            await this.redraw(this.markmap.options)
+            await this.draw()
             await this.utils.settings.saveSettings(this.controller.fixedName, result)
         }
     }
@@ -776,60 +745,36 @@ class tocMarkmap {
         this._setFullScreenIcon(false);
     }
 
-    redraw = async options => {
-        this.markmap.destroy();
-        const md = this.controller.getToc();
-        await this._create(md, options);
-    }
+    draw = async (fit = true) => {
+        const md = this.controller.getToc()
+        if (md === undefined) return
 
-    draw = async (fit = true, options = null) => {
-        const md = this.controller.getToc();
-        if (md !== undefined) {
-            await this._draw(md, fit, options);
+        this.utils.show(this.entities.modal)
+
+        const hasInstance = Boolean(this.markmap)
+        if (!hasInstance) {
+            this._initModalRect()
+            await this.controller.lazyLoad()
+        }
+
+        const options = this.controller.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.markmap && this.markmap.options)
+        this.transformContext = this.Lib.transformer.transform(md)
+        const { root } = this.transformContext
+
+        if (!hasInstance) {
+            this.markmap = this.Lib.Markmap.create(this.entities.svg, options, root)
+            return
+        }
+        if (this.config.AUTO_UPDATE) {
+            this._setFold(root)
+            this.markmap.setData(root, options)
+            if (fit) {
+                await this.markmap.fit()
+            }
         }
     }
 
     isShow = () => this.utils.isShow(this.entities.modal)
-
-    _draw = async (md, fit = true, options) => {
-        this.utils.show(this.entities.modal)
-        if (this.markmap) {
-            if (this.config.AUTO_UPDATE) {
-                await this._update(md, fit)
-            }
-        } else {
-            this._initModalRect()
-            await this.controller.lazyLoad()
-            await this._create(md, options)
-        }
-    }
-
-    _create = async (md, options) => {
-        options = this.controller.assignOptions(this.config.DEFAULT_TOC_OPTIONS, options);
-        this.transformContext = this.MarkmapLib.transformer.transform(md);
-        this.markmap = this.MarkmapLib.Markmap.create(this.entities.svg, options, this.transformContext.root);
-    }
-
-    _update = async (md, fit = true) => {
-        this.transformContext = this.MarkmapLib.transformer.transform(md);
-        const { root } = this.transformContext;
-        this._setFold(root);
-        this.markmap.setData(root);
-        if (fit) {
-            await this.markmap.fit();
-        }
-    }
-
-    _initModalRect = () => {
-        const { left, width, height } = this.entities.content.getBoundingClientRect();
-        const { WIDTH_PERCENT_WHEN_INIT: w, HEIGHT_PERCENT_WHEN_INIT: h } = this.config;
-        const l = (100 - w) / 2;
-        Object.assign(this.entities.modal.style, {
-            left: `${left + width * l / 100}px`,
-            width: `${width * w / 100}px`,
-            height: `${height * h / 100}px`
-        });
-    }
 
     _setFold = newRoot => {
         if (!this.config.KEEP_FOLD_STATE_WHEN_UPDATE) return
@@ -884,6 +829,15 @@ class tocMarkmap {
         await this[action](act)
     }
 
+    _initModalRect = () => {
+        const { top: t, left: l, width: w, height: h } = this.entities.content.getBoundingClientRect()
+        const { WIDTH_PERCENT_WHEN_INIT: wRatio, HEIGHT_PERCENT_WHEN_INIT: hRatio } = this.config
+        const height = h * hRatio / 100
+        const width = w * wRatio / 100
+        const left = l + (w - width) / 2
+        this._setModalRect({ top: t, height, width, left })
+    }
+
     _setModalRect = rect => {
         if (!rect) return;
         const { left, top, height, width } = rect;
@@ -914,15 +868,20 @@ class tocMarkmap {
 }
 
 class Downloader {
-    static _toSVG = (plugin, options = {
-        paddingX: plugin.config.DEFAULT_TOC_OPTIONS.paddingX,
-        paddingH: plugin.config.DOWNLOAD_OPTIONS.PADDING_HORIZONTAL,
-        paddingV: plugin.config.DOWNLOAD_OPTIONS.PADDING_VERTICAL,
-        textColor: plugin.config.DOWNLOAD_OPTIONS.TEXT_COLOR,
-        openCircleColor: plugin.config.DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR,
-        removeForeignObject: plugin.config.DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT,
-        removeUselessClasses: plugin.config.DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES,
-    }) => {
+    static _toSVG = (
+        plugin,
+        svg = plugin.entities.svg.cloneNode(true),
+        options = {
+            paddingX: plugin.config.DEFAULT_TOC_OPTIONS.paddingX,
+            paddingH: plugin.config.DOWNLOAD_OPTIONS.PADDING_HORIZONTAL,
+            paddingV: plugin.config.DOWNLOAD_OPTIONS.PADDING_VERTICAL,
+            nodeMinHeight: plugin.config.DEFAULT_TOC_OPTIONS.nodeMinHeight,
+            textColor: plugin.config.DOWNLOAD_OPTIONS.TEXT_COLOR,
+            openCircleColor: plugin.config.DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR,
+            removeForeignObject: plugin.config.DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT,
+            removeUselessClasses: plugin.config.DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES,
+        },
+    ) => {
         const _getRect = svg => {
             const { width, height } = plugin.entities.svg.querySelector("g").getBoundingClientRect()
             const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/)
@@ -1008,8 +967,8 @@ class Downloader {
         const removeForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
                 const x = options.paddingX
-                const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4
-                // const y = 16
+                const y = 16  // font size
+                // const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - (options.nodeMinHeight - 16)
                 const text = document.createElement("text")
                 text.setAttribute("x", x)
                 text.setAttribute("y", y)
@@ -1028,7 +987,6 @@ class Downloader {
 
         const removeUselessClasses = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
-        const svg = plugin.entities.svg.cloneNode(true)
         fixAttributes(svg)
         fixStyles(svg)
         if (options.removeForeignObject) {
@@ -1169,7 +1127,7 @@ class Downloader {
 </html>`
 
         const run = title => {
-            const { transformer } = plugin.MarkmapLib
+            const { transformer } = plugin.Lib
             const { root, features } = plugin.transformContext
             const { styles, scripts } = transformer.getUsedAssets(features)
             const styleElements = handleStyles(styles)

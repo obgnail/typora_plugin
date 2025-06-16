@@ -26,7 +26,7 @@ customElements.define("fast-form", class extends HTMLElement {
         this.form.innerHTML = this._fillForm(schema)
     }
 
-    // type: set/push/remove/removeIndex
+    // type: set/push/removeIndex
     _dispatchEvent(key, value, type = "set") {
         const customEvent = new CustomEvent("CRUD", { detail: { key, value, type } })
         this.dispatchEvent(customEvent)
@@ -124,10 +124,9 @@ customElements.define("fast-form", class extends HTMLElement {
                 that.utils.notification.show(that.i18n.t("global", "success.add"))
             }
         }).on("click", ".table-edit", async function () {
-            const btn = this
-            const trEl = btn.closest("tr")
+            const trEl = this.closest("tr")
             const tableEl = trEl.closest(".table")
-            const idx = [...tableEl.querySelectorAll("tbody tr")].findIndex(e => e === trEl)
+            const idx = [...tableEl.querySelectorAll("tbody tr")].indexOf(trEl)
             const key = tableEl.dataset.key
             const rowValue = that.options.data[key][idx]
             const targetBox = that.options.schema.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
@@ -143,11 +142,10 @@ customElements.define("fast-form", class extends HTMLElement {
                 that.utils.notification.show(that.i18n.t("global", "success.edit"))
             }
         }).on("click", ".table-delete", function () {
-            const btn = this
-            const trEl = btn.closest("tr")
+            const trEl = this.closest("tr")
             const tableEl = trEl.closest(".table")
-            const idx = [...tableEl.querySelectorAll("tbody tr")].findIndex(e => e === trEl)
-            that._dispatchEvent(tableEl.dataset.key, Number(idx), "removeIndex")
+            const idx = [...tableEl.querySelectorAll("tbody tr")].indexOf(trEl)
+            that._dispatchEvent(tableEl.dataset.key, idx, "removeIndex")
             trEl.remove()
             that.utils.notification.show(that.i18n.t("global", "success.deleted"))
         }).on("click", ".object-confirm", function () {
@@ -175,13 +173,13 @@ customElements.define("fast-form", class extends HTMLElement {
             that._dispatchAction(icon.dataset.action)
         }).on("click", ".array-item-delete", function () {
             const itemEl = this.parentElement
-            const valueEl = this.previousElementSibling
-            const displayEl = this.closest(".array")
-            that._dispatchEvent(displayEl.dataset.key, valueEl.textContent, "remove")
+            const arrayEl = this.closest(".array")
+            const idx = [...arrayEl.children].indexOf(itemEl)
+            that._dispatchEvent(arrayEl.dataset.key, idx, "removeIndex")
             itemEl.remove()
         }).on("click", ".array-item-add", function () {
             const addEl = this
-            const inputEl = this.previousElementSibling
+            const inputEl = addEl.previousElementSibling
             that.utils.hide(addEl)
             that.utils.show(inputEl)
             inputEl.focus()

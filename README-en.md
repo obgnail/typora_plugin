@@ -72,10 +72,11 @@
 | 53   | ripgrep                 | Search files using ripgrep                                | ×                  |
 | 54   | article_uploader        | One-click upload blog to supported platforms              | ×                  |
 | 55   | sortableOutline         | Drag & drop outline to rearrange                          | ×                  |
-| 56   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
-| 57   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
-| 58   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
-| 59   | json_rpc                | External control of Typora (advanced)                     | ×                  |
+| 56   | cursor_history          | Cursor History                                            | ×                  |
+| 57   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
+| 58   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
+| 59   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
+| 60   | json_rpc                | External control of Typora (advanced)                     | ×                  |
 
 
 **Respect all user choices**. Any plugin or feature in this project can be permanently enabled/disabled.
@@ -649,6 +650,13 @@ Typora comes with ripgrep. This plugin supports using the built-in ripgrep to se
 > To use this plugin, you need to be familiar with the ripgrep tool. This plugin is disabled by default and needs to be manually enabled.
 
 ### sortableOutline：Drag & drop outline to rearrange
+
+> This plugin is disabled by default and needs to be manually enabled.
+
+### cursor_history：Cursor History
+
+- hotkey for the previous cursor: alt+←
+- hotkey for the next cursor: alt+→
 
 > This plugin is disabled by default and needs to be manually enabled.
 

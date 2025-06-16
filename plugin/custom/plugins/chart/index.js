@@ -12,18 +12,19 @@ class chartPlugin extends BaseCustomPlugin {
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-chart-content",
             wrapElement: '<div class="plugin-chart-content"><canvas></canvas></div>',
+            lazyLoadFunc: this.lazyLoad,
+            beforeRenderFunc: null,
             setStyleFunc: parser.STYLE_SETTER({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
                 "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR
             }),
-            lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: this.destroy,
             beforeExportToNative: null,
             beforeExportToHTML: this.beforeExportToHTML,
             extraStyleGetter: null,
-            versionGetter: this.versionGetter,
+            versionGetter: this.getVersion,
         })
     }
 
@@ -53,7 +54,7 @@ class chartPlugin extends BaseCustomPlugin {
         $(preview).html(img)
     }
 
-    versionGetter = () => this.ChartPkg && this.ChartPkg.version
+    getVersion = () => this.ChartPkg && this.ChartPkg.version
 
     lazyLoad = () => this.ChartPkg = require("./chart.min.js")
 }

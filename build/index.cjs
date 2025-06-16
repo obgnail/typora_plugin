@@ -22,15 +22,19 @@ const buildTasks = [
         outfile: "../plugin/md_padding/md-padding.min.js",
     },
     {
-      entryPoints: ["aes-ecb.cjs"],
-      outfile: "../plugin/cipher/aes-ecb.min.js",
+        entryPoints: ["aes-ecb.cjs"],
+        outfile: "../plugin/cipher/aes-ecb.min.js",
+    },
+    {
+        entryPoints: ["markmap.mjs"],
+        outfile: "../plugin/markmap/resource/markmap.min.js",
     },
     {
         entryPoints: ["abc.mjs"],
         outfile: "../plugin/custom/plugins/abc/abcjs-basic-min.js",
     },
     {
-      entryPoints: ["marp.mjs"],
+        entryPoints: ["marp.mjs"],
         outfile: "../plugin/custom/plugins/marp/marp.min.js",
     },
     {

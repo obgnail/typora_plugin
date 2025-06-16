@@ -49,18 +49,19 @@ class wavedromPlugin extends BaseCustomPlugin {
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-wavedrom-content",
             wrapElement: () => `<div class="plugin-wavedrom-content" id="${this.prefix + ++idx}"></div>`,
+            lazyLoadFunc: this.lazyLoad,
+            beforeRenderFunc: null,
             setStyleFunc: parser.STYLE_SETTER({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
                 "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR
             }),
-            lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: null,
             beforeExportToNative: null,
             beforeExportToHTML: null,
             extraStyleGetter: null,
-            versionGetter: this.versionGetter,
+            versionGetter: this.getVersion,
         })
     }
 
@@ -72,7 +73,7 @@ class wavedromPlugin extends BaseCustomPlugin {
         this.wavedromPkg.renderWaveForm(index, waveJson, this.prefix, notFirstSignal)
     }
 
-    versionGetter = () => this.wavedromPkg && this.wavedromPkg.version
+    getVersion = () => this.wavedromPkg && this.wavedromPkg.version
 
     lazyLoad = () => {
         this.wavedromPkg = require("./wavedrom.min.js")
