@@ -98,7 +98,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
         const funcMap = {
             close: () => this.callback(),
-            refresh: () => this.checkLint(),
+            refresh: () => {
+                this.checkLint()
+                this.utils.notification.show(this.i18n._t("global", "success.refresh"))
+            },
             detailAll: () => _getDetail(this.fixInfos),
             detailSingle: infoIdx => _getDetail([this.fixInfos[infoIdx]]),
             fixAll: () => this.fixLint(),

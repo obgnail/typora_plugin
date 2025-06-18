@@ -40,7 +40,10 @@ class markmapPlugin extends BasePlugin {
         }
     }
 
-    getToc = (fixSkip = this.config.FIX_SKIPPED_LEVEL_HEADERS, removeStyles = this.config.REMOVE_HEADER_STYLES) => {
+    getToc = (
+        fixSkip = this.config.FIX_SKIPPED_LEVEL_HEADERS,
+        removeStyles = this.config.REMOVE_HEADER_STYLES,
+    ) => {
         const tree = this.utils.getTocTree(removeStyles)
         const getHeaders = (node, ret, indent) => {
             const head = "#".repeat(fixSkip ? indent : node.depth)
@@ -68,7 +71,7 @@ class markmapPlugin extends BasePlugin {
     }
 
     lazyLoad = async () => {
-        if (this.Lib.Markmap) return
+        if (this.Lib.transformerVersions) return
 
         const { Transformer, transformerVersions, markmap } = require("./resource/markmap.min.js")
         const transformer = new Transformer()
@@ -117,12 +120,13 @@ class fenceMarkmap {
     }
 
     callback = type => {
+        const empty = "# empty"
         const backQuote = "```"
-        const frontMatter = `---\nmarkmap:\n  zoom: false\n  pan: false\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n\n`
-        const md = type === "draw_fence_template"
+        const frontMatter = `---\nmarkmap:\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n\n`
+        const fence = type === "draw_fence_template"
             ? this.config.FENCE_TEMPLATE
-            : `${backQuote}${this.config.FENCE_LANGUAGE}\n${frontMatter}${this.controller.getToc() || "# empty"}\n${backQuote}`
-        this.utils.insertText(null, md)
+            : `${backQuote}${this.config.FENCE_LANGUAGE}\n${frontMatter}${this.controller.getToc() || empty}\n${backQuote}`
+        this.utils.insertText(null, fence)
     }
 
     // Get options in fence front-matter
@@ -193,17 +197,17 @@ class tocMarkmap {
                     <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg>
                 </div>
             </div>
-            <div class="plugin-markmap-grip grip-up plugin-common-hidden"></div>
+            <div class="plugin-markmap-grip grip-top plugin-common-hidden"></div>
         </div>
     `
 
     hotkey = () => [{ hotkey: this.config.TOC_HOTKEY, callback: this.callback }]
 
     prepare = () => {
-        this.markmap = null;
-        this.transformContext = null;
-        this._fixConfig();
+        this._fixConfig()
 
+        this.mm = null
+        this.transformContext = null;
         this.modalOriginRect = null;
         this.contentOriginRect = null;
         this.pinUtils = {
@@ -215,28 +219,32 @@ class tocMarkmap {
                 this.contentOriginRect = this.entities.content.getBoundingClientRect();
             }
         }
-
         this.entities = {
             content: this.utils.entities.eContent,
             modal: document.querySelector("#plugin-markmap"),
             header: document.querySelector("#plugin-markmap .plugin-markmap-header"),
-            gripUp: document.querySelector("#plugin-markmap .plugin-markmap-grip.grip-up"),
+            gripTop: document.querySelector("#plugin-markmap .plugin-markmap-grip.grip-top"),
             gripRight: document.querySelector("#plugin-markmap .plugin-markmap-grip.grip-right"),
             svg: document.querySelector("#plugin-markmap-svg"),
+            move: document.querySelector('.plugin-markmap-icon[action="move"]'),
             resize: document.querySelector('.plugin-markmap-icon[action="resize"]'),
             fullScreen: document.querySelector('.plugin-markmap-icon[action="expand"]'),
-            move: document.querySelector('.plugin-markmap-icon[action="move"]'),
+            penetrateMouse: document.querySelector('.plugin-markmap-icon[action="penetrateMouse"]'),
         }
     }
 
     process = () => {
         const onEvent = () => {
-            const { eventHub } = this.utils;
-            const { content, modal } = this.entities;
-            eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.isShow() && this.draw(this.config.AUTO_FIT_WHEN_UPDATE));
-            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.markmap && this._onButtonClick("close"));
-            content.addEventListener("transitionend", ev => (ev.target === content) && this.isInSpecialState() && this.fit());
-            modal.addEventListener("transitionend", ev => (ev.target === modal) && this.fit());
+            const { eventHub } = this.utils
+            const { modal } = this.entities
+            const setModalWidth = () => modal.classList.contains("noBoxShadow") && this.fit()
+
+            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this._doAction("close"))
+            eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.utils.isShow(modal) && this.draw(this.config.AUTO_FIT_WHEN_UPDATE))
+            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, setModalWidth)
+            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, setModalWidth)
+
+            modal.addEventListener("transitionend", ev => (ev.target === modal) && this.fit())
         }
         const onDrag = () => {
             const hint = "ty-hint"
@@ -244,7 +252,6 @@ class tocMarkmap {
             const onMouseDown = () => {
                 this.entities.move.removeAttribute(hint)
                 this._cleanTransition()
-                this._waitUnpin()
             }
             const onMouseUp = () => {
                 this.entities.move.setAttribute(hint, value)
@@ -253,98 +260,86 @@ class tocMarkmap {
             this.utils.dragFixedModal(this.entities.move, this.entities.modal, false, onMouseDown, null, onMouseUp)
         }
         const onResize = () => {
-            const getModalMinHeight = () => {
-                return this.entities.header.firstElementChild.getBoundingClientRect().height
-            }
-            const getModalMinWidth = () => {
-                const { marginLeft } = document.defaultView.getComputedStyle(this.entities.header);
-                const headerWidth = this.entities.header.getBoundingClientRect().width;
-                return parseFloat(marginLeft) + headerWidth
-            }
+            const { minHeight, minWidth } = window.getComputedStyle(this.entities.modal)
+            const modalMinHeight = parseFloat(minHeight) || 90
+            const modalMinWidth = parseFloat(minWidth) || 90
             const onMouseUp = () => {
-                this._rollbackTransition();
-                if (this.config.AUTO_FIT_WHEN_RESIZE) {
-                    this.fit()
-                }
+                this._rollbackTransition()
+                this.fit()
             }
 
-            const resizeWhenFree = () => {
-                let deltaHeight = 0;
-                let deltaWidth = 0;
+            const whenUnpin = () => {
+                let deltaHeight = 0
+                let deltaWidth = 0
                 const onMouseDown = (startX, startY, startWidth, startHeight) => {
-                    this._cleanTransition();
-                    deltaHeight = getModalMinHeight() - startHeight;
-                    deltaWidth = getModalMinWidth() - startWidth;
+                    this._cleanTransition()
+                    deltaHeight = modalMinHeight - startHeight
+                    deltaWidth = modalMinWidth - startWidth
                 }
                 const onMouseMove = (deltaX, deltaY) => {
-                    deltaY = Math.max(deltaY, deltaHeight);
-                    deltaX = Math.max(deltaX, deltaWidth);
+                    deltaY = Math.max(deltaY, deltaHeight)
+                    deltaX = Math.max(deltaX, deltaWidth)
                     return { deltaX, deltaY }
                 }
-                const onMouseUp = async () => {
-                    this._rollbackTransition();
-                    await this._waitUnpin();
-                    this._setFullScreenIcon(false, this.config.AUTO_FIT_WHEN_RESIZE);
-                }
-                this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp);
+                this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp)
             }
 
-            const resizeWhenPinTop = () => {
-                let contentStartTop = 0;
-                let contentMinTop = 0;
+            const whenPinTop = () => {
+                let contentStartTop = 0
+                let contentMinTop = 0
                 const onMouseDown = () => {
-                    this._cleanTransition();
-                    contentStartTop = this.entities.content.getBoundingClientRect().top;
-                    contentMinTop = getModalMinHeight() + this.entities.header.getBoundingClientRect().top;
+                    this._cleanTransition()
+                    contentStartTop = this.entities.content.getBoundingClientRect().top
+                    contentMinTop = modalMinHeight + this.entities.header.getBoundingClientRect().top
                 }
                 const onMouseMove = (deltaX, deltaY) => {
-                    let newContentTop = contentStartTop + deltaY;
+                    let newContentTop = contentStartTop + deltaY
                     if (newContentTop < contentMinTop) {
-                        newContentTop = contentMinTop;
-                        deltaY = contentMinTop - contentStartTop;
+                        newContentTop = contentMinTop
+                        deltaY = contentMinTop - contentStartTop
                     }
-                    this.entities.content.style.top = newContentTop + "px";
+                    this.entities.content.style.top = newContentTop + "px"
                     return { deltaX, deltaY }
                 }
-                this.utils.resizeFixedModal(this.entities.gripUp, this.entities.modal, false, true, onMouseDown, onMouseMove, onMouseUp);
+                this.utils.resizeFixedModal(this.entities.gripTop, this.entities.modal, false, true, onMouseDown, onMouseMove, onMouseUp)
             }
 
-            const resizeWhenPinRight = () => {
-                let contentStartRight = 0;
-                let contentStartWidth = 0;
-                let modalStartLeft = 0;
-                let contentMaxRight = 0;
+            const whenPinRight = () => {
+                let contentStartRight = 0
+                let contentStartWidth = 0
+                let modalStartLeft = 0
+                let contentMaxRight = 0
                 const onMouseDown = () => {
-                    this._cleanTransition();
-                    const contentRect = this.entities.content.getBoundingClientRect();
-                    contentStartRight = contentRect.right;
-                    contentStartWidth = contentRect.width;
+                    this._cleanTransition()
+                    const contentRect = this.entities.content.getBoundingClientRect()
+                    contentStartRight = contentRect.right
+                    contentStartWidth = contentRect.width
 
-                    const modalRect = this.entities.modal.getBoundingClientRect();
-                    modalStartLeft = modalRect.left;
-                    contentMaxRight = modalRect.right - getModalMinWidth();
+                    const modalRect = this.entities.modal.getBoundingClientRect()
+                    modalStartLeft = modalRect.left
+                    contentMaxRight = modalRect.right - modalMinWidth
                 }
                 const onMouseMove = (deltaX, deltaY) => {
-                    deltaX = -deltaX;
-                    deltaY = -deltaY;
-                    let newContentRight = contentStartRight - deltaX;
+                    deltaX = -deltaX
+                    deltaY = -deltaY
+                    let newContentRight = contentStartRight - deltaX
                     if (newContentRight > contentMaxRight) {
-                        deltaX = contentStartRight - contentMaxRight;
+                        deltaX = contentStartRight - contentMaxRight
                     }
-                    this.entities.content.style.width = contentStartWidth - deltaX + "px";
-                    this.entities.modal.style.left = modalStartLeft - deltaX + "px";
+                    this.entities.content.style.width = contentStartWidth - deltaX + "px"
+                    this.entities.modal.style.left = modalStartLeft - deltaX + "px"
                     return { deltaX, deltaY }
                 }
-                this.utils.resizeFixedModal(this.entities.gripRight, this.entities.modal, true, false, onMouseDown, onMouseMove, onMouseUp);
+                this.utils.resizeFixedModal(this.entities.gripRight, this.entities.modal, true, false, onMouseDown, onMouseMove, onMouseUp)
             }
 
-            resizeWhenFree();      // Resize while freely moving
-            resizeWhenPinTop();    // Resize when pin top
-            resizeWhenPinRight();  // Resize when pin right
+            whenUnpin()
+            whenPinTop()
+            whenPinRight()
         }
         const onToggleSidebar = () => {
             const resetPosition = () => {
-                if (!this.markmap) return;
+                if (!this.mm) return
                 const needResetFullscreen = this.entities.fullScreen.getAttribute("action") === "shrink";
                 if (needResetFullscreen) {
                     this.shrink();
@@ -373,7 +368,7 @@ class tocMarkmap {
                 if (!button) return
                 const action = button.getAttribute("action")
                 if (action !== "move" && this[action]) {
-                    this._onButtonClick(action)
+                    this._doAction(action)
                 }
             })
         }
@@ -386,7 +381,7 @@ class tocMarkmap {
                 if (!list) return;
                 const nodeIdx = list[list.length - 1];
                 let tocIdx = parseInt(nodeIdx - 1); // Markmap node indices start from 1, so subtract 1.
-                if (!this.markmap.state.data.content) {
+                if (!this.mm.state.data.content) {
                     tocIdx--; // If the first node of the markmap is an empty node, subtract 1 again.
                 }
                 const header = headers[tocIdx];
@@ -427,7 +422,7 @@ class tocMarkmap {
                 const attrs = [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "setting", "download", "close"]
                 return this.utils.pick(menuMap, attrs)
             }
-            const callback = ({ key }) => this._onButtonClick(key);
+            const callback = ({ key }) => this._doAction(key);
             this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback);
         }
 
@@ -441,7 +436,7 @@ class tocMarkmap {
         onContextMenu();
     }
 
-    callback = () => this.utils.isShow(this.entities.modal) ? this._onButtonClick("close") : this.draw()
+    callback = () => this.utils.isShow(this.entities.modal) ? this._doAction("close") : this.draw()
 
     close = () => {
         this.entities.modal.style = "";
@@ -449,63 +444,73 @@ class tocMarkmap {
         this.utils.show(this.entities.resize);
         this.entities.modal.classList.remove("noBoxShadow");
         this.entities.fullScreen.setAttribute("action", "expand");
-        this.markmap.destroy();
-        this.markmap = null;
+        this.mm.destroy()
+        this.mm = null
     }
 
-    fit = () => {
-        if (this.markmap) {
-            this.markmap.fit()
+    fit = (dontNotify = true) => {
+        if (!this.mm) return
+        this.mm.fit()
+        if (!dontNotify) {
+            this.utils.notification.show(this.i18n.t("func.fit.ok"))
         }
     }
 
-    penetrateMouse = async () => {
-        const options = this.markmap.options;
+    penetrateMouse = () => {
+        const options = this.mm.options
         options.zoom = !options.zoom;
         options.pan = !options.pan;
         this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan);
     }
 
     setting = async () => {
-        const { color: tocOptionColor } = this.config.DEFAULT_TOC_OPTIONS
+        const storeAttrs = [
+            "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
+            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "AUTO_UPDATE",
+            "CLICK_TO_POSITIONING", "AUTO_FIT_WHEN_UPDATE", "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
+        ]
         const arr2Str = arr => arr.join("_")
         const str2Arr = str => str.split("_")
-        const colorOptions = Object.fromEntries(
-            [...this.config.CANDIDATE_COLOR_SCHEMES, tocOptionColor].map(colorList => {
-                const colors = colorList
-                    .map(color => `<div style="background-color: ${color}; width: 32px; border-radius: 2px;"></div>`)
-                    .join("")
-                const label = `<div style="display: inline-flex; height: 22px;">${colors}</div>`
-                return [arr2Str(colorList), label]
-            })
-        )
 
-        const getKey = (key, tooltip) => ({
-            key,
-            label: this.i18n.t(`$label.${key}`),
-            tooltip: tooltip ? this.i18n.t(`$tooltip.${tooltip}`) : undefined
-        })
-        const schema = [
-            {
-                title: this.i18n.t("settingGroup.color"),
-                fields: [{ ...getKey("DEFAULT_TOC_OPTIONS.color"), type: "radio", options: colorOptions }]
-            },
-            {
-                title: this.i18n.t("settingGroup.chart"),
-                fields: [
-                    { ...getKey("DEFAULT_TOC_OPTIONS.colorFreezeLevel"), type: "range", min: 1, max: 6, step: 1 },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.initialExpandLevel"), type: "range", min: 1, max: 6, step: 1 },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.paddingX"), type: "range", min: 0, max: 100, step: 1 },
+        const getSchema = () => {
+            const pluginEnabled = this.utils.getPlugin("collapse_paragraph")
+
+            const colorOptions = Object.fromEntries(
+                [...this.config.CANDIDATE_COLOR_SCHEMES, this.config.DEFAULT_TOC_OPTIONS.color].map(colorList => {
+                    const colors = colorList
+                        .map(color => `<div style="background-color: ${color}; width: 32px; border-radius: 2px;"></div>`)
+                        .join("")
+                    const label = `<div style="display: inline-flex; height: 22px;">${colors}</div>`
+                    return [arr2Str(colorList), label]
+                })
+            )
+            const getKey = (key, tooltip) => ({
+                key,
+                label: this.i18n.t(`$label.${key}`),
+                tooltip: tooltip ? this.i18n.t(`$tooltip.${tooltip}`) : undefined
+            })
+            const titledBox = (title, ...fields) => ({ title: this.i18n.t(title), fields })
+            const untitledBox = (...fields) => ({ title: undefined, fields })
+            return [
+                titledBox(
+                    "settingGroup.color",
+                    { ...getKey("DEFAULT_TOC_OPTIONS.color"), type: "radio", options: colorOptions },
+                ),
+                titledBox(
+                    "settingGroup.chart",
                     { ...getKey("DEFAULT_TOC_OPTIONS.spacingHorizontal"), type: "range", min: 0, max: 200, step: 1 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.spacingVertical"), type: "range", min: 0, max: 100, step: 1 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.paddingX"), type: "range", min: 0, max: 100, step: 1 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.maxWidth", "zero"), type: "range", min: 0, max: 1000, step: 10 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.nodeMinHeight"), type: "range", min: 5, max: 50, step: 1 },
+                ),
+                untitledBox(
+                    { ...getKey("DEFAULT_TOC_OPTIONS.colorFreezeLevel"), type: "range", min: 1, max: 6, step: 1 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.initialExpandLevel"), type: "range", min: 1, max: 6, step: 1 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.duration"), type: "range", min: 0, max: 1000, step: 10 },
-                ]
-            },
-            {
-                title: this.i18n.t("settingGroup.window"),
-                fields: [
+                ),
+                titledBox(
+                    "settingGroup.window",
                     { ...getKey("DEFAULT_TOC_OPTIONS.fitRatio"), type: "range", min: 0.5, max: 1, step: 0.01 },
                     { ...getKey("DEFAULT_TOC_OPTIONS.maxInitialScale"), type: "range", min: 0.5, max: 5, step: 0.25 },
                     { ...getKey("WIDTH_PERCENT_WHEN_INIT"), type: "range", min: 20, max: 95, step: 1 },
@@ -513,82 +518,96 @@ class tocMarkmap {
                     { ...getKey("HEIGHT_PERCENT_WHEN_PIN_TOP"), type: "range", min: 20, max: 95, step: 1 },
                     { ...getKey("WIDTH_PERCENT_WHEN_PIN_RIGHT"), type: "range", min: 20, max: 95, step: 1 },
                     { ...getKey("POSITIONING_VIEWPORT_HEIGHT", "positioningViewPort"), type: "range", min: 0.1, max: 0.95, step: 0.01 },
-                ]
-            },
-            {
-                title: this.i18n.t("settingGroup.behavior"),
-                fields: [
-                    { ...getKey("FIX_SKIPPED_LEVEL_HEADERS"), type: "switch" },
-                    { ...getKey("REMOVE_HEADER_STYLES"), type: "switch" },
+                ),
+                titledBox(
+                    "settingGroup.interactive",
                     { ...getKey("DEFAULT_TOC_OPTIONS.zoom"), type: "switch" },
                     { ...getKey("DEFAULT_TOC_OPTIONS.pan"), type: "switch" },
                     { ...getKey("DEFAULT_TOC_OPTIONS.toggleRecursively"), type: "switch" },
-                    { ...getKey("AUTO_UPDATE"), type: "switch" },
                     { ...getKey("CLICK_TO_POSITIONING"), type: "switch" },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.autoFit"), type: "switch" },
+                ),
+                titledBox(
+                    "settingGroup.behavior",
+                    { ...getKey("FIX_SKIPPED_LEVEL_HEADERS"), type: "switch" },
+                    { ...getKey("REMOVE_HEADER_STYLES"), type: "switch" },
+                ),
+                untitledBox(
+                    { ...getKey("AUTO_UPDATE"), type: "switch" },
                     { ...getKey("AUTO_FIT_WHEN_UPDATE"), type: "switch" },
-                    { ...getKey("AUTO_FIT_WHEN_RESIZE"), type: "switch" },
                     { ...getKey("KEEP_FOLD_STATE_WHEN_UPDATE"), type: "switch" },
-                    { ...getKey("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "experimental"), type: "switch", disabled: !this.utils.getPlugin("collapse_paragraph") },
-                ]
-            },
-            {
-                title: this.i18n.t("settingGroup.download"),
-                fields: [
-                    { ...getKey("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL"), type: "switch" },
-                    { ...getKey("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES"), type: "switch" },
-                    { ...getKey("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", "removeForeignObj"), type: "switch" },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.autoFit"), type: "switch" },
+                    { ...getKey("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "experimental"), type: "switch", disabled: !pluginEnabled, readonly: pluginEnabled },
+                ),
+                titledBox(
+                    "settingGroup.download",
                     { ...getKey("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG"), type: "switch" },
                     { ...getKey("DOWNLOAD_OPTIONS.SHOW_IN_FINDER"), type: "switch" },
                     { ...getKey("DOWNLOAD_OPTIONS.FOLDER", "tempDir"), type: "text", placeholder: this.utils.tempFolder },
                     { ...getKey("DOWNLOAD_OPTIONS.FILENAME"), type: "text" },
-                    { ...getKey("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL"), type: "number", min: 1, max: 1000, step: 1, unit: this.i18n._t("settings", "$unit.pixel") },
-                    { ...getKey("DOWNLOAD_OPTIONS.PADDING_VERTICAL"), type: "number", min: 1, max: 1000, step: 1, unit: this.i18n._t("settings", "$unit.pixel") },
+                ),
+                untitledBox(
+                    { ...getKey("DOWNLOAD_OPTIONS.IMAGE_SCALE"), type: "number", min: 0.1, step: 0.1 },
+                    { ...getKey("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL"), type: "number", min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") },
+                    { ...getKey("DOWNLOAD_OPTIONS.PADDING_VERTICAL"), type: "number", min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") },
                     { ...getKey("DOWNLOAD_OPTIONS.TEXT_COLOR"), type: "text" },
                     { ...getKey("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR"), type: "text" },
-                    { ...getKey("DOWNLOAD_OPTIONS.BACKGROUND_COLOR"), type: "text" },
-                    { ...getKey("DOWNLOAD_OPTIONS.IMAGE_QUALITY"), type: "range", min: 0.01, max: 1, step: 0.01 },
-                ]
-            },
-            {
-                fields: [{ type: "action", key: "restoreSettings", label: this.i18n._t("settings", "$label.restoreSettings") }]
-            },
-        ]
+                    { ...getKey("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", "pixelImagesOnly"), type: "text" },
+                    { ...getKey("DOWNLOAD_OPTIONS.IMAGE_QUALITY", "pixelImagesOnly"), type: "range", min: 0.01, max: 1, step: 0.01 },
+                ),
+                untitledBox(
+                    { ...getKey("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL"), type: "switch" },
+                    { ...getKey("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES"), type: "switch" },
+                    { ...getKey("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", "removeForeignObj"), type: "switch" },
+                ),
+                untitledBox(
+                    { type: "action", key: "restoreSettings", label: this.i18n._t("settings", "$label.restoreSettings") },
+                ),
+            ]
+        }
 
-        const attrs = [
-            "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
-            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "AUTO_UPDATE",
-            "CLICK_TO_POSITIONING", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_RESIZE", "KEEP_FOLD_STATE_WHEN_UPDATE",
-            "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
-        ]
-        const data = JSON.parse(JSON.stringify(this.utils.pick(this.config, attrs)))
-        data.DEFAULT_TOC_OPTIONS.color = arr2Str(tocOptionColor)
-
-        const action = {
+        const getAction = () => ({
             restoreSettings: async () => {
                 const fixedName = this.controller.fixedName
                 await this.utils.settings.handleSettings(fixedName, settingObj => {
                     const setting = settingObj[fixedName]
                     if (setting) {
-                        settingObj[fixedName] = this.utils.pickBy(setting, (_, k) => !attrs.includes(k))
+                        settingObj[fixedName] = this.utils.pickBy(setting, (_, k) => !storeAttrs.includes(k))
                     }
                     return settingObj
                 })
                 const settings = await this.utils.settings.readBasePluginSettings()
                 this.config = settings[fixedName]
                 this.utils.notification.show(this.i18n._t("global", "success.restore"))
-                this.utils.formDialog.exit()
-                await this.setting()
+                await this.utils.formDialog.updateModal(op => {
+                    op.data = getData()
+                    op.schema = getSchema()
+                })
             },
+        })
+
+        const getData = () => {
+            const obj = this.utils.pick(this.config, storeAttrs)
+            const data = JSON.parse(JSON.stringify(obj))
+            data.DEFAULT_TOC_OPTIONS.color = arr2Str(data.DEFAULT_TOC_OPTIONS.color)
+            return data
         }
 
-        const op = { title: this.i18n.t("func.setting"), schema, data, action }
-        const { response, data: result } = await this.utils.formDialog.modal(op)
-        if (response === 1) {
+        const storeData = async (result) => {
             result.DEFAULT_TOC_OPTIONS.color = str2Arr(result.DEFAULT_TOC_OPTIONS.color)
-            Object.entries(result).forEach(([k, v]) => this.config[k] = v)
-            await this.draw()
+            Object.assign(this.config, result)
             await this.utils.settings.saveSettings(this.controller.fixedName, result)
+        }
+
+        const op = {
+            title: this.i18n.t("func.setting"),
+            schema: getSchema(),
+            data: getData(),
+            action: getAction(),
+        }
+        const { response, data } = await this.utils.formDialog.modal(op)
+        if (response === 1) {
+            await storeData(data)
+            await this.draw()
         }
     }
 
@@ -607,7 +626,7 @@ class tocMarkmap {
                 uuid: this.utils.getUUID(),
                 random: this.utils.randomString(),
                 timestamp: new Date().getTime(),
-                filename: this.utils.getFileName() || "markmap",
+                filename: this.utils.getFileName() || "MARKMAP",
             }
             const name = file.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
             return this.utils.Package.Path.join(folder, name)
@@ -630,119 +649,78 @@ class tocMarkmap {
         if (SHOW_IN_FINDER) {
             this.utils.showInFinder(downloadPath)
         }
-        const msg = this.i18n.t("func.download.ok")
-        this.utils.notification.show(msg)
+        this.utils.notification.show(this.i18n.t("func.download.ok"))
     }
 
     pinTop = async (draw = true) => {
-        this.pinUtils.isPinTop = !this.pinUtils.isPinTop;
+        this.pinUtils.isPinTop = !this.pinUtils.isPinTop
         if (this.pinUtils.isPinTop) {
             if (this.pinUtils.isPinRight) {
-                await this.pinRight(false);
+                await this.pinRight(false)
             }
-            await this.pinUtils.recordRect();
+            await this.pinUtils.recordRect()
         }
 
-        let showFunc, hint, contentTop, modalRect, toggleFunc;
+        let modalRect = this.modalOriginRect
+        let contentTop = this.contentOriginRect.top
         if (this.pinUtils.isPinTop) {
-            toggleFunc = "add";
-            const { top, height, width, left } = this.contentOriginRect;
-            const newHeight = height * this.config.HEIGHT_PERCENT_WHEN_PIN_TOP / 100;
-            modalRect = { left, top, width, height: newHeight };
-            contentTop = top + newHeight;
-            showFunc = "show";
-            hint = this.i18n.t("func.pinRecover")
-        } else {
-            toggleFunc = "remove";
-            modalRect = this.modalOriginRect;
-            contentTop = this.contentOriginRect.top;
-            showFunc = "hide";
-            hint = this.i18n.t("func.pinTop")
+            const { top, height, width, left } = this.contentOriginRect
+            const newHeight = height * this.config.HEIGHT_PERCENT_WHEN_PIN_TOP / 100
+            modalRect = { left, top, width, height: newHeight }
+            contentTop = top + newHeight
         }
-        this._setModalRect(modalRect);
-        this.entities.modal.classList.toggle("pinTop");
-        this.entities.modal.classList[toggleFunc]("noBoxShadow");
-        this.entities.content.style.top = contentTop + "px";
-        this.entities.fullScreen.setAttribute("action", "expand");
-        this.utils[showFunc](this.entities.gripUp);
-        const button = document.querySelector('.plugin-markmap-icon[action="pinTop"]');
-        button.setAttribute("ty-hint", hint);
-        button.classList.toggle("ion-chevron-up", !this.pinUtils.isPinTop);
-        button.classList.toggle("ion-ios7-undo", this.pinUtils.isPinTop);
-        this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinTop);
+
+        this._setModalRect(modalRect)
+        this._setPinStyle("pinTop")
+        this.entities.content.style.top = contentTop + "px"
         if (draw) {
-            await this.draw();
+            await this.draw()
         }
     }
 
     pinRight = async (draw = true) => {
-        this.pinUtils.isPinRight = !this.pinUtils.isPinRight;
+        this.pinUtils.isPinRight = !this.pinUtils.isPinRight
         if (this.pinUtils.isPinRight) {
             if (this.pinUtils.isPinTop) {
-                await this.pinTop(false);
+                await this.pinTop(false)
             }
-            await this.pinUtils.recordRect();
+            await this.pinUtils.recordRect()
         }
 
-        let showFunc, hint, writeWidth, modalRect, contentRight, contentWidth, toggleFunc;
+        let modalRect = this.modalOriginRect
+        let contentRight = ""
+        let contentWidth = ""
+        let writeWidth = ""
         if (this.pinUtils.isPinRight) {
-            toggleFunc = "add";
-            const { top, width, height, right } = this.contentOriginRect;
-            const newWidth = width * this.config.WIDTH_PERCENT_WHEN_PIN_RIGHT / 100;
-            modalRect = { top, height, width: newWidth, left: right - newWidth };
-            contentRight = `${right - newWidth}px`;
-            contentWidth = `${width - newWidth}px`;
-            writeWidth = "initial";
-            showFunc = "show";
-            hint = this.i18n.t("func.pinRecover")
-        } else {
-            toggleFunc = "remove";
-            modalRect = this.modalOriginRect;
-            contentRight = "";
-            contentWidth = "";
-            writeWidth = "";
-            showFunc = "hide";
-            hint = this.i18n.t("func.pinRight")
+            const { top, width, height, right } = this.contentOriginRect
+            const newWidth = width * this.config.WIDTH_PERCENT_WHEN_PIN_RIGHT / 100
+            modalRect = { top, height, width: newWidth, left: right - newWidth }
+            contentRight = right - newWidth + "px"
+            contentWidth = width - newWidth + "px"
+            writeWidth = "initial"
         }
 
-        this._setModalRect(modalRect);
-        this.entities.modal.classList.toggle("pinRight");
-        this.entities.modal.classList[toggleFunc]("noBoxShadow");
-        this.entities.content.style.right = contentRight;
-        this.entities.content.style.width = contentWidth;
-        this.entities.fullScreen.setAttribute("action", "expand");
-        this.utils.entities.eWrite.style.width = writeWidth;
-        this.utils[showFunc](this.entities.gripRight);
-        const button = document.querySelector('.plugin-markmap-icon[action="pinRight"]');
-        button.setAttribute("ty-hint", hint);
-        button.classList.toggle("ion-chevron-right", !this.pinUtils.isPinRight);
-        button.classList.toggle("ion-ios7-undo", this.pinUtils.isPinRight);
-        this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinRight);
+        this._setModalRect(modalRect)
+        this._setPinStyle("pinRight")
+        this.entities.content.style.right = contentRight
+        this.entities.content.style.width = contentWidth
+        this.utils.entities.eWrite.style.width = writeWidth
         if (draw) {
-            await this.draw();
+            await this.draw()
         }
     }
 
-    isInSpecialState = () => ["pinTop", "pinRight", "noBoxShadow"].some(c => this.entities.modal.classList.contains(c))
-
-    toggleToolbar = show => {
-        this.utils.toggleVisible(this.entities.header, !show);
-        this.fit();
-    }
-
-    hideToolbar = () => this.toggleToolbar(false)
-
-    showToolbar = () => this.toggleToolbar(true)
+    hideToolbar = () => this._toggleToolbar(false)
+    showToolbar = () => this._toggleToolbar(true)
 
     expand = () => {
-        this.modalOriginRect = this.entities.modal.getBoundingClientRect();
-        this._setModalRect(this.entities.content.getBoundingClientRect());
-        this._setFullScreenIcon(true);
+        this.modalOriginRect = this.entities.modal.getBoundingClientRect()
+        this._setModalRect(this.entities.content.getBoundingClientRect())
+        this._toggleFullScreen(true)
     }
-
     shrink = () => {
-        this._setModalRect(this.modalOriginRect);
-        this._setFullScreenIcon(false);
+        this._setModalRect(this.modalOriginRect)
+        this._toggleFullScreen(false)
     }
 
     draw = async (fit = true) => {
@@ -751,63 +729,53 @@ class tocMarkmap {
 
         this.utils.show(this.entities.modal)
 
-        const hasInstance = Boolean(this.markmap)
+        const hasInstance = Boolean(this.mm)
         if (!hasInstance) {
             this._initModalRect()
             await this.controller.lazyLoad()
         }
 
-        const options = this.controller.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.markmap && this.markmap.options)
+        const options = this.controller.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm && this.mm.options)
         this.transformContext = this.Lib.transformer.transform(md)
         const { root } = this.transformContext
 
         if (!hasInstance) {
-            this.markmap = this.Lib.Markmap.create(this.entities.svg, options, root)
+            this.mm = this.Lib.Markmap.create(this.entities.svg, options, root)
             return
         }
         if (this.config.AUTO_UPDATE) {
             this._setFold(root)
-            this.markmap.setData(root, options)
+            this.mm.setData(root, options)
             if (fit) {
-                await this.markmap.fit()
+                await this.mm.fit()
             }
         }
     }
 
-    isShow = () => this.utils.isShow(this.entities.modal)
-
     _setFold = newRoot => {
         if (!this.config.KEEP_FOLD_STATE_WHEN_UPDATE) return
 
-        const needFold = new Set()
-        const { data: oldRoot } = this.markmap.state || {}
-
         const preorder = (node, fn, parent) => {
-            fn(node, parent)
+            const parentPath = (parent && parent.__path) || ""
+            node.__path = `${parentPath}\n${node.content}`
+            fn(node)
             for (const child of node.children) {
                 preorder(child, fn, node)
             }
         }
-        const setPath = (node, parent) => {
-            const parentPath = (parent && parent.__path) || ""
-            node.__path = `${parentPath}\n${node.content}`
-        }
-        const getNeed = node => {
-            const { payload, __path } = node
-            if (payload && payload.fold && __path) {
-                needFold.add(__path)
+
+        const needFold = new Set()
+        const { data: oldRoot } = this.mm.state || {}
+        preorder(oldRoot, node => {
+            if (node.payload && node.payload.fold) {
+                needFold.add(node.__path)
             }
-        }
-        const setNeed = node => {
+        })
+        preorder(newRoot, node => {
             if (needFold.has(node.__path)) {
                 node.payload.fold = 1
             }
-        }
-
-        preorder(oldRoot, setPath)
-        preorder(newRoot, setPath)
-        preorder(oldRoot, getNeed)
-        preorder(newRoot, setNeed)
+        })
     }
 
     _fixConfig = () => {
@@ -820,13 +788,19 @@ class tocMarkmap {
         }
     }
 
-    _onButtonClick = async action => {
-        const dont = ["pinTop", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"]
-        if (!dont.includes(action)) {
-            await this._waitUnpin()
+    _doAction = async action => {
+        const dontNeedUnpin = ["pinTop", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"]
+        if (!dontNeedUnpin.includes(action)) {
+            if (this.pinUtils.isPinTop) {
+                await this.pinTop()
+            }
+            if (this.pinUtils.isPinRight) {
+                await this.pinRight()
+            }
         }
-        const act = (action === "pinTop" || action === "pinRight") ? false : undefined
-        await this[action](act)
+        const hasArgActions = ["pinTop", "pinRight", "fit"]
+        const arg = hasArgActions.includes(action) ? false : undefined
+        await this[action](arg)
     }
 
     _initModalRect = () => {
@@ -845,22 +819,41 @@ class tocMarkmap {
         Object.assign(this.entities.modal.style, s);
     }
 
-    _setFullScreenIcon = (fullScreen, autoFit = true) => {
-        this.entities.modal.classList.toggle("noBoxShadow", fullScreen);
-        this.entities.fullScreen.setAttribute("action", fullScreen ? "shrink" : "expand");
-        this.utils.toggleVisible(this.entities.resize, fullScreen);
-        if (autoFit) {
-            this.fit()
+    _setPinStyle = (type = "pinTop") => {
+        const [pinned, cls, act, grip, hint, icon] = type === "pinTop"
+            ? [this.pinUtils.isPinTop, "pinTop", "pinTop", "gripTop", "func.pinTop", "ion-chevron-up"]
+            : [this.pinUtils.isPinRight, "pinRight", "pinRight", "gripRight", "func.pinRight", "ion-chevron-right"]
+
+        this.entities.modal.classList.toggle(cls)
+        this.entities.modal.classList.toggle("noBoxShadow", pinned)
+        this.utils.toggleVisible(this.entities[grip], !pinned)
+        this.utils.toggleVisible(this.entities.resize, pinned)
+        this.utils.toggleVisible(this.entities.move, pinned)
+        this.utils.toggleVisible(this.entities.penetrateMouse, pinned)
+        this.entities.fullScreen.setAttribute("action", "expand")
+
+        if (pinned && this.entities.modal.classList.contains("penetrateMouse")) {
+            this._doAction("penetrateMouse")
         }
+
+        const btn = this.entities.header.querySelector(`[action="${act}"]`)
+        btn.classList.toggle(icon, !pinned)
+        btn.classList.toggle("ion-ios7-undo", pinned)
+        btn.setAttribute("ty-hint", this.i18n.t(pinned ? "func.pinRecover" : hint))
     }
 
-    _waitUnpin = async () => {
-        if (this.pinUtils.isPinTop) {
-            await this.pinTop();
-        }
-        if (this.pinUtils.isPinRight) {
-            await this.pinRight();
-        }
+    _toggleFullScreen = (isFullScreen) => {
+        this.entities.modal.classList.toggle("noBoxShadow", isFullScreen)
+        this.entities.modal.classList.toggle("fullScreen", isFullScreen)
+        this.entities.fullScreen.setAttribute("action", isFullScreen ? "shrink" : "expand")
+        this.utils.toggleVisible(this.entities.resize, isFullScreen)
+        this.utils.toggleVisible(this.entities.move, isFullScreen)
+        this.fit()
+    }
+
+    _toggleToolbar = show => {
+        this.utils.toggleVisible(this.entities.header, !show)
+        this.fit()
     }
 
     _cleanTransition = () => this.entities.modal.style.transition = "none"
@@ -872,10 +865,11 @@ class Downloader {
         plugin,
         svg = plugin.entities.svg.cloneNode(true),
         options = {
+            nodeMinHeight: plugin.config.DEFAULT_TOC_OPTIONS.nodeMinHeight,
             paddingX: plugin.config.DEFAULT_TOC_OPTIONS.paddingX,
             paddingH: plugin.config.DOWNLOAD_OPTIONS.PADDING_HORIZONTAL,
             paddingV: plugin.config.DOWNLOAD_OPTIONS.PADDING_VERTICAL,
-            nodeMinHeight: plugin.config.DEFAULT_TOC_OPTIONS.nodeMinHeight,
+            imageScale: plugin.config.DOWNLOAD_OPTIONS.IMAGE_SCALE,
             textColor: plugin.config.DOWNLOAD_OPTIONS.TEXT_COLOR,
             openCircleColor: plugin.config.DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR,
             removeForeignObject: plugin.config.DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT,
@@ -885,7 +879,9 @@ class Downloader {
         const _getRect = svg => {
             const { width, height } = plugin.entities.svg.querySelector("g").getBoundingClientRect()
             const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/)
-            if (!match || !match.groups || !match.groups.scale) return {}
+            if (!match || !match.groups || !match.groups.scale) {
+                return {}
+            }
             const scale = parseFloat(match.groups.scale)
             const realWidth = parseInt(width / scale)
             const realHeight = parseInt(height / scale)
@@ -900,16 +896,18 @@ class Downloader {
             return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
         }
 
-        const fixAttributes = svg => {
+        const setAttrs = svg => {
             const { width = 100, height = 100, minY = 0 } = _getRect(svg)
-            const { paddingH, paddingV } = options
+            const { paddingH, paddingV, imageScale } = options
             const svgWidth = width + paddingH * 2  // both sides
             const svgHeight = height + paddingV * 2
+            const scaledWidth = svgWidth * imageScale
+            const scaledHeight = svgHeight * imageScale
             svg.removeAttribute("id")
             svg.setAttribute("xmlns", "http://www.w3.org/2000/svg")
             svg.setAttribute("class", "markmap")
-            svg.setAttribute("width", svgWidth)
-            svg.setAttribute("height", svgHeight)
+            svg.setAttribute("width", scaledWidth)
+            svg.setAttribute("height", scaledHeight)
             svg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`)
             svg.querySelector("g").setAttribute("transform", `translate(${paddingH}, ${paddingV})`)
         }
@@ -985,9 +983,11 @@ class Downloader {
             })
         }
 
-        const removeUselessClasses = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
+        const removeUselessClasses = svg => {
+            svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
+        }
 
-        fixAttributes(svg)
+        setAttrs(svg)
         fixStyles(svg)
         if (options.removeForeignObject) {
             removeForeignObject(svg)
@@ -998,11 +998,15 @@ class Downloader {
         return svg
     }
 
-    static _toImage = async (plugin, format, options = {
-        imageQuality: plugin.config.DOWNLOAD_OPTIONS.IMAGE_QUALITY,
-        keepAlphaChannel: plugin.config.DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL,
-        backgroundColor: plugin.config.DOWNLOAD_OPTIONS.BACKGROUND_COLOR,
-    }) => {
+    static _toImage = async (
+        plugin,
+        format,
+        options = {
+            imageQuality: plugin.config.DOWNLOAD_OPTIONS.IMAGE_QUALITY,
+            keepAlphaChannel: plugin.config.DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL,
+            backgroundColor: plugin.config.DOWNLOAD_OPTIONS.BACKGROUND_COLOR,
+        },
+    ) => {
         const svg = this._toSVG(plugin)
         const img = new Image()
         const ok = await new Promise(resolve => {
@@ -1049,7 +1053,9 @@ class Downloader {
         const escapeHtml = text => text.replace(/[&<"]/g, char => ({ '&': '&amp;', '<': '&lt;', '"': '&quot;' })[char]);
         const createTag = (tagName, attributes, content) => {
             const attrList = Object.entries(attributes || {}).map(([key, value]) => {
-                if (value == null || value === false) return ""
+                if (value == null || value === false) {
+                    return ""
+                }
                 const escapedKey = ` ${escapeHtml(key)}`;
                 return value === true ? escapedKey : `${escapedKey}="${escapeHtml(value)}"`;
             })
@@ -1082,7 +1088,7 @@ class Downloader {
             const context = {
                 getMarkmap: () => window.markmap,
                 root: root,
-                options: { ...plugin.markmap.options, ...plugin.config.DEFAULT_TOC_OPTIONS },
+                options: { ...plugin.mm.options, ...plugin.config.DEFAULT_TOC_OPTIONS },
             }
             const createIIFE = (fn, params) => {
                 const args = params.map(arg =>
