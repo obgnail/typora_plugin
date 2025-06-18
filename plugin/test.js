@@ -1,24 +1,26 @@
 class testPlugin extends BasePlugin {
-    exportVar = () => {
-        global.__require__ = require
-        global.__module__ = module
-    }
-
-    oneInstance = () => {
+    singleInstance = () => {
         const objGetter = () => File && File.editor && File.editor.library
         const callback = () => setTimeout(() => ClientCommand.close(), 500)
         this.utils.decorate(objGetter, "openFileInNewWindow", null, callback)
     }
 
-    openDevTools = () => {
+    autoOpenDevTools = () => {
         const { eventHub } = this.utils
         eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => JSBridge.invoke("window.toggleDevTools"))
     }
 
+    updateRequire = () => {
+        global.__require__ = require
+        global.__module__ = module
+        // const Module = require("module")
+        // Module.globalPaths.push(this.utils.joinPath("plugin"))
+    }
+
     process = () => {
-        this.exportVar()
-        this.oneInstance()
-        this.openDevTools()
+        this.singleInstance()
+        this.autoOpenDevTools()
+        this.updateRequire()
     }
 }
 

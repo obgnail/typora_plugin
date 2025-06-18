@@ -1,0 +1,697 @@
+class tocMarkmap {
+    constructor(plugin) {
+        this.plugin = plugin
+        this.utils = plugin.utils
+        this.i18n = plugin.i18n
+        this.config = plugin.config
+        this.Lib = plugin.Lib
+    }
+
+    html = () => `
+        <div id="plugin-markmap" class="plugin-common-modal plugin-common-hidden">
+            <div class="plugin-markmap-wrap">
+                <div class="plugin-markmap-grip grip-right plugin-common-hidden"></div>
+                <div class="plugin-markmap-header">
+                    <div class="plugin-markmap-icon ion-close" action="close" ty-hint="${this.i18n.t('func.close')}"></div>
+                    <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="${this.i18n.t('func.expand')}"></div>
+                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="${this.i18n.t('func.move')}"></div>
+                    <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="${this.i18n.t('func.fit')}"></div>
+                    <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="${this.i18n.t('func.penetrateMouse')}"></div>
+                    <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="${this.i18n.t('func.setting')}"></div>
+                    <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="${this.i18n.t('func.download')}"></div>
+                    <div class="plugin-markmap-icon ion-chevron-up" action="pinTop" ty-hint="${this.i18n.t('func.pinTop')}"></div>
+                    <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="${this.i18n.t('func.pinRight')}"></div>
+                </div>
+                <svg id="plugin-markmap-svg"></svg>
+                <div class="plugin-markmap-icon" action="resize">
+                    <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg>
+                </div>
+            </div>
+            <div class="plugin-markmap-grip grip-top plugin-common-hidden"></div>
+        </div>
+    `
+
+    hotkey = () => [{ hotkey: this.config.TOC_HOTKEY, callback: this.callback }]
+
+    prepare = () => {
+        this._fixConfig()
+
+        this.mm = null
+        this.transformContext = null
+        this.modalOriginRect = null
+        this.contentOriginRect = null
+        this.pinUtils = {
+            isPinTop: false,
+            isPinRight: false,
+            recordRect: async () => {
+                await this.utils.sleep(200)
+                this.modalOriginRect = this.entities.modal.getBoundingClientRect()
+                this.contentOriginRect = this.entities.content.getBoundingClientRect()
+            }
+        }
+        this.entities = {
+            content: this.utils.entities.eContent,
+            modal: document.querySelector("#plugin-markmap"),
+            header: document.querySelector("#plugin-markmap .plugin-markmap-header"),
+            gripTop: document.querySelector("#plugin-markmap .plugin-markmap-grip.grip-top"),
+            gripRight: document.querySelector("#plugin-markmap .plugin-markmap-grip.grip-right"),
+            svg: document.querySelector("#plugin-markmap-svg"),
+            move: document.querySelector('.plugin-markmap-icon[action="move"]'),
+            resize: document.querySelector('.plugin-markmap-icon[action="resize"]'),
+            fullScreen: document.querySelector('.plugin-markmap-icon[action="expand"]'),
+            penetrateMouse: document.querySelector('.plugin-markmap-icon[action="penetrateMouse"]'),
+        }
+    }
+
+    process = () => {
+        const onEvent = () => {
+            const { eventHub } = this.utils
+            const { modal } = this.entities
+            const setModalWidth = () => modal.classList.contains("noBoxShadow") && this.fit()
+            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this._doAction("close"))
+            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, setModalWidth)
+            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, setModalWidth)
+            eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => {
+                if (!this.utils.isShow(modal)) return
+                this.draw()
+                if (this.config.AUTO_FIT_WHEN_UPDATE) {
+                    this.fit()
+                }
+            })
+
+            modal.addEventListener("transitionend", () => this.fit())
+        }
+        const onMove = () => {
+            const attr = "ty-hint"
+            const value = this.entities.move.getAttribute(attr)
+            const onMouseDown = () => {
+                this.entities.move.removeAttribute(attr)
+                this._cleanTransition()
+            }
+            const onMouseUp = () => {
+                this.entities.move.setAttribute(attr, value)
+                this._rollbackTransition()
+            }
+            this.utils.dragFixedModal(this.entities.move, this.entities.modal, false, onMouseDown, null, onMouseUp)
+        }
+        const onResize = () => {
+            const { minHeight, minWidth } = window.getComputedStyle(this.entities.modal)
+            const modalMinHeight = parseFloat(minHeight) || 90
+            const modalMinWidth = parseFloat(minWidth) || 90
+            const onMouseUp = () => {
+                this._rollbackTransition()
+                this.fit()
+            }
+
+            const whenUnpin = () => {
+                let deltaHeight = 0
+                let deltaWidth = 0
+                const onMouseDown = (startX, startY, startWidth, startHeight) => {
+                    this._cleanTransition()
+                    deltaHeight = modalMinHeight - startHeight
+                    deltaWidth = modalMinWidth - startWidth
+                }
+                const onMouseMove = (deltaX, deltaY) => {
+                    deltaY = Math.max(deltaY, deltaHeight)
+                    deltaX = Math.max(deltaX, deltaWidth)
+                    return { deltaX, deltaY }
+                }
+                this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp)
+            }
+
+            const whenPinTop = () => {
+                let contentStartTop = 0
+                let contentMinTop = 0
+                const onMouseDown = () => {
+                    this._cleanTransition()
+                    contentStartTop = this.entities.content.getBoundingClientRect().top
+                    contentMinTop = modalMinHeight + this.entities.header.getBoundingClientRect().top
+                }
+                const onMouseMove = (deltaX, deltaY) => {
+                    let newContentTop = contentStartTop + deltaY
+                    if (newContentTop < contentMinTop) {
+                        newContentTop = contentMinTop
+                        deltaY = contentMinTop - contentStartTop
+                    }
+                    this.entities.content.style.top = newContentTop + "px"
+                    return { deltaX, deltaY }
+                }
+                this.utils.resizeFixedModal(this.entities.gripTop, this.entities.modal, false, true, onMouseDown, onMouseMove, onMouseUp)
+            }
+
+            const whenPinRight = () => {
+                let contentStartRight = 0
+                let contentStartWidth = 0
+                let modalStartLeft = 0
+                let contentMaxRight = 0
+                const onMouseDown = () => {
+                    this._cleanTransition()
+                    const contentRect = this.entities.content.getBoundingClientRect()
+                    contentStartRight = contentRect.right
+                    contentStartWidth = contentRect.width
+
+                    const modalRect = this.entities.modal.getBoundingClientRect()
+                    modalStartLeft = modalRect.left
+                    contentMaxRight = modalRect.right - modalMinWidth
+                }
+                const onMouseMove = (deltaX, deltaY) => {
+                    deltaX = -deltaX
+                    deltaY = -deltaY
+                    let newContentRight = contentStartRight - deltaX
+                    if (newContentRight > contentMaxRight) {
+                        deltaX = contentStartRight - contentMaxRight
+                    }
+                    this.entities.content.style.width = contentStartWidth - deltaX + "px"
+                    this.entities.modal.style.left = modalStartLeft - deltaX + "px"
+                    return { deltaX, deltaY }
+                }
+                this.utils.resizeFixedModal(this.entities.gripRight, this.entities.modal, true, false, onMouseDown, onMouseMove, onMouseUp)
+            }
+
+            whenUnpin()
+            whenPinTop()
+            whenPinRight()
+        }
+        const onToggleSidebar = () => {
+            const resetPosition = () => {
+                if (!this.mm) return
+                const needResetFullscreen = this.entities.fullScreen.getAttribute("action") === "shrink"
+                if (needResetFullscreen) {
+                    this.shrink()
+                    this.expand()
+                }
+                const className = ["pinTop", "pinRight"].find(func => this.entities.modal.classList.contains(func))
+                if (!className) return
+
+                const { width, left, right } = this.entities.content.getBoundingClientRect()
+                let source
+                if (className === "pinTop") {
+                    source = { left: `${left}px`, width: `${width}px` }
+                } else {
+                    const { right: modalRight } = this.entities.modal.getBoundingClientRect()
+                    source = { left: `${right}px`, width: `${modalRight - right}px` }
+                }
+                Object.assign(this.entities.modal.style, source)
+            }
+            const { eventHub } = this.utils
+            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition)
+            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition)
+        }
+        const onHeaderClick = () => {
+            this.entities.header.addEventListener("click", ev => {
+                const button = ev.target.closest(".plugin-markmap-icon")
+                if (!button) return
+                const action = button.getAttribute("action")
+                if (action !== "move" && this[action]) {
+                    this._doAction(action)
+                }
+            })
+        }
+        const onSvgClick = () => {
+            const getCid = node => {
+                if (!node) return
+                const headers = File.editor.nodeMap.toc.headers
+                if (!headers || headers.length === 0) return
+                const list = node.getAttribute("data-path").split(".")
+                if (!list) return
+                const nodeIdx = list[list.length - 1]
+                let tocIdx = parseInt(nodeIdx - 1) // Markmap node indices start from 1, so subtract 1.
+                if (!this.mm.state.data.content) {
+                    tocIdx-- // If the first node of the markmap is an empty node, subtract 1 again.
+                }
+                const header = headers[tocIdx]
+                return header && header.attributes.id
+            }
+            this.entities.svg.addEventListener("click", ev => {
+                ev.preventDefault()
+                ev.stopPropagation()
+                const node = ev.target.closest(".markmap-node")
+                const cid = getCid(node)
+                if (!cid) return
+
+                const circle = ev.target.closest("circle")
+                if (circle) {
+                    if (this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD) {
+                        const head = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`)
+                        const isFold = node.classList.contains("markmap-fold")
+                        this.utils.callPluginFunction("collapse_paragraph", "trigger", head, !isFold)
+                    }
+                } else {
+                    if (this.config.CLICK_TO_POSITIONING) {
+                        const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect()
+                        const height = contentHeight * this.config.POSITIONING_VIEWPORT_HEIGHT + contentTop
+                        const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD
+                        this.utils.scrollByCid(cid, height, true, showHiddenElement)
+                    }
+                }
+            })
+        }
+        const onContextMenu = () => {
+            const fn = ["expand", "shrink", "fit", "download", "setting", "close", "pinTop", "pinRight", "hideToolbar", "showToolbar"]
+            const menuMap = this.i18n.entries(fn, "func.")
+            const showMenu = () => {
+                const fullScreen = this.entities.fullScreen.getAttribute("action")
+                const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar"
+                const attrs = [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "setting", "download", "close"]
+                return this.utils.pick(menuMap, attrs)
+            }
+            const callback = ({ key }) => this._doAction(key)
+            this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback)
+        }
+
+        this.prepare()
+        onEvent()
+        onMove()
+        onResize()
+        onToggleSidebar()
+        onHeaderClick()
+        onSvgClick()
+        onContextMenu()
+    }
+
+    callback = async () => {
+        if (this.utils.isShow(this.entities.modal)) {
+            await this._doAction("close")
+        } else {
+            await this.plugin.lazyLoad()
+            this.utils.show(this.entities.modal)
+            this._initModalRect()
+            await this.draw()
+        }
+    }
+
+    close = () => {
+        this.entities.modal.style = ""
+        this.utils.hide(this.entities.modal)
+        this.utils.show(this.entities.resize)
+        this.entities.modal.classList.remove("noBoxShadow")
+        this.entities.fullScreen.setAttribute("action", "expand")
+        this.mm.destroy()
+        this.mm = null
+    }
+
+    fit = (dontNotify = true) => {
+        if (!this.mm) return
+        this.mm.fit()
+        if (!dontNotify) {
+            this.utils.notification.show(this.i18n.t("func.fit.ok"))
+        }
+    }
+
+    penetrateMouse = () => {
+        const options = this.mm.options
+        options.zoom = !options.zoom
+        options.pan = !options.pan
+        this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan)
+    }
+
+    setting = async () => {
+        const storeAttrs = [
+            "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
+            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES",
+            "CLICK_TO_POSITIONING", "AUTO_FIT_WHEN_UPDATE", "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
+        ]
+        const arr2Str = arr => arr.join("_")
+        const str2Arr = str => str.split("_")
+
+        const getSchema = () => {
+            const pluginEnabled = this.utils.getPlugin("collapse_paragraph")
+            const colorOptions = Object.fromEntries(
+                [...this.config.CANDIDATE_COLOR_SCHEMES, this.config.DEFAULT_TOC_OPTIONS.color].map(colorList => {
+                    const colors = colorList
+                        .map(color => `<div style="background-color: ${color}; width: 32px; border-radius: 2px;"></div>`)
+                        .join("")
+                    const label = `<div style="display: inline-flex; height: 22px;">${colors}</div>`
+                    return [arr2Str(colorList), label]
+                })
+            )
+
+            const field = (key, type, { tooltip, ...args } = {}) => ({
+                key,
+                type,
+                label: this.i18n.t(`$label.${key}`),
+                tooltip: tooltip ? this.i18n.t(`$tooltip.${tooltip}`) : undefined,
+                ...args,
+            })
+            const titledBox = (title, ...fields) => ({ title: this.i18n.t(title), fields })
+            const untitledBox = (...fields) => ({ title: undefined, fields })
+
+            return [
+                titledBox(
+                    "settingGroup.color",
+                    field("DEFAULT_TOC_OPTIONS.color", "radio", { options: colorOptions }),
+                ),
+                titledBox(
+                    "settingGroup.chart",
+                    field("DEFAULT_TOC_OPTIONS.spacingHorizontal", "range", { min: 0, max: 200, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.spacingVertical", "range", { min: 0, max: 100, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.paddingX", "range", { min: 0, max: 100, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.maxWidth", "range", "zero", { min: 0, max: 1000, step: 10 }),
+                    field("DEFAULT_TOC_OPTIONS.nodeMinHeight", "range", { min: 5, max: 50, step: 1 })
+                ),
+                untitledBox(
+                    field("DEFAULT_TOC_OPTIONS.colorFreezeLevel", "range", { min: 1, max: 6, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.initialExpandLevel", "range", { min: 1, max: 6, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.duration", "range", { min: 0, max: 1000, step: 10 }),
+                ),
+                titledBox(
+                    "settingGroup.window",
+                    field("DEFAULT_TOC_OPTIONS.fitRatio", "range", { min: 0.5, max: 1, step: 0.01 }),
+                    field("DEFAULT_TOC_OPTIONS.maxInitialScale", "range", { min: 0.5, max: 5, step: 0.25 }),
+                    field("WIDTH_PERCENT_WHEN_INIT", "range", { min: 20, max: 95, step: 1 }),
+                    field("HEIGHT_PERCENT_WHEN_INIT", "range", { min: 20, max: 95, step: 1 }),
+                    field("HEIGHT_PERCENT_WHEN_PIN_TOP", "range", { min: 20, max: 95, step: 1 }),
+                    field("WIDTH_PERCENT_WHEN_PIN_RIGHT", "range", { min: 20, max: 95, step: 1 }),
+                ),
+                titledBox(
+                    "settingGroup.interactive",
+                    field("DEFAULT_TOC_OPTIONS.zoom", "switch"),
+                    field("DEFAULT_TOC_OPTIONS.pan", "switch"),
+                    field("DEFAULT_TOC_OPTIONS.toggleRecursively", "switch"),
+                    field("CLICK_TO_POSITIONING", "switch"),
+                    field("POSITIONING_VIEWPORT_HEIGHT", "range", {
+                        tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01, dependencies: { CLICK_TO_POSITIONING: true },
+                    }),
+                ),
+                titledBox(
+                    "settingGroup.behavior",
+                    field("FIX_SKIPPED_LEVEL_HEADERS", "switch"),
+                    field("REMOVE_HEADER_STYLES", "switch"),
+                ),
+                untitledBox(
+                    field("AUTO_FIT_WHEN_UPDATE", "switch"),
+                    field("KEEP_FOLD_STATE_WHEN_UPDATE", "switch"),
+                    field("DEFAULT_TOC_OPTIONS.autoFit", "switch"),
+                    field("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "switch", { tooltip: "experimental", disabled: !pluginEnabled, readonly: pluginEnabled }),
+                ),
+                titledBox(
+                    "settingGroup.download",
+                    field("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG", "switch"),
+                    field("DOWNLOAD_OPTIONS.SHOW_IN_FINDER", "switch"),
+                    field("DOWNLOAD_OPTIONS.FOLDER", "text", { tooltip: "tempDir", placeholder: this.utils.tempFolder }),
+                    field("DOWNLOAD_OPTIONS.FILENAME", "text"),
+                ),
+                untitledBox(
+                    field("DOWNLOAD_OPTIONS.IMAGE_SCALE", "number", { min: 0.1, step: 0.1 }),
+                    field("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", "number", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
+                    field("DOWNLOAD_OPTIONS.PADDING_VERTICAL", "number", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
+                    field("DOWNLOAD_OPTIONS.TEXT_COLOR", "text"),
+                    field("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", "text"),
+                    field("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", "text", { tooltip: "pixelImagesOnly" }),
+                    field("DOWNLOAD_OPTIONS.IMAGE_QUALITY", "range", { tooltip: "pixelImagesOnly", min: 0.01, max: 1, step: 0.01 }),
+                ),
+                untitledBox(
+                    field("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL", "switch"),
+                    field("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES", "switch"),
+                    field("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", "switch", { tooltip: "removeForeignObj" }),
+                ),
+                untitledBox(
+                    { type: "action", key: "restoreSettings", label: this.i18n._t("settings", "$label.restoreSettings") },
+                ),
+            ]
+        }
+
+        const getAction = () => ({
+            restoreSettings: async () => {
+                const fixedName = this.plugin.fixedName
+                await this.utils.settings.handleSettings(fixedName, settingObj => {
+                    const setting = settingObj[fixedName]
+                    if (setting) {
+                        settingObj[fixedName] = this.utils.pickBy(setting, (_, k) => !storeAttrs.includes(k))
+                    }
+                    return settingObj
+                })
+                const settings = await this.utils.settings.readBasePluginSettings()
+                this.config = settings[fixedName]
+                this.utils.notification.show(this.i18n._t("global", "success.restore"))
+                await this.utils.formDialog.updateModal(op => {
+                    op.data = getData()
+                    op.schema = getSchema()
+                })
+            },
+        })
+
+        const getData = () => {
+            const obj = this.utils.pick(this.config, storeAttrs)
+            const data = JSON.parse(JSON.stringify(obj))
+            data.DEFAULT_TOC_OPTIONS.color = arr2Str(data.DEFAULT_TOC_OPTIONS.color)
+            return data
+        }
+
+        const storeData = async (result) => {
+            result.DEFAULT_TOC_OPTIONS.color = str2Arr(result.DEFAULT_TOC_OPTIONS.color)
+            Object.assign(this.config, result)
+            await this.utils.settings.saveSettings(this.plugin.fixedName, result)
+        }
+
+        const op = {
+            title: this.i18n.t("func.setting"),
+            schema: getSchema(),
+            data: getData(),
+            action: getAction(),
+        }
+        const { response, data } = await this.utils.formDialog.modal(op)
+        if (response === 1) {
+            await storeData(data)
+            await this.draw()
+        }
+    }
+
+    download = async () => {
+        const { downloader } = require("./downloader.js")
+
+        let {
+            SHOW_PATH_INQUIRY_DIALOG,
+            SHOW_IN_FINDER,
+            FOLDER: folder,
+            FILENAME: file = "{{filename}}.svg",
+        } = this.config.DOWNLOAD_OPTIONS
+        const getDownloadPath = async () => {
+            if (!folder || !(await this.utils.existPath(folder))) {
+                folder = this.utils.tempFolder
+            }
+            const tpl = {
+                uuid: this.utils.getUUID(),
+                random: this.utils.randomString(),
+                timestamp: new Date().getTime(),
+                filename: this.utils.getFileName() || "MARKMAP",
+            }
+            const name = file.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
+            return this.utils.Package.Path.join(folder, name)
+        }
+
+        let downloadPath = await getDownloadPath()
+        if (SHOW_PATH_INQUIRY_DIALOG) {
+            const op = {
+                title: this.i18n.t("func.download"),
+                properties: ["saveFile", "showOverwriteConfirmation"],
+                defaultPath: downloadPath,
+                filters: downloader.getFormats(),
+            }
+            const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", op)
+            if (canceled) return
+            downloadPath = filePath
+        }
+        const ok = await downloader.download(this, downloadPath)
+        if (!ok) return
+        if (SHOW_IN_FINDER) {
+            this.utils.showInFinder(downloadPath)
+        }
+        this.utils.notification.show(this.i18n.t("func.download.ok"))
+    }
+
+    pinTop = async (fit = true) => {
+        this.pinUtils.isPinTop = !this.pinUtils.isPinTop
+        if (this.pinUtils.isPinTop) {
+            if (this.pinUtils.isPinRight) {
+                await this.pinRight(false)
+            }
+            await this.pinUtils.recordRect()
+        }
+
+        let modalRect = this.modalOriginRect
+        let contentTop = this.contentOriginRect.top
+        if (this.pinUtils.isPinTop) {
+            const { top, height, width, left } = this.contentOriginRect
+            const newHeight = height * this.config.HEIGHT_PERCENT_WHEN_PIN_TOP / 100
+            modalRect = { left, top, width, height: newHeight }
+            contentTop = top + newHeight
+        }
+
+        this._setModalRect(modalRect)
+        this._setPinStyle("pinTop")
+        this.entities.content.style.top = contentTop + "px"
+        if (fit) {
+            await this.fit()
+        }
+    }
+
+    pinRight = async (fit = true) => {
+        this.pinUtils.isPinRight = !this.pinUtils.isPinRight
+        if (this.pinUtils.isPinRight) {
+            if (this.pinUtils.isPinTop) {
+                await this.pinTop(false)
+            }
+            await this.pinUtils.recordRect()
+        }
+
+        let modalRect = this.modalOriginRect
+        let contentRight = ""
+        let contentWidth = ""
+        let writeWidth = ""
+        if (this.pinUtils.isPinRight) {
+            const { top, width, height, right } = this.contentOriginRect
+            const newWidth = width * this.config.WIDTH_PERCENT_WHEN_PIN_RIGHT / 100
+            modalRect = { top, height, width: newWidth, left: right - newWidth }
+            contentRight = right - newWidth + "px"
+            contentWidth = width - newWidth + "px"
+            writeWidth = "initial"
+        }
+
+        this._setModalRect(modalRect)
+        this._setPinStyle("pinRight")
+        this.entities.content.style.right = contentRight
+        this.entities.content.style.width = contentWidth
+        this.utils.entities.eWrite.style.width = writeWidth
+        if (fit) {
+            await this.fit()
+        }
+    }
+
+    hideToolbar = () => this._toggleToolbar(false)
+    showToolbar = () => this._toggleToolbar(true)
+    expand = () => this._toggleFullScreen(true)
+    shrink = () => this._toggleFullScreen(false)
+
+    draw = () => {
+        const md = this.plugin.getToc()
+        if (md === undefined) return
+
+        const options = this.plugin.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm && this.mm.options)
+        this.transformContext = this.Lib.transformer.transform(md)
+        const { root } = this.transformContext
+
+        if (this.mm) {
+            this._setFoldNode(root)
+            this.mm.setData(root, options)
+        } else {
+            this.mm = this.Lib.Markmap.create(this.entities.svg, options, root)
+        }
+    }
+
+    _setFoldNode = newRoot => {
+        if (!this.config.KEEP_FOLD_STATE_WHEN_UPDATE) return
+
+        const preorder = (node, fn, parent) => {
+            const parentPath = (parent && parent.__path) || ""
+            node.__path = `${parentPath}\n${node.content}`
+            fn(node)
+            for (const child of node.children) {
+                preorder(child, fn, node)
+            }
+        }
+
+        const needFold = new Set()
+        const { data: oldRoot } = this.mm.state || {}
+        preorder(oldRoot, node => {
+            if (node.payload && node.payload.fold) {
+                needFold.add(node.__path)
+            }
+        })
+        preorder(newRoot, node => {
+            if (needFold.has(node.__path)) {
+                node.payload.fold = 1
+            }
+        })
+    }
+
+    _fixConfig = () => {
+        const { DEFAULT_TOC_OPTIONS: op } = this.config
+        op.color = op.color.map(e => e.toUpperCase())
+        if (op.initialExpandLevel < 0 || isNaN(op.initialExpandLevel)) {
+            op.initialExpandLevel = 6
+        } else if (op.initialExpandLevel === 0) {
+            op.initialExpandLevel = 1
+        }
+    }
+
+    _doAction = async action => {
+        const noNeedUnpin = ["pinTop", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"]
+        if (!noNeedUnpin.includes(action)) {
+            if (this.pinUtils.isPinTop) {
+                await this.pinTop()
+            }
+            if (this.pinUtils.isPinRight) {
+                await this.pinRight()
+            }
+        }
+        const hasArgActions = ["pinTop", "pinRight", "fit"]
+        const arg = hasArgActions.includes(action) ? false : undefined
+        await this[action](arg)
+    }
+
+    _initModalRect = () => {
+        const { top: t, left: l, width: w, height: h } = this.entities.content.getBoundingClientRect()
+        const { WIDTH_PERCENT_WHEN_INIT: wRatio, HEIGHT_PERCENT_WHEN_INIT: hRatio } = this.config
+        const height = h * hRatio / 100
+        const width = w * wRatio / 100
+        const left = l + (w - width) / 2
+        this._setModalRect({ top: t, height, width, left })
+    }
+
+    _setModalRect = rect => {
+        if (!rect) return
+        const { left, top, height, width } = rect
+        const s = { left: `${left}px`, top: `${top}px`, height: `${height}px`, width: `${width}px` }
+        Object.assign(this.entities.modal.style, s)
+    }
+
+    _setPinStyle = (type = "pinTop") => {
+        const [pinned, cls, act, grip, hint, icon] = type === "pinTop"
+            ? [this.pinUtils.isPinTop, "pinTop", "pinTop", "gripTop", "func.pinTop", "ion-chevron-up"]
+            : [this.pinUtils.isPinRight, "pinRight", "pinRight", "gripRight", "func.pinRight", "ion-chevron-right"]
+
+        this.entities.modal.classList.toggle(cls)
+        this.entities.modal.classList.toggle("noBoxShadow", pinned)
+        this.utils.toggleVisible(this.entities[grip], !pinned)
+        this.utils.toggleVisible(this.entities.resize, pinned)
+        this.utils.toggleVisible(this.entities.move, pinned)
+        this.utils.toggleVisible(this.entities.penetrateMouse, pinned)
+        this.entities.fullScreen.setAttribute("action", "expand")
+
+        if (pinned && this.entities.modal.classList.contains("penetrateMouse")) {
+            this._doAction("penetrateMouse")
+        }
+
+        const btn = this.entities.header.querySelector(`[action="${act}"]`)
+        btn.classList.toggle(icon, !pinned)
+        btn.classList.toggle("ion-ios7-undo", pinned)
+        btn.setAttribute("ty-hint", this.i18n.t(pinned ? "func.pinRecover" : hint))
+    }
+
+    _toggleFullScreen = (isFullScreen) => {
+        if (isFullScreen) {
+            this.modalOriginRect = this.entities.modal.getBoundingClientRect()
+            this._setModalRect(this.entities.content.getBoundingClientRect())
+        } else {
+            this._setModalRect(this.modalOriginRect)
+        }
+        this.entities.modal.classList.toggle("noBoxShadow", isFullScreen)
+        this.entities.modal.classList.toggle("fullScreen", isFullScreen)
+        this.entities.fullScreen.setAttribute("action", isFullScreen ? "shrink" : "expand")
+        this.utils.toggleVisible(this.entities.resize, isFullScreen)
+        this.utils.toggleVisible(this.entities.move, isFullScreen)
+    }
+
+    _toggleToolbar = show => {
+        this.utils.toggleVisible(this.entities.header, !show)
+        this.fit()
+    }
+
+    _cleanTransition = () => this.entities.modal.style.transition = "none"
+    _rollbackTransition = () => this.entities.modal.style.transition = ""
+}
+
+module.exports = {
+    tocMarkmap
+}

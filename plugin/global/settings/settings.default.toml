@@ -758,11 +758,6 @@ ENABLE_TOC_MARKMAP = true
 #   留空则不设置快捷键
 TOC_HOTKEY = ""
 
-# 当大纲发生变化，是否自动更新图形
-#   true:  每当大纲发生变化，会自动更新图形
-#   false: 当大纲发生变化，不会自动更新图形，图形会一直保持不变
-AUTO_UPDATE = true
-
 # 点击思维导图节点是否跳转到文档对应章节
 #   true:  点击节点后，页面会滚动到文档中对应的标题位置
 #   false: 点击节点不会跳转到文档
@@ -790,11 +785,6 @@ REMOVE_HEADER_STYLES = true
 #   true:  更新后自动调整图形大小，保持最佳显示效果
 #   false: 更新后图形大小保持不变，可能需要手动调整窗口大小
 AUTO_FIT_WHEN_UPDATE = true
-
-# 当用户调整窗口大小时，图形是否自动重新适配窗口大小
-#   true:  调整窗口大小后，自动调整图形大小，保持最佳显示效果
-#   false: 调整窗口大小后图形大小保持不变，可能需要手动刷新
-AUTO_FIT_WHEN_RESIZE = true
 
 # 当文档内容更新导致思维导图更新时，已折叠的节点是否保持折叠状态
 #   true:  更新后，之前折叠的节点将保持折叠状态
@@ -877,9 +867,11 @@ DEFAULT_TOC_OPTIONS = { autoFit = true, duration = 500, initialExpandLevel = -1,
 #     false: 保留 foreignObject 标签，可以保留更多样式，但可能导致部分应用无法正确处理 SVG
 #     请谨慎修改此项，若不了解 SVG，请保持默认值 false
 #   PADDING_HORIZONTAL: 图形的水平内边距
-#     例如： 25 表示图片的左右内边距为 25
+#     例如：25 表示图片的左右内边距为 25
 #   PADDING_VERTICAL: 图形的垂直内边距
-#     例如： 25 表示图片的上下内边距为 25
+#     例如：25 表示图片的上下内边距为 25
+#   IMAGE_SCALE: 图片放缩比例
+#     例如：2 表示图片整体放缩 2 倍
 #   IMAGE_QUALITY: 导出为 JPG 或 WebP 格式图片时，图片的质量
 #     取值范围：0 到 1 之间的浮点数，值越大质量越高，文件体积也越大
 #   KEEP_ALPHA_CHANNEL: 导出带透明通道的图片格式 (如 PNG、WEBP) 时，是否保留透明通道
@@ -897,7 +889,7 @@ DEFAULT_TOC_OPTIONS = { autoFit = true, duration = 500, initialExpandLevel = -1,
 #   SHOW_IN_FINDER: 导出完成后是否自动打开文件所在的目录
 #     true:  导出后，自动打开文件所在目录
 #     false: 导出后不打开目录
-DOWNLOAD_OPTIONS = { FILENAME = "{{filename}}_{{timestamp}}.svg", FOLDER = "", REMOVE_USELESS_CLASSES = true, REMOVE_FOREIGN_OBJECT = false, PADDING_HORIZONTAL = 25, PADDING_VERTICAL = 25, IMAGE_QUALITY = 0.92, KEEP_ALPHA_CHANNEL = true, BACKGROUND_COLOR = "#FFFFFF", TEXT_COLOR = "#333333", OPEN_CIRCLE_COLOR = "#FFFFFF", SHOW_PATH_INQUIRY_DIALOG = true, SHOW_IN_FINDER = true }
+DOWNLOAD_OPTIONS = { FILENAME = "{{filename}}_{{timestamp}}.svg", FOLDER = "", REMOVE_USELESS_CLASSES = true, REMOVE_FOREIGN_OBJECT = false, PADDING_HORIZONTAL = 25, PADDING_VERTICAL = 25, IMAGE_SCALE = 2, IMAGE_QUALITY = 0.92, KEEP_ALPHA_CHANNEL = true, BACKGROUND_COLOR = "#FFFFFF", TEXT_COLOR = "#333333", OPEN_CIRCLE_COLOR = "#FFFFFF", SHOW_PATH_INQUIRY_DIALOG = true, SHOW_IN_FINDER = true }
 
 # ------------------- Fence (代码块) 功能 -------------------
 # 启用或禁用 Fence 功能，即插入 markmap 代码块

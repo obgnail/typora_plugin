@@ -33,7 +33,7 @@
     height: 100%;
 }
 
-.plugin-markmap-grip.grip-up {
+.plugin-markmap-grip.grip-top {
     position: absolute;
     bottom: -5px;
     width: 100%;
