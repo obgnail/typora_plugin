@@ -507,7 +507,6 @@
     "$label.TOC_HOTKEY": "Hotkey",
     "$label.FIX_SKIPPED_LEVEL_HEADERS": "Fix Skipped Level Headers",
     "$label.REMOVE_HEADER_STYLES": "Filter Out Header Style",
-    "$label.AUTO_UPDATE": "Auto Update Diagram on Outline Change",
     "$label.AUTO_FIT_WHEN_UPDATE": "Auto Fit on Diagram Update",
     "$label.KEEP_FOLD_STATE_WHEN_UPDATE": "Keep Fold State on Diagram Update",
     "$label.CLICK_TO_POSITIONING": "Click Node to Positioning Corresponding Chapter",

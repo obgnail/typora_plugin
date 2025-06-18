@@ -439,7 +439,6 @@ const SETTING_SCHEMAS = {
             Hotkey("TOC_HOTKEY", markmapTocDep),
             Switch("FIX_SKIPPED_LEVEL_HEADERS", markmapTocDep),
             Switch("REMOVE_HEADER_STYLES", markmapTocDep),
-            Switch("AUTO_UPDATE", markmapTocDep),
             Switch("AUTO_FIT_WHEN_UPDATE", markmapTocDep),
             Switch("KEEP_FOLD_STATE_WHEN_UPDATE", markmapTocDep),
             Switch("CLICK_TO_POSITIONING", markmapTocDep),

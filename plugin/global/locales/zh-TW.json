@@ -507,7 +507,6 @@
     "$label.TOC_HOTKEY": "快捷鍵",
     "$label.FIX_SKIPPED_LEVEL_HEADERS": "相容跳級標題",
     "$label.REMOVE_HEADER_STYLES": "移除標題樣式",
-    "$label.AUTO_UPDATE": "大綱變更後自動更新圖形",
     "$label.AUTO_FIT_WHEN_UPDATE": "圖形更新後自動適配視窗",
     "$label.KEEP_FOLD_STATE_WHEN_UPDATE": "圖形更新後保持節點摺疊狀態",
     "$label.CLICK_TO_POSITIONING": "點擊節點跳轉到文檔對應章節",

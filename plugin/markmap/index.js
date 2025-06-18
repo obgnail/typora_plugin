@@ -246,15 +246,15 @@ class tocMarkmap {
 
             modal.addEventListener("transitionend", ev => (ev.target === modal) && this.fit())
         }
-        const onDrag = () => {
-            const hint = "ty-hint"
-            const value = this.entities.move.getAttribute(hint)
+        const onMove = () => {
+            const attr = "ty-hint"
+            const value = this.entities.move.getAttribute(attr)
             const onMouseDown = () => {
-                this.entities.move.removeAttribute(hint)
+                this.entities.move.removeAttribute(attr)
                 this._cleanTransition()
             }
             const onMouseUp = () => {
-                this.entities.move.setAttribute(hint, value)
+                this.entities.move.setAttribute(attr, value)
                 this._rollbackTransition()
             }
             this.utils.dragFixedModal(this.entities.move, this.entities.modal, false, onMouseDown, null, onMouseUp)
@@ -403,12 +403,10 @@ class tocMarkmap {
                     }
                 } else {
                     if (this.config.CLICK_TO_POSITIONING) {
-                        if (this.config.AUTO_UPDATE) {
-                            const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect()
-                            const height = contentHeight * this.config.POSITIONING_VIEWPORT_HEIGHT + contentTop
-                            const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD
-                            this.utils.scrollByCid(cid, height, true, showHiddenElement)
-                        }
+                        const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect()
+                        const height = contentHeight * this.config.POSITIONING_VIEWPORT_HEIGHT + contentTop
+                        const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD
+                        this.utils.scrollByCid(cid, height, true, showHiddenElement)
                     }
                 }
             })
@@ -428,7 +426,7 @@ class tocMarkmap {
 
         this.prepare();
         onEvent();
-        onDrag();
+        onMove();
         onResize();
         onToggleSidebar();
         onHeaderClick();
@@ -436,7 +434,16 @@ class tocMarkmap {
         onContextMenu();
     }
 
-    callback = () => this.utils.isShow(this.entities.modal) ? this._doAction("close") : this.draw()
+    callback = async () => {
+        if (this.utils.isShow(this.entities.modal)) {
+            await this._doAction("close")
+        } else {
+            await this.controller.lazyLoad()
+            this.utils.show(this.entities.modal)
+            this._initModalRect()
+            await this.draw()
+        }
+    }
 
     close = () => {
         this.entities.modal.style = "";
@@ -466,7 +473,7 @@ class tocMarkmap {
     setting = async () => {
         const storeAttrs = [
             "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
-            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "AUTO_UPDATE",
+            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES",
             "CLICK_TO_POSITIONING", "AUTO_FIT_WHEN_UPDATE", "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
         ]
         const arr2Str = arr => arr.join("_")
@@ -474,7 +481,6 @@ class tocMarkmap {
 
         const getSchema = () => {
             const pluginEnabled = this.utils.getPlugin("collapse_paragraph")
-
             const colorOptions = Object.fromEntries(
                 [...this.config.CANDIDATE_COLOR_SCHEMES, this.config.DEFAULT_TOC_OPTIONS.color].map(colorList => {
                     const colors = colorList
@@ -484,80 +490,85 @@ class tocMarkmap {
                     return [arr2Str(colorList), label]
                 })
             )
-            const getKey = (key, tooltip) => ({
+
+            const field = (key, type, { tooltip, ...args } = {}) => ({
                 key,
+                type,
                 label: this.i18n.t(`$label.${key}`),
-                tooltip: tooltip ? this.i18n.t(`$tooltip.${tooltip}`) : undefined
+                tooltip: tooltip ? this.i18n.t(`$tooltip.${tooltip}`) : undefined,
+                ...args,
             })
             const titledBox = (title, ...fields) => ({ title: this.i18n.t(title), fields })
             const untitledBox = (...fields) => ({ title: undefined, fields })
+
             return [
                 titledBox(
                     "settingGroup.color",
-                    { ...getKey("DEFAULT_TOC_OPTIONS.color"), type: "radio", options: colorOptions },
+                    field("DEFAULT_TOC_OPTIONS.color", "radio", { options: colorOptions }),
                 ),
                 titledBox(
                     "settingGroup.chart",
-                    { ...getKey("DEFAULT_TOC_OPTIONS.spacingHorizontal"), type: "range", min: 0, max: 200, step: 1 },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.spacingVertical"), type: "range", min: 0, max: 100, step: 1 },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.paddingX"), type: "range", min: 0, max: 100, step: 1 },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.maxWidth", "zero"), type: "range", min: 0, max: 1000, step: 10 },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.nodeMinHeight"), type: "range", min: 5, max: 50, step: 1 },
+                    field("DEFAULT_TOC_OPTIONS.spacingHorizontal", "range", { min: 0, max: 200, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.spacingVertical", "range", { min: 0, max: 100, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.paddingX", "range", { min: 0, max: 100, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.maxWidth", "range", "zero", { min: 0, max: 1000, step: 10 }),
+                    field("DEFAULT_TOC_OPTIONS.nodeMinHeight", "range", { min: 5, max: 50, step: 1 })
                 ),
                 untitledBox(
-                    { ...getKey("DEFAULT_TOC_OPTIONS.colorFreezeLevel"), type: "range", min: 1, max: 6, step: 1 },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.initialExpandLevel"), type: "range", min: 1, max: 6, step: 1 },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.duration"), type: "range", min: 0, max: 1000, step: 10 },
+                    field("DEFAULT_TOC_OPTIONS.colorFreezeLevel", "range", { min: 1, max: 6, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.initialExpandLevel", "range", { min: 1, max: 6, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.duration", "range", { min: 0, max: 1000, step: 10 }),
                 ),
                 titledBox(
                     "settingGroup.window",
-                    { ...getKey("DEFAULT_TOC_OPTIONS.fitRatio"), type: "range", min: 0.5, max: 1, step: 0.01 },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.maxInitialScale"), type: "range", min: 0.5, max: 5, step: 0.25 },
-                    { ...getKey("WIDTH_PERCENT_WHEN_INIT"), type: "range", min: 20, max: 95, step: 1 },
-                    { ...getKey("HEIGHT_PERCENT_WHEN_INIT"), type: "range", min: 20, max: 95, step: 1 },
-                    { ...getKey("HEIGHT_PERCENT_WHEN_PIN_TOP"), type: "range", min: 20, max: 95, step: 1 },
-                    { ...getKey("WIDTH_PERCENT_WHEN_PIN_RIGHT"), type: "range", min: 20, max: 95, step: 1 },
-                    { ...getKey("POSITIONING_VIEWPORT_HEIGHT", "positioningViewPort"), type: "range", min: 0.1, max: 0.95, step: 0.01 },
+                    field("DEFAULT_TOC_OPTIONS.fitRatio", "range", { min: 0.5, max: 1, step: 0.01 }),
+                    field("DEFAULT_TOC_OPTIONS.maxInitialScale", "range", { min: 0.5, max: 5, step: 0.25 }),
+                    field("WIDTH_PERCENT_WHEN_INIT", "range", { min: 20, max: 95, step: 1 }),
+                    field("HEIGHT_PERCENT_WHEN_INIT", "range", { min: 20, max: 95, step: 1 }),
+                    field("HEIGHT_PERCENT_WHEN_PIN_TOP", "range", { min: 20, max: 95, step: 1 }),
+                    field("WIDTH_PERCENT_WHEN_PIN_RIGHT", "range", { min: 20, max: 95, step: 1 }),
                 ),
                 titledBox(
                     "settingGroup.interactive",
-                    { ...getKey("DEFAULT_TOC_OPTIONS.zoom"), type: "switch" },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.pan"), type: "switch" },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.toggleRecursively"), type: "switch" },
-                    { ...getKey("CLICK_TO_POSITIONING"), type: "switch" },
+                    field("DEFAULT_TOC_OPTIONS.zoom", "switch"),
+                    field("DEFAULT_TOC_OPTIONS.pan", "switch"),
+                    field("DEFAULT_TOC_OPTIONS.toggleRecursively", "switch"),
+                    field("CLICK_TO_POSITIONING", "switch"),
+                    field("POSITIONING_VIEWPORT_HEIGHT", "range", {
+                        tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01, dependencies: { CLICK_TO_POSITIONING: true },
+                    }),
                 ),
                 titledBox(
                     "settingGroup.behavior",
-                    { ...getKey("FIX_SKIPPED_LEVEL_HEADERS"), type: "switch" },
-                    { ...getKey("REMOVE_HEADER_STYLES"), type: "switch" },
+                    field("FIX_SKIPPED_LEVEL_HEADERS", "switch"),
+                    field("REMOVE_HEADER_STYLES", "switch"),
                 ),
                 untitledBox(
-                    { ...getKey("AUTO_UPDATE"), type: "switch" },
-                    { ...getKey("AUTO_FIT_WHEN_UPDATE"), type: "switch" },
-                    { ...getKey("KEEP_FOLD_STATE_WHEN_UPDATE"), type: "switch" },
-                    { ...getKey("DEFAULT_TOC_OPTIONS.autoFit"), type: "switch" },
-                    { ...getKey("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "experimental"), type: "switch", disabled: !pluginEnabled, readonly: pluginEnabled },
+                    field("AUTO_FIT_WHEN_UPDATE", "switch"),
+                    field("KEEP_FOLD_STATE_WHEN_UPDATE", "switch"),
+                    field("DEFAULT_TOC_OPTIONS.autoFit", "switch"),
+                    field("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "switch", { tooltip: "experimental", disabled: !pluginEnabled, readonly: pluginEnabled }),
                 ),
                 titledBox(
                     "settingGroup.download",
-                    { ...getKey("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG"), type: "switch" },
-                    { ...getKey("DOWNLOAD_OPTIONS.SHOW_IN_FINDER"), type: "switch" },
-                    { ...getKey("DOWNLOAD_OPTIONS.FOLDER", "tempDir"), type: "text", placeholder: this.utils.tempFolder },
-                    { ...getKey("DOWNLOAD_OPTIONS.FILENAME"), type: "text" },
+                    field("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG", "switch"),
+                    field("DOWNLOAD_OPTIONS.SHOW_IN_FINDER", "switch"),
+                    field("DOWNLOAD_OPTIONS.FOLDER", "text", { tooltip: "tempDir", placeholder: this.utils.tempFolder }),
+                    field("DOWNLOAD_OPTIONS.FILENAME", "text"),
                 ),
                 untitledBox(
-                    { ...getKey("DOWNLOAD_OPTIONS.IMAGE_SCALE"), type: "number", min: 0.1, step: 0.1 },
-                    { ...getKey("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL"), type: "number", min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") },
-                    { ...getKey("DOWNLOAD_OPTIONS.PADDING_VERTICAL"), type: "number", min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") },
-                    { ...getKey("DOWNLOAD_OPTIONS.TEXT_COLOR"), type: "text" },
-                    { ...getKey("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR"), type: "text" },
-                    { ...getKey("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", "pixelImagesOnly"), type: "text" },
-                    { ...getKey("DOWNLOAD_OPTIONS.IMAGE_QUALITY", "pixelImagesOnly"), type: "range", min: 0.01, max: 1, step: 0.01 },
+                    field("DOWNLOAD_OPTIONS.IMAGE_SCALE", "number", { min: 0.1, step: 0.1 }),
+                    field("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", "number", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
+                    field("DOWNLOAD_OPTIONS.PADDING_VERTICAL", "number", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
+                    field("DOWNLOAD_OPTIONS.TEXT_COLOR", "text"),
+                    field("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", "text"),
+                    field("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", "text", { tooltip: "pixelImagesOnly" }),
+                    field("DOWNLOAD_OPTIONS.IMAGE_QUALITY", "range", { tooltip: "pixelImagesOnly", min: 0.01, max: 1, step: 0.01 }),
                 ),
                 untitledBox(
-                    { ...getKey("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL"), type: "switch" },
-                    { ...getKey("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES"), type: "switch" },
-                    { ...getKey("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", "removeForeignObj"), type: "switch" },
+                    field("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL", "switch"),
+                    field("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES", "switch"),
+                    field("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", "switch", { tooltip: "removeForeignObj" }),
                 ),
                 untitledBox(
                     { type: "action", key: "restoreSettings", label: this.i18n._t("settings", "$label.restoreSettings") },
@@ -712,43 +723,25 @@ class tocMarkmap {
 
     hideToolbar = () => this._toggleToolbar(false)
     showToolbar = () => this._toggleToolbar(true)
-
-    expand = () => {
-        this.modalOriginRect = this.entities.modal.getBoundingClientRect()
-        this._setModalRect(this.entities.content.getBoundingClientRect())
-        this._toggleFullScreen(true)
-    }
-    shrink = () => {
-        this._setModalRect(this.modalOriginRect)
-        this._toggleFullScreen(false)
-    }
+    expand = () => this._toggleFullScreen(true)
+    shrink = () => this._toggleFullScreen(false)
 
     draw = async (fit = true) => {
         const md = this.controller.getToc()
         if (md === undefined) return
 
-        this.utils.show(this.entities.modal)
-
-        const hasInstance = Boolean(this.mm)
-        if (!hasInstance) {
-            this._initModalRect()
-            await this.controller.lazyLoad()
-        }
-
         const options = this.controller.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm && this.mm.options)
         this.transformContext = this.Lib.transformer.transform(md)
         const { root } = this.transformContext
 
-        if (!hasInstance) {
-            this.mm = this.Lib.Markmap.create(this.entities.svg, options, root)
-            return
-        }
-        if (this.config.AUTO_UPDATE) {
+        if (this.mm) {
             this._setFold(root)
             this.mm.setData(root, options)
             if (fit) {
                 await this.mm.fit()
             }
+        } else {
+            this.mm = this.Lib.Markmap.create(this.entities.svg, options, root)
         }
     }
 
@@ -843,6 +836,12 @@ class tocMarkmap {
     }
 
     _toggleFullScreen = (isFullScreen) => {
+        if (isFullScreen) {
+            this.modalOriginRect = this.entities.modal.getBoundingClientRect()
+            this._setModalRect(this.entities.content.getBoundingClientRect())
+        } else {
+            this._setModalRect(this.modalOriginRect)
+        }
         this.entities.modal.classList.toggle("noBoxShadow", isFullScreen)
         this.entities.modal.classList.toggle("fullScreen", isFullScreen)
         this.entities.fullScreen.setAttribute("action", isFullScreen ? "shrink" : "expand")
