@@ -782,9 +782,14 @@ FIX_SKIPPED_LEVEL_HEADERS = true
 REMOVE_HEADER_STYLES = true
 
 # 当文档内容更新导致思维导图更新时，是否自动调整图形大小以适配窗口
-#   true:  更新后自动调整图形大小，保持最佳显示效果
-#   false: 更新后图形大小保持不变，可能需要手动调整窗口大小
+#   true:  更新后自动调整图形大小
+#   false: 更新后图形大小保持不变
 AUTO_FIT_WHEN_UPDATE = true
+
+# 当折叠/展开节点后，图形自动适配窗口
+#   true:  折叠/展开节点后自动调整图形大小
+#   false: 折叠/展开节点后图形大小保持不变
+AUTO_FIT_WHEN_FOLD = true
 
 # 当文档内容更新导致思维导图更新时，已折叠的节点是否保持折叠状态
 #   true:  更新后，之前折叠的节点将保持折叠状态
@@ -814,7 +819,7 @@ WIDTH_PERCENT_WHEN_PIN_RIGHT = 50
 
 # 当鼠标悬停在思维导图节点上时，显示的边框样式
 #   可以使用 CSS 边框样式，例如 "2px solid red", "1px dashed #000000"
-NODE_BORDER_WHEN_HOVER = "4px solid #FF7B00"
+NODE_BORDER_WHEN_HOVER = "3px solid #FF7B00"
 
 # 预设的配色方案列表：用于设置思维导图节点的颜色
 #   每个配色方案是一个颜色数组，插件会按顺序使用这些颜色
@@ -833,7 +838,6 @@ CANDIDATE_COLOR_SCHEMES = [
 ]
 
 # TOC 图形默认选项：用于自定义 TOC 图形外观和行为
-#   autoFit           : 折叠/展开节点时，图形是否自动适配窗口
 #   duration          : 折叠/展开节点时，图形变换动画的持续时间 (单位：毫秒)
 #   initialExpandLevel: 首次渲染时要展开多少级分支 (-1 则展开全部)
 #   colorFreezeLevel  : 从多少级开始固定分支颜色
@@ -848,7 +852,7 @@ CANDIDATE_COLOR_SCHEMES = [
 #   spacingVertical   : 节点垂直间距
 #   paddingX          : 节点内部边距
 #   fitRatio          : 图形的窗口填充率
-DEFAULT_TOC_OPTIONS = { autoFit = true, duration = 500, initialExpandLevel = -1, maxInitialScale = 2, maxWidth = 0, nodeMinHeight = 16, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 6, zoom = true, pan = true, toggleRecursively = false, color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
+DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialScale = 2, maxWidth = 0, nodeMinHeight = 16, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 6, zoom = true, pan = true, toggleRecursively = false, color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
 
 # 导出选项：用于自定义导出图形和导出行为
 #   FILENAME: 文件名格式

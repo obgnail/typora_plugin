@@ -65,6 +65,8 @@
     border-radius: 6px;
     width: max-content;
     line-height: 24px;
+    max-width: 300px;
+    word-wrap: break-word;
 }
 
 .tooltip > span:last-child::after {

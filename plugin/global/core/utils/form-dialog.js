@@ -45,53 +45,47 @@ class formDialog {
     }
 
     _onVisibilityChange = (state = 1) => {
-        this.hide()
+        this.utils.hide(this.entities.cover)
+        this.utils.hide(this.entities.dialog)
+
         this.resolver({ response: state, data: this.entities.form.options.data })
         this.resolver = null
         this.listener = null
     }
 
-    _updateModal = ({ title, schema, data, action, listener }) => {
+    _updateModal = ({ title, listener, ...options }) => {
         if (title) {
             this.entities.title.textContent = title
         }
         if (listener) {
             this.listener = listener
         }
-        const { schema: s, data: d, action: a } = this.entities.form.options
-        this.entities.form.render(schema || s, data || d, action || a)
+        this.entities.form.render(options)
     }
 
-    _getOptions = () => {
-        const listener = this.listener
-        const title = this.entities.title.textContent
-        const { schema, data, action } = this.entities.form.options
-        return { title, schema, data, action, listener }
-    }
+    modal = ({ title, listener, ...options }) => {
+        return new Promise(resolve => {
+            this.resolver = resolve
+            this.listener = listener
 
-    show = (title, schema, data, action) => {
-        this.entities.title.textContent = title
-        this.entities.form.render(schema, data, action)
-        this.utils.show(this.entities.dialog)
-        this.utils.show(this.entities.cover)
+            this.entities.title.textContent = title
+            this.entities.form.render(options)
+            this.utils.show(this.entities.dialog)
+            this.utils.show(this.entities.cover)
+        })
     }
-
-    hide = () => {
-        this.utils.hide(this.entities.cover)
-        this.utils.hide(this.entities.dialog)
-    }
-
-    modal = ({ title, schema, data, action, listener }) => new Promise(resolve => {
-        this.resolver = resolve
-        this.listener = listener
-        this.show(title, schema, data, action)
-    })
 
     updateModal = async fn => {
-        const options = this._getOptions()
+        const options = this.getOptions()
         await fn(options)
         this._updateModal(options)
     }
+
+    getOptions = () => ({
+        title: this.entities.title.textContent,
+        listener: this.listener,
+        ...this.entities.form.options,
+    })
 
     exit = () => this.entities.cancel.click()
 }
