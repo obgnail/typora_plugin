@@ -17,25 +17,21 @@ class downloader {
         const _getRect = svg => {
             const { width, height } = plugin.entities.svg.querySelector("g").getBoundingClientRect()
             const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/)
-            if (!match || !match.groups || !match.groups.scale) {
-                return {}
-            }
-            const scale = parseFloat(match.groups.scale)
+            const scale = (match && match.groups && match.groups.scale) ? parseFloat(match.groups.scale) : 1
             const realWidth = parseInt(width / scale)
             const realHeight = parseInt(height / scale)
-            let minY = 0, maxY = 0
+            let minY = 0
             svg.querySelectorAll("g.markmap-node").forEach(node => {
-                const match = node.getAttribute("transform").match(/translate\((?<x>.+?),\s(?<y>.+?)\)/)
+                const match = node.getAttribute("transform").match(/translate\((?<x>.+?),\s+(?<y>.+?)\)/)
                 if (!match || !match.groups || !match.groups.x || !match.groups.y) return
                 const y = parseInt(match.groups.y)
                 minY = Math.min(minY, y)
-                maxY = Math.max(maxY, y)
             })
-            return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
+            return { minX: 0, width: realWidth, minY: minY, height: realHeight }
         }
 
         const setAttrs = svg => {
-            const { width = 100, height = 100, minY = 0 } = _getRect(svg)
+            const { minX, minY, width, height } = _getRect(svg)
             const { paddingH, paddingV, imageScale } = options
             const svgWidth = width + paddingH * 2  // both sides
             const svgHeight = height + paddingV * 2
@@ -46,7 +42,7 @@ class downloader {
             svg.setAttribute("class", "markmap")
             svg.setAttribute("width", scaledWidth)
             svg.setAttribute("height", scaledHeight)
-            svg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`)
+            svg.setAttribute("viewBox", `${minX} ${minY} ${svgWidth} ${svgHeight}`)
             svg.querySelector("g").setAttribute("transform", `translate(${paddingH}, ${paddingV})`)
         }
 
@@ -207,9 +203,12 @@ class downloader {
             return createTag(tagName, attributes)
         })
 
-        const handleScripts = (scripts, root, urlBuilder) => {
-            const _base = ["d3@7.9.0/dist/d3.min.js", "markmap-view@0.17.3-alpha.1/dist/browser/index.js"]
-            const base = _base.map(asset => ({ type: "script", data: { src: urlBuilder.getFullUrl(asset) } }))
+        // const setProvider = (urlBuilder, name = "jsdelivr", fn = e => `https://cdn.jsdelivr.net/npm/${e}`) => urlBuilder.setProvider(name, fn)
+
+        /** Arg provider: Built-in optional values: unpkg/jsdelivr */
+        const handleScripts = (scripts, root, urlBuilder, provider) => {
+            const _base = ["d3@7.9.0/dist/d3.min.js", "markmap-view@0.17.2/dist/browser/index.js"]
+            const base = _base.map(asset => ({ type: "script", data: { src: urlBuilder.getFullUrl(asset, provider) } }))
 
             const entry = {
                 type: "iife",
@@ -275,7 +274,7 @@ class downloader {
             const { root, features } = plugin.transformContext
             const { styles, scripts } = transformer.getUsedAssets(features)
             const styleElements = handleStyles(styles)
-            const scriptElements = handleScripts(scripts, root, transformer.urlBuilder)
+            const scriptElements = handleScripts(scripts, root, transformer.urlBuilder, "jsdelivr")
             return toHTML(title, styleElements, scriptElements)
         }
 
