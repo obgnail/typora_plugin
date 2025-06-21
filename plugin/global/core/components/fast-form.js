@@ -17,7 +17,7 @@ customElements.define("fast-form", class extends HTMLElement {
         this._bindEvents()
     }
 
-    render(schema, data = {}, action = {}) {
+    render({ schema = [], data = {}, action = {} }) {
         this.options.schema = schema
         this.options.action = action
         this.options.data = JSON.parse(JSON.stringify(data))

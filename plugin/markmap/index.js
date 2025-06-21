@@ -24,6 +24,7 @@ class markmapPlugin extends BasePlugin {
 
     process = () => {
         if (this.tocMarkmap) {
+            this.tocMarkmap.init()
             this.tocMarkmap.process()
         }
         if (this.fenceMarkmap) {
@@ -67,8 +68,7 @@ class markmapPlugin extends BasePlugin {
 
     assignOptions = (update, origin) => {
         const options = this.Lib.deriveOptions({ ...origin, ...update })
-        // `autoFit` and `toggleRecursively` are deleted after calling deriveOptions
-        options.autoFit = update.autoFit
+        // `toggleRecursively` is deleted after calling deriveOptions
         options.toggleRecursively = update.toggleRecursively
         return options
     }

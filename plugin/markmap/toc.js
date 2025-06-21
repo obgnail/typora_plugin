@@ -9,68 +9,91 @@ class tocMarkmap {
 
     html = () => `
         <div id="plugin-markmap" class="plugin-common-modal plugin-common-hidden">
-            <div class="plugin-markmap-wrap">
-                <div class="plugin-markmap-grip grip-right plugin-common-hidden"></div>
-                <div class="plugin-markmap-header">
-                    <div class="plugin-markmap-icon ion-close" action="close" ty-hint="${this.i18n.t('func.close')}"></div>
-                    <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="${this.i18n.t('func.expand')}"></div>
-                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="${this.i18n.t('func.move')}"></div>
-                    <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="${this.i18n.t('func.fit')}"></div>
-                    <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="${this.i18n.t('func.penetrateMouse')}"></div>
-                    <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="${this.i18n.t('func.setting')}"></div>
-                    <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="${this.i18n.t('func.download')}"></div>
-                    <div class="plugin-markmap-icon ion-chevron-up" action="pinTop" ty-hint="${this.i18n.t('func.pinTop')}"></div>
-                    <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="${this.i18n.t('func.pinRight')}"></div>
-                </div>
-                <svg id="plugin-markmap-svg"></svg>
-                <div class="plugin-markmap-icon" action="resize">
-                    <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg>
-                </div>
+            <div class="plugin-markmap-header">
+                <div class="plugin-markmap-icon ion-close" action="close" ty-hint="${this.i18n.t('func.close')}"></div>
+                <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="${this.i18n.t('func.move')}"></div>
+                <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="${this.i18n.t('func.fit')}"></div>
+                <div class="plugin-markmap-icon ion-android-locate" action="penetrateMouse" ty-hint="${this.i18n.t('func.penetrateMouse')}"></div>
+                <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="${this.i18n.t('func.setting')}"></div>
+                <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="${this.i18n.t('func.download')}"></div>
+                <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="${this.i18n.t('func.expand')}"></div>
+                <div class="plugin-markmap-icon ion-chevron-up" action="pinTop" ty-hint="${this.i18n.t('func.pinTop')}"></div>
+                <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="${this.i18n.t('func.pinRight')}"></div>
+                <div class="plugin-markmap-icon" action="resize"><svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg></div>
             </div>
-            <div class="plugin-markmap-grip grip-top plugin-common-hidden"></div>
+            <svg id="plugin-markmap-svg"></svg>
+            <div class="plugin-markmap-grip-top plugin-common-hidden"></div>
+            <div class="plugin-markmap-grip-right plugin-common-hidden"></div>
         </div>
     `
 
     hotkey = () => [{ hotkey: this.config.TOC_HOTKEY, callback: this.callback }]
 
-    prepare = () => {
+    init = () => {
         this._fixConfig()
 
         this.mm = null
         this.transformContext = null
-        this.modalOriginRect = null
-        this.contentOriginRect = null
-        this.pinUtils = {
-            isPinTop: false,
-            isPinRight: false,
-            recordRect: async () => {
-                await this.utils.sleep(200)
-                this.modalOriginRect = this.entities.modal.getBoundingClientRect()
-                this.contentOriginRect = this.entities.content.getBoundingClientRect()
-            }
-        }
+
         this.entities = {
             content: this.utils.entities.eContent,
             modal: document.querySelector("#plugin-markmap"),
-            header: document.querySelector("#plugin-markmap .plugin-markmap-header"),
-            gripTop: document.querySelector("#plugin-markmap .plugin-markmap-grip.grip-top"),
-            gripRight: document.querySelector("#plugin-markmap .plugin-markmap-grip.grip-right"),
+            header: document.querySelector(".plugin-markmap-header"),
+            gripTop: document.querySelector(".plugin-markmap-grip-top"),
+            gripRight: document.querySelector(".plugin-markmap-grip-right"),
             svg: document.querySelector("#plugin-markmap-svg"),
             move: document.querySelector('.plugin-markmap-icon[action="move"]'),
             resize: document.querySelector('.plugin-markmap-icon[action="resize"]'),
             fullScreen: document.querySelector('.plugin-markmap-icon[action="expand"]'),
             penetrateMouse: document.querySelector('.plugin-markmap-icon[action="penetrateMouse"]'),
         }
+
+        this.pinUtils = {
+            isPinTop: false,
+            isPinRight: false,
+            originModalRect: null,
+            originContentRect: null,
+            recordContentRect: rect => this.pinUtils.originContentRect = rect,
+            recordRects: () => {
+                if (!this.entities.modal.classList.contains("noBoxShadow")) {
+                    this.pinUtils.originModalRect = this.entities.modal.getBoundingClientRect()
+                    this.pinUtils.originContentRect = this.entities.content.getBoundingClientRect()
+                }
+            },
+        }
     }
 
     process = () => {
         const onEvent = () => {
             const { eventHub } = this.utils
-            const { modal } = this.entities
-            const setModalWidth = () => modal.classList.contains("noBoxShadow") && this.fit()
-            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this._doAction("close"))
-            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, setModalWidth)
-            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, setModalWidth)
+            const { modal, content, fullScreen, header } = this.entities
+            const repositioning = () => {
+                if (!this.mm) return
+
+                const isFullScreen = fullScreen.getAttribute("action") === "shrink"
+                if (!this.pinUtils.isPinTop && !this.pinUtils.isPinRight && !isFullScreen) return
+
+                const contentRect = content.getBoundingClientRect()
+                const modalRect = modal.getBoundingClientRect()
+                const { originContentRect } = this.pinUtils
+
+                let newModalRect, newContentRect
+                if (isFullScreen) {
+                    newModalRect = contentRect
+                    newContentRect = contentRect
+                } else if (this.pinUtils.isPinTop) {
+                    newModalRect = new DOMRect(contentRect.x, modalRect.y, contentRect.width, modalRect.height)
+                    newContentRect = new DOMRect(contentRect.x, originContentRect.y, contentRect.width, originContentRect.height)
+                } else if (this.pinUtils.isPinRight) {
+                    newModalRect = new DOMRect(contentRect.right, modalRect.y, modalRect.right - contentRect.right, modalRect.height)
+                    newContentRect = new DOMRect(contentRect.x, originContentRect.y, originContentRect.right - contentRect.left, originContentRect.height)
+                }
+                this.pinUtils.recordContentRect(newContentRect)
+                this._setModalRect(newModalRect)
+            }
+            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, repositioning)
+            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, repositioning)
+            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this.close())
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => {
                 if (!this.utils.isShow(modal)) return
                 this.draw()
@@ -80,6 +103,13 @@ class tocMarkmap {
             })
 
             modal.addEventListener("transitionend", () => this.fit())
+            header.addEventListener("click", ev => {
+                const button = ev.target.closest(".plugin-markmap-icon")
+                if (button) {
+                    const action = button.getAttribute("action")
+                    this.doAction(action)
+                }
+            })
         }
         const onMove = () => {
             const attr = "ty-hint"
@@ -125,7 +155,7 @@ class tocMarkmap {
                 const onMouseDown = () => {
                     this._cleanTransition()
                     contentStartTop = this.entities.content.getBoundingClientRect().top
-                    contentMinTop = modalMinHeight + this.entities.header.getBoundingClientRect().top
+                    contentMinTop = modalMinHeight + this.entities.modal.getBoundingClientRect().top
                 }
                 const onMouseMove = (deltaX, deltaY) => {
                     let newContentTop = contentStartTop + deltaY
@@ -172,41 +202,6 @@ class tocMarkmap {
             whenPinTop()
             whenPinRight()
         }
-        const onToggleSidebar = () => {
-            const resetPosition = () => {
-                if (!this.mm) return
-                const needResetFullscreen = this.entities.fullScreen.getAttribute("action") === "shrink"
-                if (needResetFullscreen) {
-                    this.shrink()
-                    this.expand()
-                }
-                const className = ["pinTop", "pinRight"].find(func => this.entities.modal.classList.contains(func))
-                if (!className) return
-
-                const { width, left, right } = this.entities.content.getBoundingClientRect()
-                let source
-                if (className === "pinTop") {
-                    source = { left: `${left}px`, width: `${width}px` }
-                } else {
-                    const { right: modalRight } = this.entities.modal.getBoundingClientRect()
-                    source = { left: `${right}px`, width: `${modalRight - right}px` }
-                }
-                Object.assign(this.entities.modal.style, source)
-            }
-            const { eventHub } = this.utils
-            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition)
-            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition)
-        }
-        const onHeaderClick = () => {
-            this.entities.header.addEventListener("click", ev => {
-                const button = ev.target.closest(".plugin-markmap-icon")
-                if (!button) return
-                const action = button.getAttribute("action")
-                if (action !== "move" && this[action]) {
-                    this._doAction(action)
-                }
-            })
-        }
         const onSvgClick = () => {
             const getCid = node => {
                 if (!node) return
@@ -216,15 +211,13 @@ class tocMarkmap {
                 if (!list) return
                 const nodeIdx = list[list.length - 1]
                 let tocIdx = parseInt(nodeIdx - 1) // Markmap node indices start from 1, so subtract 1.
-                if (!this.mm.state.data.content) {
-                    tocIdx-- // If the first node of the markmap is an empty node, subtract 1 again.
+                if (this.mm.state.data.content === "" && headers[0].getText() !== "") {
+                    tocIdx-- // If the first(root) node of the markmap is an empty node, subtract 1 again.
                 }
                 const header = headers[tocIdx]
                 return header && header.attributes.id
             }
             this.entities.svg.addEventListener("click", ev => {
-                ev.preventDefault()
-                ev.stopPropagation()
                 const node = ev.target.closest(".markmap-node")
                 const cid = getCid(node)
                 if (!cid) return
@@ -235,6 +228,9 @@ class tocMarkmap {
                         const head = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`)
                         const isFold = node.classList.contains("markmap-fold")
                         this.utils.callPluginFunction("collapse_paragraph", "trigger", head, !isFold)
+                    }
+                    if (this.config.AUTO_FIT_WHEN_FOLD) {
+                        this.fit()
                     }
                 } else {
                     if (this.config.CLICK_TO_POSITIONING) {
@@ -255,23 +251,20 @@ class tocMarkmap {
                 const attrs = [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "setting", "download", "close"]
                 return this.utils.pick(menuMap, attrs)
             }
-            const callback = ({ key }) => this._doAction(key)
+            const callback = ({ key }) => this.doAction(key)
             this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback)
         }
 
-        this.prepare()
         onEvent()
         onMove()
         onResize()
-        onToggleSidebar()
-        onHeaderClick()
         onSvgClick()
         onContextMenu()
     }
 
     callback = async () => {
         if (this.utils.isShow(this.entities.modal)) {
-            await this._doAction("close")
+            this.close()
         } else {
             await this.plugin.lazyLoad()
             this.utils.show(this.entities.modal)
@@ -281,6 +274,11 @@ class tocMarkmap {
     }
 
     close = () => {
+        if (this.pinUtils.isPinTop) {
+            this.pinTop()
+        } else if (this.pinUtils.isPinRight) {
+            this.pinRight()
+        }
         this.entities.modal.style = ""
         this.utils.hide(this.entities.modal)
         this.utils.show(this.entities.resize)
@@ -290,10 +288,10 @@ class tocMarkmap {
         this.mm = null
     }
 
-    fit = (dontNotify = true) => {
+    fit = (notify = false) => {
         if (!this.mm) return
         this.mm.fit()
-        if (!dontNotify) {
+        if (notify) {
             this.utils.notification.show(this.i18n.t("func.fit.ok"))
         }
     }
@@ -308,8 +306,8 @@ class tocMarkmap {
     setting = async () => {
         const storeAttrs = [
             "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
-            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES",
-            "CLICK_TO_POSITIONING", "AUTO_FIT_WHEN_UPDATE", "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
+            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITIONING",
+            "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_FOLD", "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
         ]
         const arr2Str = arr => arr.join("_")
         const str2Arr = str => str.split("_")
@@ -319,7 +317,7 @@ class tocMarkmap {
             const colorOptions = Object.fromEntries(
                 [...this.config.CANDIDATE_COLOR_SCHEMES, this.config.DEFAULT_TOC_OPTIONS.color].map(colorList => {
                     const colors = colorList
-                        .map(color => `<div style="background-color: ${color}; width: 32px; border-radius: 2px;"></div>`)
+                        .map(color => `<div style="background: ${color}; width: 34px; border-radius: 2px;"></div>`)
                         .join("")
                     const label = `<div style="display: inline-flex; height: 22px;">${colors}</div>`
                     return [arr2Str(colorList), label]
@@ -377,11 +375,9 @@ class tocMarkmap {
                     "settingGroup.behavior",
                     field("FIX_SKIPPED_LEVEL_HEADERS", "switch"),
                     field("REMOVE_HEADER_STYLES", "switch"),
-                ),
-                untitledBox(
-                    field("AUTO_FIT_WHEN_UPDATE", "switch"),
                     field("KEEP_FOLD_STATE_WHEN_UPDATE", "switch"),
-                    field("DEFAULT_TOC_OPTIONS.autoFit", "switch"),
+                    field("AUTO_FIT_WHEN_UPDATE", "switch"),
+                    field("AUTO_FIT_WHEN_FOLD", "switch"),
                     field("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "switch", { tooltip: "experimental", disabled: !pluginEnabled, readonly: pluginEnabled }),
                 ),
                 titledBox(
@@ -397,7 +393,7 @@ class tocMarkmap {
                     field("DOWNLOAD_OPTIONS.PADDING_VERTICAL", "number", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
                     field("DOWNLOAD_OPTIONS.TEXT_COLOR", "text"),
                     field("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", "text"),
-                    field("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", "text", { tooltip: "pixelImagesOnly" }),
+                    field("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", "text", { tooltip: "jpgFormatOnly" }),
                     field("DOWNLOAD_OPTIONS.IMAGE_QUALITY", "range", { tooltip: "pixelImagesOnly", min: 0.01, max: 1, step: 0.01 }),
                 ),
                 untitledBox(
@@ -500,68 +496,74 @@ class tocMarkmap {
         this.utils.notification.show(this.i18n.t("func.download.ok"))
     }
 
-    pinTop = async (fit = true) => {
+    pinTop = (fit = true) => {
         this.pinUtils.isPinTop = !this.pinUtils.isPinTop
         if (this.pinUtils.isPinTop) {
             if (this.pinUtils.isPinRight) {
-                await this.pinRight(false)
+                this.pinRight(false)
+            } else {
+                this.pinUtils.recordRects()
             }
-            await this.pinUtils.recordRect()
         }
 
-        let modalRect = this.modalOriginRect
-        let contentTop = this.contentOriginRect.top
+        let modalRect, contentTop
         if (this.pinUtils.isPinTop) {
-            const { top, height, width, left } = this.contentOriginRect
+            const { left, top, height, width } = this.pinUtils.originContentRect
             const newHeight = height * this.config.HEIGHT_PERCENT_WHEN_PIN_TOP / 100
             modalRect = { left, top, width, height: newHeight }
             contentTop = top + newHeight
+        } else {
+            modalRect = this.pinUtils.originModalRect
+            contentTop = this.pinUtils.originContentRect.top
         }
 
         this._setModalRect(modalRect)
-        this._setPinStyle("pinTop")
+        this._setPinStyles(true)
         this.entities.content.style.top = contentTop + "px"
         if (fit) {
-            await this.fit()
+            this.fit()
         }
     }
 
-    pinRight = async (fit = true) => {
+    pinRight = (fit = true) => {
         this.pinUtils.isPinRight = !this.pinUtils.isPinRight
         if (this.pinUtils.isPinRight) {
             if (this.pinUtils.isPinTop) {
-                await this.pinTop(false)
+                this.pinTop(false)
+            } else {
+                this.pinUtils.recordRects()
             }
-            await this.pinUtils.recordRect()
         }
 
-        let modalRect = this.modalOriginRect
-        let contentRight = ""
-        let contentWidth = ""
-        let writeWidth = ""
+        let modalRect, contentRight, contentWidth, writeWidth
         if (this.pinUtils.isPinRight) {
-            const { top, width, height, right } = this.contentOriginRect
+            const { top, height, width, right } = this.pinUtils.originContentRect
             const newWidth = width * this.config.WIDTH_PERCENT_WHEN_PIN_RIGHT / 100
             modalRect = { top, height, width: newWidth, left: right - newWidth }
             contentRight = right - newWidth + "px"
             contentWidth = width - newWidth + "px"
             writeWidth = "initial"
+        } else {
+            modalRect = this.pinUtils.originModalRect
+            contentRight = ""
+            contentWidth = ""
+            writeWidth = ""
         }
 
         this._setModalRect(modalRect)
-        this._setPinStyle("pinRight")
+        this._setPinStyles(false)
         this.entities.content.style.right = contentRight
         this.entities.content.style.width = contentWidth
         this.utils.entities.eWrite.style.width = writeWidth
         if (fit) {
-            await this.fit()
+            this.fit()
         }
     }
 
-    hideToolbar = () => this._toggleToolbar(false)
     showToolbar = () => this._toggleToolbar(true)
-    expand = () => this._toggleFullScreen(true)
-    shrink = () => this._toggleFullScreen(false)
+    hideToolbar = () => this._toggleToolbar(false)
+    expand = () => this._toggleFullscreen(true)
+    shrink = () => this._toggleFullscreen(false)
 
     draw = () => {
         const md = this.plugin.getToc()
@@ -576,6 +578,14 @@ class tocMarkmap {
             this.mm.setData(root, options)
         } else {
             this.mm = this.Lib.Markmap.create(this.entities.svg, options, root)
+        }
+    }
+
+    doAction = async action => {
+        if (action === "fit") {
+            this.fit(true)
+        } else if (action !== "move") {
+            await this[action]()
         }
     }
 
@@ -615,21 +625,6 @@ class tocMarkmap {
         }
     }
 
-    _doAction = async action => {
-        const noNeedUnpin = ["pinTop", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"]
-        if (!noNeedUnpin.includes(action)) {
-            if (this.pinUtils.isPinTop) {
-                await this.pinTop()
-            }
-            if (this.pinUtils.isPinRight) {
-                await this.pinRight()
-            }
-        }
-        const hasArgActions = ["pinTop", "pinRight", "fit"]
-        const arg = hasArgActions.includes(action) ? false : undefined
-        await this[action](arg)
-    }
-
     _initModalRect = () => {
         const { top: t, left: l, width: w, height: h } = this.entities.content.getBoundingClientRect()
         const { WIDTH_PERCENT_WHEN_INIT: wRatio, HEIGHT_PERCENT_WHEN_INIT: hRatio } = this.config
@@ -646,21 +641,20 @@ class tocMarkmap {
         Object.assign(this.entities.modal.style, s)
     }
 
-    _setPinStyle = (type = "pinTop") => {
-        const [pinned, cls, act, grip, hint, icon] = type === "pinTop"
-            ? [this.pinUtils.isPinTop, "pinTop", "pinTop", "gripTop", "func.pinTop", "ion-chevron-up"]
-            : [this.pinUtils.isPinRight, "pinRight", "pinRight", "gripRight", "func.pinRight", "ion-chevron-right"]
+    _setPinStyles = (isTop = true) => {
+        const [pinned, gripEl, act, hint, icon] = (isTop === true)
+            ? [this.pinUtils.isPinTop, this.entities.gripTop, "pinTop", "func.pinTop", "ion-chevron-up"]
+            : [this.pinUtils.isPinRight, this.entities.gripRight, "pinRight", "func.pinRight", "ion-chevron-right"]
 
-        this.entities.modal.classList.toggle(cls)
         this.entities.modal.classList.toggle("noBoxShadow", pinned)
-        this.utils.toggleVisible(this.entities[grip], !pinned)
+        this.utils.toggleVisible(gripEl, !pinned)
         this.utils.toggleVisible(this.entities.resize, pinned)
         this.utils.toggleVisible(this.entities.move, pinned)
         this.utils.toggleVisible(this.entities.penetrateMouse, pinned)
         this.entities.fullScreen.setAttribute("action", "expand")
 
         if (pinned && this.entities.modal.classList.contains("penetrateMouse")) {
-            this._doAction("penetrateMouse")
+            this.penetrateMouse()
         }
 
         const btn = this.entities.header.querySelector(`[action="${act}"]`)
@@ -669,18 +663,21 @@ class tocMarkmap {
         btn.setAttribute("ty-hint", this.i18n.t(pinned ? "func.pinRecover" : hint))
     }
 
-    _toggleFullScreen = (isFullScreen) => {
-        if (isFullScreen) {
-            this.modalOriginRect = this.entities.modal.getBoundingClientRect()
-            this._setModalRect(this.entities.content.getBoundingClientRect())
+    _toggleFullscreen = (expand = true) => {
+        if (this.pinUtils.isPinTop) {
+            this.pinTop()
+        } else if (this.pinUtils.isPinRight) {
+            this.pinRight()
         } else {
-            this._setModalRect(this.modalOriginRect)
+            this.pinUtils.recordRects()
         }
-        this.entities.modal.classList.toggle("noBoxShadow", isFullScreen)
-        this.entities.modal.classList.toggle("fullScreen", isFullScreen)
-        this.entities.fullScreen.setAttribute("action", isFullScreen ? "shrink" : "expand")
-        this.utils.toggleVisible(this.entities.resize, isFullScreen)
-        this.utils.toggleVisible(this.entities.move, isFullScreen)
+
+        this._setModalRect(expand ? this.pinUtils.originContentRect : this.pinUtils.originModalRect)
+        this.entities.modal.classList.toggle("noBoxShadow", expand)
+        this.entities.fullScreen.setAttribute("action", expand ? "shrink" : "expand")
+        this.utils.toggleVisible(this.entities.penetrateMouse, expand)
+        this.utils.toggleVisible(this.entities.resize, expand)
+        this.utils.toggleVisible(this.entities.move, expand)
     }
 
     _toggleToolbar = show => {
