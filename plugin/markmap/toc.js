@@ -11,12 +11,12 @@ class tocMarkmap {
         <div id="plugin-markmap" class="plugin-common-modal plugin-common-hidden">
             <div class="plugin-markmap-header">
                 <div class="plugin-markmap-icon ion-close" action="close" ty-hint="${this.i18n.t('func.close')}"></div>
-                <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="${this.i18n.t('func.expand')}"></div>
                 <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="${this.i18n.t('func.move')}"></div>
                 <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="${this.i18n.t('func.fit')}"></div>
                 <div class="plugin-markmap-icon ion-android-locate" action="penetrateMouse" ty-hint="${this.i18n.t('func.penetrateMouse')}"></div>
                 <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="${this.i18n.t('func.setting')}"></div>
                 <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="${this.i18n.t('func.download')}"></div>
+                <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="${this.i18n.t('func.expand')}"></div>
                 <div class="plugin-markmap-icon ion-chevron-up" action="pinTop" ty-hint="${this.i18n.t('func.pinTop')}"></div>
                 <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="${this.i18n.t('func.pinRight')}"></div>
                 <div class="plugin-markmap-icon" action="resize"><svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg></div>
@@ -51,21 +51,14 @@ class tocMarkmap {
         this.pinUtils = {
             isPinTop: false,
             isPinRight: false,
-            modalOriginRect: null,
-            contentOriginRect: null,
-            updateContentRect: (rect) => {
-                const r = this.pinUtils.contentOriginRect
-                this.pinUtils.contentOriginRect = {
-                    left: rect.left || r.left,
-                    top: rect.top || r.top,
-                    height: rect.height || r.height,
-                    width: rect.width || r.width,
-                    right: rect.right || r.right,
-                }
-            },
+            originModalRect: null,
+            originContentRect: null,
+            recordContentRect: rect => this.pinUtils.originContentRect = rect,
             recordRects: () => {
-                this.pinUtils.modalOriginRect = this.entities.modal.getBoundingClientRect()
-                this.pinUtils.contentOriginRect = this.entities.content.getBoundingClientRect()
+                if (!this.entities.modal.classList.contains("noBoxShadow")) {
+                    this.pinUtils.originModalRect = this.entities.modal.getBoundingClientRect()
+                    this.pinUtils.originContentRect = this.entities.content.getBoundingClientRect()
+                }
             },
         }
     }
@@ -73,8 +66,8 @@ class tocMarkmap {
     process = () => {
         const onEvent = () => {
             const { eventHub } = this.utils
-            const { modal, content, fullScreen } = this.entities
-            const resetPosition = () => {
+            const { modal, content, fullScreen, header } = this.entities
+            const repositioning = () => {
                 if (!this.mm) return
 
                 const isFullScreen = fullScreen.getAttribute("action") === "shrink"
@@ -82,24 +75,25 @@ class tocMarkmap {
 
                 const contentRect = content.getBoundingClientRect()
                 const modalRect = modal.getBoundingClientRect()
+                const { originContentRect } = this.pinUtils
 
-                let newRect, update
+                let newModalRect, newContentRect
                 if (isFullScreen) {
-                    newRect = contentRect
-                    update = { left: contentRect.left, width: contentRect.width }
+                    newModalRect = contentRect
+                    newContentRect = contentRect
                 } else if (this.pinUtils.isPinTop) {
-                    newRect = { top: modalRect.top, height: modalRect.height, left: contentRect.left, width: contentRect.width }
-                    update = { left: contentRect.left, width: contentRect.width }
+                    newModalRect = new DOMRect(contentRect.x, modalRect.y, contentRect.width, modalRect.height)
+                    newContentRect = new DOMRect(contentRect.x, originContentRect.y, contentRect.width, originContentRect.height)
                 } else if (this.pinUtils.isPinRight) {
-                    newRect = { top: modalRect.top, height: modalRect.height, left: contentRect.right, width: modalRect.right - contentRect.right }
-                    update = { left: contentRect.left, width: this.pinUtils.contentOriginRect.right - contentRect.left }
+                    newModalRect = new DOMRect(contentRect.right, modalRect.y, modalRect.right - contentRect.right, modalRect.height)
+                    newContentRect = new DOMRect(contentRect.x, originContentRect.y, originContentRect.right - contentRect.left, originContentRect.height)
                 }
-                this.pinUtils.updateContentRect(update)
-                this._setModalRect(newRect)
+                this.pinUtils.recordContentRect(newContentRect)
+                this._setModalRect(newModalRect)
             }
-            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition)
-            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition)
-            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this._doAction("close"))
+            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, repositioning)
+            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, repositioning)
+            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this.close())
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => {
                 if (!this.utils.isShow(modal)) return
                 this.draw()
@@ -109,6 +103,13 @@ class tocMarkmap {
             })
 
             modal.addEventListener("transitionend", () => this.fit())
+            header.addEventListener("click", ev => {
+                const button = ev.target.closest(".plugin-markmap-icon")
+                if (button) {
+                    const action = button.getAttribute("action")
+                    this.doAction(action)
+                }
+            })
         }
         const onMove = () => {
             const attr = "ty-hint"
@@ -201,16 +202,6 @@ class tocMarkmap {
             whenPinTop()
             whenPinRight()
         }
-        const onHeaderClick = () => {
-            this.entities.header.addEventListener("click", ev => {
-                const button = ev.target.closest(".plugin-markmap-icon")
-                if (!button) return
-                const action = button.getAttribute("action")
-                if (action !== "move" && this[action]) {
-                    this._doAction(action)
-                }
-            })
-        }
         const onSvgClick = () => {
             const getCid = node => {
                 if (!node) return
@@ -220,15 +211,13 @@ class tocMarkmap {
                 if (!list) return
                 const nodeIdx = list[list.length - 1]
                 let tocIdx = parseInt(nodeIdx - 1) // Markmap node indices start from 1, so subtract 1.
-                if (!this.mm.state.data.content) {
-                    tocIdx-- // If the first node of the markmap is an empty node, subtract 1 again.
+                if (this.mm.state.data.content === "" && headers[0].getText() !== "") {
+                    tocIdx-- // If the first(root) node of the markmap is an empty node, subtract 1 again.
                 }
                 const header = headers[tocIdx]
                 return header && header.attributes.id
             }
             this.entities.svg.addEventListener("click", ev => {
-                ev.preventDefault()
-                ev.stopPropagation()
                 const node = ev.target.closest(".markmap-node")
                 const cid = getCid(node)
                 if (!cid) return
@@ -262,31 +251,34 @@ class tocMarkmap {
                 const attrs = [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "setting", "download", "close"]
                 return this.utils.pick(menuMap, attrs)
             }
-            const callback = ({ key }) => this._doAction(key)
+            const callback = ({ key }) => this.doAction(key)
             this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback)
         }
 
         onEvent()
         onMove()
         onResize()
-        onHeaderClick()
         onSvgClick()
         onContextMenu()
     }
 
     callback = async () => {
         if (this.utils.isShow(this.entities.modal)) {
-            await this._doAction("close")
+            this.close()
         } else {
             await this.plugin.lazyLoad()
             this.utils.show(this.entities.modal)
             this._initModalRect()
-            this.pinUtils.recordRects()
             await this.draw()
         }
     }
 
     close = () => {
+        if (this.pinUtils.isPinTop) {
+            this.pinTop()
+        } else if (this.pinUtils.isPinRight) {
+            this.pinRight()
+        }
         this.entities.modal.style = ""
         this.utils.hide(this.entities.modal)
         this.utils.show(this.entities.resize)
@@ -516,17 +508,17 @@ class tocMarkmap {
 
         let modalRect, contentTop
         if (this.pinUtils.isPinTop) {
-            const { left, top, height, width } = this.pinUtils.contentOriginRect
+            const { left, top, height, width } = this.pinUtils.originContentRect
             const newHeight = height * this.config.HEIGHT_PERCENT_WHEN_PIN_TOP / 100
             modalRect = { left, top, width, height: newHeight }
             contentTop = top + newHeight
         } else {
-            modalRect = this.pinUtils.modalOriginRect
-            contentTop = this.pinUtils.contentOriginRect.top
+            modalRect = this.pinUtils.originModalRect
+            contentTop = this.pinUtils.originContentRect.top
         }
 
         this._setModalRect(modalRect)
-        this._setPinStyle("pinTop")
+        this._setPinStyles(true)
         this.entities.content.style.top = contentTop + "px"
         if (fit) {
             this.fit()
@@ -545,21 +537,21 @@ class tocMarkmap {
 
         let modalRect, contentRight, contentWidth, writeWidth
         if (this.pinUtils.isPinRight) {
-            const { top, height, width, right } = this.pinUtils.contentOriginRect
+            const { top, height, width, right } = this.pinUtils.originContentRect
             const newWidth = width * this.config.WIDTH_PERCENT_WHEN_PIN_RIGHT / 100
             modalRect = { top, height, width: newWidth, left: right - newWidth }
             contentRight = right - newWidth + "px"
             contentWidth = width - newWidth + "px"
             writeWidth = "initial"
         } else {
-            modalRect = this.pinUtils.modalOriginRect
+            modalRect = this.pinUtils.originModalRect
             contentRight = ""
             contentWidth = ""
             writeWidth = ""
         }
 
         this._setModalRect(modalRect)
-        this._setPinStyle("pinRight")
+        this._setPinStyles(false)
         this.entities.content.style.right = contentRight
         this.entities.content.style.width = contentWidth
         this.utils.entities.eWrite.style.width = writeWidth
@@ -568,10 +560,10 @@ class tocMarkmap {
         }
     }
 
-    hideToolbar = () => this._toggleToolbar(false)
     showToolbar = () => this._toggleToolbar(true)
-    expand = () => this._toggleFullScreen(true)
-    shrink = () => this._toggleFullScreen(false)
+    hideToolbar = () => this._toggleToolbar(false)
+    expand = () => this._toggleFullscreen(true)
+    shrink = () => this._toggleFullscreen(false)
 
     draw = () => {
         const md = this.plugin.getToc()
@@ -586,6 +578,14 @@ class tocMarkmap {
             this.mm.setData(root, options)
         } else {
             this.mm = this.Lib.Markmap.create(this.entities.svg, options, root)
+        }
+    }
+
+    doAction = async action => {
+        if (action === "fit") {
+            this.fit(true)
+        } else if (action !== "move") {
+            await this[action]()
         }
     }
 
@@ -625,18 +625,6 @@ class tocMarkmap {
         }
     }
 
-    _doAction = async action => {
-        if (["close", "expand"].includes(action)) {
-            if (this.pinUtils.isPinTop) {
-                this.pinTop()
-            } else if (this.pinUtils.isPinRight) {
-                this.pinRight()
-            }
-        }
-        const arg = action === "fit" ? true : undefined
-        await this[action](arg)
-    }
-
     _initModalRect = () => {
         const { top: t, left: l, width: w, height: h } = this.entities.content.getBoundingClientRect()
         const { WIDTH_PERCENT_WHEN_INIT: wRatio, HEIGHT_PERCENT_WHEN_INIT: hRatio } = this.config
@@ -653,20 +641,20 @@ class tocMarkmap {
         Object.assign(this.entities.modal.style, s)
     }
 
-    _setPinStyle = (type = "pinTop") => {
-        const [pinned, act, grip, hint, icon] = type === "pinTop"
-            ? [this.pinUtils.isPinTop, "pinTop", "gripTop", "func.pinTop", "ion-chevron-up"]
-            : [this.pinUtils.isPinRight, "pinRight", "gripRight", "func.pinRight", "ion-chevron-right"]
+    _setPinStyles = (isTop = true) => {
+        const [pinned, gripEl, act, hint, icon] = (isTop === true)
+            ? [this.pinUtils.isPinTop, this.entities.gripTop, "pinTop", "func.pinTop", "ion-chevron-up"]
+            : [this.pinUtils.isPinRight, this.entities.gripRight, "pinRight", "func.pinRight", "ion-chevron-right"]
 
         this.entities.modal.classList.toggle("noBoxShadow", pinned)
-        this.utils.toggleVisible(this.entities[grip], !pinned)
+        this.utils.toggleVisible(gripEl, !pinned)
         this.utils.toggleVisible(this.entities.resize, pinned)
         this.utils.toggleVisible(this.entities.move, pinned)
         this.utils.toggleVisible(this.entities.penetrateMouse, pinned)
         this.entities.fullScreen.setAttribute("action", "expand")
 
         if (pinned && this.entities.modal.classList.contains("penetrateMouse")) {
-            this._doAction("penetrateMouse")
+            this.penetrateMouse()
         }
 
         const btn = this.entities.header.querySelector(`[action="${act}"]`)
@@ -675,13 +663,21 @@ class tocMarkmap {
         btn.setAttribute("ty-hint", this.i18n.t(pinned ? "func.pinRecover" : hint))
     }
 
-    _toggleFullScreen = (isFullScreen) => {
-        this._setModalRect(isFullScreen ? this.pinUtils.contentOriginRect : this.pinUtils.modalOriginRect)
-        this.entities.modal.classList.toggle("noBoxShadow", isFullScreen)
-        this.entities.fullScreen.setAttribute("action", isFullScreen ? "shrink" : "expand")
-        this.utils.toggleVisible(this.entities.penetrateMouse, isFullScreen)
-        this.utils.toggleVisible(this.entities.resize, isFullScreen)
-        this.utils.toggleVisible(this.entities.move, isFullScreen)
+    _toggleFullscreen = (expand = true) => {
+        if (this.pinUtils.isPinTop) {
+            this.pinTop()
+        } else if (this.pinUtils.isPinRight) {
+            this.pinRight()
+        } else {
+            this.pinUtils.recordRects()
+        }
+
+        this._setModalRect(expand ? this.pinUtils.originContentRect : this.pinUtils.originModalRect)
+        this.entities.modal.classList.toggle("noBoxShadow", expand)
+        this.entities.fullScreen.setAttribute("action", expand ? "shrink" : "expand")
+        this.utils.toggleVisible(this.entities.penetrateMouse, expand)
+        this.utils.toggleVisible(this.entities.resize, expand)
+        this.utils.toggleVisible(this.entities.move, expand)
     }
 
     _toggleToolbar = show => {
