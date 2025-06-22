@@ -105,6 +105,7 @@
     align-items: center;
     height: 42px;
     line-height: 42px;
+    user-select: none;
 }
 
 /***** general control *****/
@@ -121,6 +122,7 @@
     word-break: keep-all;
     padding-right: 12px;
     max-width: 100%;
+    user-select: none;
 }
 
 .control-right {
@@ -411,6 +413,8 @@ textarea::placeholder {
 
 .control[data-type="action"] {
     cursor: pointer;
+    overflow: hidden; /* Hides the ripple outside the element */
+    position: relative; /* Allows absolute positioning of the ripple */
 }
 
 .control[data-type="action"]:hover {
@@ -419,6 +423,22 @@ textarea::placeholder {
 
 .control[data-type="action"]:hover .action {
     margin-right: 0;
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(187, 187, 187, 0.5);
+    transform: scale(0);
+    animation: ripple-effect .8s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes ripple-effect {
+    to {
+        transform: scale(2);
+        opacity: 0;
+    }
 }
 
 /***** object *****/

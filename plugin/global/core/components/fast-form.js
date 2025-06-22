@@ -168,7 +168,8 @@ customElements.define("fast-form", class extends HTMLElement {
             const input = this.closest(".hotkey-wrap").querySelector("input")
             input.value = input.getAttribute("value")
             that._dispatchEvent(input.dataset.key, input.value)
-        }).on("click", '.control[data-type="action"]', function () {
+        }).on("click", '.control[data-type="action"]', function (ev) {
+            that._rippled(this, ev.clientX, ev.clientY)
             const icon = this.querySelector(".action")
             that._dispatchAction(icon.dataset.action)
         }).on("click", ".array-item-delete", function () {
@@ -497,5 +498,21 @@ customElements.define("fast-form", class extends HTMLElement {
         }
         const f = funcMap[this.options.objectFormat] || funcMap.JSON
         return f(str)
+    }
+
+    _rippled(el, clientX, clientY) {
+        const ripple = document.createElement("span")
+        ripple.classList.add("ripple")
+        const diameter = Math.max(el.clientWidth, el.clientHeight) * 2
+        const radius = diameter / 2
+        const rect = el.getBoundingClientRect()
+        const x = clientX - rect.left - radius
+        const y = clientY - rect.top - radius
+        ripple.style.width = `${diameter}px`
+        ripple.style.height = `${diameter}px`
+        ripple.style.left = `${x}px`
+        ripple.style.top = `${y}px`
+        el.appendChild(ripple)
+        ripple.addEventListener("animationend", () => ripple.remove(), { once: true })
     }
 })
