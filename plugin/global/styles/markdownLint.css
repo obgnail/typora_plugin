@@ -3,14 +3,10 @@
     flex-direction: column;
     top: 10%;
     right: 25px;
-    margin: 5px;
-    overflow: auto;
-    resize: vertical;
     line-height: ${this.config.modal_line_height};
     width: ${this.config.modal_width};
     min-width: 380px;
     max-height: ${this.config.modal_max_height};
-    min-height: 150px;
     z-index: 9993;
 }
 
@@ -35,11 +31,13 @@
 
 .plugin-markdownlint-table {
     overflow: auto;
+    flex-grow: 1;
 }
 
 #plugin-markdownlint table {
     cursor: default;
     margin-top: 0;
+    margin-bottom: .8em;
     font-size: ${this.config.modal_font_size};
 }
 
@@ -63,8 +61,12 @@
     right: 9px;
     width: ${this.config.button_width};
     height: ${this.config.button_height};
-    background-color: ${this.config.pass_color};
+    background-color: ${this.config.error_color};
     cursor: pointer;
     transition: background-color 0.1s ease 0s;
     z-index: 9992;
+}
+
+#plugin-markdownlint-button[lint-check-pass] {
+    background-color: ${this.config.pass_color};
 }

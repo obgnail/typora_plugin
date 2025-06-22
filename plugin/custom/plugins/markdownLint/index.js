@@ -32,11 +32,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.initLint = this.utils.noop
         this.checkLint = this.utils.noop
         this.fixLint = this.utils.noop
-
         this.fixInfos = []
-        this.TOOLS = new Set(this.config.tools)
-        this.ACTION = { INIT: "init", CHECK: "check", FIX: "fix" }
-        this.TRANSLATIONS = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
         this.entities = {
             modal: document.querySelector("#plugin-markdownlint"),
             iconGroup: document.querySelector("#plugin-markdownlint .plugin-markdownlint-icon-group"),
@@ -45,14 +41,16 @@ class markdownLintPlugin extends BaseCustomPlugin {
             tbody: document.querySelector("#plugin-markdownlint tbody"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
+        this.TRANSLATIONS = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
     }
 
     process = () => {
         const initWorker = (onCheck, onFix) => {
+            const ACTION = { INIT: "init", CHECK: "check", FIX: "fix" }
             const worker = new Worker("plugin/custom/plugins/markdownLint/linter-worker.js")
             worker.onmessage = event => {
-                const { action, result } = event.data || {}
-                const fn = action === this.ACTION.FIX ? onFix : onCheck
+                const { action, result } = event.data
+                const fn = action === ACTION.FIX ? onFix : onCheck
                 fn(result)
             }
             const send = (action, customPayload) => {
@@ -60,14 +58,15 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const payload = { content, ...customPayload }
                 worker.postMessage({ action, payload })
             }
-            this.initLint = () => {
-                const config = this.config.rule_config
-                const libPath = this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js")
-                const customRulePaths = this.config.custom_rules.map(e => this.utils.joinPath(e))
-                send(this.ACTION.INIT, { config, libPath, customRulePaths })
-            }
-            this.checkLint = () => send(this.ACTION.CHECK)
-            this.fixLint = (fixInfo = this.fixInfos) => send(this.ACTION.FIX, { fixInfo })
+            Object.assign(this, {
+                initLint: () => send(ACTION.INIT, {
+                    config: this.config.rule_config,
+                    libPath: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
+                    customRulePaths: this.config.custom_rules.map(r => this.utils.joinPath(r)),
+                }),
+                checkLint: () => send(ACTION.CHECK),
+                fixLint: (fixInfo = this.fixInfos) => send(ACTION.FIX, { fixInfo }),
+            })
         }
 
         const onEvent = () => {
@@ -86,8 +85,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
         const _getDetail = async (infos = this.fixInfos) => {
             const attrs = ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]
-            const obj = infos.map(info => this.utils.pick(info, attrs))
-            const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t")
+            const infoList = infos.map(info => this.utils.pick(info, attrs))
+            const value = infoList.length === 1 ? infoList[0] : infoList
+            const content = JSON.stringify(value, null, "\t")
             const op = {
                 title: this.i18n.t("func.detailAll"),
                 schema: [{ fields: [{ type: "textarea", key: "detail", rows: 14 }] }],
@@ -108,16 +108,18 @@ class markdownLintPlugin extends BaseCustomPlugin {
             fixSingle: infoIdx => this.fixLint([this.fixInfos[infoIdx]]),
             toggleSourceMode: () => File.toggleSourceMode(),
             doc: async () => {
-                const doc = Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n")
-                const viewRules = () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md")
                 const op = {
                     title: this.i18n.t("func.doc"),
                     schema: [
-                        { fields: [{ type: "textarea", key: "doc", rows: 11 }] },
                         { fields: [{ type: "action", key: "viewRules", label: this.i18n.t("$label.viewMarkdownlintRules") }] },
+                        { fields: [{ type: "textarea", key: "doc", rows: 12 }] },
                     ],
-                    data: { doc },
-                    action: { viewRules },
+                    data: {
+                        doc: Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n"),
+                    },
+                    action: {
+                        viewRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+                    },
                 }
                 await this.utils.formDialog.modal(op)
             },
@@ -142,19 +144,21 @@ class markdownLintPlugin extends BaseCustomPlugin {
             }
             this.entities.iconGroup.addEventListener("click", ev => {
                 const target = ev.target.closest("[action]")
-                if (target) {
-                    const action = target.getAttribute("action")
-                    const fn = funcMap[action]
-                    fn && fn()
+                if (!target) return
+                const action = target.getAttribute("action")
+                const fn = funcMap[action]
+                if (fn) {
+                    fn()
                 }
             })
             this.entities.table.addEventListener("click", ev => {
                 const target = ev.target.closest("[action]")
-                if (target) {
-                    const action = target.getAttribute("action")
-                    const value = parseInt(target.dataset.value)
-                    const fn = funcMap[action]
-                    fn && fn(value)
+                if (!target) return
+                const action = target.getAttribute("action")
+                const value = parseInt(target.dataset.value)
+                const fn = funcMap[action]
+                if (fn) {
+                    fn(value)
                 }
             })
             this.entities.modal.addEventListener("mousedown", ev => {
@@ -166,50 +170,46 @@ class markdownLintPlugin extends BaseCustomPlugin {
             })
         }
 
-        initWorker(this.onCheck, this.onFix)
+        initWorker(this._onCheck, this._onFix)
         onEvent()
         onElementEvent()
     }
 
-    onCheck = fixInfos => {
-        const { error_color, pass_color, translate, result_order_by } = this.config
+    callback = async anchorNode => {
+        this.utils.toggleVisible(this.entities.modal)
+        this.checkLint()
+    }
 
-        const compareFn = result_order_by === "ruleName"
+    _onCheck = fixInfos => {
+        const compareFn = this.config.result_order_by === "ruleName"
             ? (a, b) => a.ruleNames[0] - b.ruleNames[0]
             : (a, b) => a.lineNumber - b.lineNumber
         this.fixInfos = fixInfos.sort(compareFn)
 
         if (this.entities.button) {
-            this.entities.button.style.backgroundColor = this.fixInfos.length ? error_color : pass_color
+            this.entities.button.toggleAttribute("lint-check-pass", this.fixInfos.length === 0)
         }
-        if (!this.utils.isShow(this.entities.modal)) return
 
+        if (this.utils.isHidden(this.entities.modal)) return
+
+        const useInfo = this.config.tools.includes("info")
+        const useLocate = this.config.tools.includes("locate")
+        const useFix = this.config.tools.includes("fix")
         const tds = this.fixInfos.map((item, idx) => {
             const rule = item.ruleNames[0]
             const lineNumber = item.lineNumber
-            const desc = (translate && this.TRANSLATIONS[rule]) || item.ruleDescription
-            const info = this.TOOLS.has("info")
-                ? `<i class="ion-information-circled" action="detailSingle" data-value="${idx}"></i>`
-                : ""
-            const locate = this.TOOLS.has("locate")
-                ? `<i class="ion-android-locate" action="jumpToLine" data-value="${lineNumber}"></i>`
-                : ""
-            const fixInfo = this.TOOLS.has("fix") && item.fixInfo
-                ? `<i class="ion-wrench" action="fixSingle" data-value="${idx}"></i>`
-                : ""
+            const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
+            const info = useInfo ? `<i class="ion-information-circled" action="detailSingle" data-value="${idx}"></i>` : ""
+            const locate = useLocate ? `<i class="ion-android-locate" action="jumpToLine" data-value="${lineNumber}"></i>` : ""
+            const fixInfo = (useFix && item.fixInfo) ? `<i class="ion-wrench" action="fixSingle" data-value="${idx}"></i>` : ""
             return `<tr><td>${lineNumber}</td><td>${rule}</td><td>${desc}</td><td>${info}${locate}${fixInfo}</td></tr>`
         })
         this.entities.tbody.innerHTML = tds.length ? tds.join("") : `<tr><td colspan="4">${this.i18n._t("global", "empty")}</td></tr>`
     }
 
-    onFix = async fileContent => {
+    _onFix = async fileContent => {
         await this.utils.editCurrentFile(fileContent)
         this.utils.notification.show(this.i18n.t("func.fixAll.ok"))
-        this.checkLint()
-    }
-
-    callback = async anchorNode => {
-        this.utils.toggleVisible(this.entities.modal)
         this.checkLint()
     }
 }
