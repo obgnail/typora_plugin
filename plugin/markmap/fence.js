@@ -46,30 +46,29 @@ class fenceMarkmap {
         if (!yamlObject) {
             return defaultOptions
         }
-        const key = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap")
-        const fenceOptions = key ? yamlObject[key] : yamlObject
+        const fenceOptions = yamlObject.markmap ? yamlObject.markmap : yamlObject
         return { ...defaultOptions, ...fenceOptions }
     }
 
-    setStyle = ($pre, $wrap, content, ops) => {
+    setStyle = ($pre, $wrap, content, options) => {
         const panelWidth = $pre.find(".md-diagram-panel").css("width")
         $wrap.css({
             width: parseFloat(panelWidth) - 10 + "px",
-            height: ops.height || this.config.DEFAULT_FENCE_HEIGHT,
-            "background-color": ops.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+            height: options.height || this.config.DEFAULT_FENCE_HEIGHT,
+            "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
         })
     }
 
-    create = ($wrap, content, ops) => {
+    create = ($wrap, content, options) => {
         const { root } = this.Lib.transformer.transform(content)
-        const options = this.plugin.assignOptions(ops)
-        return this.Lib.Markmap.create($wrap[0], options, root)
+        const _options = this.plugin.assignOptions(options)
+        return this.Lib.Markmap.create($wrap[0], _options, root)
     }
 
-    update = async ($wrap, content, instance, ops) => {
+    update = async ($wrap, content, instance, options) => {
         const { root } = this.Lib.transformer.transform(content)
-        const options = this.plugin.assignOptions(ops, instance.options)
-        instance.setData(root, options)
+        const _options = this.plugin.assignOptions(options, instance.options)
+        instance.setData(root, _options)
         await instance.fit()
     }
 

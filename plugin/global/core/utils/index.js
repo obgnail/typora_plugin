@@ -725,25 +725,24 @@ class utils {
     }
 
     static splitFrontMatter = content => {
-        const result = { yamlObject: null, remainContent: content, yamlLineCount: 0 };
-        content = content.trimLeft();
+        const result = { yamlObject: null, remainContent: content, yamlLineCount: 0 }
+        content = content.trimLeft()
         if (!/^---\r?\n/.test(content)) {
             return result
         }
-        const matchResult = /\n---\r?\n/.exec(content);
-        if (!matchResult) {
+        const endDelimiterMatch = /\n---\r?\n/.exec(content)
+        if (!endDelimiterMatch) {
             return result
         }
-        const yamlContent = content.slice(4, matchResult.index);
-        const remainContent = content.slice(matchResult.index + matchResult[0].length);
-        const yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3;
-        let yamlObject = {}
+        const yamlContent = content.slice(4, endDelimiterMatch.index)
+        result.remainContent = content.slice(endDelimiterMatch.index + endDelimiterMatch[0].length)
+        result.yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3
         try {
-            yamlObject = this.readYaml(yamlContent)
+            result.yamlObject = this.readYaml(yamlContent)
         } catch (e) {
             console.error(e)
         }
-        return { yamlObject, remainContent, yamlLineCount }
+        return result
     }
 
     static getRecentFiles = async () => {
