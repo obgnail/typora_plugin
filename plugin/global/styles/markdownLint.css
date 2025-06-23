@@ -61,12 +61,12 @@
     right: 9px;
     width: ${this.config.button_width};
     height: ${this.config.button_height};
-    background-color: ${this.config.error_color};
+    background-color: ${this.config.pass_color};
     cursor: pointer;
     transition: background-color 0.1s ease 0s;
     z-index: 9992;
 }
 
-#plugin-markdownlint-button[lint-check-pass] {
-    background-color: ${this.config.pass_color};
+#plugin-markdownlint-button[lint-check-failed] {
+    background-color: ${this.config.error_color};
 }

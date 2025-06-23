@@ -187,7 +187,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.fixInfos = fixInfos.sort(compareFn)
 
         if (this.entities.button) {
-            this.entities.button.toggleAttribute("lint-check-pass", this.fixInfos.length === 0)
+            this.entities.button.toggleAttribute("lint-check-failed", this.fixInfos.length)
         }
 
         if (this.utils.isHidden(this.entities.modal)) return
