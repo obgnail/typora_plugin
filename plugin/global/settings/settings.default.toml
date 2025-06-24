@@ -1958,7 +1958,7 @@ HIDE_OTHER_OPTIONS = false
 # 是否自动将已启用但未在 `MENUS` 中配置的插件添加到最后一个一级菜单中
 #   true:  自动添加
 #   false: 不自动添加
-FIND_LOST_PLUGINS = true
+FIND_LOST_PLUGINS = false
 
 # ------------------- 自定义右键菜单 -------------------
 # 自定义右键菜单：`MENUS` 数组中的每一项对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
@@ -2086,6 +2086,9 @@ HOTKEY = ""
 
 # 打开设置页面时，默认定位到哪个插件的菜单
 DEFAULT_MENU = "global"
+
+# 设置页面里隐藏菜单的插件
+HIDE_MENUS = []
 
 # 忽略配置依赖
 # 若为 true，将不再强制执行配置项之间的依赖关系

@@ -50,6 +50,11 @@ customElements.define("fast-form", class extends HTMLElement {
                 this.select()
                 return false
             }
+        }).on("keydown", ".array-item-input", function (ev) {
+            if (ev.key === "Enter") {
+                this.blur()
+                return false
+            }
         }).on("click", function () {
             if (shownSelectOption) {
                 that.utils.hide(shownSelectOption)
@@ -218,8 +223,9 @@ customElements.define("fast-form", class extends HTMLElement {
             const displayEl = input.parentElement
             const addEl = input.nextElementSibling
             const value = input.textContent
+            const allowDuplicates = displayEl.dataset.allowDuplicates === "true"
             const arrayValues = [...displayEl.querySelectorAll(".array-item-value")].map(e => e.textContent)
-            if (arrayValues.includes(value)) {
+            if (!allowDuplicates && arrayValues.includes(value)) {
                 const msg = this.i18n.t("global", "error.duplicateValue")
                 this.utils.notification.show(msg, "error")
                 input.focus()
@@ -360,7 +366,7 @@ customElements.define("fast-form", class extends HTMLElement {
                 case "array":
                     const items = value.map(v => this._createArrayItem(v)).join("")
                     return `
-                        <div class="array" data-key="${ctl.key}">
+                        <div class="array" data-key="${ctl.key}" data-allow-duplicates="${Boolean(ctl.allowDuplicates)}">
                             ${items}
                             <span class="array-item-input plugin-common-hidden" contenteditable="true"></span>
                             <span class="array-item-add">+ ${this.i18n.t("global", "add")}</span>
@@ -477,7 +483,7 @@ customElements.define("fast-form", class extends HTMLElement {
     }
 
     _joinSelected(options) {
-        return options.join(", ")
+        return options.length ? options.join(", ") : this.i18n.t("global", "empty")
     }
 
     _serialize(obj) {

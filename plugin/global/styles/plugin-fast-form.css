@@ -539,14 +539,17 @@ textarea::placeholder {
 .table th:last-child,
 .table td:last-child {
     text-align: right;
-    width: 70px;
+    width: 65px;
 }
 
-.table .fa {
+.table th:last-child .fa,
+.table td:last-child .fa {
     font-size: 18px;
     cursor: pointer;
     border-radius: 50%;
     padding: 7px;
+    width: 18px;
+    text-align: center;
 }
 
 .table .fa:hover {

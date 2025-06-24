@@ -71,12 +71,9 @@ class preferencesPlugin extends BasePlugin {
                 search()
             })
         }
-        const domEvents = () => {
+        const onEvents = () => {
             // this.utils.dragFixedModal(this.entities.title, this.entities.dialog, false)
-            this.entities.closeButton.addEventListener("click", () => {
-                this.call()
-                this.utils.notification.show(this.i18n._t("global", "takesEffectAfterRestart"))
-            })
+            this.entities.closeButton.addEventListener("click", () => this.call())
             this.entities.menu.addEventListener("click", async ev => {
                 const target = ev.target.closest(".plugin-preferences-menu-item")
                 if (target) {
@@ -84,27 +81,27 @@ class preferencesPlugin extends BasePlugin {
                     await this.switchMenu(fixedName)
                 }
             })
-        }
-        const formEvents = () => {
             this.entities.form.addEventListener("CRUD", async ev => {
                 const { key, value, type } = ev.detail
-                const propHandler = this.utils.nestedPropertyHelpers[type]
-                if (propHandler) {
-                    const fixedName = this.entities.form.dataset.plugin
-                    const settings = await this._getSettings(fixedName)
-                    propHandler(settings, key, value)
-                    await this.utils.settings.saveSettings(fixedName, settings)
-                    const postFn = this.POSTPROCESSORS[`${fixedName}.${key}`]
-                    if (postFn) {
-                        await postFn(value, settings)
-                    }
+                const handleProperty = this.utils.nestedPropertyHelpers[type]
+                if (!handleProperty) return
+
+                const fixedName = this.entities.form.dataset.plugin
+                const settings = await this._getSettings(fixedName)
+                handleProperty(settings, key, value)
+                await this.utils.settings.saveSettings(fixedName, settings)
+
+                this._setDialogState(true)
+
+                const postFn = this.POSTPROCESSORS[`${fixedName}.${key}`]
+                if (postFn) {
+                    await postFn(value, settings)
                 }
             })
         }
 
         searchInDialog()
-        domEvents()
-        formEvents()
+        onEvents()
     }
 
     call = async () => {
@@ -112,21 +109,27 @@ class preferencesPlugin extends BasePlugin {
         if (isShow) {
             this.entities.searchInput.value = ""
             this.utils.hide(this.entities.dialog)
+            if (this._hasDialogChanged()) {
+                this._setDialogState(false)
+                this.utils.notification.show(this.i18n._t("global", "takesEffectAfterRestart"))
+            }
         } else {
             await this.showDialog(this.config.DEFAULT_MENU)
             this.utils.show(this.entities.dialog)
         }
     }
 
-    showDialog = async (showMenu) => {
+    showDialog = async (fixedName) => {
         const plugins = this._getAllPlugins()
-        const menus = Object.entries(plugins).map(([name, pluginName]) => {
-            const showName = this.utils.escape(pluginName)
-            return `<div class="plugin-preferences-menu-item" data-plugin="${name}">${showName}</div>`
-        })
+        const menus = Object.entries(plugins)
+            .filter(([name]) => !this.config.HIDE_MENUS.includes(name))
+            .map(([name, pluginName]) => {
+                const showName = this.utils.escape(pluginName)
+                return `<div class="plugin-preferences-menu-item" data-plugin="${name}">${showName}</div>`
+            })
         this.entities.menu.innerHTML = menus.join("")
-        showMenu = plugins.hasOwnProperty(showMenu) ? showMenu : "global"
-        await this.switchMenu(showMenu)
+        fixedName = plugins.hasOwnProperty(fixedName) ? fixedName : "global"
+        await this.switchMenu(fixedName)
         setTimeout(() => {
             const active = this.entities.menu.querySelector(".plugin-preferences-menu-item.active")
             active.scrollIntoView({ block: "center" })
@@ -134,10 +137,15 @@ class preferencesPlugin extends BasePlugin {
     }
 
     switchMenu = async (fixedName) => {
-        const settings = await this._getSettings(fixedName)
-        const data = await this._preprocess(fixedName, settings)
+        if (this.config.HIDE_MENUS.includes(fixedName)) {
+            fixedName = "global"
+        }
+        const schema = this.SETTING_SCHEMAS[fixedName]
+        if (!schema) return
+
+        const data = await this._preprocess(fixedName)
         this.entities.form.dataset.plugin = fixedName
-        this.entities.form.render({ schema: this.SETTING_SCHEMAS[fixedName], data, action: this.ACTION_HANDLERS })
+        this.entities.form.render({ schema, data, action: this.ACTION_HANDLERS })
         this.entities.menu.querySelectorAll(".active").forEach(e => e.classList.remove("active"))
         const menuItem = this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`)
         menuItem.classList.add("active")
@@ -168,15 +176,15 @@ class preferencesPlugin extends BasePlugin {
         return settings[fixedName]
     }
 
-    _preprocess = async (fixedName, settings) => {
-        const fnMap = this.PREPROCESSORS
-        await Promise.all(
-            this.SETTING_SCHEMAS[fixedName].flatMap(box => {
-                return box.fields
-                    .filter(field => field.key && fnMap.hasOwnProperty(`${fixedName}.${field.key}`))
-                    .map(async field => await fnMap[`${fixedName}.${field.key}`](field, settings))
-            })
-        )
+    _preprocess = async (fixedName) => {
+        const preprocessors = this.PREPROCESSORS
+        const settings = await this._getSettings(fixedName)
+        const promises = this.SETTING_SCHEMAS[fixedName].flatMap(box => {
+            return box.fields
+                .filter(field => field.key && preprocessors.hasOwnProperty(`${fixedName}.${field.key}`))
+                .map(async field => await preprocessors[`${fixedName}.${field.key}`](field, settings))
+        })
+        await Promise.all(promises)
         return settings
     }
 
@@ -251,13 +259,11 @@ class preferencesPlugin extends BasePlugin {
     _removeDependencies = (obj) => {
         if (obj == null || typeof obj !== "object") return
 
-        for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                if (key === "dependencies") {
-                    delete obj[key]
-                } else if (typeof obj[key] === "object") {
-                    this._removeDependencies(obj[key])
-                }
+        for (const key of Object.keys(obj)) {
+            if (key === "dependencies") {
+                obj[key] = undefined
+            } else if (typeof obj[key] === "object") {
+                this._removeDependencies(obj[key])
             }
         }
     }
@@ -270,6 +276,9 @@ class preferencesPlugin extends BasePlugin {
             this._removeDependencies(this.SETTING_SCHEMAS)
         }
     }
+
+    _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
+    _hasDialogChanged = () => this.entities.dialog.hasAttribute("has-changed")
 
     /** Callback functions for type="action" settings in schema */
     _initActionHandlers = () => {
@@ -293,12 +302,14 @@ class preferencesPlugin extends BasePlugin {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearSettings(fixedName)
                 await this.switchMenu(fixedName)
+                this._setDialogState(true)
                 this.utils.notification.show(this.i18n._t("global", "success.restore"))
             },
             restoreAllSettings: async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearAllSettings()
                 await this.switchMenu(fixedName)
+                this._setDialogState(true)
                 this.utils.notification.show(this.i18n._t("global", "success.restoreAll"))
             },
             runtimeSettings: async () => {
@@ -434,9 +445,9 @@ class preferencesPlugin extends BasePlugin {
             },
             "window_tab.LAST_TAB_CLOSE_ACTION": (field, data) => {
                 if (this.utils.isBetaVersion) {
-                    const illegalOption = "blankPage"
-                    _disableOption(field.options, illegalOption)
-                    if (data[field.key] === illegalOption) {
+                    const invalidOption = "blankPage"
+                    _disableOption(field.options, invalidOption)
+                    if (data[field.key] === invalidOption) {
                         data[field.key] = "reconfirm"
                     }
                 }
@@ -469,6 +480,13 @@ class preferencesPlugin extends BasePlugin {
             "preferences.DEFAULT_MENU": (field, data) => {
                 if (!field.options) {
                     field.options = this._getAllPlugins()
+                }
+            },
+            "preferences.HIDE_MENUS": (field, data) => {
+                if (!field.options) {
+                    field.options = this._getAllPlugins()
+                    _disableOption(field.options, "preferences")
+                    _disableOption(field.options, "global")
                 }
             },
         }

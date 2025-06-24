@@ -941,6 +941,7 @@
     "$label.SEARCH_PLUGIN_FIXEDNAME": "Support Search Plugin English Name",
     "$label.OBJECT_SETTINGS_FORMAT": "Object Data Format in Settings Window",
     "$label.DEFAULT_MENU": "Default Settings Tab",
+    "$label.HIDE_MENUS": "Hidden Settings Tab",
     "$label.IGNORE_CONFIG_DEPENDENCIES": "Ignore Settings Dependencies",
     "$option.OBJECT_SETTINGS_FORMAT.JSON": "JSON",
     "$option.OBJECT_SETTINGS_FORMAT.TOML": "TOML",

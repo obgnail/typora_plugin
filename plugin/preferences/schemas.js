@@ -913,6 +913,7 @@ const SETTING_SCHEMAS = {
         ),
         UntitledBox(
             Select("DEFAULT_MENU"),
+            Select("HIDE_MENUS"),
             Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
             Switch("IGNORE_CONFIG_DEPENDENCIES"),
             Switch("SEARCH_PLUGIN_FIXEDNAME"),
