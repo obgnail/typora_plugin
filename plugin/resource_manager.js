@@ -88,13 +88,13 @@ class resourceManagerPlugin extends BasePlugin {
         const dir = this.utils.getMountFolder()
         if (!dir) return
 
-        this.utils.notification.show(this.i18n._t("global", "processing"))
+        const hide = this.utils.notification.show(this.i18n._t("global", "processing"), "info")
         const { resourcesInFolder, resourcesInFile } = await this.finder.run(dir)
         this.results.init(resourcesInFolder, resourcesInFile)
         this._initModalRect()
         this._initModalTable()
         this.utils.show(this.entities.modal)
-        this.utils.notification.hide()
+        hide()
     }
 
     close = () => {

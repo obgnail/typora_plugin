@@ -134,11 +134,10 @@ class searchMultiPlugin extends BasePlugin {
             const ast = this.searcher.parse(input, optimize)
             const explain = this.searcher.toExplain(ast)
             this.entities.input.setAttribute("title", explain)
-            this.utils.notification.hide()
             return ast
         } catch (e) {
             this.entities.input.removeAttribute("title")
-            this.utils.notification.show(e.toString().slice(7), "error", 7000)
+            this.utils.notification.show(e.toString().slice(7), "error", 5000)
             console.error(e)
         }
     }

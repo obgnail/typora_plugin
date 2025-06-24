@@ -8,11 +8,8 @@ class mdPaddingPlugin extends BasePlugin {
     }
 
     call = async () => {
-        const running = this.i18n.t("running")
-        const done = this.i18n.t("done")
-        this.utils.notification.show(running, "info")
         await this.utils.editCurrentFile(this.format)
-        this.utils.notification.show(done)
+        this.utils.notification.show(this.i18n.t("done"))
     }
 }
 

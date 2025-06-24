@@ -327,7 +327,6 @@
   },
   "md_padding": {
     "pluginName": "Chinese-English Text Spacer",
-    "running": "Spacing...",
     "done": "Spacing Completed",
     "$title.IGNORE_WORDS": "Ignored Words",
     "$title.IGNORE_PATTERNS": "Ignored Patterns"

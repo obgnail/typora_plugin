@@ -327,7 +327,6 @@
   },
   "md_padding": {
     "pluginName": "中英文混排优化",
-    "running": "混排优化中",
     "done": "混排优化完成",
     "$title.IGNORE_WORDS": "忽略词组",
     "$title.IGNORE_PATTERNS": "忽略正则表达式"
