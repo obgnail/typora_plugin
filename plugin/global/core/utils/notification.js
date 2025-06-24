@@ -2,10 +2,11 @@ class notification {
     constructor(utils) {
         this.utils = utils
         this.types = {
-            success: { bgColor: "#e6ffed", iconColor: "#009688", icon: "fa fa-check" },
-            info: { bgColor: "#e6f7ff", iconColor: "#448aff", icon: "fa fa-info-circle" },
-            warning: { bgColor: "#fffbe6", iconColor: "#f57c00", icon: "fa fa-warning" },
-            error: { bgColor: "#ffe6e6", iconColor: "#d32f2f", icon: "fa fa-bug" },
+            success: { bgColor: "#dcfce7", color: "#166534", icon: "fa fa-check" },
+            info: { bgColor: "#dbeafe", color: "#1e40af", icon: "fa fa-info-circle" },
+            warning: { bgColor: "#fef9c3", color: "#854d0e", icon: "fa fa-warning" },
+            error: { bgColor: "#fee2e2", color: "#991b1b", icon: "fa fa-bug" },
+            generic: { bgColor: "#f3e8ff", color: "#6b21a8", icon: "fa fa-bullhorn" },
         }
     }
 
@@ -16,13 +17,13 @@ class notification {
 
     // duration: 0 indicates not automatically closing
     show = (message, type = "success", duration = 3000) => {
-        const { bgColor, iconColor, icon } = this.types[type] || this.types.info
+        const { bgColor, color, icon } = this.types[type] || this.types.info
 
         const notification = document.createElement("div")
         notification.className = "plugin-common-notification"
         notification.style.setProperty("--notification-bg-color", bgColor)
-        notification.style.setProperty("--notification-icon-color", iconColor)
-        notification.innerHTML = `<span class="notification-icon ${icon}"></span><span class="notification-message">${message}</span><button class="notification-close-btn">✕</button>`
+        notification.style.setProperty("--notification-text-color", color)
+        notification.innerHTML = `<span class="notification-icon ${icon}"></span><span class="notification-message">${message}</span><span class="notification-close-btn fa fa-times"></span>`
 
         const closing = () => this.hide(notification)
         notification.querySelector(".notification-close-btn").addEventListener("click", closing)

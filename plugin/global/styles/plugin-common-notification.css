@@ -12,21 +12,21 @@
 .plugin-common-notification {
     min-width: 400px;
     max-width: 700px;
-    padding: 15px 20px;
-    color: rgb(51, 51, 51);
-    box-shadow: rgba(0, 0, 0, 0.1) 0 2px 10px;
-    border-radius: 2px;
+    padding: 16px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 6px -1px, rgba(0, 0, 0, 0.1) 0 2px 4px -2px;
+    border-radius: 8px;
     text-align: left;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     background-color: var(--notification-bg-color);
+    color: var(--notification-text-color);
     opacity: 0;
     transform: translateY(-20px);
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out, margin-top 0.3s ease-out;
+    transition: all 0.3s ease-out;
     margin-bottom: 10px;
     box-sizing: border-box;
-    --notification-bg-color: "#e6f7ff";
-    --notification-icon-color: currentColor;
+    --notification-bg-color: #dcfce7;
+    --notification-text-color: #166534;
 }
 
 .plugin-common-notification.notification-show {
@@ -40,24 +40,20 @@
 }
 
 .plugin-common-notification .notification-icon {
-    width: 16px;
-    margin-right: 10px;
-    color: var(--notification-icon-color);
+    font-size: 1.4em;
+    line-height: 1.2em;
 }
 
 .plugin-common-notification .notification-message {
     flex: 1 1 0;
-    margin: 0;
+    margin: 0 12px;
     font-size: 16px;
     white-space: break-spaces;
     word-break: break-word;
+    font-weight: 600;
 }
 
 .plugin-common-notification .notification-close-btn {
-    background: none;
-    border: none;
-    font-size: 16px;
-    color: rgb(136, 136, 136);
+    font-size: 1.3em;
     cursor: pointer;
-    margin-left: 10px;
 }

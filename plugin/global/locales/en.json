@@ -50,6 +50,7 @@
     "disableReminder": "Do not Show Again",
     "takesEffectAfterRestart": "Modification Takes effect after restart",
     "incompatibilityWarning": "Typora version is too low, some plugins may not work.\nPlease upgrade to 0.9.98 (the last free version)",
+    "confirmNeeded": "Perform {{count}} more actions to confirm",
     "uninstallPluginWarning": "Warning: All plugins will be removed. This action is irreversible!",
     "uninstallPluginDetail": "You are about to uninstall the plugin system. All settings and data associated with the plugin system will be permanently deleted. Please accurately type \"{{reconfirm}}\" in the input box below to confirm your intention. After uninstallation is complete, please restart Typora to finalize the process.",
     "uninstallPluginConfirmInput": "Confirm Input",

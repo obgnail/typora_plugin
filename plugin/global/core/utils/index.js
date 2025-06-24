@@ -235,6 +235,55 @@ class utils {
         }
     }
 
+    /** @description Creates an event handler that confirms an action only after it's triggered a specific number of times consecutively within a set time window */
+    static createConsecutiveAction = (
+        {
+            threshold = 2,
+            timeWindow = 1000,
+            onTimeout = this.noop,
+            onInsufficient = (current, total) => this.notification.show(i18n.t("global", "confirmNeeded", { count: total - current }), "info"),
+            onConfirmed,
+        }
+    ) => {
+        threshold = Math.max(threshold, 2)
+        let currentCount = 0
+        let lastTimestamp = 0
+        let resetTimer = null
+        return function (...args) {
+            const now = Date.now()
+            if (now - lastTimestamp > timeWindow || currentCount === 0) {
+                currentCount = 1
+            } else {
+                currentCount++
+            }
+            lastTimestamp = now
+            if (resetTimer) {
+                clearTimeout(resetTimer)
+            }
+            if (currentCount < threshold) {
+                resetTimer = setTimeout(() => {
+                    if (onTimeout && currentCount < threshold) {
+                        onTimeout(currentCount, threshold)
+                    }
+                    currentCount = 0
+                    resetTimer = null
+                }, timeWindow)
+                if (currentCount < threshold) {
+                    onInsufficient(currentCount, threshold)
+                }
+            } else {
+                if (onConfirmed) {
+                    onConfirmed(...args)
+                }
+                currentCount = 0
+                if (resetTimer) {
+                    clearTimeout(resetTimer)
+                    resetTimer = null
+                }
+            }
+        }
+    }
+
     static chunk = (array, size = 10) => {
         let index = 0;
         let result = [];

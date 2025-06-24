@@ -280,8 +280,10 @@ class preferencesPlugin extends BasePlugin {
     _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
     _hasDialogChanged = () => this.entities.dialog.hasAttribute("has-changed")
 
-    /** Callback functions for type="action" settings in schema */
+    /** Callback functions for type="action" fields in schema */
     _initActionHandlers = () => {
+        const consecutive = (onConfirmed) => this.utils.createConsecutiveAction({ threshold: 3, timeWindow: 2000, onConfirmed })
+
         this.ACTION_HANDLERS = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
             deepWiki: () => this.utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
@@ -298,20 +300,20 @@ class preferencesPlugin extends BasePlugin {
             developPlugins: () => this.utils.showInFinder(this.utils.joinPath("./plugin/custom/README.md")),
             backupSettings: async () => this.utils.settings.backupSettingFile(),
             openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
-            restoreSettings: async () => {
+            restoreSettings: consecutive(async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearSettings(fixedName)
                 await this.switchMenu(fixedName)
                 this._setDialogState(true)
                 this.utils.notification.show(this.i18n._t("global", "success.restore"))
-            },
-            restoreAllSettings: async () => {
+            }),
+            restoreAllSettings: consecutive(async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearAllSettings()
                 await this.switchMenu(fixedName)
                 this._setDialogState(true)
                 this.utils.notification.show(this.i18n._t("global", "success.restoreAll"))
-            },
+            }),
             runtimeSettings: async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 const settings = await this._getSettings(fixedName)
