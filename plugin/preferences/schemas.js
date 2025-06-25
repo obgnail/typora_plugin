@@ -442,6 +442,7 @@ const SETTING_SCHEMAS = {
             Switch("AUTO_FIT_WHEN_UPDATE", markmapTocDep),
             Switch("AUTO_FIT_WHEN_FOLD", markmapTocDep),
             Switch("KEEP_FOLD_STATE_WHEN_UPDATE", markmapTocDep),
+            Switch("USE_CONTEXT_MENU", markmapTocDep),
             Switch("CLICK_TO_POSITIONING", markmapTocDep),
             Switch("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", { tooltip: "experimental", ...markmapTocDep }),
             Range("POSITIONING_VIEWPORT_HEIGHT", { tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01, ...markmapTocDep }),

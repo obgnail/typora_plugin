@@ -510,6 +510,7 @@
     "$label.AUTO_FIT_WHEN_UPDATE": "圖形更新時自動適配視窗",
     "$label.AUTO_FIT_WHEN_FOLD": "圖形摺疊/展開節點時自動適配視窗",
     "$label.KEEP_FOLD_STATE_WHEN_UPDATE": "保持節點摺疊狀態",
+    "$label.USE_CONTEXT_MENU": "右鍵選單",
     "$label.CLICK_TO_POSITIONING": "點擊節點跳轉到文檔對應章節",
     "$label.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD": "摺疊節點後自動摺疊章節內容",
     "$label.POSITIONING_VIEWPORT_HEIGHT": "定位視窗高度",

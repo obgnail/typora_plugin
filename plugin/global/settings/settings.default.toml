@@ -758,6 +758,11 @@ ENABLE_TOC_MARKMAP = true
 #   留空则不设置快捷键
 TOC_HOTKEY = ""
 
+# 使用右键菜单
+#   true:  使用右键菜单
+#   false: 不使用右键菜单
+USE_CONTEXT_MENU = true
+
 # 点击思维导图节点是否跳转到文档对应章节
 #   true:  点击节点后，页面会滚动到文档中对应的标题位置
 #   false: 点击节点不会跳转到文档

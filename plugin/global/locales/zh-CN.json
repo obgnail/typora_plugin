@@ -510,6 +510,7 @@
     "$label.AUTO_FIT_WHEN_UPDATE": "图形更新时自动适配窗口",
     "$label.AUTO_FIT_WHEN_FOLD": "图形折叠/展开节点时自动适配窗口",
     "$label.KEEP_FOLD_STATE_WHEN_UPDATE": "保持节点折叠状态",
+    "$label.USE_CONTEXT_MENU": "右键菜单",
     "$label.CLICK_TO_POSITIONING": "点击节点跳转到文档对应章节",
     "$label.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD": "折叠节点后自动折叠章节内容",
     "$label.POSITIONING_VIEWPORT_HEIGHT": "定位视口高度",

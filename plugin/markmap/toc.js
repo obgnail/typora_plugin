@@ -110,6 +110,8 @@ class tocMarkmap {
                     this.doAction(action)
                 }
             })
+
+            this.toggleContextMenu()
         }
         const onMove = () => {
             const attr = "ty-hint"
@@ -242,24 +244,11 @@ class tocMarkmap {
                 }
             })
         }
-        const onContextMenu = () => {
-            const fn = ["expand", "shrink", "fit", "download", "setting", "close", "pinTop", "pinRight", "hideToolbar", "showToolbar"]
-            const menuMap = this.i18n.entries(fn, "func.")
-            const showMenu = () => {
-                const fullScreen = this.entities.fullScreen.getAttribute("action")
-                const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar"
-                const attrs = [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "setting", "download", "close"]
-                return this.utils.pick(menuMap, attrs)
-            }
-            const callback = ({ key }) => this.doAction(key)
-            this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback)
-        }
 
         onEvent()
         onMove()
         onResize()
         onSvgClick()
-        onContextMenu()
     }
 
     callback = async () => {
@@ -283,7 +272,7 @@ class tocMarkmap {
         this.utils.hide(this.entities.modal)
         this.utils.show(this.entities.resize)
         this.entities.modal.classList.remove("noBoxShadow")
-        this.entities.fullScreen.setAttribute("action", "expand")
+        this._setFullScreenStyles(false)
         this.mm.destroy()
         this.mm = null
     }
@@ -307,7 +296,7 @@ class tocMarkmap {
         const storeAttrs = [
             "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
             "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITIONING",
-            "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_FOLD", "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
+            "USE_CONTEXT_MENU", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_FOLD", "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
         ]
         const arr2Str = arr => arr.join("_")
         const str2Arr = str => str.split("_")
@@ -363,6 +352,7 @@ class tocMarkmap {
                 ),
                 titledBox(
                     "settingGroup.interactive",
+                    field("USE_CONTEXT_MENU", "switch"),
                     field("DEFAULT_TOC_OPTIONS.zoom", "switch"),
                     field("DEFAULT_TOC_OPTIONS.pan", "switch"),
                     field("DEFAULT_TOC_OPTIONS.toggleRecursively", "switch"),
@@ -450,6 +440,7 @@ class tocMarkmap {
         if (response === 1) {
             await storeData(data)
             await this.draw()
+            this.toggleContextMenu()
         }
     }
 
@@ -494,6 +485,25 @@ class tocMarkmap {
             this.utils.showInFinder(downloadPath)
         }
         this.utils.notification.show(this.i18n.t("func.download.ok"))
+    }
+
+    toggleContextMenu = (register = this.config.USE_CONTEXT_MENU) => {
+        if (!register) {
+            this.utils.contextMenu.unregister(this.entities.svg)
+        } else {
+            this.utils.contextMenu.register(
+                this.entities.svg,
+                () => {
+                    const all = ["expand", "shrink", "hideToolbar", "showToolbar", "fit", "pinTop", "pinRight", "setting", "download", "close"]
+                    const menuItems = this.i18n.entries(all, "func.")
+                    const fullScreen = this.entities.fullScreen.getAttribute("action")
+                    const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar"
+                    const attrs = [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "setting", "download", "close"]
+                    return this.utils.pick(menuItems, attrs)
+                },
+                (ev, key) => this.doAction(key),
+            )
+        }
     }
 
     pinTop = (fit = true) => {
@@ -651,7 +661,7 @@ class tocMarkmap {
         this.utils.toggleVisible(this.entities.resize, pinned)
         this.utils.toggleVisible(this.entities.move, pinned)
         this.utils.toggleVisible(this.entities.penetrateMouse, pinned)
-        this.entities.fullScreen.setAttribute("action", "expand")
+        this._setFullScreenStyles(false)
 
         if (pinned && this.entities.modal.classList.contains("penetrateMouse")) {
             this.penetrateMouse()
@@ -661,6 +671,14 @@ class tocMarkmap {
         btn.classList.toggle(icon, !pinned)
         btn.classList.toggle("ion-ios7-undo", pinned)
         btn.setAttribute("ty-hint", this.i18n.t(pinned ? "func.pinRecover" : hint))
+    }
+
+    _setFullScreenStyles = (expand = true) => {
+        const btn = this.entities.fullScreen
+        btn.setAttribute("action", expand ? "shrink" : "expand")
+        btn.setAttribute("ty-hint", this.i18n.t(expand ? "func.shrink" : "func.expand"))
+        btn.classList.toggle("ion-qr-scanner", !expand)
+        btn.classList.toggle("ion-ios7-undo", expand)
     }
 
     _toggleFullscreen = (expand = true) => {
@@ -673,8 +691,8 @@ class tocMarkmap {
         }
 
         this._setModalRect(expand ? this.pinUtils.originContentRect : this.pinUtils.originModalRect)
+        this._setFullScreenStyles(expand)
         this.entities.modal.classList.toggle("noBoxShadow", expand)
-        this.entities.fullScreen.setAttribute("action", expand ? "shrink" : "expand")
         this.utils.toggleVisible(this.entities.penetrateMouse, expand)
         this.utils.toggleVisible(this.entities.resize, expand)
         this.utils.toggleVisible(this.entities.move, expand)

@@ -334,19 +334,24 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const handleContextMenu = () => {
             let tabIdx = -1
-            const all = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"]
-            const entries = this.i18n.entries(all, "func.")
-            const map = this.utils.pick(entries, this.config.CONTEXT_MENU)
-            const showMenu = ({ target }) => {
-                tabIdx = parseInt(target.dataset.idx)
-                return map
-            }
-            const onClick = ({ key: func }) => {
-                if (tabIdx !== -1 && func && this[func]) {
-                    this[func](tabIdx)
-                }
-            }
-            this.utils.contextMenu.register("window-tab", "#plugin-window-tab .tab-container", showMenu, onClick)
+            this.utils.contextMenu.register(
+                this.entities.tabBar,
+                (ev) => {
+                    const target = ev.target.closest(".tab-container")
+                    if (target) {
+                        tabIdx = parseInt(target.dataset.idx)
+                        const all = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"]
+                        const menuItems = this.i18n.entries(all, "func.")
+                        return this.utils.pick(menuItems, this.config.CONTEXT_MENU)
+                    }
+                },
+                (ev, key) => {
+                    const fn = this[key]
+                    if (fn) {
+                        fn(tabIdx)
+                    }
+                },
+            )
         }
         const adjustQuickOpen = () => {
             const open = (item, ev) => {

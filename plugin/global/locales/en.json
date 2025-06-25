@@ -510,6 +510,7 @@
     "$label.AUTO_FIT_WHEN_UPDATE": "Auto Fit Window Size on Update",
     "$label.AUTO_FIT_WHEN_FOLD": "Auto Fit Window Size on Fold/Expand",
     "$label.KEEP_FOLD_STATE_WHEN_UPDATE": "Keep Fold State on Diagram Update",
+    "$label.USE_CONTEXT_MENU": "Context Menu",
     "$label.CLICK_TO_POSITIONING": "Click Node to Positioning Corresponding Chapter",
     "$label.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD": "Auto Collapse Paragraph When Fold Node",
     "$label.POSITIONING_VIEWPORT_HEIGHT": "Positioning Viewport Height",

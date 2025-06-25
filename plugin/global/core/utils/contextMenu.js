@@ -3,62 +3,79 @@
  */
 class contextMenu {
     constructor(utils) {
-        this.utils = utils;
-        this.className = "plugin-common-menu";
-        this.menus = new Map();
-        this.callback = null;
+        this.utils = utils
+        this.menuSet = new WeakSet()
+        this._callback = null
     }
 
     process = async () => {
-        await this.utils.styleTemplater.register(this.className);
-        this.utils.insertElement(`<div class="${this.className}"></div>`);
+        await this.utils.styleTemplater.register("plugin-common-menu")
+        this.utils.insertElement(`<div class="plugin-common-menu"></div>`)
 
-        this.menu = document.querySelector("." + this.className);
-        this.menu.addEventListener("click", ev => {
-            if (!this.callback) return;
-            const target = ev.target.closest(".menu-item");
-            if (!target) return;
-            ev.preventDefault();
-            ev.stopPropagation();
-            this.callback({ ev, key: target.dataset.key })
-            this.callback = null;
-            this.menu.classList.remove("show");
+        this.menuEl = document.querySelector(".plugin-common-menu")
+        this.menuEl.addEventListener("mousedown", ev => {
+            if (!this._callback || ev.button !== 0) return
+            const target = ev.target.closest(".menu-item")
+            if (target) {
+                this._callback(ev, target.dataset.key)
+                this._hideMenu()
+            }
         })
-        // content ELEMENT internal only
-        this.utils.entities.eContent.addEventListener("mousedown", ev => {
-            if (!ev.target.closest(".menu-item")) {
-                this.menu.classList.remove("show")
-            }
-            if (ev.button !== 2) return;
-            for (const menu of this.menus.values()) {
-                const target = ev.target.closest(menu.selector);
-                if (!target) continue;
-                ev.preventDefault();
-                ev.stopPropagation();
-                const menus = menu.generator({ ev, target });
-                this.render(menus);
-                this.show(ev);
-                this.callback = menu.callback;
-            }
-        }, true)
     }
 
     /**
-     * @param {string} name: Give it a name
-     * @param {string} selector: At which location right click will pop up the menu
-     * @param {function({ev, target}): {key: value}} generator: Generates an object composed of context menu options; the target parameter is the element corresponding to the above selector
-     * @param {function({ev, key}): null} callback: on click callback; the key parameter is the clicked option
+     * @param {Element} el: At which location right click will pop up the menu
+     * @param {function(ev): {key: value}} getMenuItems: Generates an object composed of context menu options
+     * @param {function(ev, key): null} onClickMenuItem: on click callback; the key parameter is the clicked option
      */
-    register = (name, selector, generator, callback) => this.menus.set(name, { selector, generator, callback })
-    unregister = name => this.menus.delete(name)
-    exist = name => this.menus.has(name)
-
-    render = menus => {
-        this.menu.innerHTML = Object.entries(menus).map(([key, text]) => `<div class="menu-item" data-key="${key}">${text}</div>`).join("")
+    register = (el, getMenuItems, onClickMenuItem) => {
+        if (el && !this.menuSet.has(el)) {
+            el.__getMenuItems = getMenuItems
+            el.__onClickMenuItem = onClickMenuItem
+            el.addEventListener("mousedown", this._handler)
+            this.menuSet.add(el)
+        }
     }
 
-    show = ev => {
-        const $menu = $(this.menu);
+    unregister = el => {
+        if (this.menuSet.has(el)) {
+            el.__getMenuItems = undefined
+            el.__onClickMenuItem = undefined
+            el.removeEventListener("mousedown", this._handler)
+            this.menuSet.delete(el)
+        }
+    }
+
+    _handler = ev => {
+        if (this._callback) {
+            this._hideMenu()
+        }
+
+        if (ev.button !== 2) return
+
+        const { __getMenuItems, __onClickMenuItem } = ev.currentTarget
+        if (!__getMenuItems || !__onClickMenuItem) return
+
+        ev.preventDefault()
+        ev.stopPropagation()
+
+        const menuItems = __getMenuItems(ev)
+        if (!menuItems || !this.utils.isObject(menuItems) || Object.keys(menuItems).length === 0) return
+
+        this.menuEl.innerHTML = Object.entries(menuItems).map(([key, text]) => `<div class="menu-item" data-key="${key}">${text}</div>`).join("")
+        this._callback = __onClickMenuItem
+        this._showMenu(ev)
+
+        document.addEventListener("mousedown", this._hideMenu, { once: true })
+    }
+
+    _hideMenu = () => {
+        this.menuEl.classList.remove("show")
+        this._callback = null
+    }
+
+    _showMenu = ev => {
+        const $menu = $(this.menuEl)
         $menu.addClass("show");
         const { innerWidth, innerHeight } = window;
         const { clientX, clientY } = ev;
