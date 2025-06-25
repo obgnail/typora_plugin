@@ -145,7 +145,8 @@ class utils {
 
 
     ////////////////////////////// pure function //////////////////////////////
-    static noop = args => args
+    static noop = () => undefined
+    static identity = args => args
 
     static safeEval = x => new Function(`return (${x})`)()
     static unsafeEval = x => eval(`(${x})`)
@@ -235,47 +236,60 @@ class utils {
         }
     }
 
-    /** @description Creates an event handler that confirms an action only after it's triggered a specific number of times consecutively within a set time window */
+    /**
+     * @description Creates a function that confirms an action only after it has been
+     * triggered `threshold` times consecutively within `timeWindow` milliseconds.
+     * It supports an optional `getIdentifier` function to ensure only identical actions count.
+     */
     static createConsecutiveAction = (
         {
             threshold = 2,
             timeWindow = 1000,
+            getIdentifier = (...args) => undefined,
             onTimeout = this.noop,
             onInsufficient = (current, total) => this.notification.show(i18n.t("global", "confirmNeeded", { count: total - current }), "info"),
             onConfirmed,
         }
     ) => {
         threshold = Math.max(threshold, 2)
+
+        const NO_IDENTIFIER = Object.create(null)
         let currentCount = 0
         let lastTimestamp = 0
         let resetTimer = null
+        let lastIdentifier = NO_IDENTIFIER
+
         return function (...args) {
             const now = Date.now()
-            if (now - lastTimestamp > timeWindow || currentCount === 0) {
+            const currentIdentifier = getIdentifier(...args)
+
+            if (currentCount === 0 || now - lastTimestamp > timeWindow || currentIdentifier !== lastIdentifier) {
                 currentCount = 1
             } else {
                 currentCount++
             }
             lastTimestamp = now
+            lastIdentifier = currentIdentifier
             if (resetTimer) {
                 clearTimeout(resetTimer)
             }
+
             if (currentCount < threshold) {
                 resetTimer = setTimeout(() => {
                     if (onTimeout && currentCount < threshold) {
                         onTimeout(currentCount, threshold)
                     }
                     currentCount = 0
+                    lastIdentifier = NO_IDENTIFIER
                     resetTimer = null
                 }, timeWindow)
-                if (currentCount < threshold) {
-                    onInsufficient(currentCount, threshold)
-                }
+                onInsufficient(currentCount, threshold)
             } else {
                 if (onConfirmed) {
                     onConfirmed(...args)
                 }
                 currentCount = 0
+                lastIdentifier = NO_IDENTIFIER
                 if (resetTimer) {
                     clearTimeout(resetTimer)
                     resetTimer = null
@@ -971,7 +985,7 @@ class utils {
             elements = [...dom.body.childNodes]
         }
         let fragment = elements;
-        if (elements instanceof Array || elements instanceof NodeList) {
+        if (Array.isArray(elements) || elements instanceof NodeList) {
             fragment = document.createDocumentFragment();
             fragment.append(...elements);
         }

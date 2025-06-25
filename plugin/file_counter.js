@@ -59,7 +59,7 @@ class fileCounterPlugin extends BasePlugin {
 
     countFiles = async (dir) => {
         let count = 0
-        await this.utils.walkDir(dir, this.fileFilter, this.dirFilter, this.utils.noop, () => count++)
+        await this.utils.walkDir(dir, this.fileFilter, this.dirFilter, this.utils.identity, () => count++)
         return count
     }
 

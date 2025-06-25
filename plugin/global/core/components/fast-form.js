@@ -146,14 +146,19 @@ customElements.define("fast-form", class extends HTMLElement {
                 that.utils.zip(row, tds).slice(0, -1).forEach(([val, td]) => td.textContent = val)
                 that.utils.notification.show(that.i18n.t("global", "success.edit"))
             }
-        }).on("click", ".table-delete", function () {
-            const trEl = this.closest("tr")
-            const tableEl = trEl.closest(".table")
-            const idx = [...tableEl.querySelectorAll("tbody tr")].indexOf(trEl)
-            that._dispatchEvent(tableEl.dataset.key, idx, "removeIndex")
-            trEl.remove()
-            that.utils.notification.show(that.i18n.t("global", "success.deleted"))
-        }).on("click", ".object-confirm", function () {
+        }).on("click", ".table-delete", that.utils.createConsecutiveAction({
+            threshold: 2,
+            timeWindow: 3000,
+            getIdentifier: (ev) => ev.currentTarget,
+            onConfirmed: (ev) => {
+                const trEl = ev.currentTarget.closest("tr")
+                const tableEl = trEl.closest(".table")
+                const idx = [...tableEl.querySelectorAll("tbody tr")].indexOf(trEl)
+                that._dispatchEvent(tableEl.dataset.key, idx, "removeIndex")
+                trEl.remove()
+                that.utils.notification.show(that.i18n.t("global", "success.deleted"))
+            }
+        })).on("click", ".object-confirm", function () {
             const textarea = this.closest(".control").querySelector(".object")
             try {
                 const value = that._deserialize(textarea.value)
