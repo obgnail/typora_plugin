@@ -16,46 +16,40 @@ customElements.define("fast-window", class extends HTMLElement {
         this._offsetX = 0
         this._offsetY = 0
 
-        this.entities.titleBar.addEventListener("mousedown", this._startDrag)
-        this.entities.buttonsContainer.addEventListener("click", (ev) => {
-            const target = ev.target.closest(".button")
-            if (target) {
-                ev.stopPropagation()
-                const action = target.dataset.action || ""
-                const detail = { action, target, ev, component: this }
-                this.dispatchEvent(new CustomEvent("btn-click", { bubbles: true, composed: true, detail }))
-            }
-        })
+        this._addEventListeners()
     }
 
     connectedCallback() {
         this._updateTitle()
         this._renderButtons()
-
-        // If the element uses transform in external CSS
-        // We need to convert it back to a left/top based positioning after connecting it to DOM,
-        // so that there will be no offset when dragging.
-        const { transform } = window.getComputedStyle(this)
-        if (transform !== "none") {
-            const { left, top } = this.getBoundingClientRect()
-            this.style.left = `${left}px`
-            this.style.top = `${top}px`
-            this.style.transform = "none"
-        }
+        this._applyInitialPosAndSize()
     }
 
     static get observedAttributes() {
-        return ["window-title", "window-buttons"]
+        return ["window-title", "window-buttons", "initial-x", "initial-y", "initial-width", "initial-height"]
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return
 
-        if (name === "window-title") {
-            this._updateTitle()
-        } else if (name === "window-buttons") {
-            this._renderButtons()
+        switch (name) {
+            case "window-title":
+                this._updateTitle()
+                break
+            case "window-buttons":
+                this._renderButtons()
+                break
+            case "initial-x":
+            case "initial-y":
+            case "initial-width":
+            case "initial-height":
+                this._applyInitialPosAndSize()
+                break
         }
+    }
+
+    disconnectedCallback() {
+        this._removeEventListeners()
     }
 
     setContent = (content, unsafe = false) => {
@@ -73,6 +67,18 @@ customElements.define("fast-window", class extends HTMLElement {
         } else {
             console.warn("fast-window: Invalid content type for setContent. Expected string, HTMLElement, or DocumentFragment.")
         }
+    }
+
+    _addEventListeners() {
+        this.entities.titleBar.addEventListener("mousedown", this._startDrag)
+        this.entities.buttonsContainer.addEventListener("click", this._onButtonClick)
+    }
+
+    _removeEventListeners() {
+        this.entities.titleBar.removeEventListener("mousedown", this._startDrag)
+        this.entities.buttonsContainer.removeEventListener("click", this._onButtonClick)
+        document.removeEventListener("mousemove", this._dragging)
+        document.removeEventListener("mouseup", this._endDrag)
     }
 
     _updateTitle() {
@@ -111,11 +117,35 @@ customElements.define("fast-window", class extends HTMLElement {
         this.entities.buttonsContainer.append(...buttons)
     }
 
+    _applyInitialPosAndSize() {
+        const initialX = this.getAttribute("initial-x")
+        const initialY = this.getAttribute("initial-y")
+        const initialWidth = this.getAttribute("initial-width")
+        const initialHeight = this.getAttribute("initial-height")
+
+        if (initialX) this.style.left = `${initialX}px`
+        if (initialY) this.style.top = `${initialY}px`
+        if (initialWidth) this.style.width = `${initialWidth}px`
+        if (initialHeight) this.style.height = `${initialHeight}px`
+
+        // If the element uses transform in external CSS
+        // We need to convert it back to a left/top based positioning after connecting it to DOM,
+        // so that there will be no offset when dragging.
+        const { transform } = window.getComputedStyle(this)
+        if (transform !== "none") {
+            const { left, top } = this.getBoundingClientRect()
+            this.style.left = `${left}px`
+            this.style.top = `${top}px`
+            this.style.transform = "none"
+        }
+    }
+
     _startDrag = (ev) => {
-        if (ev.button !== 0) return
+        if (ev.button !== 0 || ev.target.closest(".button")) return
 
         this._isDragging = true
         this.style.transition = "none"
+        this.entities.titleBar.classList.add("dragging")
 
         const rect = this.getBoundingClientRect()
         this._offsetX = ev.clientX - rect.left
@@ -145,8 +175,19 @@ customElements.define("fast-window", class extends HTMLElement {
     _endDrag = () => {
         this._isDragging = false
         this.style.transition = ""
+        this.entities.titleBar.classList.remove("dragging")
 
         document.removeEventListener("mousemove", this._dragging)
         document.removeEventListener("mouseup", this._endDrag)
+    }
+
+    _onButtonClick = (ev) => {
+        const target = ev.target.closest(".button")
+        if (target) {
+            ev.stopPropagation()
+            const action = target.dataset.action || ""
+            const detail = { action, target, originalEvent: ev, component: this }
+            this.dispatchEvent(new CustomEvent("btn-click", { bubbles: true, composed: true, detail }))
+        }
     }
 })
