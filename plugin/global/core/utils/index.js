@@ -1,4 +1,3 @@
-const OS = require("os")
 const PATH = require("path")
 const FS = require("fs")
 const CHILD_PROCESS = require("child_process")
@@ -16,13 +15,12 @@ class utils {
 
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static separator = File.isWin ? "\\" : "/"
-    static tempFolder = window._options.tempPath || OS.tmpdir()
-    static nonExistSelector = "#__non_exist__"                // Plugin temporarily unavailable, return this.
-    static disableForeverSelector = "#__disabled__"           // Plugin permanently unavailable, return this.
+    static tempFolder = window._options.tempPath || require("os").tmpdir()
+    static nonExistSelector = "__non_exist__"                 // Plugin temporarily unavailable, return this.
+    static disableForeverSelector = "__disabled__"            // Plugin permanently unavailable, return this.
     static stopLoadPluginError = new Error("stopLoadPlugin")  // For plugin's beforeProcess method; return this to stop loading the plugin.
-    static uniqueObject = Object.create(null)
+    static uniqueObject = Symbol("unique")
     static Package = Object.freeze({
-        OS: OS,
         Path: PATH,
         Fs: FS,
         FsExtra: FS_EXTRA,
@@ -245,15 +243,19 @@ class utils {
         {
             threshold = 2,
             timeWindow = 1000,
+            resetOnConfirmed = true,
             getIdentifier = (...args) => undefined,
             onTimeout = this.noop,
             onInsufficient = (current, total) => this.notification.show(i18n.t("global", "confirmNeeded", { count: total - current }), "info"),
             onConfirmed,
         }
     ) => {
+        if (typeof onConfirmed !== "function") {
+            throw new Error("onConfirmed must be a Function")
+        }
         threshold = Math.max(threshold, 2)
 
-        const NO_IDENTIFIER = Object.create(null)
+        const NO_IDENTIFIER = Symbol("no_identifier")
         let currentCount = 0
         let lastTimestamp = 0
         let resetTimer = null
@@ -272,6 +274,7 @@ class utils {
             lastIdentifier = currentIdentifier
             if (resetTimer) {
                 clearTimeout(resetTimer)
+                resetTimer = null
             }
 
             if (currentCount < threshold) {
@@ -285,14 +288,10 @@ class utils {
                 }, timeWindow)
                 onInsufficient(currentCount, threshold)
             } else {
-                if (onConfirmed) {
-                    onConfirmed(...args)
-                }
-                currentCount = 0
-                lastIdentifier = NO_IDENTIFIER
-                if (resetTimer) {
-                    clearTimeout(resetTimer)
-                    resetTimer = null
+                onConfirmed(...args)
+                if (resetOnConfirmed) {
+                    currentCount = 0
+                    lastIdentifier = NO_IDENTIFIER
                 }
             }
         }
@@ -636,7 +635,7 @@ class utils {
 
     ////////////////////////////// Basic file operations //////////////////////////////
     static getDirname = () => global.dirname || global.__dirname
-    static getHomeDir = () => OS.homedir() || File.option.userPath
+    static getHomeDir = () => require("os").homedir() || File.option.userPath
     static getFilePath = () => File.filePath || (File.bundle && File.bundle.filePath) || ""
     static getMountFolder = () => File.getMountFolder() || ""
     static getCurrentDirPath = () => PATH.dirname(this.getFilePath())
