@@ -1,0 +1,128 @@
+:host {
+    --window-bg-color: #ffffff;
+    --window-border-color: #e0e0e0;
+    --titlebar-bg-color: #f5f5f5;
+    --titlebar-text-color: #333333;
+    --button-hover-bg: #e0e0e0;
+    --close-button-hover-bg: #ff6b6b;
+    --close-button-text-color: #666666;
+    --close-button-hover-text-color: #ffffff;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+    position: fixed;
+    display: block;
+    min-width: 300px;
+    min-height: 200px;
+    background-color: var(--window-bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+    font-family: var(--font-family);
+    z-index: 9999;
+    resize: both;
+}
+
+.title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: var(--titlebar-bg-color);
+    border-bottom: 1px solid var(--window-border-color);
+    user-select: none;
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+    flex-shrink: 0;
+}
+
+.title-text {
+    flex-grow: 1;
+    font-weight: 600;
+    color: var(--titlebar-text-color);
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.buttons-container {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.button {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: 1.2em;
+    width: 1.2em;
+    text-align: center;
+
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    color: var(--close-button-text-color);
+}
+
+.button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.button::after {
+    content: attr(data-hint);
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 5px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, bottom 0.2s ease;
+    z-index: 10000;
+}
+
+.button:not([data-hint])::after,
+.button[data-hint=""]::after {
+    content: none;
+    visibility: hidden;
+    opacity: 0;
+}
+
+.button:hover::after {
+    opacity: 1;
+    bottom: -25px;
+}
+
+.button[data-action="close"] {
+    color: var(--close-button-text-color);
+}
+
+.button[data-action="close"]:hover {
+    background-color: var(--close-button-hover-bg);
+    color: var(--close-button-hover-text-color);
+}
+
+.content-area {
+    padding: 15px;
+    flex-grow: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}

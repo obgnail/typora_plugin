@@ -2,22 +2,21 @@ customElements.define("fast-form", class extends HTMLElement {
     constructor() {
         super()
         const root = this.attachShadow({ mode: "open" })
-        root.innerHTML = `
-            <link rel="stylesheet" href="./style/font-awesome-4.1.0/css/font-awesome.min.css" crossorigin="anonymous">
-            <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous">
-            <div id="form"></div>`
+        const template = document.getElementById("plugin-fast-form")
+        root.appendChild(template.content.cloneNode(true))
+
         this.form = root.querySelector("#form")
         this.options = { objectFormat: "JSON", schema: null, data: null, action: null, prerequisite: null }
     }
 
-    init(utils, options) {
+    init = (utils, options) => {
         this.utils = utils
         this.i18n = utils.i18n
         this.options = { ...this.options, ...options }
         this._bindEvents()
     }
 
-    render({ schema = [], data = {}, action = {} }) {
+    render = ({ schema = [], data = {}, action = {} }) => {
         this.options.schema = schema
         this.options.action = action
         this.options.data = JSON.parse(JSON.stringify(data))
