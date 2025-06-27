@@ -22,11 +22,15 @@ customElements.define("fast-window", class extends HTMLElement {
     connectedCallback() {
         this._updateTitle()
         this._renderButtons()
+        this._setResize()
         this._applyInitialPosAndSize()
+        if (this.hasAttribute("hidden")) {
+            this.style.display = "none"
+        }
     }
 
     static get observedAttributes() {
-        return ["window-title", "window-buttons", "initial-x", "initial-y", "initial-width", "initial-height"]
+        return ["window-title", "window-buttons", "window-resize", "initial-x", "initial-y", "initial-width", "initial-height"]
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -38,6 +42,9 @@ customElements.define("fast-window", class extends HTMLElement {
                 break
             case "window-buttons":
                 this._renderButtons()
+                break
+            case "window-resize":
+                this._setResize()
                 break
             case "initial-x":
             case "initial-y":
@@ -69,23 +76,37 @@ customElements.define("fast-window", class extends HTMLElement {
         }
     }
 
-    _addEventListeners() {
-        this.entities.titleBar.addEventListener("mousedown", this._startDrag)
-        this.entities.buttonsContainer.addEventListener("click", this._onButtonClick)
+    show = () => {
+        if (!this.hidden && !this.classList.contains("hiding")) return
+        this.hidden = false
+        this.style.display = "flex"
+        this.classList.remove("hiding")
+        this.classList.add("showing")
     }
 
-    _removeEventListeners() {
+    hide = () => {
+        if (this.hidden || this.classList.contains("showing")) return
+        this.classList.remove("showing")
+        this.classList.add("hiding")
+    }
+
+    _addEventListeners = () => {
+        this.entities.titleBar.addEventListener("mousedown", this._startDrag)
+        this.entities.buttonsContainer.addEventListener("click", this._onButtonClick)
+        this.addEventListener("animationend", this._onAnimationEnd)
+    }
+
+    _removeEventListeners = () => {
         this.entities.titleBar.removeEventListener("mousedown", this._startDrag)
         this.entities.buttonsContainer.removeEventListener("click", this._onButtonClick)
         document.removeEventListener("mousemove", this._dragging)
         document.removeEventListener("mouseup", this._endDrag)
+        this.removeEventListener("animationend", this._onAnimationEnd)
     }
 
-    _updateTitle() {
-        this.entities.titleTextElement.textContent = this.getAttribute("window-title") || ""
-    }
+    _updateTitle = () => this.entities.titleTextElement.textContent = this.getAttribute("window-title") || ""
 
-    _renderButtons() {
+    _renderButtons = () => {
         this.entities.buttonsContainer.innerHTML = ""
 
         const buttonConfigs = this.getAttribute("window-buttons")
@@ -117,7 +138,7 @@ customElements.define("fast-window", class extends HTMLElement {
         this.entities.buttonsContainer.append(...buttons)
     }
 
-    _applyInitialPosAndSize() {
+    _applyInitialPosAndSize = () => {
         const initialX = this.getAttribute("initial-x")
         const initialY = this.getAttribute("initial-y")
         const initialWidth = this.getAttribute("initial-width")
@@ -140,12 +161,14 @@ customElements.define("fast-window", class extends HTMLElement {
         }
     }
 
+    _setResize = () => this.style.setProperty("--window-resize", this.getAttribute("window-resize"))
+
     _startDrag = (ev) => {
         if (ev.button !== 0 || ev.target.closest(".button")) return
 
         this._isDragging = true
         this.style.transition = "none"
-        this.entities.titleBar.classList.add("dragging")
+        this.classList.add("dragging")
 
         const rect = this.getBoundingClientRect()
         this._offsetX = ev.clientX - rect.left
@@ -174,8 +197,8 @@ customElements.define("fast-window", class extends HTMLElement {
 
     _endDrag = () => {
         this._isDragging = false
-        this.style.transition = ""
-        this.entities.titleBar.classList.remove("dragging")
+        this.style.removeProperty("transition")
+        this.classList.remove("dragging")
 
         document.removeEventListener("mousemove", this._dragging)
         document.removeEventListener("mouseup", this._endDrag)
@@ -188,6 +211,16 @@ customElements.define("fast-window", class extends HTMLElement {
             const action = target.dataset.action || ""
             const detail = { action, target, originalEvent: ev, component: this }
             this.dispatchEvent(new CustomEvent("btn-click", { bubbles: true, composed: true, detail }))
+        }
+    }
+
+    _onAnimationEnd = (ev) => {
+        if (ev.animationName === "hideWindow" && this.classList.contains("hiding")) {
+            this.style.display = "none"
+            this.hidden = true
+            this.classList.remove("hiding")
+        } else if (ev.animationName === "showWindow" && this.classList.contains("showing")) {
+            this.classList.remove("showing")
         }
     }
 })
