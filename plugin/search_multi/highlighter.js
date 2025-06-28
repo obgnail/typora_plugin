@@ -16,7 +16,7 @@ class Highlighter {
         }, 999)
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.utils.debounce(() => {
-            const isShow = this.utils.isShow(this.plugin.entities.modal)
+            const isShow = !this.plugin.entities.window.hidden
             if (isShow) {
                 this.plugin.highlightMultiByAST()
             }

@@ -4,28 +4,37 @@ class resourceManagerPlugin extends BasePlugin {
     hotkey = () => [this.config.HOTKEY]
 
     html = () => `
-        <div id="plugin-resource-manager" class="plugin-common-modal plugin-common-hidden">
-            <div class="plugin-resource-manager-icon-group">
-                <div class="plugin-resource-manager-icon ion-close" action="close" ty-hint="${this.i18n.t('func.close')}"></div>
-                <div class="plugin-resource-manager-icon ion-arrow-move" action="move" ty-hint="${this.i18n.t('func.move')}"></div>
-                <div class="plugin-resource-manager-icon ion-eye-disabled" action="togglePreview" ty-hint="${this.i18n.t('func.togglePreview')}"></div>
-                <div class="plugin-resource-manager-icon ion-archive" action="download" ty-hint="${this.i18n.t('func.download')}"></div>
+        <fast-window
+            id="plugin-resource-manager"
+            hidden
+            window-title="${this.pluginName}"
+            window-buttons="download|fa-download|${this.i18n.t("func.download")};
+                            togglePreview|fa-eye|${this.i18n.t("func.togglePreview")};
+                            close|fa-times|${this.i18n.t("func.close")}">
+            <div class="plugin-resource-manager-wrap">
+                <table class="non-exist-in-file">
+                     <caption></caption>
+                     <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">preview</th><th>operation</th></tr></thead>
+                     <tbody></tbody>
+                </table>
+                <table class="non-exist-in-folder">
+                     <caption></caption>
+                     <thead><tr><th>#</th><th>resource</th></tr></thead>
+                     <tbody></tbody>
+                </table>
+                <div class="plugin-resource-manager-message"></div>
+                <textarea rows="10" readonly></textarea>
             </div>
-            <img class="plugin-resource-manager-popup plugin-common-hidden">
-            <div class="plugin-resource-manager-wrap"></div>
-        </div>
+        </fast-window>
     `
 
     init = () => {
         this.finder = new ResourceFinder(this)
         this.showWarnDialog = true
         this.entities = {
-            modal: document.querySelector("#plugin-resource-manager"),
+            content: this.utils.entities.eContent,
+            window: document.querySelector("#plugin-resource-manager"),
             wrap: document.querySelector(".plugin-resource-manager-wrap"),
-            popup: document.querySelector(".plugin-resource-manager-popup"),
-            iconGroup: document.querySelector(".plugin-resource-manager-icon-group"),
-            move: document.querySelector('.plugin-resource-manager-icon-group [action="move"]'),
-            $wrap: $(".plugin-resource-manager-wrap"),
         }
         this.results = {
             nonExistInFile: new Set(),
@@ -42,15 +51,10 @@ class resourceManagerPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.dragFixedModal(this.entities.move, this.entities.modal, false)
-        this.entities.iconGroup.addEventListener("click", ev => {
-            const target = ev.target.closest("[action]")
-            if (!target) return
-            const action = target.getAttribute("action")
+        this.entities.window.addEventListener("btn-click", ev => {
+            const { action } = ev.detail
             const fn = this[action]
-            if (fn) {
-                fn(ev)
-            }
+            if (fn) fn()
         })
         this.entities.wrap.addEventListener("click", async ev => {
             const target = ev.target.closest("button[action]")
@@ -89,34 +93,35 @@ class resourceManagerPlugin extends BasePlugin {
         if (!dir) return
 
         const hide = this.utils.notification.show(this.i18n._t("global", "processing"), "info")
-        const { resourcesInFolder, resourcesInFile } = await this.finder.run(dir)
+        const result = await this.runWithProgressBar(dir, 3 * 60 * 1000)
+        if (result instanceof Error) {
+            this.utils.notification.show(result.toString(), "error")
+            return
+        }
+        const { resourcesInFolder, resourcesInFile } = result
         this.results.init(resourcesInFolder, resourcesInFile)
         this._initModalRect()
         this._initModalTable()
-        this.utils.show(this.entities.modal)
+        this.entities.window.show()
         hide()
     }
 
+    runWithProgressBar = async (dir, timeout) => this.utils.progressBar.fake({ task: () => this.finder.run(dir), timeout })
+
     close = () => {
         this.results.clear()
-        this.entities.wrap.innerHTML = ""
-        this.utils.hide(this.entities.modal)
-        this.togglePreview(false)
+        this.entities.window.hide()
+        this.togglePreview(true)
     }
 
-    togglePreview = force => {
-        const icon = this.entities.iconGroup.querySelector('[action="togglePreview"]')
-        const wantClose = force === false || icon.classList.contains("ion-eye")
-        this.entities.wrap.querySelectorAll(".non-exist-in-file-table td:nth-of-type(3), .non-exist-in-file-table th:nth-of-type(3)")
-            .forEach(e => e.classList.toggle("plugin-common-hidden", wantClose))
-        const func = wantClose ? "off" : "on"
-        const className = "img"
-        this.entities.$wrap
-            [func]("mouseenter", className, this._showPopup)
-            [func]("mousemove", className, this._showPopup)
-            [func]("mouseleave", className, this._hidePopup)
-        icon.classList.toggle("ion-eye-disabled", wantClose)
-        icon.classList.toggle("ion-eye", !wantClose)
+    togglePreview = forceClose => {
+        let wantClose
+        this.entities.window.updateButton("togglePreview", btn => {
+            wantClose = forceClose || btn.icon === "fa-eye-slash"
+            btn.icon = wantClose ? "fa-eye" : "fa-eye-slash"
+        })
+        const selector = ".non-exist-in-file td:nth-of-type(3), .non-exist-in-file th:nth-of-type(3)"
+        this.entities.wrap.querySelectorAll(selector).forEach(e => this.utils.toggleVisible(e, wantClose))
     }
 
     download = async () => {
@@ -146,13 +151,13 @@ class resourceManagerPlugin extends BasePlugin {
     }
 
     _initModalRect = (resetLeft = true) => {
-        const { left, width, height } = this.utils.entities.eContent.getBoundingClientRect()
+        const { left, width, height } = this.entities.content.getBoundingClientRect()
         const { MODAL_LEFT_PERCENT: l, MODAL_WIDTH_PERCENT: w, MODAL_HEIGHT_PERCENT: h } = this.config
         const style = { width: `${width * w / 100}px`, height: `${height * h / 100}px` }
         if (resetLeft) {
             style.left = `${left + width * l / 100}px`
         }
-        Object.assign(this.entities.modal.style, style)
+        Object.assign(this.entities.window.style, style)
     }
 
     _initModalTable = () => {
@@ -187,35 +192,13 @@ class resourceManagerPlugin extends BasePlugin {
         const tbody1 = nonExistInFileRows.join("") || '<tr><td colspan="4" style="text-align: center">Empty</td></tr>'
         const tbody2 = nonExistInFolderRows.join("") || '<tr><td colspan="2" style="text-align: center">Empty</td></tr>'
 
-        this.entities.wrap.innerHTML = `
-            <table class="table non-exist-in-file-table">
-                 <caption>${I18N.nonExistInFile}</caption>
-                 <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">preview</th><th>operation</th></tr></thead>
-                 <tbody>${tbody1}</tbody>
-            </table>
-            <table class="table">
-                 <caption>${I18N.nonExistInFolder}</caption>
-                 <thead><tr><th>#</th><th>resource</th></tr></thead>
-                 <tbody>${tbody2}</tbody>
-            </table>
-            <div class="plugin-resource-manager-message">${I18N.setting}</div>
-            <textarea rows="10" readonly>${setting}</textarea>
-        `
-    }
-
-    _hidePopup = ev => this.utils.hide(this.entities.popup)
-    _showPopup = ev => {
-        const popup = this.entities.popup
-        if (!popup) return
-
-        this.utils.show(popup)
-        requestAnimationFrame(() => {
-            popup.src = ev.target.getAttribute("src")
-            const left = Math.min(window.innerWidth - 10 - popup.offsetWidth, ev.clientX + 10)
-            const top = Math.min(window.innerHeight - 50 - popup.offsetHeight, ev.clientY + 20)
-            popup.style.left = `${left}px`
-            popup.style.top = `${top}px`
-        })
+        const wrap = this.entities.wrap
+        wrap.querySelector(".non-exist-in-file caption").textContent = I18N.nonExistInFile
+        wrap.querySelector(".non-exist-in-folder caption").textContent = I18N.nonExistInFolder
+        wrap.querySelector(".non-exist-in-file tbody").innerHTML = tbody1
+        wrap.querySelector(".non-exist-in-folder tbody").innerHTML = tbody2
+        wrap.querySelector(".plugin-resource-manager-message").innerHTML = I18N.setting
+        wrap.querySelector("textarea").value = setting
     }
 
     _getOutput = (format = "obj") => {

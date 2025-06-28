@@ -72,7 +72,6 @@ class preferencesPlugin extends BasePlugin {
             })
         }
         const onEvents = () => {
-            // this.utils.dragFixedModal(this.entities.title, this.entities.dialog, false)
             this.entities.closeButton.addEventListener("click", () => this.call())
             this.entities.menu.addEventListener("click", async ev => {
                 const target = ev.target.closest(".plugin-preferences-menu-item")

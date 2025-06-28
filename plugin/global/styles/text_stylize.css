@@ -1,10 +1,14 @@
 #plugin-text-stylize {
-    top: 10%;
+    top: 25%;
+    left: 100px;
     background-color: ${backgroundColor};
+    min-height: auto;
+    overflow: visible;
 }
 
 #plugin-text-stylize .stylize-tool {
     display: flex;
+    padding: 10px;
 }
 
 #plugin-text-stylize .stylize-tool > [action] {
@@ -13,21 +17,22 @@
     width: 25px;
     height: 25px;
     opacity: 0.6;
+    margin: 0 1px;
 }
 
 #plugin-text-stylize .stylize-tool > [action].select {
-    background: var(--active-file-bg-color);
-    color: var(--active-file-text-color);
+    background: #e0e6ed;
+    border-radius: 5px;
+    color: currentColor;
     opacity: 1;
-    outline: 1px solid #32a1ce;
 }
 
 #plugin-text-stylize .stylize-palette {
     position: absolute;
     left: 0;
-    top: 30px;
-    margin-top: 10px;
+    margin: 0;
     display: none;
+    transition: all 0.3s ease-in-out;
 }
 
 #plugin-text-stylize .stylize-palette td {

@@ -53,14 +53,7 @@ class updaterPlugin extends BasePlugin {
 
         this.utils.notification.show(I18N.pleaseWait)
         const updater = await this.getUpdater(proxy, timeout)
-        const getState = updater.runWithState()
-        const isDone = () => getState().done === true
-        const notTimeout = await this.utils.progressBar.fake({ timeout, isDone })
-
-        let { done, state, info } = getState()
-        if (!notTimeout || !done || !state) {
-            state = new Error(`Timeout! Proxy: ${proxy}`)
-        }
+        const { state, info } = await updater.runWithProgressBar(timeout)
 
         let title, detail, redirect
         if (state === "UPDATED") {
@@ -126,7 +119,6 @@ class updater {
             "./plugin/global/settings/custom_plugin.user.toml",
             "./plugin/window_tab/save_tabs.json",
             "./plugin/custom/plugins/reopenClosedFiles/remain.json",
-            "./plugin/custom/plugins/scrollBookmarker/bookmark.json",
         ]
 
         this.latestVersionInfo = null;
@@ -158,13 +150,10 @@ class updater {
         return "UPDATED";
     }
 
-    runWithState = () => {
-        const v = { done: false, state: null, info: null }; // state: NO_NEED/UPDATED/Error
-        this.run()
-            .then(state => v.state = state)
-            .catch(err => console.error(v.state = err))
-            .finally(() => Object.assign(v, { done: true, info: this.latestVersionInfo }));
-        return () => v
+    runWithProgressBar = async (timeout) => {
+        const op = { task: this.run, timeout }
+        const result = await this.utils.progressBar.fake(op)
+        return { state: result, info: this.latestVersionInfo }
     }
 
     prepare = async () => {

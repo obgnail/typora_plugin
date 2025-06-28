@@ -19,7 +19,7 @@ class readOnlyPlugin extends BasePlugin {
         const setInput = disabled => {
             if (!disabled) return;
             [
-                "#plugin-search-multi-input input", "#plugin-commander-form input",
+                "#plugin-search-multi-input-wrap input", "#plugin-commander-form input",
                 "#plugin-toolbar-input input", "#typora-quick-open-input input",
             ].forEach(selector => {
                 const input = document.querySelector(selector);

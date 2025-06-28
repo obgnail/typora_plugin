@@ -12,50 +12,52 @@ customElements.define("fast-window", class extends HTMLElement {
             contentArea: shadowRoot.querySelector(".content-area"),
         }
 
+        this.contentArea = this.entities.contentArea
         this._isDragging = false
         this._offsetX = 0
         this._offsetY = 0
 
-        this.entities.titleBar.addEventListener("mousedown", this._startDrag)
-        this.entities.buttonsContainer.addEventListener("click", (ev) => {
-            const target = ev.target.closest(".button")
-            if (target) {
-                ev.stopPropagation()
-                const action = target.dataset.action || ""
-                const detail = { action, target, ev, component: this }
-                this.dispatchEvent(new CustomEvent("btn-click", { bubbles: true, composed: true, detail }))
-            }
-        })
+        this._addEventListeners()
     }
 
     connectedCallback() {
-        this._updateTitle()
-        this._renderButtons()
-
-        // If the element uses transform in external CSS
-        // We need to convert it back to a left/top based positioning after connecting it to DOM,
-        // so that there will be no offset when dragging.
-        const { transform } = window.getComputedStyle(this)
-        if (transform !== "none") {
-            const { left, top } = this.getBoundingClientRect()
-            this.style.left = `${left}px`
-            this.style.top = `${top}px`
-            this.style.transform = "none"
+        if (this.hasAttribute("hidden")) {
+            this.style.display = "none"
         }
+        this.updateTitle()
+        this._updateButtons()
+        this._setResize()
+        this._applyInitialPosAndSize()
     }
 
     static get observedAttributes() {
-        return ["window-title", "window-buttons"]
+        return ["window-title", "window-buttons", "window-resize", "x", "y", "width", "height"]
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) return
 
-        if (name === "window-title") {
-            this._updateTitle()
-        } else if (name === "window-buttons") {
-            this._renderButtons()
+        switch (name) {
+            case "window-title":
+                this.updateTitle()
+                break
+            case "window-buttons":
+                this._updateButtons()
+                break
+            case "window-resize":
+                this._setResize()
+                break
+            case "x":
+            case "y":
+            case "width":
+            case "height":
+                this._applyInitialPosAndSize()
+                break
         }
+    }
+
+    disconnectedCallback() {
+        this._removeEventListeners()
     }
 
     setContent = (content, unsafe = false) => {
@@ -75,47 +77,108 @@ customElements.define("fast-window", class extends HTMLElement {
         }
     }
 
-    _updateTitle() {
-        this.entities.titleTextElement.textContent = this.getAttribute("window-title") || ""
+    updateTitle = (title = this.getAttribute("window-title")) => this.entities.titleTextElement.textContent = title || ""
+
+    updateButtons = (updater) => {
+        const buttons = this._parseButtonConfig()
+        const _updated = updater(buttons)
+        const updated = _updated === undefined ? buttons : _updated
+        const result = updated && updated.length
+            ? updated.map(({ action, icon, hint }) => `${action}|${icon}|${hint};`).join("")
+            : ""
+        this.setAttribute("window-buttons", result)
     }
 
-    _renderButtons() {
+    updateButton = (action, updater) => {
+        this.updateButtons(buttons => {
+            updater(buttons.find(btn => btn.action === action))
+            return buttons
+        })
+    }
+
+    toggle = (forceHide = false) => {
+        if (forceHide || !this.hidden) {
+            this.hide()
+        } else {
+            this.show()
+        }
+    }
+
+    show = () => {
+        if (!this.hidden && !this.classList.contains("hiding")) return
+        this.hidden = false
+        this.style.removeProperty("display")
+        this.classList.remove("hiding")
+        this.classList.add("showing")
+    }
+
+    hide = () => {
+        if (this.hidden || this.classList.contains("showing")) return
+        this.classList.remove("showing")
+        this.classList.add("hiding")
+    }
+
+    _addEventListeners = () => {
+        this.entities.titleBar.addEventListener("mousedown", this._startDrag)
+        this.entities.buttonsContainer.addEventListener("click", this._onButtonClick)
+        this.addEventListener("animationend", this._onAnimationEnd)
+    }
+
+    _removeEventListeners = () => {
+        this.entities.titleBar.removeEventListener("mousedown", this._startDrag)
+        this.entities.buttonsContainer.removeEventListener("click", this._onButtonClick)
+        document.removeEventListener("mousemove", this._dragging)
+        document.removeEventListener("mouseup", this._endDrag)
+        this.removeEventListener("animationend", this._onAnimationEnd)
+    }
+
+    _updateButtons = () => {
         this.entities.buttonsContainer.innerHTML = ""
 
-        const buttonConfigs = this.getAttribute("window-buttons")
-        if (!buttonConfigs) return
+        const buttonEls = this._parseButtonConfig().map(({ action, icon, hint }) => {
+            const el = document.createElement("div")
+            el.className = `button fa ${icon}`
+            el.dataset.action = action
+            if (hint) {
+                el.dataset.hint = hint
+            }
+            return el
+        })
 
-        const buttons = buttonConfigs
-            .split(" ")
-            .filter(cfg => cfg.trim() !== "")
-            .map(cfg => {
-                const parts = cfg.split(":")
-                if (parts.length < 2 || parts.length > 3) {
-                    console.warn(`Invalid button config: ${cfg}. Expected format "action:icon" or "action:icon:hint".`)
-                    return
-                }
-                const action = parts[0].trim()
-                const iconClass = parts[1].trim()
-                const hint = parts[2] ? parts[2].trim() : ""
-
-                const btn = document.createElement("div")
-                btn.className = `button fa ${iconClass}`
-                btn.dataset.action = action
-                if (hint) {
-                    btn.dataset.hint = hint
-                }
-                return btn
-            })
-            .filter(Boolean)
-
-        this.entities.buttonsContainer.append(...buttons)
+        this.entities.buttonsContainer.append(...buttonEls)
     }
 
+    _applyInitialPosAndSize = () => {
+        const x = this.getAttribute("x")
+        const y = this.getAttribute("y")
+        const w = this.getAttribute("width")
+        const h = this.getAttribute("height")
+
+        if (x) this.style.left = x
+        if (y) this.style.top = y
+        if (w) this.style.width = w
+        if (h) this.style.height = h
+
+        // If the element uses transform in external CSS
+        // We need to convert it back to a left/top based positioning after connecting it to DOM,
+        // so that there will be no offset when dragging.
+        const { transform } = window.getComputedStyle(this)
+        if (transform !== "none") {
+            const { left, top } = this.getBoundingClientRect()
+            this.style.left = `${left}px`
+            this.style.top = `${top}px`
+            this.style.transform = "none"
+        }
+    }
+
+    _setResize = () => this.style.setProperty("--window-resize", this.getAttribute("window-resize"))
+
     _startDrag = (ev) => {
-        if (ev.button !== 0) return
+        if (ev.button !== 0 || ev.target.closest(".button")) return
 
         this._isDragging = true
         this.style.transition = "none"
+        this.classList.add("dragging")
 
         const rect = this.getBoundingClientRect()
         this._offsetX = ev.clientX - rect.left
@@ -144,9 +207,48 @@ customElements.define("fast-window", class extends HTMLElement {
 
     _endDrag = () => {
         this._isDragging = false
-        this.style.transition = ""
+        this.style.removeProperty("transition")
+        this.classList.remove("dragging")
 
         document.removeEventListener("mousemove", this._dragging)
         document.removeEventListener("mouseup", this._endDrag)
+    }
+
+    _onButtonClick = (ev) => {
+        const target = ev.target.closest(".button")
+        if (target) {
+            ev.stopPropagation()
+            const action = target.dataset.action || ""
+            const detail = { action, target, originalEvent: ev, component: this }
+            this.dispatchEvent(new CustomEvent("btn-click", { bubbles: true, composed: true, detail }))
+        }
+    }
+
+    _onAnimationEnd = (ev) => {
+        if (ev.animationName === "hideWindow" && this.classList.contains("hiding")) {
+            this.style.display = "none"
+            this.hidden = true
+            this.classList.remove("hiding")
+        } else if (ev.animationName === "showWindow" && this.classList.contains("showing")) {
+            this.classList.remove("showing")
+        }
+    }
+
+    _parseButtonConfig = (config = this.getAttribute("window-buttons")) => {
+        return (config || "")
+            .split(";")
+            .filter(cfg => cfg.trim() !== "")
+            .map(cfg => {
+                const parts = cfg.split("|")
+                if (parts.length < 2 || parts.length > 3) {
+                    console.warn(`Invalid button config: ${cfg}. Expected format "action:icon" or "action:icon:hint".`)
+                    return
+                }
+                const action = parts[0].trim()
+                const icon = parts[1].trim()
+                const hint = parts[2] ? parts[2].trim() : ""
+                return { action, icon, hint }
+            })
+            .filter(Boolean)
     }
 })

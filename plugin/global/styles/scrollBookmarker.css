@@ -1,27 +1,5 @@
 #plugin-scroll-bookmarker {
     right: 25px;
-    width: 300px;
-    max-height: 500px;
-    overflow-y: auto;
-}
-
-.plugin-scroll-bookmarker-icon-group {
-    display: flex;
-    flex-direction: row-reverse;
-    font-size: 1.3em;
-    margin: 0 0.3em;
-    user-select: none;
-}
-
-.plugin-scroll-bookmarker-icon-group .plugin-scroll-bookmarker-icon {
-    cursor: pointer;
-    margin-left: 0.6em;
-    opacity: 0.6;
-}
-
-.plugin-scroll-bookmarker-icon:hover {
-    opacity: 1;
-    transform: translateY(-2px) scale(1.2);
 }
 
 #plugin-scroll-bookmarker .bookmark-item {
@@ -40,8 +18,6 @@
 
 #plugin-scroll-bookmarker .bookmark-item-content {
     padding-right: 10px;
-    /* word-wrap: break-word; */
-    /* flex-wrap: wrap; */
     flex: 1;
     font-size: 15px;
     overflow-wrap: anywhere;

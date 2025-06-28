@@ -18,18 +18,18 @@ load(
     `,
 )
 
-// load(
-//     "./fast-window.js",
-//     "plugin-fast-window",
-//     `
-//         <link rel="stylesheet" href="./style/font-awesome-4.1.0/css/font-awesome.min.css" crossorigin="anonymous">
-//         <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-window.css" crossorigin="anonymous">
-//         <div class="title-bar">
-//             <span class="title-text" id="window-title"></span>
-//             <div class="buttons-container"></div>
-//         </div>
-//         <div class="content-area">
-//             <slot></slot>
-//         </div>
-//     `,
-// )
+load(
+    "./fast-window.js",
+    "plugin-fast-window",
+    `
+        <link rel="stylesheet" href="./style/font-awesome-4.1.0/css/font-awesome.min.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-window.css" crossorigin="anonymous">
+        <div class="title-bar" part="title-bar">
+            <span class="title-text" id="window-title"></span>
+            <div class="buttons-container"></div>
+        </div>
+        <div class="content-area" part="content-area">
+            <slot></slot>
+        </div>
+    `,
+)

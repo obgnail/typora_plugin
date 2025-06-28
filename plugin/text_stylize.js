@@ -25,18 +25,16 @@ class textStylizePlugin extends BasePlugin {
             setBrush: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z"/></svg>',
             useBrush: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>',
             erase: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m528-546-93-93-121-121h486v120H568l-40 94ZM792-56 460-388l-80 188H249l119-280L56-792l56-56 736 736-56 56Z"/></svg>',
-            move: '<svg xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 -960 960 960" width="22"><path d="M480-80 310-250l57-57 73 73v-166h80v165l72-73 58 58L480-80ZM250-310 80-480l169-169 57 57-72 72h166v80H235l73 72-58 58Zm460 0-57-57 73-73H560v-80h165l-73-72 58-58 170 170-170 170ZM440-560v-166l-73 73-57-57 170-170 170 170-57 57-73-73v166h-80Z"/></svg>',
-            close: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>',
         }
-        const hintMap = this.i18n.entries(Object.keys(svgMap), "$option.TOOLBAR.")
+        const hintMap = this.i18n.entries(Object.keys(svgMap), "$option.TOOLS.")
 
-        const tools = this.config.TOOLBAR
+        const tools = this.config.TOOLS
             .filter(name => svgMap.hasOwnProperty(name))
             .map(name => {
                 const svg = svgMap[name]
                 const hint = hintMap[name]
                 const style = name === "blank" ? 'style="visibility: hidden"' : ""
-                return `<span action="${name}" ty-hint="${hint}" ${style}>${svg}</span>`
+                return `<div action="${name}" ty-hint="${hint}" ${style}>${svg}</div>`
             })
             .join("")
         const trs = this.config.COLOR_TABLE
@@ -47,10 +45,15 @@ class textStylizePlugin extends BasePlugin {
             .join("")
 
         return `
-            <div id="plugin-text-stylize" class="plugin-common-modal plugin-common-hidden">
-                <div class="stylize-tool">${tools}</div>       
-                <table class="stylize-palette"><tbody>${trs}</tbody></table>     
-            </div>
+            <fast-window 
+                id="plugin-text-stylize"
+                hidden
+                window-resize="none"
+                window-title="${this.pluginName}"
+                window-buttons="close|fa-times">
+                <div class="stylize-tool">${tools}</div>
+                <table class="stylize-palette"><tbody>${trs}</tbody></table>
+            </fast-window>
         `
     }
 
@@ -69,7 +72,7 @@ class textStylizePlugin extends BasePlugin {
 
     init = () => {
         this.entities = {
-            modal: document.querySelector("#plugin-text-stylize"),
+            window: document.querySelector("#plugin-text-stylize"),
             toolbar: document.querySelector("#plugin-text-stylize .stylize-tool"),
             palette: document.querySelector("#plugin-text-stylize .stylize-palette"),
         }
@@ -78,16 +81,26 @@ class textStylizePlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.dragFixedModal(this.entities.toolbar.querySelector(`[action="move"]`), this.entities.modal, false);
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.utils.hide(this.entities.modal));
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.entities.window.hide())
 
         const that = this;
         $(this.entities.toolbar).on("mouseenter", "[action]", function () {
-            const action = this.getAttribute("action");
-            const showPalette = action === "foregroundColor" || action === "backgroundColor" || action === "borderColor";
-            that.entities.toolbar.querySelectorAll(":scope > [action]").forEach(ele => ele.classList.remove("select"));
-            this.classList.add("select");
-            that.entities.palette.style.display = showPalette ? "block" : "none";
+            const action = this.getAttribute("action")
+            const showPalette = action === "foregroundColor" || action === "backgroundColor" || action === "borderColor"
+            that.entities.toolbar.querySelectorAll(":scope > [action]").forEach(ele => ele.classList.remove("select"))
+            this.classList.add("select")
+            if (showPalette) {
+                const { height } = that.entities.window.getBoundingClientRect()
+                that.entities.palette.style.top = height + 10 + "px"
+            }
+            that.entities.palette.style.display = showPalette ? "initial" : ""
+        })
+
+        this.entities.window.addEventListener("btn-click", ev => {
+            const { action } = ev.detail
+            if (action === "close") {
+                this.entities.window.hide()
+            }
         })
 
         this.entities.toolbar.addEventListener("mousedown", ev => {
@@ -116,12 +129,12 @@ class textStylizePlugin extends BasePlugin {
         }, true)
     }
 
-    call = () => this.utils.toggleVisible(this.entities.modal);
+    call = () => this.entities.window.toggle()
 
     onAction = (action, color) => {
         const callMap = this.getFuncMap(color);
         const func = callMap[action];
-        func && func();
+        if (func) func()
     }
 
     getFuncMap = color => ({
