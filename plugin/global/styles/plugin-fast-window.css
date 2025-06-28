@@ -1,7 +1,7 @@
 :host {
     --window-resize: both;
-    --window-bg-color: #ffffff;
-    --window-border-color: #d1d9e6;
+    --window-bg-color: #fafafa;
+    --titlebar-border-color: rgba(150, 162, 170, 0.2);
     --titlebar-bg-color: #f5f5f5;
     --titlebar-text-color: #334e68;
     --button-hover-bg: #e0e6ed;
@@ -9,7 +9,7 @@
     --close-button-text-color: #666666;
     --close-button-hover-text-color: #ffffff;
     --border-radius: 10px;
-    --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    --box-shadow: 2px 2px 4px #dbdbdb, -2px -2px 4px #dbdbdb;
     --font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     --title-font-size: 1.1rem;
     --button-icon-size: 1.1rem;
@@ -28,7 +28,6 @@
     font-family: var(--font-family);
     z-index: 9999;
     resize: var(--window-resize);
-    border: 1px solid var(--window-border-color);
     transition: box-shadow 0.3s ease-in-out, transform 0.1s ease-out;
 }
 
@@ -72,9 +71,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 14px;
+    padding: 6px 12px;
     background: var(--titlebar-bg-color);
-    border-bottom: 1px solid var(--window-border-color);
+    border-bottom: 1px solid var(--titlebar-border-color);
     user-select: none;
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
@@ -161,7 +160,7 @@
 }
 
 .content-area {
-    padding: 15px 20px;
+    padding: .3em;
     flex-grow: 1;
     overflow: auto;
     display: flex;

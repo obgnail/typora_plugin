@@ -14,9 +14,8 @@
 #plugin-commander-form select,
 #plugin-commander-form input {
     border: 1px solid #ddd;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-    border-radius: 2px;
-    height: 28px;
+    border-radius: 6px;
+    height: 30px;
     margin: 1px 0;
 }
 
@@ -47,10 +46,8 @@
 }
 
 .plugin-commander-output {
-    margin-top: 0;
-    cursor: default;
-    max-height: 340px;
     overflow: auto;
+    height: 100%;
 }
 
 .plugin-commander-output pre {
@@ -58,7 +55,7 @@
     font-size: 13px;
     line-height: 1.2;
     margin: 0;
-    padding: 5px;
+    padding: 8px;
 }
 
 .plugin-commander-output pre.error {

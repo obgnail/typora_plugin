@@ -10,33 +10,32 @@ class searchMultiPlugin extends BasePlugin {
     }
 
     html = () => `
-        <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
-            <div id="plugin-search-multi-input">
-                <input type="text" placeholder="${this.pluginName}">
-                <div class="plugin-search-multi-btn-group">
-                    <span class="option-btn" action="searchGrammarModal" ty-hint="${this.i18n.t('grammar')}">
-                        <div class="ion-help-circled"></div>
-                    </span>
-                    <span class="option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="${this.i18n.t('caseSensitive')}">
+        <fast-window
+            id="plugin-search-multi"
+            window-title="${this.pluginName}"
+            window-resize="none"
+            window-buttons="searchGrammarModal|fa-question|${this.i18n.t("grammar")};close|fa-times"
+            hidden>
+            <div class="plugin-search-multi-wrap">
+                <div id="plugin-search-multi-input-wrap">
+                    <input type="text">
+                    <div class="option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}">
                         <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
-                    </span>
+                    </div>
                 </div>
-            </div>
-
-            <div class="plugin-highlight-multi-result plugin-common-hidden"></div>
-
-            <div class="plugin-search-multi-result plugin-common-hidden">
-                <div class="search-result-title">${this.i18n.t('matchedFiles')}：<span>0</span></div>
-                <div class="search-result-list"></div>
-            </div>
-
-            <div class="plugin-search-multi-info-item plugin-common-hidden">
-                <div class="plugin-search-multi-info" data-lg="Front">${this.i18n.t('searching')}</div>
-                <div class="typora-search-spinner">
-                    <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                <div class="plugin-search-multi-result plugin-common-hidden">
+                    <div class="search-result-title">${this.i18n.t("matchedFiles")}：<span>0</span></div>
+                    <div class="search-result-list"></div>
                 </div>
+                <div class="plugin-search-multi-info-item plugin-common-hidden">
+                    <div class="plugin-search-multi-info" data-lg="Front">${this.i18n.t("searching")}</div>
+                    <div class="typora-search-spinner">
+                        <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                    </div>
+                </div>
+                <div class="plugin-highlight-multi-result plugin-common-hidden"></div>
             </div>
-        </div>
+        </fast-window>
     `
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -49,9 +48,9 @@ class searchMultiPlugin extends BasePlugin {
             return prefix + ext.toLowerCase()
         }))
         this.entities = {
-            modal: document.querySelector("#plugin-search-multi"),
-            input: document.querySelector("#plugin-search-multi-input input"),
-            buttonGroup: document.querySelector(".plugin-search-multi-btn-group"),
+            window: document.querySelector("#plugin-search-multi"),
+            input: document.querySelector("#plugin-search-multi-input-wrap input"),
+            button: document.querySelector("#plugin-search-multi .option-btn"),
             highlightResult: document.querySelector(".plugin-highlight-multi-result"),
             result: document.querySelector(".plugin-search-multi-result"),
             resultCounter: document.querySelector(".plugin-search-multi-result .search-result-title span"),
@@ -63,27 +62,23 @@ class searchMultiPlugin extends BasePlugin {
     process = () => {
         this.searcher.process()
         this.highlighter.process()
-        if (this.config.ALLOW_DRAG) {
-            this.utils.dragFixedModal(this.entities.input, this.entities.modal)
-        }
         this.entities.resultList.addEventListener("click", ev => {
             const target = ev.target.closest(".plugin-search-multi-item")
-            if (!target) return
-            const filepath = target.dataset.path
-            this.utils.openFile(filepath)
-            if (this.config.AUTO_HIDE) {
-                this.utils.hide(this.entities.modal)
+            if (target) {
+                const filepath = target.dataset.path
+                this.utils.openFile(filepath)
             }
         })
-        this.entities.buttonGroup.addEventListener("click", ev => {
-            const btn = ev.target.closest(".option-btn")
-            if (!btn) return
-            const action = btn.getAttribute("action")
+        this.entities.button.addEventListener("click", () => {
+            this.entities.button.classList.toggle("select")
+            this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
+        })
+        this.entities.window.addEventListener("btn-click", ev => {
+            const { action } = ev.detail
             if (action === "searchGrammarModal") {
                 this.searcher.showGrammar()
-            } else if (action === "toggleCaseSensitive") {
-                btn.classList.toggle("select")
-                this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
+            } else if (action === "close") {
+                this.hide()
             }
         })
         this.entities.input.addEventListener("keydown", ev => {
@@ -229,21 +224,19 @@ class searchMultiPlugin extends BasePlugin {
         }
     }
 
-    isModalHidden = () => this.utils.isHidden(this.entities.modal)
-
     hide = () => {
-        this.utils.hide(this.entities.modal)
+        this.entities.window.hide()
         this.utils.hide(this.entities.info)
         this.highlighter.clearSearch()
     }
 
     show = () => {
-        this.utils.show(this.entities.modal)
+        this.entities.window.show()
         setTimeout(() => this.entities.input.select())
     }
 
     call = () => {
-        if (!this.isModalHidden()) {
+        if (!this.entities.window.hidden) {
             this.hide()
         } else {
             this.show()

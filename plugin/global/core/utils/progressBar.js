@@ -26,7 +26,18 @@ class progressBar {
         }, interval);
     })
 
-    fake = ({ timeout, isDone = this._timeout(), strategy = this._fade, animateTo100 = true, interval = 50 }) => new Promise(resolve => {
+    fake = async ({ task, timeout, strategy = this._fade, animateTo100 = true, interval = 50 }) => {
+        let done, result
+        const op = { timeout, isDone: () => done, strategy, animateTo100, interval }
+        task()
+            .then(data => result = data)
+            .catch(err => console.error(result = err))
+            .finally(() => done = true)
+        const ok = await this._fake(op)
+        return ok ? result : new Error("Timeout")
+    }
+
+    _fake = ({ timeout, isDone = this._timeout(), strategy = this._fade, animateTo100 = true, interval = 50 }) => new Promise(resolve => {
         let timer;
         const start = new Date().getTime();
         const end = start + timeout;

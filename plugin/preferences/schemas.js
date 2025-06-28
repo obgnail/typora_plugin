@@ -140,7 +140,7 @@ const OPTIONS = {
         POSITION_TABLE: ["before", "after"],
     },
     text_stylize: {
-        TOOLBAR: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush", "move", "close"],
+        TOOLS: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush"],
     },
     resource_manager: {
         RESOURCE_GRAMMARS: ["markdown", "html"],
@@ -275,9 +275,7 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "windowInteraction",
-            Switch("AUTO_HIDE"),
             Switch("BACKSPACE_TO_HIDE"),
-            Switch("ALLOW_DRAG"),
         ),
         ArrayBox("ALLOW_EXT"),
         ArrayBox("IGNORE_FOLDERS"),
@@ -294,7 +292,6 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "windowInteraction",
             Switch("BACKSPACE_TO_HIDE"),
-            Switch("ALLOW_DRAG"),
         ),
         TableBox(
             "BUILTIN",
@@ -736,7 +733,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "toolBar",
             Text("MODAL_BACKGROUND_COLOR"),
-            Select("TOOLBAR", OPTIONS.text_stylize.TOOLBAR),
+            Select("TOOLS", OPTIONS.text_stylize.TOOLS),
         ),
         TableBox(
             "ACTION_HOTKEYS",
@@ -744,7 +741,7 @@ const SETTING_SCHEMAS = {
             [
                 UntitledBox(
                     { type: "hotkey", key: "hotkey", label: "$label.ACTION_HOTKEYS.hotkey" },
-                    { type: "select", key: "action", label: "$label.ACTION_HOTKEYS.action", options: OPTIONS.text_stylize.TOOLBAR },
+                    { type: "select", key: "action", label: "$label.ACTION_HOTKEYS.action", options: OPTIONS.text_stylize.TOOLS },
                 ),
             ],
             {
@@ -1352,7 +1349,6 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Hotkey("modifier_key", { tooltip: "modifierKeyExample" }),
             Switch("auto_popup_modal"),
-            Switch("persistence"),
         ),
         handleSettingsBox,
     ],

@@ -1,6 +1,4 @@
 #plugin-markdownlint {
-    display: flex;
-    flex-direction: column;
     top: 10%;
     right: 25px;
     line-height: ${this.config.modal_line_height};
@@ -8,25 +6,6 @@
     min-width: 380px;
     max-height: ${this.config.modal_max_height};
     z-index: 9993;
-}
-
-.plugin-markdownlint-icon-group {
-    display: flex;
-    flex-direction: row-reverse;
-    font-size: 1.3em;
-    margin: 0.3em;
-    user-select: none;
-}
-
-.plugin-markdownlint-icon-group .plugin-markdownlint-icon {
-    cursor: pointer;
-    margin-left: 0.6em;
-    opacity: 0.6;
-}
-
-.plugin-markdownlint-icon:hover {
-    opacity: 1;
-    transform: translateY(-2px) scale(1.2);
 }
 
 .plugin-markdownlint-table {

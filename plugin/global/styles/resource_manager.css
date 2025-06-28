@@ -1,42 +1,23 @@
-#plugin-resource-manager {
-    display: flex;
-    flex-direction: column;
-    resize: both;
-    overflow: auto;
-    min-width: 120px;
-    min-height: 120px;
-}
-
 #plugin-resource-manager .plugin-resource-manager-wrap {
     overflow: scroll;
 }
 
-#plugin-resource-manager .plugin-resource-manager-popup {
-    max-width: 500px;
-    max-height: 500px;
-    position: fixed;
-    box-shadow: 0 0 0.125em 0 rgba(0, 0, 0, .5);
-    border-radius: 0.5em;
-    background-color: var(--side-bar-bg-color);
-    z-index: 9999;
-}
-
-.non-exist-in-file-table th:first-child {
+.non-exist-in-file th:first-child {
     width: 10px;
 }
-.non-exist-in-file-table th:last-child {
+.non-exist-in-file th:last-child {
     width: 150px;
 }
-.non-exist-in-file-table td:nth-of-type(2) {
+.non-exist-in-file td:nth-of-type(2) {
     max-width: 200px;
     white-space: break-spaces;
     word-break: break-word;
 }
-.non-exist-in-file-table td:nth-of-type(3) {
+.non-exist-in-file td:nth-of-type(3) {
     max-width: 100px;
     max-height: 100px;
 }
-.non-exist-in-file-table td:last-of-type {
+.non-exist-in-file td:last-of-type {
     text-align: center;
 }
 
@@ -56,22 +37,4 @@
 #plugin-resource-manager textarea {
     width: 100%;
     margin-top: 10px;
-}
-
-#plugin-resource-manager .plugin-resource-manager-icon-group {
-    display: flex;
-    flex-direction: row-reverse;
-    font-size: 1.2em;
-    margin-right: 0.4em;
-}
-
-.plugin-resource-manager-icon-group .plugin-resource-manager-icon {
-    cursor: pointer;
-    margin-left: 0.4em;
-    opacity: 0.6;
-}
-
-.plugin-resource-manager-icon:hover {
-    opacity: 1;
-    transform: translateY(-2px) scale(1.2);
 }

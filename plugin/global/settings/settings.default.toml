@@ -182,16 +182,6 @@ NAME = ""
 HOTKEY = "ctrl+shift+p"
 
 # ------------------- 窗口交互 -------------------
-# 允许通过 `Ctrl` + 鼠标拖拽输入框来移动窗口
-#   true:  启用窗口拖动功能
-#   false: 禁用窗口拖动功能
-ALLOW_DRAG = true
-
-# 当输入框为空且失去焦点时，是否自动隐藏窗口
-#   true:  启用自动隐藏功能
-#   false: 禁用自动隐藏功能
-AUTO_HIDE = false
-
 # 当输入框为空，且按下 `Backspace` 键时，隐藏窗口
 #   true:  启用此功能
 #   false: 禁用此功能
@@ -292,11 +282,6 @@ NAME = ""
 #   示例： "ctrl+shift+c"
 #   留空则不设置快捷键
 HOTKEY = ""
-
-# 允许通过【ctrl+鼠标拖拽输入框】拖动窗口
-#   true:  启用拖动窗口功能，可以通过按住 Ctrl 键并拖动输入框来移动窗口
-#   false: 禁用拖动窗口功能
-ALLOW_DRAG = true
 
 # 当输入框为空，且键入 backspace 时，隐藏窗口
 #   true:  启用此功能
@@ -1626,12 +1611,10 @@ SHOW_MODAL_HOTKEY = ""
 #   blank                : 无功能，用于占位 (分隔按钮)
 #   setBrush             : 设置格式刷
 #   useBrush             : 使用格式刷
-#   move                 : 移动工具栏
-#   close                : 关闭工具栏
-TOOLBAR = [
+TOOLS = [
     "weight", "italic", "underline", "throughline", "overline", "title", "superScript", "subScript",
     "emphasis", "blur", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
-    "foregroundColor", "backgroundColor", "borderColor", "setBrush", "useBrush", "erase", "blank", "move", "close"
+    "foregroundColor", "backgroundColor", "borderColor", "blank", "setBrush", "useBrush", "erase",
 ]
 
 # 默认的格式刷
@@ -1641,7 +1624,7 @@ DEFAULT_FORMAT_BRUSH = ""
 # ------------------- 快捷键 -------------------
 # 将设置样式的动作映射为快捷键，方便快速应用样式
 #   hotkey: 快捷键组合，例如："ctrl+shift+c"。为空则禁用快捷键
-#   action: 对应的工具栏按钮 (必须是上方 TOOLBAR 中定义的按钮之一)
+#   action: 对应的工具栏按钮 (必须是上方 TOOLS 中定义的按钮之一)
 # 举例：
 #   ACTION_HOTKEYS = [
 #       { hotkey = "ctrl+shift+d", action = "foregroundColor" },

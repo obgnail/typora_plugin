@@ -31,7 +31,7 @@ class commanderPlugin extends BasePlugin {
         }
         const builtin = this.builtin.map(e => `<option data-shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`)
         return `
-            <div id="plugin-commander" class="plugin-common-modal plugin-common-hidden"> 
+            <fast-window id="plugin-commander" window-title="${this.pluginName}" window-buttons="close|fa-times" hidden>
                 <form id="plugin-commander-form">
                     <div class="plugin-commander-input-wrap">
                         <div class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="${runText}"></div>
@@ -41,7 +41,7 @@ class commanderPlugin extends BasePlugin {
                     <select class="plugin-commander-builtin">${builtin.join("")}</select>
                 </form>
                 <div class="plugin-commander-output plugin-common-hidden"><pre></pre></div>
-            </div>
+            </fast-window>
         `
     }
 
@@ -55,12 +55,12 @@ class commanderPlugin extends BasePlugin {
 
     init = () => {
         this.entities = {
-            modal: document.getElementById("plugin-commander"),
+            window: document.querySelector("#plugin-commander"),
             form: document.querySelector("#plugin-commander-form"),
-            input: document.querySelector("#plugin-commander-form .plugin-commander-input"),
-            shellSelect: document.querySelector("#plugin-commander-form .plugin-commander-shell"),
-            builtinSelect: document.querySelector("#plugin-commander-form .plugin-commander-builtin"),
-            commit: document.querySelector("#plugin-commander-form .plugin-commander-commit"),
+            input: document.querySelector(".plugin-commander-input"),
+            shellSelect: document.querySelector(".plugin-commander-shell"),
+            builtinSelect: document.querySelector(".plugin-commander-builtin"),
+            commit: document.querySelector(".plugin-commander-commit"),
             output: document.querySelector(".plugin-commander-output"),
             pre: document.querySelector(".plugin-commander-output pre"),
         }
@@ -98,12 +98,15 @@ class commanderPlugin extends BasePlugin {
         this.entities.form.addEventListener("keydown", ev => {
             const wantHide = ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value)
             if (wantHide) {
-                this.utils.hide(this.entities.modal)
+                this.entities.window.hide()
             }
         })
-        if (this.config.ALLOW_DRAG) {
-            this.utils.dragFixedModal(this.entities.input, this.entities.modal);
-        }
+        this.entities.window.addEventListener("btn-click", ev => {
+            const { action } = ev.detail
+            if (action === "close") {
+                this.entities.window.hide()
+            }
+        })
     }
 
     _convertPath = (path, shell) => {
@@ -153,7 +156,7 @@ class commanderPlugin extends BasePlugin {
 
     _showResult = (result, showModal = true, error = false) => {
         if (showModal) {
-            this.utils.show(this.entities.modal);
+            this.entities.window.show()
         }
         this.utils.show(this.entities.output);
         this.entities.pre.textContent = result;
@@ -223,10 +226,10 @@ class commanderPlugin extends BasePlugin {
     }
 
     toggleModal = () => {
-        const { modal, input } = this.entities;
-        this.utils.toggleVisible(modal);
-        if (this.utils.isShow(modal)) {
-            input.select();
+        const hidden = this.entities.window.hidden
+        this.entities.window.toggle()
+        if (hidden) {
+            this.entities.input.select()
         }
     }
 

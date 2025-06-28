@@ -7,24 +7,24 @@ class markdownLintPlugin extends BaseCustomPlugin {
     ]
 
     html = () => `
-        <div id="plugin-markdownlint" class="plugin-common-modal plugin-common-hidden">
-            <div class="plugin-markdownlint-icon-group">
-                <div class="plugin-markdownlint-icon ion-close" action="close" ty-hint="${this.i18n.t("func.close")}"></div>
-                <div class="plugin-markdownlint-icon ion-arrow-move" action="move" ty-hint="${this.i18n.t("func.move")}"></div>
-                <div class="plugin-markdownlint-icon ion-refresh" action="refresh" ty-hint="${this.i18n.t("func.refresh")}"></div>
-                <div class="plugin-markdownlint-icon ion-code" action="toggleSourceMode" ty-hint="${this.i18n.t("func.toggleSourceMode")}"></div>
-                <div class="plugin-markdownlint-icon ion-wrench" action="fixAll" ty-hint="${this.i18n.t("func.fixAll")}"></div>
-                <div class="plugin-markdownlint-icon ion-earth" action="translate" ty-hint="${this.i18n.t("func.translate")}"></div>
-                <div class="plugin-markdownlint-icon ion-information-circled" action="detailAll" ty-hint="${this.i18n.t("func.detailAll")}"></div>
-                <div class="plugin-markdownlint-icon ion-document-text" action="doc" ty-hint="${this.i18n.t("func.doc")}"></div>
-            </div>
+        <fast-window 
+            id="plugin-markdownlint"
+            hidden
+            window-title="${this.pluginName}"
+            window-buttons="doc|fa-file-text|${this.i18n.t("func.doc")};
+                            switchOrder|fa-sort-amount-asc|${this.i18n.t(`$option.result_order_by.${this.config.result_order_by}`)};
+                            detailAll|fa-info-circle|${this.i18n.t("func.detailAll")};
+                            fixAll|fa-wrench|${this.i18n.t("func.fixAll")};
+                            toggleSourceMode|fa-code|${this.i18n.t("func.toggleSourceMode")};
+                            refresh|fa-refresh|${this.i18n.t("func.refresh")};
+                            close|fa-times|${this.i18n.t("func.close")}">
             <div class="plugin-markdownlint-table">
                 <table>
                     <thead><tr><th>${this.i18n.t("line")}</th><th>${this.i18n.t("rule")}</th><th>${this.i18n.t("desc")}</th><th>${this.i18n.t("ops")}</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
-        </div>
+        </fast-window>
         ${this.config.use_button ? `<div id="plugin-markdownlint-button"></div>` : ""}
     `
 
@@ -34,9 +34,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.fixLint = this.utils.noop
         this.fixInfos = []
         this.entities = {
-            modal: document.querySelector("#plugin-markdownlint"),
-            iconGroup: document.querySelector("#plugin-markdownlint .plugin-markdownlint-icon-group"),
-            moveIcon: document.querySelector('#plugin-markdownlint .plugin-markdownlint-icon[action="move"]'),
+            window: document.querySelector("#plugin-markdownlint"),
             table: document.querySelector("#plugin-markdownlint table"),
             tbody: document.querySelector("#plugin-markdownlint tbody"),
             button: document.querySelector("#plugin-markdownlint-button"),
@@ -75,7 +73,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => setTimeout(this.initLint, 1000))
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, force => {
                 if (force) {
-                    this.utils.toggleVisible(this.entities.modal, force)
+                    this.entities.window.toggle(force)
                 }
                 if (this.entities.button) {
                     this.utils.toggleVisible(this.entities.button, force)
@@ -130,26 +128,25 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 }
                 this.utils.scrollSourceView(lineToGo)
             },
-            translate: () => {
-                this.config.translate = !this.config.translate
+            switchOrder: () => {
+                const orderBy = this.config.result_order_by === "ruleName" ? "lineNumber" : "ruleName"
+                this.config.result_order_by = orderBy
                 this.checkLint()
-                this.utils.settings.saveSettings(this.fixedName, { translate: this.config.translate })
+                const hint = this.i18n.t(`$option.result_order_by.${orderBy}`)
+                this.entities.window.updateButton("switchOrder", btn => btn.hint = hint)
+                this.utils.notification.show(hint)
+                this.utils.settings.saveSettings(this.fixedName, { result_order_by: orderBy })
             },
         }
 
         const onElementEvent = () => {
-            this.utils.dragFixedModal(this.entities.moveIcon, this.entities.modal, false)
             if (this.entities.button) {
                 this.entities.button.addEventListener("click", this.callback)
             }
-            this.entities.iconGroup.addEventListener("click", ev => {
-                const target = ev.target.closest("[action]")
-                if (!target) return
-                const action = target.getAttribute("action")
+            this.entities.window.addEventListener("btn-click", ev => {
+                const { action } = ev.detail
                 const fn = funcMap[action]
-                if (fn) {
-                    fn()
-                }
+                if (fn) fn()
             })
             this.entities.table.addEventListener("click", ev => {
                 const target = ev.target.closest("[action]")
@@ -157,11 +154,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const action = target.getAttribute("action")
                 const value = parseInt(target.dataset.value)
                 const fn = funcMap[action]
-                if (fn) {
-                    fn(value)
-                }
+                if (fn) fn(value)
             })
-            this.entities.modal.addEventListener("mousedown", ev => {
+            this.entities.window.contentArea.addEventListener("mousedown", ev => {
                 ev.preventDefault()
                 ev.stopPropagation()
                 if (ev.button === 2) {
@@ -176,7 +171,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     callback = async anchorNode => {
-        this.utils.toggleVisible(this.entities.modal)
+        this.entities.window.toggle()
         this.checkLint()
     }
 
@@ -190,7 +185,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             this.entities.button.toggleAttribute("lint-check-failed", this.fixInfos.length)
         }
 
-        if (this.utils.isHidden(this.entities.modal)) return
+        if (this.entities.window.hidden) return
 
         const useInfo = this.config.tools.includes("info")
         const useLocate = this.config.tools.includes("locate")
@@ -199,9 +194,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
             const rule = item.ruleNames[0]
             const lineNumber = item.lineNumber
             const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
-            const info = useInfo ? `<i class="ion-information-circled" action="detailSingle" data-value="${idx}"></i>` : ""
-            const locate = useLocate ? `<i class="ion-android-locate" action="jumpToLine" data-value="${lineNumber}"></i>` : ""
-            const fixInfo = (useFix && item.fixInfo) ? `<i class="ion-wrench" action="fixSingle" data-value="${idx}"></i>` : ""
+            const info = useInfo ? `<i class="fa fa-info-circle" action="detailSingle" data-value="${idx}"></i>` : ""
+            const locate = useLocate ? `<i class="fa fa-crosshairs" action="jumpToLine" data-value="${lineNumber}"></i>` : ""
+            const fixInfo = (useFix && item.fixInfo) ? `<i class="fa fa-wrench" action="fixSingle" data-value="${idx}"></i>` : ""
             return `<tr><td>${lineNumber}</td><td>${rule}</td><td>${desc}</td><td>${info}${locate}${fixInfo}</td></tr>`
         })
         this.entities.tbody.innerHTML = tds.length ? tds.join("") : `<tr><td colspan="4">${this.i18n._t("global", "empty")}</td></tr>`
