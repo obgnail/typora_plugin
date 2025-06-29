@@ -1,4 +1,5 @@
-$rootDir = (Get-Location).Path | Split-Path -Parent | Split-Path -Parent
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$rootDir = $scriptDir | Split-Path -Parent | Split-Path -Parent
 $appPath = Join-Path -Path $rootDir -ChildPath "app"
 $appsrcPath = Join-Path -Path $rootDir -ChildPath "appsrc"
 $windowHTMLPath = Join-Path -Path $rootDir -ChildPath "window.html"

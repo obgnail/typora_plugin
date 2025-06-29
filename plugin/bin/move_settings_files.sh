@@ -5,14 +5,17 @@
 # Supports
 # - --force: overwrite existing files without prompting
 # - --no-overwrite: skip overwriting
-# - --restore: moves config back to global/settings (If source file missing, create empty destination file)
+# - --restore: moves $HOME/.config/typora_plugin back to global/settings (If source file missing, create empty destination file)
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRC_DIR="$(cd "$SCRIPT_DIR/../global/settings" && pwd)"
-DEST_DIR="$HOME/.config/typora_plugin"
-FILES=("settings.user.toml" "custom_plugin.user.toml")
+readonly FILES=("settings.user.toml" "custom_plugin.user.toml")
+readonly DEST_DIR="$HOME/.config/typora_plugin"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+SRC_DIR="$SCRIPT_DIR/../global/settings"
+if command -v realpath &>/dev/null; then
+    SRC_DIR=$(realpath "$SRC_DIR")
+fi
 
 FORCE_OVERWRITE=0
 SKIP_OVERWRITE=0
@@ -22,7 +25,8 @@ usage() {
     echo "Usage: $0 [-f|--force] [-n|--no-overwrite] [-r|--restore]"
     echo "  -f, --force         Overwrite existing files without prompting"
     echo "  -n, --no-overwrite  Skip if target file exists, no prompt"
-    echo "  -r, --restore       Move config files from typora_plugin back to global/settings"
+    echo "  -r, --restore       Move settings files from home dir back to plugin dir"
+    echo "  -h, --help          Display this help message"
     exit 1
 }
 
@@ -80,7 +84,7 @@ move_or_create_empty_file() {
 
     if [[ -f "$TO" ]]; then
         if [[ $FORCE_OVERWRITE -eq 1 ]]; then
-            :
+            : # Do nothing, proceed with overwrite
         elif [[ $SKIP_OVERWRITE -eq 1 ]]; then
             echo "Skipped: $TO already exists (--no-overwrite)"
             return
@@ -91,6 +95,11 @@ move_or_create_empty_file() {
                 return
             fi
         fi
+    fi
+
+    local TO_DIR=$(dirname "$TO")
+    if [[ ! -d "$TO_DIR" ]]; then
+        mkdir -p "$TO_DIR" || { echo "Error: Failed to create target directory $TO_DIR"; return 1; }
     fi
 
     if mv -f "$FROM" "$TO" 2>/dev/stdout; then
@@ -104,14 +113,14 @@ move_or_create_empty_file() {
     fi
 }
 
-move_to_config_dir() {
+move_to_home_dir() {
     [[ -d "$DEST_DIR" ]] || { mkdir -p "$DEST_DIR" && echo "Created destination directory: $DEST_DIR"; }
     for file in "${FILES[@]}"; do
         move_or_create_empty_file "$SRC_DIR/$file" "$DEST_DIR/$file" "$file" "Moved" 0
     done
 }
 
-restore_to_global_settings() {
+restore_to_plugin_dir() {
     [[ -d "$SRC_DIR" ]] || { mkdir -p "$SRC_DIR" && echo "Created directory: $SRC_DIR"; }
     for file in "${FILES[@]}"; do
         move_or_create_empty_file "$DEST_DIR/$file" "$SRC_DIR/$file" "$file" "Restored" 1
@@ -119,7 +128,7 @@ restore_to_global_settings() {
 }
 
 if [[ $RESTORE -eq 0 ]]; then
-    move_to_config_dir
+    move_to_home_dir
 else
-    restore_to_global_settings
+    restore_to_plugin_dir
 fi
