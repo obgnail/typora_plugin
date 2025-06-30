@@ -1,6 +1,9 @@
 :host {
     --window-resize: both;
+    --window-min-width: 320px;
+    --window-min-height: 240px;
     --window-bg-color: #fafafa;
+    --content-area-padding: .3em;
     --titlebar-border-color: rgba(150, 162, 170, 0.2);
     --titlebar-bg-color: #f5f5f5;
     --titlebar-text-color: #334e68;
@@ -10,6 +13,7 @@
     --close-button-hover-text-color: #ffffff;
     --border-radius: 10px;
     --box-shadow: 2px 2px 4px #dbdbdb, -2px -2px 4px #dbdbdb;
+    --box-shadow-dragging: 0 15px 45px rgba(0, 0, 0, 0.25);
     --font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     --title-font-size: 1.1rem;
     --button-icon-size: 1.1rem;
@@ -19,8 +23,8 @@
     position: fixed;
     display: flex;
     flex-direction: column;
-    min-width: 320px;
-    min-height: 240px;
+    min-width: var(--window-min-width);
+    min-height: var(--window-min-height);
     background-color: var(--window-bg-color);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
@@ -32,7 +36,7 @@
 }
 
 :host(.dragging) {
-    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--box-shadow-dragging);
     transform: translateY(-2px);
 }
 
@@ -65,6 +69,15 @@
 
 :host(.hiding) {
     animation: hideWindow var(--animation-duration) ease-in forwards;
+}
+
+.content-area {
+    padding: var(--content-area-padding);
+    flex-grow: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .title-bar {
@@ -114,11 +127,11 @@
     color: var(--close-button-text-color);
 }
 
-.button:hover {
+.buttons-container .button:hover {
     background-color: var(--button-hover-bg);
 }
 
-.button::after {
+.buttons-container .button::after {
     content: attr(data-hint);
     position: absolute;
     bottom: -32px;
@@ -137,33 +150,24 @@
     z-index: 10000;
 }
 
-.button:not([data-hint])::after,
-.button[data-hint=""]::after {
+.buttons-container .button:not([data-hint])::after,
+.buttons-container .button[data-hint=""]::after {
     content: none;
     visibility: hidden;
     opacity: 0;
 }
 
-.button:hover::after {
+.buttons-container .button:hover::after {
     opacity: 1;
     bottom: -28px;
     visibility: visible;
 }
 
-.button[data-action="close"] {
+.buttons-container .button[data-action="close"] {
     color: var(--close-button-text-color);
 }
 
-.button[data-action="close"]:hover {
+.buttons-container .button[data-action="close"]:hover {
     background-color: var(--close-button-hover-bg);
     color: var(--close-button-hover-text-color);
-}
-
-.content-area {
-    padding: .3em;
-    flex-grow: 1;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
 }

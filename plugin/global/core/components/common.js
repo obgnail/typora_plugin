@@ -1,14 +1,17 @@
-const sharedSheets = new CSSStyleSheet()
+const sharedSheets = []
 
-const loadStyle = (style) => {
-    const sheet = [...document.styleSheets].find(e => e.href && e.href.includes(style))
-    for (const rule of sheet.cssRules) {
-        sharedSheets.insertRule(rule.cssText)
+const push = (style) => {
+    const sheet = new CSSStyleSheet()
+    const targetSheet = [...document.styleSheets].find(s => s.href && s.href.includes(style))
+    if (!targetSheet) return
+    for (const cssRule of targetSheet.cssRules) {
+        sheet.insertRule(cssRule.cssText)
     }
+    sharedSheets.push(sheet)
 }
 
-loadStyle("font-awesome")
-// loadStyle("ionicons")
+push("font-awesome")
+// push("ionicons")
 
 module.exports = {
     sharedSheets

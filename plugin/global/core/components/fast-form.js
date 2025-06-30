@@ -1,13 +1,16 @@
-const { sharedSheets } = require("./common.js")
+const { sharedSheets } = require("./common")
 
 customElements.define("fast-form", class extends HTMLElement {
+    static _template = `
+        <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous">
+        <div id="form"></div>    
+    `
+
     constructor() {
         super()
         const root = this.attachShadow({ mode: "open" })
-        root.adoptedStyleSheets = [sharedSheets]
-
-        const template = document.getElementById("plugin-fast-form")
-        root.appendChild(template.content.cloneNode(true))
+        root.adoptedStyleSheets = sharedSheets
+        root.innerHTML = this.constructor._template
 
         this.form = root.querySelector("#form")
         this.options = { objectFormat: "JSON", schema: null, data: null, action: null, prerequisite: null }
