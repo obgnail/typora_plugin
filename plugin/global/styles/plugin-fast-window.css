@@ -99,7 +99,7 @@
     flex-shrink: 0;
 }
 
-.button {
+.buttons-container .button {
     position: relative;
     display: inline-flex;
     justify-content: center;

@@ -1,7 +1,11 @@
+const { sharedSheets } = require("./common.js")
+
 customElements.define("fast-form", class extends HTMLElement {
     constructor() {
         super()
         const root = this.attachShadow({ mode: "open" })
+        root.adoptedStyleSheets = [sharedSheets]
+
         const template = document.getElementById("plugin-fast-form")
         root.appendChild(template.content.cloneNode(true))
 

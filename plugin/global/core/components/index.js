@@ -12,7 +12,6 @@ load(
     "./fast-form.js",
     "plugin-fast-form",
     `
-        <link rel="stylesheet" href="./style/font-awesome-4.1.0/css/font-awesome.min.css" crossorigin="anonymous">
         <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous">
         <div id="form"></div>
     `,
@@ -22,7 +21,6 @@ load(
     "./fast-window.js",
     "plugin-fast-window",
     `
-        <link rel="stylesheet" href="./style/font-awesome-4.1.0/css/font-awesome.min.css" crossorigin="anonymous">
         <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-window.css" crossorigin="anonymous">
         <div class="title-bar" part="title-bar">
             <span class="title-text" id="window-title"></span>

@@ -1,15 +1,19 @@
+const { sharedSheets } = require("./common.js")
+
 customElements.define("fast-window", class extends HTMLElement {
     constructor() {
         super()
-        const shadowRoot = this.attachShadow({ mode: "open" })
+        const root = this.attachShadow({ mode: "open" })
+        root.adoptedStyleSheets = [sharedSheets]
+
         const template = document.getElementById("plugin-fast-window")
-        shadowRoot.appendChild(template.content.cloneNode(true))
+        root.appendChild(template.content.cloneNode(true))
 
         this.entities = {
-            titleBar: shadowRoot.querySelector(".title-bar"),
-            titleTextElement: shadowRoot.getElementById("window-title"),
-            buttonsContainer: shadowRoot.querySelector(".buttons-container"),
-            contentArea: shadowRoot.querySelector(".content-area"),
+            titleBar: root.querySelector(".title-bar"),
+            titleTextElement: root.getElementById("window-title"),
+            buttonsContainer: root.querySelector(".buttons-container"),
+            contentArea: root.querySelector(".content-area"),
         }
 
         this.contentArea = this.entities.contentArea
