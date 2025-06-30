@@ -901,7 +901,7 @@
     "$title.trigger": "Command Trigger",
     "$placeholder.LettersAndNumbersOnly": "Letters and numbers Only",
     "$placeholder.emojiOnly": "Single Emoji Only",
-    "$placeholder.callbackType": "If the Type is \"Insert Snippet\", the value is the string to be inserted; \nIf the Type is \"Insert Dynamic Snippet\", the value is a function that returns a string; \nIf the Type is \"Execute Command\", the value is a function that executes the logical command."
+    "$placeholder.callbackType": "If the Type is 'Insert Snippet', the value is the string to be inserted; \nIf the Type is 'Insert Dynamic Snippet', the value is a function that returns a string; \nIf the Type is 'Execute Command', the value is a function that executes the logical command."
   },
   "right_click_menu": {
     "pluginName": "Right-Click Menu",

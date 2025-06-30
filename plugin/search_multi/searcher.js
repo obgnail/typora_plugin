@@ -873,7 +873,7 @@ class Searcher {
             }
         }
         const _toJSON = ({ expression, optimize }) => _to(expression, optimize, ast => JSON.stringify(ast, null, "\t"))
-        const _toText = async ({ expression, optimize }) => _to(expression, optimize, ast => this.toExplain(ast))
+        const _toText = ({ expression, optimize }) => _to(expression, optimize, ast => this.toExplain(ast))
         const _toGraph = async ({ expression, optimize, translate, direction }) => {
             return _to(expression, optimize, async ast => {
                 const definition = this.toMermaid(ast, translate, direction)

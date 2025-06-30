@@ -244,11 +244,13 @@ class utils {
             threshold = 2,
             timeWindow = 1000,
             totalTimeLimit = 0,
+            debounceDelay = 0,
             resetOnConfirmed = true,
             getIdentifier = (...args) => undefined,
             shouldReset = () => false,
             shouldConfirm = () => false,
             onTimeout = this.noop,
+            onReset = this.noop,
             onInsufficient = (current, total) => this.notification.show(i18n.t("global", "confirmNeeded", { count: total - current }), "info"),
             onConfirmed,
         }
@@ -258,6 +260,7 @@ class utils {
         }
         threshold = Math.max(threshold, 2)
         totalTimeLimit = Math.max(totalTimeLimit, 0)
+        debounceDelay = Math.max(debounceDelay, 0)
 
         const NO_IDENTIFIER = Symbol("no_identifier")
         let currentCount = 0
@@ -265,8 +268,11 @@ class utils {
         let firstTimestamp = 0
         let lastIdentifier = NO_IDENTIFIER
         let resetTimer = null
+        let debounceTimer = null
 
         const resetState = () => {
+            onReset(currentCount, threshold)
+
             currentCount = 0
             lastTimestamp = 0
             firstTimestamp = 0
@@ -274,6 +280,10 @@ class utils {
             if (resetTimer) {
                 clearTimeout(resetTimer)
                 resetTimer = null
+            }
+            if (debounceTimer) {
+                clearTimeout(debounceTimer)
+                debounceTimer = null
             }
         }
         const executeConfirmation = (...args) => {
@@ -284,6 +294,9 @@ class utils {
         }
 
         return function (...args) {
+            if (debounceDelay > 0 && debounceTimer) {
+                return
+            }
             if (shouldConfirm(...args)) {
                 executeConfirmation(...args)
                 return
@@ -299,7 +312,7 @@ class utils {
                 currentCount === 0
                 || now - lastTimestamp > timeWindow
                 || (totalTimeLimit > 0 && currentCount > 0 && now - firstTimestamp > totalTimeLimit)
-                || currentIdentifier !== lastIdentifier
+                || (lastIdentifier !== NO_IDENTIFIER && currentIdentifier !== lastIdentifier)
             )
             if (needReset) {
                 resetState()
@@ -313,6 +326,12 @@ class utils {
             if (resetTimer) {
                 clearTimeout(resetTimer)
                 resetTimer = null
+            }
+            if (debounceDelay > 0) {
+                if (debounceTimer) {
+                    clearTimeout(debounceTimer)
+                }
+                debounceTimer = setTimeout(() => debounceTimer = null, debounceDelay)
             }
 
             if (currentCount < threshold) {
@@ -1231,7 +1250,7 @@ const newMixin = (utils) => {
         ...require("./contextMenu"),
         ...require("./notification"),
         ...require("./progressBar"),
-        ...require("./form-dialog"),
+        ...require("./form_dialog"),
         ...require("./diagramParser"),
         ...require("./thirdPartyDiagramParser"),
         ...require("./mermaid"),

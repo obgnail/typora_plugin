@@ -8,7 +8,7 @@
     z-index: 9993;
 }
 
-.plugin-markdownlint-table {
+.plugin-markdownlint-table-wrap {
     overflow: auto;
     flex-grow: 1;
 }

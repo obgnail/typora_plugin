@@ -18,7 +18,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                             toggleSourceMode|fa-code|${this.i18n.t("func.toggleSourceMode")};
                             refresh|fa-refresh|${this.i18n.t("func.refresh")};
                             close|fa-times|${this.i18n.t("func.close")}">
-            <div class="plugin-markdownlint-table">
+            <div class="plugin-markdownlint-table-wrap">
                 <table>
                     <thead><tr><th>${this.i18n.t("line")}</th><th>${this.i18n.t("rule")}</th><th>${this.i18n.t("desc")}</th><th>${this.i18n.t("ops")}</th></tr></thead>
                     <tbody></tbody>
@@ -35,6 +35,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.fixInfos = []
         this.entities = {
             window: document.querySelector("#plugin-markdownlint"),
+            wrap: document.querySelector(".plugin-markdownlint-table-wrap"),
             table: document.querySelector("#plugin-markdownlint table"),
             tbody: document.querySelector("#plugin-markdownlint tbody"),
             button: document.querySelector("#plugin-markdownlint-button"),
@@ -156,7 +157,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const fn = funcMap[action]
                 if (fn) fn(value)
             })
-            this.entities.window.contentArea.addEventListener("mousedown", ev => {
+            this.entities.wrap.addEventListener("mousedown", ev => {
                 ev.preventDefault()
                 ev.stopPropagation()
                 if (ev.button === 2) {
