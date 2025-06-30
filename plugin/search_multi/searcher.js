@@ -891,7 +891,7 @@ class Searcher {
                 ast: t("modal.playground.presentation.ast"),
             }
 
-            let presentField = { key: "ast", type: "textarea", rows: 5 }
+            let presentField = { key: "ast", type: "textarea", readonly: true, rows: 5 }
             if (presentation === "graph" || presentation === "text") {
                 const to = presentation === "graph" ? _toGraph : _toText
                 const cnt = await to({ expression, optimize, translate, direction })
@@ -954,12 +954,11 @@ class Searcher {
                 },
             },
             listener: ({ key, value }) => {
-                if (key === "ast") return
                 this.utils.formDialog.updateModal(async op => {
-                    if (key === "presentation" && value === "ast") {
+                    op.data[key] = value
+                    if ((key === "presentation" && value === "ast") || (key === "expression" && op.data.presentation === "ast")) {
                         op.data.ast = await _toJSON(op.data)
                     }
-                    op.data[key] = value
                     op.schema = await getSchema(op.data)
                 })
             },
