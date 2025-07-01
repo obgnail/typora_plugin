@@ -19,10 +19,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                             refresh|fa-refresh|${this.i18n.t("func.refresh")};
                             close|fa-times|${this.i18n.t("func.close")}">
             <div class="plugin-markdownlint-table-wrap">
-                <table>
-                    <thead><tr><th>${this.i18n.t("line")}</th><th>${this.i18n.t("rule")}</th><th>${this.i18n.t("desc")}</th><th>${this.i18n.t("ops")}</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <fast-table class="plugin-markdownlint-table"></fast-table>
             </div>
         </fast-window>
         ${this.config.use_button ? `<div id="plugin-markdownlint-button"></div>` : ""}
@@ -36,11 +33,11 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.entities = {
             window: document.querySelector("#plugin-markdownlint"),
             wrap: document.querySelector(".plugin-markdownlint-table-wrap"),
-            table: document.querySelector("#plugin-markdownlint table"),
-            tbody: document.querySelector("#plugin-markdownlint tbody"),
+            table: document.querySelector(".plugin-markdownlint-table"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
         this.TRANSLATIONS = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
+        this.updateTable = this._getUpdater()
     }
 
     process = () => {
@@ -149,13 +146,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const fn = funcMap[action]
                 if (fn) fn()
             })
-            this.entities.table.addEventListener("click", ev => {
-                const target = ev.target.closest("[action]")
-                if (!target) return
-                const action = target.getAttribute("action")
-                const value = parseInt(target.dataset.value)
-                const fn = funcMap[action]
-                if (fn) fn(value)
+            this.entities.table.addEventListener("table-click", ev => {
+                const { action, rowData } = ev.detail
+                if (action === "fixSingle") {
+                    funcMap.fixSingle(rowData["data-idx"])
+                } else {
+                    funcMap.jumpToLine(rowData.line)
+                }
             })
             this.entities.wrap.addEventListener("mousedown", ev => {
                 ev.preventDefault()
@@ -176,6 +173,25 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.checkLint()
     }
 
+    _getUpdater = () => {
+        const useInfo = this.config.tools.includes("info")
+        const useLocate = this.config.tools.includes("locate")
+        const useFix = this.config.tools.includes("fix")
+        const render = (value, rowData) => {
+            const info = useInfo ? `<i class="fa fa-info-circle action-icon" action="detailSingle" data-value="${rowData["data-idx"]}"></i>` : ""
+            const locate = useLocate ? `<i class="fa fa-crosshairs action-icon" action="jumpToLine"></i>` : ""
+            const fixInfo = useFix ? `<i class="fa fa-wrench action-icon" action="fixSingle" data-value="${rowData["data-idx"]}"></i>` : ""
+            return [info, locate, fixInfo].join("")
+        }
+        const proxy = this.entities.table.getBoundProxy([
+            { key: "line", title: this.i18n.t("line") },
+            { key: "rule", title: this.i18n.t("rule") },
+            { key: "desc", title: this.i18n.t("desc") },
+            { key: "ops", title: this.i18n.t("ops"), render },
+        ])
+        return (data) => proxy.data = data
+    }
+
     _onCheck = fixInfos => {
         const compareFn = this.config.result_order_by === "ruleName"
             ? (a, b) => a.ruleNames[0] - b.ruleNames[0]
@@ -188,19 +204,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
         if (this.entities.window.hidden) return
 
-        const useInfo = this.config.tools.includes("info")
-        const useLocate = this.config.tools.includes("locate")
-        const useFix = this.config.tools.includes("fix")
-        const tds = this.fixInfos.map((item, idx) => {
+        const data = this.fixInfos.map((item, idx) => {
             const rule = item.ruleNames[0]
-            const lineNumber = item.lineNumber
+            const line = item.lineNumber
             const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
-            const info = useInfo ? `<i class="fa fa-info-circle" action="detailSingle" data-value="${idx}"></i>` : ""
-            const locate = useLocate ? `<i class="fa fa-crosshairs" action="jumpToLine" data-value="${lineNumber}"></i>` : ""
-            const fixInfo = (useFix && item.fixInfo) ? `<i class="fa fa-wrench" action="fixSingle" data-value="${idx}"></i>` : ""
-            return `<tr><td>${lineNumber}</td><td>${rule}</td><td>${desc}</td><td>${info}${locate}${fixInfo}</td></tr>`
+            return { rule, line, desc, "data-idx": idx }
         })
-        this.entities.tbody.innerHTML = tds.length ? tds.join("") : `<tr><td colspan="4">${this.i18n._t("global", "empty")}</td></tr>`
+        this.updateTable(data)
     }
 
     _onFix = async fileContent => {
