@@ -2,19 +2,22 @@
     display: block;
     box-sizing: border-box;
     min-height: var(--min-height);
-    font-size: var(--font-size);
 
     --min-height: 50px;
     --bg-color: transparent;
+    --line-hight: 1.6em;
+    --font-size: 14px;
+
     --header-bg: #ffffff;
     --header-text-color: #333;
     --header-border-color: #eee;
     --odd-row-bg: #ffffff;
     --even-row-bg: #ffffff;
+    --row-text-color: #333;
     --row-hover-bg: #f9f9f9;
     --row-border-color: #eee;
+
     --no-data-text-color: #888;
-    --font-size: 14px;
     --padding-horizontal: 10px;
     --padding-vertical: 6px;
 
@@ -33,6 +36,8 @@ table {
     border-collapse: collapse;
     margin: 0;
     padding: 0;
+    font-size: var(--font-size);
+    line-height: var(--line-hight);
 }
 
 thead {
@@ -75,6 +80,10 @@ td {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;
+}
+
+tbody {
+    color: var(--row-text-color);
 }
 
 tbody tr {
