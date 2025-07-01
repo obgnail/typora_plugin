@@ -1,7 +1,6 @@
 #plugin-markdownlint {
     top: 10%;
     right: 25px;
-    line-height: ${this.config.modal_line_height};
     width: ${this.config.modal_width};
     min-width: 380px;
     max-height: ${this.config.modal_max_height};
@@ -11,28 +10,6 @@
 .plugin-markdownlint-table-wrap {
     overflow: auto;
     flex-grow: 1;
-}
-
-#plugin-markdownlint table {
-    cursor: default;
-    margin-top: 0;
-    margin-bottom: .8em;
-    font-size: ${this.config.modal_font_size};
-}
-
-#plugin-markdownlint table th,
-#plugin-markdownlint table td[colspan],
-#plugin-markdownlint table td:nth-child(4) {
-    text-align: center;
-}
-
-#plugin-markdownlint i:hover {
-    color: var(--active-file-border-color, darkred);
-    cursor: pointer;
-}
-
-#plugin-markdownlint i + i {
-    margin-left: 0.7em;
 }
 
 #plugin-markdownlint-button {

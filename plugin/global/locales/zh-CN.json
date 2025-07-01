@@ -1391,8 +1391,6 @@
     "MD101": "公式块前后需用空行隔开",
     "$label.modal_width": "宽度",
     "$label.modal_max_height": "最大高度",
-    "$label.modal_font_size": "字体大小",
-    "$label.modal_line_height": "文字行高",
     "$label.use_button": "启用",
     "$label.button_width": "宽度",
     "$label.button_height": "高度",

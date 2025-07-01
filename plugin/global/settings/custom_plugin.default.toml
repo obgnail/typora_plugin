@@ -1405,12 +1405,6 @@ modal_width = "fit-content"
 # 弹窗的最大高度
 modal_max_height = "500px"
 
-# 弹窗的字体大小
-modal_font_size = "14px"
-
-# 弹窗的文字行高
-modal_line_height = 1.2
-
 # ------------------- 状态指示器 -------------------
 # 是否在右上角添加一个方块，用以提示格式检测状态
 # 若置为 false，以下配置全部失效

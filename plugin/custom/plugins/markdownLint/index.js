@@ -183,13 +183,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
             const fixInfo = useFix ? `<i class="fa fa-wrench action-icon" action="fixSingle" data-value="${rowData["data-idx"]}"></i>` : ""
             return [info, locate, fixInfo].join("")
         }
-        const proxy = this.entities.table.getBoundProxy([
-            { key: "line", title: this.i18n.t("line") },
-            { key: "rule", title: this.i18n.t("rule") },
-            { key: "desc", title: this.i18n.t("desc") },
-            { key: "ops", title: this.i18n.t("ops"), render },
-        ])
-        return (data) => proxy.data = data
+        const meta = [
+            { key: "line", title: this.i18n.t("line"), width: "4em", sortable: true },
+            { key: "rule", title: this.i18n.t("rule"), width: "4em", sortable: true },
+            { key: "desc", title: this.i18n.t("desc"), sortable: true },
+            { key: "ops", title: this.i18n.t("ops"), width: "4em", render },
+        ]
+        return (data) => this.entities.table.setData(data, meta)
     }
 
     _onCheck = fixInfos => {

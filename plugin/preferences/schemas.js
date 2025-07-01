@@ -1428,8 +1428,6 @@ const SETTING_SCHEMAS = {
             "windowStyle",
             Text("modal_width"),
             Text("modal_max_height"),
-            Text("modal_font_size"),
-            Number("modal_line_height", { unit: UNITS.em, min: 0.1 }),
         ),
         TitledBox(
             "square",

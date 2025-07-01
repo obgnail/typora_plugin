@@ -5,22 +5,22 @@
 
     --bg-color: transparent;
     --border-color: #eee;
-    --header-bg: #eef2f7;
+    --header-bg: #ffffff;
     --header-text-color: #333;
     --odd-row-bg: #ffffff;
-    --even-row-bg: #f9f9f9;
-    --row-hover-bg: #f0f8ff;
+    --even-row-bg: #ffffff;
+    --row-hover-bg: #f2f2f2;
     --row-border-color: #ddd;
     --no-data-text-color: #888;
     --font-size: 14px;
     --border-radius: 8px;
     --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    --padding-horizontal: 15px;
-    --padding-vertical: 10px;
+    --padding-horizontal: 10px;
+    --padding-vertical: 6px;
 
-    --action-color: #4CAF50;
-    --action-hover-color: #45a049;
-    --action-gap: 8px;
+    --action-color: #666666;
+    --action-hover-color: #333333;
+    --action-gap: 5px;
     --icon-size: 16px;
     --icon-padding: 5px;
 
@@ -34,11 +34,11 @@
 }
 
 table {
+    table-layout: fixed;
     width: 100%;
     border-collapse: collapse;
     margin: 0;
     padding: 0;
-    table-layout: fixed;
 }
 
 thead {
@@ -47,7 +47,7 @@ thead {
 }
 
 th {
-    padding: 12px var(--padding-horizontal);
+    padding: 8px var(--padding-horizontal);
     text-align: left;
     font-weight: 600;
     border-bottom: 1px solid var(--row-border-color);

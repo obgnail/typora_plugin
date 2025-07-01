@@ -64,39 +64,6 @@ customElements.define("fast-table", class extends HTMLElement {
         this.showNoData()
     }
 
-    getBoundProxy = (columns = []) => {
-        const self = this
-        const bindKey = "data"
-        const container = { [bindKey]: [] }
-
-        self.setData(container[bindKey], columns)
-        return new Proxy(container, {
-            set: (obj, prop, value, receiver) => {
-                if (prop === bindKey) {
-                    if (Reflect.get(obj, prop, receiver) === value) {
-                        return true
-                    }
-                    if (!Array.isArray(value)) {
-                        console.warn(`Attempted to set property '${prop}' to a non-array value. Coercing to empty array.`)
-                        value = []
-                    }
-                    const result = Reflect.set(obj, prop, value, receiver)
-                    self.setData(obj[bindKey], columns)
-                    return result
-                }
-                return Reflect.set(obj, prop, value, receiver)
-            },
-            deleteProperty: (obj, prop) => {
-                if (prop === bindKey) {
-                    const result = Reflect.deleteProperty(obj, prop)
-                    self.setData([], columns)
-                    return result
-                }
-                return Reflect.deleteProperty(obj, prop)
-            }
-        })
-    }
-
     showNoData = () => {
         this.entities.tableWrapper.classList.add("hidden")
         this.entities.noDataMessage.classList.remove("hidden")
@@ -147,14 +114,17 @@ customElements.define("fast-table", class extends HTMLElement {
         this.entities.theadRow.innerHTML = ""
         const thElements = columns.map(col => {
             const th = document.createElement("th")
+            th.setAttribute("data-key", col.key)
+            if (col.width) {
+                th.style.width = col.width
+            }
+
             const thContent = document.createElement("div")
             thContent.classList.add("th-content")
 
             const titleSpan = document.createElement("span")
             titleSpan.textContent = col.title
             thContent.appendChild(titleSpan)
-
-            th.setAttribute("data-key", col.key)
 
             if (col.sortable === true) {
                 th.classList.add("sortable")
@@ -191,6 +161,10 @@ customElements.define("fast-table", class extends HTMLElement {
 
     _createTableCell = (cellValue, rowData, columnConfig) => {
         const td = document.createElement("td")
+        if (columnConfig.width) {
+            td.style.width = columnConfig.width
+        }
+
         const contentDiv = document.createElement("div")
         contentDiv.classList.add("fast-table-cell-content")
 
