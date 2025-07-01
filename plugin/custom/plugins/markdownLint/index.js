@@ -12,7 +12,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
             hidden
             window-title="${this.pluginName}"
             window-buttons="doc|fa-file-text|${this.i18n.t("func.doc")};
-                            switchOrder|fa-sort-amount-asc|${this.i18n.t(`$option.result_order_by.${this.config.result_order_by}`)};
                             detailAll|fa-info-circle|${this.i18n.t("func.detailAll")};
                             fixAll|fa-wrench|${this.i18n.t("func.fixAll")};
                             toggleSourceMode|fa-code|${this.i18n.t("func.toggleSourceMode")};
@@ -29,6 +28,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.initLint = this.utils.noop
         this.checkLint = this.utils.noop
         this.fixLint = this.utils.noop
+        this.updateTable = this._getUpdater()
+
         this.fixInfos = []
         this.entities = {
             window: document.querySelector("#plugin-markdownlint"),
@@ -37,7 +38,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
             button: document.querySelector("#plugin-markdownlint-button"),
         }
         this.TRANSLATIONS = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
-        this.updateTable = this._getUpdater()
     }
 
     process = () => {
@@ -126,15 +126,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 }
                 this.utils.scrollSourceView(lineToGo)
             },
-            switchOrder: () => {
-                const orderBy = this.config.result_order_by === "ruleName" ? "lineNumber" : "ruleName"
-                this.config.result_order_by = orderBy
-                this.checkLint()
-                const hint = this.i18n.t(`$option.result_order_by.${orderBy}`)
-                this.entities.window.updateButton("switchOrder", btn => btn.hint = hint)
-                this.utils.notification.show(hint)
-                this.utils.settings.saveSettings(this.fixedName, { result_order_by: orderBy })
-            },
         }
 
         const onElementEvent = () => {
@@ -148,11 +139,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
             })
             this.entities.table.addEventListener("table-click", ev => {
                 const { action, rowData } = ev.detail
-                if (action === "fixSingle") {
-                    funcMap.fixSingle(rowData["data-idx"])
-                } else {
-                    funcMap.jumpToLine(rowData.line)
-                }
+                const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.infoIdx : rowData.line
+                funcMap[action](arg)
             })
             this.entities.wrap.addEventListener("mousedown", ev => {
                 ev.preventDefault()
@@ -177,40 +165,41 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const useInfo = this.config.tools.includes("info")
         const useLocate = this.config.tools.includes("locate")
         const useFix = this.config.tools.includes("fix")
-        const render = (value, rowData) => {
-            const info = useInfo ? `<i class="fa fa-info-circle action-icon" action="detailSingle" data-value="${rowData["data-idx"]}"></i>` : ""
+        const optionsRender = () => {
+            const info = useInfo ? `<i class="fa fa-info-circle action-icon" action="detailSingle"></i>` : ""
             const locate = useLocate ? `<i class="fa fa-crosshairs action-icon" action="jumpToLine"></i>` : ""
-            const fixInfo = useFix ? `<i class="fa fa-wrench action-icon" action="fixSingle" data-value="${rowData["data-idx"]}"></i>` : ""
+            const fixInfo = useFix ? `<i class="fa fa-wrench action-icon" action="fixSingle"></i>` : ""
             return [info, locate, fixInfo].join("")
         }
-        const meta = [
-            { key: "line", title: this.i18n.t("line"), width: "4em", sortable: true },
-            { key: "rule", title: this.i18n.t("rule"), width: "4em", sortable: true },
-            { key: "desc", title: this.i18n.t("desc"), sortable: true },
-            { key: "ops", title: this.i18n.t("ops"), width: "4em", render },
-        ]
-        return (data) => this.entities.table.setData(data, meta)
+        const sortKey = this.config.result_order_by === "ruleName" ? "rule" : "line"
+        const schema = {
+            defaultSort: { key: sortKey, direction: "asc" },
+            columns: [
+                { key: "line", title: this.i18n.t("line"), width: "4em", sortable: true },
+                { key: "rule", title: this.i18n.t("rule"), width: "5em", sortable: true },
+                { key: "desc", title: this.i18n.t("desc"), width: "fit-content", sortable: true },
+                { key: "ops", title: this.i18n.t("ops"), width: "6em", render: optionsRender },
+            ]
+        }
+        return (fixInfos) => {
+            const data = fixInfos.map((item, infoIdx) => {
+                const rule = item.ruleNames[0]
+                const line = item.lineNumber
+                const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
+                return { rule, line, desc, infoIdx }
+            })
+            this.entities.table.setData(data, schema)
+        }
     }
 
     _onCheck = fixInfos => {
-        const compareFn = this.config.result_order_by === "ruleName"
-            ? (a, b) => a.ruleNames[0] - b.ruleNames[0]
-            : (a, b) => a.lineNumber - b.lineNumber
-        this.fixInfos = fixInfos.sort(compareFn)
-
+        this.fixInfos = fixInfos
         if (this.entities.button) {
-            this.entities.button.toggleAttribute("lint-check-failed", this.fixInfos.length)
+            this.entities.button.toggleAttribute("lint-check-failed", fixInfos.length)
         }
-
-        if (this.entities.window.hidden) return
-
-        const data = this.fixInfos.map((item, idx) => {
-            const rule = item.ruleNames[0]
-            const line = item.lineNumber
-            const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
-            return { rule, line, desc, "data-idx": idx }
-        })
-        this.updateTable(data)
+        if (!this.entities.window.hidden) {
+            this.updateTable(fixInfos)
+        }
     }
 
     _onFix = async fileContent => {

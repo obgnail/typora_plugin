@@ -1,20 +1,20 @@
 :host {
     display: block;
     box-sizing: border-box;
-    min-height: 50px;
+    min-height: var(--min-height);
+    font-size: var(--font-size);
 
+    --min-height: 50px;
     --bg-color: transparent;
-    --border-color: #eee;
     --header-bg: #ffffff;
     --header-text-color: #333;
+    --header-border-color: #eee;
     --odd-row-bg: #ffffff;
     --even-row-bg: #ffffff;
-    --row-hover-bg: #f2f2f2;
-    --row-border-color: #ddd;
+    --row-hover-bg: #f9f9f9;
+    --row-border-color: #eee;
     --no-data-text-color: #888;
     --font-size: 14px;
-    --border-radius: 8px;
-    --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     --padding-horizontal: 10px;
     --padding-vertical: 6px;
 
@@ -23,12 +23,6 @@
     --action-gap: 5px;
     --icon-size: 16px;
     --icon-padding: 5px;
-
-    --button-bg: #007bff;
-    --button-hover-bg: #0056b3;
-    --button-text-color: #fff;
-    --button-border-radius: 4px;
-    --button-padding: 5px 10px;
 
     --sort-icon-color: #888;
 }
@@ -50,7 +44,7 @@ th {
     padding: 8px var(--padding-horizontal);
     text-align: left;
     font-weight: 600;
-    border-bottom: 1px solid var(--row-border-color);
+    border-bottom: 1px solid var(--header-border-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -100,7 +94,7 @@ tbody tr:hover {
     background-color: var(--row-hover-bg);
 }
 
-.fast-table-cell-content {
+.cell {
     display: flex;
     align-items: center;
     gap: var(--action-gap);
@@ -109,7 +103,7 @@ tbody tr:hover {
     min-height: 1em;
 }
 
-.fast-table-cell-content img {
+.cell img {
     max-width: 40px;
     max-height: 40px;
     border-radius: 4px;
@@ -117,33 +111,19 @@ tbody tr:hover {
     display: block;
 }
 
-.fast-table-cell-content a {
+.cell a {
     color: var(--action-color);
     text-decoration: none;
     transition: color 0.2s ease;
     white-space: normal;
 }
-.fast-table-cell-content a:hover {
+
+.cell a:hover {
     color: var(--action-hover-color);
     text-decoration: underline;
 }
 
-.fast-table-cell-content button {
-    background-color: var(--button-bg);
-    color: var(--button-text-color);
-    padding: var(--button-padding);
-    border: none;
-    border-radius: var(--button-border-radius);
-    cursor: pointer;
-    font-size: 14px;
-    white-space: nowrap;
-    transition: background-color 0.2s ease;
-}
-.fast-table-cell-content button:hover {
-    background-color: var(--button-hover-bg);
-}
-
-.action-icon {
+.cell .action-icon {
     cursor: pointer;
     color: var(--action-color);
     transition: color 0.2s ease, transform 0.2s ease;
@@ -153,13 +133,9 @@ tbody tr:hover {
     vertical-align: middle;
 }
 
-.action-icon:hover {
+.cell .action-icon:hover {
     color: var(--action-hover-color);
     transform: scale(1.1);
-}
-
-.table-wrapper.hidden {
-    display: none;
 }
 
 .no-data {
@@ -170,6 +146,6 @@ tbody tr:hover {
     background-color: var(--bg-color);
 }
 
-.no-data.hidden {
+.hidden {
     display: none;
 }

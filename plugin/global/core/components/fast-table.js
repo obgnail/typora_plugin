@@ -13,20 +13,15 @@ customElements.define("fast-table", class extends HTMLElement {
         root.adoptedStyleSheets = sharedSheets
         root.innerHTML = this.constructor._template
 
-        this.currentData = []
-        this.currentColumns = []
-        this.sortKey = null
-        this.sortDirection = null
         this.entities = {
-            table: this.shadowRoot.querySelector("table"),
-            thead: this.shadowRoot.querySelector("thead"),
-            theadRow: this.shadowRoot.querySelector("thead tr"),
-            tbody: this.shadowRoot.querySelector("tbody"),
-            tableWrapper: this.shadowRoot.querySelector(".table-wrapper"),
-            noDataMessage: this.shadowRoot.querySelector(".no-data"),
+            table: root.querySelector("table"),
+            thead: root.querySelector("thead"),
+            theadRow: root.querySelector("thead tr"),
+            tbody: root.querySelector("tbody"),
+            tableWrapper: root.querySelector(".table-wrapper"),
+            noDataMessage: root.querySelector(".no-data"),
         }
-
-        this.showNoData()
+        this.clear()
     }
 
     connectedCallback() {
@@ -39,67 +34,61 @@ customElements.define("fast-table", class extends HTMLElement {
         this.entities.thead.removeEventListener("click", this._onHeaderClick)
     }
 
-    setData = (data = [], columns = this.currentColumns) => {
-        this.currentData = data
-        this.currentColumns = columns
+    setData = (data = [], schema = { columns: [] }) => {
+        if (!schema.columns) {
+            schema.columns = []
+        }
+        if (!schema.defaultSort) {
+            schema.defaultSort = { key: "", direction: "" }
+        }
 
-        this._clearTableInternal()
-        const { processedData, processedColumns, isValid } = this._processData(data, columns)
+        this.data = data
+        this.schema = schema
+        if (!this.sortKey) {
+            const { key, direction } = schema.defaultSort
+            this.sortKey = key ? key : null
+            this.sortDirection = direction ? (direction || "asc") : null
+        }
+
+        this._clearTable()
+        const { processedData, processedColumns, isValid } = this._process(this.data, this.schema)
         if (!isValid) {
-            this.showNoData()
+            this._showNoData()
             return
         }
-        this.hideNoData()
+        this._hideNoData()
         this._renderHeader(processedColumns)
         this._renderBody(processedData, processedColumns)
     }
 
-    getData = () => {
-        const { processedData } = this._processData(this.currentData, this.currentColumns)
-        return processedData
-    }
+    getProcessedData = () => this._process(this.data, this.schema).processedData
 
     clear = () => {
-        this._clearTableInternal()
-        this.showNoData()
+        this.data = []
+        this.schema = { columns: [] }
+        this.sortKey = null
+        this.sortDirection = null
+        this._clearTable()
+        this._showNoData()
     }
 
-    showNoData = () => {
-        this.entities.tableWrapper.classList.add("hidden")
-        this.entities.noDataMessage.classList.remove("hidden")
-    }
-
-    hideNoData = () => {
-        this.entities.tableWrapper.classList.remove("hidden")
-        this.entities.noDataMessage.classList.add("hidden")
-    }
-
-    _processData = (data, columns) => {
-        let dataArray = []
-        if (Array.isArray(data)) {
-            dataArray = data
-        } else if (data && typeof data === "object" && Array.isArray(data.data)) {
-            dataArray = data.data
-        }
-
-        if (dataArray.length === 0 || columns.length === 0) {
+    _process = (data, schema) => {
+        if (data.length === 0 || schema.columns.length === 0) {
             return { processedData: [], processedColumns: [], isValid: false }
         }
 
         if (this.sortKey && this.sortDirection) {
-            const sortCol = columns.find(col => col.key === this.sortKey)
+            const sortCol = schema.columns.find(col => col.key === this.sortKey)
             if (sortCol && sortCol.sortable === true) {
                 const isASC = this.sortDirection === "asc"
-                dataArray = [...dataArray].sort((a, b) => {
-                    const valA = a[this.sortKey]
-                    const valB = b[this.sortKey]
-                    if (typeof valA === "string" && typeof valB === "string") {
-                        return isASC ? valA.localeCompare(valB) : valB.localeCompare(valA)
-                    }
-                    if (valA < valB) {
+                data = [...data].sort((i1, i2) => {
+                    const v1 = i1[this.sortKey]
+                    const v2 = i2[this.sortKey]
+                    if (typeof v1 === "string" && typeof v2 === "string") {
+                        return isASC ? v1.localeCompare(v2) : v2.localeCompare(v1)
+                    } else if (v1 < v2) {
                         return isASC ? -1 : 1
-                    }
-                    if (valA > valB) {
+                    } else if (v1 > v2) {
                         return isASC ? 1 : -1
                     }
                     return 0
@@ -107,14 +96,14 @@ customElements.define("fast-table", class extends HTMLElement {
             }
         }
 
-        return { processedData: dataArray, processedColumns: columns, isValid: true }
+        return { processedData: data, processedColumns: schema.columns, isValid: true }
     }
 
     _renderHeader = (columns) => {
         this.entities.theadRow.innerHTML = ""
         const thElements = columns.map(col => {
             const th = document.createElement("th")
-            th.setAttribute("data-key", col.key)
+            th.dataset.key = col.key
             if (col.width) {
                 th.style.width = col.width
             }
@@ -148,34 +137,23 @@ customElements.define("fast-table", class extends HTMLElement {
         const trElements = data.map(rowData => {
             const tr = document.createElement("tr")
             tr._rowData = rowData
-            Object.keys(rowData)
-                .filter(key => key.startsWith("data-"))
-                .forEach(key => tr.setAttribute(`data-${key.slice(5)}`, String(rowData[key])))
-            const tdElements = columns.map(col => this._createTableCell(rowData[col.key], rowData, col))
+            const tdElements = columns.map(col => {
+                const val = rowData[col.key]
+                const cell = document.createElement("div")
+                cell.classList.add("cell")
+                if (col.render && typeof col.render === "function") {
+                    cell.innerHTML = col.render(rowData)
+                } else {
+                    cell.textContent = val !== undefined ? val : ""
+                }
+                const td = document.createElement("td")
+                td.appendChild(cell)
+                return td
+            })
             tr.append(...tdElements)
-
             return tr
         })
         this.entities.tbody.append(...trElements)
-    }
-
-    _createTableCell = (cellValue, rowData, columnConfig) => {
-        const td = document.createElement("td")
-        if (columnConfig.width) {
-            td.style.width = columnConfig.width
-        }
-
-        const contentDiv = document.createElement("div")
-        contentDiv.classList.add("fast-table-cell-content")
-
-        const valueToDisplay = cellValue !== undefined ? cellValue : ""
-        if (columnConfig.render && typeof columnConfig.render === "function") {
-            contentDiv.innerHTML = columnConfig.render(valueToDisplay, rowData)
-        } else {
-            contentDiv.textContent = String(valueToDisplay)
-        }
-        td.appendChild(contentDiv)
-        return td
     }
 
     _onTableClick = (ev) => {
@@ -193,11 +171,11 @@ customElements.define("fast-table", class extends HTMLElement {
     }
 
     _onHeaderClick = (ev) => {
-        const targetTh = ev.target.closest("th")
-        if (!targetTh || !targetTh.classList.contains("sortable")) return
+        const th = ev.target.closest("th")
+        if (!th || !th.classList.contains("sortable")) return
 
-        const clickedKey = targetTh.getAttribute("data-key")
-        const clickedColumnConfig = this.currentColumns.find(col => col.key === clickedKey)
+        const clickedKey = th.dataset.key
+        const clickedColumnConfig = this.schema.columns.find(col => col.key === clickedKey)
         if (!clickedColumnConfig || clickedColumnConfig.sortable !== true) return
 
         if (this.sortKey === clickedKey) {
@@ -207,11 +185,21 @@ customElements.define("fast-table", class extends HTMLElement {
             this.sortDirection = "asc"
         }
 
-        this.setData(this.currentData, this.currentColumns)
+        this.setData(this.data, this.schema)
     }
 
-    _clearTableInternal = () => {
+    _clearTable = () => {
         this.entities.theadRow.innerHTML = ""
         this.entities.tbody.innerHTML = ""
+    }
+
+    _showNoData = () => {
+        this.entities.tableWrapper.classList.add("hidden")
+        this.entities.noDataMessage.classList.remove("hidden")
+    }
+
+    _hideNoData = () => {
+        this.entities.tableWrapper.classList.remove("hidden")
+        this.entities.noDataMessage.classList.add("hidden")
     }
 })
