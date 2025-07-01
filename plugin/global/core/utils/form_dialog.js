@@ -1,4 +1,4 @@
-class form_dialog {
+class formDialog {
     constructor(utils, i18n) {
         this.utils = utils
         this.i18n = i18n
@@ -91,5 +91,5 @@ class form_dialog {
 }
 
 module.exports = {
-    formDialog: form_dialog
+    formDialog
 }

@@ -1425,13 +1425,6 @@ const SETTING_SCHEMAS = {
     markdownLint: [
         customPluginFullBasePropBox,
         TitledBox(
-            "windowStyle",
-            Text("modal_width"),
-            Text("modal_max_height"),
-            Text("modal_font_size"),
-            Number("modal_line_height", { unit: UNITS.em, min: 0.1 }),
-        ),
-        TitledBox(
             "square",
             Switch("use_button"),
             Text("button_width", { dependencies: { use_button: true } }),

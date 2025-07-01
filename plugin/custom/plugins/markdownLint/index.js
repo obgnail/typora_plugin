@@ -12,17 +12,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
             hidden
             window-title="${this.pluginName}"
             window-buttons="doc|fa-file-text|${this.i18n.t("func.doc")};
-                            switchOrder|fa-sort-amount-asc|${this.i18n.t(`$option.result_order_by.${this.config.result_order_by}`)};
                             detailAll|fa-info-circle|${this.i18n.t("func.detailAll")};
                             fixAll|fa-wrench|${this.i18n.t("func.fixAll")};
                             toggleSourceMode|fa-code|${this.i18n.t("func.toggleSourceMode")};
                             refresh|fa-refresh|${this.i18n.t("func.refresh")};
                             close|fa-times|${this.i18n.t("func.close")}">
             <div class="plugin-markdownlint-table-wrap">
-                <table>
-                    <thead><tr><th>${this.i18n.t("line")}</th><th>${this.i18n.t("rule")}</th><th>${this.i18n.t("desc")}</th><th>${this.i18n.t("ops")}</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <fast-table class="plugin-markdownlint-table"></fast-table>
             </div>
         </fast-window>
         ${this.config.use_button ? `<div id="plugin-markdownlint-button"></div>` : ""}
@@ -32,12 +28,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.initLint = this.utils.noop
         this.checkLint = this.utils.noop
         this.fixLint = this.utils.noop
+        this.updateTable = this._getUpdater()
+
         this.fixInfos = []
         this.entities = {
             window: document.querySelector("#plugin-markdownlint"),
             wrap: document.querySelector(".plugin-markdownlint-table-wrap"),
-            table: document.querySelector("#plugin-markdownlint table"),
-            tbody: document.querySelector("#plugin-markdownlint tbody"),
+            table: document.querySelector(".plugin-markdownlint-table"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
         this.TRANSLATIONS = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
@@ -129,15 +126,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 }
                 this.utils.scrollSourceView(lineToGo)
             },
-            switchOrder: () => {
-                const orderBy = this.config.result_order_by === "ruleName" ? "lineNumber" : "ruleName"
-                this.config.result_order_by = orderBy
-                this.checkLint()
-                const hint = this.i18n.t(`$option.result_order_by.${orderBy}`)
-                this.entities.window.updateButton("switchOrder", btn => btn.hint = hint)
-                this.utils.notification.show(hint)
-                this.utils.settings.saveSettings(this.fixedName, { result_order_by: orderBy })
-            },
         }
 
         const onElementEvent = () => {
@@ -149,13 +137,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const fn = funcMap[action]
                 if (fn) fn()
             })
-            this.entities.table.addEventListener("click", ev => {
-                const target = ev.target.closest("[action]")
-                if (!target) return
-                const action = target.getAttribute("action")
-                const value = parseInt(target.dataset.value)
-                const fn = funcMap[action]
-                if (fn) fn(value)
+            this.entities.table.addEventListener("table-click", ev => {
+                const { action, rowData } = ev.detail
+                const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.infoIdx : rowData.line
+                funcMap[action](arg)
             })
             this.entities.wrap.addEventListener("mousedown", ev => {
                 ev.preventDefault()
@@ -176,31 +161,45 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.checkLint()
     }
 
-    _onCheck = fixInfos => {
-        const compareFn = this.config.result_order_by === "ruleName"
-            ? (a, b) => a.ruleNames[0] - b.ruleNames[0]
-            : (a, b) => a.lineNumber - b.lineNumber
-        this.fixInfos = fixInfos.sort(compareFn)
-
-        if (this.entities.button) {
-            this.entities.button.toggleAttribute("lint-check-failed", this.fixInfos.length)
-        }
-
-        if (this.entities.window.hidden) return
-
+    _getUpdater = () => {
         const useInfo = this.config.tools.includes("info")
         const useLocate = this.config.tools.includes("locate")
         const useFix = this.config.tools.includes("fix")
-        const tds = this.fixInfos.map((item, idx) => {
-            const rule = item.ruleNames[0]
-            const lineNumber = item.lineNumber
-            const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
-            const info = useInfo ? `<i class="fa fa-info-circle" action="detailSingle" data-value="${idx}"></i>` : ""
-            const locate = useLocate ? `<i class="fa fa-crosshairs" action="jumpToLine" data-value="${lineNumber}"></i>` : ""
-            const fixInfo = (useFix && item.fixInfo) ? `<i class="fa fa-wrench" action="fixSingle" data-value="${idx}"></i>` : ""
-            return `<tr><td>${lineNumber}</td><td>${rule}</td><td>${desc}</td><td>${info}${locate}${fixInfo}</td></tr>`
-        })
-        this.entities.tbody.innerHTML = tds.length ? tds.join("") : `<tr><td colspan="4">${this.i18n._t("global", "empty")}</td></tr>`
+        const optionsRender = () => {
+            const info = useInfo ? `<i class="fa fa-info-circle action-icon" action="detailSingle"></i>` : ""
+            const locate = useLocate ? `<i class="fa fa-crosshairs action-icon" action="jumpToLine"></i>` : ""
+            const fixInfo = useFix ? `<i class="fa fa-wrench action-icon" action="fixSingle"></i>` : ""
+            return [info, locate, fixInfo].join("")
+        }
+        const sortKey = this.config.result_order_by === "ruleName" ? "rule" : "line"
+        const schema = {
+            defaultSort: { key: sortKey, direction: "asc" },
+            columns: [
+                { key: "line", title: this.i18n.t("line"), width: "4em", sortable: true },
+                { key: "rule", title: this.i18n.t("rule"), width: "5em", sortable: true },
+                { key: "desc", title: this.i18n.t("desc"), width: "fit-content", sortable: true },
+                { key: "ops", title: this.i18n.t("ops"), width: "6em", render: optionsRender },
+            ]
+        }
+        return (fixInfos) => {
+            const data = fixInfos.map((item, infoIdx) => {
+                const rule = item.ruleNames[0]
+                const line = item.lineNumber
+                const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
+                return { rule, line, desc, infoIdx }
+            })
+            this.entities.table.setData(data, schema)
+        }
+    }
+
+    _onCheck = fixInfos => {
+        this.fixInfos = fixInfos
+        if (this.entities.button) {
+            this.entities.button.toggleAttribute("lint-check-failed", fixInfos.length)
+        }
+        if (!this.entities.window.hidden) {
+            this.updateTable(fixInfos)
+        }
     }
 
     _onFix = async fileContent => {

@@ -1389,10 +1389,6 @@
     "MD058": "表格前后需用空行隔开",
     "MD059": "链接文本应具有描述性",
     "MD101": "公式块前后需用空行隔开",
-    "$label.modal_width": "宽度",
-    "$label.modal_max_height": "最大高度",
-    "$label.modal_font_size": "字体大小",
-    "$label.modal_line_height": "文字行高",
     "$label.use_button": "启用",
     "$label.button_width": "宽度",
     "$label.button_height": "高度",
@@ -1411,7 +1407,6 @@
     "$option.result_order_by.ruleName": "按检测规则排序",
     "$title.rule_config": "检测规则",
     "$title.custom_rules": "自定义检测规则文件",
-    "$title.windowStyle": "窗口样式",
     "$title.square": "状态指示方块",
     "$title.detectAndFix": "检测与修复"
   },

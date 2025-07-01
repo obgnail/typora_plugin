@@ -1,0 +1,160 @@
+:host {
+    display: block;
+    box-sizing: border-box;
+    min-height: var(--min-height);
+
+    --min-height: 50px;
+    --bg-color: transparent;
+    --line-hight: 1.6em;
+    --font-size: 14px;
+
+    --header-bg: #ffffff;
+    --header-text-color: #333;
+    --header-border-color: #eee;
+    --odd-row-bg: #ffffff;
+    --even-row-bg: #ffffff;
+    --row-text-color: #333;
+    --row-hover-bg: #f9f9f9;
+    --row-border-color: #eee;
+
+    --no-data-text-color: #888;
+    --padding-horizontal: 10px;
+    --padding-vertical: 6px;
+
+    --action-color: #666666;
+    --action-hover-color: #333333;
+    --action-gap: 5px;
+    --icon-size: 16px;
+    --icon-padding: 5px;
+
+    --sort-icon-color: #888;
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    padding: 0;
+    font-size: var(--font-size);
+    line-height: var(--line-hight);
+}
+
+thead {
+    background-color: var(--header-bg);
+    color: var(--header-text-color);
+}
+
+th {
+    padding: 8px var(--padding-horizontal);
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid var(--header-border-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: default;
+    user-select: none;
+}
+
+.th-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+th.sortable .th-content {
+    cursor: pointer;
+}
+
+th .sort-icon {
+    margin-left: 8px;
+    color: var(--sort-icon-color);
+    font-size: 0.9em;
+}
+
+td {
+    padding: var(--padding-vertical) var(--padding-horizontal);
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+tbody {
+    color: var(--row-text-color);
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--row-border-color);
+    transition: background-color 0.2s ease;
+}
+
+tbody tr:nth-of-type(even) {
+    background-color: var(--even-row-bg);
+}
+
+tbody tr:nth-of-type(odd) {
+    background-color: var(--odd-row-bg);
+}
+
+tbody tr:hover {
+    background-color: var(--row-hover-bg);
+}
+
+.cell {
+    display: flex;
+    align-items: center;
+    gap: var(--action-gap);
+    width: 100%;
+    height: 100%;
+    min-height: 1em;
+}
+
+.cell img {
+    max-width: 40px;
+    max-height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    display: block;
+}
+
+.cell a {
+    color: var(--action-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    white-space: normal;
+}
+
+.cell a:hover {
+    color: var(--action-hover-color);
+    text-decoration: underline;
+}
+
+.cell .action-icon {
+    cursor: pointer;
+    color: var(--action-color);
+    transition: color 0.2s ease, transform 0.2s ease;
+    display: inline-block;
+    font-size: var(--icon-size);
+    padding: var(--icon-padding);
+    vertical-align: middle;
+}
+
+.cell .action-icon:hover {
+    color: var(--action-hover-color);
+    transform: scale(1.1);
+}
+
+.no-data {
+    text-align: center;
+    padding: 30px;
+    color: var(--no-data-text-color);
+    font-style: italic;
+    background-color: var(--bg-color);
+}
+
+.hidden {
+    display: none;
+}

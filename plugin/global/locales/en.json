@@ -1389,10 +1389,6 @@
     "MD058": "Tables must be surrounded by blank lines",
     "MD059": "Link text must be descriptive",
     "MD101": "MathBlocks must be surrounded by blank lines",
-    "$label.modal_width": "Width",
-    "$label.modal_max_height": "Max Height",
-    "$label.modal_font_size": "Font Size",
-    "$label.modal_line_height": "Line Height",
     "$label.use_button": "Enable",
     "$label.button_width": "Width",
     "$label.button_height": "Height",
@@ -1411,7 +1407,6 @@
     "$option.result_order_by.ruleName": "Sort by Rule",
     "$title.rule_config": "Lint Rules",
     "$title.custom_rules": "Custom Lint Rules File",
-    "$title.windowStyle": "Window Style",
     "$title.square": "Status indicator Square",
     "$title.detectAndFix": "Detect and Fix"
   },
