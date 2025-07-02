@@ -2,6 +2,11 @@
     overflow: scroll;
 }
 
+.non-exist-in-file-caption,
+.non-exist-in-folder-caption {
+    text-align: center;
+}
+
 .non-exist-in-file th:first-child {
     width: 10px;
 }

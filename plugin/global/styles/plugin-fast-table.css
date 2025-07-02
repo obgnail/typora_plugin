@@ -11,11 +11,13 @@
     --header-bg: #ffffff;
     --header-text-color: #333;
     --header-border-color: #eee;
+    --header-padding-vertical: 8px;
     --odd-row-bg: #ffffff;
     --even-row-bg: #ffffff;
     --row-text-color: #333;
     --row-hover-bg: #f9f9f9;
     --row-border-color: #eee;
+    --row-text-align: left;
 
     --no-data-text-color: #888;
     --padding-horizontal: 10px;
@@ -46,7 +48,7 @@ thead {
 }
 
 th {
-    padding: 8px var(--padding-horizontal);
+    padding: var(--header-padding-vertical) var(--padding-horizontal);
     text-align: left;
     font-weight: 600;
     border-bottom: 1px solid var(--header-border-color);
@@ -76,7 +78,7 @@ th .sort-icon {
 
 td {
     padding: var(--padding-vertical) var(--padding-horizontal);
-    text-align: left;
+    text-align: var(--row-text-align);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: normal;

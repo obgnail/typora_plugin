@@ -1385,16 +1385,26 @@ rule_config = { default = true, MD010 = { code_blocks = false }, MD012 = { maxim
 #   false: 不翻译，显示英文原文
 translate = true
 
-# 检测结果的排序规则
-#   lineNumber: 按行排序
-#   ruleName:   按规则名排序
-result_order_by = "lineNumber"
+# 展示列
+#   idx:  序号
+#   line: 行
+#   rule: 规则
+#   desc: 说明
+#   ops:  操作
+columns = ["line", "rule", "desc", "ops"]
 
 # 展示的工具
 #   info:   具体的检测信息
 #   locate: 定位
 #   fix:    修复
 tools = ["info", "locate", "fix"]
+
+# 检测结果的排序规则
+#   idx:    按序号排列
+#   lineNumber: 按行排序
+#   ruleName:   按规则名排序
+#   ruleDesc:   按规则描述排序
+result_order_by = "lineNumber"
 
 # ------------------- 状态指示器 -------------------
 # 是否在右上角添加一个方块，用以提示格式检测状态

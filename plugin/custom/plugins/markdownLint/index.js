@@ -65,7 +65,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             })
         }
 
-        const onEvent = () => {
+        const onLifecycle = () => {
             const { eventHub } = this.utils
             eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.checkLint, 500))
             eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => setTimeout(this.initLint, 1000))
@@ -99,9 +99,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 this.utils.notification.show(this.i18n._t("global", "success.refresh"))
             },
             detailAll: () => _getDetail(this.fixInfos),
-            detailSingle: infoIdx => _getDetail([this.fixInfos[infoIdx]]),
-            fixAll: () => this.fixLint(),
-            fixSingle: infoIdx => this.fixLint([this.fixInfos[infoIdx]]),
+            fixAll: () => this.fixLint(this.fixInfos),
+            detailSingle: idx => _getDetail([this.fixInfos[idx]]),
+            fixSingle: idx => this.fixLint([this.fixInfos[idx]]),
             toggleSourceMode: () => File.toggleSourceMode(),
             doc: async () => {
                 const op = {
@@ -139,7 +139,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             })
             this.entities.table.addEventListener("table-click", ev => {
                 const { action, rowData } = ev.detail
-                const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.infoIdx : rowData.line
+                const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
                 funcMap[action](arg)
             })
             this.entities.wrap.addEventListener("mousedown", ev => {
@@ -152,7 +152,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         }
 
         initWorker(this._onCheck, this._onFix)
-        onEvent()
+        onLifecycle()
         onElementEvent()
     }
 
@@ -171,22 +171,24 @@ class markdownLintPlugin extends BaseCustomPlugin {
             const fixInfo = useFix ? `<i class="fa fa-wrench action-icon" action="fixSingle"></i>` : ""
             return [info, locate, fixInfo].join("")
         }
-        const sortKey = this.config.result_order_by === "ruleName" ? "rule" : "line"
+        const sortKey = { index: "idx", lineNumber: "line", ruleName: "rule", ruleDesc: "desc" }[this.config.result_order_by] || "line"
+        const supportColumns = {
+            idx: { key: "idx", title: this.i18n.t("$option.columns.idx"), width: "3em", sortable: true },
+            line: { key: "line", title: this.i18n.t("$option.columns.line"), width: "4em", sortable: true },
+            rule: { key: "rule", title: this.i18n.t("$option.columns.rule"), width: "5em", sortable: true },
+            desc: { key: "desc", title: this.i18n.t("$option.columns.desc"), width: "fit-content", sortable: true },
+            ops: { key: "ops", title: this.i18n.t("$option.columns.ops"), width: "5.5em", render: optionsRender },
+        }
         const schema = {
             defaultSort: { key: sortKey, direction: "asc" },
-            columns: [
-                { key: "line", title: this.i18n.t("line"), width: "4em", sortable: true },
-                { key: "rule", title: this.i18n.t("rule"), width: "5em", sortable: true },
-                { key: "desc", title: this.i18n.t("desc"), width: "fit-content", sortable: true },
-                { key: "ops", title: this.i18n.t("ops"), width: "6em", render: optionsRender },
-            ]
+            columns: this.config.columns.map(col => supportColumns[col])
         }
         return (fixInfos) => {
-            const data = fixInfos.map((item, infoIdx) => {
+            const data = fixInfos.map((item, idx) => {
                 const rule = item.ruleNames[0]
                 const line = item.lineNumber
                 const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
-                return { rule, line, desc, infoIdx }
+                return { rule, line, desc, idx }
             })
             this.entities.table.setData(data, schema)
         }

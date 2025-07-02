@@ -12,13 +12,13 @@ class resourceManagerPlugin extends BasePlugin {
                             togglePreview|fa-eye|${this.i18n.t("func.togglePreview")};
                             close|fa-times|${this.i18n.t("func.close")}">
             <div class="plugin-resource-manager-wrap">
+                <div class="non-exist-in-file-caption"></div>
                 <table class="non-exist-in-file">
-                     <caption></caption>
                      <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">preview</th><th>operation</th></tr></thead>
                      <tbody></tbody>
                 </table>
+                <div class="non-exist-in-folder-caption"></div>
                 <table class="non-exist-in-folder">
-                     <caption></caption>
                      <thead><tr><th>#</th><th>resource</th></tr></thead>
                      <tbody></tbody>
                 </table>
@@ -193,8 +193,8 @@ class resourceManagerPlugin extends BasePlugin {
         const tbody2 = nonExistInFolderRows.join("") || '<tr><td colspan="2" style="text-align: center">Empty</td></tr>'
 
         const wrap = this.entities.wrap
-        wrap.querySelector(".non-exist-in-file caption").textContent = I18N.nonExistInFile
-        wrap.querySelector(".non-exist-in-folder caption").textContent = I18N.nonExistInFolder
+        wrap.querySelector(".non-exist-in-file-caption").textContent = I18N.nonExistInFile
+        wrap.querySelector(".non-exist-in-folder-caption").textContent = I18N.nonExistInFolder
         wrap.querySelector(".non-exist-in-file tbody").innerHTML = tbody1
         wrap.querySelector(".non-exist-in-folder tbody").innerHTML = tbody2
         wrap.querySelector(".plugin-resource-manager-message").innerHTML = I18N.setting

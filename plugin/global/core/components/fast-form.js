@@ -184,8 +184,7 @@ customElements.define("fast-form", class extends HTMLElement {
             const input = this.closest(".hotkey-wrap").querySelector("input")
             input.value = input.getAttribute("value")
             that._dispatchEvent(input.dataset.key, input.value)
-        }).on("click", '.control[data-type="action"]', function (ev) {
-            that._rippled(this, ev.clientX, ev.clientY)
+        }).on("click", '.control[data-type="action"]', function () {
             const icon = this.querySelector(".action")
             that._dispatchAction(icon.dataset.action)
         }).on("click", ".array-item-delete", function () {
@@ -226,6 +225,8 @@ customElements.define("fast-form", class extends HTMLElement {
             that._dispatchEvent(this.dataset.key, Number(this.value))
         }).on("change", ".text-input, .textarea", function () {
             that._dispatchEvent(this.dataset.key, this.value)
+        }).on("mousedown", '.control[data-type="action"]', function (ev) {
+            that._rippled(this, ev.clientX, ev.clientY)
         })
 
         this.form.addEventListener("focusout", ev => {

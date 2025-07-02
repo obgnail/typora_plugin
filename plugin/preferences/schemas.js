@@ -167,8 +167,9 @@ const OPTIONS = {
         thumbnail_object_fit: ["fill", "contain", "cover", "scale-down"],
     },
     markdownLint: {
+        columns: ["idx", "line", "rule", "desc", "ops"],
         tools: ["info", "locate", "fix"],
-        result_order_by: ["lineNumber", "ruleName"],
+        result_order_by: ["index", "lineNumber", "ruleName", "ruleDesc"],
     },
 }
 
@@ -230,7 +231,6 @@ const SETTING_SCHEMAS = {
             Text("TAB_MIN_WIDTH"),
             Text("TAB_MAX_WIDTH"),
             Number("MAX_TAB_NUM", { tooltip: "minusOne", min: -1 }),
-            Select("CONTEXT_MENU", OPTIONS.window_tab.CONTEXT_MENU),
         ),
         TitledBox(
             "behavior",
@@ -244,6 +244,8 @@ const SETTING_SCHEMAS = {
             Switch("CTRL_WHEEL_TO_SWITCH"),
             Switch("MIDDLE_CLICK_TO_CLOSE"),
             Switch("SHOW_FULL_PATH_WHEN_HOVER"),
+            Switch("USE_CONTEXT_MENU"),
+            Select("CONTEXT_MENU", OPTIONS.window_tab.CONTEXT_MENU, { dependencies: { USE_CONTEXT_MENU: true } }),
             Select("DRAG_STYLE", OPTIONS.window_tab.DRAG_STYLE),
             Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: { DRAG_STYLE: "JetBrains" } }),
             Number("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { DRAG_STYLE: "JetBrains", TAB_DETACHMENT: "resistant" } }),
@@ -1425,19 +1427,20 @@ const SETTING_SCHEMAS = {
     markdownLint: [
         customPluginFullBasePropBox,
         TitledBox(
+            "detectAndFix",
+            Switch("translate"),
+            Select("columns", OPTIONS.markdownLint.columns, { minItems: 1 }),
+            Select("result_order_by", OPTIONS.markdownLint.result_order_by),
+            Select("tools", OPTIONS.markdownLint.tools, { minItems: 1 }),
+            Hotkey("hotkey_fix_lint_error"),
+        ),
+        TitledBox(
             "square",
             Switch("use_button"),
             Text("button_width", { dependencies: { use_button: true } }),
             Text("button_height", { dependencies: { use_button: true } }),
             Text("pass_color", { dependencies: { use_button: true } }),
             Text("error_color", { dependencies: { use_button: true } }),
-        ),
-        TitledBox(
-            "detectAndFix",
-            Switch("translate"),
-            Select("tools", OPTIONS.markdownLint.tools, { minItems: 1 }),
-            Select("result_order_by", OPTIONS.markdownLint.result_order_by),
-            Hotkey("hotkey_fix_lint_error"),
         ),
         ObjectBOX("rule_config", { rows: 10 }),
         ArrayBox("custom_rules"),

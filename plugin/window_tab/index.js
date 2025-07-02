@@ -423,7 +423,7 @@ class windowTabBarPlugin extends BasePlugin {
         if (this.config.MIDDLE_CLICK_TO_CLOSE) {
             handleMiddleClick();
         }
-        if (this.config.CONTEXT_MENU.length) {
+        if (this.config.USE_CONTEXT_MENU && this.config.CONTEXT_MENU.length) {
             handleContextMenu();
         }
     }

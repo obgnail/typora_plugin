@@ -13,7 +13,14 @@
 }
 
 .plugin-markdownlint-table {
+    --header-bg: transparent;
+    --row-border-color: transparent;
+    --even-row-bg: transparent;
+    --odd-row-bg: #fff;
+    --row-hover-bg: #eee;
     --action-gap: 0;
+    --padding-vertical: 5px;
+    --header-padding-vertical: 5px;
 }
 
 #plugin-markdownlint-button {

@@ -1250,7 +1250,7 @@ const newMixin = (utils) => {
         ...require("./contextMenu"),
         ...require("./notification"),
         ...require("./progressBar"),
-        ...require("./form_dialog"),
+        ...require("./formDialog"),
         ...require("./diagramParser"),
         ...require("./thirdPartyDiagramParser"),
         ...require("./mermaid"),
