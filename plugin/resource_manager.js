@@ -13,16 +13,10 @@ class resourceManagerPlugin extends BasePlugin {
                             close|fa-times|${this.i18n.t("func.close")}">
             <div class="plugin-resource-manager-wrap">
                 <div class="non-exist-in-file-caption"></div>
-                <table class="non-exist-in-file">
-                     <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">preview</th><th>operation</th></tr></thead>
-                     <tbody></tbody>
-                </table>
+                <fast-table class="non-exist-in-file"></fast-table>
                 <div class="non-exist-in-folder-caption"></div>
-                <table class="non-exist-in-folder">
-                     <thead><tr><th>#</th><th>resource</th></tr></thead>
-                     <tbody></tbody>
-                </table>
-                <div class="plugin-resource-manager-message"></div>
+                <fast-table class="non-exist-in-folder"></fast-table>
+                <div class="resource-manager-config-caption"></div>
                 <textarea rows="10" readonly></textarea>
             </div>
         </fast-window>
@@ -35,6 +29,8 @@ class resourceManagerPlugin extends BasePlugin {
             content: this.utils.entities.eContent,
             window: document.querySelector("#plugin-resource-manager"),
             wrap: document.querySelector(".plugin-resource-manager-wrap"),
+            fileTable: document.querySelector(".non-exist-in-file"),
+            folderTable: document.querySelector(".non-exist-in-folder"),
         }
         this.results = {
             nonExistInFile: new Set(),
@@ -56,23 +52,17 @@ class resourceManagerPlugin extends BasePlugin {
             const fn = this[action]
             if (fn) fn()
         })
-        this.entities.wrap.addEventListener("click", async ev => {
-            const target = ev.target.closest("button[action]")
-            if (!target) return
-            const tr = target.closest("tr")
-            if (!tr) return
-            const img = tr.querySelector("img")
-            if (!img) return
-
-            const src = img.getAttribute("src")
-            const action = target.getAttribute("action")
+        this.entities.fileTable.addEventListener("table-click", async ev => {
+            const { action, rowData } = ev.detail
             if (action === "locate") {
-                this.utils.showInFinder(src)
-            } else if (action === "delete") {
+                this.utils.showInFinder(rowData.src)
+                return
+            }
+            if (action === "delete") {
                 if (this.showWarnDialog) {
                     const checkboxLabel = this.i18n._t("global", "disableReminder")
                     const reconfirm = this.i18n.t("msgBox.reconfirmDeleteFile")
-                    const filename = this.utils.getFileName(src, false)
+                    const filename = this.utils.getFileName(rowData.src, false)
                     const message = `${reconfirm} ${filename}`
                     const option = { type: "warning", message, checkboxLabel }
                     const { response, checkboxChecked } = await this.utils.showMessageBox(option)
@@ -81,9 +71,9 @@ class resourceManagerPlugin extends BasePlugin {
                         this.showWarnDialog = false
                     }
                 }
-                await this.utils.Package.Fs.promises.unlink(src)
-                this.utils.removeElement(tr)
-                this.results.nonExistInFile.delete(src)
+                await this.utils.Package.Fs.promises.unlink(rowData.src)
+                this.results.nonExistInFile.delete(rowData.src)
+                this._updateTables(true, false)
             }
         })
     }
@@ -111,17 +101,11 @@ class resourceManagerPlugin extends BasePlugin {
     close = () => {
         this.results.clear()
         this.entities.window.hide()
-        this.togglePreview(true)
     }
 
-    togglePreview = forceClose => {
-        let wantClose
-        this.entities.window.updateButton("togglePreview", btn => {
-            wantClose = forceClose || btn.icon === "fa-eye-slash"
-            btn.icon = wantClose ? "fa-eye" : "fa-eye-slash"
-        })
-        const selector = ".non-exist-in-file td:nth-of-type(3), .non-exist-in-file th:nth-of-type(3)"
-        this.entities.wrap.querySelectorAll(selector).forEach(e => this.utils.toggleVisible(e, wantClose))
+    togglePreview = () => {
+        this.entities.window.updateButton("togglePreview", btn => btn.icon = (btn.icon === "fa-eye-slash") ? "fa-eye" : "fa-eye-slash")
+        this._updateTables(true, false)
     }
 
     download = async () => {
@@ -161,44 +145,40 @@ class resourceManagerPlugin extends BasePlugin {
     }
 
     _initModalTable = () => {
+        const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
         const output = this.utils.pickBy(
             this._getOutput(),
-            (_, key) => !["resource_non_exist_in_file", "resource_non_exist_in_folder"].includes(key),
+            (_, key) => !["resource_non_exist_in_file", "resource_non_exist_in_folder"].includes(key)
         )
-        const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
-        const setting = JSON.stringify(output, replacer, "\t")
-        const { nonExistInFile, nonExistInFolder } = this.results
-        const I18N = {
-            locate: this.i18n.t("func.locate"),
-            delete: this.i18n.t("func.delete"),
-            setting: this.i18n.t("title.setting"),
-            nonExistInFile: this.i18n.t("title.nonExistInFile", { size: nonExistInFile.size }),
-            nonExistInFolder: this.i18n.t("title.nonExistInFolder", { size: nonExistInFolder.size }),
-        }
-
-        const btnGroup = `
-            <td>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-default" action="locate">${I18N.locate}</button>
-                    <button type="button" class="btn btn-default" action="delete">${I18N.delete}</button>
-                </div>
-            </td>`
-        const nonExistInFileRows = [...nonExistInFile].map((row, idx) => {
-            return `<tr><td>${idx + 1}</td><td>${row}</td><td class="plugin-common-hidden"><img src="${row}"/></td>${btnGroup}</tr>`
-        })
-        const nonExistInFolderRows = [...nonExistInFolder].map((row, idx) => {
-            return `<tr><td>${idx + 1}</td><td>${row}</td></tr>`
-        })
-        const tbody1 = nonExistInFileRows.join("") || '<tr><td colspan="4" style="text-align: center">Empty</td></tr>'
-        const tbody2 = nonExistInFolderRows.join("") || '<tr><td colspan="2" style="text-align: center">Empty</td></tr>'
 
         const wrap = this.entities.wrap
-        wrap.querySelector(".non-exist-in-file-caption").textContent = I18N.nonExistInFile
-        wrap.querySelector(".non-exist-in-folder-caption").textContent = I18N.nonExistInFolder
-        wrap.querySelector(".non-exist-in-file tbody").innerHTML = tbody1
-        wrap.querySelector(".non-exist-in-folder tbody").innerHTML = tbody2
-        wrap.querySelector(".plugin-resource-manager-message").innerHTML = I18N.setting
-        wrap.querySelector("textarea").value = setting
+        wrap.querySelector("textarea").value = JSON.stringify(output, replacer, "\t")
+        wrap.querySelector(".non-exist-in-file-caption").textContent = this.i18n.t("title.nonExistInFile", { size: this.results.nonExistInFile.size })
+        wrap.querySelector(".non-exist-in-folder-caption").textContent = this.i18n.t("title.nonExistInFolder", { size: this.results.nonExistInFolder.size })
+        wrap.querySelector(".resource-manager-config-caption").textContent = this.i18n.t("title.setting")
+        this._updateTables(true, true)
+    }
+
+    _updateTables = (file, folder) => {
+        const getData = set => [...set].map((src, idx) => ({ idx: idx + 1, src }))
+        const commonColumns = [
+            { key: "idx", title: "No.", width: "3em", sortable: true },
+            { key: "src", title: "Resources", width: "fit-content", sortable: true },
+        ]
+
+        if (file) {
+            const opsRender = () => `<i class="fa fa-external-link action-icon" action="locate"></i><i class="fa fa-trash-o action-icon" action="delete"></i>`
+            const isInPreview = this.entities.window.getAttribute("window-buttons").includes("fa-eye-slash")
+            const fileColumns = [...commonColumns]
+            if (isInPreview) {
+                fileColumns.push({ key: "image", title: "Preview", sortable: true, render: (rowData) => `<img src="${rowData.src}"/>` })
+            }
+            fileColumns.push({ key: "operations", title: "Ops", width: "4em", render: opsRender })
+            this.entities.fileTable.setData(getData(this.results.nonExistInFile), { columns: fileColumns })
+        }
+        if (folder) {
+            this.entities.folderTable.setData(getData(this.results.nonExistInFolder), { columns: commonColumns })
+        }
     }
 
     _getOutput = (format = "obj") => {

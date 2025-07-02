@@ -802,8 +802,6 @@
   },
   "resource_manager": {
     "pluginName": "Resource Management",
-    "func.locate": "Open",
-    "func.delete": "Delete",
     "func.close": "Close",
     "func.togglePreview": "Preview Image",
     "func.download": "Download Report",

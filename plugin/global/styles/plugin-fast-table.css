@@ -28,7 +28,8 @@
     --action-gap: 5px;
     --icon-size: 16px;
     --icon-padding: 5px;
-
+    --image-max-width: 40px;
+    --image-max-hight: 40px;
     --sort-icon-color: #888;
 }
 
@@ -115,8 +116,8 @@ tbody tr:hover {
 }
 
 .cell img {
-    max-width: 40px;
-    max-height: 40px;
+    max-width: var(--image-max-width);
+    max-height: var(--image-max-hight);
     border-radius: 4px;
     object-fit: cover;
     display: block;

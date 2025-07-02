@@ -1,45 +1,24 @@
-#plugin-resource-manager .plugin-resource-manager-wrap {
+#plugin-resource-manager {
+    top: 40px;
+}
+
+.plugin-resource-manager-wrap {
     overflow: scroll;
 }
 
 .non-exist-in-file-caption,
-.non-exist-in-folder-caption {
+.non-exist-in-folder-caption,
+.resource-manager-config-caption {
     text-align: center;
+    margin: 10px 0;
 }
 
-.non-exist-in-file th:first-child {
-    width: 10px;
-}
-.non-exist-in-file th:last-child {
-    width: 150px;
-}
-.non-exist-in-file td:nth-of-type(2) {
-    max-width: 200px;
-    white-space: break-spaces;
-    word-break: break-word;
-}
-.non-exist-in-file td:nth-of-type(3) {
-    max-width: 100px;
-    max-height: 100px;
-}
-.non-exist-in-file td:last-of-type {
-    text-align: center;
-}
-
-#plugin-resource-manager tbody {
-    font-size: 0.7em;
-}
-
-.plugin-resource-manager-message {
-    font-size: 1.2em;
-    margin-top: 1.2em;
-    margin-left: 0.2em;
-    padding-bottom: 2px;
-    border-bottom: 1px solid #ececec;
-    text-align: center;
+.non-exist-in-file,
+.non-exist-in-folder {
+    --image-max-width: 400px;
+    --image-max-hight: 400px;
 }
 
 #plugin-resource-manager textarea {
     width: 100%;
-    margin-top: 10px;
 }

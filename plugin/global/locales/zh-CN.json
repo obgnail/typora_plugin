@@ -802,8 +802,6 @@
   },
   "resource_manager": {
     "pluginName": "资源管理",
-    "func.locate": "打开",
-    "func.delete": "删除",
     "func.close": "关闭",
     "func.togglePreview": "预览图片",
     "func.download": "下载报告",
