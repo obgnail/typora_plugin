@@ -72,13 +72,43 @@ customElements.define("fast-table", class extends HTMLElement {
         this._showNoData()
     }
 
+    deleteRow = (key, value) => {
+        if (!key || !value) {
+            console.warn("deleteRow: 'key' and 'value' must be provided.")
+            return false
+        }
+        const initialLength = this.data.length
+        this.data = this.data.filter(item => item[key] !== value)
+        if (this.data.length < initialLength) {
+            this.setData(this.data, this.schema)
+            return true
+        }
+        return false
+    }
+
+    editRow = (key, value, newData) => {
+        if (!key || !value || typeof newData !== "object" || newData === null) {
+            console.warn("editRow: 'key', 'value', and 'newData' (object) must be provided.")
+            return false
+        }
+        const index = this.data.findIndex(item => item[key] === value)
+        if (index !== -1) {
+            this.data[index] = { ...this.data[index], ...newData }
+            this.setData(this.data, this.schema)
+            return true
+        }
+        return false
+    }
+
     _process = (data, schema) => {
-        if (data.length === 0 || schema.columns.length === 0) {
+        const columns = schema.columns.filter(col => col.ignore !== true)
+
+        if (data.length === 0 || columns.length === 0) {
             return { processedData: [], processedColumns: [], isValid: false }
         }
 
         if (this.sortKey && this.sortDirection) {
-            const sortCol = schema.columns.find(col => col.key === this.sortKey)
+            const sortCol = columns.find(col => col.key === this.sortKey)
             if (sortCol && sortCol.sortable === true) {
                 const isASC = this.sortDirection === "asc"
                 data = [...data].sort((i1, i2) => {
@@ -96,7 +126,7 @@ customElements.define("fast-table", class extends HTMLElement {
             }
         }
 
-        return { processedData: data, processedColumns: schema.columns, isValid: true }
+        return { processedData: data, processedColumns: columns, isValid: true }
     }
 
     _renderHeader = (columns) => {

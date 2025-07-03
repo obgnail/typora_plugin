@@ -23,7 +23,6 @@ class resourceManagerPlugin extends BasePlugin {
     `
 
     init = () => {
-        this.finder = new ResourceFinder(this)
         this.showWarnDialog = true
         this.entities = {
             content: this.utils.entities.eContent,
@@ -31,18 +30,6 @@ class resourceManagerPlugin extends BasePlugin {
             wrap: document.querySelector(".plugin-resource-manager-wrap"),
             fileTable: document.querySelector(".non-exist-in-file"),
             folderTable: document.querySelector(".non-exist-in-folder"),
-        }
-        this.results = {
-            nonExistInFile: new Set(),
-            nonExistInFolder: new Set(),
-            init: (inFolder, inFile) => {
-                this.results.nonExistInFile = new Set([...inFolder].filter(x => !inFile.has(x)))
-                this.results.nonExistInFolder = new Set([...inFile].filter(x => !inFolder.has(x)))
-            },
-            clear: () => {
-                this.results.nonExistInFile.clear()
-                this.results.nonExistInFolder.clear()
-            },
         }
     }
 
@@ -72,8 +59,8 @@ class resourceManagerPlugin extends BasePlugin {
                     }
                 }
                 await this.utils.Package.Fs.promises.unlink(rowData.src)
-                this.results.nonExistInFile.delete(rowData.src)
-                this._updateTables(true, false)
+                this.entities.fileTable.deleteRow("idx", rowData.idx)
+                this.utils.notification.show(this.i18n._t("global", "success.deleted"))
             }
         })
     }
@@ -82,33 +69,43 @@ class resourceManagerPlugin extends BasePlugin {
         const dir = this.utils.getMountFolder()
         if (!dir) return
 
-        const hide = this.utils.notification.show(this.i18n._t("global", "processing"), "info")
-        const result = await this.runWithProgressBar(dir, 3 * 60 * 1000)
+        const hideProcessing = this.utils.notification.show(this.i18n._t("global", "processing"), "info")
+        const result = await this._runWithProgressBar(dir, 3 * 60 * 1000)
         if (result instanceof Error) {
             this.utils.notification.show(result.toString(), "error")
             return
         }
-        const { resourcesInFolder, resourcesInFile } = result
-        this.results.init(resourcesInFolder, resourcesInFile)
+        this._initModalContent(result)
         this._initModalRect()
-        this._initModalTable()
         this.entities.window.show()
-        hide()
+        hideProcessing()
     }
 
-    runWithProgressBar = async (dir, timeout) => this.utils.progressBar.fake({ task: () => this.finder.run(dir), timeout })
-
     close = () => {
-        this.results.clear()
         this.entities.window.hide()
+        this.entities.fileTable.clear()
+        this.entities.folderTable.clear()
     }
 
     togglePreview = () => {
         this.entities.window.updateButton("togglePreview", btn => btn.icon = (btn.icon === "fa-eye-slash") ? "fa-eye" : "fa-eye-slash")
-        this._updateTables(true, false)
+        this._setFileTableData()
     }
 
     download = async () => {
+        const getOutput = (format) => {
+            const _obj = {
+                ...this._getConfig(),
+                resources_non_exist_in_file: this.entities.fileTable.getProcessedData().map(e => e.src),
+                resources_non_exist_in_folder: this.entities.folderTable.getProcessedData().map(e => e.src),
+            }
+            const json = () => JSON.stringify(_obj, null, "\t")
+            const yaml = () => this.utils.stringifyYaml(_obj)
+            const toml = () => this.utils.stringifyToml(_obj)
+            const fn = { json, yaml, toml }[format] || json
+            return fn()
+        }
+
         let dir = this.utils.getCurrentDirPath()
         dir = (dir === ".") ? this.utils.getMountFolder() : dir
         dir = dir || this.utils.tempFolder
@@ -125,14 +122,15 @@ class resourceManagerPlugin extends BasePlugin {
         const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", op)
         if (canceled) return
 
-        let ext = this.utils.Package.Path.extname(filePath).toLowerCase()
-        ext = (ext[0] === ".") ? ext.slice(1) : ext
-        const fileContent = this._getOutput(ext)
+        const format = this.utils.Package.Path.extname(filePath).toLowerCase().replace(/^\./, "")
+        const fileContent = getOutput(format)
         const ok = await this.utils.writeFile(filePath, fileContent)
         if (ok) {
             this.utils.showInFinder(filePath)
         }
     }
+
+    _runWithProgressBar = async (dir, timeout) => this.utils.progressBar.fake({ task: () => new ResourceFinder(this).run(dir), timeout })
 
     _initModalRect = (resetLeft = true) => {
         const { left, width, height } = this.entities.content.getBoundingClientRect()
@@ -144,60 +142,47 @@ class resourceManagerPlugin extends BasePlugin {
         Object.assign(this.entities.window.style, style)
     }
 
-    _initModalTable = () => {
-        const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
-        const output = this.utils.pickBy(
-            this._getOutput(),
-            (_, key) => !["resource_non_exist_in_file", "resource_non_exist_in_folder"].includes(key)
-        )
+    _initModalContent = (result) => {
+        const { notInFile, notInFolder } = result
 
-        const wrap = this.entities.wrap
-        wrap.querySelector("textarea").value = JSON.stringify(output, replacer, "\t")
-        wrap.querySelector(".non-exist-in-file-caption").textContent = this.i18n.t("title.nonExistInFile", { size: this.results.nonExistInFile.size })
-        wrap.querySelector(".non-exist-in-folder-caption").textContent = this.i18n.t("title.nonExistInFolder", { size: this.results.nonExistInFolder.size })
-        wrap.querySelector(".resource-manager-config-caption").textContent = this.i18n.t("title.setting")
-        this._updateTables(true, true)
+        const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
+        this.entities.wrap.querySelector("textarea").value = JSON.stringify(this._getConfig(), replacer, "\t")
+        this.entities.wrap.querySelector(".non-exist-in-file-caption").textContent = this.i18n.t("title.nonExistInFile", { size: notInFile.length })
+        this.entities.wrap.querySelector(".non-exist-in-folder-caption").textContent = this.i18n.t("title.nonExistInFolder", { size: notInFolder.length })
+        this.entities.wrap.querySelector(".resource-manager-config-caption").textContent = this.i18n.t("title.setting")
+
+        const to = arr => arr.map((src, idx) => ({ idx: idx + 1, src }))
+        this._setFileTableData(to(notInFile))
+        this._setFolderTableData(to(notInFolder))
     }
 
-    _updateTables = (file, folder) => {
-        const getData = set => [...set].map((src, idx) => ({ idx: idx + 1, src }))
-        const commonColumns = [
-            { key: "idx", title: "No.", width: "3em", sortable: true },
+    _setFileTableData = (data = this.entities.fileTable.data) => {
+        const opsRender = () => `<i class="fa fa-external-link action-icon" action="locate"></i><i class="fa fa-trash-o action-icon" action="delete"></i>`
+        const isInPreview = this.entities.window.getAttribute("window-buttons").includes("fa-eye-slash")
+        const columns = [
+            { key: "idx", title: "No", width: "3em", sortable: true },
+            { key: "src", title: "Resources", width: "fit-content", sortable: true },
+            { key: "image", title: "Preview", sortable: true, ignore: !isInPreview, render: (rowData) => `<img src="${rowData.src}" />` },
+            { key: "operations", title: "Operations", width: "5.2em", render: opsRender }
+        ]
+        this.entities.fileTable.setData(data, { columns })
+    }
+
+    _setFolderTableData = (data = this.entities.folderTable.data) => {
+        const columns = [
+            { key: "idx", title: "No", width: "3em", sortable: true },
             { key: "src", title: "Resources", width: "fit-content", sortable: true },
         ]
-
-        if (file) {
-            const opsRender = () => `<i class="fa fa-external-link action-icon" action="locate"></i><i class="fa fa-trash-o action-icon" action="delete"></i>`
-            const isInPreview = this.entities.window.getAttribute("window-buttons").includes("fa-eye-slash")
-            const fileColumns = [...commonColumns]
-            if (isInPreview) {
-                fileColumns.push({ key: "image", title: "Preview", sortable: true, render: (rowData) => `<img src="${rowData.src}"/>` })
-            }
-            fileColumns.push({ key: "operations", title: "Ops", width: "4em", render: opsRender })
-            this.entities.fileTable.setData(getData(this.results.nonExistInFile), { columns: fileColumns })
-        }
-        if (folder) {
-            this.entities.folderTable.setData(getData(this.results.nonExistInFolder), { columns: commonColumns })
-        }
+        this.entities.folderTable.setData(data, { columns })
     }
 
-    _getOutput = (format = "obj") => {
-        const _obj = {
-            search_folder: this.utils.getMountFolder(),
-            resource_types: this.config.RESOURCE_GRAMMARS,
-            ignore_folders: this.config.IGNORE_FOLDERS,
-            resource_extensions: this.config.RESOURCE_EXT,
-            markdown_extensions: this.config.MARKDOWN_EXT,
-            resource_non_exist_in_file: [...this.results.nonExistInFile],
-            resource_non_exist_in_folder: [...this.results.nonExistInFolder],
-        }
-        const obj = () => _obj
-        const json = () => JSON.stringify(_obj, null, "\t")
-        const yaml = () => this.utils.stringifyYaml(_obj)
-        const toml = () => this.utils.stringifyToml(_obj)
-        const fn = { obj, json, yaml, toml }[format] || json
-        return fn()
-    }
+    _getConfig = () => ({
+        search_folder: this.utils.getMountFolder(),
+        resource_types: this.config.RESOURCE_GRAMMARS,
+        ignore_folders: this.config.IGNORE_FOLDERS,
+        resource_extensions: this.config.RESOURCE_EXT,
+        markdown_extensions: this.config.MARKDOWN_EXT,
+    })
 }
 
 class ResourceFinder {
@@ -205,6 +190,7 @@ class ResourceFinder {
         this.plugin = plugin
         this.utils = plugin.utils
         this.config = plugin.config
+        this.redirectPlugin = null
 
         // This regular expression is from `File.editor.brush.inline.rules.image`
         // Typora simplifies the image syntax from a context-free grammar to a regular grammar
@@ -213,13 +199,11 @@ class ResourceFinder {
 
         this.resourceExts = new Set(this.config.RESOURCE_EXT)
         this.markdownExts = new Set(this.config.MARKDOWN_EXT)
-
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            this.redirectPlugin = this.utils.getCustomPlugin("redirectLocalRootUrl")
-        })
     }
 
     run = async (dir = this.utils.getMountFolder()) => {
+        this.redirectPlugin = this.utils.getCustomPlugin("redirectLocalRootUrl")
+
         const results = { resourcesInFolder: new Set(), resourcesInFile: new Set() }
         const fileFilter = () => true
         const dirFilter = name => !this.config.IGNORE_FOLDERS.includes(name)
@@ -233,7 +217,10 @@ class ResourceFinder {
             }
         }
         await this.utils.walkDir(dir, fileFilter, dirFilter, paramsBuilder, callback)
-        return results
+
+        const notInFile = [...results.resourcesInFolder].filter(x => !results.resourcesInFile.has(x))
+        const notInFolder = [...results.resourcesInFile].filter(x => !results.resourcesInFolder.has(x))
+        return { notInFile, notInFolder }
     }
 
     _handleMarkdownFile = async (path, dir, results) => {

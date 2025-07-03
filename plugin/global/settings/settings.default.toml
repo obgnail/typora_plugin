@@ -1353,19 +1353,17 @@ WAIT_RECOVER_INTERVAL = 1000
 #   ICON: 按钮图标的 CSS class
 #       支持 Font Awesome 4.1.0 的图标，参考：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 #       例如: "fa fa-bomb"
-#   HINT: 鼠标悬停在按钮上时显示的功能提示
+#   HINT: 鼠标悬停在按钮上时显示的功能提示，填入任意字符串
 #   ON_INIT: 初始化函数字符串，此函数只在插件初始化时执行一次
 #       参数: plugin - 插件实例对象
-#       示例: "plu => console.log('custom fence button has init')"，不需要则置为空字符串 ""
+#       示例: plu => console.log('The button has been initialized')，不需要则置为空字符串 ""
 #   ON_RENDER: 渲染后回调函数字符串，每次页面渲染代码块时都会执行此函数
 #       参数: buttonElement - 按钮的 DOM 元素对象
-#       示例: "btn => console.log('btn has render')"，不需要则置为空字符串 ""
+#       示例: btn => console.log('The button has been rendered')，不需要则置为空字符串 ""
 #   ON_CLICK: 鼠标点击按钮时的回调函数字符串，点击时执行此函数
-#       参数: {ev, btn, cont, fence, cm, cid, plu}，分别表示：click 事件对象，按钮的 DOM 元素，代码块文本内容，代码块的 DOM 元素, CodeMirror实例对象，代码块的 CID，插件实例对象
-#       示例: "({ cont }) => console.log(cont)"。此项不可为空
-CUSTOM_BUTTONS = [
-    { DISABLE = true, ICON = "fa fa-bomb", HINT = "demo", ON_INIT = "", ON_RENDER = "", ON_CLICK = "({ cont }) => console.log(cont)" },
-]
+#       参数: { ev, btn, cont, fence, cm, cid, plu }，分别表示：click event，按钮的 DOM 元素，代码块内容，代码块的 DOM 元素, CodeMirror 实例对象，代码块 CID，插件实例对象
+#       示例: ({ ev, btn, cont, fence, cm, cid, plu }) => console.log('The button has been clicked')。此项不可为空
+CUSTOM_BUTTONS = []
 
 # ------------------- 快捷键功能 -------------------
 # 若置为 false，以下配置全部失效

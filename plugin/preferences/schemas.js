@@ -735,7 +735,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "toolBar",
             Text("MODAL_BACKGROUND_COLOR"),
-            Select("TOOLS", OPTIONS.text_stylize.TOOLS),
+            Select("TOOLS", OPTIONS.text_stylize.TOOLS, { minItems: 1 }),
         ),
         TableBox(
             "ACTION_HOTKEYS",

@@ -177,7 +177,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             line: { key: "line", title: this.i18n.t("$option.columns.line"), width: "4em", sortable: true },
             rule: { key: "rule", title: this.i18n.t("$option.columns.rule"), width: "5em", sortable: true },
             desc: { key: "desc", title: this.i18n.t("$option.columns.desc"), width: "fit-content", sortable: true },
-            ops: { key: "ops", title: this.i18n.t("$option.columns.ops"), width: "5.5em", render: optionsRender },
+            ops: { key: "ops", title: this.i18n.t("$option.columns.ops"), width: "5.2em", render: optionsRender },
         }
         const schema = {
             defaultSort: { key: sortKey, direction: "asc" },

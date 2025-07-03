@@ -7,6 +7,10 @@
     z-index: 9993;
 }
 
+#plugin-markdownlint::part(content-area) {
+    padding: 0;
+}
+
 .plugin-markdownlint-table-wrap {
     overflow: auto;
     flex-grow: 1;
@@ -19,8 +23,8 @@
     --odd-row-bg: #fff;
     --row-hover-bg: #eee;
     --action-gap: 0;
-    --padding-vertical: 5px;
-    --header-padding-vertical: 5px;
+    --padding-vertical: 4px;
+    --header-padding-vertical: 4px;
 }
 
 #plugin-markdownlint-button {
