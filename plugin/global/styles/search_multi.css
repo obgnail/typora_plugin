@@ -2,30 +2,30 @@
     top: 40px;
     right: 100px;
     width: 420px;
-    min-height: inherit;
+    min-height: initial;
 }
 
 body.unibody-window #plugin-search-multi {
     top: 65px;
 }
 
-.plugin-search-multi-wrap {
+#plugin-search-multi::part(content-area) {
     overflow: hidden;
 }
 
-#plugin-search-multi .search-result-title {
+#plugin-search-multi .plugin-search-counter {
     font-size: 10px;
     opacity: .8;
     line-height: 16px;
     height: 16px;
 }
 
-#plugin-search-multi-input-wrap {
+#plugin-search-multi-form {
     position: relative;
     margin: 6px 3px;
 }
 
-#plugin-search-multi-input-wrap input {
+#plugin-search-multi-form input {
     font-family: Arial;
     width: 100%;
     line-height: 28px;
@@ -37,14 +37,14 @@ body.unibody-window #plugin-search-multi {
     padding-right: 45px;
 }
 
-#plugin-search-multi-input-wrap svg {
+#plugin-search-multi-form svg {
     width: 20px;
     height: 15px;
     stroke: none;
     fill: currentColor
 }
 
-#plugin-search-multi-input-wrap .option-btn {
+#plugin-search-multi-form .plugin-search-multi-btn {
     border-radius: 6px;
     cursor: pointer;
     position: absolute;
@@ -55,13 +55,13 @@ body.unibody-window #plugin-search-multi {
     padding: 3px 4px;
 }
 
-#plugin-search-multi-input-wrap .option-btn.select,
-#plugin-search-multi-input-wrap .option-btn:hover {
+#plugin-search-multi-form .plugin-search-multi-btn.select,
+#plugin-search-multi-form .plugin-search-multi-btn:hover {
     background: var(--active-file-bg-color);
     color: var(--active-file-text-color);
 }
 
-.plugin-search-multi-item {
+.plugin-search-item {
     display: block;
     font-size: 14px;
     height: 40px;
@@ -69,8 +69,8 @@ body.unibody-window #plugin-search-multi {
     overflow: hidden;
 }
 
-.plugin-search-multi-item:hover,
-.plugin-search-multi-item.active {
+.plugin-search-item:hover,
+.plugin-search-item.active {
     background-color: var(--active-file-bg-color);
     border-color: var(--active-file-text-color);
     color: var(--active-file-text-color);
@@ -78,7 +78,7 @@ body.unibody-window #plugin-search-multi {
     border-radius: 6px;
 }
 
-.plugin-search-multi-item-title {
+.plugin-search-item-title {
     line-height: 24px;
     max-height: 24px;
     overflow: hidden
@@ -90,7 +90,7 @@ body.unibody-window #plugin-search-multi {
     margin-left: 6px;
 }
 
-.plugin-search-multi-result .search-result-list {
+.plugin-search-multi-result .plugin-search-files {
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
@@ -99,7 +99,7 @@ body.unibody-window #plugin-search-multi {
     scroll-padding: 40px;
 }
 
-.plugin-search-multi-item-path {
+.plugin-search-item-path {
     opacity: .5;
     font-size: 11px;
     margin-top: -4px;
@@ -110,7 +110,7 @@ body.unibody-window #plugin-search-multi {
     line-height: 14px
 }
 
-.plugin-search-multi-info-item {
+.plugin-search-multi-searching {
     opacity: .7;
     font-size: 12px;
     line-height: 40px;
@@ -120,15 +120,15 @@ body.unibody-window #plugin-search-multi {
 
 ${colors_style}
 
-.plugin-highlight-multi-result {
+.plugin-search-highlights {
     display: inline-flex;
     flex-wrap: wrap;
     align-content: flex-start;
     max-width: 100%;
-    margin-top: 2px;
+    margin: 2px -3px 0;
 }
 
-.plugin-highlight-multi-result-item {
+.plugin-highlight-item {
     font-family: Arial;
     font-size: 14px;
     margin: 3px;
@@ -141,16 +141,16 @@ ${colors_style}
     user-select: none;
 }
 
-.plugin-highlight-multi-result-item:hover {
+.plugin-highlight-item:hover {
     filter: brightness(1.07);
 }
 
-.plugin-highlight-multi-outline {
+.plugin-highlight-outline {
     outline: 4px solid #FF7B00;
     text-decoration: blink;
 }
 
-.plugin-highlight-multi-bar {
+.plugin-highlight-bar {
     display: inline;
     position: absolute;
     left: 0;

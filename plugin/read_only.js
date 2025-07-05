@@ -19,11 +19,14 @@ class readOnlyPlugin extends BasePlugin {
         const setInput = disabled => {
             if (!disabled) return;
             [
-                "#plugin-search-multi-input-wrap input", "#plugin-commander-form input",
-                "#plugin-toolbar-input input", "#typora-quick-open-input input",
+                "#plugin-search-multi-form input",
+                "#plugin-commander-form input",
+                "#plugin-toolbar-form input",
+                "#plugin-ripgrep-form input",
+                "#typora-quick-open-input input",
             ].forEach(selector => {
-                const input = document.querySelector(selector);
-                input && input.removeAttribute("readonly");
+                const input = document.querySelector(selector)
+                if (input) input.removeAttribute("readonly")
             })
         }
         const setReplaceButton = disabled => {

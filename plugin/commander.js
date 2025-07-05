@@ -183,7 +183,7 @@ class commanderPlugin extends BasePlugin {
             }
         }
         this._refreshModal(cmd, shell)
-        this.utils.Package.ChildProcess.exec(command, options_, callback_)
+        require("child_process").exec(command, options_, callback_)
     }
     _spawn = ({ cmd, shell, options = {}, callback = null }) => {
         const command = this._getCommand(cmd, shell);
@@ -196,7 +196,7 @@ class commanderPlugin extends BasePlugin {
         const callback_ = code => callback && callback(code);
 
         this._refreshModal(cmd, shell);
-        const child = this.utils.Package.ChildProcess.spawn(command, options_);
+        const child = require("child_process").spawn(command, options_)
         child.stdout.on("data", resolve);
         child.stderr.on("data", reject);
         child.on("close", callback_);

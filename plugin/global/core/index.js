@@ -9,25 +9,28 @@ async function entry() {
      * Initializes global variables.
      * The plugin system exposes the following global variables, but only 3 are actually useful: BasePlugin, BaseCustomPlugin, and LoadPlugins.
      * The remaining variables are exposed by the static class `utils` and should never be referenced by business plugins.
-     * Furthermore, `utils` is also an instance property of BasePlugin and BaseCustomPlugin, so `utils` itself doesn't need to be exposed.
+     * Furthermore, `utils` is an instance property of BasePlugin and BaseCustomPlugin, so `utils` itself doesn't need to be exposed.
      * Since they will never be referenced by business plugins, why are they set as global variables? Answer: For debugging convenience.
      **/
     const initGlobalVars = settings => {
-        // "global" is a general setting, not a plugin setting
+        // "global" is a general setting, not a specific plugin setting
         Object.defineProperty(settings, "global", { enumerable: false })
 
         global.BasePlugin = BasePlugin
         global.BaseCustomPlugin = BaseCustomPlugin
         global.LoadPlugins = LoadPlugins
-        global.__plugins__ = null
+        global.__base_plugins__ = null
+        global.__plugin_settings__ = settings
         global.__plugin_utils__ = utils
         global.__plugin_i18n__ = i18n
-        global.__plugin_settings__ = settings
     }
+
+    const initI18N = async locate => i18n.init(locate)
 
     const loadPlugins = async () => {
         const { enable, disable, stop, error, nosetting } = await LoadPlugins(global.__plugin_settings__)
-        global.__plugins__ = enable
+        // Ignore all plugins that cannot function properly
+        global.__base_plugins__ = enable
     }
 
     /** For Typora versions below 0.9.98, a compatibility warning is issued when running the plugin system. */
@@ -41,14 +44,15 @@ async function entry() {
 
     const settings = await utils.settings.readBasePluginSettings()
     const enable = settings && settings.global && settings.global.ENABLE
-    if (enable) {
-        initGlobalVars(settings)
-        await i18n.init(settings.global.LOCALE)
-        await hook(loadPlugins)
-        warn()
-    } else {
+    if (!enable) {
         console.warn("typora plugin disabled")
+        return
     }
+
+    initGlobalVars(settings)
+    await initI18N(settings.global.LOCALE)
+    await hook(loadPlugins)
+    warn()
 }
 
 module.exports = {

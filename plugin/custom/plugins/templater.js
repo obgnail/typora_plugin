@@ -5,6 +5,21 @@ class templaterPlugin extends BaseCustomPlugin {
 
     hotkey = () => [this.config.hotkey]
 
+    process = () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+            const { template_folders, template } = this.config
+            const { Path: { extname }, Fs: { promises: { readFile } } } = this.utils.Package
+
+            if (!template_folders || template_folders.length === 0) return
+
+            const fileFilter = (path) => extname(path).toLowerCase() === ".md"
+            const dirFilter = () => true
+            const paramsBuilder = async (path, file) => ({ file, content: (await readFile(path)).toString() })
+            const callback = ({ file, content }) => template.push({ name: file.replace(/\.md$/i, ""), text: content })
+            template_folders.forEach(dir => this.utils.walkDir(dir, fileFilter, dirFilter, paramsBuilder, callback).catch(console.error))
+        })
+    }
+
     callback = async anchorNode => {
         const defaultTpl = this.config.template[0]
         const templates = Object.fromEntries(this.config.template.map(tpl => [tpl.name, tpl.name]))

@@ -18,19 +18,12 @@ class Highlighter {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.utils.debounce(() => {
             const isShow = !this.plugin.entities.window.hidden
             if (isShow) {
-                this.plugin.highlightMultiByAST()
+                this.plugin.highlightByAST()
             }
         }, 1000))
 
-        this.utils.entities.eContent.addEventListener("mousedown", ev => {
-            const shouldClear = this.searchStatus.hits.length && !ev.target.closest("#plugin-search-multi")
-            if (shouldClear) {
-                this.clearSearch()
-            }
-        }, true)
-
-        document.querySelector(".plugin-highlight-multi-result").addEventListener("mousedown", ev => {
-            const target = ev.target.closest(".plugin-highlight-multi-result-item")
+        document.querySelector(".plugin-search-highlights").addEventListener("mousedown", ev => {
+            const target = ev.target.closest(".plugin-highlight-item")
             if (!target) return
             const className = [...target.classList.values()].find(e => e.startsWith("cm-plugin-highlight-hit"))
             if (!className) return
@@ -72,6 +65,7 @@ class Highlighter {
                 if (!ok) break
             }
         }
+        this._registerAutoClearSearch()
         return this.searchStatus.hitGroups
     }
 
@@ -118,14 +112,25 @@ class Highlighter {
         return currentPos
     }
 
+    _registerAutoClearSearch = () => {
+        document.addEventListener("mousedown", ev => {
+            if (this.searchStatus.hits.length === 0) return
+            if (ev.target.closest("#plugin-search-multi")) {
+                this._registerAutoClearSearch()
+            } else {
+                this.clearSearch()
+            }
+        }, { capture: true, once: true })
+    }
+
     _highlightMarker = marker => {
-        document.querySelectorAll(".plugin-highlight-multi-outline").forEach(ele => ele.classList.remove("plugin-highlight-multi-outline"))
-        marker.classList.add("plugin-highlight-multi-outline")
+        document.querySelectorAll(".plugin-highlight-outline").forEach(ele => ele.classList.remove("plugin-highlight-outline"))
+        marker.classList.add("plugin-highlight-outline")
 
         const writeRect = this.utils.entities.eWrite.getBoundingClientRect()
         const markerRect = marker.getBoundingClientRect()
         const bar = document.createElement("div")
-        bar.className = "plugin-highlight-multi-bar"
+        bar.className = "plugin-highlight-bar"
         bar.style.height = markerRect.height + "px"
         bar.style.width = writeRect.width + "px"
         marker.appendChild(bar)
@@ -135,8 +140,7 @@ class Highlighter {
     clearSearch = () => {
         if (this.isClosed()) return
 
-        console.debug("clear search")
-        this.utils.entities.querySelectorAllInWrite(".plugin-highlight-multi-bar").forEach(e => this.utils.removeElement(e))
+        this.utils.entities.querySelectorAllInWrite(".plugin-highlight-bar").forEach(e => this.utils.removeElement(e))
         if (File.editor.sourceView.inSourceMode) {
             if (this.searchStatus && this.searchStatus.hits.length) {
                 File.editor.fences.clearSearchAll()

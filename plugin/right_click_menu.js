@@ -47,7 +47,7 @@ class rightClickMenuPlugin extends BasePlugin {
         const findLostPluginsIfNeed = () => {
             if (!this.config.FIND_LOST_PLUGINS) return
 
-            const plugins = new Map(Object.entries(this.utils.getAllPlugins()))
+            const plugins = new Map(Object.entries(this.utils.getAllBasePlugins()))
             this.config.MENUS.forEach(menu => menu.LIST.forEach(p => plugins.delete(p)))
             const lostPlugins = [...plugins.values()].map(p => p.fixedName)
             this.config.MENUS.at(-1).LIST.push(...lostPlugins)
@@ -75,7 +75,7 @@ class rightClickMenuPlugin extends BasePlugin {
                     return { ele: "li", className: "divider" }
                 }
                 const [fixedName, action] = item.split(".")
-                const plugin = this.utils.getPlugin(fixedName)
+                const plugin = this.utils.getBasePlugin(fixedName)
                 if (plugin) {
                     return action ? LiWithAction(plugin, action) : Li(plugin)
                 }
@@ -90,7 +90,7 @@ class rightClickMenuPlugin extends BasePlugin {
         const templates = this.config.MENUS.flatMap(({ LIST = [] }, idx) => {
             return LIST
                 .filter(item => item !== this.dividerValue)
-                .map(item => this.utils.getPlugin(item))
+                .map(item => this.utils.getBasePlugin(item))
                 .filter(plugin => plugin && (plugin.staticActions || plugin.getDynamicActions))
                 .map(plugin => {
                     const children = (plugin.staticActions || []).map(act => this._thirdLiTemplate(act))
@@ -248,7 +248,7 @@ class rightClickMenuPlugin extends BasePlugin {
             if (action) {
                 that.callPluginDynamicAction(fixedName, action)
             } else {
-                const plugin = that.utils.getPlugin(fixedName)
+                const plugin = that.utils.getBasePlugin(fixedName)
                 // If there is a third level menu, clicking the second level menu is not allowed.
                 if (!plugin || plugin.staticActions || plugin.getDynamicActions) {
                     return false

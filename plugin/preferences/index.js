@@ -155,7 +155,7 @@ class preferencesPlugin extends BasePlugin {
     _getAllPlugins = () => {
         const names = [
             "global",
-            ...Object.keys(this.utils.getAllPluginSettings()),
+            ...Object.keys(this.utils.getAllBasePluginSettings()),
             ...Object.keys(this.utils.getAllCustomPluginSettings())
         ]
         const plugins = names
@@ -169,7 +169,7 @@ class preferencesPlugin extends BasePlugin {
     }
 
     _getSettings = async (fixedName) => {
-        const isBase = this.utils.getPluginSetting(fixedName)
+        const isBase = this.utils.getBasePluginSetting(fixedName)
         const fn = isBase ? "readBasePluginSettings" : "readCustomPluginSettings"
         const settings = await this.utils.settings[fn]()
         return settings[fixedName]
@@ -281,7 +281,7 @@ class preferencesPlugin extends BasePlugin {
 
     /** Callback functions for type="action" fields in schema */
     _initActionHandlers = () => {
-        const consecutive = (onConfirmed) => this.utils.createConsecutiveAction({ threshold: 3, timeWindow: 2000, onConfirmed })
+        const consecutive = (onConfirmed) => this.utils.createConsecutiveAction({ threshold: 3, timeWindow: 3000, onConfirmed })
 
         this.ACTION_HANDLERS = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
@@ -324,7 +324,7 @@ class preferencesPlugin extends BasePlugin {
                 await this.utils.formDialog.modal(op)
             },
             updatePlugin: async () => {
-                const updater = this.utils.getPlugin("updater")
+                const updater = this.utils.getBasePlugin("updater")
                 if (!updater) {
                     const plugin = this.i18n._t("updater", "pluginName")
                     const msg = this.i18n._t("global", "error.pluginDisabled", { plugin })
@@ -469,12 +469,12 @@ class preferencesPlugin extends BasePlugin {
                 }
             },
             "markmap.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD": (field, data) => {
-                if (!this.utils.getPlugin("collapse_paragraph")) {
+                if (!this.utils.getBasePlugin("collapse_paragraph")) {
                     _incompatibleSwitch(field, data, this.i18n._t("markmap", "$tooltip.experimental"))
                 }
             },
             "reopenClosedFiles.enable": (field, data) => {
-                if (!this.utils.getPlugin("window_tab")) {
+                if (!this.utils.getBasePlugin("window_tab")) {
                     _incompatibleSwitch(field, data, this.i18n._t("reopenClosedFiles", "$tooltip.dependOnWindowTab"))
                 }
             },

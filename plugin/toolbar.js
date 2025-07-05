@@ -15,82 +15,57 @@ class toolbarPlugin extends BasePlugin {
             .join("\n")
         return `
             <div id="plugin-toolbar" class="plugin-common-modal plugin-common-hidden">
-                <div id="plugin-toolbar-input"><input placeholder="plu multi" title="${title}"></div>
+                <form id="plugin-toolbar-form"><input placeholder="plu image" title="${title}"></form>
                 <div class="plugin-toolbar-result"></div>
             </div>`
     }
 
     init = () => {
-        this.canInput = true;
-
         this.entities = {
             content: this.utils.entities.eContent,
             toolbar: document.querySelector("#plugin-toolbar"),
-            input: document.querySelector("#plugin-toolbar-input input"),
-            result: document.querySelector("#plugin-toolbar .plugin-toolbar-result")
+            form: document.querySelector("#plugin-toolbar-form"),
+            input: document.querySelector("#plugin-toolbar-form input"),
+            result: document.querySelector(".plugin-toolbar-result"),
         }
 
-        this.search = this.utils.debounce(async ev => {
+        this.search = this.utils.debounce(async () => {
             const result = await this.toolController.handleInput();
             const ok = result && result.matches && result.tool;
             this.entities.result.innerHTML = ok ? this._newItems(result).join("") : "";
-            if (ev) {
-                ev.preventDefault();
-                ev.stopPropagation();
-            }
         }, this.config.DEBOUNCE_INTERVAL)
     }
 
     process = () => {
+        this.entities.form.addEventListener("submit", ev => {
+            ev.preventDefault()
+            const item = this.entities.result.querySelector(".plugin-toolbar-item.active") || (this.entities.result.childElementCount === 1 && this.entities.result.firstChild)
+            if (item) {
+                this._callTool(item)
+            }
+        })
         this.entities.input.addEventListener("keydown", ev => {
-            switch (ev.key) {
-                case "Enter":
-                    const select = this.entities.result.querySelector(".plugin-toolbar-item.active")
-                        || (this.entities.result.childElementCount === 1 && this.entities.result.firstChild);
-                    if (select) {
-                        this._callTool(select, ev);
-                    }
-                    break
-                case "ArrowUp":
-                case "ArrowDown":
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    this.utils.scrollActiveItem(this.entities.result, ".plugin-toolbar-item.active", ev.key === "ArrowDown");
-                    break
-                case "Escape":
-                case "Backspace":
-                    if (ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value)) {
-                        ev.stopPropagation();
-                        ev.preventDefault();
-                        this.hide();
-                    }
-                    break
+            if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
+                this.utils.scrollActiveItem(this.entities.result, ".plugin-toolbar-item.active", ev.key === "ArrowDown")
+            } else if (ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value)) {
+                this.hide()
             }
         })
 
-        this.entities.input.addEventListener("input", ev => this.canInput && this.search(ev))
+        let canInput = true
+        this.entities.input.addEventListener("input", () => canInput && this.search())
+        this.entities.input.addEventListener("compositionstart", () => canInput = false, true)
+        this.entities.input.addEventListener("compositionend", async () => {
+            canInput = true
+            await this.search()
+        })
 
         this.entities.result.addEventListener("click", ev => {
-            const target = ev.target.closest(".plugin-toolbar-item");
-            target && this._callTool(target, ev);
-        });
-
-        if (this.config.AUTO_HIDE) {
-            this.entities.content.addEventListener("click", ev => {
-                const needHide = this.utils.isShow(this.entities.toolbar) && !ev.target.closest("#plugin-toolbar")
-                if (needHide) {
-                    this.hide()
-                }
-            })
-        }
-
-        if (this.config.PAUSE_ON_COMPOSITION) {
-            this.entities.input.addEventListener("compositionstart", () => this.canInput = false, true);
-            this.entities.input.addEventListener("compositionend", async () => {
-                this.canInput = true;
-                await this.search();
-            });
-        }
+            const target = ev.target.closest(".plugin-toolbar-item")
+            if (target) {
+                this._callTool(target)
+            }
+        })
     }
 
     call = () => {
@@ -103,11 +78,18 @@ class toolbarPlugin extends BasePlugin {
         })
     }
 
-    _callTool = (target, ev) => {
-        if (ev) {
-            ev.preventDefault()
-            ev.stopPropagation()
-        }
+    _registerAutoHide = () => {
+        document.addEventListener("click", ev => {
+            if (this.utils.isHidden(this.entities.toolbar)) return
+            if (ev.target.closest("#plugin-toolbar")) {
+                this._registerAutoHide()
+            } else {
+                this.hide()
+            }
+        }, { once: true })
+    }
+
+    _callTool = (target) => {
         const { tool, value, meta } = target.dataset
         this.toolController.callback(tool, value, meta)
         if (tool === "func") {
@@ -141,6 +123,7 @@ class toolbarPlugin extends BasePlugin {
         this.utils.show(this.entities.toolbar);
         this.entities.input.select();
         await this.search();
+        this._registerAutoHide()
     }
 
     hide = () => {
@@ -307,7 +290,7 @@ class tabTool extends baseToolInterface {
     translate = () => this.i18n.t("tool.tab")
     icon = () => "📖"
     init = () => {
-        const callback = () => this.windowTabPlugin = this.utils.getPlugin("window_tab")
+        const callback = () => this.windowTabPlugin = this.utils.getBasePlugin("window_tab")
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, callback)
     }
     search = async input => {
@@ -324,7 +307,7 @@ class pluginTool extends baseToolInterface {
     translate = () => this.i18n.t("tool.plu")
     icon = () => "🔌"
     collectAll = () => {
-        return Object.entries(this.utils.getAllPlugins())
+        return Object.entries(this.utils.getAllBasePlugins())
             .filter(([_, plugin]) => plugin.call)
             .flatMap(([fixedName, plugin]) => {
                 const chineseName = plugin.pluginName
@@ -422,7 +405,9 @@ class operationTool extends baseToolInterface {
     search = async input => this.baseSearch(input, this.ops, ["showName"])
     callback = (fixedName, meta) => {
         const op = this.ops.find(ele => ele.fixedName === fixedName)
-        op && op.callback(meta)
+        if (op) {
+            op.callback(meta)
+        }
     }
 }
 
@@ -442,18 +427,18 @@ class modeTool extends baseToolInterface {
             { fixedName: "typewriterMode", callback: () => File.editor.toggleTypeWriterMode() },
         ]
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            const readonly = this.utils.getPlugin("read_only");
-            const blur = this.utils.getPlugin("blur");
-            const dark = this.utils.getPlugin("dark");
-            const noImage = this.utils.getPlugin("no_image");
-            const image = this.utils.getCustomPlugin("imageReviewer");
+            const readonly = this.utils.getBasePlugin("read_only")
+            const blur = this.utils.getBasePlugin("blur")
+            const dark = this.utils.getBasePlugin("dark")
+            const noImage = this.utils.getBasePlugin("no_image")
+            const image = this.utils.getCustomPlugin("imageReviewer")
 
-            readonly && this.modes.push({ fixedName: "readOnlyMode", callback: () => readonly.call() });
-            blur && this.modes.push({ fixedName: "blurMode", callback: () => blur.call() });
-            dark && this.modes.push({ fixedName: "dark", callback: () => dark.call() });
-            image && this.modes.push({ fixedName: "imageReviewer", callback: () => image.callback() });
-            noImage && this.modes.push({ fixedName: "no_image", callback: () => noImage.call() });
-            this.modes.push({ fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools") });
+            if (readonly) this.modes.push({ fixedName: "readOnlyMode", callback: () => readonly.call() })
+            if (blur) this.modes.push({ fixedName: "blurMode", callback: () => blur.call() })
+            if (dark) this.modes.push({ fixedName: "dark", callback: () => dark.call() })
+            if (image) this.modes.push({ fixedName: "imageReviewer", callback: () => image.callback() })
+            if (noImage) this.modes.push({ fixedName: "no_image", callback: () => noImage.call() })
+            this.modes.push({ fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools") })
 
             this.modes.forEach(mode => {
                 const name = this.i18n.t("tool.mode." + mode.fixedName)
@@ -464,7 +449,9 @@ class modeTool extends baseToolInterface {
     search = async input => this.baseSearch(input, this.modes, ["showName"])
     callback = (fixedName, meta) => {
         const mode = this.modes.find(ele => ele.fixedName === fixedName);
-        mode && mode.callback(meta);
+        if (mode) {
+            mode.callback(meta)
+        }
     }
 }
 
@@ -506,10 +493,9 @@ class functionTool extends baseToolInterface {
     icon = () => "💡"
     search = async input => {
         const blank = "\u00A0".repeat(3)
-        const all = Array.from(this.controller.tools.entries(), ([name, tool]) => ({
-            showName: tool.icon() + blank + name + " - " + tool.translate(),
-            fixedName: name
-        }))
+        const all = [...this.controller.tools.entries()].map(([name, tool]) => {
+            return { showName: tool.icon() + blank + name + " - " + tool.translate(), fixedName: name }
+        })
         return this.baseSearch(input, all, ["showName"])
     }
     callback = fixedName => {
@@ -530,7 +516,9 @@ class mixTool extends baseToolInterface {
             .filter(([name]) => name !== toolName)
             .map(async ([name, tool]) => {
                 const result = await tool.search(input)
-                if (!result) return []
+                if (!result) {
+                    return []
+                }
                 return result.map(ele => {
                     const meta = `${name}@${ele.meta || ""}`
                     const item = typeof ele === "string" ? { showName: ele, fixedName: ele, meta } : { ...ele, meta }
@@ -546,7 +534,9 @@ class mixTool extends baseToolInterface {
         const tool = meta.slice(0, at)
         const realMeta = meta.slice(at + 1)
         const t = this.controller.tools.get(tool)
-        t && t.callback(fixedName, realMeta)
+        if (t) {
+            t.callback(fixedName, realMeta)
+        }
     }
 }
 

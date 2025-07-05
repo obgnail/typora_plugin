@@ -95,7 +95,7 @@ class diagramParser {
         }
 
         const isClickBtn = this.exitInteractiveStrategies.length === 1 && this.exitInteractiveStrategies[0] === "click_exit_button";
-        const hasPlugin = this.utils.getPlugin("fence_enhance");
+        const hasPlugin = this.utils.getBasePlugin("fence_enhance")
         if (!hasPlugin && isClickBtn) {
             for (const p of this.parsers.values()) {
                 p.interactiveMode = false;

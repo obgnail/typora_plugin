@@ -14,7 +14,7 @@ class resizeTablePlugin extends BasePlugin {
     call = action => action === "record_resize_state" && this.toggleRecorder()
 
     onResize = () => {
-        this.utils.entities.eWrite.addEventListener("mousedown", ev => {
+        this.utils.entities.eContent.addEventListener("mousedown", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
             ev.stopPropagation();
             ev.preventDefault();

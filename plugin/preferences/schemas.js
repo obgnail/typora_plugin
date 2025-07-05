@@ -370,15 +370,10 @@ const SETTING_SCHEMAS = {
             Range("TOOLBAR_WIDTH_PERCENT", { min: 0, max: 100, step: 1 }),
         ),
         TitledBox(
-            "windowInteraction",
-            Switch("AUTO_HIDE"),
-            Switch("BACKSPACE_TO_HIDE"),
-        ),
-        TitledBox(
             "input",
             Select("DEFAULT_TOOL", OPTIONS.toolbar.DEFAULT_TOOL),
             Switch("USE_NEGATIVE_SEARCH"),
-            Switch("PAUSE_ON_COMPOSITION", { tooltip: "pauseOnComposition" }),
+            Switch("BACKSPACE_TO_HIDE"),
             Number("DEBOUNCE_INTERVAL", { unit: UNITS.millisecond, min: 0 }),
         ),
         handleSettingsBox,
@@ -1280,6 +1275,7 @@ const SETTING_SCHEMAS = {
                 text: "",
             },
         ),
+        ArrayBox("template_folders"),
         handleSettingsBox,
     ],
     chineseSymbolAutoPairer: [

@@ -11,7 +11,7 @@ class settings {
         return exist ? homeSettingPath : this.getOriginSettingPath(settingFile)
     }
     getSettingFileName = (fixedName) => {
-        if (this.utils.getPluginSetting(fixedName)) {
+        if (this.utils.getBasePluginSetting(fixedName)) {
             return "settings.user.toml"
         } else if (this.utils.getCustomPluginSetting(fixedName)) {
             return "custom_plugin.user.toml"

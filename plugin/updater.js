@@ -272,7 +272,7 @@ class ProxyGetter {
     }
 
     _getProxy = (cmd, func) => new Promise(resolve => {
-        this.utils.Package.ChildProcess.exec(cmd, (err, stdout, stderr) => {
+        require("child_process").exec(cmd, (err, stdout, stderr) => {
             const result = (err || stderr) ? null : func(stdout);
             resolve(result);
         })

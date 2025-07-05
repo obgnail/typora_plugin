@@ -1,6 +1,5 @@
 const PATH = require("path")
 const FS = require("fs")
-const CHILD_PROCESS = require("child_process")
 const FS_EXTRA = require("fs-extra")
 const { i18n } = require("../i18n")
 
@@ -13,32 +12,31 @@ class utils {
     static typoraVersion = window._options.appVersion
     static isBetaVersion = this.typoraVersion[0] === "0"
 
-    static supportHasSelector = CSS.supports("selector(:has(*))")
     static separator = File.isWin ? "\\" : "/"
+    static supportHasSelector = CSS.supports("selector(:has(*))")
     static tempFolder = window._options.tempPath || require("os").tmpdir()
+    static Package = Object.freeze({ Path: PATH, Fs: FS, FsExtra: FS_EXTRA })
+
     static nonExistSelector = "__non_exist__"                 // Plugin temporarily unavailable, return this.
     static disableForeverSelector = "__disabled__"            // Plugin permanently unavailable, return this.
     static stopLoadPluginError = new Error("stopLoadPlugin")  // For plugin's beforeProcess method; return this to stop loading the plugin.
-    static uniqueObject = Symbol("unique")
-    static Package = Object.freeze({
-        Path: PATH,
-        Fs: FS,
-        FsExtra: FS_EXTRA,
-        ChildProcess: CHILD_PROCESS,
-    })
+
+    // Do NOT manually call these variables
+    static _sentinel = Symbol()  // As a sentinel value
+    static _meta = {}            // Used to pass data in the context menu
 
     ////////////////////////////// plugin //////////////////////////////
-    static getAllPlugins = () => global.__plugins__
-    static getAllCustomPlugins = () => global.__plugins__.custom && global.__plugins__.custom.plugins
-    static getPlugin = fixedName => global.__plugins__[fixedName]
-    static getCustomPlugin = fixedName => global.__plugins__.custom && global.__plugins__.custom.plugins[fixedName]
-    static getAllPluginSettings = () => global.__plugin_settings__
-    static getAllCustomPluginSettings = () => (global.__plugins__.custom && global.__plugins__.custom.pluginsSettings) || {}
+    static getAllBasePlugins = () => global.__base_plugins__
+    static getAllCustomPlugins = () => global.__base_plugins__.custom && global.__base_plugins__.custom.plugins
+    static getBasePlugin = fixedName => global.__base_plugins__[fixedName]
+    static getCustomPlugin = fixedName => global.__base_plugins__.custom && global.__base_plugins__.custom.plugins[fixedName]
+    static getAllBasePluginSettings = () => global.__plugin_settings__
+    static getAllCustomPluginSettings = () => (global.__base_plugins__.custom && global.__base_plugins__.custom.pluginsSettings) || {}
     static getGlobalSetting = name => global.__plugin_settings__.global[name]
-    static getPluginSetting = fixedName => global.__plugin_settings__[fixedName]
+    static getBasePluginSetting = fixedName => global.__plugin_settings__[fixedName]
     static getCustomPluginSetting = fixedName => this.getAllCustomPluginSettings()[fixedName]
-    static tryGetPlugin = fixedName => this.getPlugin(fixedName) || this.getCustomPlugin(fixedName)
-    static tryGetPluginSetting = fixedName => this.getAllPluginSettings()[fixedName] || this.getAllCustomPluginSettings()[fixedName]
+    static tryGetPlugin = fixedName => this.getBasePlugin(fixedName) || this.getCustomPlugin(fixedName)
+    static tryGetPluginSetting = fixedName => this.getAllBasePluginSettings()[fixedName] || this.getAllCustomPluginSettings()[fixedName]
 
     static getPluginFunction = (fixedName, func) => {
         const plugin = this.tryGetPlugin(fixedName);
@@ -91,9 +89,8 @@ class utils {
             func(target[0])
         }
     }
-    static _meta = {} // Used to pass data in the context menu; do not manually call this variable.
     static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
-        const plugin = this.getPlugin(fixedName)
+        const plugin = this.getBasePlugin(fixedName)
         if (plugin && plugin.getDynamicActions instanceof Function) {
             anchorNode = anchorNode || this.getAnchorNode()
             const anchor = anchorNode[0]
@@ -104,7 +101,7 @@ class utils {
         }
     }
     static callPluginDynamicAction = (fixedName, action) => {
-        const plugin = this.getPlugin(fixedName)
+        const plugin = this.getBasePlugin(fixedName)
         if (plugin && plugin.call instanceof Function) {
             plugin.call(action, this._meta)
         }
@@ -182,10 +179,10 @@ class utils {
 
     /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static once = fn => {
-        let cache = this.uniqueObject
+        let cache = this._sentinel
         const isAsync = this.isAsyncFunction(fn)
         return function (...args) {
-            if (cache === utils.uniqueObject) {
+            if (cache === utils._sentinel) {
                 cache = isAsync
                     ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
                     : fn(...args)

@@ -170,12 +170,11 @@ All plugins provide four usage methods:
 
 Function: Search through a combination of different conditions to accurately find files.
 
-- `Open search box`: ctrl + shift + P
-- `Close search box`: Position the cursor in the input box, type esc
-- `Search`: enter
-- `Select`: ArrowUp, ArrowDown
-- `Open`: click, ctrl + enter
-- `Move position`: ctrl + drag the input box
+Usage:
+
+- Method 1: Right-click menu -> Often Used Plugins -> Multi-Fields File Searcher
+- Method 2: Shortcut key `ctrl+shift+P`
+
 
 Usage example: The search syntax is similar to Google search syntax and supports regular expressions.
 
@@ -273,9 +272,7 @@ Usage:
 
 Function: Similar to Total Commander's command line, a tool for quickly executing commands and providing minimal interaction.
 
-- `Pop up the execution box`: Right-click menu -> Often Used Plugins -> Command Line Environment
-- `Close the execution box`: esc
-- `Move position`: ctrl + drag the input box
+Usage: Right-click menu -> Often Used Plugins -> Command Line Environment
 
 Supported shells:
 

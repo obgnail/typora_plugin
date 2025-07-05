@@ -8,7 +8,7 @@ class reopenClosedFilesPlugin extends BaseCustomPlugin {
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, async () => {
-            this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
+            this.windowTabBarPlugin = this.utils.getBasePlugin("window_tab")
             if (!this.windowTabBarPlugin) return;
             await this.ensureFile();
             if (this.config.auto_reopen_when_init) {

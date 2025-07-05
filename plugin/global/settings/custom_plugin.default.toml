@@ -839,8 +839,8 @@ hotkey = ""
 auto_open = true
 
 # ------------------- 自定义模板变量 -------------------
-#  除了内置的模板变量，还可以自定义模板变量（高级配置，需要一定的 JavaScript 基础）
-#  每个模板变量配置包含以下属性
+# 除了内置的模板变量，还可以自定义模板变量（高级配置，需要一定的 JavaScript 基础）
+# 每个模板变量配置包含以下属性
 #   - enable:   是否启用此模板变量
 #   - name:     模板变量名（必须唯一）
 #   - callback: 回调函数的字符串，此函数将返回此模板变量的值
@@ -850,6 +850,12 @@ template_variables = [
     { enable = false, name = "sumList", callback = "args => args.reduce((x, y) => x + y, 0)" },
     { enable = false, name = "contact", callback = "(...args) => args.join('-')" },
 ]
+
+# ------------------- 模板目录 -------------------
+# 除了下面写在 template 选项的模板，还可以指定模板目录，插件将递归寻找目录中的 md 文件，加入到模板中
+# 这些模板文件将以文件名为模板名称，以文件内容为模板内容。注意转义反斜杠。
+#   示例：["D:\\tmp\\templates"]
+template_folders = []
 
 # ------------------- 如何在模板里使用变量 -------------------
 # 在模板中使用变量的方式与 JavaScript 中调用函数基本一致，有两点不同
@@ -1550,7 +1556,7 @@ buttons = [
     #   在光标处插入 javascript 代码块
     { disable = true, coordinate = [4, 1], size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertFence("javascript")' },
     #   打开 Windows 计算器
-    { disable = true, coordinate = [5, 0], size = "17px", icon = "ion-bug", evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')" },
+    { disable = true, coordinate = [5, 0], size = "17px", icon = "ion-bug", evil = "() => require('child_process').exec('cmd /C calc')" },
     #   打开网址
     { disable = true, coordinate = [5, 1], size = "17px", icon = "ion-alert", evil = "() => this.utils.openUrl('https://github.com/obgnail/typora_plugin')" },
 ]

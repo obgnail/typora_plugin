@@ -3,10 +3,10 @@ class ripgrepPlugin extends BasePlugin {
 
     html = () => `
         <div id="plugin-ripgrep" class="plugin-common-modal plugin-common-hidden"> 
-            <div id="plugin-ripgrep-form">
+            <form id="plugin-ripgrep-form">
                 <div class="plugin-ripgrep-prefix"><b>rg</b></div>
                 <input type="text" placeholder='[options] PATTERN [path]'/>
-            </div>
+            </form>
             <div class="plugin-ripgrep-output plugin-common-hidden"><pre tabindex="0"></pre></div>
         </div>
     `
@@ -17,6 +17,7 @@ class ripgrepPlugin extends BasePlugin {
         this.entities = {
             content: this.utils.entities.eContent,
             modal: document.getElementById("plugin-ripgrep"),
+            form: document.getElementById("plugin-ripgrep-form"),
             input: document.querySelector("#plugin-ripgrep-form input"),
             output: document.querySelector(".plugin-ripgrep-output"),
             pre: document.querySelector(".plugin-ripgrep-output pre"),
@@ -24,24 +25,14 @@ class ripgrepPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.entities.input.addEventListener("keydown", ev => {
-            switch (ev.key) {
-                case "Enter":
-                    const input = ev.target.closest("input");
-                    if (input) {
-                        this.ripgrep(input.value);
-                        ev.stopPropagation();
-                        ev.preventDefault();
-                    }
-                    break;
-                case "Escape":
-                case "Backspace":
-                    if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
-                        ev.stopPropagation();
-                        ev.preventDefault();
-                        this.utils.hide(this.entities.modal);
-                    }
-                    break
+        this.entities.form.addEventListener("submit", ev => {
+            ev.preventDefault()
+            this.ripgrep(this.entities.input.value)
+        })
+        this.entities.form.addEventListener("keydown", ev => {
+            const wantHide = ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value)
+            if (wantHide) {
+                this.utils.hide(this.entities.modal)
             }
         })
     }
@@ -93,7 +84,7 @@ class ripgrepPlugin extends BasePlugin {
     _ripgrep = (args, onData, onErr, onClose) => {
         const rgPath = reqnode("vscode-ripgrep").rgPath.replace("node_modules.asar", "node_modules");
         const options = { cwd: File.getMountFolder(), stdio: ["ignore", "pipe", "pipe"], env: { rg: rgPath } };
-        const child = this.utils.Package.ChildProcess.spawn(rgPath, args, options);
+        const child = require("child_process").spawn(rgPath, args, options)
         child.stdout.setEncoding("utf8");
         child.stderr.setEncoding("utf8");
         child.stdout.on("data", onData);

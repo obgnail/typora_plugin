@@ -302,7 +302,7 @@ class tocMarkmap {
         const str2Arr = str => str.split("_")
 
         const getSchema = () => {
-            const pluginEnabled = this.utils.getPlugin("collapse_paragraph")
+            const pluginEnabled = this.utils.getBasePlugin("collapse_paragraph")
             const colorOptions = Object.fromEntries(
                 [...this.config.CANDIDATE_COLOR_SCHEMES, this.config.DEFAULT_TOC_OPTIONS.color].map(colorList => {
                     const colors = colorList

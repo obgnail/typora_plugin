@@ -2,11 +2,11 @@
     top: ${topPercent};
 }
 
-#plugin-toolbar-input {
+#plugin-toolbar-form {
     font-size: 1.2em;
 }
 
-#plugin-toolbar-input input {
+#plugin-toolbar-form input {
     width: 100%;
     height: 1.5em;
     padding-left: 10px;

@@ -187,10 +187,10 @@ NAME = ""
 HOTKEY = "ctrl+shift+p"
 
 # ------------------- 窗口交互 -------------------
-# 当输入框为空，且按下 `Backspace` 键时，隐藏窗口
+# 当输入框为空，且键入 Backspace 时，隐藏窗口
 #   true:  启用此功能
 #   false: 禁用此功能
-BACKSPACE_TO_HIDE = true
+BACKSPACE_TO_HIDE = false
 
 # ------------------- 搜索内容 -------------------
 # 搜索时是否区分大小写
@@ -288,10 +288,10 @@ NAME = ""
 #   留空则不设置快捷键
 HOTKEY = ""
 
-# 当输入框为空，且键入 backspace 时，隐藏窗口
+# 当输入框为空，且键入 Backspace 时，隐藏窗口
 #   true:  启用此功能
 #   false: 禁用此功能
-BACKSPACE_TO_HIDE = true
+BACKSPACE_TO_HIDE = false
 
 # ------------------- 命令执行与回显 -------------------
 # 控制通过【快捷键】或【右键菜单】调用内建命令时，是否以及如何显示执行结果
@@ -529,20 +529,10 @@ NAME = ""
 HOTKEY = "ctrl+j"
 
 # ------------------- 窗口行为 -------------------
-# 当输入框为空，且键入 backspace 时，隐藏窗口
+# 当输入框为空，且键入 Backspace 时，隐藏窗口
 #   true:  启用此功能
 #   false: 禁用此功能
 BACKSPACE_TO_HIDE = true
-
-# 当鼠标点击搜索窗口之外的区域时，是否自动隐藏搜索窗口
-#   true:  当鼠标点击窗口外区域时，搜索窗口会自动隐藏
-#   false: 鼠标点击窗口外区域不会自动隐藏搜索窗口
-AUTO_HIDE = true
-
-# 是否等待输入法输入完毕后再执行搜索
-#   true:  当使用中文输入法等输入时，等待输入完毕才触发搜索，避免输入过程中频繁搜索
-#   false: 输入过程中的每一个字符都会触发搜索
-PAUSE_ON_COMPOSITION = true
 
 # ------------------- 窗口外观 -------------------
 # 搜索工具栏在页面垂直方向的位置：设置搜索工具栏在页面顶部的位置，以百分比表示
@@ -2190,9 +2180,9 @@ CUSTOM_HOTKEYS = [
     # 简单使用：insertBlockCode
     { enable = false, hotkey = "ctrl+shift+e", desc = "Insert JavaScript BlockCode", evil = "() => this.utils.insertFence('javascript')" },
     # 支持但邪恶的使用方法：openCalc
-    { enable = false, hotkey = "ctrl+shift+e", desc = "Open Windows Calculator", evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')" },
+    { enable = false, hotkey = "ctrl+shift+e", desc = "Open Windows Calculator", evil = "() => require('child_process').exec('cmd /C calc')" },
     # 支持但不推荐的使用方法：switchFirstTab
-    { enable = false, hotkey = "ctrl+shift+e", desc = "Switch to the first window tab", evil = "() => this.utils.getPlugin('window_tab').switchTab(0)" },
+    { enable = false, hotkey = "ctrl+shift+e", desc = "Switch to the first window tab", evil = "() => this.utils.getBasePlugin('window_tab').switchTab(0)" },
     # 支持但是不正常不推荐的使用方法：alertWhenOpenFile
     { enable = false, hotkey = "-", desc = "Pop up a prompt window", evil = "this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, filepath => window.confirm(`You opened the file: ${filepath}`))" },
     # 正规使用方法：insertKanban
@@ -2348,7 +2338,7 @@ NAME = ""
 HOTKEY = ""
 
 # ------------------- 窗口行为 -------------------
-# 当输入框为空，且键入 backspace 时，隐藏搜索窗口
+# 当输入框为空，且键入 Backspace 时，隐藏窗口
 #   true:  启用此功能
 #   false: 禁用此功能
 BACKSPACE_TO_HIDE = true
