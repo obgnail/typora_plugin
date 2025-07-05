@@ -13,20 +13,25 @@ body.unibody-window #plugin-search-multi {
     overflow: hidden;
 }
 
+.plugin-search-multi-wrap {
+    display: flex;
+    flex-direction: column;
+}
+
 #plugin-search-multi .plugin-search-counter {
     font-size: 10px;
     opacity: .8;
     line-height: 16px;
     height: 16px;
+    padding-left: 6px;
 }
 
 #plugin-search-multi-form {
     position: relative;
-    margin: 6px 3px;
+    margin: 6px 4px 8px;
 }
 
 #plugin-search-multi-form input {
-    font-family: Arial;
     width: 100%;
     line-height: 28px;
     font-size: 18px;
@@ -67,6 +72,7 @@ body.unibody-window #plugin-search-multi {
     height: 40px;
     margin: 2px 0;
     overflow: hidden;
+    padding-left: 6px;
 }
 
 .plugin-search-item:hover,
@@ -85,8 +91,9 @@ body.unibody-window #plugin-search-multi {
 }
 
 .plugin-search-multi-result {
+    display: flex;
+    flex-direction: column;
     user-select: none;
-    margin-top: 6px;
     margin-left: 6px;
 }
 
@@ -124,7 +131,7 @@ ${colors_style}
     display: inline-flex;
     flex-wrap: wrap;
     align-content: flex-start;
-    max-width: 100%;
+    width: 100%;
     margin: 2px -3px 0;
 }
 

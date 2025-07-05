@@ -14,9 +14,9 @@ class searchMultiPlugin extends BasePlugin {
             id="plugin-search-multi"
             window-title="${this.pluginName}"
             window-resize="none"
-            window-buttons="searchGrammarModal|fa-question|${this.i18n.t("grammar")};close|fa-times"
+            window-buttons="showGrammar|fa-question|${this.i18n.t("grammar")};close|fa-times"
             hidden>
-            <div>
+            <div class="plugin-search-multi-wrap">
                 <form id="plugin-search-multi-form">
                     <input type="text">
                     <div class="plugin-search-multi-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}">
@@ -26,7 +26,7 @@ class searchMultiPlugin extends BasePlugin {
                 <div class="plugin-search-multi-result plugin-common-hidden">
                     <div class="plugin-search-counter">${this.i18n.t("matchedFiles")}：<span>0</span></div>
                     <div class="plugin-search-files"></div>
-                    <div class="plugin-search-highlights plugin-common-hidden"></div>
+                    <div class="plugin-search-highlights"></div>
                 </div>
                 <div class="plugin-search-multi-searching plugin-common-hidden">
                     <div>${this.i18n.t("searching")}</div>
@@ -74,7 +74,7 @@ class searchMultiPlugin extends BasePlugin {
         })
         this.entities.window.addEventListener("btn-click", ev => {
             const { action } = ev.detail
-            if (action === "searchGrammarModal") {
+            if (action === "showGrammar") {
                 this.searcher.showGrammar()
             } else if (action === "close") {
                 this.hide()
@@ -126,19 +126,19 @@ class searchMultiPlugin extends BasePlugin {
             const tokens = this.searcher.getContentTokens(ast).filter(Boolean)
             if (tokens.length === 0) return
 
-            const hitGroups = this.highlighter.doSearch(tokens)
             const hint = this.i18n.t("highlightHint")
-            const itemList = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
-                const div = document.createElement("div")
-                div.className = `plugin-highlight-item ${cls}`
-                div.dataset.pos = -1
+            const hitGroups = this.highlighter.doSearch(tokens)
+            const items = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
+                const item = document.createElement("div")
+                item.className = `plugin-highlight-item ${cls}`
+                item.dataset.pos = -1
                 if (!this.config.REMOVE_BUTTON_HINT) {
-                    div.setAttribute("ty-hint", hint)
+                    item.setAttribute("ty-hint", hint)
                 }
-                div.appendChild(document.createTextNode(`${name} (${hits.length})`))
-                return div
+                item.appendChild(document.createTextNode(`${name} (${hits.length})`))
+                return item
             })
-            this.entities.highlights.append(...itemList)
+            this.entities.highlights.append(...items)
             this.utils.show(this.entities.highlights)
         } catch (e) {
             console.error(e)
