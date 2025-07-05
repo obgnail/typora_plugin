@@ -17,8 +17,12 @@
     min-height: 120px;
 }
 
-#plugin-markmap.noBoxShadow {
+#plugin-markmap.pinned-window {
     box-shadow: none;
+}
+
+#plugin-markmap:not(.pinned-window) .plugin-markmap-header {
+    cursor: move;
 }
 
 #plugin-markmap.penetrateMouse {

@@ -478,7 +478,6 @@
     "func.close": "Close",
     "func.expand": "Expand",
     "func.shrink": "Shrink",
-    "func.move": "Move",
     "func.fit": "Fit to Window",
     "func.fit.ok": "Fit to Window Successfully",
     "func.penetrateMouse": "Mouse Penetration",

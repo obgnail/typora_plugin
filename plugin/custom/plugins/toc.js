@@ -101,7 +101,15 @@ class tocPlugin extends BaseCustomPlugin {
                 this.entities.modal.style.left = modalStartLeft - deltaX + "px";
                 return { deltaX, deltaY }
             }
-            this.utils.resizeFixedModal(this.entities.grip, this.entities.modal, true, false, onMouseDown, onMouseMove);
+            this.utils.resizeElement({
+                targetEle: this.entities.grip,
+                resizeEle: this.entities.modal,
+                resizeWidth: true,
+                resizeHeight: false,
+                onMouseDown,
+                onMouseMove,
+                onMouseUp: null,
+            })
         }
         const onDrag = () => {
             if (!this.config.sortable) return

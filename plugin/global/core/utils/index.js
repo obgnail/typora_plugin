@@ -1073,97 +1073,108 @@ class utils {
         return ele.rawText().substring(bookmark.start, bookmark.end);
     }
 
-    static resizeFixedModal = (
-        handleElement, resizeElement,
-        resizeWidth = true, resizeHeight = true,
-        onMouseDown = null, onMouseMove = null, onMouseUp = null
+    static resizeElement = (
+        {
+            targetEle,
+            resizeEle,
+            resizeWidth = true,
+            resizeHeight = true,
+            onMouseDown = null,
+            onMouseMove = null,
+            onMouseUp = null,
+        }
     ) => {
-        let startX, startY, startWidth, startHeight;
-        handleElement.addEventListener("mousedown", ev => {
-            const { width, height } = document.defaultView.getComputedStyle(resizeElement);
-            startX = ev.clientX;
-            startY = ev.clientY;
-            startWidth = parseFloat(width);
-            startHeight = parseFloat(height);
+        let startX, startY, startWidth, startHeight
+        targetEle.addEventListener("mousedown", ev => {
+            const { width, height } = document.defaultView.getComputedStyle(resizeEle)
+            startX = ev.clientX
+            startY = ev.clientY
+            startWidth = parseFloat(width)
+            startHeight = parseFloat(height)
             if (onMouseDown) {
                 onMouseDown(startX, startY, startWidth, startHeight)
             }
-            document.addEventListener("mousemove", mousemove);
-            document.addEventListener("mouseup", mouseup);
-            ev.stopPropagation();
-            ev.preventDefault();
-        }, true);
+            document.addEventListener("mousemove", mousemove)
+            document.addEventListener("mouseup", mouseup)
+            ev.stopPropagation()
+            ev.preventDefault()
+        }, true)
 
         function mousemove(e) {
             requestAnimationFrame(() => {
-                let deltaX = e.clientX - startX;
-                let deltaY = e.clientY - startY;
+                let deltaX = e.clientX - startX
+                let deltaY = e.clientY - startY
                 if (onMouseMove) {
-                    const { deltaX: newDeltaX, deltaY: newDeltaY } = onMouseMove(deltaX, deltaY) || {};
-                    deltaX = newDeltaX || deltaX;
-                    deltaY = newDeltaY || deltaY;
+                    const { deltaX: newDeltaX, deltaY: newDeltaY } = onMouseMove(deltaX, deltaY) || {}
+                    deltaX = newDeltaX || deltaX
+                    deltaY = newDeltaY || deltaY
                 }
                 if (resizeWidth) {
-                    resizeElement.style.width = startWidth + deltaX + "px";
+                    resizeEle.style.width = startWidth + deltaX + "px"
                 }
                 if (resizeHeight) {
-                    resizeElement.style.height = startHeight + deltaY + "px";
+                    resizeEle.style.height = startHeight + deltaY + "px"
                 }
             })
         }
 
         function mouseup() {
-            document.removeEventListener("mousemove", mousemove);
-            document.removeEventListener("mouseup", mouseup);
+            document.removeEventListener("mousemove", mousemove)
+            document.removeEventListener("mouseup", mouseup)
             if (onMouseUp) {
                 onMouseUp()
             }
         }
     }
 
-    static dragFixedModal = (
-        handleElement, moveElement, withMetaKey = true,
-        _onMouseDown = null, _onMouseMove = null, _onMouseUp = null
+    static dragElement = (
+        {
+            targetEle,
+            moveEle,
+            onCheck = null,
+            onMouseDown = null,
+            onMouseMove = null,
+            onMouseUp = null,
+        }
     ) => {
-        handleElement.addEventListener("mousedown", ev => {
-            if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
-            ev.stopPropagation();
-            const { left, top } = moveElement.getBoundingClientRect();
-            const shiftX = ev.clientX - left;
-            const shiftY = ev.clientY - top;
-            if (_onMouseDown) {
-                _onMouseDown()
+        targetEle.addEventListener("mousedown", ev => {
+            if (onCheck && !onCheck(ev)) return
+
+            ev.stopPropagation()
+            const { left, top } = moveEle.getBoundingClientRect()
+            const shiftX = ev.clientX - left
+            const shiftY = ev.clientY - top
+            if (onMouseDown) {
+                onMouseDown()
             }
 
-            const onMouseMove = ev => {
-                if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
-                ev.stopPropagation();
-                ev.preventDefault();
+            const _onMouseMove = ev => {
+                ev.stopPropagation()
+                ev.preventDefault()
                 requestAnimationFrame(() => {
-                    if (_onMouseMove) {
-                        _onMouseMove()
+                    if (onMouseMove) {
+                        onMouseMove()
                     }
-                    moveElement.style.left = ev.clientX - shiftX + 'px';
-                    moveElement.style.top = ev.clientY - shiftY + 'px';
-                });
+                    moveEle.style.left = ev.clientX - shiftX + "px"
+                    moveEle.style.top = ev.clientY - shiftY + "px"
+                })
             }
 
-            const onMouseUp = ev => {
-                if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
-                if (_onMouseUp) {
-                    _onMouseUp()
+            const _onMouseUp = ev => {
+                if (onMouseUp) {
+                    onMouseUp()
                 }
-                ev.stopPropagation();
-                ev.preventDefault();
-                document.removeEventListener("mousemove", onMouseMove);
-                moveElement.onmouseup = null;
-                document.removeEventListener("mouseup", onMouseUp);
+                ev.stopPropagation()
+                ev.preventDefault()
+                document.removeEventListener("mousemove", _onMouseMove)
+                moveEle.onmouseup = null
+                document.removeEventListener("mouseup", _onMouseUp)
             }
 
-            document.addEventListener("mouseup", onMouseUp);
-            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", _onMouseUp)
+            document.addEventListener("mousemove", _onMouseMove)
         })
-        handleElement.ondragstart = () => false
+        targetEle.ondragstart = () => false
     }
 
     static scrollActiveItem = (list, activeSelector, isNext) => {

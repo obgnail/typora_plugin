@@ -11,7 +11,6 @@ class tocMarkmap {
         <div id="plugin-markmap" class="plugin-common-modal plugin-common-hidden">
             <div class="plugin-markmap-header">
                 <div class="plugin-markmap-icon ion-close" action="close" ty-hint="${this.i18n.t('func.close')}"></div>
-                <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="${this.i18n.t('func.move')}"></div>
                 <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="${this.i18n.t('func.fit')}"></div>
                 <div class="plugin-markmap-icon ion-android-locate" action="penetrateMouse" ty-hint="${this.i18n.t('func.penetrateMouse')}"></div>
                 <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="${this.i18n.t('func.setting')}"></div>
@@ -42,7 +41,6 @@ class tocMarkmap {
             gripTop: document.querySelector(".plugin-markmap-grip-top"),
             gripRight: document.querySelector(".plugin-markmap-grip-right"),
             svg: document.querySelector("#plugin-markmap-svg"),
-            move: document.querySelector('.plugin-markmap-icon[action="move"]'),
             resize: document.querySelector('.plugin-markmap-icon[action="resize"]'),
             fullScreen: document.querySelector('.plugin-markmap-icon[action="expand"]'),
             penetrateMouse: document.querySelector('.plugin-markmap-icon[action="penetrateMouse"]'),
@@ -55,7 +53,7 @@ class tocMarkmap {
             originContentRect: null,
             recordContentRect: rect => this.pinUtils.originContentRect = rect,
             recordRects: () => {
-                if (!this.entities.modal.classList.contains("noBoxShadow")) {
+                if (!this.entities.modal.classList.contains("pinned-window")) {
                     this.pinUtils.originModalRect = this.entities.modal.getBoundingClientRect()
                     this.pinUtils.originContentRect = this.entities.content.getBoundingClientRect()
                 }
@@ -114,17 +112,14 @@ class tocMarkmap {
             this.toggleContextMenu()
         }
         const onMove = () => {
-            const attr = "ty-hint"
-            const value = this.entities.move.getAttribute(attr)
-            const onMouseDown = () => {
-                this.entities.move.removeAttribute(attr)
-                this._cleanTransition()
-            }
-            const onMouseUp = () => {
-                this.entities.move.setAttribute(attr, value)
-                this._rollbackTransition()
-            }
-            this.utils.dragFixedModal(this.entities.move, this.entities.modal, false, onMouseDown, null, onMouseUp)
+            this.utils.dragElement({
+                targetEle: this.entities.header,
+                moveEle: this.entities.modal,
+                onCheck: () => !this.entities.modal.classList.contains("pinned-window"),
+                onMouseDown: this._cleanTransition,
+                onMouseMove: null,
+                onMouseUp: this._rollbackTransition,
+            })
         }
         const onResize = () => {
             const { minHeight, minWidth } = window.getComputedStyle(this.entities.modal)
@@ -148,7 +143,15 @@ class tocMarkmap {
                     deltaX = Math.max(deltaX, deltaWidth)
                     return { deltaX, deltaY }
                 }
-                this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp)
+                this.utils.resizeElement({
+                    targetEle: this.entities.resize,
+                    resizeEle: this.entities.modal,
+                    resizeWidth: true,
+                    resizeHeight: true,
+                    onMouseDown,
+                    onMouseMove,
+                    onMouseUp,
+                })
             }
 
             const whenPinTop = () => {
@@ -168,7 +171,15 @@ class tocMarkmap {
                     this.entities.content.style.top = newContentTop + "px"
                     return { deltaX, deltaY }
                 }
-                this.utils.resizeFixedModal(this.entities.gripTop, this.entities.modal, false, true, onMouseDown, onMouseMove, onMouseUp)
+                this.utils.resizeElement({
+                    targetEle: this.entities.gripTop,
+                    resizeEle: this.entities.modal,
+                    resizeWidth: false,
+                    resizeHeight: true,
+                    onMouseDown,
+                    onMouseMove,
+                    onMouseUp,
+                })
             }
 
             const whenPinRight = () => {
@@ -197,7 +208,15 @@ class tocMarkmap {
                     this.entities.modal.style.left = modalStartLeft - deltaX + "px"
                     return { deltaX, deltaY }
                 }
-                this.utils.resizeFixedModal(this.entities.gripRight, this.entities.modal, true, false, onMouseDown, onMouseMove, onMouseUp)
+                this.utils.resizeElement({
+                    targetEle: this.entities.gripRight,
+                    resizeEle: this.entities.modal,
+                    resizeWidth: true,
+                    resizeHeight: false,
+                    onMouseDown,
+                    onMouseMove,
+                    onMouseUp,
+                })
             }
 
             whenUnpin()
@@ -271,7 +290,7 @@ class tocMarkmap {
         this.entities.modal.style = ""
         this.utils.hide(this.entities.modal)
         this.utils.show(this.entities.resize)
-        this.entities.modal.classList.remove("noBoxShadow")
+        this.entities.modal.classList.remove("pinned-window")
         this._setFullScreenStyles(false)
         this.mm.destroy()
         this.mm = null
@@ -430,17 +449,20 @@ class tocMarkmap {
             await this.utils.settings.saveSettings(this.plugin.fixedName, result)
         }
 
+        let hasEdit = false
         const op = {
             title: this.i18n.t("func.setting"),
             schema: getSchema(),
             data: getData(),
             action: getAction(),
+            listener: () => hasEdit = true,
         }
         const { response, data } = await this.utils.formDialog.modal(op)
-        if (response === 1) {
+        if (response === 1 && hasEdit) {
             await storeData(data)
             await this.draw()
             this.toggleContextMenu()
+            this.utils.notification.show(this.i18n._t("global", "success.edit"))
         }
     }
 
@@ -594,7 +616,7 @@ class tocMarkmap {
     doAction = async action => {
         if (action === "fit") {
             this.fit(true)
-        } else if (action !== "move") {
+        } else if (action !== "resize") {
             await this[action]()
         }
     }
@@ -656,10 +678,9 @@ class tocMarkmap {
             ? [this.pinUtils.isPinTop, this.entities.gripTop, "pinTop", "func.pinTop", "ion-chevron-up"]
             : [this.pinUtils.isPinRight, this.entities.gripRight, "pinRight", "func.pinRight", "ion-chevron-right"]
 
-        this.entities.modal.classList.toggle("noBoxShadow", pinned)
+        this.entities.modal.classList.toggle("pinned-window", pinned)
         this.utils.toggleVisible(gripEl, !pinned)
         this.utils.toggleVisible(this.entities.resize, pinned)
-        this.utils.toggleVisible(this.entities.move, pinned)
         this.utils.toggleVisible(this.entities.penetrateMouse, pinned)
         this._setFullScreenStyles(false)
 
@@ -692,10 +713,9 @@ class tocMarkmap {
 
         this._setModalRect(expand ? this.pinUtils.originContentRect : this.pinUtils.originModalRect)
         this._setFullScreenStyles(expand)
-        this.entities.modal.classList.toggle("noBoxShadow", expand)
+        this.entities.modal.classList.toggle("pinned-window", expand)
         this.utils.toggleVisible(this.entities.penetrateMouse, expand)
         this.utils.toggleVisible(this.entities.resize, expand)
-        this.utils.toggleVisible(this.entities.move, expand)
     }
 
     _toggleToolbar = show => {

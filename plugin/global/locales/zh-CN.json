@@ -478,7 +478,6 @@
     "func.close": "关闭",
     "func.expand": "全屏",
     "func.shrink": "取消全屏",
-    "func.move": "移动",
     "func.fit": "图形适配窗口",
     "func.fit.ok": "图形已重新适配窗口",
     "func.penetrateMouse": "鼠标穿透",
