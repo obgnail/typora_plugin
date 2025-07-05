@@ -161,7 +161,7 @@ class resourceManagerPlugin extends BasePlugin {
         const isInPreview = this.entities.window.getAttribute("window-buttons").includes("fa-eye-slash")
         const columns = [
             { key: "idx", title: "No", width: "3em", sortable: true },
-            { key: "src", title: "Resources", width: "fit-content", sortable: true },
+            { key: "src", title: "Resources", sortable: true },
             { key: "image", title: "Preview", sortable: true, ignore: !isInPreview, render: (rowData) => `<img src="${rowData.src}" />` },
             { key: "operations", title: "Operations", width: "5.2em", render: opsRender }
         ]
@@ -171,7 +171,7 @@ class resourceManagerPlugin extends BasePlugin {
     _setFolderTableData = (data = this.entities.folderTable.data) => {
         const columns = [
             { key: "idx", title: "No", width: "3em", sortable: true },
-            { key: "src", title: "Resources", width: "fit-content", sortable: true },
+            { key: "src", title: "Resources", sortable: true },
         ]
         this.entities.folderTable.setData(data, { columns })
     }
