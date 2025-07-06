@@ -433,6 +433,7 @@ class tocMarkmap {
                     op.data = getData()
                     op.schema = getSchema()
                 })
+                hasEdit = true
             },
         })
 
