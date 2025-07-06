@@ -216,6 +216,14 @@ class Searcher {
             ANCESTOR: { none, write },
         } = this.MIXIN
         const { splitFrontMatter, Package: { Path } } = this.utils
+        const getMatchCount = (content, regex) => {
+            let count = 0
+            for (const _ of content.matchAll(regex)) {
+                count++
+            }
+            return count
+        }
+
         const QUERY = {
             default: ({ path, file, stats, content }) => `${content}\n${path}`,
             path: ({ path, file, stats, content }) => path,
@@ -228,11 +236,14 @@ class Searcher {
             mtime: ({ path, file, stats, content }) => normalizeDate(stats.mtime),
             birthtime: ({ path, file, stats, content }) => normalizeDate(stats.birthtime),
             content: ({ path, file, stats, content }) => content,
+            crlf: ({ path, file, stats, content }) => content.includes("\r\n"),
             linenum: ({ path, file, stats, content }) => content.split("\n").length,
             charnum: ({ path, file, stats, content }) => content.length,
-            crlf: ({ path, file, stats, content }) => content.includes("\r\n"),
-            hasimage: ({ path, file, stats, content }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(content),
-            hasimg: ({ path, file, stats, content }) => /<img.*?src=".*?"/.test(content),
+            chinesenum: ({ path, file, stats, content }) => getMatchCount(content, /\p{sc=Han}/gu),
+            imagenum: ({ path, file, stats, content }) => getMatchCount(content, /(\!\[((?:\[[^\]]*\]|[^\[\]])*)\]\()(<?((?:\([^)]*\)|[^()])*?)>?[ \t]*((['"])((?:.|\n)*?)\6[ \t]*)?)(\)(?:\s*{([^{}\(\)]*)})?)/g),
+            imgtagnum: ({ path, file, stats, content }) => getMatchCount(content, /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/g),
+            hasimage: ({ path, file, stats, content }) => /(\!\[((?:\[[^\]]*\]|[^\[\]])*)\]\()(<?((?:\([^)]*\)|[^()])*?)>?[ \t]*((['"])((?:.|\n)*?)\6[ \t]*)?)(\)(?:\s*{([^{}\(\)]*)})?)/.test(content),
+            hasimgtag: ({ path, file, stats, content }) => /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/.test(content),
             haschinese: ({ path, file, stats, content }) => /\p{sc=Han}/u.test(content),
             hasemoji: ({ path, file, stats, content }) => /\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/u.test(content),
             hasinvisiblechar: ({ path, file, stats, content }) => /[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/.test(content),
@@ -240,13 +251,6 @@ class Searcher {
             frontmatter: ({ path, file, stats, content }) => {
                 const { yamlObject } = splitFrontMatter(content)
                 return yamlObject ? JSON.stringify(yamlObject) : ""
-            },
-            chinesenum: ({ path, file, stats, content }) => {
-                let count = 0
-                for (const _ of content.matchAll(/\p{sc=Han}/gu)) {
-                    count++
-                }
-                return count
             },
         }
         const PROCESS = {
@@ -275,12 +279,14 @@ class Searcher {
             buildQualifier("linenum", true, true, 2, none, PROCESS.number),
             buildQualifier("charnum", true, true, 2, none, PROCESS.number),
             buildQualifier("chinesenum", true, true, 2, none, PROCESS.number),
-            buildQualifier("crlf", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("imagenum", true, true, 2, none, PROCESS.number),
+            buildQualifier("imgtagnum", true, true, 2, none, PROCESS.number),
             buildQualifier("hasimage", true, true, 2, none, PROCESS.boolean),
-            buildQualifier("hasimg", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("hasimgtag", true, true, 2, none, PROCESS.boolean),
             buildQualifier("haschinese", true, true, 2, none, PROCESS.boolean),
             buildQualifier("hasemoji", true, true, 2, none, PROCESS.boolean),
             buildQualifier("hasinvisiblechar", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("crlf", true, true, 2, none, PROCESS.boolean),
             buildQualifier("line", false, true, 2, write, PROCESS.stringArray),
         ]
     }
