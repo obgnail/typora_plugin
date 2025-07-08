@@ -55,7 +55,7 @@
 | 36   | chineseSymbolAutoPairer | Automatic completion of Chinese symbols                   |                    |
 | 37   | resize_table            | Adjust table row height and column width                  |                    |
 | 38   | resize_image            | Adjust image display size                                 |                    |
-| 39   | export_enhance          | Avoid image loss when exporting to html                   |                    |
+| 39   | export_enhance          | Avoid image loss when exporting to HTML                   |                    |
 | 40   | markdownLint            | Markdown Lint Check                                       |                    |
 | 41   | go_top                  | One-click to top of the article                           |                    |
 | 42   | reopenClosedFiles       | Reopen Closed Files                                       | ×                  |
@@ -78,10 +78,19 @@
 | 59   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
 | 60   | json_rpc                | External control of Typora (advanced)                     | ×                  |
 
-
-**Respect all user choices**. Any plugin or feature in this project can be permanently enabled/disabled.
-
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
+
+
+
+## Q&A
+
+- **Is my Typora supported?** Typora's version should be ≥ 0.9.98 (the last free version).
+- **How to modify plugin configurations?** Right-click menu -> Less Used Plugins -> Preferences. **Respect all user choices**. Any plugin or feature can be permanently enabled/disabled.
+- **How to upgrade plugins?** Right-click menu -> Less Used Plugins -> Upgrade Plugins.
+- **How to uninstall plugins?** Right-click menu -> Less Used Plugins -> Preferences -> Uninstall Plugins.
+- **How to develop plugins?** This project adheres to **No BuildTime**, so there is no need to install any development environment. Please refer to [Readme](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README-en.md) for details.
+- **Does it support Typora for Mac?** I don't have a Mac device, so I haven't tested it.
+- **Any other questions?** Please ask [AI Wiki](https://deepwiki.com/obgnail/typora_plugin).
 
 
 
@@ -94,7 +103,7 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 2. Go to the Typora installation path and find the folder A containing `window.html`.
 
    - For the official version of Typora, the path is `./resources/window.html`.
-   
+
    - For the free version of Typora, the path is `./resources/app/window.html`.
 
 3. Paste the unzipped plugin folder into folder A.
@@ -102,7 +111,7 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 4. Go to the folder `A/plugin/bin/`.
 
    - Windows: Double-click to run `install_windows_amd_x64.exe`. If you see the following image, the installation is successful.
-   
+
    - Linux: Run `install_linux.sh` as administrator. If you see the following image, the installation is successful.
 
 5. Verification: Restart Typora, right-click in the main text area, and if you see the `Often Used Plugins` column, everything is fine.
@@ -127,19 +136,6 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 ```sh
 yay -S typora-plugin
 ```
-
-
-
-## Q&A
-
-- **Is my version of Typora supported?** All plugins have been tested on version 0.9.98 (the last free version) and the latest version. This project theoretically supports all Typora versions, but Typora's functionality stabilized after version 0.9.98. **It is recommended to use version 0.9.98 or later**.
-- **Will the plugins become invalid?** Theoretically, they can remain effective for a long time, and I am maintaining them.
-- **How to modify plugin configurations?** Right-click menu -> Less Used Plugins -> Preferences.
-- **How to upgrade plugins?** Right-click menu -> Often Used Plugins -> Secondary Plugins -> Upgrade Plugins.
-- **I don't want to use it anymore, how to uninstall the plugin system?** Right-click menu -> Less Used Plugins -> Preferences -> Uninstall Plugins.
-- **Does it support Typora for Mac?** I don't have a Mac device, so I haven't tested it.
-- **Any other questions?** Please ask [AI Wiki](https://deepwiki.com/obgnail/typora_plugin).
-
 
 
 
@@ -276,8 +272,8 @@ Usage: Right-click menu -> Often Used Plugins -> Command Line Environment
 
 Supported shells:
 
-- `cmd/bash`: Default terminal for Windows or Mac
-- `powershell`: Microsoft's silly child :D
+- `cmd/bash`: Default terminal for Windows or Linux
+- `powershell`: Microsoft's silly kid :D
 - `git bash`: Ensure it is installed and added to the environment variable
 - `wsl`: Ensure WSL2 is installed and added to the environment variable
 
@@ -435,15 +431,7 @@ Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Callouts
 
 ![callouts](./assets/callouts.png)
 
-The quantity, type, color, and icon can all be defined by yourself. Please modify the configuration file:
-
-```toml
-[[callouts.config.list]]
-type = "note"
-background_color = "#e1d1eb"
-left_line_color = "#6a1b9a"
-icon = "\\f040"
-```
+The quantity, type, color, and icon can all be defined by yourself. Please modify the configuration.
 
 ### kanban
 
@@ -697,7 +685,7 @@ For specific usage, refer to: [README.md](https://github.com/obgnail/typora_plug
 ## Acknowledgements
 
 - Apache: [ECharts](https://echarts.apache.org/zh/index.html) | [draw.io](https://github.com/jgraph/drawio)
-- MIT: [markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/)
+- MIT: [markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
 - no-licence: [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/)
 
 ## Conclusion
@@ -707,3 +695,4 @@ I am not a front-end developer, and all my front-end knowledge comes from Google
 **This project follows the MIT license, feel free to enjoy it.**
 
 If you find it useful, please give it a star ⭐, and feel free to recommend it to like-minded friends.
+

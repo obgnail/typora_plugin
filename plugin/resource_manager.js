@@ -89,7 +89,7 @@ class resourceManagerPlugin extends BasePlugin {
 
     togglePreview = () => {
         this.entities.window.updateButton("togglePreview", btn => btn.icon = (btn.icon === "fa-eye-slash") ? "fa-eye" : "fa-eye-slash")
-        this._setFileTableData()
+        this.entities.fileTable.setSchema(this._getFileTableSchema())
     }
 
     download = async () => {
@@ -151,29 +151,29 @@ class resourceManagerPlugin extends BasePlugin {
         this.entities.wrap.querySelector(".non-exist-in-folder-caption").textContent = this.i18n.t("title.nonExistInFolder", { size: notInFolder.length })
         this.entities.wrap.querySelector(".resource-manager-config-caption").textContent = this.i18n.t("title.setting")
 
-        const to = arr => arr.map((src, idx) => ({ idx: idx + 1, src }))
-        this._setFileTableData(to(notInFile))
-        this._setFolderTableData(to(notInFolder))
+        const toData = arr => arr.map((src, idx) => ({ idx: idx + 1, src }))
+        this.entities.fileTable.configure(toData(notInFile), this._getFileTableSchema())
+        this.entities.folderTable.configure(toData(notInFolder), this._getFolderTableSchema())
     }
 
-    _setFileTableData = (data = this.entities.fileTable.data) => {
-        const opsRender = () => `<i class="fa fa-external-link action-icon" action="locate"></i><i class="fa fa-trash-o action-icon" action="delete"></i>`
+    _getFileTableSchema = () => {
+        const operationsRender = () => `<i class="fa fa-external-link action-icon" action="locate"></i><i class="fa fa-trash-o action-icon" action="delete"></i>`
         const isInPreview = this.entities.window.getAttribute("window-buttons").includes("fa-eye-slash")
         const columns = [
             { key: "idx", title: "No", width: "3em", sortable: true },
             { key: "src", title: "Resources", sortable: true },
             { key: "image", title: "Preview", sortable: true, ignore: !isInPreview, render: (rowData) => `<img src="${rowData.src}" />` },
-            { key: "operations", title: "Operations", width: "5.2em", render: opsRender }
+            { key: "operations", title: "Operations", width: "5.2em", render: operationsRender }
         ]
-        this.entities.fileTable.setData(data, { columns })
+        return { columns }
     }
 
-    _setFolderTableData = (data = this.entities.folderTable.data) => {
+    _getFolderTableSchema = () => {
         const columns = [
             { key: "idx", title: "No", width: "3em", sortable: true },
             { key: "src", title: "Resources", sortable: true },
         ]
-        this.entities.folderTable.setData(data, { columns })
+        return { columns }
     }
 
     _getConfig = () => ({

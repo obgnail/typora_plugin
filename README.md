@@ -55,7 +55,7 @@
 | 36   | chineseSymbolAutoPairer | 中文符号自动补全                       |          |
 | 37   | resize_table            | 调整表格行高列宽                       |          |
 | 38   | resize_image            | 调整图片显示大小                       |          |
-| 39   | export_enhance          | 导出 html 时避免图片丢失               |          |
+| 39   | export_enhance          | 导出 HTML 时避免图片丢失               |          |
 | 40   | markdownLint            | markdown 格式检查                      |          |
 | 41   | go_top                  | 一键到文章顶部、底部                   |          |
 | 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 | ×        |
@@ -78,9 +78,19 @@
 | 59   | quickButton             | 于右下角添加功能按钮（高级）           |          |
 | 60   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
 
-**尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
-
 > 如果有需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果觉得本项目对您有帮助，请不吝点亮一个 Star ⭐！
+
+
+
+## Q&A
+
+- **我的 Typora 能用吗？** 要求 Typora 版本大于等于 0.9.98（最后一个免费版本）。
+- **如何修改插件配置？** 通过右键菜单 -> 少用插件 -> 插件配置。**尊重用户的一切选择**，所有的插件和功能皆可永久启用 / 禁用。
+- **如何升级插件？** 通过右键菜单 -> 少用插件 -> 插件配置 -> 升级插件。
+- **如何卸载插件？** 通过右键菜单 -> 少用插件 -> 插件配置 -> 卸载插件。
+- **如何编写插件？** 本项目坚持 **No BuildTime**，因此无需安装任何开发环境，详情请参考 [Readme](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README.md)。
+- **支持 Typora for Mac 吗？** 我没有 Mac 设备，故暂不支持。
+- **还有其他问题？** 欢迎前往 [AI Wiki](https://deepwiki.com/obgnail/typora_plugin) 提问或查阅社区讨论。
 
 
 
@@ -101,7 +111,7 @@
 4. 进入文件夹 `A/plugin/bin/`
 
    - Windows 系统：双击运行 `install_windows_amd_x64.exe`，如果看到下图，说明安装成功
-   
+
    - Linux 系统：以管理员运行 `install_linux.sh`，如果看到下图，说明安装成功
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
@@ -125,18 +135,6 @@
 ```sh
 yay -S typora-plugin
 ```
-
-
-
-## Q&A
-
-- **我的 Typora 版本能用吗？** 本项目已在 Typora 0.9.98 版本（最后一个免费版本）和最新版本进行过测试。理论上支持所有 Typora 版本，但推荐使用 0.9.98 及以上版本以获得更稳定的体验。
-- **插件会失效吗？** 理论上能保持长时间有效。
-- **如何修改插件配置？** 通过右键菜单 -> 少用插件 -> 插件配置。
-- **如何升级插件？** 通过右键菜单 -> 常用插件 -> 二级插件 -> 升级插件。
-- **如何卸载插件系统？** 通过右键菜单 -> 少用插件 -> 插件配置 -> 卸载插件。
-- **支持 Typora for Mac 吗？** 目前暂无 Mac 设备进行测试和适配，因此暂不支持。
-- **还有其他问题？** 欢迎前往 [AI Wiki](https://deepwiki.com/obgnail/typora_plugin) 提问或查阅社区讨论。
 
 
 
@@ -190,8 +188,6 @@ yay -S typora-plugin
 | `thead:k8s h2:prometheus blockcode:"kubectl apply"` | 表头包含 k8s，且二级标题包含 prometheus，且代码块内容包含 kubectl apply |
 
 ![search_mutli](assets/search_mutli.gif)
-
-
 
 
 
@@ -287,9 +283,9 @@ yay -S typora-plugin
 
 支持 shell：
 
-- `cmd/bash`：windows 或 Mac 的默认终端
+- `cmd/bash`：Windows 或 Linux 的默认终端
 - `powershell`：微软的傻儿子 :D
-- `git bash`：需确保安装并添加到环境变量
+- `git bash`：需确保安装 Git Bash 并添加到环境变量
 - `wsl`：需确保安装 WSL2 并添加到环境变量
 
 内置环境变量：
@@ -468,15 +464,7 @@ LIST = [
 
 ![callouts](./assets/callouts.png)
 
-数量、类型、颜色、icon 皆可自己定义，请前往配置文件修改：
-
-```toml
-[[callouts.config.list]]
-type = "note"
-background_color = "#e1d1eb"
-left_line_color = "#6a1b9a"
-icon = "\\f040"
-```
+数量、类型、颜色、icon 皆可自己定义，请前往配置修改。
 
 
 
@@ -506,7 +494,7 @@ icon = "\\f040"
 
 ### text_stylize：文字风格化
 
-功能：将文字转为 html 格式，改变文字样式。
+功能：将文字转为 HTML 格式，改变文字样式。
 
 使用方式：右键菜单 -> 少用插件 -> 文字风格化。
 
@@ -591,7 +579,7 @@ icon = "\\f040"
 
 ### export_enhance：导出增强
 
-功能：导出 html 时，将图片转为 base64，避免图片丢失。
+功能：导出 HTML 时，将图片转为 base64，避免图片丢失。
 
 
 
@@ -752,7 +740,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 ### hotkeys：快捷键注册中心（高级）
 
-> 此插件是高级插件，仅对有 javascript 基础的用户开放。
+> 此插件是高级插件，仅对有 JavaScript 基础的用户开放。
 
 功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】绑定快捷键。
 
@@ -760,7 +748,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 ### quickButton：于右下角添加功能按钮（高级）
 
-> 此插件是高级插件，仅对有 javascript 基础的用户开放。
+> 此插件是高级插件，仅对有 JavaScript 基础的用户开放。
 
 功能和 hotkeys 类似，以声明的形式，为【任意插件系统函数】设置快捷按钮。
 
@@ -768,7 +756,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 ### custom：开放平台，用户自定义插件（高级）
 
-> 此插件是高级插件，仅对有 javascript 基础的用户开放。
+> 此插件是高级插件，仅对有 JavaScript 基础的用户开放。
 
 功能：提供开放能力，支持用户自己写插件。
 

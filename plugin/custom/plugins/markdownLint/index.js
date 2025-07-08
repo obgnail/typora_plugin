@@ -28,7 +28,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.initLint = this.utils.noop
         this.checkLint = this.utils.noop
         this.fixLint = this.utils.noop
-        this.updateTable = this._getUpdater()
 
         this.fixInfos = []
         this.entities = {
@@ -38,6 +37,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
             button: document.querySelector("#plugin-markdownlint-button"),
         }
         this.TRANSLATIONS = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
+
+        this._initTableColumns()
     }
 
     process = () => {
@@ -161,11 +162,11 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.checkLint()
     }
 
-    _getUpdater = () => {
+    _initTableColumns = () => {
         const useInfo = this.config.tools.includes("info")
         const useLocate = this.config.tools.includes("locate")
         const useFix = this.config.tools.includes("fix")
-        const optionsRender = () => {
+        const operationsRender = () => {
             const info = useInfo ? `<i class="fa fa-info-circle action-icon" action="detailSingle"></i>` : ""
             const locate = useLocate ? `<i class="fa fa-crosshairs action-icon" action="jumpToLine"></i>` : ""
             const fixInfo = useFix ? `<i class="fa fa-wrench action-icon" action="fixSingle"></i>` : ""
@@ -177,21 +178,23 @@ class markdownLintPlugin extends BaseCustomPlugin {
             line: { key: "line", title: this.i18n.t("$option.columns.line"), width: "4em", sortable: true },
             rule: { key: "rule", title: this.i18n.t("$option.columns.rule"), width: "5em", sortable: true },
             desc: { key: "desc", title: this.i18n.t("$option.columns.desc"), sortable: true },
-            ops: { key: "ops", title: this.i18n.t("$option.columns.ops"), width: "5.2em", render: optionsRender },
+            ops: { key: "ops", title: this.i18n.t("$option.columns.ops"), width: "5.2em", render: operationsRender },
         }
         const schema = {
             defaultSort: { key: sortKey, direction: "asc" },
             columns: this.config.columns.map(col => supportColumns[col])
         }
-        return (fixInfos) => {
-            const data = fixInfos.map((item, idx) => {
-                const rule = item.ruleNames[0]
-                const line = item.lineNumber
-                const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
-                return { rule, line, desc, idx }
-            })
-            this.entities.table.setData(data, schema)
-        }
+        this.entities.table.setSchema(schema)
+    }
+
+    _setTableData = (fixInfos) => {
+        const data = fixInfos.map((item, idx) => {
+            const rule = item.ruleNames[0]
+            const line = item.lineNumber
+            const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
+            return { rule, line, desc, idx }
+        })
+        this.entities.table.setData(data)
     }
 
     _onCheck = fixInfos => {
@@ -200,7 +203,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             this.entities.button.toggleAttribute("lint-check-failed", fixInfos.length)
         }
         if (!this.entities.window.hidden) {
-            this.updateTable(fixInfos)
+            this._setTableData(fixInfos)
         }
     }
 

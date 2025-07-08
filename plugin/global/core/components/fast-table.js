@@ -34,70 +34,83 @@ customElements.define("fast-table", class extends HTMLElement {
         this.entities.thead.removeEventListener("click", this._onHeaderClick)
     }
 
-    setData = (data = [], schema = { columns: [] }) => {
+    configure = (data, schema) => {
+        this.setData(data)
+        this.setSchema(schema)
+    }
+
+    setData = (data = []) => {
+        this.data = data
+        this._scheduleUpdate()
+    }
+
+    setSchema = (schema = { columns: [] }) => {
         if (!schema.columns) {
             schema.columns = []
         }
         if (!schema.defaultSort) {
             schema.defaultSort = { key: "", direction: "" }
         }
-
-        this.data = data
-        this.schema = schema
         if (!this.sortKey) {
             const { key, direction } = schema.defaultSort
             this.sortKey = key ? key : null
             this.sortDirection = direction ? (direction || "asc") : null
         }
-
-        this._clearTable()
-        const { processedData, processedColumns, isValid } = this._process(this.data, this.schema)
-        if (!isValid) {
-            this._showNoData()
-            return
-        }
-        this._hideNoData()
-        this._renderHeader(processedColumns)
-        this._renderBody(processedData, processedColumns)
+        this.schema = schema
+        this._scheduleUpdate()
     }
 
     getProcessedData = () => this._process(this.data, this.schema).processedData
 
     clear = () => {
+        this._updateScheduled = false
+        this._pauseReactivity = false
+
         this.data = []
         this.schema = { columns: [] }
         this.sortKey = null
         this.sortDirection = null
+
         this._clearTable()
         this._showNoData()
     }
 
     deleteRow = (key, value) => {
-        if (!key || !value) {
+        if (key == null || value == null) {
             console.warn("deleteRow: 'key' and 'value' must be provided.")
             return false
         }
         const initialLength = this.data.length
         this.data = this.data.filter(item => item[key] !== value)
         if (this.data.length < initialLength) {
-            this.setData(this.data, this.schema)
+            this.configure(this.data, this.schema)
             return true
         }
         return false
     }
 
     editRow = (key, value, newData) => {
-        if (!key || !value || typeof newData !== "object" || newData === null) {
+        if (key == null || value == null || newData == null || typeof newData !== "object") {
             console.warn("editRow: 'key', 'value', and 'newData' (object) must be provided.")
             return false
         }
         const index = this.data.findIndex(item => item[key] === value)
         if (index !== -1) {
             this.data[index] = { ...this.data[index], ...newData }
-            this.setData(this.data, this.schema)
+            this.configure(this.data, this.schema)
             return true
         }
         return false
+    }
+
+    batchUpdate = (updateFn) => {
+        this._pauseReactivity = true
+        try {
+            updateFn(this.data)
+        } finally {
+            this._pauseReactivity = false
+            this._scheduleUpdate()
+        }
     }
 
     _process = (data, schema) => {
@@ -127,6 +140,32 @@ customElements.define("fast-table", class extends HTMLElement {
         }
 
         return { processedData: data, processedColumns: columns, isValid: true }
+    }
+
+    _scheduleUpdate = () => {
+        if (this._pauseReactivity || this._updateScheduled) return
+
+        this._updateScheduled = true
+        Promise.resolve()
+            .then(() => {
+                this._updateScheduled = false
+                this._render()
+            })
+            .catch(error => {
+                this._updateScheduled = false
+                console.error('Fast-table render error:', error)
+            })
+    }
+
+    _render = () => {
+        const { processedData, processedColumns, isValid } = this._process(this.data, this.schema)
+        if (!isValid) {
+            this._showNoData()
+            return
+        }
+        this._hideNoData()
+        this._renderHeader(processedColumns)
+        this._renderBody(processedData, processedColumns)
     }
 
     _renderHeader = (columns) => {
@@ -215,7 +254,7 @@ customElements.define("fast-table", class extends HTMLElement {
             this.sortDirection = "asc"
         }
 
-        this.setData(this.data, this.schema)
+        this.configure(this.data, this.schema)
     }
 
     _clearTable = () => {
