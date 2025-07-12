@@ -138,7 +138,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const fn = funcMap[action]
                 if (fn) fn()
             })
-            this.entities.table.addEventListener("table-click", ev => {
+            this.entities.table.addEventListener("row-action", ev => {
                 const { action, rowData } = ev.detail
                 const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
                 funcMap[action](arg)

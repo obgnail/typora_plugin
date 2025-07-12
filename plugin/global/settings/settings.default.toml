@@ -837,7 +837,7 @@ CANDIDATE_COLOR_SCHEMES = [
 #   spacingVertical   : 节点垂直间距
 #   paddingX          : 节点内部边距
 #   fitRatio          : 图形的窗口填充率
-DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialScale = 2, maxWidth = 0, nodeMinHeight = 16, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 6, zoom = true, pan = true, toggleRecursively = false, color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
+DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialScale = 2, maxWidth = 0, nodeMinHeight = 16, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 7, zoom = true, pan = true, toggleRecursively = false, color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
 
 # 导出选项：用于自定义导出图形和导出行为
 #   FILENAME: 文件名格式
@@ -924,7 +924,7 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 #   spacingVertical   : 节点垂直间距
 #   paddingX          : 节点内部边距
 #   fitRatio          : 图形的窗口填充率
-DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialScale = 2, colorFreezeLevel = 6, zoom = false, pan = false, toggleRecursively = false, maxWidth = 0, nodeMinHeight = 16, spacingHorizontal = 80, spacingVertical = 5, paddingX = 8, fitRatio = 0.95, height = "300px", backgroundColor = "#F8F8F8", color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
+DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialScale = 2, colorFreezeLevel = 7, zoom = false, pan = false, toggleRecursively = false, maxWidth = 0, nodeMinHeight = 16, spacingHorizontal = 80, spacingVertical = 5, paddingX = 8, fitRatio = 0.95, height = "300px", backgroundColor = "#F8F8F8", color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
 
 # 插入的 Markmap 代码块模板
 #   此模板定义了插入的 Markmap 代码块的初始内容和配置
@@ -943,7 +943,7 @@ markmap:
   paddingX: 8
   fitRatio: 0.95
   initialExpandLevel: -1
-  colorFreezeLevel: 6
+  colorFreezeLevel: 7
   maxInitialScale: 2
   color: ["#4E79A7", "#F28E2C", "#E15759", "#76B7B2", "#59A14F", "#EDC949", "#AF7AA1", "#FF9DA7", "#9C755F", "#BAB0AB"]
   duration: 500

@@ -25,6 +25,7 @@ class eventHub {
             beforeToggleSourceMode: "beforeToggleSourceMode",           // Before entering source code mode
             afterToggleSidebar: "afterToggleSidebar",                   // After toggling the sidebar state
             afterSetSidebarWidth: "afterSetSidebarWidth",               // After adjusting the sidebar width
+            // contentElementResized: "contentElementResized",             // content element resized
             beforeAddCodeBlock: "beforeAddCodeBlock",                   // Before adding a code block
             afterAddCodeBlock: "afterAddCodeBlock",                     // After adding a code block
             afterUpdateCodeBlockLang: "afterUpdateCodeBlockLang",       // After modifying the code block language
@@ -141,6 +142,15 @@ class eventHub {
 
         const afterSetSidebarWidth = this.utils.debounce(() => this.publishEvent(this.eventType.afterSetSidebarWidth), 400);
         this.utils.decorate(() => File && File.editor && File.editor.library, "setSidebarWidth", null, afterSetSidebarWidth);
+
+        // const resizeObserver = new ResizeObserver(entries => {
+        //     for (const entry of entries) {
+        //         if (entry.target === content) {
+        //             this.publishEvent(this.eventType.contentElementResized, entry.contentRect)
+        //         }
+        //     }
+        // })
+        // resizeObserver.observe(content)
 
         this.utils.decorate(() => window, "onbeforeunload", () => this.publishEvent(this.eventType.beforeUnload))
 

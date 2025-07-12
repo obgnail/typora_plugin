@@ -226,17 +226,14 @@ customElements.define("fast-table", class extends HTMLElement {
     }
 
     _onTableClick = (ev) => {
-        const target = ev.target
+        const action = ev.target.getAttribute("action")
+        if (!action) return
 
-        const isActionElement = target.hasAttribute("action")
-        if (!isActionElement) return
-
-        const action = target.getAttribute("action")
-        const row = target.closest("tr")
+        const row = ev.target.closest("tr")
         if (!row || !row._rowData) return
 
         const detail = { action: action, rowData: row._rowData }
-        this.dispatchEvent(new CustomEvent("table-click", { bubbles: true, composed: true, detail }))
+        this.dispatchEvent(new CustomEvent("row-action", { bubbles: true, composed: true, detail }))
     }
 
     _onHeaderClick = (ev) => {

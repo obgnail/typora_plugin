@@ -132,6 +132,8 @@ class downloader {
         return svg
     }
 
+    static _toString = (svg) => new XMLSerializer().serializeToString(svg)
+
     static _toImage = async (
         plugin,
         format,
@@ -144,7 +146,8 @@ class downloader {
         const svg = this._toSVG(plugin)
         const img = new Image()
         const ok = await new Promise(resolve => {
-            img.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg.outerHTML)}`
+            const str = this._toString(svg)
+            img.src = `data:image/svg+xml;utf8,${encodeURIComponent(str)}`
             img.onerror = () => resolve(false)
             img.onload = () => resolve(true)
         })
@@ -173,7 +176,7 @@ class downloader {
         return Buffer.from(base64, "base64")
     }
 
-    static svg = (plugin) => this._toSVG(plugin).outerHTML
+    static svg = (plugin) => this._toString(this._toSVG(plugin))
 
     static png = async (plugin) => this._toImage(plugin, "png")
 
@@ -181,71 +184,71 @@ class downloader {
 
     static webp = async (plugin) => this._toImage(plugin, "webp")
 
-    static md = (plugin) => plugin.transformContext.content
-
     static html = (plugin) => {
         const escapeHtml = text => text.replace(/[&<"]/g, char => ({ '&': '&amp;', '<': '&lt;', '"': '&quot;' })[char])
         const createTag = (tagName, attributes, content) => {
-            const attrList = Object.entries(attributes || {}).map(([key, value]) => {
-                if (value == null || value === false) {
-                    return ""
-                }
-                const escapedKey = ` ${escapeHtml(key)}`
-                return value === true ? escapedKey : `${escapedKey}="${escapeHtml(value)}"`
-            })
-            const tag = `<${tagName}${attrList.filter(Boolean).join("")}>`
-            return content != null ? `${tag}${content}</${tagName}>` : tag
+            const attrs = Object.entries(attributes || {})
+                .filter(([_, value]) => value != null && value !== false)
+                .map(([key, value]) => {
+                    const escapedKey = escapeHtml(key)
+                    return value === true ? escapedKey : `${escapedKey}="${escapeHtml(value)}"`
+                })
+                .join(" ")
+            const attrStr = (attrs ? " " : "") + attrs
+            return content != null
+                ? `<${tagName}${attrStr}>${content}</${tagName}>`
+                : `<${tagName}${attrStr} />`
         }
 
         const handleStyles = styles => styles.map(style => {
-            const tagName = (style.type === "stylesheet") ? "link" : "style"
-            const attributes = (style.type === "stylesheet") ? { rel: "stylesheet", ...style.data } : style.data
+            const isLink = style.type === "stylesheet"
+            const tagName = isLink ? "link" : "style"
+            const attributes = isLink ? { rel: "stylesheet", ...style.data } : style.data
             return createTag(tagName, attributes)
         })
 
-        // const setProvider = (urlBuilder, name = "jsdelivr", fn = e => `https://cdn.jsdelivr.net/npm/${e}`) => urlBuilder.setProvider(name, fn)
+        const getExternalScripts = (transformer) => {
+            const provider = "jsdelivr"
+            transformer.urlBuilder.setProvider(provider, e => `https://cdn.jsdelivr.net/npm/${e}`)
+            return ["d3@7.9.0/dist/d3.min.js", "markmap-view@0.17.2/dist/browser/index.js"]
+                .map(asset => transformer.urlBuilder.getFullUrl(asset, provider))
+                .map(src => ({ type: "script", data: { src } }))
+        }
 
-        /** Arg provider: Built-in optional values: unpkg/jsdelivr */
-        const handleScripts = (scripts, root, urlBuilder, provider) => {
-            const _base = ["d3@7.9.0/dist/d3.min.js", "markmap-view@0.17.2/dist/browser/index.js"]
-            const base = _base.map(asset => ({ type: "script", data: { src: urlBuilder.getFullUrl(asset, provider) } }))
-
+        const handleScripts = (external, scripts, root) => {
             const entry = {
                 type: "iife",
                 data: {
                     getParams: ({ getMarkmap, root, options }) => [getMarkmap, root, options],
                     fn: (getMarkmap, root, options) => {
                         const markmap = getMarkmap()
-                        const opt = markmap.deriveOptions(options)
-                        window.mm = markmap.Markmap.create("svg#mindmap", opt, root)
+                        const op = markmap.deriveOptions(options)
+                        window.mm = markmap.Markmap.create("svg#mindmap", op, root)
                     }
                 }
             }
-
             const context = {
                 getMarkmap: () => window.markmap,
-                root: root,
+                root,
                 options: { ...plugin.mm.options, ...plugin.config.DEFAULT_TOC_OPTIONS },
             }
             const createIIFE = (fn, params) => {
-                const args = params.map(arg =>
-                    typeof arg === "function"
-                        ? arg.toString().replace(/\s+/g, " ")
-                        : JSON.stringify(arg)
-                )
-                const callFuncStr = `(${fn.toString()})(${args.join(", ")})`
-                return callFuncStr.replace(/<\s*\/script\s*>/gi, "\\x3c$&")
+                const args = params
+                    .map(param => typeof param === "function" ? param.toString().replace(/\s+/g, " ") : JSON.stringify(param))
+                    .join(", ")
+                    .replace(/<\s*\/script\s*>/gi, "\\x3c$&")
+                return `(${fn.toString()})(${args})`
             }
 
-            return [...base, ...scripts, entry].map(script => {
+            return [...external, ...scripts, entry].map(script => {
                 switch (script.type) {
                     case "script":
                         return createTag("script", { src: script.data.src }, "")
                     case "iife":
                         const { fn, getParams } = script.data
                         const params = getParams ? getParams(context) : []
-                        const content = createIIFE(fn, params)
-                        return createTag("script", null, content)
+                        const iife = createIIFE(fn, params)
+                        return createTag("script", null, iife)
                     default:
                         return script
                 }
@@ -255,31 +258,33 @@ class downloader {
         const toHTML = (title, styles, scripts) => `
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>${title}</title>
-        <style>* { margin: 0; padding: 0; } #mindmap { display: block; width: 100vw; height: 100vh; }</style>
-        ${styles.join("\n")}
-    </head>
-    <body>
-        <svg id="mindmap"></svg>
-        ${scripts.join("\n")}
-    </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+    <style>* { margin: 0; padding: 0; } #mindmap { display: block; width: 100vw; height: 100vh; }</style>
+    ${styles.join("\n    ")}
+</head>
+<body>
+    <svg id="mindmap"></svg>
+    ${scripts.join("\n    ")}
+</body>
 </html>`
 
-        const run = title => {
+        const run = (title = "MINDMAP") => {
             const { transformer } = plugin.Lib
             const { root, features } = plugin.transformContext
             const { styles, scripts } = transformer.getUsedAssets(features)
-            const styleElements = handleStyles(styles)
-            const scriptElements = handleScripts(scripts, root, transformer.urlBuilder, "jsdelivr")
-            return toHTML(title, styleElements, scriptElements)
+            const external = getExternalScripts(transformer)
+            const styleEls = handleStyles(styles)
+            const scriptEls = handleScripts(external, scripts, root)
+            return toHTML(title, styleEls, scriptEls)
         }
 
-        return run("MINDMAP")
+        return run()
     }
+
+    static md = (plugin) => plugin.transformContext.content
 
     static getFormats = () => {
         const formats = Object.keys(this).filter(k => !k.startsWith("_") && !["getFormats", "download"].includes(k))

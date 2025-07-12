@@ -1222,7 +1222,7 @@ class utils {
                 clearInterval(timer)
                 obj[attr] = decorator(obj[attr], before, after)
             }
-        }, 20)
+        }, 50)
     }
 
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {

@@ -356,8 +356,8 @@ class tocMarkmap {
                     field("DEFAULT_TOC_OPTIONS.nodeMinHeight", "range", { min: 5, max: 50, step: 1 })
                 ),
                 untitledBox(
-                    field("DEFAULT_TOC_OPTIONS.colorFreezeLevel", "range", { min: 1, max: 6, step: 1 }),
-                    field("DEFAULT_TOC_OPTIONS.initialExpandLevel", "range", { min: 1, max: 6, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.colorFreezeLevel", "range", { min: 1, max: 7, step: 1 }),
+                    field("DEFAULT_TOC_OPTIONS.initialExpandLevel", "range", { min: 1, max: 7, step: 1 }),
                     field("DEFAULT_TOC_OPTIONS.duration", "range", { min: 0, max: 1000, step: 10 }),
                 ),
                 titledBox(
@@ -642,7 +642,7 @@ class tocMarkmap {
             }
         })
         preorder(newRoot, node => {
-            if (needFold.has(node.__path)) {
+            if (node.payload && needFold.has(node.__path)) {
                 node.payload.fold = 1
             }
         })
@@ -651,10 +651,11 @@ class tocMarkmap {
     _fixConfig = () => {
         const { DEFAULT_TOC_OPTIONS: op } = this.config
         op.color = op.color.map(e => e.toUpperCase())
-        if (op.initialExpandLevel < 0 || isNaN(op.initialExpandLevel)) {
-            op.initialExpandLevel = 6
-        } else if (op.initialExpandLevel === 0) {
-            op.initialExpandLevel = 1
+        if (op.initialExpandLevel <= 0 || isNaN(op.initialExpandLevel)) {
+            op.initialExpandLevel = 7
+        }
+        if (op.colorFreezeLevel < 0 || isNaN(op.colorFreezeLevel)) {
+            op.colorFreezeLevel = 7
         }
     }
 

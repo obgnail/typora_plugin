@@ -39,7 +39,7 @@ class resourceManagerPlugin extends BasePlugin {
             const fn = this[action]
             if (fn) fn()
         })
-        this.entities.fileTable.addEventListener("table-click", async ev => {
+        this.entities.fileTable.addEventListener("row-action", async ev => {
             const { action, rowData } = ev.detail
             if (action === "locate") {
                 this.utils.showInFinder(rowData.src)
