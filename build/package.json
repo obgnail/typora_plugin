@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "node index.cjs",
-    "build-single": "npm run build smol-toml",
+    "build-single": "npm run build https-proxy-agent",
     "build-selected": "npm run build md-padding markmap"
   },
   "dependencies": {
@@ -10,6 +10,8 @@
     "@moritzrs/micromark-extension-ofm": "^0.0.1",
     "abcjs": "^6.4.4",
     "crypto-js": "^4.2.0",
+    "https-proxy-agent": "^7.0.6",
+    "markdown-it": "^14.1.0",
     "markdownlint": "^0.38.0",
     "markdownlint-rule-helpers": "^0.29.0",
     "markmap-common": "^0.17.1",

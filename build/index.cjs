@@ -13,6 +13,10 @@ const options = {
 }
 
 const allBuildTasks = {
+    "markdown-it": {
+        entryPoints: ["markdown-it.cjs"],
+        outfile: "../plugin/global/core/lib/markdown-it.js",
+    },
     "smol-toml": {
         entryPoints: ["smol-toml.mjs"],
         outfile: "../plugin/global/core/lib/soml-toml.js",
@@ -20,6 +24,10 @@ const allBuildTasks = {
     "mdast": {
         entryPoints: ["mdast.mjs"],
         outfile: "../plugin/global/core/lib/mdast.js",
+    },
+    "https-proxy-agent": {
+        entryPoints: ["https-proxy-agent.cjs"],
+        outfile: "../plugin/global/core/lib/https-proxy-agent.js",
     },
     "md-padding": {
         entryPoints: ["md-padding.mjs"],
