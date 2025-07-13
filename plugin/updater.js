@@ -117,8 +117,6 @@ class updater {
             "./plugin/global/user_styles",
             "./plugin/global/settings/settings.user.toml",
             "./plugin/global/settings/custom_plugin.user.toml",
-            "./plugin/window_tab/save_tabs.json",
-            "./plugin/custom/plugins/reopenClosedFiles/remain.json",
         ]
 
         this.latestVersionInfo = null;

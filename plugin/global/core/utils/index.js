@@ -681,6 +681,13 @@ class utils {
         return fileName
     }
 
+    static getStorage = (plugin) => ({
+        set: (key, value) => localStorage.setItem(`plugin.${plugin.fixedName}.${key}`, value + ""),
+        get: (key) => localStorage.getItem(`plugin.${plugin.fixedName}.${key}`),
+        has: (key) => !!localStorage.getItem(`plugin.${plugin.fixedName}.${key}`),
+        remove: (key) => localStorage.removeItem(`plugin.${plugin.fixedName}.${key}`),
+    })
+
     ////////////////////////////// Basic file operations //////////////////////////////
     static getDirname = () => global.dirname || global.__dirname
     static getHomeDir = () => require("os").homedir() || File.option.userPath
@@ -696,14 +703,6 @@ class utils {
         } catch (err) {
         }
     }))
-
-    static existPathSync = filepath => {
-        try {
-            FS.accessSync(filepath);
-            return true
-        } catch (err) {
-        }
-    }
 
     static existPath = async filepath => {
         try {

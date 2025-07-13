@@ -23,6 +23,9 @@ class windowTabBarPlugin extends BasePlugin {
     ]
 
     init = () => {
+        this.saveKey = "manualSaved"
+        this.storage = this.utils.getStorage(this)
+
         this.staticActions = this.i18n.fillActions([
             { act_value: "sort_tabs", act_hotkey: this.config.SORT_TABS_HOTKEY },
             { act_value: "save_tabs" },
@@ -35,7 +38,6 @@ class windowTabBarPlugin extends BasePlugin {
         }
         this.localOpen = false
         this.checkTabsInterval = null
-        this.saveTabFilePath = this.utils.joinPath("./plugin/window_tab/save_tabs.json")
         this.tabUtil = {
             tabs: [],
             activeIdx: 0,
@@ -429,7 +431,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     getDynamicActions = () => this.i18n.fillActions([
-        { act_value: "open_save_tabs", act_hidden: !this.utils.existPathSync(this.saveTabFilePath) },
+        { act_value: "open_save_tabs", act_hidden: !this.storage.has(this.saveKey) },
         { act_value: "toggle_file_ext", act_state: this.config.TRIM_FILE_EXT },
         { act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_ON_DUPLICATE },
         { act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
@@ -857,8 +859,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     openInNewWindow = idx => this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false)
 
-    saveTabs = async filepath => {
-        filepath = filepath || this.saveTabFilePath
+    saveTabs = (key = this.saveKey) => {
         const mount_folder = this.utils.getMountFolder()
         const save_tabs = this.tabUtil.tabs.map((tab, idx) => ({
             idx: idx,
@@ -866,13 +867,12 @@ class windowTabBarPlugin extends BasePlugin {
             active: idx === this.tabUtil.activeIdx,
             scrollTop: tab.scrollTop,
         }))
-        const str = JSON.stringify({ mount_folder, save_tabs }, null, "\t")
-        await this.utils.Package.Fs.promises.writeFile(filepath, str)
+        const result = JSON.stringify({ mount_folder, save_tabs })
+        this.storage.set(key, result)
     }
 
-    openSaveTabs = async (filepath, matchMountFolder = false) => {
-        filepath = filepath || this.saveTabFilePath
-        const data = await this.utils.Package.Fs.promises.readFile(filepath, "utf8")
+    openSaveTabs = (key = this.saveKey, matchMountFolder = false) => {
+        const data = this.storage.get(key)
         const { save_tabs, mount_folder } = JSON.parse(data || "{}")
         if (!save_tabs || save_tabs.length === 0) return
         if (matchMountFolder && mount_folder !== this.utils.getMountFolder()) return

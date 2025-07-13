@@ -21,7 +21,6 @@ class eventHub {
             otherFileOpened: "otherFileOpened",                         // Different from fileOpened: reopening the current tab won't trigger otherFileOpened, but fileOpened will
             fileContentLoaded: "fileContentLoaded",                     // After file content is loaded
             fileEdited: "fileEdited",                                   // After file is edited
-            beforeUnload: "beforeUnload",                               // Before exiting Typora
             beforeToggleSourceMode: "beforeToggleSourceMode",           // Before entering source code mode
             afterToggleSidebar: "afterToggleSidebar",                   // After toggling the sidebar state
             afterSetSidebarWidth: "afterSetSidebarWidth",               // After adjusting the sidebar width
@@ -151,8 +150,6 @@ class eventHub {
         //     }
         // })
         // resizeObserver.observe(content)
-
-        this.utils.decorate(() => window, "onbeforeunload", () => this.publishEvent(this.eventType.beforeUnload))
 
         this.utils.decorate(() => File && File.megaMenu, "showPreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, true))
         this.utils.decorate(() => File && File.megaMenu, "closePreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, false))
