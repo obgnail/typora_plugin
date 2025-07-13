@@ -34,7 +34,7 @@ customElements.define("fast-form", class extends HTMLElement {
 
     // type: set/push/removeIndex
     _dispatchEvent(key, value, type = "set") {
-        const customEvent = new CustomEvent("CRUD", { detail: { key, value, type } })
+        const customEvent = new CustomEvent("form-crud", { detail: { key, value, type } })
         this.dispatchEvent(customEvent)
         this.utils.nestedPropertyHelpers[type](this.options.data, key, value)
         this._toggleReadonly(key)

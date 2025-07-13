@@ -4,7 +4,7 @@
  */
 const esbuild = require("esbuild")
 
-const commonOptions = {
+const options = {
     bundle: true,
     minify: true,
     platform: "node",
@@ -12,51 +12,75 @@ const commonOptions = {
     logLevel: "info",
 }
 
-const buildTasks = [
-    {
-        entryPoints: ["mdast.mjs"],
-        outfile: "../plugin/global/core/lib/mdast.min.js",
+const allBuildTasks = {
+    "smol-toml": {
+        entryPoints: ["smol-toml.mjs"],
+        outfile: "../plugin/global/core/lib/soml-toml.js",
     },
-    {
+    "mdast": {
+        entryPoints: ["mdast.mjs"],
+        outfile: "../plugin/global/core/lib/mdast.js",
+    },
+    "md-padding": {
         entryPoints: ["md-padding.mjs"],
         outfile: "../plugin/md_padding/md-padding.min.js",
     },
-    {
-        entryPoints: ["aes-ecb.cjs"],
+    "aes-ecb": {
+        entryPoints: ["aes-ecb.mjs"],
         outfile: "../plugin/cipher/aes-ecb.min.js",
     },
-    {
+    "markmap": {
         entryPoints: ["markmap.mjs"],
         outfile: "../plugin/markmap/resource/markmap.min.js",
     },
-    {
+    "abc": {
         entryPoints: ["abc.mjs"],
         outfile: "../plugin/custom/plugins/abc/abcjs-basic-min.js",
     },
-    {
+    "marp": {
         entryPoints: ["marp.mjs"],
         outfile: "../plugin/custom/plugins/marp/marp.min.js",
     },
-    {
+    "markdownlint": {
         entryPoints: ["markdownlint.mjs"],
         outfile: "../plugin/custom/plugins/markdownLint/markdownlint.min.js",
     },
-    {
+    "markdownlint-rule-math": {
         entryPoints: ["markdownlint-rule-math.cjs"],
         outfile: "../plugin/custom/plugins/markdownLint/MD101.js",
     },
-]
+}
 
-Promise.all(buildTasks.map(task => {
+let tasksToBuild = []
+const args = process.argv.slice(2)
+if (args.length === 0) {
+    tasksToBuild = Object.values(allBuildTasks)
+    console.log("Building all dependencies...")
+} else {
+    args.forEach(taskName => {
+        if (allBuildTasks[taskName]) {
+            tasksToBuild.push(allBuildTasks[taskName])
+            console.log(`Adding task: ${taskName}`)
+        } else {
+            console.warn(`Warning: Task "${taskName}" not found. Skipping.`)
+        }
+    })
+}
+if (tasksToBuild.length === 0) {
+    console.error("No valid tasks specified. Please provide valid task names")
+    process.exit(1)
+}
+
+Promise.all(tasksToBuild.map(task => {
     return esbuild.build({
-        ...commonOptions,
+        ...options,
         ...task,
     })
 }))
     .then(() => {
-        console.log("All esbuild packaging tasks have been successfully completed!")
+        console.log("Selected packaging tasks have been successfully completed!")
     })
     .catch((err) => {
-        console.error("esbuild error:", err)
+        console.error("Build Error:", err)
         process.exit(1)
     })

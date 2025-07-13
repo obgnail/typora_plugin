@@ -37,7 +37,12 @@ class formDialog {
         this.entities.cover.addEventListener("click", () => this._onVisibilityChange(0))
         this.entities.cancel.addEventListener("click", () => this._onVisibilityChange(0))
         this.entities.submit.addEventListener("click", () => this._onVisibilityChange(1))
-        this.entities.form.addEventListener("CRUD", ev => {
+        this.entities.dialog.addEventListener("keydown", ev => {
+            if (ev.key === "Escape") {
+                this._onVisibilityChange(0)
+            }
+        })
+        this.entities.form.addEventListener("form-crud", ev => {
             if (this.listener) {
                 this.listener(ev.detail)
             }
@@ -72,6 +77,7 @@ class formDialog {
             this.entities.form.render(options)
             this.utils.show(this.entities.dialog)
             this.utils.show(this.entities.cover)
+            this.entities.submit.focus()
         })
     }
 

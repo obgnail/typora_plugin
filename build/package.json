@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "build-all": "node index.cjs"
+    "build": "node index.cjs",
+    "build-single": "npm run build smol-toml",
+    "build-selected": "npm run build md-padding markmap"
   },
   "dependencies": {
     "@marp-team/marp-core": "^4.0.1",
@@ -19,7 +21,8 @@
     "mdast-util-math": "^3.0.0",
     "mdast-util-to-markdown": "^2.1.2",
     "micromark-extension-gfm": "^3.0.0",
-    "micromark-extension-math": "^3.1.0"
+    "micromark-extension-math": "^3.1.0",
+    "smol-toml": "^1.4.1"
   },
   "devDependencies": {
     "esbuild": "^0.25.4"

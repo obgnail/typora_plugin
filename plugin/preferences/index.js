@@ -80,7 +80,7 @@ class preferencesPlugin extends BasePlugin {
                     await this.switchMenu(fixedName)
                 }
             })
-            this.entities.form.addEventListener("CRUD", async ev => {
+            this.entities.form.addEventListener("form-crud", async ev => {
                 const { key, value, type } = ev.detail
                 const handleProperty = this.utils.nestedPropertyHelpers[type]
                 if (!handleProperty) return
