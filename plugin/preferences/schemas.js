@@ -234,6 +234,7 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "behavior",
+            Switch("REOPEN_CLOSED_TABS_WHEN_INIT"),
             Select("NEW_TAB_POSITION", OPTIONS.window_tab.NEW_TAB_POSITION),
             Select("TAB_SWITCH_ON_CLOSE", OPTIONS.window_tab.TAB_SWITCH_ON_CLOSE),
             Select("LAST_TAB_CLOSE_ACTION", OPTIONS.window_tab.LAST_TAB_CLOSE_ACTION),
@@ -1443,13 +1444,6 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Action("viewMarkdownlintRules"),
             Action("viewCustomMarkdownlintRules"),
-        ),
-        handleSettingsBox,
-    ],
-    reopenClosedFiles: [
-        customPluginFullBasePropBox,
-        UntitledBox(
-            Switch("auto_reopen_when_init"),
         ),
         handleSettingsBox,
     ],

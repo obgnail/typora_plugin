@@ -473,11 +473,6 @@ class preferencesPlugin extends BasePlugin {
                     _incompatibleSwitch(field, data, this.i18n._t("markmap", "$tooltip.experimental"))
                 }
             },
-            "reopenClosedFiles.enable": (field, data) => {
-                if (!this.utils.getBasePlugin("window_tab")) {
-                    _incompatibleSwitch(field, data, this.i18n._t("reopenClosedFiles", "$tooltip.dependOnWindowTab"))
-                }
-            },
             "preferences.DEFAULT_MENU": (field, data) => {
                 if (!field.options) {
                     field.options = this._getAllPlugins()

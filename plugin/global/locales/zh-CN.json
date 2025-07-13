@@ -129,6 +129,7 @@
     "$label.NEW_TAB_POSITION": "新建标签位置",
     "$label.TAB_SWITCH_ON_CLOSE": "关闭标签后",
     "$label.LAST_TAB_CLOSE_ACTION": "关闭最后的标签后",
+    "$label.REOPEN_CLOSED_TABS_WHEN_INIT": "启动时恢复未关闭标签",
     "$label.CTRL_CLICK_TO_NEW_WINDOW": "Ctrl+Click 新窗口打开",
     "$label.CTRL_WHEEL_TO_SWITCH": "Ctrl+Wheel 切换标签",
     "$label.MIDDLE_CLICK_TO_CLOSE": "中键关闭标签",
@@ -1410,11 +1411,6 @@
     "$title.custom_rules": "自定义检测规则文件",
     "$title.square": "状态指示方块",
     "$title.detectAndFix": "检测与修复"
-  },
-  "reopenClosedFiles": {
-    "pluginName": "重新打开未关闭标签页",
-    "$label.auto_reopen_when_init": "自动恢复未关闭标签",
-    "$tooltip.dependOnWindowTab": "依赖 window_tab 插件"
   },
   "quickButton": {
     "pluginName": "快速按钮",

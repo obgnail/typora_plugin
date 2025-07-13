@@ -508,11 +508,10 @@ class utils {
         return "/" + PATH.posix.join.apply(PATH.posix, newS).replace(":", "")
     }
 
-    static escape = htmlStr => htmlStr.replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+    static escape = html => {
+        const replacements = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }
+        return html.replace(/[&<>"']/g, (char) => replacements[char])
+    }
 
     static compareVersion = (ver1, ver2) => {
         if (ver1 === "" && ver2 !== "") {
@@ -684,7 +683,7 @@ class utils {
     static getStorage = (plugin) => ({
         set: (key, value) => localStorage.setItem(`plugin.${plugin.fixedName}.${key}`, value + ""),
         get: (key) => localStorage.getItem(`plugin.${plugin.fixedName}.${key}`),
-        has: (key) => !!localStorage.getItem(`plugin.${plugin.fixedName}.${key}`),
+        has: (key) => localStorage.getItem(`plugin.${plugin.fixedName}.${key}`) != null,
         remove: (key) => localStorage.removeItem(`plugin.${plugin.fixedName}.${key}`),
     })
 
@@ -697,12 +696,14 @@ class utils {
     static joinPath = (...paths) => PATH.join(this.getDirname(), ...paths)
     static requireFilePath = (...paths) => require(this.joinPath(...paths))
 
-    static readFiles = async files => Promise.all(files.map(async file => {
-        try {
-            return await FS.promises.readFile(file, 'utf-8')
-        } catch (err) {
-        }
-    }))
+    static readFiles = async files => Promise.all(
+        files.map(async file => {
+            try {
+                return await FS.promises.readFile(file, "utf-8")
+            } catch (err) {
+            }
+        })
+    )
 
     static existPath = async filepath => {
         try {
@@ -781,10 +782,7 @@ class utils {
 
     ////////////////////////////// Business Operations //////////////////////////////
     static exitTypora = () => JSBridge.invoke("window.close");
-    static restartTypora = (reopenClosedFiles = true) => {
-        if (reopenClosedFiles) {
-            this.callPluginFunction("reopenClosedFiles", "save")
-        }
+    static restartTypora = () => {
         this.openFolder(this.getMountFolder())
         setTimeout(this.exitTypora, 50)
     }
@@ -958,7 +956,8 @@ class utils {
             }
             return `<img alt="${alt}" src="${src}">`
         }
-        return content.replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
+        return content
+            .replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
             .replace(/(?<!\\)[*_]{2}(.+?)(?<!\\)[*_]{2}/gs, `<strong>$1</strong>`)
             .replace(/(?<![*\\])\*(?![\\*])(.+?)(?<![*\\])\*(?![\\*])/gs, `<em>$1</em>`)
             .replace(/(?<!\\)~~(.+?)(?<!\\)~~/gs, "<del>$1</del>")

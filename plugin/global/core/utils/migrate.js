@@ -6,17 +6,21 @@ class migrate {
         this.utils = utils
     }
 
-    deleteUselessPlugin = async () => {
+    deleteUselessPlugins = async () => {
         const custom = [
             "fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode",
-            "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander", "resourceOperation", "__modal_example",
+            "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander", "resourceOperation",
+            "reopenClosedFiles", "__modal_example",
         ]
         const promises = custom
-            .map(plugin => this.utils.joinPath("./plugin/custom/plugins", `${plugin}.js`))
+            .flatMap(plugin => [
+                this.utils.joinPath("./plugin/custom/plugins", `${plugin}.js`),
+                this.utils.joinPath("./plugin/custom/plugins", plugin),
+            ])
             .map(async path => {
                 const exist = await this.utils.existPath(path)
                 if (exist) {
-                    await this.utils.Package.Fs.promises.unlink(path)
+                    await this.utils.Package.FsExtra.remove(path)
                 }
             })
         await Promise.all(promises)
@@ -32,8 +36,8 @@ class migrate {
         })
     }
 
-    cleanInvalidPlugin = async (files) => {
-        const promises = files.flatMap(async ({ configDefault, configUser }) => {
+    cleanInvalidPlugins = async (files) => {
+        const promises = files.map(({ configDefault, configUser }) => {
             const fixedNames = new Set([...Object.keys(configDefault), ...Object.keys(configUser)])
             fixedNames.delete("global")
             return [...fixedNames].map(async fixedName => {
@@ -52,10 +56,10 @@ class migrate {
                 }
             })
         })
-        await Promise.all(promises)
+        await Promise.all(promises.flat())
     }
 
-    cleanPluginAndKey = (files) => {
+    cleanPluginsAndKeys = (files) => {
         files.forEach(({ configDefault, configUser }) => {
             Object.keys(configUser)
                 .filter(fixedName => configDefault.hasOwnProperty(fixedName))
@@ -81,7 +85,7 @@ class migrate {
         ]
     }
 
-    saveFile = async (files) => {
+    saveFiles = async (files) => {
         const promises = files.map(async ({ file, configUser }) => {
             const path = await this.utils.settings.getActualSettingPath(file)
             const content = this.utils.stringifyToml(configUser)
@@ -92,13 +96,14 @@ class migrate {
 
     run = async () => {
         const files = await this.getConfigs()
-        await this.deleteUselessPlugin()
+        await this.deleteUselessPlugins()
         await this.fixCustomPluginConfigs(files)
-        await this.cleanInvalidPlugin(files)
-        await this.cleanPluginAndKey(files)
-        await this.saveFile(files)
+        await this.cleanInvalidPlugins(files)
+        await this.cleanPluginsAndKeys(files)
+        await this.saveFiles(files)
     }
 
+    // Run migrate after Typora starts and check the permission to write to the settings files
     afterProcess = () => {
         setTimeout(async () => await this.run(), 5 * 1000)
     }

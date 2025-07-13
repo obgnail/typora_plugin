@@ -58,25 +58,24 @@
 | 39   | export_enhance          | Avoid image loss when exporting to HTML                   |                    |
 | 40   | markdownLint            | Markdown Lint Check                                       |                    |
 | 41   | go_top                  | One-click to top of the article                           |                    |
-| 42   | reopenClosedFiles       | Reopen Closed Files                                       | ×                  |
-| 43   | truncate_text           | Hide content to improve performance for large files       | ×                  |
-| 44   | dark                    | Dark mode                                                 |                    |
-| 45   | no_image                | No image mode                                             |                    |
-| 46   | updater                 | One-click plugin update                                   |                    |
-| 47   | easy_modify             | Editing tools                                             |                    |
-| 48   | editor_width_slider     | Adjust writing area width                                 |                    |
-| 49   | redirectLocalRootUrl    | Redirect local resource root directory                    | ×                  |
-| 50   | blockSideBySide         | Display active blocks side by side                        | ×                  |
-| 51   | scrollBookmarker        | Bookmark manager                                          | ×                  |
-| 52   | cipher                  | Encrypt files                                             | ×                  |
-| 53   | ripgrep                 | Search files using ripgrep                                | ×                  |
-| 54   | article_uploader        | One-click upload blog to supported platforms              | ×                  |
-| 55   | sortableOutline         | Drag & drop outline to rearrange                          | ×                  |
-| 56   | cursor_history          | Cursor History                                            | ×                  |
-| 57   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
-| 58   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
-| 59   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
-| 60   | json_rpc                | External control of Typora (advanced)                     | ×                  |
+| 42   | truncate_text           | Hide content to improve performance for large files       | ×                  |
+| 43   | dark                    | Dark mode                                                 |                    |
+| 44   | no_image                | No image mode                                             |                    |
+| 45   | updater                 | One-click plugin update                                   |                    |
+| 46   | easy_modify             | Editing tools                                             |                    |
+| 47   | editor_width_slider     | Adjust writing area width                                 |                    |
+| 48   | redirectLocalRootUrl    | Redirect local resource root directory                    | ×                  |
+| 49   | blockSideBySide         | Display active blocks side by side                        | ×                  |
+| 50   | scrollBookmarker        | Bookmark manager                                          | ×                  |
+| 51   | cipher                  | Encrypt files                                             | ×                  |
+| 52   | ripgrep                 | Search files using ripgrep                                | ×                  |
+| 53   | article_uploader        | One-click upload blog to supported platforms              | ×                  |
+| 54   | sortableOutline         | Drag & drop outline to rearrange                          | ×                  |
+| 55   | cursor_history          | Cursor History                                            | ×                  |
+| 56   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
+| 57   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
+| 58   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
+| 59   | json_rpc                | External control of Typora (advanced)                     | ×                  |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
@@ -525,12 +524,6 @@ Function: When exporting HTML, convert images to base64 to avoid image loss.
 ### go_top
 
 Function: Add a "Go to Top" button at the bottom right corner.
-
-### reopenClosedFiles
-
-Function: Automatically or through a shortcut, open the tabs that were not closed when Typora was last exited.
-
-> This plugin only works when window_tab is enabled.
 
 ### dark: Dark Mode
 

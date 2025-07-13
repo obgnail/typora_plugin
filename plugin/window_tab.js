@@ -23,7 +23,8 @@ class windowTabBarPlugin extends BasePlugin {
     ]
 
     init = () => {
-        this.saveKey = "manualSaved"
+        this.manualSaveKey = "manualSaved"
+        this.autoSaveKey = "autoSaved"
         this.storage = this.utils.getStorage(this)
 
         this.staticActions = this.i18n.fillActions([
@@ -383,6 +384,16 @@ class windowTabBarPlugin extends BasePlugin {
                 }
             }, true)
         }
+        const reopenTabsWhenInit = () => {
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+                // Redirection is disabled when opening specific files (isDiscardableUntitled === false).
+                this.utils.loopDetector(this.utils.isDiscardableUntitled, () => this.openSaveTabs(this.autoSaveKey, true), 50, 2000, false)
+
+                setTimeout(() => {
+                    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveKey))
+                }, 2000)
+            })
+        }
 
         // Typora version 1.1 and later supports using anchor links to jump to local files
         // Intercept internal and local file links, and change the jump behavior to open in a new tab
@@ -425,13 +436,16 @@ class windowTabBarPlugin extends BasePlugin {
         if (this.config.MIDDLE_CLICK_TO_CLOSE) {
             handleMiddleClick();
         }
+        if (this.config.REOPEN_CLOSED_TABS_WHEN_INIT) {
+            reopenTabsWhenInit()
+        }
         if (this.config.USE_CONTEXT_MENU && this.config.CONTEXT_MENU.length) {
             handleContextMenu();
         }
     }
 
     getDynamicActions = () => this.i18n.fillActions([
-        { act_value: "open_save_tabs", act_hidden: !this.storage.has(this.saveKey) },
+        { act_value: "open_save_tabs", act_hidden: !this.storage.has(this.manualSaveKey) },
         { act_value: "toggle_file_ext", act_state: this.config.TRIM_FILE_EXT },
         { act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_ON_DUPLICATE },
         { act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
@@ -770,8 +784,8 @@ class windowTabBarPlugin extends BasePlugin {
         const getLatestTabIdx = () => tabUtil.tabs.reduce((maxIdx, tab, idx, array) => (tab.timestamp || 0) > (array[maxIdx].timestamp || 0) ? idx : maxIdx, 0)
         const handleLastTab = () => {
             const exit = () => {
-                tabUtil.spliceTabs(idx, 1)  // Delete all tabs to ensure the `reopenClosedFiles` plugin works properly.
-                this.utils.exitTypora();
+                tabUtil.spliceTabs(idx, 1)
+                this.utils.exitTypora()
             }
             switch (LAST_TAB_CLOSE_ACTION) {
                 case "exit":
@@ -859,7 +873,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     openInNewWindow = idx => this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false)
 
-    saveTabs = (key = this.saveKey) => {
+    saveTabs = (key = this.manualSaveKey) => {
         const mount_folder = this.utils.getMountFolder()
         const save_tabs = this.tabUtil.tabs.map((tab, idx) => ({
             idx: idx,
@@ -871,7 +885,7 @@ class windowTabBarPlugin extends BasePlugin {
         this.storage.set(key, result)
     }
 
-    openSaveTabs = (key = this.saveKey, matchMountFolder = false) => {
+    openSaveTabs = (key = this.manualSaveKey, matchMountFolder = false) => {
         const data = this.storage.get(key)
         const { save_tabs, mount_folder } = JSON.parse(data || "{}")
         if (!save_tabs || save_tabs.length === 0) return

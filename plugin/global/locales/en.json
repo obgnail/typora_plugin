@@ -129,6 +129,7 @@
     "$label.NEW_TAB_POSITION": "New Tab Position",
     "$label.TAB_SWITCH_ON_CLOSE": "On Tab Close",
     "$label.LAST_TAB_CLOSE_ACTION": "On Last Tab Close",
+    "$label.REOPEN_CLOSED_TABS_WHEN_INIT": "Reopen Unclosed Tabs When Starting Typora",
     "$label.CTRL_CLICK_TO_NEW_WINDOW": "Ctrl+Click to New Window",
     "$label.CTRL_WHEEL_TO_SWITCH": "Ctrl+Wheel to Switch Tabs",
     "$label.MIDDLE_CLICK_TO_CLOSE": "Middle Click to Close Tab",
@@ -1410,11 +1411,6 @@
     "$title.custom_rules": "Custom Lint Rules File",
     "$title.square": "Status indicator Square",
     "$title.detectAndFix": "Detect and Fix"
-  },
-  "reopenClosedFiles": {
-    "pluginName": "Reopen Closed Files",
-    "$label.auto_reopen_when_init": "Auto Reopen Unclosed Tabs",
-    "$tooltip.dependOnWindowTab": "Dependent on window_tab plugin"
   },
   "quickButton": {
     "pluginName": "QuickButton",
