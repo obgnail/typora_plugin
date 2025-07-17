@@ -758,26 +758,54 @@ class utils {
     static walkDir = async (dir, fileFilter, dirFilter, paramsBuilder, callback) => {
         const { Fs: { promises: { readdir, stat } }, Path } = this.Package
 
-        async function walk(dir) {
+        const CONCURRENCY_LIMIT = 20
+        const taskQueue = []
+        let activeTasks = 0
+
+        let resolveDrain
+        const drainPromise = new Promise(resolve => resolveDrain = resolve)
+
+        const runTask = () => {
+            while (taskQueue.length > 0 && activeTasks < CONCURRENCY_LIMIT) {
+                const task = taskQueue.shift()
+                activeTasks++
+                task().finally(() => {
+                    activeTasks--
+                    runTask()
+
+                    if (activeTasks === 0 && taskQueue.length === 0) {
+                        resolveDrain()
+                    }
+                })
+            }
+        }
+        const addTask = (fn) => {
+            taskQueue.push(fn)
+            runTask()
+        }
+        const walk = async (dir) => {
             const files = await readdir(dir)
-            const promises = files.map(async file => {
+            for (const file of files) {
                 const path = Path.join(dir, file)
-                const stats = await stat(path)
-                if (stats.isFile()) {
-                    if (fileFilter(path, stats)) {
-                        const params = await paramsBuilder(path, file, dir, stats)
-                        await callback(params)
+                addTask(async () => {
+                    const stats = await stat(path)
+                    if (stats.isFile()) {
+                        if (fileFilter(path, stats)) {
+                            const params = await paramsBuilder(path, file, dir, stats)
+                            await callback(params)
+                        }
+                    } else if (stats.isDirectory()) {
+                        if (dirFilter(file)) {
+                            await walk(path)
+                        }
                     }
-                } else if (stats.isDirectory()) {
-                    if (dirFilter(file)) {
-                        await walk(path)
-                    }
-                }
-            })
-            await Promise.all(promises)
+                })
+            }
         }
 
         await walk(dir)
+        runTask()
+        await drainPromise
     }
 
     ////////////////////////////// Business Operations //////////////////////////////
