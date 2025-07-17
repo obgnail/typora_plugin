@@ -117,7 +117,7 @@ class QualifierMixin {
     }
 
     static CAST = {
-        toStringOrRegexp: (operand, operandType) => operandType === "REGEXP" ? new RegExp(operand) : operand.toString(),
+        toStringOrRegexp: (operand, operandType) => operandType === "REGEXP" ? new RegExp(operand, "u") : operand.toString(),
         toNumber: operand => Number(operand),
         toBoolean: operand => operand.toLowerCase() === "true",
         toBytes: operand => {
@@ -236,6 +236,7 @@ class Searcher {
             mtime: ({ path, file, stats, content }) => normalizeDate(stats.mtime),
             birthtime: ({ path, file, stats, content }) => normalizeDate(stats.birthtime),
             content: ({ path, file, stats, content }) => content,
+            isempty: ({ path, file, stats, content }) => content.trim() === "",
             crlf: ({ path, file, stats, content }) => content.includes("\r\n"),
             linenum: ({ path, file, stats, content }) => content.split("\n").length,
             charnum: ({ path, file, stats, content }) => content.length,
@@ -286,6 +287,7 @@ class Searcher {
             buildQualifier("haschinese", true, true, 2, none, PROCESS.boolean),
             buildQualifier("hasemoji", true, true, 2, none, PROCESS.boolean),
             buildQualifier("hasinvisiblechar", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("isempty", true, true, 2, none, PROCESS.boolean),
             buildQualifier("crlf", true, true, 2, none, PROCESS.boolean),
             buildQualifier("line", false, true, 2, write, PROCESS.stringArray),
         ]
@@ -815,6 +817,7 @@ class Searcher {
             bold(genOperator(">", "<", ">=", "<=")) + " " + t("modal.hintDetail.operator.compare"),
         ]
         const _operand = [
+            t("modal.hintDetail.operand.text"),
             t("modal.hintDetail.operand.quotes", { eg: emphasis('"sour pear"') }),
             t("modal.hintDetail.operand.regex", { eg: emphasis("/\\bsour\\b/") }),
         ]
@@ -914,7 +917,7 @@ class Searcher {
             ]
             const exampleFields = [{ type: "custom", content: example }]
             const playgroundFields = [
-                { key: "expression", type: "textarea", rows: 3 },
+                { key: "expression", type: "textarea", rows: 3, noResize: true },
                 presentField,
                 { key: "optimize", type: "switch", label: t("$label.OPTIMIZE_SEARCH"), tooltip: t("$tooltip.breakOrder") },
                 { key: "presentation", type: "select", label: t("modal.playground.presentation"), options: presentOps },
@@ -939,7 +942,7 @@ class Searcher {
 
         const defaultData = {
             grammar: "",
-            expression: "taskdone:sour  file:pear  ( linenum<=200 | size>10kb )",
+            expression: "head:sour  file:pear  ( linenum<=200 | size>10kb )",
             presentation: "graph",
             direction: "LR",
             ast: "",

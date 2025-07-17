@@ -103,7 +103,7 @@ CTRL_CLICK_TO_NEW_WINDOW = true
 # 是否允许通过按住 Ctrl 键并滚动鼠标滚轮来切换标签页
 #   true:  启用此功能
 #   false: 禁用此功能
-CTRL_WHEEL_TO_SWITCH = true
+CTRL_WHEEL_TO_SWITCH = false
 
 # 是否允许通过鼠标中键点击标签页来关闭该标签页
 #   true:  启用此功能

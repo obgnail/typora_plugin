@@ -68,7 +68,7 @@ move_or_create_empty_file() {
         if [[ "$CREATE_EMPTY" == "1" ]]; then
             if [[ ! -f "$TO" ]]; then
                 if touch "$TO"; then
-                    chmod 600 "$TO"
+                    chmod 666 "$TO"
                     echo "Notice: $FROM not found, created empty file at $TO"
                 else
                     echo "Error: Failed to create empty file at $TO"
@@ -103,7 +103,7 @@ move_or_create_empty_file() {
     fi
 
     if mv -f "$FROM" "$TO" 2>/dev/stdout; then
-        if chmod 600 "$TO"; then
+        if chmod 666 "$TO"; then
             echo "Success: $DIRECTION and set permissions for $FILE_DESC → $TO"
         else
             echo "Warning: $FILE_DESC $DIRECTION, but failed to set permissions. Please check $TO manually."

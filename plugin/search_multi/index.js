@@ -186,15 +186,15 @@ class searchMultiPlugin extends BasePlugin {
                 item.setAttribute("ty-hint", time)
             }
 
-            const title = document.createElement("div")
-            title.className = "plugin-search-item-title"
-            title.textContent = this.config.SHOW_EXT ? base : name
+            const itemTitle = document.createElement("div")
+            itemTitle.className = "plugin-search-item-title"
+            itemTitle.textContent = this.config.SHOW_EXT ? base : name
 
-            const path = document.createElement("div")
-            path.className = "plugin-search-item-path"
-            path.textContent = dirPath + this.utils.separator
+            const itemPath = document.createElement("div")
+            itemPath.className = "plugin-search-item-path"
+            itemPath.textContent = dirPath + this.utils.separator
 
-            item.append(title, path)
+            item.append(itemTitle, itemPath)
             return item
         }
 
@@ -222,10 +222,10 @@ class searchMultiPlugin extends BasePlugin {
     }
 
     call = () => {
-        if (!this.entities.window.hidden) {
-            this.hide()
-        } else {
+        if (this.entities.window.hidden) {
             this.show()
+        } else {
+            this.hide()
         }
     }
 }

@@ -371,7 +371,8 @@ customElements.define("fast-form", class extends HTMLElement {
                     const rows = ctl.rows || 3
                     const readonly = ctl.readonly ? "readonly" : ""
                     const value_ = isObject ? this._serialize(value) : value
-                    const textarea = `<textarea class="${ctl.type}" rows="${rows}" ${readonly} data-key="${ctl.key}" ${placeholder(ctl)} ${disabled(ctl)}>${value_}</textarea>`
+                    const cls = ctl.type + (ctl.noResize ? " no-resize" : "")
+                    const textarea = `<textarea class="${cls}" rows="${rows}" ${readonly} data-key="${ctl.key}" ${placeholder(ctl)} ${disabled(ctl)}>${value_}</textarea>`
                     return isObject
                         ? `<div class="object-wrap">${textarea}<button class="object-confirm">${this.i18n.t("global", "confirm")}</button></div>`
                         : textarea

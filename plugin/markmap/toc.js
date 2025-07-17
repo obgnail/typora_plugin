@@ -11,13 +11,12 @@ class tocMarkmap {
         <div id="plugin-markmap" class="plugin-common-modal plugin-common-hidden">
             <div class="plugin-markmap-header">
                 <div class="plugin-markmap-icon ion-close" action="close" ty-hint="${this.i18n.t('func.close')}"></div>
-                <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="${this.i18n.t('func.fit')}"></div>
-                <div class="plugin-markmap-icon ion-android-locate" action="penetrateMouse" ty-hint="${this.i18n.t('func.penetrateMouse')}"></div>
-                <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="${this.i18n.t('func.setting')}"></div>
-                <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="${this.i18n.t('func.download')}"></div>
                 <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="${this.i18n.t('func.expand')}"></div>
                 <div class="plugin-markmap-icon ion-chevron-up" action="pinTop" ty-hint="${this.i18n.t('func.pinTop')}"></div>
                 <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="${this.i18n.t('func.pinRight')}"></div>
+                <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="${this.i18n.t('func.fit')}"></div>
+                <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="${this.i18n.t('func.setting')}"></div>
+                <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="${this.i18n.t('func.download')}"></div>
                 <div class="plugin-markmap-icon" action="resize"><svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg></div>
             </div>
             <svg id="plugin-markmap-svg"></svg>
@@ -43,7 +42,6 @@ class tocMarkmap {
             svg: document.querySelector("#plugin-markmap-svg"),
             resize: document.querySelector('.plugin-markmap-icon[action="resize"]'),
             fullScreen: document.querySelector('.plugin-markmap-icon[action="expand"]'),
-            penetrateMouse: document.querySelector('.plugin-markmap-icon[action="penetrateMouse"]'),
         }
 
         this.pinUtils = {
@@ -304,15 +302,8 @@ class tocMarkmap {
         }
     }
 
-    penetrateMouse = () => {
-        const options = this.mm.options
-        options.zoom = !options.zoom
-        options.pan = !options.pan
-        this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan)
-    }
-
     setting = async () => {
-        const storeAttrs = [
+        const attrsToSave = [
             "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
             "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITIONING",
             "USE_CONTEXT_MENU", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_FOLD", "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
@@ -422,7 +413,7 @@ class tocMarkmap {
                 await this.utils.settings.handleSettings(fixedName, settingObj => {
                     const setting = settingObj[fixedName]
                     if (setting) {
-                        settingObj[fixedName] = this.utils.pickBy(setting, (_, k) => !storeAttrs.includes(k))
+                        settingObj[fixedName] = this.utils.pickBy(setting, (_, k) => !attrsToSave.includes(k))
                     }
                     return settingObj
                 })
@@ -438,13 +429,13 @@ class tocMarkmap {
         })
 
         const getData = () => {
-            const obj = this.utils.pick(this.config, storeAttrs)
+            const obj = this.utils.pick(this.config, attrsToSave)
             const data = JSON.parse(JSON.stringify(obj))
             data.DEFAULT_TOC_OPTIONS.color = arr2Str(data.DEFAULT_TOC_OPTIONS.color)
             return data
         }
 
-        const storeData = async (result) => {
+        const save = async (result) => {
             result.DEFAULT_TOC_OPTIONS.color = str2Arr(result.DEFAULT_TOC_OPTIONS.color)
             Object.assign(this.config, result)
             await this.utils.settings.saveSettings(this.plugin.fixedName, result)
@@ -460,7 +451,7 @@ class tocMarkmap {
         }
         const { response, data } = await this.utils.formDialog.modal(op)
         if (response === 1 && hasEdit) {
-            await storeData(data)
+            await save(data)
             await this.draw()
             this.toggleContextMenu()
             this.utils.notification.show(this.i18n._t("global", "success.edit"))
@@ -617,7 +608,7 @@ class tocMarkmap {
     doAction = async action => {
         if (action === "fit") {
             this.fit(true)
-        } else if (action !== "resize") {
+        } else if (action !== "resize" && this[action]) {
             await this[action]()
         }
     }
@@ -683,12 +674,7 @@ class tocMarkmap {
         this.entities.modal.classList.toggle("pinned-window", pinned)
         this.utils.toggleVisible(gripEl, !pinned)
         this.utils.toggleVisible(this.entities.resize, pinned)
-        this.utils.toggleVisible(this.entities.penetrateMouse, pinned)
         this._setFullScreenStyles(false)
-
-        if (pinned && this.entities.modal.classList.contains("penetrateMouse")) {
-            this.penetrateMouse()
-        }
 
         const btn = this.entities.header.querySelector(`[action="${act}"]`)
         btn.classList.toggle(icon, !pinned)
@@ -716,7 +702,6 @@ class tocMarkmap {
         this._setModalRect(expand ? this.pinUtils.originContentRect : this.pinUtils.originModalRect)
         this._setFullScreenStyles(expand)
         this.entities.modal.classList.toggle("pinned-window", expand)
-        this.utils.toggleVisible(this.entities.penetrateMouse, expand)
         this.utils.toggleVisible(this.entities.resize, expand)
     }
 

@@ -1423,6 +1423,9 @@ button_width = "15px"
 # 方块的高度
 button_height = "15px"
 
+# 方块的边框圆角
+button_border_radius = "4px"
+
 # 格式检测通过时方块的颜色
 pass_color = "#499C54"
 

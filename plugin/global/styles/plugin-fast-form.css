@@ -153,6 +153,7 @@ textarea {
     border-radius: 4px;
     background: transparent;
     width: 100%;
+    min-height: 2em;
     font-size: 16px;
     outline: none;
     font-family: inherit;
@@ -177,6 +178,10 @@ textarea::placeholder {
 .unit-input:disabled,
 .switch-input:disabled {
     cursor: not-allowed;
+}
+
+.no-resize {
+    resize: none;
 }
 
 /***** switch *****/

@@ -25,7 +25,6 @@ customElements.define("fast-window", class extends HTMLElement {
             contentArea: root.querySelector(".content-area"),
         }
 
-        this.contentArea = this.entities.contentArea
         this._isDragging = false
         this._offsetX = 0
         this._offsetY = 0
@@ -74,19 +73,18 @@ customElements.define("fast-window", class extends HTMLElement {
     }
 
     setContent = (content, unsafe = false) => {
-        const contentArea = this.entities.contentArea
-        contentArea.innerHTML = ""
+        const area = this.entities.contentArea
+        area.innerHTML = ""
         if (typeof content === "string") {
             if (unsafe) {
-                contentArea.innerHTML = content
+                area.innerHTML = content
             } else {
-                const textNode = document.createTextNode(content)
-                contentArea.appendChild(textNode)
+                area.appendChild(document.createTextNode(content))
             }
         } else if (content instanceof Node) {
-            contentArea.appendChild(content)
+            area.appendChild(content)
         } else {
-            console.warn("fast-window: Invalid content type for setContent. Expected string, HTMLElement, or DocumentFragment.")
+            console.warn("Invalid content. Expected string, HTMLElement, or DocumentFragment.")
         }
     }
 

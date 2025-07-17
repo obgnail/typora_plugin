@@ -17,12 +17,7 @@ class migrate {
                 this.utils.joinPath("./plugin/custom/plugins", `${plugin}.js`),
                 this.utils.joinPath("./plugin/custom/plugins", plugin),
             ])
-            .map(async path => {
-                const exist = await this.utils.existPath(path)
-                if (exist) {
-                    await this.utils.Package.FsExtra.remove(path)
-                }
-            })
+            .map(async path => this.utils.Package.FsExtra.remove(path))
         await Promise.all(promises)
     }
 
@@ -105,7 +100,7 @@ class migrate {
 
     // Run migrate after Typora starts and check the permission to write to the settings files
     afterProcess = () => {
-        setTimeout(async () => await this.run(), 5 * 1000)
+        setTimeout(this.run, 5 * 1000)
     }
 }
 

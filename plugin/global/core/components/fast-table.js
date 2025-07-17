@@ -18,8 +18,8 @@ customElements.define("fast-table", class extends HTMLElement {
             thead: root.querySelector("thead"),
             theadRow: root.querySelector("thead tr"),
             tbody: root.querySelector("tbody"),
-            tableWrapper: root.querySelector(".table-wrapper"),
-            noDataMessage: root.querySelector(".no-data"),
+            wrapper: root.querySelector(".table-wrapper"),
+            noData: root.querySelector(".no-data"),
         }
         this.clear()
     }
@@ -146,15 +146,15 @@ customElements.define("fast-table", class extends HTMLElement {
         if (this._pauseReactivity || this._updateScheduled) return
 
         this._updateScheduled = true
-        Promise.resolve()
-            .then(() => {
+        queueMicrotask(() => {
+            try {
                 this._updateScheduled = false
                 this._render()
-            })
-            .catch(error => {
+            } catch (error) {
                 this._updateScheduled = false
                 console.error('Fast-table render error:', error)
-            })
+            }
+        })
     }
 
     _render = () => {
@@ -260,12 +260,12 @@ customElements.define("fast-table", class extends HTMLElement {
     }
 
     _showNoData = () => {
-        this.entities.tableWrapper.classList.add("hidden")
-        this.entities.noDataMessage.classList.remove("hidden")
+        this.entities.wrapper.classList.add("hidden")
+        this.entities.noData.classList.remove("hidden")
     }
 
     _hideNoData = () => {
-        this.entities.tableWrapper.classList.remove("hidden")
-        this.entities.noDataMessage.classList.add("hidden")
+        this.entities.wrapper.classList.remove("hidden")
+        this.entities.noData.classList.add("hidden")
     }
 })

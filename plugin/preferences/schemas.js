@@ -50,31 +50,29 @@ const Select = (key, options, { tooltip, minItems, maxItems, dependencies, ...ar
     return { type: "select", key, label, tooltip, options, minItems, maxItems, dependencies, ...args }
 }
 
+const Title = title => title
 const UntitledBox = (...fields) => ({ title: undefined, fields })
 const TitledBox = (title, ...fields) => ({ title: `$title.${title}`, fields })
 
-const ObjectBOX = (key, { rows = 10, dependencies, ...args } = {}) => TitledBox(key, { type: "object", key, rows, dependencies, ...args })
-const TextareaBox = (key, { rows = 10, dependencies, ...args } = {}) => TitledBox(key, { type: "textarea", key, rows, dependencies, ...args })
-const ArrayBox = (key, { dependencies, ...args } = {}) => TitledBox(key, { type: "array", key, dependencies, ...args })
-const RadioBox = (key, options, { dependencies, ...args } = {}) => TitledBox(key, { type: "radio", key, options, dependencies, ...args })
-const CheckboxBox = (key, options, { minItems, maxItems, dependencies, ...args } = {}) => TitledBox(key, {
-    type: "checkbox",
-    options,
-    key,
-    minItems,
-    maxItems,
-    dependencies,
-    ...args,
-})
-const TableBox = (key, ths, nestedBoxes, defaultValues, { dependencies, ...args } = {}) => TitledBox(key, {
-    type: "table",
-    key,
-    nestedBoxes,
-    defaultValues,
-    dependencies,
-    thMap: Object.fromEntries(ths.map(th => [th, `$label.${key}.${th}`])),
-    ...args,
-})
+const ObjectBOX = (key, { rows = 10, dependencies, ...args } = {}) => {
+    return TitledBox(key, { type: "object", key, rows, dependencies, ...args })
+}
+const TextareaBox = (key, { rows = 10, dependencies, ...args } = {}) => {
+    return TitledBox(key, { type: "textarea", key, rows, dependencies, ...args })
+}
+const ArrayBox = (key, { dependencies, ...args } = {}) => {
+    return TitledBox(key, { type: "array", key, dependencies, ...args })
+}
+const TableBox = (key, ths, nestedBoxes, defaultValues, { dependencies, ...args } = {}) => {
+    const thMap = Object.fromEntries(ths.map(th => [th, `$label.${key}.${th}`]))
+    return TitledBox(key, { type: "table", key, nestedBoxes, defaultValues, thMap, dependencies, ...args })
+}
+const RadioBox = (key, options, { dependencies, ...args } = {}) => {
+    return TitledBox(key, { type: "radio", key, options, dependencies, ...args })
+}
+const CheckboxBox = (key, options, { minItems, maxItems, dependencies, ...args } = {}) => {
+    return TitledBox(key, { type: "checkbox", options, key, minItems, maxItems, dependencies, ...args })
+}
 
 const prop_ENABLE = Switch("ENABLE")
 const prop_NAME = Text("NAME", { placeholder: "defaultIfEmpty" })
@@ -98,15 +96,27 @@ const fenceEnhanceButtonDep = { dependencies: { ENABLE_BUTTON: true } }
 const fenceEnhanceHotkeyDep = { dependencies: { ENABLE_HOTKEY: true } }
 
 const langModeBox = TitledBox(
-    "fenceLanguageMode",
+    Title("fenceLanguageMode"),
     Text("LANGUAGE", protectedAttrs),
     Switch("INTERACTIVE_MODE"),
 )
 const chartStyleBox = TitledBox(
-    "diagramStyle",
+    Title("diagramStyle"),
     Text("DEFAULT_FENCE_HEIGHT"),
     Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
 )
+
+const UNITS = {
+    byte: "$unit.byte",
+    pixel: "$unit.pixel",
+    millisecond: "$unit.millisecond",
+    second: "$unit.second",
+    item: "$unit.item",
+    line: "$unit.line",
+    percent: "$unit.percent",
+    degree: "$unit.degree",
+    em: "$unit.em",
+}
 
 const OPTIONS = {
     global: {
@@ -179,18 +189,6 @@ Object.values(OPTIONS).forEach(obj => {
     })
 })
 
-const UNITS = {
-    byte: "$unit.byte",
-    pixel: "$unit.pixel",
-    millisecond: "$unit.millisecond",
-    second: "$unit.second",
-    item: "$unit.item",
-    line: "$unit.line",
-    percent: "$unit.percent",
-    degree: "$unit.degree",
-    em: "$unit.em",
-}
-
 const SETTING_SCHEMAS = {
     global: [
         UntitledBox(
@@ -211,11 +209,11 @@ const SETTING_SCHEMAS = {
             Action("editStyles"),
             Action("developPlugins"),
             Action("githubImageBed"),
-            Action("sendEmail"),
         ),
         UntitledBox(
             Action("updatePlugin"),
             Action("uninstallPlugin"),
+            Action("sendEmail"),
             Action("donate"),
             Static("pluginVersion"),
         ),
@@ -223,7 +221,7 @@ const SETTING_SCHEMAS = {
     window_tab: [
         pluginLiteBasePropBox,
         TitledBox(
-            "appearance",
+            Title("appearance"),
             Switch("SHOW_TAB_CLOSE_BUTTON"),
             Switch("TRIM_FILE_EXT"),
             Switch("SHOW_DIR_ON_DUPLICATE"),
@@ -233,14 +231,14 @@ const SETTING_SCHEMAS = {
             Number("MAX_TAB_NUM", { tooltip: "minusOne", min: -1 }),
         ),
         TitledBox(
-            "behavior",
+            Title("behavior"),
             Switch("REOPEN_CLOSED_TABS_WHEN_INIT"),
             Select("NEW_TAB_POSITION", OPTIONS.window_tab.NEW_TAB_POSITION),
             Select("TAB_SWITCH_ON_CLOSE", OPTIONS.window_tab.TAB_SWITCH_ON_CLOSE),
             Select("LAST_TAB_CLOSE_ACTION", OPTIONS.window_tab.LAST_TAB_CLOSE_ACTION),
         ),
         TitledBox(
-            "mouseInteraction",
+            Title("mouseInteraction"),
             Switch("CTRL_CLICK_TO_NEW_WINDOW"),
             Switch("CTRL_WHEEL_TO_SWITCH"),
             Switch("MIDDLE_CLICK_TO_CLOSE"),
@@ -263,13 +261,13 @@ const SETTING_SCHEMAS = {
     search_multi: [
         pluginFullBasePropBox,
         TitledBox(
-            "search",
+            Title("search"),
             Switch("CASE_SENSITIVE"),
             Switch("OPTIMIZE_SEARCH", { tooltip: "breakOrder" }),
             Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
         ),
         TitledBox(
-            "searchResult",
+            Title("searchResult"),
             Switch("RELATIVE_PATH"),
             Switch("SHOW_EXT"),
             Switch("SHOW_MTIME"),
@@ -277,7 +275,7 @@ const SETTING_SCHEMAS = {
             Number("MAX_HITS", { min: 1 }),
         ),
         TitledBox(
-            "windowInteraction",
+            Title("windowInteraction"),
             Switch("BACKSPACE_TO_HIDE"),
         ),
         ArrayBox("ALLOW_EXT"),
@@ -288,12 +286,12 @@ const SETTING_SCHEMAS = {
     commander: [
         pluginFullBasePropBox,
         TitledBox(
-            "cmdDisplay",
+            Title("cmdDisplay"),
             Select("QUICK_RUN_DISPLAY", OPTIONS.commander.QUICK_RUN_DISPLAY),
             Select("COMMIT_RUN_DISPLAY", OPTIONS.commander.COMMIT_RUN_DISPLAY),
         ),
         TitledBox(
-            "windowInteraction",
+            Title("windowInteraction"),
             Switch("BACKSPACE_TO_HIDE"),
         ),
         TableBox(
@@ -325,7 +323,7 @@ const SETTING_SCHEMAS = {
     read_only: [
         pluginFullBasePropBox,
         TitledBox(
-            "underReadOnly",
+            Title("underReadOnly"),
             Text("SHOW_TEXT"),
             Switch("READ_ONLY_DEFAULT"),
             Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
@@ -366,12 +364,12 @@ const SETTING_SCHEMAS = {
     toolbar: [
         pluginFullBasePropBox,
         TitledBox(
-            "searchBarPosition",
+            Title("searchBarPosition"),
             Range("TOOLBAR_TOP_PERCENT", { min: 0, max: 100, step: 1 }),
             Range("TOOLBAR_WIDTH_PERCENT", { min: 0, max: 100, step: 1 }),
         ),
         TitledBox(
-            "input",
+            Title("input"),
             Select("DEFAULT_TOOL", OPTIONS.toolbar.DEFAULT_TOOL),
             Switch("USE_NEGATIVE_SEARCH"),
             Switch("BACKSPACE_TO_HIDE"),
@@ -382,13 +380,13 @@ const SETTING_SCHEMAS = {
     resize_image: [
         pluginLiteBasePropBox,
         TitledBox(
-            "image",
+            Title("image"),
             Switch("RECORD_RESIZE"),
             Switch("ALLOW_EXCEED_LIMIT"),
             Select("IMAGE_ALIGN", OPTIONS.resize_image.IMAGE_ALIGN),
         ),
         TitledBox(
-            "modifierKeys",
+            Title("modifierKeys"),
             Hotkey("MODIFIER_KEY.TEMPORARY", { tooltip: "modifyKeyExample" }),
             Hotkey("MODIFIER_KEY.PERSISTENT"),
         ),
@@ -420,7 +418,7 @@ const SETTING_SCHEMAS = {
     go_top: [
         pluginLiteBasePropBox,
         TitledBox(
-            "hotkey",
+            Title("hotkey"),
             Hotkey("HOTKEY_GO_TOP"),
             Hotkey("HOTKEY_GO_BOTTOM"),
         ),
@@ -429,7 +427,7 @@ const SETTING_SCHEMAS = {
     markmap: [
         pluginLiteBasePropBox,
         TitledBox(
-            "mindmapDiagram",
+            Title("mindmapDiagram"),
             Switch("ENABLE_TOC_MARKMAP"),
             Hotkey("TOC_HOTKEY", markmapTocDep),
             Switch("FIX_SKIPPED_LEVEL_HEADERS", markmapTocDep),
@@ -448,7 +446,7 @@ const SETTING_SCHEMAS = {
             Text("NODE_BORDER_WHEN_HOVER", markmapTocDep),
         ),
         TitledBox(
-            "mindmapDiagramDefaultOptions",
+            Title("mindmapDiagramDefaultOptions"),
             Switch("DEFAULT_TOC_OPTIONS.zoom", markmapTocDep),
             Switch("DEFAULT_TOC_OPTIONS.pan", markmapTocDep),
             Switch("DEFAULT_TOC_OPTIONS.toggleRecursively", markmapTocDep),
@@ -466,7 +464,7 @@ const SETTING_SCHEMAS = {
         ArrayBox("DEFAULT_TOC_OPTIONS.color", markmapTocDep),
         ObjectBOX("CANDIDATE_COLOR_SCHEMES", markmapTocDep),
         TitledBox(
-            "mindmapDiagramExport",
+            Title("mindmapDiagramExport"),
             Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL", markmapTocDep),
             Switch("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES", markmapTocDep),
             Switch("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", { tooltip: "removeForeignObj", ...markmapTocDep }),
@@ -483,7 +481,7 @@ const SETTING_SCHEMAS = {
             Text("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", markmapTocDep),
         ),
         TitledBox(
-            "fence",
+            Title("fence"),
             Switch("ENABLE_FENCE_MARKMAP"),
             Switch("INTERACTIVE_MODE", markmapFenceDep),
             Hotkey("FENCE_HOTKEY", markmapFenceDep),
@@ -492,7 +490,7 @@ const SETTING_SCHEMAS = {
             Text("DEFAULT_FENCE_BACKGROUND_COLOR", markmapFenceDep),
         ),
         TitledBox(
-            "fenceDiagramDefaultOptions",
+            Title("fenceDiagramDefaultOptions"),
             Switch("DEFAULT_FENCE_OPTIONS.zoom", markmapFenceDep),
             Switch("DEFAULT_FENCE_OPTIONS.pan", markmapFenceDep),
             Switch("DEFAULT_FENCE_OPTIONS.toggleRecursively", markmapFenceDep),
@@ -516,7 +514,7 @@ const SETTING_SCHEMAS = {
     auto_number: [
         pluginLiteBasePropBox,
         TitledBox(
-            "autoNumbering",
+            Title("autoNumbering"),
             Switch("ENABLE_OUTLINE"),
             Switch("ENABLE_CONTENT"),
             Switch("ENABLE_TOC"),
@@ -525,7 +523,7 @@ const SETTING_SCHEMAS = {
             Switch("ENABLE_FENCE"),
         ),
         TitledBox(
-            "style",
+            Title("style"),
             Select("ALIGN", OPTIONS.auto_number.ALIGN),
             Text("FONT_FAMILY"),
         ),
@@ -597,7 +595,7 @@ const SETTING_SCHEMAS = {
             },
         ),
         TitledBox(
-            "advanced",
+            Title("advanced"),
             Switch("ENABLE_WHEN_EXPORT"),
         ),
         handleSettingsBox,
@@ -605,7 +603,7 @@ const SETTING_SCHEMAS = {
     fence_enhance: [
         pluginLiteBasePropBox,
         TitledBox(
-            "buttonStyle",
+            Title("buttonStyle"),
             Switch("ENABLE_BUTTON"),
             Switch("AUTO_HIDE", fenceEnhanceButtonDep),
             Switch("REMOVE_BUTTON_HINT", fenceEnhanceButtonDep),
@@ -619,7 +617,7 @@ const SETTING_SCHEMAS = {
             Number("WAIT_RECOVER_INTERVAL", { unit: UNITS.millisecond, min: 500, step: 100, ...fenceEnhanceButtonDep }),
         ),
         TitledBox(
-            "buttons",
+            Title("buttons"),
             Switch("ENABLE_COPY", fenceEnhanceButtonDep),
             Switch("ENABLE_INDENT", fenceEnhanceButtonDep),
             Switch("ENABLE_FOLD", fenceEnhanceButtonDep),
@@ -650,7 +648,7 @@ const SETTING_SCHEMAS = {
             fenceEnhanceButtonDep,
         ),
         TitledBox(
-            "buttonHotkeys",
+            Title("buttonHotkeys"),
             Switch("ENABLE_HOTKEY"),
             Text("SWAP_PREVIOUS_LINE", { tooltip: "codeMirrorStyle", ...fenceEnhanceHotkeyDep }),
             Text("SWAP_NEXT_LINE", fenceEnhanceHotkeyDep),
@@ -661,7 +659,7 @@ const SETTING_SCHEMAS = {
             Action("viewCodeMirrorKeymapsManual"),
         ),
         TitledBox(
-            "advanced",
+            Title("advanced"),
             Switch("ENABLE_LANGUAGE_FOLD"),
             Switch("INDENTED_WRAPPED_LINE"),
             Switch("HIGHLIGHT_WHEN_HOVER"),
@@ -673,13 +671,13 @@ const SETTING_SCHEMAS = {
     collapse_paragraph: [
         pluginLiteBasePropBox,
         TitledBox(
-            "mode",
+            Title("mode"),
             Switch("RECORD_COLLAPSE"),
             Switch("STRICT_MODE"),
             Switch("STRICT_MODE_IN_CONTEXT_MENU"),
         ),
         TitledBox(
-            "modifierKey",
+            Title("modifierKey"),
             Hotkey("MODIFIER_KEY.COLLAPSE_SINGLE", { tooltip: "modifierKeyExample" }),
             Hotkey("MODIFIER_KEY.COLLAPSE_SIBLINGS"),
             Hotkey("MODIFIER_KEY.COLLAPSE_ALL_SIBLINGS"),
@@ -705,7 +703,7 @@ const SETTING_SCHEMAS = {
     truncate_text: [
         pluginLiteBasePropBox,
         TitledBox(
-            "hotkey",
+            Title("hotkey"),
             Hotkey("HIDE_FRONT_HOTKEY"),
             Hotkey("SHOW_ALL_HOTKEY"),
             Hotkey("HIDE_BASE_VIEW_HOTKEY"),
@@ -716,7 +714,7 @@ const SETTING_SCHEMAS = {
     export_enhance: [
         pluginLiteBasePropBox,
         TitledBox(
-            "networkImage",
+            Title("networkImage"),
             Switch("DOWNLOAD_NETWORK_IMAGE"),
             Number("DOWNLOAD_THREADS", { min: 1, dependencies: { DOWNLOAD_NETWORK_IMAGE: true } }),
         ),
@@ -729,7 +727,7 @@ const SETTING_SCHEMAS = {
             Hotkey("SHOW_MODAL_HOTKEY"),
         ),
         TitledBox(
-            "toolBar",
+            Title("toolBar"),
             Text("MODAL_BACKGROUND_COLOR"),
             Select("TOOLS", OPTIONS.text_stylize.TOOLS, { minItems: 1 }),
         ),
@@ -748,7 +746,7 @@ const SETTING_SCHEMAS = {
             },
         ),
         TitledBox(
-            "buttonDefaultOptions",
+            Title("buttonDefaultOptions"),
             Text("DEFAULT_COLORS.FOREGROUND"),
             Text("DEFAULT_COLORS.BACKGROUND"),
             Text("DEFAULT_COLORS.BORDER"),
@@ -760,7 +758,7 @@ const SETTING_SCHEMAS = {
     cipher: [
         pluginLiteBasePropBox,
         TitledBox(
-            "hotkey",
+            Title("hotkey"),
             Hotkey("ENCRYPT_HOTKEY"),
             Hotkey("DECRYPT_HOTKEY"),
             Switch("SHOW_HINT_MODAL"),
@@ -770,7 +768,7 @@ const SETTING_SCHEMAS = {
     resource_manager: [
         pluginFullBasePropBox,
         TitledBox(
-            "windowPosition",
+            Title("windowPosition"),
             Range("MODAL_LEFT_PERCENT", { min: 0, max: 100, step: 1 }),
             Range("MODAL_WIDTH_PERCENT", { min: 0, max: 100, step: 1 }),
             Range("MODAL_HEIGHT_PERCENT", { min: 0, max: 100, step: 1 }),
@@ -786,7 +784,7 @@ const SETTING_SCHEMAS = {
     easy_modify: [
         pluginLiteBasePropBox,
         TitledBox(
-            "hotkey",
+            Title("hotkey"),
             Hotkey("HOTKEY_COPY_FULL_PATH"),
             Hotkey("HOTKEY_INCREASE_HEADERS_LEVEL"),
             Hotkey("HOTKEY_DECREASE_HEADERS_LEVEL"),
@@ -813,7 +811,7 @@ const SETTING_SCHEMAS = {
     slash_commands: [
         pluginLiteBasePropBox,
         TitledBox(
-            "trigger",
+            Title("trigger"),
             Text("TRIGGER_REGEXP"),
             Text("FUNC_PARAM_SEPARATOR", protectedAttrs),
             Select("SUGGESTION_TIMING", OPTIONS.slash_commands.SUGGESTION_TIMING),
@@ -855,7 +853,7 @@ const SETTING_SCHEMAS = {
             prop_NAME,
         ),
         TitledBox(
-            "style",
+            Title("style"),
             Switch("SHOW_PLUGIN_HOTKEY"),
             Switch("SHOW_ACTION_OPTIONS_ICON"),
             Switch("DO_NOT_HIDE"),
@@ -875,7 +873,7 @@ const SETTING_SCHEMAS = {
             },
         ),
         TitledBox(
-            "advanced",
+            Title("advanced"),
             Switch("FIND_LOST_PLUGINS"),
         ),
         handleSettingsBox,
@@ -919,18 +917,18 @@ const SETTING_SCHEMAS = {
     file_counter: [
         pluginLiteBasePropBox,
         TitledBox(
-            "textStyle",
+            Title("textStyle"),
             Text("FONT_WEIGHT"),
             Text("COLOR"),
             Text("BACKGROUND_COLOR"),
             Text("BEFORE_TEXT"),
         ),
         TitledBox(
-            "mouseInteraction",
+            Title("mouseInteraction"),
             Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU"),
         ),
         TitledBox(
-            "search",
+            Title("search"),
             Number("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1 }),
             Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
         ),
@@ -979,19 +977,19 @@ const SETTING_SCHEMAS = {
             Switch("HIDE"),
         ),
         TitledBox(
-            "hotkey",
+            Title("hotkey"),
             Hotkey("UPLOAD_ALL_HOTKEY"),
             Hotkey("UPLOAD_CNBLOG_HOTKEY"),
             Hotkey("UPLOAD_WORDPRESS_HOTKEY"),
             Hotkey("UPLOAD_CSDN_HOTKEY"),
         ),
         TitledBox(
-            "upload",
+            Title("upload"),
             Switch("upload.reconfirm"),
             Switch("upload.selenium.headless"),
         ),
         TitledBox(
-            "wordPress",
+            Title("wordPress"),
             Switch("upload.wordpress.enabled"),
             Text("upload.wordpress.hostname"),
             Text("upload.wordpress.loginUrl"),
@@ -999,13 +997,13 @@ const SETTING_SCHEMAS = {
             Text("upload.wordpress.password"),
         ),
         TitledBox(
-            "cnblog",
+            Title("cnblog"),
             Switch("upload.cnblog.enabled"),
             Text("upload.cnblog.username"),
             Text("upload.cnblog.password"),
         ),
         TitledBox(
-            "csdn",
+            Title("csdn"),
             Switch("upload.csdn.enabled"),
             Text("upload.csdn.cookie"),
         ),
@@ -1017,12 +1015,12 @@ const SETTING_SCHEMAS = {
     ripgrep: [
         pluginFullBasePropBox,
         TitledBox(
-            "windowPosition",
+            Title("windowPosition"),
             Range("TOP_PERCENT", { min: 0, max: 100, step: 1 }),
             Range("WIDTH_PERCENT", { min: 0, max: 100, step: 1 }),
         ),
         TitledBox(
-            "interaction",
+            Title("interaction"),
             Switch("BACKSPACE_TO_HIDE"),
         ),
         handleSettingsBox,
@@ -1030,7 +1028,7 @@ const SETTING_SCHEMAS = {
     cursor_history: [
         pluginLiteBasePropBox,
         TitledBox(
-            "hotkey",
+            Title("hotkey"),
             Hotkey("HOTKEY_GO_FORWARD"),
             Hotkey("HOTKEY_GO_BACK"),
         ),
@@ -1042,7 +1040,7 @@ const SETTING_SCHEMAS = {
     json_rpc: [
         pluginLiteBasePropBox,
         TitledBox(
-            "rpcServer",
+            Title("rpcServer"),
             Switch("SERVER_OPTIONS.strict"),
             Text("SERVER_OPTIONS.host"),
             Number("SERVER_OPTIONS.port", { min: 0, max: 65535, step: 1 }),
@@ -1059,7 +1057,7 @@ const SETTING_SCHEMAS = {
             Text("PROXY"),
         ),
         TitledBox(
-            "autoUpdate",
+            Title("autoUpdate"),
             Switch("AUTO_UPDATE"),
             Number("UPDATE_LOOP_INTERVAL", { tooltip: "loopInterval", unit: UNITS.millisecond, min: -1, dependencies: { AUTO_UPDATE: true } }),
             Number("START_UPDATE_INTERVAL", { tooltip: "waitInterval", unit: UNITS.millisecond, min: -1, dependencies: { AUTO_UPDATE: true } }),
@@ -1073,13 +1071,13 @@ const SETTING_SCHEMAS = {
     kanban: [
         customPluginLiteBasePropBox,
         TitledBox(
-            "fence",
+            Title("fence"),
             Text("LANGUAGE", protectedAttrs),
             Switch("INTERACTIVE_MODE"),
             Switch("STRICT_MODE"),
         ),
         TitledBox(
-            "kanbanStyle",
+            Title("kanbanStyle"),
             Number("KANBAN_WIDTH", { unit: UNITS.pixel, min: 1 }),
             Number("KANBAN_MAX_HEIGHT", { unit: UNITS.pixel, min: 1 }),
             Number("KANBAN_TASK_DESC_MAX_HEIGHT", { tooltip: "lowerThenZero", unit: UNITS.em, min: -1 }),
@@ -1096,13 +1094,13 @@ const SETTING_SCHEMAS = {
     chat: [
         customPluginLiteBasePropBox,
         TitledBox(
-            "fence",
+            Title("fence"),
             Text("LANGUAGE", protectedAttrs),
             Switch("INTERACTIVE_MODE"),
             Switch("DEFAULT_OPTIONS.useStrict"),
         ),
         TitledBox(
-            "defaultOption",
+            Title("defaultOption"),
             Switch("DEFAULT_OPTIONS.showNickname"),
             Switch("DEFAULT_OPTIONS.showAvatar"),
             Switch("DEFAULT_OPTIONS.notAllowShowTime"),
@@ -1117,7 +1115,7 @@ const SETTING_SCHEMAS = {
         customPluginLiteBasePropBox,
         langModeBox,
         TitledBox(
-            "diagramStyle",
+            Title("diagramStyle"),
             Text("BACKGROUND_COLOR"),
             Text("TITLE_COLOR"),
             Text("TITLE_FONT_SIZE"),
@@ -1138,7 +1136,7 @@ const SETTING_SCHEMAS = {
         chartStyleBox,
         TextareaBox("TEMPLATE"),
         TitledBox(
-            "advanced",
+            Title("advanced"),
             Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: "svgBetter" }),
             Select("EXPORT_TYPE", OPTIONS.echarts.EXPORT_TYPE),
             Action("chooseEchartsRenderer"),
@@ -1155,7 +1153,7 @@ const SETTING_SCHEMAS = {
     wavedrom: [
         customPluginLiteBasePropBox,
         TitledBox(
-            "fenceLanguageMode",
+            Title("fenceLanguageMode"),
             Text("LANGUAGE", protectedAttrs),
             Switch("INTERACTIVE_MODE"),
             Switch("SAFE_MODE"),
@@ -1188,7 +1186,7 @@ const SETTING_SCHEMAS = {
         chartStyleBox,
         TextareaBox("TEMPLATE"),
         TitledBox(
-            "advanced",
+            Title("advanced"),
             Text("RESOURCE_URI"),
         ),
         handleSettingsBox,
@@ -1202,22 +1200,22 @@ const SETTING_SCHEMAS = {
     callouts: [
         customPluginLiteBasePropBox,
         TitledBox(
-            "style",
+            Title("style"),
             Switch("set_title_color"),
             Text("box_shadow"),
         ),
         TitledBox(
-            "mouseHover",
+            Title("mouseHover"),
             Switch("hover_to_show_fold_callout"),
         ),
         TitledBox(
-            "fontFamily",
+            Title("fontFamily"),
             Text("font_family"),
             Switch("use_network_icon_when_exporting", { tooltip: "messingFont" }),
             Text("network_icon_url", { dependencies: { use_network_icon_when_exporting: true } }),
         ),
         TitledBox(
-            "defaultOptions",
+            Title("defaultOptions"),
             Text("default_background_color"),
             Text("default_left_line_color"),
             Text("default_icon"),
@@ -1321,12 +1319,12 @@ const SETTING_SCHEMAS = {
             Switch("right_click_outline_button_to_toggle"),
         ),
         TitledBox(
-            "tocStyle",
+            Title("tocStyle"),
             Range("width_percent_when_pin_right", { min: 0, max: 100, step: 1 }),
             Text("toc_font_size"),
         ),
         TitledBox(
-            "name",
+            Title("name"),
             Text("show_name.fence"),
             Text("show_name.image"),
             Text("show_name.table"),
@@ -1334,7 +1332,7 @@ const SETTING_SCHEMAS = {
             Text("show_name.math"),
         ),
         TitledBox(
-            "displayHeader",
+            Title("displayHeader"),
             Switch("include_headings.fence"),
             Switch("include_headings.image"),
             Switch("include_headings.table"),
@@ -1354,7 +1352,7 @@ const SETTING_SCHEMAS = {
     imageReviewer: [
         customPluginFullBasePropBox,
         TitledBox(
-            "style",
+            Title("style"),
             Range("mask_background_opacity", { min: 0, max: 1, step: 0.05 }),
             Range("image_max_width", { min: 0, max: 100, step: 1 }),
             Range("image_max_height", { min: 0, max: 100, step: 1 }),
@@ -1364,21 +1362,21 @@ const SETTING_SCHEMAS = {
             Number("water_fall_columns", { min: 0 }),
         ),
         TitledBox(
-            "component",
+            Title("component"),
             Switch("show_thumbnail_nav"),
             Select("tool_position", OPTIONS.imageReviewer.tool_position),
             Select("show_message", OPTIONS.imageReviewer.show_message),
             Select("tool_function", OPTIONS.imageReviewer.operations, { minItems: 1 }),
         ),
         TitledBox(
-            "behavior",
+            Title("behavior"),
             Switch("filter_error_image"),
             Select("first_image_strategies", OPTIONS.imageReviewer.first_image_strategies, { minItems: 1 }),
             Select("thumbnail_object_fit", OPTIONS.imageReviewer.thumbnail_object_fit),
             Number("play_second", { unit: UNITS.second, min: 0 }),
         ),
         TitledBox(
-            "mouseEvent",
+            Title("mouseEvent"),
             Switch("click_mask_to_exit"),
             Select("mousedown_function.0", OPTIONS.imageReviewer.operations),
             Select("mousedown_function.1", OPTIONS.imageReviewer.operations),
@@ -1413,7 +1411,7 @@ const SETTING_SCHEMAS = {
             ["", "nextImage"],
         ),
         TitledBox(
-            "adjustScale",
+            Title("adjustScale"),
             Number("zoom_scale", { min: 0.01 }),
             Number("rotate_scale", { unit: UNITS.degree, min: 1 }),
             Number("skew_scale", { unit: UNITS.degree, min: 1 }),
@@ -1424,7 +1422,7 @@ const SETTING_SCHEMAS = {
     markdownLint: [
         customPluginFullBasePropBox,
         TitledBox(
-            "detectAndFix",
+            Title("detectAndFix"),
             Switch("translate"),
             Select("columns", OPTIONS.markdownLint.columns, { minItems: 1 }),
             Select("result_order_by", OPTIONS.markdownLint.result_order_by),
@@ -1432,10 +1430,11 @@ const SETTING_SCHEMAS = {
             Hotkey("hotkey_fix_lint_error"),
         ),
         TitledBox(
-            "square",
+            Title("square"),
             Switch("use_button"),
             Text("button_width", { dependencies: { use_button: true } }),
             Text("button_height", { dependencies: { use_button: true } }),
+            Text("button_border_radius", { dependencies: { use_button: true } }),
             Text("pass_color", { dependencies: { use_button: true } }),
             Text("error_color", { dependencies: { use_button: true } }),
         ),
@@ -1450,7 +1449,7 @@ const SETTING_SCHEMAS = {
     quickButton: [
         customPluginFullBasePropBox,
         TitledBox(
-            "buttonStyle",
+            Title("buttonStyle"),
             Text("button_size"),
             Text("button_border_radius"),
             Text("button_box_shadow"),

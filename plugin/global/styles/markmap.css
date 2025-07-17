@@ -15,6 +15,7 @@
     user-select: none;
     min-width: 120px;
     min-height: 120px;
+    border-radius: 8px;
 }
 
 #plugin-markmap.pinned-window {
@@ -23,12 +24,6 @@
 
 #plugin-markmap:not(.pinned-window) .plugin-markmap-header {
     cursor: move;
-}
-
-#plugin-markmap.penetrateMouse {
-    pointer-events: none;
-    background: none;
-    backdrop-filter: blur(15px);
 }
 
 .plugin-markmap-grip-top {
@@ -76,11 +71,6 @@
 .plugin-markmap-icon:not([action="resize"]):hover {
     opacity: 1;
     transform: translateY(-2px) scale(1.2);
-}
-
-#plugin-markmap.penetrateMouse .plugin-markmap-icon[action="penetrateMouse"] {
-    opacity: 1;
-    color: rgb(194, 24, 91);
 }
 
 .plugin-markmap-icon[action="resize"] {
