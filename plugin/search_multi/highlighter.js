@@ -211,10 +211,7 @@ class Highlighter {
     _handleOtherNode = (node, isFutureCm = false) => {
         this._resetRegexpLastIndex()
         const nodeElement = File.editor.findElemById(node.cid)[0]
-        if (!nodeElement) {
-            console.error(`Cannot find element for [${node.get("type")}] from [${node.get("parent").get("type")}]`)
-            return
-        }
+        if (!nodeElement) return
 
         let offsetAdjust = 0
         let rawText = $(nodeElement).rawText()

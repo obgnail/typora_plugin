@@ -228,7 +228,7 @@ const SETTING_SCHEMAS = {
             Switch("HIDE_WINDOW_TITLE_BAR"),
             Text("TAB_MIN_WIDTH"),
             Text("TAB_MAX_WIDTH"),
-            Number("MAX_TAB_NUM", { tooltip: "minusOne", min: -1 }),
+            Number("MAX_TAB_NUM", { tooltip: "minusOneMeansUnlimited", min: -1 }),
         ),
         TitledBox(
             Title("behavior"),
@@ -265,6 +265,8 @@ const SETTING_SCHEMAS = {
             Switch("CASE_SENSITIVE"),
             Switch("OPTIMIZE_SEARCH", { tooltip: "breakOrder" }),
             Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
+            Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
+            Number("CONCURRENCY_LIMIT", { min: 1 }),
         ),
         TitledBox(
             Title("searchResult"),
@@ -773,12 +775,15 @@ const SETTING_SCHEMAS = {
             Range("MODAL_WIDTH_PERCENT", { min: 0, max: 100, step: 1 }),
             Range("MODAL_HEIGHT_PERCENT", { min: 0, max: 100, step: 1 }),
         ),
-        UntitledBox(
-            Select("RESOURCE_GRAMMARS", OPTIONS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
-        ),
         ArrayBox("RESOURCE_EXT"),
         ArrayBox("MARKDOWN_EXT"),
         ArrayBox("IGNORE_FOLDERS"),
+        TitledBox(
+            Title("advanced"),
+            Select("RESOURCE_GRAMMARS", OPTIONS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
+            Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
+            Number("CONCURRENCY_LIMIT", { min: 1 }),
+        ),
         handleSettingsBox,
     ],
     easy_modify: [
@@ -931,6 +936,8 @@ const SETTING_SCHEMAS = {
             Title("search"),
             Number("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1 }),
             Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
+            Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
+            Number("CONCURRENCY_LIMIT", { min: 1 }),
         ),
         ArrayBox("ALLOW_EXT"),
         ArrayBox("IGNORE_FOLDERS"),

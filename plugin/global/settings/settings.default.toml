@@ -212,6 +212,13 @@ CASE_SENSITIVE = false
 #   小于 0 的值，表示不忽略任何文件
 MAX_SIZE = 2000000
 
+# 遍历的最大子目录深度，超出深度的文件将被忽略
+#   若 MAX_DEPTH 小于 0，则不过滤
+MAX_DEPTH = -1
+
+# 并发数限制
+CONCURRENCY_LIMIT = 20
+
 # 允许搜索的文件扩展名列表
 # 只有在此列表中的文件才会被搜索
 # 注意：默认值为 Typora 允许打开的所有文件扩展名列表。因此不建议添加新的扩展名
@@ -2114,6 +2121,13 @@ IGNORE_MIN_NUM = 0
 #   例如：设置为 2000000 表示文件大小限制为 2 MB
 MAX_SIZE = 2000000
 
+# 遍历的最大子目录深度，超出深度的文件将被忽略
+#   若 MAX_DEPTH 小于 0，则不过滤
+MAX_DEPTH = -1
+
+# 并发数限制
+CONCURRENCY_LIMIT = 20
+
 # Typora 允许打开的文件的扩展名列表，不在此列表中的文件在搜索时将被忽略
 #   例如：["md", "txt"] 表示只统计 .md 和 .txt 文件
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
@@ -2241,6 +2255,13 @@ MARKDOWN_EXT = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".md
 # ------------------- 文件扫描 -------------------
 # 需要忽略扫描的文件夹名称列表，这些文件夹及其子文件夹中的文件将不会被扫描
 IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
+
+# 遍历的最大子目录深度，超出深度的文件将被忽略
+#   若 MAX_DEPTH 小于 0，则不过滤
+MAX_DEPTH = -1
+
+# 并发数限制
+CONCURRENCY_LIMIT = 20
 
 
 ################### editor_width_slider ###################

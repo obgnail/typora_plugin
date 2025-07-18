@@ -755,10 +755,20 @@ class utils {
         return output
     }
 
-    static walkDir = async (dir, fileFilter, dirFilter, paramsBuilder, callback) => {
+    static walkDir = async (
+        {
+            dir,
+            fileFilter = () => true,
+            dirFilter = () => true,
+            paramsBuilder = async (path, file, dir, stats) => ({ path, file, dir, stats }),
+            callback,
+            semaphore = 20,
+            maxDepth = -1,
+        }
+    ) => {
         const { Fs: { promises: { readdir, stat } }, Path } = this.Package
 
-        const CONCURRENCY_LIMIT = 20
+        semaphore = Math.max(semaphore, 1)
         const taskQueue = []
         let activeTasks = 0
 
@@ -766,13 +776,12 @@ class utils {
         const drainPromise = new Promise(resolve => resolveDrain = resolve)
 
         const runTask = () => {
-            while (taskQueue.length > 0 && activeTasks < CONCURRENCY_LIMIT) {
+            while (taskQueue.length > 0 && activeTasks < semaphore) {
                 const task = taskQueue.shift()
                 activeTasks++
                 task().finally(() => {
                     activeTasks--
                     runTask()
-
                     if (activeTasks === 0 && taskQueue.length === 0) {
                         resolveDrain()
                     }
@@ -783,7 +792,9 @@ class utils {
             taskQueue.push(fn)
             runTask()
         }
-        const walk = async (dir) => {
+        const walk = async (dir, depth) => {
+            if (maxDepth > 0 && depth > maxDepth) return
+
             const files = await readdir(dir)
             for (const file of files) {
                 const path = Path.join(dir, file)
@@ -796,14 +807,14 @@ class utils {
                         }
                     } else if (stats.isDirectory()) {
                         if (dirFilter(file)) {
-                            await walk(path)
+                            await walk(path, depth + 1)
                         }
                     }
                 })
             }
         }
 
-        await walk(dir)
+        await walk(dir, 0)
         runTask()
         await drainPromise
     }

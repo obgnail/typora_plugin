@@ -25,10 +25,13 @@
     "$label.INTERACTIVE_MODE": "Interactive Mode",
     "$label.DEFAULT_FENCE_HEIGHT": "Default Height",
     "$label.DEFAULT_FENCE_BACKGROUND_COLOR": "Background Color",
+    "$label.MAX_DEPTH": "Max Subdirectory Depth",
+    "$label.CONCURRENCY_LIMIT": "Max Concurrent Tasks",
     "$placeholder.defaultIfEmpty": "Use default if empty",
     "$tooltip.protected": "Protected Setting. Edit the settings file to modify",
     "$tooltip.lowVersion": "Typora version is too low. This feature is unavailable",
-    "$tooltip.minusOne": "-1 for unlimited",
+    "$tooltip.minusOneMeansUnlimited": "-1 means unlimited",
+    "$tooltip.minusOneMeansDisable": "-1 means disable",
     "$tooltip.maxBytes": "Typora limit: 2,000,000 bytes max",
     "$title.fenceLanguageMode": "Language & Mode",
     "$title.diagramStyle": "Diagram Style",
@@ -972,8 +975,7 @@
     "pluginName": "Editor Width Slider",
     "tmpAdjust": "Temporary Adjustment",
     "restore": "Restore Default And Exit",
-    "$label.WIDTH_RATIO": "Editor Width",
-    "$tooltip.minusOneMeansDisable": "-1 means disable"
+    "$label.WIDTH_RATIO": "Editor Width"
   },
   "article_uploader": {
     "pluginName": "Article Uploader",

@@ -205,9 +205,6 @@ class ResourceFinder {
         this.redirectPlugin = this.utils.getCustomPlugin("redirectLocalRootUrl")
 
         const results = { resourcesInFolder: new Set(), resourcesInFile: new Set() }
-        const fileFilter = () => true
-        const dirFilter = name => !this.config.IGNORE_FOLDERS.includes(name)
-        const paramsBuilder = (path, file, dir, stats) => ({ path, file, dir })
         const callback = async ({ path, file, dir }) => {
             const ext = this.utils.Package.Path.extname(file).toLowerCase()
             if (this.resourceExts.has(ext)) {
@@ -216,7 +213,13 @@ class ResourceFinder {
                 await this._handleMarkdownFile(path, dir, results)
             }
         }
-        await this.utils.walkDir(dir, fileFilter, dirFilter, paramsBuilder, callback)
+        await this.utils.walkDir({
+            dir,
+            dirFilter: name => !this.config.IGNORE_FOLDERS.includes(name),
+            callback,
+            semaphore: this.config.CONCURRENCY_LIMIT,
+            maxDepth: this.config.MAX_DEPTH,
+        })
 
         const notInFile = [...results.resourcesInFolder].filter(x => !results.resourcesInFile.has(x))
         const notInFolder = [...results.resourcesInFile].filter(x => !results.resourcesInFolder.has(x))

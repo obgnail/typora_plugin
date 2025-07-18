@@ -151,15 +151,13 @@ class searchMultiPlugin extends BasePlugin {
         this.entities.counter.textContent = 0
         this.entities.files.innerHTML = ""
 
-        const { MAX_SIZE, IGNORE_FOLDERS } = this.config
+        const { MAX_SIZE, MAX_DEPTH, CONCURRENCY_LIMIT, IGNORE_FOLDERS } = this.config
         const { Path: { extname }, Fs: { promises: { readFile } } } = this.utils.Package
 
         const verifySize = 0 > MAX_SIZE
             ? () => true
             : stat => stat.size < MAX_SIZE
         const verifyExt = path => this.allowedExtensions.has(extname(path).toLowerCase())
-        const fileFilter = (path, stat) => verifySize(stat) && verifyExt(path)
-        const dirFilter = name => !IGNORE_FOLDERS.includes(name)
 
         const readFileScope = this.searcher.getReadFileScope(ast)
         const paramsBuilder = readFileScope.length !== 0
@@ -167,8 +165,15 @@ class searchMultiPlugin extends BasePlugin {
             : (path, file, dir, stats) => ({ path, file, stats })
 
         const matcher = source => this.searcher.match(ast, source)
-        const callback = this._showSearchResult(rootPath, matcher)
-        await this.utils.walkDir(rootPath, fileFilter, dirFilter, paramsBuilder, callback)
+        await this.utils.walkDir({
+            dir: rootPath,
+            fileFilter: (path, stat) => verifySize(stat) && verifyExt(path),
+            dirFilter: name => !IGNORE_FOLDERS.includes(name),
+            paramsBuilder,
+            callback: this._showSearchResult(rootPath, matcher),
+            semaphore: CONCURRENCY_LIMIT,
+            maxDepth: MAX_DEPTH,
+        })
 
         this.utils.hide(this.entities.searching)
     }

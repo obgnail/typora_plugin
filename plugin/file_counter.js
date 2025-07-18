@@ -59,7 +59,15 @@ class fileCounterPlugin extends BasePlugin {
 
     countFiles = async (dir) => {
         let count = 0
-        await this.utils.walkDir(dir, this.fileFilter, this.dirFilter, this.utils.identity, () => count++)
+        await this.utils.walkDir({
+            dir,
+            fileFilter: this.fileFilter,
+            dirFilter: this.dirFilter,
+            paramsBuilder: this.utils.identity,
+            callback: () => count++,
+            semaphore: this.config.CONCURRENCY_LIMIT,
+            maxDepth: this.config.MAX_DEPTH,
+        })
         return count
     }
 

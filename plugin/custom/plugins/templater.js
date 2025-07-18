@@ -12,11 +12,11 @@ class templaterPlugin extends BaseCustomPlugin {
 
             if (!template_folders || template_folders.length === 0) return
 
+            const maxDepth = 3  // Only recursively search for 3 sub depths
             const fileFilter = (path) => extname(path).toLowerCase() === ".md"
-            const dirFilter = () => true
             const paramsBuilder = async (path, file) => ({ file, content: (await readFile(path)).toString() })
             const callback = ({ file, content }) => template.push({ name: file.replace(/\.md$/i, ""), text: content })
-            template_folders.forEach(dir => this.utils.walkDir(dir, fileFilter, dirFilter, paramsBuilder, callback).catch(console.error))
+            template_folders.forEach(dir => this.utils.walkDir({ dir, fileFilter, paramsBuilder, callback, maxDepth }))
         })
     }
 
