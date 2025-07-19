@@ -759,6 +759,7 @@ class utils {
         {
             dir,
             onEntities = null,
+            onError = null,
             fileFilter = () => true,
             dirFilter = () => true,
             paramsBuilder = (path, file, dir, stats) => ({ path, file, dir, stats }),
@@ -803,6 +804,7 @@ class utils {
         }
         const callOnEntities = (stats) => {
             if (!onEntities) return
+
             try {
                 onEntities(stats)
             } catch (err) {
@@ -833,10 +835,9 @@ class utils {
                     }
                 }
             } catch (err) {
+                if (onError) onError(currentPath, err)
                 console.error(`Error processing path ${currentPath}:`, err)
             } finally {
-                // For a directory, here means that it has successfully read and created tasks for all its sub items.
-                // For files, here means that the callback has been executed.
                 pendingTasks--
             }
         }

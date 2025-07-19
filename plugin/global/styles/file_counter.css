@@ -9,3 +9,7 @@
     color: ${color};
     font-weight: ${font_weight};
 }
+
+.plugin-file-counter + .file-node-content .file-node-title {
+    overflow-x: hidden !important;
+}

@@ -13,12 +13,11 @@ class fileCounterPlugin extends BasePlugin {
             return prefix + ext.toLowerCase()
         }))
 
-        this._stop = false
         this.stopPlugin = this.utils.once(() => {
-            this._stop = true
             this.removeAllCounter()
             const msg = this.i18n.t("error.tooManyFiles", { pluginName: this.pluginName })
             this.utils.notification.show(msg, "warning", 7000)
+            this.observer.disconnect()
         })
     }
 
@@ -39,9 +38,7 @@ class fileCounterPlugin extends BasePlugin {
             }, { passive: false, capture: true })
         }
 
-        new MutationObserver(mutationList => {
-            if (this._stop) return
-
+        this.observer = new MutationObserver(mutationList => {
             if (mutationList.length === 1) {
                 const add = mutationList[0].addedNodes[0]
                 if (add && add.classList && add.classList.contains("file-library-node")) {
@@ -59,7 +56,8 @@ class fileCounterPlugin extends BasePlugin {
             if (needCountAllDirs) {
                 this.countAllDirs()
             }
-        }).observe(this.libraryTreeEl, { subtree: true, childList: true })
+        })
+        this.observer.observe(this.libraryTreeEl, { subtree: true, childList: true })
     }
 
     _verifyExt = path => this.allowedExtensions.has(this.utils.Package.Path.extname(path).toLowerCase())
@@ -81,13 +79,12 @@ class fileCounterPlugin extends BasePlugin {
         let count = 0
         await this.utils.walkDir({
             dir,
-            _fileFilter: this._fileFilter,
-            _dirFilter: this._dirFilter,
+            fileFilter: this._fileFilter,
+            dirFilter: this._dirFilter,
             paramsBuilder: this.utils.identity,
             onEntities: this._getEntitiesCounter(),
             callback: () => count++,
             semaphore: this.config.CONCURRENCY_LIMIT,
-            maxDepth: this.config.MAX_DEPTH,
         })
         return count
     }
@@ -107,10 +104,6 @@ class fileCounterPlugin extends BasePlugin {
             node.insertBefore(countDiv, background.nextElementSibling)
         }
         countDiv.innerText = this.config.BEFORE_TEXT + fileCount
-        const titleNode = node.querySelector(".file-node-title")
-        if (titleNode) {
-            titleNode.style.setProperty("overflow-x", "hidden", "important")
-        }
     }
 
     countDir = (tree) => {
@@ -122,7 +115,6 @@ class fileCounterPlugin extends BasePlugin {
     countAllDirs = () => {
         const root = this.libraryTreeEl.querySelector(":scope > .file-library-node")
         if (root) {
-            console.debug(`[${this.fixedName}]: count all dirs`)
             this.countDir(root)
         }
     }
