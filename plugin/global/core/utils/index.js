@@ -758,30 +758,34 @@ class utils {
     static walkDir = async (
         {
             dir,
+            onEntities = null,
             fileFilter = () => true,
             dirFilter = () => true,
-            onEntities = null,
-            paramsBuilder = async (path, file, dir, stats) => ({ path, file, dir, stats }),
+            paramsBuilder = (path, file, dir, stats) => ({ path, file, dir, stats }),
             callback,
             semaphore = 20,
             maxDepth = -1,
         }
     ) => {
-        const { Fs: { promises: { readdir, stat } }, Path } = this.Package
-
         semaphore = Math.max(semaphore, 1)
-        const taskQueue = []
+
+        let abort = false
         let activeTasks = 0
-        let stopProcessing = false
+        let pendingTasks = 0
+        const taskQueue = []
+
+        const { Fs: { promises: { readdir, stat } }, Path } = this.Package
         const { promise: drainPromise, resolve: resolveDrain, reject: rejectDrain } = Promise.withResolvers()
 
         const checkDrain = () => {
-            if (activeTasks === 0 && taskQueue.length === 0 && !stopProcessing) {
+            if (activeTasks === 0 && pendingTasks === 0) {
                 resolveDrain()
             }
         }
         const runTask = () => {
-            while (taskQueue.length > 0 && activeTasks < semaphore && !stopProcessing) {
+            if (abort) return
+
+            while (taskQueue.length > 0 && activeTasks < semaphore) {
                 const task = taskQueue.shift()
                 activeTasks++
                 task().finally(() => {
@@ -792,45 +796,53 @@ class utils {
             }
         }
         const addTask = (fn) => {
+            if (abort) return
+
             taskQueue.push(fn)
             runTask()
         }
-        const walk = async (dir, depth) => {
-            if (maxDepth > 0 && depth > maxDepth || stopProcessing) return
+        const callOnEntities = (stats) => {
+            if (!onEntities) return
+            try {
+                onEntities(stats)
+            } catch (err) {
+                rejectDrain(err)
+                abort = true
+                return true
+            }
+        }
+        const processPath = async (currentPath, parentDir, fileName, depth) => {
+            try {
+                const stats = await stat(currentPath)
+                const stop = callOnEntities(stats)
+                if (stop) return
 
-            const files = await readdir(dir)
-            for (const file of files) {
-                if (stopProcessing) break
-
-                const path = Path.join(dir, file)
-                addTask(async () => {
-                    if (stopProcessing) return
-
-                    const stats = await stat(path)
-                    if (onEntities) {
-                        const ret = onEntities(stats)
-                        if (ret instanceof Error) {
-                            stopProcessing = true
-                            rejectDrain(ret)
-                            return
+                if (stats.isDirectory()) {
+                    if (dirFilter(fileName) && (maxDepth < 0 || depth < maxDepth)) {
+                        const files = await readdir(currentPath)
+                        pendingTasks += files.length
+                        for (const file of files) {
+                            const newPath = Path.join(currentPath, file)
+                            addTask(() => processPath(newPath, currentPath, file, depth + 1))
                         }
                     }
-                    if (stats.isFile()) {
-                        if (fileFilter(path, stats)) {
-                            const params = await paramsBuilder(path, file, dir, stats)
-                            await callback(params)
-                        }
-                    } else if (stats.isDirectory()) {
-                        if (dirFilter(file)) {
-                            await walk(path, depth + 1)
-                        }
+                } else if (stats.isFile()) {
+                    if (fileFilter(currentPath, stats)) {
+                        const params = await paramsBuilder(currentPath, fileName, parentDir, stats)
+                        await callback(params)
                     }
-                })
+                }
+            } catch (err) {
+                console.error(`Error processing path ${currentPath}:`, err)
+            } finally {
+                // For a directory, here means that it has successfully read and created tasks for all its sub items.
+                // For files, here means that the callback has been executed.
+                pendingTasks--
             }
         }
 
-        await walk(dir, 0)
-        runTask()
+        pendingTasks = 1
+        addTask(() => processPath(dir, null, dir, 0))
         await drainPromise
     }
 

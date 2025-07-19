@@ -73,7 +73,7 @@ class fileCounterPlugin extends BasePlugin {
             count++
             if (count > this.config.MAX_ENTITIES) {
                 this.stopPlugin()
-                return new Error("Too Many Files")
+                throw new Error("Too Many Files")
             }
         }
     }
