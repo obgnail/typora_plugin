@@ -86,7 +86,26 @@ function AbortSignalTimeout() {
     }
 }
 
+function WithResolvers() {
+    if (!Promise.withResolvers) {
+        Object.defineProperty(Promise, "withResolvers", {
+            value() {
+                const out = {}
+                out.promise = new Promise((resolve_, reject_) => {
+                    out.resolve = resolve_
+                    out.reject = reject_
+                })
+                return out
+            },
+            configurable: true,
+            enumerable: false,
+            writable: true,
+        })
+    }
+}
+
 At()
 HasOwn()
 GroupBy()
 AbortSignalTimeout()
+WithResolvers()

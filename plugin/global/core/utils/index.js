@@ -760,6 +760,7 @@ class utils {
             dir,
             fileFilter = () => true,
             dirFilter = () => true,
+            onEntities = null,
             paramsBuilder = async (path, file, dir, stats) => ({ path, file, dir, stats }),
             callback,
             semaphore = 20,
@@ -771,20 +772,22 @@ class utils {
         semaphore = Math.max(semaphore, 1)
         const taskQueue = []
         let activeTasks = 0
+        let stopProcessing = false
+        const { promise: drainPromise, resolve: resolveDrain, reject: rejectDrain } = Promise.withResolvers()
 
-        let resolveDrain
-        const drainPromise = new Promise(resolve => resolveDrain = resolve)
-
+        const checkDrain = () => {
+            if (activeTasks === 0 && taskQueue.length === 0 && !stopProcessing) {
+                resolveDrain()
+            }
+        }
         const runTask = () => {
-            while (taskQueue.length > 0 && activeTasks < semaphore) {
+            while (taskQueue.length > 0 && activeTasks < semaphore && !stopProcessing) {
                 const task = taskQueue.shift()
                 activeTasks++
                 task().finally(() => {
                     activeTasks--
                     runTask()
-                    if (activeTasks === 0 && taskQueue.length === 0) {
-                        resolveDrain()
-                    }
+                    checkDrain()
                 })
             }
         }
@@ -793,13 +796,25 @@ class utils {
             runTask()
         }
         const walk = async (dir, depth) => {
-            if (maxDepth > 0 && depth > maxDepth) return
+            if (maxDepth > 0 && depth > maxDepth || stopProcessing) return
 
             const files = await readdir(dir)
             for (const file of files) {
+                if (stopProcessing) break
+
                 const path = Path.join(dir, file)
                 addTask(async () => {
+                    if (stopProcessing) return
+
                     const stats = await stat(path)
+                    if (onEntities) {
+                        const ret = onEntities(stats)
+                        if (ret instanceof Error) {
+                            stopProcessing = true
+                            rejectDrain(ret)
+                            return
+                        }
+                    }
                     if (stats.isFile()) {
                         if (fileFilter(path, stats)) {
                             const params = await paramsBuilder(path, file, dir, stats)

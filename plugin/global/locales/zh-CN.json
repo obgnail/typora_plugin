@@ -944,6 +944,7 @@
   },
   "file_counter": {
     "pluginName": "文件计数",
+    "error.tooManyFiles": "文件过多，插件「 {{pluginName}} 」暂停运行",
     "$label.FONT_WEIGHT": "字宽",
     "$label.COLOR": "颜色",
     "$label.BACKGROUND_COLOR": "背景色",
@@ -951,6 +952,7 @@
     "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU": "Ctrl+Wheel 横向滚动侧边栏",
     "$label.IGNORE_MIN_NUM": "目录下最小文件数",
     "$label.MAX_SIZE": "最大文件",
+    "$label.MAX_ENTITIES": "最大文件数量",
     "$title.ALLOW_EXT": "允许文件扩展名",
     "$title.IGNORE_FOLDERS": "忽略目录名",
     "$title.textStyle": "文字样式",

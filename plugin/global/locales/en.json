@@ -944,6 +944,7 @@
   },
   "file_counter": {
     "pluginName": "File Counter",
+    "error.tooManyFiles": "Too Many Files. Plugin \"{{pluginName}}\" Suspends Running",
     "$label.FONT_WEIGHT": "Font Weight",
     "$label.COLOR": "Color",
     "$label.BACKGROUND_COLOR": "Background Color",
@@ -951,6 +952,7 @@
     "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU": "Ctrl+Wheel Scroll Sidebar Horizontally",
     "$label.IGNORE_MIN_NUM": "Min File Count in Directory",
     "$label.MAX_SIZE": "Max File Size",
+    "$label.MAX_ENTITIES": "Max Number of Entities",
     "$title.ALLOW_EXT": "Allowed File Extensions",
     "$title.IGNORE_FOLDERS": "Ignored Folders",
     "$title.textStyle": "Text Style",

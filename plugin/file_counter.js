@@ -12,6 +12,14 @@ class fileCounterPlugin extends BasePlugin {
             const prefix = (ext !== "" && !ext.startsWith(".")) ? "." : ""
             return prefix + ext.toLowerCase()
         }))
+
+        this._stop = false
+        this.stopPlugin = this.utils.once(() => {
+            this._stop = true
+            this.removeAllCounter()
+            const msg = this.i18n.t("error.tooManyFiles", { pluginName: this.pluginName })
+            this.utils.notification.show(msg, "warning", 7000)
+        })
     }
 
     process = () => {
@@ -32,6 +40,8 @@ class fileCounterPlugin extends BasePlugin {
         }
 
         new MutationObserver(mutationList => {
+            if (this._stop) return
+
             if (mutationList.length === 1) {
                 const add = mutationList[0].addedNodes[0]
                 if (add && add.classList && add.classList.contains("file-library-node")) {
@@ -52,18 +62,29 @@ class fileCounterPlugin extends BasePlugin {
         }).observe(this.libraryTreeEl, { subtree: true, childList: true })
     }
 
-    verifyExt = path => this.allowedExtensions.has(this.utils.Package.Path.extname(path).toLowerCase())
-    verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE
-    fileFilter = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath)
-    dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
+    _verifyExt = path => this.allowedExtensions.has(this.utils.Package.Path.extname(path).toLowerCase())
+    _verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE
+    _fileFilter = (filepath, stat) => this._verifySize(stat) && this._verifyExt(filepath)
+    _dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
 
-    countFiles = async (dir) => {
+    _getEntitiesCounter = () => {
+        let count = 0
+        return () => {
+            count++
+            if (count > this.config.MAX_ENTITIES) {
+                this.stopPlugin()
+                return new Error("Too Many Files")
+            }
+        }
+    }
+    _countFiles = async (dir) => {
         let count = 0
         await this.utils.walkDir({
             dir,
-            fileFilter: this.fileFilter,
-            dirFilter: this.dirFilter,
+            _fileFilter: this._fileFilter,
+            _dirFilter: this._dirFilter,
             paramsBuilder: this.utils.identity,
+            onEntities: this._getEntitiesCounter(),
             callback: () => count++,
             semaphore: this.config.CONCURRENCY_LIMIT,
             maxDepth: this.config.MAX_DEPTH,
@@ -73,7 +94,7 @@ class fileCounterPlugin extends BasePlugin {
 
     _countDir = async (node) => {
         const dir = node.dataset.path
-        const fileCount = await this.countFiles(dir)
+        const fileCount = await this._countFiles(dir)
         let countDiv = node.querySelector(`:scope > .${this.className}`)
         if (fileCount <= this.config.IGNORE_MIN_NUM) {
             this.utils.removeElement(countDiv)
@@ -105,6 +126,8 @@ class fileCounterPlugin extends BasePlugin {
             this.countDir(root)
         }
     }
+
+    removeAllCounter = () => document.querySelectorAll(".plugin-file-counter").forEach(this.utils.removeElement)
 }
 
 module.exports = {

@@ -936,6 +936,7 @@ const SETTING_SCHEMAS = {
             Title("search"),
             Number("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1 }),
             Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
+            Number("MAX_ENTITIES", { min: 100 }),
             Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
             Number("CONCURRENCY_LIMIT", { min: 1 }),
         ),
