@@ -166,10 +166,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const useInfo = this.config.tools.includes("info")
         const useLocate = this.config.tools.includes("locate")
         const useFix = this.config.tools.includes("fix")
-        const operationsRender = () => {
+        const operationsRender = (rowData) => {
             const info = useInfo ? `<i class="fa fa-info-circle action-icon" action="detailSingle"></i>` : ""
             const locate = useLocate ? `<i class="fa fa-crosshairs action-icon" action="jumpToLine"></i>` : ""
-            const fixInfo = useFix ? `<i class="fa fa-wrench action-icon" action="fixSingle"></i>` : ""
+            const fixInfo = (useFix && rowData.fixable) ? `<i class="fa fa-wrench action-icon" action="fixSingle"></i>` : ""
             return [info, locate, fixInfo].join("")
         }
         const sortKey = { index: "idx", lineNumber: "line", ruleName: "rule", ruleDesc: "desc" }[this.config.result_order_by] || "line"
@@ -191,8 +191,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const data = fixInfos.map((item, idx) => {
             const rule = item.ruleNames[0]
             const line = item.lineNumber
+            const fixable = Boolean(item.fixInfo)
             const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
-            return { rule, line, desc, idx }
+            return { rule, line, desc, idx, fixable }
         })
         this.entities.table.setData(data)
     }

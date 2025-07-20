@@ -27,6 +27,7 @@
     "$label.DEFAULT_FENCE_BACKGROUND_COLOR": "背景色",
     "$label.MAX_DEPTH": "最大子目录深度",
     "$label.CONCURRENCY_LIMIT": "最大同时处理任务数",
+    "$label.FOLLOW_SYMBOLIC_LINKS": "跟随符号链接",
     "$placeholder.defaultIfEmpty": "为空则使用默认名",
     "$tooltip.protected": "受保护选项，请修改配置文件",
     "$tooltip.lowVersion": "Typora 版本过低，此功能不可用",
@@ -952,12 +953,11 @@
     "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU": "Ctrl+Wheel 横向滚动侧边栏",
     "$label.IGNORE_MIN_NUM": "目录下最小文件数",
     "$label.MAX_SIZE": "最大文件",
-    "$label.MAX_ENTITIES": "最大文件数量",
+    "$label.MAX_STATS": "最大文件数量",
     "$title.ALLOW_EXT": "允许文件扩展名",
     "$title.IGNORE_FOLDERS": "忽略目录名",
     "$title.textStyle": "文字样式",
     "$title.mouseInteraction": "鼠标交互",
-    "$title.search": "搜索",
     "$tooltip.ignoreMinNum": "忽略所含文件数少于 X 的目录"
   },
   "hotkeys": {

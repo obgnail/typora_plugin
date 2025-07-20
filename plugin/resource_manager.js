@@ -219,6 +219,7 @@ class ResourceFinder {
             callback,
             semaphore: this.config.CONCURRENCY_LIMIT,
             maxDepth: this.config.MAX_DEPTH,
+            followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
         })
 
         const notInFile = [...results.resourcesInFolder].filter(x => !results.resourcesInFile.has(x))

@@ -758,41 +758,70 @@ class utils {
     static walkDir = async (
         {
             dir,
-            onEntities = null,
-            onError = null,
-            fileFilter = () => true,
-            dirFilter = () => true,
-            paramsBuilder = (path, file, dir, stats) => ({ path, file, dir, stats }),
             callback,
+            fileFilter = (name, path, stats) => true,
+            dirFilter = (name, path, stats) => true,
+            paramsBuilder = (path, file, dir, stats) => ({ path, file, dir, stats }),
+            onStat = null,
+            onError = (path, err) => console.error(`Error processing path ${path}:`, err),
             semaphore = 20,
             maxDepth = -1,
+            followSymlinks = true,
+            stopOnError = false,
+            signal = null,
         }
     ) => {
+        if (signal && signal.aborted) {
+            return Promise.reject(signal.reason)
+        }
+
         semaphore = Math.max(semaphore, 1)
+
+        const { promises: { readdir, stat, lstat } } = FS
+        const { join, dirname, basename } = PATH
+        const statFn = followSymlinks ? stat : lstat
 
         let abort = false
         let activeTasks = 0
         let pendingTasks = 0
         const taskQueue = []
-
-        const { Fs: { promises: { readdir, stat } }, Path } = this.Package
         const { promise: drainPromise, resolve: resolveDrain, reject: rejectDrain } = Promise.withResolvers()
 
-        const checkDrain = () => {
+        if (signal) {
+            const onAbort = () => stop(signal.reason)
+            signal.addEventListener("abort", onAbort, { once: true })
+            drainPromise.finally(() => signal.removeEventListener("abort", onAbort))
+        }
+        const stop = (err) => {
+            rejectDrain(err)
+            abort = true
+        }
+        const callOnStat = (stats) => {
+            if (!onStat || abort) return
+
+            try {
+                onStat(stats)
+            } catch (err) {
+                stop(err)
+            }
+        }
+        const check = () => {
             if (activeTasks === 0 && pendingTasks === 0) {
                 resolveDrain()
             }
         }
         const runTask = () => {
-            if (abort) return
-
+            if (abort) {
+                taskQueue.length = 0
+                return
+            }
             while (taskQueue.length > 0 && activeTasks < semaphore) {
                 const task = taskQueue.shift()
                 activeTasks++
                 task().finally(() => {
                     activeTasks--
                     runTask()
-                    checkDrain()
+                    check()
                 })
             }
         }
@@ -802,49 +831,40 @@ class utils {
             taskQueue.push(fn)
             runTask()
         }
-        const callOnEntities = (stats) => {
-            if (!onEntities) return
-
-            try {
-                onEntities(stats)
-            } catch (err) {
-                rejectDrain(err)
-                abort = true
-                return true
-            }
-        }
         const processPath = async (currentPath, parentDir, fileName, depth) => {
             try {
-                const stats = await stat(currentPath)
-                const stop = callOnEntities(stats)
-                if (stop) return
+                const stats = await statFn(currentPath)
+                callOnStat(stats)
+
+                if (abort) return
 
                 if (stats.isDirectory()) {
-                    if (dirFilter(fileName) && (maxDepth < 0 || depth < maxDepth)) {
+                    if (dirFilter(fileName, currentPath, stats) && (maxDepth < 0 || depth < maxDepth)) {
                         const files = await readdir(currentPath)
                         pendingTasks += files.length
                         for (const file of files) {
-                            const newPath = Path.join(currentPath, file)
+                            const newPath = join(currentPath, file)
                             addTask(() => processPath(newPath, currentPath, file, depth + 1))
                         }
                     }
-                } else if (stats.isFile()) {
-                    if (fileFilter(currentPath, stats)) {
+                } else if (stats.isFile() || (!followSymlinks && stats.isSymbolicLink())) {
+                    if (fileFilter(fileName, currentPath, stats)) {
                         const params = await paramsBuilder(currentPath, fileName, parentDir, stats)
                         await callback(params)
                     }
                 }
             } catch (err) {
-                if (onError) onError(currentPath, err)
-                console.error(`Error processing path ${currentPath}:`, err)
+                onError(currentPath, err)
+                if (stopOnError) stop(err)
             } finally {
+                // Processing lifecycle of currentPath is finished (regardless of success, failure, or filtering)
                 pendingTasks--
             }
         }
 
         pendingTasks = 1
-        addTask(() => processPath(dir, null, dir, 0))
-        await drainPromise
+        addTask(() => processPath(dir, dirname(dir), basename(dir), 0))
+        return drainPromise
     }
 
     ////////////////////////////// Business Operations //////////////////////////////

@@ -264,9 +264,6 @@ const SETTING_SCHEMAS = {
             Title("search"),
             Switch("CASE_SENSITIVE"),
             Switch("OPTIMIZE_SEARCH", { tooltip: "breakOrder" }),
-            Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
-            Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
-            Number("CONCURRENCY_LIMIT", { min: 1 }),
         ),
         TitledBox(
             Title("searchResult"),
@@ -283,6 +280,13 @@ const SETTING_SCHEMAS = {
         ArrayBox("ALLOW_EXT"),
         ArrayBox("IGNORE_FOLDERS"),
         ArrayBox("HIGHLIGHT_COLORS"),
+        TitledBox(
+            Title("advanced"),
+            Switch("FOLLOW_SYMBOLIC_LINKS"),
+            Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
+            Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
+            Number("CONCURRENCY_LIMIT", { min: 1 }),
+        ),
         handleSettingsBox,
     ],
     commander: [
@@ -781,6 +785,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("advanced"),
             Select("RESOURCE_GRAMMARS", OPTIONS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
+            Switch("FOLLOW_SYMBOLIC_LINKS"),
             Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
             Number("CONCURRENCY_LIMIT", { min: 1 }),
         ),
@@ -932,15 +937,16 @@ const SETTING_SCHEMAS = {
             Title("mouseInteraction"),
             Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU"),
         ),
-        TitledBox(
-            Title("search"),
-            Number("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1 }),
-            Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
-            Number("MAX_ENTITIES", { min: 100 }),
-            Number("CONCURRENCY_LIMIT", { min: 1 }),
-        ),
         ArrayBox("ALLOW_EXT"),
         ArrayBox("IGNORE_FOLDERS"),
+        TitledBox(
+            Title("advanced"),
+            Switch("FOLLOW_SYMBOLIC_LINKS"),
+            Number("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1 }),
+            Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
+            Number("MAX_STATS", { min: 100 }),
+            Number("CONCURRENCY_LIMIT", { min: 1 }),
+        ),
         handleSettingsBox,
     ],
     hotkeys: [

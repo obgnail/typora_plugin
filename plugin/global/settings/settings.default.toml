@@ -205,19 +205,22 @@ BACKSPACE_TO_HIDE = false
 #   false: 搜索时不区分大小写
 CASE_SENSITIVE = false
 
-# ------------------- 文件过滤 -------------------
-# 允许搜索的最大文件大小，单位为字节 (bytes)
-# 注意: Typora 仅支持打开小于 2000000 字节的文件，因此不建议设置超过此值
-#   大于此值的文件在搜索时将被忽略
-#   小于 0 的值，表示不忽略任何文件
-MAX_SIZE = 2000000
-
 # 遍历的最大子目录深度，超出深度的文件将被忽略
 #   若 MAX_DEPTH 小于 0，则不过滤
 MAX_DEPTH = -1
 
 # 并发数限制
 CONCURRENCY_LIMIT = 20
+
+# 跟随符号链接
+FOLLOW_SYMBOLIC_LINKS = true
+
+# ------------------- 文件过滤 -------------------
+# 允许搜索的最大文件大小，单位为字节 (bytes)
+# 注意: Typora 仅支持打开小于 2000000 字节的文件，因此不建议设置超过此值
+#   大于此值的文件在搜索时将被忽略
+#   小于 0 的值，表示不忽略任何文件
+MAX_SIZE = 2000000
 
 # 允许搜索的文件扩展名列表
 # 只有在此列表中的文件才会被搜索
@@ -2123,10 +2126,13 @@ MAX_SIZE = 2000000
 
 # 最大文件数量
 #   若超出，则插件暂停运行
-MAX_ENTITIES = 10000
+MAX_STATS = 10000
 
 # 并发数限制
 CONCURRENCY_LIMIT = 20
+
+# 跟随符号链接
+FOLLOW_SYMBOLIC_LINKS = true
 
 # Typora 允许打开的文件的扩展名列表，不在此列表中的文件在搜索时将被忽略
 #   例如：["md", "txt"] 表示只统计 .md 和 .txt 文件
@@ -2262,6 +2268,9 @@ MAX_DEPTH = -1
 
 # 并发数限制
 CONCURRENCY_LIMIT = 20
+
+# 跟随符号链接
+FOLLOW_SYMBOLIC_LINKS = true
 
 
 ################### editor_width_slider ###################

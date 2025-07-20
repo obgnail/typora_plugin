@@ -60,16 +60,16 @@ class fileCounterPlugin extends BasePlugin {
         this.observer.observe(this.libraryTreeEl, { subtree: true, childList: true })
     }
 
-    _verifyExt = path => this.allowedExtensions.has(this.utils.Package.Path.extname(path).toLowerCase())
+    _verifyExt = name => this.allowedExtensions.has(this.utils.Package.Path.extname(name).toLowerCase())
     _verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE
-    _fileFilter = (filepath, stat) => this._verifySize(stat) && this._verifyExt(filepath)
-    _dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
+    _fileFilter = (name, filepath, stat) => this._verifySize(stat) && this._verifyExt(name)
+    _dirFilter = name => !this.config.IGNORE_FOLDERS.includes(name)
 
-    _getEntitiesCounter = () => {
+    _getStatsCounter = () => {
         let count = 0
         return () => {
             count++
-            if (count > this.config.MAX_ENTITIES) {
+            if (count > this.config.MAX_STATS) {
                 this.stopPlugin()
                 throw new Error("Too Many Files")
             }
@@ -82,9 +82,10 @@ class fileCounterPlugin extends BasePlugin {
             fileFilter: this._fileFilter,
             dirFilter: this._dirFilter,
             paramsBuilder: this.utils.identity,
-            onEntities: this._getEntitiesCounter(),
+            onStat: this._getStatsCounter(),
             callback: () => count++,
             semaphore: this.config.CONCURRENCY_LIMIT,
+            followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
         })
         return count
     }
