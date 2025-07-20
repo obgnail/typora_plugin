@@ -755,6 +755,7 @@ class utils {
         return output
     }
 
+    // TODO: Uses a dual-counter system to to prevent the walk from terminating prematurely while tasks are paused for asynchronous IO. Too complicated.
     static walkDir = async (
         {
             dir,
@@ -772,7 +773,8 @@ class utils {
         }
     ) => {
         if (signal && signal.aborted) {
-            return Promise.reject(signal.reason)
+            const reason = signal.reason || new DOMException("signal aborted", "AbortError")
+            return Promise.reject(reason)
         }
 
         semaphore = Math.max(semaphore, 1)
@@ -781,23 +783,23 @@ class utils {
         const { join, dirname, basename } = PATH
         const statFn = followSymlinks ? stat : lstat
 
-        let abort = false
-        let activeTasks = 0
-        let pendingTasks = 0
+        let aborted = false
+        let activeTasks = 0   // The number of currently executing tasks, limited by the `semaphore`
+        let pendingTasks = 0  // The total count of discovered paths that are not yet fully processed
         const taskQueue = []
         const { promise: drainPromise, resolve: resolveDrain, reject: rejectDrain } = Promise.withResolvers()
 
         if (signal) {
-            const onAbort = () => stop(signal.reason)
+            const onAbort = () => stop(signal.reason || new DOMException("signal aborted", "AbortError"))
             signal.addEventListener("abort", onAbort, { once: true })
             drainPromise.finally(() => signal.removeEventListener("abort", onAbort))
         }
         const stop = (err) => {
             rejectDrain(err)
-            abort = true
+            aborted = true
         }
         const callOnStat = (stats) => {
-            if (!onStat || abort) return
+            if (!onStat || aborted) return
 
             try {
                 onStat(stats)
@@ -806,12 +808,12 @@ class utils {
             }
         }
         const check = () => {
-            if (activeTasks === 0 && pendingTasks === 0) {
+            if (!aborted && activeTasks === 0 && pendingTasks === 0) {
                 resolveDrain()
             }
         }
         const runTask = () => {
-            if (abort) {
+            if (aborted) {
                 taskQueue.length = 0
                 return
             }
@@ -826,7 +828,7 @@ class utils {
             }
         }
         const addTask = (fn) => {
-            if (abort) return
+            if (aborted) return
 
             taskQueue.push(fn)
             runTask()
@@ -836,7 +838,7 @@ class utils {
                 const stats = await statFn(currentPath)
                 callOnStat(stats)
 
-                if (abort) return
+                if (aborted) return
 
                 if (stats.isDirectory()) {
                     if (dirFilter(fileName, currentPath, stats) && (maxDepth < 0 || depth < maxDepth)) {
@@ -855,9 +857,9 @@ class utils {
                 }
             } catch (err) {
                 onError(currentPath, err)
-                if (stopOnError) stop(err)
+                if (depth === 0 || stopOnError) stop(err)
             } finally {
-                // Processing lifecycle of currentPath is finished (regardless of success, failure, or filtering)
+                // currentPath is fully processed (regardless of success, failure, or filtering)
                 pendingTasks--
             }
         }
@@ -907,7 +909,7 @@ class utils {
 
     static fetch = async (url, { proxy = "", timeout = 3 * 60 * 1000, ...args }) => {
         let signal, agent
-        if (timeout && AbortSignal && AbortSignal.timeout) {
+        if (timeout) {
             signal = AbortSignal.timeout(timeout)
         }
         if (proxy) {

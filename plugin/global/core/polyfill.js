@@ -62,22 +62,15 @@ function AbortSignalTimeout() {
                 if (!Number.isFinite(ms) || ms < 0) {
                     throw new TypeError("ms must be a finite, non-negative number")
                 }
-
-                let timeoutId
                 const controller = new AbortController()
-                const signal = controller.signal
-
-                const abortHandler = () => {
-                    clearTimeout(timeoutId)
-                    signal.removeEventListener("abort", abortHandler)
-                }
-                signal.addEventListener("abort", abortHandler)
-                timeoutId = setTimeout(() => {
-                    if (!signal.aborted) {
-                        controller.abort("timeout")
+                const timeoutId = setTimeout(() => {
+                    if (!controller.signal.aborted) {
+                        const reason = new DOMException("signal timed out.", "TimeoutError")
+                        controller.abort(reason)
                     }
                 }, ms)
-                return signal
+                controller.signal.addEventListener("abort", () => clearTimeout(timeoutId), { once: true })
+                return controller.signal
             },
             configurable: true,
             enumerable: false,

@@ -141,6 +141,7 @@ class searchMultiPlugin extends BasePlugin {
             this.entities.highlights.append(...items)
             this.utils.show(this.entities.highlights)
         } catch (e) {
+            this.utils.notification.show(e.toString(), "error")
             console.error(e)
         }
     }
@@ -151,7 +152,7 @@ class searchMultiPlugin extends BasePlugin {
         this.entities.counter.textContent = 0
         this.entities.files.innerHTML = ""
 
-        const { MAX_SIZE, MAX_DEPTH, CONCURRENCY_LIMIT, IGNORE_FOLDERS, FOLLOW_SYMBOLIC_LINKS } = this.config
+        const { MAX_SIZE, MAX_DEPTH, TIMEOUT, CONCURRENCY_LIMIT, IGNORE_FOLDERS, FOLLOW_SYMBOLIC_LINKS } = this.config
         const { Path: { extname }, Fs: { promises: { readFile } } } = this.utils.Package
 
         const verifySize = 0 > MAX_SIZE
@@ -165,18 +166,26 @@ class searchMultiPlugin extends BasePlugin {
             : (path, file, dir, stats) => ({ path, file, stats })
 
         const matcher = source => this.searcher.match(ast, source)
-        await this.utils.walkDir({
-            dir: rootPath,
-            fileFilter: (name, path, stat) => verifySize(stat) && verifyExt(name),
-            dirFilter: name => !IGNORE_FOLDERS.includes(name),
-            paramsBuilder,
-            callback: this._showSearchResult(rootPath, matcher),
-            semaphore: CONCURRENCY_LIMIT,
-            maxDepth: MAX_DEPTH,
-            followSymlinks: FOLLOW_SYMBOLIC_LINKS,
-        })
 
-        this.utils.hide(this.entities.searching)
+        try {
+            await this.utils.walkDir({
+                dir: rootPath,
+                fileFilter: (name, path, stat) => verifySize(stat) && verifyExt(name),
+                dirFilter: name => !IGNORE_FOLDERS.includes(name),
+                paramsBuilder,
+                callback: this._showSearchResult(rootPath, matcher),
+                semaphore: CONCURRENCY_LIMIT,
+                maxDepth: MAX_DEPTH,
+                followSymlinks: FOLLOW_SYMBOLIC_LINKS,
+                signal: TIMEOUT > 0 ? AbortSignal.timeout(TIMEOUT) : undefined,
+            })
+        } catch (e) {
+            console.error(e)
+            const msg = e.name === "TimeoutError" ? this.i18n._t("global", "error.timeout") : e.toString()
+            this.utils.notification.show(msg, "error")
+        } finally {
+            this.utils.hide(this.entities.searching)
+        }
     }
 
     _showSearchResult = (rootPath, matcher) => {

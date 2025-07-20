@@ -213,18 +213,25 @@ class ResourceFinder {
                 await this._handleMarkdownFile(path, dir, results)
             }
         }
-        await this.utils.walkDir({
-            dir,
-            dirFilter: name => !this.config.IGNORE_FOLDERS.includes(name),
-            callback,
-            semaphore: this.config.CONCURRENCY_LIMIT,
-            maxDepth: this.config.MAX_DEPTH,
-            followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
-        })
 
-        const notInFile = [...results.resourcesInFolder].filter(x => !results.resourcesInFile.has(x))
-        const notInFolder = [...results.resourcesInFile].filter(x => !results.resourcesInFolder.has(x))
-        return { notInFile, notInFolder }
+        try {
+            await this.utils.walkDir({
+                dir,
+                dirFilter: name => !this.config.IGNORE_FOLDERS.includes(name),
+                callback,
+                semaphore: this.config.CONCURRENCY_LIMIT,
+                maxDepth: this.config.MAX_DEPTH,
+                followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
+                signal: this.config.TIMEOUT > 0 ? AbortSignal.timeout(this.config.TIMEOUT) : undefined,
+            })
+            const notInFile = [...results.resourcesInFolder].filter(x => !results.resourcesInFile.has(x))
+            const notInFolder = [...results.resourcesInFile].filter(x => !results.resourcesInFolder.has(x))
+            return { notInFile, notInFolder }
+        } catch (e) {
+            console.error(e)
+            const msg = e.name === "TimeoutError" ? this.plugin.i18n._t("global", "error.timeout") : e.toString()
+            this.utils.notification.show(msg, "error")
+        }
     }
 
     _handleMarkdownFile = async (path, dir, results) => {

@@ -199,21 +199,29 @@ HOTKEY = "ctrl+shift+p"
 #   false: 禁用此功能
 BACKSPACE_TO_HIDE = false
 
-# ------------------- 搜索内容 -------------------
+# ------------------- 搜索 -------------------
 # 搜索时是否区分大小写
 #   true:  搜索时区分大小写
 #   false: 搜索时不区分大小写
 CASE_SENSITIVE = false
 
 # 遍历的最大子目录深度，超出深度的文件将被忽略
-#   若 MAX_DEPTH 小于 0，则不过滤
+#   若小于 0，则不过滤
 MAX_DEPTH = -1
 
 # 并发数限制
+# 用于防止因打开过多文件句柄导致 EMFILE 错误，并控制內存与 CPU 的使用率
+#   必须为正整数
 CONCURRENCY_LIMIT = 20
 
 # 跟随符号链接
+#   true:  跟随符号链接，如果存在闭环目录会导致无限循环
+#   false: 不跟随符号链接，符号链接作为普通文件处理
 FOLLOW_SYMBOLIC_LINKS = true
+
+# 超时限制，单位为毫秒
+#   若小于 0，则不限制时间
+TIMEOUT = 60000
 
 # ------------------- 文件过滤 -------------------
 # 允许搜索的最大文件大小，单位为字节 (bytes)
@@ -2128,10 +2136,13 @@ MAX_SIZE = 2000000
 #   若超出，则插件暂停运行
 MAX_STATS = 10000
 
-# 并发数限制
+# 用于防止因打开过多文件句柄导致 EMFILE 错误，并控制內存与 CPU 的使用率
+#   必须为正整数
 CONCURRENCY_LIMIT = 20
 
 # 跟随符号链接
+#   true:  跟随符号链接，如果存在闭环目录会导致无限循环
+#   false: 不跟随符号链接，符号链接作为普通文件处理
 FOLLOW_SYMBOLIC_LINKS = true
 
 # Typora 允许打开的文件的扩展名列表，不在此列表中的文件在搜索时将被忽略
@@ -2266,11 +2277,18 @@ IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 #   若 MAX_DEPTH 小于 0，则不过滤
 MAX_DEPTH = -1
 
-# 并发数限制
+# 用于防止因打开过多文件句柄导致 EMFILE 错误，并控制內存与 CPU 的使用率
+#   必须为正整数
 CONCURRENCY_LIMIT = 20
 
 # 跟随符号链接
+#   true:  跟随符号链接，如果存在闭环目录会导致无限循环
+#   false: 不跟随符号链接，符号链接作为普通文件处理
 FOLLOW_SYMBOLIC_LINKS = true
+
+# 超时限制，单位为毫秒
+#   若小于 0，则不限制时间
+TIMEOUT = 180000
 
 
 ################### editor_width_slider ###################

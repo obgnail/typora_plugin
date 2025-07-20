@@ -283,6 +283,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("advanced"),
             Switch("FOLLOW_SYMBOLIC_LINKS"),
+            Number("TIMEOUT", { tooltip: "minusOneMeansUnlimited", unit: UNITS.millisecond, min: -1 }),
             Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
             Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
             Number("CONCURRENCY_LIMIT", { min: 1 }),
@@ -786,6 +787,7 @@ const SETTING_SCHEMAS = {
             Title("advanced"),
             Select("RESOURCE_GRAMMARS", OPTIONS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
             Switch("FOLLOW_SYMBOLIC_LINKS"),
+            Number("TIMEOUT", { tooltip: "minusOneMeansUnlimited", unit: UNITS.millisecond, min: -1 }),
             Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
             Number("CONCURRENCY_LIMIT", { min: 1 }),
         ),
