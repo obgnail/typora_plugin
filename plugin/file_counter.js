@@ -6,19 +6,14 @@ class fileCounterPlugin extends BasePlugin {
     })
 
     init = () => {
+        this.controller = new AbortController()
+
         this.className = "plugin-file-counter"
         this.libraryTreeEl = document.getElementById("file-library-tree")
         this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => {
             const prefix = (ext !== "" && !ext.startsWith(".")) ? "." : ""
             return prefix + ext.toLowerCase()
         }))
-
-        this.stopPlugin = this.utils.once(() => {
-            this.removeAllCounter()
-            const msg = this.i18n.t("error.tooManyFiles", { pluginName: this.pluginName })
-            this.utils.notification.show(msg, "warning", 7000)
-            this.observer.disconnect()
-        })
     }
 
     process = () => {
@@ -65,27 +60,28 @@ class fileCounterPlugin extends BasePlugin {
     _fileFilter = (name, filepath, stat) => this._verifySize(stat) && this._verifyExt(name)
     _dirFilter = name => !this.config.IGNORE_FOLDERS.includes(name)
 
-    _getStatsCounter = () => {
-        let count = 0
-        return () => {
-            count++
-            if (count > this.config.MAX_STATS) {
-                this.stopPlugin()
-                throw new Error("Too Many Files")
-            }
+    _onFinished = (err) => {
+        if (!err) return
+        if (err.name === "QuotaExceededError") {
+            this.stopPlugin()
+        } else if (err.name === "AbortError") {
+            console.warn("file_counter aborted")
         }
     }
+
     _countFiles = async (dir) => {
         let count = 0
         await this.utils.walkDir({
             dir,
             fileFilter: this._fileFilter,
             dirFilter: this._dirFilter,
-            paramsBuilder: this.utils.identity,
-            onStat: this._getStatsCounter(),
-            callback: () => count++,
+            createFileParams: this.utils.identity,
+            onFile: () => count++,
+            maxStats: this.config.MAX_STATS,
             semaphore: this.config.CONCURRENCY_LIMIT,
             followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
+            signal: this.controller.signal,
+            onFinished: this._onFinished,
         })
         return count
     }
@@ -120,7 +116,14 @@ class fileCounterPlugin extends BasePlugin {
         }
     }
 
-    removeAllCounter = () => document.querySelectorAll(".plugin-file-counter").forEach(this.utils.removeElement)
+    stopPlugin = () => {
+        document.querySelectorAll(".plugin-file-counter").forEach(this.utils.removeElement)
+        const msg = this.i18n.t("error.tooManyFiles", { pluginName: this.pluginName })
+        this.utils.notification.show(msg, "warning", 7000)
+        this.observer.disconnect()
+        this.controller.abort(new DOMException("Stop Plugin", "AbortError"))
+        this.controller = null
+    }
 }
 
 module.exports = {

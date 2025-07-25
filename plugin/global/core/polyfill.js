@@ -65,11 +65,48 @@ function AbortSignalTimeout() {
                 const controller = new AbortController()
                 const timeoutId = setTimeout(() => {
                     if (!controller.signal.aborted) {
-                        const reason = new DOMException("signal timed out.", "TimeoutError")
+                        const reason = new DOMException("Signal Timed Out", "TimeoutError")
                         controller.abort(reason)
                     }
                 }, ms)
                 controller.signal.addEventListener("abort", () => clearTimeout(timeoutId), { once: true })
+                return controller.signal
+            },
+            configurable: true,
+            enumerable: false,
+            writable: true,
+        })
+    }
+}
+
+function AbortSignalAny() {
+    if (AbortSignal && !AbortSignal.any) {
+        Object.defineProperty(AbortSignal, "any", {
+            value(signals) {
+                if (!Array.isArray(signals)) {
+                    throw new TypeError("The provided value is not AbortSignal sequence")
+                }
+
+                const controller = new AbortController()
+                const signalsArray = [...signals]
+
+                for (const signal of signalsArray) {
+                    if (signal.aborted) {
+                        controller.abort(signal.reason)
+                        return controller.signal
+                    }
+                }
+
+                const onAbort = (e) => {
+                    controller.abort(e.target.reason)
+                    for (const signal of signalsArray) {
+                        signal.removeEventListener("abort", onAbort)
+                    }
+                }
+                for (const signal of signalsArray) {
+                    signal.addEventListener("abort", onAbort, { once: true })
+                }
+
                 return controller.signal
             },
             configurable: true,
@@ -101,4 +138,5 @@ At()
 HasOwn()
 GroupBy()
 AbortSignalTimeout()
+AbortSignalAny()
 WithResolvers()

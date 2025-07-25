@@ -285,7 +285,7 @@ class preferencesPlugin extends BasePlugin {
 
         this.ACTION_HANDLERS = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
-            deepWiki: () => this.utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
+            viewDeepWiki: () => this.utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
             githubImageBed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
             sendEmail: () => this.utils.sendEmail("he1251698542@gmail.com", "Feedback"),
             viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
@@ -297,6 +297,7 @@ class preferencesPlugin extends BasePlugin {
             viewJsonRPCReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/README.md")),
             editStyles: () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/user_styles/README.md")),
             developPlugins: () => this.utils.showInFinder(this.utils.joinPath("./plugin/custom/README.md")),
+            openPluginFolder: () => this.utils.showInFinder(this.utils.joinPath("./plugin")),
             backupSettings: async () => this.utils.settings.backupSettingFile(),
             openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
             restoreSettings: consecutive(async () => {

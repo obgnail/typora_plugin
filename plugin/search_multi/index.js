@@ -39,6 +39,7 @@ class searchMultiPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
+        this.cancelController = null
         this.searcher = new Searcher(this)
         this.highlighter = new Highlighter(this)
         this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => {
@@ -152,40 +153,57 @@ class searchMultiPlugin extends BasePlugin {
         this.entities.counter.textContent = 0
         this.entities.files.innerHTML = ""
 
-        const { MAX_SIZE, MAX_DEPTH, TIMEOUT, CONCURRENCY_LIMIT, IGNORE_FOLDERS, FOLLOW_SYMBOLIC_LINKS } = this.config
+        const { MAX_SIZE, MAX_DEPTH, MAX_STATS, TIMEOUT, TRAVERSE_STRATEGY, CONCURRENCY_LIMIT, IGNORE_FOLDERS, FOLLOW_SYMBOLIC_LINKS } = this.config
         const { Path: { extname }, Fs: { promises: { readFile } } } = this.utils.Package
 
-        const verifySize = 0 > MAX_SIZE
-            ? () => true
-            : stat => stat.size < MAX_SIZE
-        const verifyExt = name => this.allowedExtensions.has(extname(name).toLowerCase())
-
-        const readFileScope = this.searcher.getReadFileScope(ast)
-        const paramsBuilder = readFileScope.length !== 0
-            ? async (path, file, dir, stats) => ({ path, file, stats, content: (await readFile(path)).toString() })
-            : (path, file, dir, stats) => ({ path, file, stats })
-
-        const matcher = source => this.searcher.match(ast, source)
-
-        try {
-            await this.utils.walkDir({
-                dir: rootPath,
-                fileFilter: (name, path, stat) => verifySize(stat) && verifyExt(name),
-                dirFilter: name => !IGNORE_FOLDERS.includes(name),
-                paramsBuilder,
-                callback: this._showSearchResult(rootPath, matcher),
-                semaphore: CONCURRENCY_LIMIT,
-                maxDepth: MAX_DEPTH,
-                followSymlinks: FOLLOW_SYMBOLIC_LINKS,
-                signal: TIMEOUT > 0 ? AbortSignal.timeout(TIMEOUT) : undefined,
-            })
-        } catch (e) {
-            console.error(e)
-            const msg = e.name === "TimeoutError" ? this.i18n._t("global", "error.timeout") : e.toString()
-            this.utils.notification.show(msg, "error")
-        } finally {
-            this.utils.hide(this.entities.searching)
+        const getFileFilter = () => {
+            const verifyExt = name => this.allowedExtensions.has(extname(name).toLowerCase())
+            return 0 > MAX_SIZE
+                ? (name) => verifyExt(name)
+                : (name, path, stat) => stat.size < MAX_SIZE && verifyExt(name)
         }
+        const getDirFilter = () => name => !IGNORE_FOLDERS.includes(name)
+        const getCreateFileParams = () => {
+            const readFileScopes = this.searcher.getReadFileScopes(ast)
+            return readFileScopes.length !== 0
+                ? async (path, file, dir, stats) => ({ path, file, stats, content: (await readFile(path)).toString() })
+                : (path, file, dir, stats) => ({ path, file, stats })
+        }
+        const getOnFile = () => {
+            const matcher = this.searcher.match.bind(null, ast)
+            return this._showSearchResult(rootPath, matcher)
+        }
+        const getSignal = () => {
+            this.cancelController = new AbortController()
+            return TIMEOUT > 0
+                ? AbortSignal.any([AbortSignal.timeout(TIMEOUT), this.cancelController.signal])
+                : this.cancelController.signal
+        }
+        const onFinished = (err) => {
+            this.cancelController = null
+            this.utils.hide(this.entities.searching)
+
+            if (!err) return
+            if (err.name === "AbortError") return  // user cancellation
+            console.error(err)
+            const msg = err.name === "TimeoutError" ? this.i18n._t("global", "error.timeout") : err.toString()
+            this.utils.notification.show(msg, "error")
+        }
+
+        await this.utils.walkDir({
+            dir: rootPath,
+            fileFilter: getFileFilter(),
+            dirFilter: getDirFilter(),
+            createFileParams: getCreateFileParams(),
+            onFile: getOnFile(),
+            signal: getSignal(),
+            semaphore: CONCURRENCY_LIMIT,
+            maxStats: MAX_STATS,
+            maxDepth: MAX_DEPTH,
+            strategy: TRAVERSE_STRATEGY,
+            followSymlinks: FOLLOW_SYMBOLIC_LINKS,
+            onFinished,
+        })
     }
 
     _showSearchResult = (rootPath, matcher) => {
@@ -229,6 +247,9 @@ class searchMultiPlugin extends BasePlugin {
         this.entities.window.hide()
         this.utils.hide(this.entities.searching)
         this.highlighter.clearSearch()
+        if (this.cancelController) {
+            this.cancelController.abort(new DOMException("User Cancellation", "AbortError"))
+        }
     }
 
     show = () => {

@@ -108,8 +108,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const op = {
                     title: this.i18n.t("func.doc"),
                     schema: [
-                        { fields: [{ type: "action", key: "viewRules", label: this.i18n.t("$label.viewMarkdownlintRules") }] },
                         { fields: [{ type: "textarea", key: "doc", rows: 12 }] },
+                        { fields: [{ type: "action", key: "viewRules", label: this.i18n.t("$label.viewMarkdownlintRules") }] },
                     ],
                     data: {
                         doc: Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n"),

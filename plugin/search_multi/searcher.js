@@ -186,13 +186,13 @@ class Searcher {
         this.qualifiers = new Map()
     }
 
-    process() {
+    process = () => {
         const qualifiers = this.buildQualifiers()
         qualifiers.forEach(q => this.qualifiers.set(q.scope, q))
         this.parser.setQualifier(qualifiers.map(q => q.scope), Object.keys(this.MIXIN.OPERATOR))
     }
 
-    buildQualifiers() {
+    buildQualifiers = () => {
         const qualifiers = [...this.buildBaseQualifiers(), ...this.buildMarkdownQualifiers()]
         qualifiers.forEach(q => {
             q.preprocess = q.preprocess || this.MIXIN.PREPROCESS.noop
@@ -206,7 +206,7 @@ class Searcher {
         return qualifiers
     }
 
-    buildBaseQualifiers() {
+    buildBaseQualifiers = () => {
         const {
             PREPROCESS: { resolveDate, resolveNumber, resolveBoolean },
             VALIDATE: { isSize, isDate, isNumber, isBoolean },
@@ -293,7 +293,7 @@ class Searcher {
         ]
     }
 
-    buildMarkdownQualifiers() {
+    buildMarkdownQualifiers = () => {
         // Prevent re-parsing of the same file in a SINGLE query
         const cache = fn => {
             let cached, result
@@ -475,7 +475,7 @@ class Searcher {
         ]
     }
 
-    parse(input, optimize = false) {
+    parse = (input, optimize = false) => {
         input = input.replace(/\r?\n/g, " ")
         input = this.config.CASE_SENSITIVE ? input : input.toLowerCase()
         const ast = this.parser.parse(input)
@@ -483,7 +483,7 @@ class Searcher {
         return optimize ? this.optimize(ast) : ast
     }
 
-    postParse(ast) {
+    postParse = (ast) => {
         const { REGEXP } = this.parser.TYPE
         this.parser.walk(ast, node => {
             const qualifier = this.qualifiers.get(node.scope.toLowerCase())
@@ -502,7 +502,7 @@ class Searcher {
      *   2. Sorting `dataNodes` by `cost`
      *   3. Rebuilding the subtree based on `dataNodes` to favor low-cost operations
      */
-    optimize(ast) {
+    optimize = (ast) => {
         if (!ast) return
 
         const { OR, AND } = this.parser.TYPE
@@ -557,11 +557,11 @@ class Searcher {
         return ast
     }
 
-    match(ast, source) {
+    match = (ast, source) => {
         return this.parser.evaluate(ast, node => this._match(node, source))
     }
 
-    _match(node, source) {
+    _match = (node, source) => {
         const { scope, operator, castResult, type } = node
         const qualifier = this.qualifiers.get(scope)
         let queryResult = qualifier.query(source)
@@ -576,7 +576,7 @@ class Searcher {
         return match(scope, operator, castResult, queryResult)
     }
 
-    getReadFileScope(ast) {
+    getReadFileScopes = (ast) => {
         const scope = new Set()
         const needRead = new Set([...this.qualifiers.values()].filter(q => q.need_read_file).map(q => q.scope))
         this.parser.walk(ast, node => {
@@ -587,7 +587,7 @@ class Searcher {
         return [...scope]
     }
 
-    getContentTokens(ast) {
+    getContentTokens = (ast) => {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
         const isMeta = new Set([...this.qualifiers.values()].filter(q => q.is_meta).map(q => q.scope))
         const contentNodes = new Set()
@@ -627,7 +627,7 @@ class Searcher {
             })
     }
 
-    toMermaid(ast, translate = false, direction = "TB") {
+    toMermaid = (ast, translate = false, direction = "TB") => {
         let idx = 0
         const { t, link } = this.i18n
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
@@ -720,7 +720,7 @@ class Searcher {
         return [`graph ${direction}`, "S((Start))", "E((End))", ...result, ...start, ...end].join("\n")
     }
 
-    toExplain(ast) {
+    toExplain = (ast) => {
         const { t, link } = this.i18n
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
         const I18N = {
@@ -796,7 +796,7 @@ class Searcher {
         return `${I18N.explain}：\n${content}`
     }
 
-    async showGrammar() {
+    showGrammar = async () => {
         const t = this.i18n.t
         const scope = [...this.qualifiers.values()]
         const metaScope = scope.filter(s => s.is_meta)
@@ -856,6 +856,8 @@ class Searcher {
             [emphasis('thead:k8s h2:prometheus blockcode:"kubectl apply"'), t("modal.example.desc10")],
         ])
 
+        const operators = [...Object.keys(this.MIXIN.OPERATOR)].map(s => `'${s}'`).join(" | ")
+        const scopes = [...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")
         const grammar = `
 <query> ::= <expression>
 <expression> ::= <term> ( <or> <term> )*
@@ -869,8 +871,8 @@ class Searcher {
 <not> ::= 'NOT' | '-'
 <keyword> ::= [^\\s"()|]+
 <regex> ::= [^/]+
-<operator> ::= ${[...Object.keys(this.MIXIN.OPERATOR)].map(s => `'${s}'`).join(" | ")}
-<scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
+<operator> ::= ${operators}
+<scope> ::= ${scopes}`
 
         const _to = async (expression, optimize, callback) => {
             try {

@@ -31,6 +31,9 @@ class resourceManagerPlugin extends BasePlugin {
             fileTable: document.querySelector(".non-exist-in-file"),
             folderTable: document.querySelector(".non-exist-in-folder"),
         }
+        if (this.config.TIMEOUT <= 0) {
+            this.config.TIMEOUT = 5 * 60 * 1000
+        }
     }
 
     process = () => {
@@ -43,9 +46,7 @@ class resourceManagerPlugin extends BasePlugin {
             const { action, rowData } = ev.detail
             if (action === "locate") {
                 this.utils.showInFinder(rowData.src)
-                return
-            }
-            if (action === "delete") {
+            } else if (action === "delete") {
                 if (this.showWarnDialog) {
                     const checkboxLabel = this.i18n._t("global", "disableReminder")
                     const reconfirm = this.i18n.t("msgBox.reconfirmDeleteFile")
@@ -70,7 +71,7 @@ class resourceManagerPlugin extends BasePlugin {
         if (!dir) return
 
         const hideProcessing = this.utils.notification.show(this.i18n._t("global", "processing"), "info")
-        const result = await this._runWithProgressBar(dir, 3 * 60 * 1000)
+        const result = await this._runWithProgressBar(dir)
         if (result instanceof Error) {
             this.utils.notification.show(result.toString(), "error")
             return
@@ -130,7 +131,12 @@ class resourceManagerPlugin extends BasePlugin {
         }
     }
 
-    _runWithProgressBar = async (dir, timeout) => this.utils.progressBar.fake({ task: () => new ResourceFinder(this).run(dir), timeout })
+    _runWithProgressBar = async (dir) => {
+        return this.utils.progressBar.fake({
+            task: () => new ResourceFinder(this).run(dir),
+            timeout: this.config.TIMEOUT,
+        })
+    }
 
     _initModalRect = (resetLeft = true) => {
         const { left, width, height } = this.entities.content.getBoundingClientRect()
@@ -205,7 +211,7 @@ class ResourceFinder {
         this.redirectPlugin = this.utils.getCustomPlugin("redirectLocalRootUrl")
 
         const results = { resourcesInFolder: new Set(), resourcesInFile: new Set() }
-        const callback = async ({ path, file, dir }) => {
+        const onFile = async ({ path, file, dir }) => {
             const ext = this.utils.Package.Path.extname(file).toLowerCase()
             if (this.resourceExts.has(ext)) {
                 results.resourcesInFolder.add(path)
@@ -213,25 +219,29 @@ class ResourceFinder {
                 await this._handleMarkdownFile(path, dir, results)
             }
         }
-
-        try {
-            await this.utils.walkDir({
-                dir,
-                dirFilter: name => !this.config.IGNORE_FOLDERS.includes(name),
-                callback,
-                semaphore: this.config.CONCURRENCY_LIMIT,
-                maxDepth: this.config.MAX_DEPTH,
-                followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
-                signal: this.config.TIMEOUT > 0 ? AbortSignal.timeout(this.config.TIMEOUT) : undefined,
-            })
-            const notInFile = [...results.resourcesInFolder].filter(x => !results.resourcesInFile.has(x))
-            const notInFolder = [...results.resourcesInFile].filter(x => !results.resourcesInFolder.has(x))
-            return { notInFile, notInFolder }
-        } catch (e) {
-            console.error(e)
-            const msg = e.name === "TimeoutError" ? this.plugin.i18n._t("global", "error.timeout") : e.toString()
+        const onFinished = (err) => {
+            if (!err) return
+            console.error(err)
+            const msg = err.name === "TimeoutError" ? this.plugin.i18n._t("global", "error.timeout") : err.toString()
             this.utils.notification.show(msg, "error")
         }
+
+        await this.utils.walkDir({
+            dir,
+            dirFilter: name => !this.config.IGNORE_FOLDERS.includes(name),
+            onFile,
+            semaphore: this.config.CONCURRENCY_LIMIT,
+            maxStats: this.config.MAX_STATS,
+            maxDepth: this.config.MAX_DEPTH,
+            followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
+            strategy: this.config.TRAVERSE_STRATEGY,
+            signal: AbortSignal.timeout(this.config.TIMEOUT),
+            onFinished,
+        })
+
+        const notInFile = [...results.resourcesInFolder].filter(x => !results.resourcesInFile.has(x))
+        const notInFolder = [...results.resourcesInFile].filter(x => !results.resourcesInFolder.has(x))
+        return { notInFile, notInFolder }
     }
 
     _handleMarkdownFile = async (path, dir, results) => {

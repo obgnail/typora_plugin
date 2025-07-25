@@ -88,7 +88,7 @@ class settings {
 
     backupSettingFile = async (showInFinder = true) => {
         const { FsExtra, Path } = this.utils.Package
-        const backupDir = Path.join(this.utils.tempFolder, "typora_plugin_config")
+        const backupDir = Path.join(this.utils.tempFolder, "typora-plugin-settings")
         await FsExtra.emptyDir(backupDir)
         const settingFiles = ["settings.user.toml", "custom_plugin.user.toml"]
         for (const file of settingFiles) {

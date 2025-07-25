@@ -26,9 +26,11 @@
     "$label.DEFAULT_FENCE_HEIGHT": "默认高度",
     "$label.DEFAULT_FENCE_BACKGROUND_COLOR": "背景色",
     "$label.MAX_DEPTH": "最大子目录深度",
+    "$label.MAX_STATS": "最大文件数量",
+    "$label.MAX_SIZE": "最大文件",
     "$label.CONCURRENCY_LIMIT": "最大同时处理任务数",
     "$label.FOLLOW_SYMBOLIC_LINKS": "跟随符号链接",
-    "$label.TIMEOUT": "超时限制",
+    "$label.TIMEOUT": "最大执行时间",
     "$placeholder.defaultIfEmpty": "为空则使用默认名",
     "$tooltip.protected": "受保护选项，请修改配置文件",
     "$tooltip.lowVersion": "Typora 版本过低，此功能不可用",
@@ -83,11 +85,12 @@
     "error.incorrectCommand": "请输入正确的指令",
     "$label.LOCALE": "语言",
     "$label.EXIT_INTERACTIVE_MODE": "图表退出交互模式方式",
+    "$label.openPluginFolder": "插件目录",
     "$label.openSettingsFolder": "配置目录",
     "$label.backupSettings": "备份配置",
     "$label.restoreAllSettings": "恢复所有默认",
     "$label.visitRepo": "THIS IS FOR EVERYONE",
-    "$label.deepWiki": "AI 文档",
+    "$label.viewDeepWiki": "AI 文档",
     "$label.githubImageBed": "Github 图床",
     "$label.editStyles": "修改样式",
     "$label.developPlugins": "我要写插件",
@@ -297,7 +300,7 @@
     "$label.MAX_HITS": "高亮最大数量",
     "$label.CASE_SENSITIVE": "区分大小写",
     "$label.OPTIMIZE_SEARCH": "搜索优化",
-    "$label.MAX_SIZE": "最大文件",
+    "$label.TRAVERSE_STRATEGY": "遍历策略",
     "$label.BACKSPACE_TO_HIDE": "输入框为空且键入退格键时，隐藏窗口",
     "$tooltip.breakOrder": "重组搜索条件",
     "$title.ALLOW_EXT": "允许文件扩展名",
@@ -305,7 +308,9 @@
     "$title.HIGHLIGHT_COLORS": "高亮颜色",
     "$title.searchResult": "搜索结果",
     "$title.search": "搜索",
-    "$title.windowInteraction": "窗口交互"
+    "$title.windowInteraction": "窗口交互",
+    "$option.TRAVERSE_STRATEGY.bfs": "广度优先",
+    "$option.TRAVERSE_STRATEGY.dfs": "深度优先"
   },
   "commander": {
     "pluginName": "命令行环境",
@@ -818,12 +823,15 @@
     "$label.MODAL_WIDTH_PERCENT": "宽度",
     "$label.MODAL_HEIGHT_PERCENT": "左边框定位",
     "$label.RESOURCE_GRAMMARS": "资源语法",
+    "$label.TRAVERSE_STRATEGY": "遍历策略",
     "$title.RESOURCE_EXT": "资源文件扩展名",
     "$title.MARKDOWN_EXT": "检索文件扩展名",
     "$title.IGNORE_FOLDERS": "忽略检索目录名",
     "$title.windowPosition": "窗口位置",
     "$option.RESOURCE_GRAMMARS.markdown": "Markdown",
-    "$option.RESOURCE_GRAMMARS.html": "HTML"
+    "$option.RESOURCE_GRAMMARS.html": "HTML",
+    "$option.TRAVERSE_STRATEGY.bfs": "广度优先",
+    "$option.TRAVERSE_STRATEGY.dfs": "深度优先"
   },
   "easy_modify": {
     "pluginName": "编辑工具",
@@ -954,8 +962,6 @@
     "$label.BEFORE_TEXT": "前缀",
     "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU": "Ctrl+Wheel 横向滚动侧边栏",
     "$label.IGNORE_MIN_NUM": "目录下最小文件数",
-    "$label.MAX_SIZE": "最大文件",
-    "$label.MAX_STATS": "最大文件数量",
     "$title.ALLOW_EXT": "允许文件扩展名",
     "$title.IGNORE_FOLDERS": "忽略目录名",
     "$title.textStyle": "文字样式",
@@ -1072,7 +1078,7 @@
     "$title.TASK_COLOR": "任务颜色",
     "$title.fence": "代码块",
     "$title.kanbanStyle": "看板样式",
-    "$tooltip.lowerThenZero": "小于 0 表示显示全部"
+    "$tooltip.lowerThenZero": "-1 表示显示全部"
   },
   "chat": {
     "pluginName": "Chat",

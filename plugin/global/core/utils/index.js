@@ -755,25 +755,28 @@ class utils {
         return output
     }
 
-    // TODO: Uses a dual-counter system to to prevent the walk from terminating prematurely while tasks are paused for asynchronous IO. Too complicated.
+    // TODO: Uses dual counters to prevent from terminating prematurely while tasks are paused for asynchronous IO. Too complicated.
     static walkDir = async (
         {
             dir,
-            callback,
+            onFile,
             fileFilter = (name, path, stats) => true,
             dirFilter = (name, path, stats) => true,
-            paramsBuilder = (path, file, dir, stats) => ({ path, file, dir, stats }),
+            createFileParams = (path, file, dir, stats) => ({ path, file, dir, stats }),
             onStat = null,
-            onError = (path, err) => console.error(`Error processing path ${path}:`, err),
+            onNonFatalError = (path, err) => console.error(`Error processing path ${path}:`, err),
+            onFinished = null,
             semaphore = 20,
             maxDepth = -1,
-            followSymlinks = true,
-            stopOnError = false,
+            maxStats = -1,
+            strategy = "bfs", // bfs | dfs
+            followSymlinks = false,
+            stopOnNonFatalError = false,
             signal = null,
         }
     ) => {
         if (signal && signal.aborted) {
-            const reason = signal.reason || new DOMException("signal aborted", "AbortError")
+            const reason = signal.reason || new DOMException("Signal Aborted", "AbortError")
             return Promise.reject(reason)
         }
 
@@ -782,90 +785,96 @@ class utils {
         const { promises: { readdir, stat, lstat } } = FS
         const { join, dirname, basename } = PATH
         const statFn = followSymlinks ? stat : lstat
+        const dequeueFn = strategy === "dfs" ? "pop" : "shift"
+        const needCheckStats = maxStats > 0
+        const noNeedCheckDepth = maxDepth < 0
 
+        let fatalError
         let aborted = false
-        let activeTasks = 0   // The number of currently executing tasks, limited by the `semaphore`
-        let pendingTasks = 0  // The total count of discovered paths that are not yet fully processed
+        let statsCount = 0
+        let runningTasks = 0  // The number of currently executing tasks, limited by the `semaphore`
+        let pendingPaths = 0  // The number of discovered paths that are not yet processed
         const taskQueue = []
         const { promise: drainPromise, resolve: resolveDrain, reject: rejectDrain } = Promise.withResolvers()
 
         if (signal) {
-            const onAbort = () => stop(signal.reason || new DOMException("signal aborted", "AbortError"))
+            const onAbort = () => rejectAndStop(signal.reason || new DOMException("Signal Aborted", "AbortError"))
             signal.addEventListener("abort", onAbort, { once: true })
             drainPromise.finally(() => signal.removeEventListener("abort", onAbort))
         }
-        const stop = (err) => {
-            rejectDrain(err)
+        if (onFinished) {
+            drainPromise.finally(() => onFinished(fatalError))
+        }
+        const rejectAndStop = (err) => {
             aborted = true
+            taskQueue.length = 0
+            fatalError = err
+            rejectDrain(err)
         }
-        const callOnStat = (stats) => {
-            if (!onStat || aborted) return
-
-            try {
-                onStat(stats)
-            } catch (err) {
-                stop(err)
-            }
-        }
-        const check = () => {
-            if (!aborted && activeTasks === 0 && pendingTasks === 0) {
+        const checkDrain = () => {
+            if (runningTasks === 0 && pendingPaths === 0 && !aborted) {
                 resolveDrain()
             }
         }
-        const runTask = () => {
-            if (aborted) {
-                taskQueue.length = 0
-                return
-            }
-            while (taskQueue.length > 0 && activeTasks < semaphore) {
-                const task = taskQueue.shift()
-                activeTasks++
+        const runNextTask = () => {
+            if (aborted) return
+
+            while (taskQueue.length > 0 && runningTasks < semaphore) {
+                const task = taskQueue[dequeueFn]()
+                runningTasks++
                 task().finally(() => {
-                    activeTasks--
-                    runTask()
-                    check()
+                    runningTasks--
+                    runNextTask()
+                    checkDrain()
                 })
             }
         }
-        const addTask = (fn) => {
-            if (aborted) return
-
-            taskQueue.push(fn)
-            runTask()
+        const scheduleTask = (fn) => {
+            if (!aborted) {
+                taskQueue.push(fn)
+                runNextTask()
+            }
         }
         const processPath = async (currentPath, parentDir, fileName, depth) => {
             try {
                 const stats = await statFn(currentPath)
-                callOnStat(stats)
-
                 if (aborted) return
 
+                if (needCheckStats) {
+                    statsCount++
+                    if (statsCount > maxStats) {
+                        rejectAndStop(new DOMException("Stats Count Exceeded", "QuotaExceededError"))
+                        return
+                    }
+                }
+                if (onStat) onStat(stats)
+
                 if (stats.isDirectory()) {
-                    if (dirFilter(fileName, currentPath, stats) && (maxDepth < 0 || depth < maxDepth)) {
+                    if (dirFilter(fileName, currentPath, stats) && (noNeedCheckDepth || depth < maxDepth)) {
                         const files = await readdir(currentPath)
-                        pendingTasks += files.length
+                        pendingPaths += files.length
                         for (const file of files) {
                             const newPath = join(currentPath, file)
-                            addTask(() => processPath(newPath, currentPath, file, depth + 1))
+                            scheduleTask(() => processPath(newPath, currentPath, file, depth + 1))
                         }
                     }
                 } else if (stats.isFile() || (!followSymlinks && stats.isSymbolicLink())) {
                     if (fileFilter(fileName, currentPath, stats)) {
-                        const params = await paramsBuilder(currentPath, fileName, parentDir, stats)
-                        await callback(params)
+                        const params = await createFileParams(currentPath, fileName, parentDir, stats)
+                        if (!aborted) await onFile(params)
                     }
                 }
             } catch (err) {
-                onError(currentPath, err)
-                if (depth === 0 || stopOnError) stop(err)
+                onNonFatalError(currentPath, err)
+                if (depth === 0 || stopOnNonFatalError) rejectAndStop(err)
             } finally {
                 // currentPath is fully processed (regardless of success, failure, or filtering)
-                pendingTasks--
+                pendingPaths--
             }
         }
 
-        pendingTasks = 1
-        addTask(() => processPath(dir, dirname(dir), basename(dir), 0))
+        pendingPaths = 1
+        scheduleTask(() => processPath(dir, dirname(dir), basename(dir), 0))
         return drainPromise
     }
 

@@ -131,6 +131,9 @@ const OPTIONS = {
         DRAG_STYLE: ["JetBrains", "VSCode"],
         TAB_DETACHMENT: ["free", "resistant", "lockVertical"],
     },
+    search_multi: {
+        TRAVERSE_STRATEGY: ["bfs", "dfs"],
+    },
     commander: {
         QUICK_RUN_DISPLAY: ["echo", "always", "error", "silent"],
         COMMIT_RUN_DISPLAY: ["echo", "always"],
@@ -154,6 +157,7 @@ const OPTIONS = {
     },
     resource_manager: {
         RESOURCE_GRAMMARS: ["markdown", "html"],
+        TRAVERSE_STRATEGY: ["bfs", "dfs"],
     },
     slash_commands: {
         SUGGESTION_TIMING: ["on_input", "debounce"],
@@ -205,7 +209,8 @@ const SETTING_SCHEMAS = {
         ),
         UntitledBox(
             Action("visitRepo"),
-            Action("deepWiki"),
+            Action("viewDeepWiki"),
+            Action("openPluginFolder"),
             Action("editStyles"),
             Action("developPlugins"),
             Action("githubImageBed"),
@@ -283,8 +288,10 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("advanced"),
             Switch("FOLLOW_SYMBOLIC_LINKS"),
+            Select("TRAVERSE_STRATEGY", OPTIONS.search_multi.TRAVERSE_STRATEGY),
             Number("TIMEOUT", { tooltip: "minusOneMeansUnlimited", unit: UNITS.millisecond, min: -1 }),
             Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
+            Number("MAX_STATS", { tooltip: "minusOneMeansUnlimited", min: -1 }),
             Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
             Number("CONCURRENCY_LIMIT", { min: 1 }),
         ),
@@ -786,8 +793,10 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("advanced"),
             Select("RESOURCE_GRAMMARS", OPTIONS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
+            Select("TRAVERSE_STRATEGY", OPTIONS.resource_manager.TRAVERSE_STRATEGY),
             Switch("FOLLOW_SYMBOLIC_LINKS"),
-            Number("TIMEOUT", { tooltip: "minusOneMeansUnlimited", unit: UNITS.millisecond, min: -1 }),
+            Number("TIMEOUT", { unit: UNITS.millisecond, min: 1 }),
+            Number("MAX_STATS", { tooltip: "minusOneMeansUnlimited", min: -1 }),
             Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
             Number("CONCURRENCY_LIMIT", { min: 1 }),
         ),

@@ -80,7 +80,7 @@
 .plugin-preferences-menu-item {
     box-sizing: border-box;
     line-height: 38px;
-    padding-left: 12px;
+    padding: 0 12px;
     border-radius: 6px;
     margin-bottom: 2px;
     overflow: hidden;
