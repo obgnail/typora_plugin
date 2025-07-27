@@ -37,7 +37,7 @@
 
 :host(.dragging) {
     box-shadow: var(--box-shadow-dragging);
-    transform: translateY(-2px);
+    cursor: grabbing;
 }
 
 @keyframes showWindow {

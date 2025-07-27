@@ -25,7 +25,6 @@
 
     --action-color: #666666;
     --action-hover-color: #333333;
-    --action-gap: 5px;
     --icon-size: 16px;
     --icon-padding: 5px;
     --image-max-width: 40px;
@@ -60,21 +59,14 @@ th {
     user-select: none;
 }
 
-.th-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
-th.sortable .th-content {
+th.sortable {
     cursor: pointer;
 }
 
-th .sort-icon {
-    margin-left: 8px;
+th.sortable i {
+    margin-left: .5em;
+    opacity: .9;
     color: var(--sort-icon-color);
-    font-size: 0.9em;
 }
 
 td {
@@ -106,16 +98,7 @@ tbody tr:hover {
     background-color: var(--row-hover-bg);
 }
 
-.cell {
-    display: flex;
-    align-items: center;
-    gap: var(--action-gap);
-    width: 100%;
-    height: 100%;
-    min-height: 1em;
-}
-
-.cell img {
+td img {
     max-width: var(--image-max-width);
     max-height: var(--image-max-hight);
     border-radius: 4px;
@@ -123,19 +106,19 @@ tbody tr:hover {
     display: block;
 }
 
-.cell a {
+td a {
     color: var(--action-color);
     text-decoration: none;
     transition: color 0.2s ease;
     white-space: normal;
 }
 
-.cell a:hover {
+td a:hover {
     color: var(--action-hover-color);
     text-decoration: underline;
 }
 
-.cell .action-icon {
+td .action-icon {
     cursor: pointer;
     color: var(--action-color);
     transition: color 0.2s ease, transform 0.2s ease;
@@ -145,7 +128,7 @@ tbody tr:hover {
     vertical-align: middle;
 }
 
-.cell .action-icon:hover {
+td .action-icon:hover {
     color: var(--action-hover-color);
     transform: scale(1.1);
 }

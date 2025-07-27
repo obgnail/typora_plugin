@@ -14,6 +14,12 @@
     font-size: 14px;
     font-family: "Open Sans", "Clear Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: rgb(65, 84, 98);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.plugin-preferences-dialog.dragging {
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.25);
+    cursor: grabbing;
 }
 
 .plugin-preferences-dialog ::-webkit-scrollbar {

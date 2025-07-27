@@ -41,6 +41,24 @@ class preferencesPlugin extends BasePlugin {
     }
 
     process = () => {
+        const dragAndMove = () => {
+            const { dialog, title } = this.entities
+            this.utils.dragElement({
+                targetEle: title,
+                moveEle: dialog,
+                onMouseDown: () => {
+                    dialog.classList.add("dragging")
+                    const { transform } = window.getComputedStyle(dialog)
+                    if (transform !== "none") {
+                        const { left, top } = dialog.getBoundingClientRect()
+                        dialog.style.left = `${left}px`
+                        dialog.style.top = `${top}px`
+                        dialog.style.transform = "none"
+                    }
+                },
+                onMouseUp: () => dialog.classList.remove("dragging"),
+            })
+        }
         const searchInDialog = () => {
             let allow = true
             const search = () => {
@@ -99,6 +117,7 @@ class preferencesPlugin extends BasePlugin {
             })
         }
 
+        dragAndMove()
         searchInDialog()
         onEvents()
     }

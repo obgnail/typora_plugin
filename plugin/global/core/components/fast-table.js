@@ -176,14 +176,7 @@ customElements.define("fast-table", class extends HTMLElement {
             if (col.width) {
                 th.style.width = col.width
             }
-
-            const thContent = document.createElement("div")
-            thContent.classList.add("th-content")
-
-            const titleSpan = document.createElement("span")
-            titleSpan.textContent = col.title
-            thContent.appendChild(titleSpan)
-
+            th.append(document.createTextNode(col.title))
             if (col.sortable === true) {
                 th.classList.add("sortable")
                 const icon = document.createElement("i")
@@ -192,31 +185,28 @@ customElements.define("fast-table", class extends HTMLElement {
                     : this.sortDirection === "asc"
                         ? "fa-sort-asc"
                         : "fa-sort-desc"
-                icon.classList.add("sort-icon", "fa", cls)
-                thContent.appendChild(icon)
+                icon.classList.add("fa", cls)
+                th.appendChild(icon)
             }
-            th.appendChild(thContent)
             return th
         })
         this.entities.theadRow.append(...thElements)
     }
 
+    // TODO: too expensive, introducing DOM Diffing may be a good solution
     _renderBody = (data, columns) => {
         this.entities.tbody.innerHTML = ""
         const trElements = data.map(rowData => {
             const tr = document.createElement("tr")
             tr._rowData = rowData
             const tdElements = columns.map(col => {
-                const val = rowData[col.key]
-                const cell = document.createElement("div")
-                cell.classList.add("cell")
-                if (col.render && typeof col.render === "function") {
-                    cell.innerHTML = col.render(rowData)
-                } else {
-                    cell.textContent = val !== undefined ? val : ""
-                }
                 const td = document.createElement("td")
-                td.appendChild(cell)
+                if (col.render && typeof col.render === "function") {
+                    td.innerHTML = col.render(rowData)
+                } else {
+                    const val = rowData[col.key]
+                    td.textContent = val !== undefined ? val : ""
+                }
                 return td
             })
             tr.append(...tdElements)
