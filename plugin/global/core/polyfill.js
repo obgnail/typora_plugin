@@ -1,4 +1,44 @@
-function At() {
+const _impl = (target, attr, fn) => {
+    if (target && !(attr in target)) {
+        Object.defineProperty(target, attr, {
+            value: fn,
+            configurable: true,
+            enumerable: false,
+            writable: true,
+        })
+    }
+}
+
+const _isIterable = (obj) => {
+    return obj == null ? false : typeof obj[Symbol.iterator] === "function"
+}
+
+function object() {
+    _impl(Object, "hasOwn", function (obj, key) {
+        return Object.prototype.hasOwnProperty.call(obj, key)
+    })
+
+    _impl(Object, "groupBy", function (items, callback) {
+        if (items == null) {
+            throw new TypeError("Cannot convert undefined or null to object")
+        }
+        if (typeof callback !== "function") {
+            throw new TypeError("callback must be a function")
+        }
+        const result = Object.create(null)
+        let index = 0
+        for (const item of items) {
+            const key = callback(item, index++)
+            if (!(key in result)) {
+                result[key] = []
+            }
+            result[key].push(item)
+        }
+        return result
+    })
+}
+
+function typedArray() {
     function at(n) {
         n = Math.trunc(n) || 0
         if (n < 0) {
@@ -10,133 +50,74 @@ function At() {
         return this[n]
     }
 
-    for (const type of [Array, String, Int8Array]) {
-        if (!type.prototype.at) {
-            Object.defineProperty(type.prototype, "at", {
-                value: at,
-                configurable: true,
-                enumerable: false,
-                writable: true,
-            })
+    for (const type of [Array, String, Object.getPrototypeOf(Int8Array)]) {
+        _impl(type.prototype, "at", at)
+    }
+}
+
+function promise() {
+    _impl(Promise, "withResolvers", function () {
+        const out = {}
+        out.promise = new Promise((resolve_, reject_) => {
+            out.resolve = resolve_
+            out.reject = reject_
+        })
+        return out
+    })
+
+    _impl(Promise, "try", function (callback, ...args) {
+        return new Promise(resolve => resolve(callback(...args)))
+    })
+}
+
+function abortSignal() {
+    _impl(AbortSignal, "timeout", function (ms) {
+        if (!Number.isFinite(ms) || ms < 0) {
+            throw new TypeError("ms must be a finite, non-negative number")
         }
-    }
-}
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => {
+            if (!controller.signal.aborted) {
+                const reason = new DOMException("Signal Timed Out", "TimeoutError")
+                controller.abort(reason)
+            }
+        }, ms)
+        controller.signal.addEventListener("abort", () => clearTimeout(timeoutId), { once: true })
+        return controller.signal
+    })
 
-function HasOwn() {
-    if (!Object.hasOwn) {
-        Object.defineProperty(Object, "hasOwn", {
-            value(object, key) {
-                return Object.prototype.hasOwnProperty.call(object, key)
-            },
-            configurable: true,
-            enumerable: false,
-            writable: true,
-        })
-    }
-}
+    _impl(AbortSignal, "any", function (signals) {
+        if (!_isIterable(signals)) {
+            throw new TypeError("The provided value is not an AbortSignal sequence")
+        }
+        const signalsArray = [...signals]
+        if (signalsArray.some(signal => !(signal instanceof AbortSignal))) {
+            throw new TypeError("The provided value is not an AbortSignal sequence")
+        }
 
-function GroupBy() {
-    if (!Object.groupBy) {
-        Object.defineProperty(Object, "groupBy", {
-            value(items, callback) {
-                return items.reduce((acc, item, index, array) => {
-                    const key = callback.call(this, item, index, array)
-                    if (acc[key] === undefined) {
-                        acc[key] = []
-                    }
-                    acc[key].push(item)
-                    return acc
-                }, {})
-            },
-            configurable: true,
-            enumerable: false,
-            writable: true,
-        })
-    }
-}
-
-function AbortSignalTimeout() {
-    if (AbortSignal && !AbortSignal.timeout) {
-        Object.defineProperty(AbortSignal, "timeout", {
-            value(ms) {
-                if (!Number.isFinite(ms) || ms < 0) {
-                    throw new TypeError("ms must be a finite, non-negative number")
-                }
-                const controller = new AbortController()
-                const timeoutId = setTimeout(() => {
-                    if (!controller.signal.aborted) {
-                        const reason = new DOMException("Signal Timed Out", "TimeoutError")
-                        controller.abort(reason)
-                    }
-                }, ms)
-                controller.signal.addEventListener("abort", () => clearTimeout(timeoutId), { once: true })
+        const controller = new AbortController()
+        for (const signal of signalsArray) {
+            if (signal.aborted) {
+                controller.abort(signal.reason)
                 return controller.signal
-            },
-            configurable: true,
-            enumerable: false,
-            writable: true,
-        })
-    }
+            }
+        }
+
+        const onAbort = (e) => {
+            controller.abort(e.target.reason)
+            for (const signal of signalsArray) {
+                signal.removeEventListener("abort", onAbort)
+            }
+        }
+        for (const signal of signalsArray) {
+            signal.addEventListener("abort", onAbort, { once: true })
+        }
+
+        return controller.signal
+    })
 }
 
-function AbortSignalAny() {
-    if (AbortSignal && !AbortSignal.any) {
-        Object.defineProperty(AbortSignal, "any", {
-            value(signals) {
-                if (!Array.isArray(signals)) {
-                    throw new TypeError("The provided value is not AbortSignal sequence")
-                }
-
-                const controller = new AbortController()
-                const signalsArray = [...signals]
-
-                for (const signal of signalsArray) {
-                    if (signal.aborted) {
-                        controller.abort(signal.reason)
-                        return controller.signal
-                    }
-                }
-
-                const onAbort = (e) => {
-                    controller.abort(e.target.reason)
-                    for (const signal of signalsArray) {
-                        signal.removeEventListener("abort", onAbort)
-                    }
-                }
-                for (const signal of signalsArray) {
-                    signal.addEventListener("abort", onAbort, { once: true })
-                }
-
-                return controller.signal
-            },
-            configurable: true,
-            enumerable: false,
-            writable: true,
-        })
-    }
-}
-
-function WithResolvers() {
-    if (!Promise.withResolvers) {
-        Object.defineProperty(Promise, "withResolvers", {
-            value() {
-                const out = {}
-                out.promise = new Promise((resolve_, reject_) => {
-                    out.resolve = resolve_
-                    out.reject = reject_
-                })
-                return out
-            },
-            configurable: true,
-            enumerable: false,
-            writable: true,
-        })
-    }
-}
-
-At()
-HasOwn()
-GroupBy()
-AbortSignalTimeout()
-AbortSignalAny()
-WithResolvers()
+object()
+typedArray()
+promise()
+abortSignal()

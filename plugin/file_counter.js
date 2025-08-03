@@ -75,7 +75,7 @@ class fileCounterPlugin extends BasePlugin {
             dir,
             fileFilter: this._fileFilter,
             dirFilter: this._dirFilter,
-            createFileParams: this.utils.identity,
+            fileParamsGetter: this.utils.identity,
             onFile: () => count++,
             maxStats: this.config.MAX_STATS,
             semaphore: this.config.CONCURRENCY_LIMIT,

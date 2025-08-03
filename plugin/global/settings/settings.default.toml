@@ -100,6 +100,9 @@ DRAG_NEW_WINDOW_THRESHOLD = -1
 #   false: 禁用此功能
 CTRL_CLICK_TO_NEW_WINDOW = true
 
+# 鼠标滚轮滚动标签栏
+WHEEL_TO_SCROLL_TAB_BAR = true
+
 # 是否允许通过按住 Ctrl 键并滚动鼠标滚轮来切换标签页
 #   true:  启用此功能
 #   false: 禁用此功能
@@ -218,6 +221,11 @@ CONCURRENCY_LIMIT = 20
 #   true:  跟随符号链接，如果存在闭环目录会导致无限循环
 #   false: 不跟随符号链接，符号链接作为普通文件处理
 FOLLOW_SYMBOLIC_LINKS = false
+
+# 关闭搜索窗口时，若搜索尚未结束，则立即停止搜索
+#   true:  停止搜索，避免资源浪费
+#   false: 不停止搜索，后台运行
+STOP_SEARCHING_ON_HIDING = true
 
 # 超时限制，单位为毫秒
 #   若小于 0，则不限制时间
@@ -1037,22 +1045,22 @@ ENABLE_CONTENT = true
 # 启用 TOC 自动编号：是否在 TOC (Table of Contents) 目录中显示自动编号
 #   true:  在 TOC 中显示编号
 #   false: 在 TOC 中不显示编号
-ENABLE_TOC = true
+ENABLE_TOC = false
 
 # 启用表格自动编号：是否对文档中的表格进行自动编号
 #   true:  对表格进行编号
 #   false: 不对表格进行编号
-ENABLE_TABLE = true
+ENABLE_TABLE = false
 
 # 启用图片自动编号：是否对文档中的图片进行自动编号
 #   true:  对图片进行编号
 #   false: 不对图片进行编号
-ENABLE_IMAGE = true
+ENABLE_IMAGE = false
 
 # 启用代码块自动编号：是否对文档中的代码块进行自动编号
 #   true:  对代码块进行编号
 #   false: 不对代码块进行编号
-ENABLE_FENCE = true
+ENABLE_FENCE = false
 
 # ------------------- 样式与显示控制 -------------------
 # 导出时运用样式：是否在导出为 HTML 或 PDF 等格式时保留自动编号的样式
@@ -1728,6 +1736,9 @@ HOTKEY_INCREASE_HEADERS_LEVEL = ""
 
 # 快捷键：降低选中文段的标题等级
 HOTKEY_DECREASE_HEADERS_LEVEL = ""
+
+# 快捷键：移除外层区块（减少一层嵌套）
+HOTKEY_UNWRAP_OUTERMOST_BLOCK = ""
 
 # 快捷键：提取选区文字到新文件
 HOTKEY_EXTRACT_RANGE_TO_NEW_FILE = ""

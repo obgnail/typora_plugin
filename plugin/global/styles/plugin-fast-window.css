@@ -13,11 +13,10 @@
     --close-button-hover-text-color: #ffffff;
     --border-radius: 10px;
     --box-shadow: 2px 2px 4px #dbdbdb, -2px -2px 4px #dbdbdb;
-    --box-shadow-dragging: 0 15px 45px rgba(0, 0, 0, 0.25);
     --font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     --title-font-size: 1.1rem;
     --button-icon-size: 1.1rem;
-    --button-gap: 4px;
+    --button-gap: 0;
     --animation-duration: 0.2s;
 
     position: fixed;
@@ -33,11 +32,6 @@
     z-index: 9999;
     resize: var(--window-resize);
     transition: box-shadow 0.3s ease-in-out, transform 0.1s ease-out;
-}
-
-:host(.dragging) {
-    box-shadow: var(--box-shadow-dragging);
-    cursor: grabbing;
 }
 
 @keyframes showWindow {
@@ -91,9 +85,14 @@
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
     flex-shrink: 0;
+    cursor: grab;
 }
 
-.title-text {
+.title-bar.dragging {
+    cursor: grabbing;
+}
+
+.title-name {
     flex-grow: 1;
     font-weight: 600;
     color: var(--titlebar-text-color);
@@ -105,14 +104,14 @@
     line-height: 1.4;
 }
 
-.buttons-container {
+.title-buttons {
     display: flex;
     gap: var(--button-gap);
     align-items: center;
     flex-shrink: 0;
 }
 
-.buttons-container .button {
+.title-buttons .button {
     position: relative;
     display: inline-flex;
     justify-content: center;
@@ -121,17 +120,17 @@
     width: 28px;
     background: none;
     font-size: var(--button-icon-size);
-    cursor: pointer;
+    cursor: default;
     border-radius: 5px;
     transition: background-color 0.2s ease, color 0.2s ease;
     color: var(--close-button-text-color);
 }
 
-.buttons-container .button:hover {
+.title-buttons .button:hover {
     background-color: var(--button-hover-bg);
 }
 
-.buttons-container .button::after {
+.title-buttons .button::after {
     content: attr(data-hint);
     position: absolute;
     bottom: -32px;
@@ -150,24 +149,24 @@
     z-index: 10000;
 }
 
-.buttons-container .button:not([data-hint])::after,
-.buttons-container .button[data-hint=""]::after {
+.title-buttons .button:not([data-hint])::after,
+.title-buttons .button[data-hint=""]::after {
     content: none;
     visibility: hidden;
     opacity: 0;
 }
 
-.buttons-container .button:hover::after {
+.title-buttons .button:hover::after {
     opacity: 1;
     bottom: -28px;
     visibility: visible;
 }
 
-.buttons-container .button[data-action="close"] {
+.title-buttons .button[data-action="close"] {
     color: var(--close-button-text-color);
 }
 
-.buttons-container .button[data-action="close"]:hover {
+.title-buttons .button[data-action="close"]:hover {
     background-color: var(--close-button-hover-bg);
     color: var(--close-button-hover-text-color);
 }

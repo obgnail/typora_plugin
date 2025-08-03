@@ -10,6 +10,7 @@ class easyModifyPlugin extends BasePlugin {
         { hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE, callback: () => this.dynamicCall("extract_rang_to_new_file") },
         { hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, callback: () => this.dynamicCall("insert_mermaid_mindmap") },
         { hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, callback: () => this.dynamicCall("insert_mermaid_graph") },
+        { hotkey: this.config.HOTKEY_UNWRAP_OUTERMOST_BLOCK, callback: () => this.dynamicCall("unwrap_outermost_block") },
     ]
 
     init = () => {
@@ -21,6 +22,7 @@ class easyModifyPlugin extends BasePlugin {
             { act_value: "copy_full_path", act_hotkey: this.config.HOTKEY_COPY_FULL_PATH },
             { act_value: "increase_headers_level", act_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, act_hint: defaultDoc },
             { act_value: "decrease_headers_level", act_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, act_hint: defaultDoc },
+            { act_value: "unwrap_outermost_block", act_hotkey: this.config.HOTKEY_UNWRAP_OUTERMOST_BLOCK },
             { act_value: "convert_crlf_to_lf", act_hotkey: this.config.HOTKEY_CONVERT_CRLF_TO_LF, act_hint: notRecommended },
             { act_value: "convert_lf_to_crlf", act_hotkey: this.config.HOTKEY_CONVERT_LF_TO_CRLF, act_hint: notRecommended },
             { act_value: "filter_invisible_characters", act_hotkey: this.config.HOTKEY_FILTER_INVISIBLE_CHARACTERS, act_hint: notRecommended },
@@ -44,7 +46,8 @@ class easyModifyPlugin extends BasePlugin {
             extract.act_hint = I18N.noSelection
         }
 
-        meta.copyAnchor = anchorNode.closest("#write > [cid]")
+        meta.innermostAnchor = anchorNode.closest("#write [cid]")
+        meta.outermostAnchor = anchorNode.closest("#write > [cid]")
         meta.insertAnchor = anchorNode.closest('#write > p[mdtype="paragraph"]')
         const act_disabled = !meta.insertAnchor || meta.insertAnchor.querySelector("p > span")
         const act_hint = act_disabled ? I18N.positionEmptyLine : ""
@@ -62,7 +65,8 @@ class easyModifyPlugin extends BasePlugin {
         const funcMap = {
             increase_headers_level: () => this.changeHeadersLevel(true),
             decrease_headers_level: () => this.changeHeadersLevel(false),
-            copy_full_path: () => this.copyFullPath(meta.copyAnchor),
+            unwrap_outermost_block: () => this.unwrapOutermostBlock(meta.outermostAnchor, meta.innermostAnchor),
+            copy_full_path: () => this.copyFullPath(meta.outermostAnchor),
             insert_mermaid_mindmap: () => this.insertMindmap("mindmap", meta.insertAnchor),
             insert_mermaid_graph: () => this.insertMindmap("graph", meta.insertAnchor),
             extract_rang_to_new_file: async () => this.extractRangeToNewFile(meta.range),
@@ -278,6 +282,40 @@ class easyModifyPlugin extends BasePlugin {
         const tokens = func(tree)
         const mermaid = ["```mermaid", "\n", getComment(type), ...tokens, "```"].join("")
         this.utils.insertText(target, mermaid)
+    }
+
+    unwrapOutermostBlock = (outermostAnchor, innermostAnchor) => {
+        if (!outermostAnchor || !innermostAnchor) return
+
+        // exit if the anchor is inside a code or math block
+        if (innermostAnchor.matches(".md-fences, .md-math-block")) return
+
+        const createUnwrapFn = (type) => {
+            return () => {
+                const closestCid = innermostAnchor.getAttribute("cid")
+                const closestNode = File.editor.nodeMap.allNodes.get(closestCid)
+                if (!closestNode) return
+
+                // Monkey-patch: Temporarily replace the method to ensure `toggleIndent` targets the top-level block
+                const originFn = closestNode.getClosetBlock
+                closestNode.getClosetBlock = () => closestNode.getTopBlock().getFirstChild()
+                try {
+                    File.editor.stylize.toggleIndent(type)
+                } finally {
+                    closestNode.getClosetBlock = originFn
+                }
+            }
+        }
+
+        const handlers = {
+            '[mdtype="heading"]': () => File.editor.stylize.changeBlock(`header${outermostAnchor.tagName[1]}`, undefined, true),
+            '[mdtype="blockquote"]': createUnwrapFn("blockquote"),
+            '.task-list-item': createUnwrapFn("tasklist"),
+            'ol[mdtype="list"]': createUnwrapFn("ol"),
+            'ul[mdtype="list"]': createUnwrapFn("ul"),
+        }
+        const type = Object.keys(handlers).find(selector => outermostAnchor.matches(selector))
+        if (type) handlers[type]()
     }
 }
 

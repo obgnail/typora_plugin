@@ -245,6 +245,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("mouseInteraction"),
             Switch("CTRL_CLICK_TO_NEW_WINDOW"),
+            Switch("WHEEL_TO_SCROLL_TAB_BAR"),
             Switch("CTRL_WHEEL_TO_SWITCH"),
             Switch("MIDDLE_CLICK_TO_CLOSE"),
             Switch("SHOW_FULL_PATH_WHEN_HOVER"),
@@ -269,6 +270,7 @@ const SETTING_SCHEMAS = {
             Title("search"),
             Switch("CASE_SENSITIVE"),
             Switch("OPTIMIZE_SEARCH", { tooltip: "breakOrder" }),
+            Switch("STOP_SEARCHING_ON_HIDING"),
         ),
         TitledBox(
             Title("searchResult"),
@@ -809,6 +811,7 @@ const SETTING_SCHEMAS = {
             Hotkey("HOTKEY_COPY_FULL_PATH"),
             Hotkey("HOTKEY_INCREASE_HEADERS_LEVEL"),
             Hotkey("HOTKEY_DECREASE_HEADERS_LEVEL"),
+            Hotkey("HOTKEY_UNWRAP_OUTERMOST_BLOCK"),
             Hotkey("HOTKEY_EXTRACT_RANGE_TO_NEW_FILE"),
             Hotkey("HOTKEY_INSERT_MERMAID_MINDMAP"),
             Hotkey("HOTKEY_INSERT_MERMAID_GRAPH"),
@@ -1463,7 +1466,7 @@ const SETTING_SCHEMAS = {
             Text("error_color", { dependencies: { use_button: true } }),
         ),
         ObjectBOX("rule_config", { rows: 10 }),
-        ArrayBox("custom_rules"),
+        ArrayBox("custom_rules_files"),
         UntitledBox(
             Action("viewMarkdownlintRules"),
             Action("viewCustomMarkdownlintRules"),

@@ -17,10 +17,15 @@ class testPlugin extends BasePlugin {
         // Module.globalPaths.push(this.utils.joinPath("plugin"))
     }
 
+    test = async () => {
+
+    }
+
     process = () => {
         this.singleInstance()
         this.autoOpenDevTools()
         this.updateRequire()
+        this.test()
     }
 }
 

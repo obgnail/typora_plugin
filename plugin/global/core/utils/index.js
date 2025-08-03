@@ -510,7 +510,7 @@ class utils {
 
     static escape = html => {
         const replacements = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }
-        return html.replace(/[&<>"']/g, (char) => replacements[char])
+        return html.replace(/[&<>"']/g, c => replacements[c])
     }
 
     static compareVersion = (ver1, ver2) => {
@@ -575,7 +575,9 @@ class utils {
      * @param {any} saveContext - Contextual information for saving (optional).
      * @returns {string} - The content of the editor.
      */
-    static getCurrentFileContent = (shouldSave, contentType, skipSetContent, saveContext) => File.sync(shouldSave, contentType, skipSetContent, saveContext)
+    static getCurrentFileContent = (shouldSave = false, contentType, skipSetContent, saveContext) => {
+        return File.sync(shouldSave, contentType, skipSetContent, saveContext)
+    }
 
     static editCurrentFile = async (replacement, persistence = File.option.enableAutoSave) => {
         await this.fixScrollTop(async () => {
@@ -762,7 +764,7 @@ class utils {
             onFile,
             fileFilter = (name, path, stats) => true,
             dirFilter = (name, path, stats) => true,
-            createFileParams = (path, file, dir, stats) => ({ path, file, dir, stats }),
+            fileParamsGetter = (path, file, dir, stats) => ({ path, file, dir, stats }),
             onStat = null,
             onNonFatalError = (path, err) => console.error(`Error processing path ${path}:`, err),
             onFinished = null,
@@ -860,7 +862,7 @@ class utils {
                     }
                 } else if (stats.isFile() || (!followSymlinks && stats.isSymbolicLink())) {
                     if (fileFilter(fileName, currentPath, stats)) {
-                        const params = await createFileParams(currentPath, fileName, parentDir, stats)
+                        const params = await fileParamsGetter(currentPath, fileName, parentDir, stats)
                         if (!aborted) await onFile(params)
                     }
                 }

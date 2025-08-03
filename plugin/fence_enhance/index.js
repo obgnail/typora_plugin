@@ -243,6 +243,44 @@ class fenceEnhancePlugin extends BasePlugin {
         }
     }
 
+    indentAllFences = () => {
+        this.utils.entities.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
+            const codeMirror = fence.querySelector(":scope > .CodeMirror")
+            if (!codeMirror) {
+                const cid = fence.getAttribute("cid")
+                File.editor.fences.addCodeBlock(cid)
+            }
+            this.indentFence(fence)
+        })
+    }
+
+    addFenceLang = async lang => {
+        const filterFn = token => token.info === ""
+        const handleFn = line => line.endsWith("```") ? line + lang : line
+        await this._handleFence(filterFn, handleFn)
+    }
+
+    replaceFenceLang = async (sourceLang, targetLang) => {
+        const regex = new RegExp(`(?<=\`\`\`)${sourceLang}$`)
+        const filterFn = token => token.info === sourceLang
+        const handleFn = line => line.replace(regex, targetLang)
+        await this._handleFence(filterFn, handleFn)
+    }
+
+    _handleFence = async (filterFn, handleFn) => {
+        await this.utils.editCurrentFile(content => {
+            const lines = content.split(/\r?\n/g)
+            this.utils.parseMarkdownBlock(content)
+                .filter(token => token.type === "fence")
+                .filter(filterFn)
+                .map(token => token.map[0])
+                .forEach(idx => lines[idx] = handleFn(lines[idx].trimEnd()))
+            const joiner = content.includes("\r\n") ? "\r\n" : "\n"
+            return lines.join(joiner)
+        })
+        this.utils.notification.show(this.i18n._t("global", "success"))
+    }
+
     getDynamicActions = (anchorNode, meta) => this.i18n.fillActions([
         { act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
         { act_value: "toggle_state_copy", act_state: this.config.ENABLE_COPY },
@@ -255,18 +293,6 @@ class fenceEnhancePlugin extends BasePlugin {
     ])
 
     call = (action, meta) => {
-        const _handleFence = async (filterFn, handleFn) => {
-            await this.utils.editCurrentFile(content => {
-                const lines = content.split(/\r?\n/g)
-                this.utils.parseMarkdownBlock(content)
-                    .filter(token => token.type === "fence")
-                    .filter(filterFn)
-                    .map(token => token.map[0])
-                    .forEach(idx => lines[idx] = handleFn(lines[idx].trimEnd()))
-                const joiner = content.includes("\r\n") ? "\r\n" : "\n"
-                return lines.join(joiner)
-            })
-        }
         const callMap = {
             toggle_state_fold: () => {
                 this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD
@@ -313,14 +339,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 const op = { type: "warning", title, message }
                 const { response } = await this.utils.showMessageBox(op)
                 if (response === 0) {
-                    this.utils.entities.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
-                        const codeMirror = fence.querySelector(":scope > .CodeMirror")
-                        if (!codeMirror) {
-                            const cid = fence.getAttribute("cid")
-                            File.editor.fences.addCodeBlock(cid)
-                        }
-                        this.indentFence(fence)
-                    })
+                    this.indentAllFences()
                 }
             },
             add_fences_lang: async () => {
@@ -331,10 +350,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 }
                 const { response, data: { targetLang } } = await this.utils.formDialog.modal(op)
                 if (response === 1 && targetLang) {
-                    const filterFn = token => token.info === ""
-                    const handleFn = line => line.endsWith("```") ? line + targetLang : line
-                    await _handleFence(filterFn, handleFn)
-                    this.utils.notification.show(this.i18n._t("global", "success"))
+                    await this.addFenceLang(targetLang)
                 }
             },
             replace_fences_lang: async () => {
@@ -347,19 +363,14 @@ class fenceEnhancePlugin extends BasePlugin {
                     schema: [{ fields }],
                     data: { sourceLang: "js", targetLang: "javascript" },
                 }
-                const { response, data } = await this.utils.formDialog.modal(op)
-                const { sourceLang, targetLang } = data
+                const { response, data: { sourceLang, targetLang } } = await this.utils.formDialog.modal(op)
                 if (response === 1 && sourceLang && targetLang) {
-                    const regex = new RegExp(`(?<=\`\`\`)${sourceLang}$`)
-                    const filterFn = token => token.info === sourceLang
-                    const handleFn = line => line.replace(regex, targetLang)
-                    await _handleFence(filterFn, handleFn)
-                    this.utils.notification.show(this.i18n._t("global", "success"))
+                    await this.replaceFenceLang(sourceLang, targetLang)
                 }
             },
         }
         const func = callMap[action]
-        func && func()
+        if (func) func()
     }
 }
 

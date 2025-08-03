@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "node index.cjs",
-    "build-single": "npm run build https-proxy-agent",
+    "build-single": "npm run build markdownlint-custom-rules",
     "build-selected": "npm run build md-padding markmap"
   },
   "dependencies": {
@@ -24,6 +24,7 @@
     "mdast-util-to-markdown": "^2.1.2",
     "micromark-extension-gfm": "^3.0.0",
     "micromark-extension-math": "^3.1.0",
+    "minimatch": "^10.0.3",
     "smol-toml": "^1.4.1"
   },
   "devDependencies": {

@@ -318,12 +318,14 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const handleWheel = () => {
             this.entities.tabBar.addEventListener("wheel", ev => {
-                const target = ev.target.closest("#plugin-window-tab .tab-bar");
-                if (!target) return;
-                if (this.utils.metaKeyPressed(ev)) {
-                    (ev.deltaY < 0) ? this.previousTab() : this.nextTab();
-                } else {
-                    target.scrollLeft += ev.deltaY * 0.5;
+                const target = ev.target.closest("#plugin-window-tab .tab-bar")
+                if (!target) return
+
+                if (this.config.CTRL_WHEEL_TO_SWITCH && this.utils.metaKeyPressed(ev)) {
+                    const fn = (ev.deltaY < 0) ? "previousTab" : "nextTab"
+                    this[fn]()
+                } else if (this.config.WHEEL_TO_SCROLL_TAB_BAR) {
+                    target.scrollLeft += ev.deltaY * 0.5
                 }
             }, { passive: true })
         }
@@ -430,7 +432,7 @@ class windowTabBarPlugin extends BasePlugin {
         handleFocusChange();
         adjustQuickOpen();
         interceptLink();
-        if (this.config.CTRL_WHEEL_TO_SWITCH) {
+        if (this.config.WHEEL_TO_SCROLL_TAB_BAR || this.config.CTRL_WHEEL_TO_SWITCH) {
             handleWheel();
         }
         if (this.config.MIDDLE_CLICK_TO_CLOSE) {

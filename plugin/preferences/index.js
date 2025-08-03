@@ -47,7 +47,7 @@ class preferencesPlugin extends BasePlugin {
                 targetEle: title,
                 moveEle: dialog,
                 onMouseDown: () => {
-                    dialog.classList.add("dragging")
+                    title.classList.add("dragging")
                     const { transform } = window.getComputedStyle(dialog)
                     if (transform !== "none") {
                         const { left, top } = dialog.getBoundingClientRect()
@@ -56,7 +56,7 @@ class preferencesPlugin extends BasePlugin {
                         dialog.style.transform = "none"
                     }
                 },
-                onMouseUp: () => dialog.classList.remove("dragging"),
+                onMouseUp: () => title.classList.remove("dragging"),
             })
         }
         const searchInDialog = () => {
@@ -308,7 +308,7 @@ class preferencesPlugin extends BasePlugin {
             githubImageBed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
             sendEmail: () => this.utils.sendEmail("he1251698542@gmail.com", "Feedback"),
             viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
-            viewCustomMarkdownlintRules: () => this.utils.openUrl("https://github.com/obgnail/markdownlint-rule-math"),
+            viewCustomMarkdownlintRules: () => this.utils.openUrl("https://github.com/obgnail/markdownlint-custom-rules"),
             viewCodeMirrorKeymapsManual: () => this.utils.openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
             viewAbcVisualOptionsHelp: () => this.utils.openUrl("https://paulrosen.github.io/abcjs/visual/render-abc-options.html"),
             chooseEchartsRenderer: () => this.utils.openUrl("https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/"),

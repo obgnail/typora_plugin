@@ -25,6 +25,10 @@ const allBuildTasks = {
         entryPoints: ["mdast.mjs"],
         outfile: "../plugin/global/core/lib/mdast.js",
     },
+    "minimatch": {
+        entryPoints: ["minimatch.mjs"],
+        outfile: "../plugin/global/core/lib/minimatch.js",
+    },
     "https-proxy-agent": {
         entryPoints: ["https-proxy-agent.cjs"],
         outfile: "../plugin/global/core/lib/https-proxy-agent.js",
@@ -53,9 +57,9 @@ const allBuildTasks = {
         entryPoints: ["markdownlint.mjs"],
         outfile: "../plugin/custom/plugins/markdownLint/markdownlint.min.js",
     },
-    "markdownlint-rule-math": {
-        entryPoints: ["markdownlint-rule-math.cjs"],
-        outfile: "../plugin/custom/plugins/markdownLint/MD101.js",
+    "markdownlint-custom-rules": {
+        entryPoints: ["markdownlint-custom-rules.cjs"],
+        outfile: "../plugin/custom/plugins/markdownLint/custom-rules.js",
     },
 }
 

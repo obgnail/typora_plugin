@@ -4,8 +4,8 @@ customElements.define("fast-window", class extends HTMLElement {
     static _template = `
         <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-window.css" crossorigin="anonymous">
         <div class="title-bar" part="title-bar">
-            <span class="title-text" id="window-title"></span>
-            <div class="buttons-container"></div>
+            <div class="title-name"></div>
+            <div class="title-buttons"></div>
         </div>
         <div class="content-area" part="content-area">
             <slot></slot>
@@ -20,8 +20,8 @@ customElements.define("fast-window", class extends HTMLElement {
 
         this.entities = {
             titleBar: root.querySelector(".title-bar"),
-            titleTextElement: root.getElementById("window-title"),
-            buttonsContainer: root.querySelector(".buttons-container"),
+            titleName: root.querySelector(".title-name"),
+            titleButtons: root.querySelector(".title-buttons"),
             contentArea: root.querySelector(".content-area"),
         }
 
@@ -88,7 +88,9 @@ customElements.define("fast-window", class extends HTMLElement {
         }
     }
 
-    updateTitle = (title = this.getAttribute("window-title")) => this.entities.titleTextElement.textContent = title || ""
+    updateTitle = (title = this.getAttribute("window-title")) => {
+        this.entities.titleName.textContent = title || ""
+    }
 
     updateButtons = (updater) => {
         const buttons = this._parseButtonConfig()
@@ -131,20 +133,20 @@ customElements.define("fast-window", class extends HTMLElement {
 
     _addEventListeners = () => {
         this.entities.titleBar.addEventListener("mousedown", this._startDrag)
-        this.entities.buttonsContainer.addEventListener("click", this._onButtonClick)
+        this.entities.titleButtons.addEventListener("click", this._onButtonClick)
         this.addEventListener("animationend", this._onAnimationEnd)
     }
 
     _removeEventListeners = () => {
         this.entities.titleBar.removeEventListener("mousedown", this._startDrag)
-        this.entities.buttonsContainer.removeEventListener("click", this._onButtonClick)
+        this.entities.titleButtons.removeEventListener("click", this._onButtonClick)
         document.removeEventListener("mousemove", this._dragging)
         document.removeEventListener("mouseup", this._endDrag)
         this.removeEventListener("animationend", this._onAnimationEnd)
     }
 
     _updateButtons = () => {
-        this.entities.buttonsContainer.innerHTML = ""
+        this.entities.titleButtons.innerHTML = ""
 
         const buttonEls = this._parseButtonConfig().map(({ action, icon, hint }) => {
             const el = document.createElement("div")
@@ -156,7 +158,7 @@ customElements.define("fast-window", class extends HTMLElement {
             return el
         })
 
-        this.entities.buttonsContainer.append(...buttonEls)
+        this.entities.titleButtons.append(...buttonEls)
     }
 
     _applyInitialPosAndSize = () => {
@@ -189,7 +191,7 @@ customElements.define("fast-window", class extends HTMLElement {
 
         this._isDragging = true
         this.style.transition = "none"
-        this.classList.add("dragging")
+        this.entities.titleBar.classList.add("dragging")
 
         const rect = this.getBoundingClientRect()
         this._offsetX = ev.clientX - rect.left
@@ -219,7 +221,7 @@ customElements.define("fast-window", class extends HTMLElement {
     _endDrag = () => {
         this._isDragging = false
         this.style.removeProperty("transition")
-        this.classList.remove("dragging")
+        this.entities.titleBar.classList.remove("dragging")
 
         document.removeEventListener("mousemove", this._dragging)
         document.removeEventListener("mouseup", this._endDrag)

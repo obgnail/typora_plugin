@@ -153,7 +153,7 @@ class searchMultiPlugin extends BasePlugin {
         this.entities.counter.textContent = 0
         this.entities.files.innerHTML = ""
 
-        const { MAX_SIZE, MAX_DEPTH, MAX_STATS, TIMEOUT, TRAVERSE_STRATEGY, CONCURRENCY_LIMIT, IGNORE_FOLDERS, FOLLOW_SYMBOLIC_LINKS } = this.config
+        const { MAX_SIZE, MAX_DEPTH, MAX_STATS, TIMEOUT, TRAVERSE_STRATEGY, CONCURRENCY_LIMIT, IGNORE_FOLDERS, FOLLOW_SYMBOLIC_LINKS, STOP_SEARCHING_ON_HIDING } = this.config
         const { Path: { extname }, Fs: { promises: { readFile } } } = this.utils.Package
 
         const getFileFilter = () => {
@@ -163,7 +163,7 @@ class searchMultiPlugin extends BasePlugin {
                 : (name, path, stat) => stat.size < MAX_SIZE && verifyExt(name)
         }
         const getDirFilter = () => name => !IGNORE_FOLDERS.includes(name)
-        const getCreateFileParams = () => {
+        const getFileParamsCreator = () => {
             const readFileScopes = this.searcher.getReadFileScopes(ast)
             return readFileScopes.length !== 0
                 ? async (path, file, dir, stats) => ({ path, file, stats, content: (await readFile(path)).toString() })
@@ -175,9 +175,12 @@ class searchMultiPlugin extends BasePlugin {
         }
         const getSignal = () => {
             this.cancelController = new AbortController()
-            return TIMEOUT > 0
-                ? AbortSignal.any([AbortSignal.timeout(TIMEOUT), this.cancelController.signal])
-                : this.cancelController.signal
+            const signals = []
+            if (TIMEOUT > 0) signals.push(AbortSignal.timeout(TIMEOUT))
+            if (STOP_SEARCHING_ON_HIDING) signals.push(this.cancelController.signal)
+            return signals.length === 0
+                ? undefined
+                : signals.length === 1 ? signals[0] : AbortSignal.any(signals)
         }
         const onFinished = (err) => {
             this.cancelController = null
@@ -194,7 +197,7 @@ class searchMultiPlugin extends BasePlugin {
             dir: rootPath,
             fileFilter: getFileFilter(),
             dirFilter: getDirFilter(),
-            createFileParams: getCreateFileParams(),
+            fileParamsGetter: getFileParamsCreator(),
             onFile: getOnFile(),
             signal: getSignal(),
             semaphore: CONCURRENCY_LIMIT,
