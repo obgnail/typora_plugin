@@ -1432,6 +1432,17 @@ pass_color = "#499C54"
 # 格式检测未通过时方块的颜色
 error_color = "#BE9117"
 
+# ------------------- 操作 -------------------
+# 右击表格以切换源码模式
+#   true:  支持右击表格
+#   false: 不支持右击表格
+right_click_table_to_toggle_source_mode = true
+
+# 右击方块以修复错误
+#   true:  支持右击方块
+#   false: 不支持右击方块
+right_click_button_to_fix = true
+
 
 ################### quickButton ###################
 [quickButton]

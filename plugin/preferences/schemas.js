@@ -1451,6 +1451,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("detectAndFix"),
             Switch("translate"),
+            Switch("right_click_table_to_toggle_source_mode"),
             Select("columns", OPTIONS.markdownLint.columns, { minItems: 1 }),
             Select("result_order_by", OPTIONS.markdownLint.result_order_by),
             Select("tools", OPTIONS.markdownLint.tools, { minItems: 1 }),
@@ -1459,6 +1460,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("square"),
             Switch("use_button"),
+            Switch("right_click_button_to_fix", { dependencies: { use_button: true } }),
             Text("button_width", { dependencies: { use_button: true } }),
             Text("button_height", { dependencies: { use_button: true } }),
             Text("button_border_radius", { dependencies: { use_button: true } }),

@@ -114,6 +114,7 @@ class updater {
         this.versionFile = this.utils.joinPath("./plugin/bin/version.json");
         this.workDir = this.pkgPath.join(this.utils.tempFolder, "typora-plugin-updater");
         this.exclude = [
+            "./plugin/global/user_space",
             "./plugin/global/user_styles",
             "./plugin/global/settings/settings.user.toml",
             "./plugin/global/settings/custom_plugin.user.toml",

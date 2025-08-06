@@ -697,6 +697,7 @@ class utils {
     static getCurrentDirPath = () => PATH.dirname(this.getFilePath())
     static joinPath = (...paths) => PATH.join(this.getDirname(), ...paths)
     static requireFilePath = (...paths) => require(this.joinPath(...paths))
+    static getUserSpaceFile = (file = "") => this.joinPath("./plugin/global/user_space", file)
 
     static readFiles = async files => Promise.all(
         files.map(async file => {

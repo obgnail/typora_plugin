@@ -131,7 +131,22 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
         const onElementEvent = () => {
             if (this.entities.button) {
-                this.entities.button.addEventListener("click", this.callback)
+                this.entities.button.addEventListener("mousedown", ev => {
+                    if (ev.button === 0) {
+                        this.callback()
+                    } else if (this.config.right_click_button_to_fix && ev.button === 2) {
+                        this.fixLint()
+                    }
+                })
+            }
+            if (this.config.right_click_table_to_toggle_source_mode) {
+                this.entities.wrap.addEventListener("mousedown", ev => {
+                    ev.preventDefault()
+                    ev.stopPropagation()
+                    if (ev.button === 2) {
+                        funcMap.toggleSourceMode()
+                    }
+                })
             }
             this.entities.window.addEventListener("btn-click", ev => {
                 const { action } = ev.detail
@@ -142,13 +157,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const { action, rowData } = ev.detail
                 const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
                 funcMap[action](arg)
-            })
-            this.entities.wrap.addEventListener("mousedown", ev => {
-                ev.preventDefault()
-                ev.stopPropagation()
-                if (ev.button === 2) {
-                    funcMap.toggleSourceMode()
-                }
             })
         }
 
