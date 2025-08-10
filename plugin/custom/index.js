@@ -9,7 +9,7 @@ class CustomPlugin extends BasePlugin {
         const isString = s => typeof s === "string"
         const hotkeys = [];
         for (const [fixedName, plugin] of Object.entries(this.plugins)) {
-            if (!plugin || !this.utils.hasCustomPluginOverride(plugin, "hotkey")) continue
+            if (!plugin || !this.utils.hasOverrideCustomPluginFn(plugin, "hotkey")) continue
             try {
                 const hotkey = plugin.hotkey();
                 if (isString(hotkey) || (Array.isArray(hotkey) && hotkey.every(isString))) {
@@ -97,8 +97,9 @@ class customPluginLoader {
     }
 
     fixCallback = async () => {
+        const { hasOverrideCustomPluginFn: hasOverride } = this.utils
         for (const plugin of Object.values(this.controller.plugins)) {
-            if (!plugin || !this.utils.hasCustomPluginOverride(plugin, "callback") || !this.utils.hasCustomPluginOverride(plugin, "selector")) continue
+            if (!plugin || !hasOverride(plugin, "callback") || !hasOverride(plugin, "selector")) continue
             const originCallback = plugin.callback
             plugin.callback = anchorNode => {
                 if (!anchorNode) {

@@ -37,7 +37,8 @@ class preferencesPlugin extends BasePlugin {
         this._initPreProcessors()
         this._initPostProcessors()
         this._initSchemas()
-        this._initDialogForm()
+        this._initRules()
+        this._initForm()
     }
 
     process = () => {
@@ -163,7 +164,7 @@ class preferencesPlugin extends BasePlugin {
 
         const data = await this._preprocess(fixedName)
         this.entities.form.dataset.plugin = fixedName
-        this.entities.form.render({ schema, data, action: this.ACTION_HANDLERS })
+        this.entities.form.render({ schema, data, action: this.ACTION_HANDLERS, rule: this.VALIDATION_RULES[fixedName] })
         this.entities.menu.querySelectorAll(".active").forEach(e => e.classList.remove("active"))
         const menuItem = this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`)
         menuItem.classList.add("active")
@@ -206,7 +207,7 @@ class preferencesPlugin extends BasePlugin {
         return settings
     }
 
-    _initDialogForm = () => this.entities.form.init(this.utils, { objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
+    _initForm = () => this.entities.form.setOptions({ objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
 
     /** Will NOT modify the schemas structure, just i18n */
     _translateSchema = (schemas) => {
@@ -292,6 +293,23 @@ class preferencesPlugin extends BasePlugin {
         this._translateSchema(this.SETTING_SCHEMAS)
         if (this.config.IGNORE_CONFIG_DEPENDENCIES) {
             this._removeDependencies(this.SETTING_SCHEMAS)
+        }
+    }
+
+    // TODO: Validate rules for all settings
+    _initRules = () => {
+        // Throwing an error when verification fails
+        this.VALIDATION_RULES = {
+            md_padding: {
+                IGNORE_PATTERNS: ({ key, value, type }) => {
+                    if (type === "push") new RegExp(value)
+                }
+            },
+            markdownLint: {
+                custom_rules_files: ({ key, value, type }) => {
+                    if (type === "push") this.utils.Package.Fs.accessSync(value)
+                },
+            },
         }
     }
 
@@ -429,13 +447,17 @@ class preferencesPlugin extends BasePlugin {
                     return `<div style="display: flex; flex-direction: column; align-items: center">${svg}<div style="font-weight: bold">${qr.label}</div></div>`
                 })
                 const content = `<div style="display: flex; justify-content: space-evenly; padding-top: 8px">${qrs.join("")}</div>`
-                const blessing = `<div style="font-weight: bold; font-style:italic">Mayst thou thy peace discov'r.</div>`
+                const blessing = `<b><em>Farewell, Ashen One. Mayst thou thy peace discov'r.</em></b>`
                 const op = {
                     title: this.i18n._t("global", "$label.donate"),
                     schema: [
                         { fields: [{ type: "custom", content: blessing }] },
                         { fields: [{ type: "custom", content: content }] },
+                        { fields: [{ type: "action", key: "starMe", label: "<b>Star this project on GitHub</b>" }] },
                     ],
+                    action: {
+                        starMe: this.ACTION_HANDLERS.visitRepo,
+                    }
                 }
                 await this.utils.formDialog.modal(op)
             },

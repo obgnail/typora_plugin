@@ -14,24 +14,8 @@ class downloader {
             removeUselessClasses: plugin.config.DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES,
         },
     ) => {
-        const _getRect = svg => {
-            const { width, height } = plugin.entities.svg.querySelector("g").getBoundingClientRect()
-            const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/)
-            const scale = (match && match.groups && match.groups.scale) ? parseFloat(match.groups.scale) : 1
-            const realWidth = parseInt(width / scale)
-            const realHeight = parseInt(height / scale)
-            let minY = 0
-            svg.querySelectorAll("g.markmap-node").forEach(node => {
-                const match = node.getAttribute("transform").match(/translate\((?<x>.+?),\s+(?<y>.+?)\)/)
-                if (!match || !match.groups || !match.groups.x || !match.groups.y) return
-                const y = parseInt(match.groups.y)
-                minY = Math.min(minY, y)
-            })
-            return { minX: 0, width: realWidth, minY: minY, height: realHeight }
-        }
-
         const setAttrs = svg => {
-            const { minX, minY, width, height } = _getRect(svg)
+            const { x, y, width, height } = plugin.entities.svg.querySelector("g").getBBox()
             const { paddingH, paddingV, imageScale } = options
             const svgWidth = width + paddingH * 2  // both sides
             const svgHeight = height + paddingV * 2
@@ -42,7 +26,7 @@ class downloader {
             svg.setAttribute("class", "markmap")
             svg.setAttribute("width", scaledWidth)
             svg.setAttribute("height", scaledHeight)
-            svg.setAttribute("viewBox", `${minX} ${minY} ${svgWidth} ${svgHeight}`)
+            svg.setAttribute("viewBox", `${x} ${y} ${svgWidth} ${svgHeight}`)
             svg.querySelector("g").setAttribute("transform", `translate(${paddingH}, ${paddingV})`)
         }
 
@@ -215,6 +199,16 @@ class downloader {
                 .map(src => ({ type: "script", data: { src } }))
         }
 
+        const deepDeleteAttr = (obj, attr) => {
+            if (obj == null || typeof obj !== "object") return
+            for (const key of Object.keys(obj)) {
+                if (obj[key] != null && typeof obj[key] === "object") {
+                    deepDeleteAttr(obj[key], attr)
+                }
+            }
+            delete obj[attr]
+        }
+
         const handleScripts = (external, scripts, root) => {
             const entry = {
                 type: "iife",
@@ -275,6 +269,7 @@ class downloader {
             const { transformer } = plugin.Lib
             const { root, features } = plugin.transformContext
             const { styles, scripts } = transformer.getUsedAssets(features)
+            deepDeleteAttr(root, "__path")
             const external = getExternalScripts(transformer)
             const styleEls = handleStyles(styles)
             const scriptEls = handleScripts(external, scripts, root)

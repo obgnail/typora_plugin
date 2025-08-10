@@ -4,8 +4,6 @@ const FS_EXTRA = require("fs-extra")
 const { i18n } = require("../i18n")
 
 class utils {
-    static i18n = i18n
-
     static nodeVersion = process && process.versions && process.versions.node
     static electronVersion = process && process.versions && process.versions.electron
     static chromeVersion = process && process.versions && process.versions.chrome
@@ -51,8 +49,8 @@ class utils {
         return _func
     }
 
-    static hasPluginOverride = (plugin, fn) => plugin[fn] !== global.BasePlugin.prototype[fn]
-    static hasCustomPluginOverride = (plugin, fn) => plugin[fn] !== global.BaseCustomPlugin.prototype[fn]
+    static hasOverrideBasePluginFn = (plugin, fn) => plugin[fn] !== global.BasePlugin.prototype[fn]
+    static hasOverrideCustomPluginFn = (plugin, fn) => plugin[fn] !== global.BaseCustomPlugin.prototype[fn]
 
     static isUnderMountFolder = path => {
         const mountFolder = PATH.resolve(File.getMountFolder());
@@ -908,14 +906,11 @@ class utils {
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
 
-    static _markdownIt = null
-    static getMarkdownIt = () => {
-        if (!this._markdownIt) {
-            const { markdownit } = require("../lib/markdown-it")
-            this._markdownIt = markdownit({ html: true, linkify: true, typographer: true })
-        }
-        return this._markdownIt
-    }
+    static getMarkdownIt = this.once(() => {
+        const { markdownit } = require("../lib/markdown-it")
+        const defaultOptions = { html: true, linkify: true, typographer: true }
+        return markdownit(defaultOptions)
+    })
     static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
     static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
 

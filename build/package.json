@@ -25,7 +25,7 @@
     "micromark-extension-gfm": "^3.0.0",
     "micromark-extension-math": "^3.1.0",
     "minimatch": "^10.0.3",
-    "smol-toml": "^1.4.1"
+    "smol-toml": "^1.4.2"
   },
   "devDependencies": {
     "esbuild": "^0.25.4"

@@ -1,10 +1,9 @@
 const { sharedSheets } = require("./common")
+const { utils } = require("../utils")
+const { i18n } = require("../i18n")
 
 customElements.define("fast-form", class extends HTMLElement {
-    static _template = `
-        <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous">
-        <div id="form"></div>    
-    `
+    static _template = `<link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous"><div id="form"></div>`
 
     constructor() {
         super()
@@ -13,31 +12,25 @@ customElements.define("fast-form", class extends HTMLElement {
         root.innerHTML = this.constructor._template
 
         this.form = root.querySelector("#form")
-        this.options = { objectFormat: "JSON", schema: null, data: null, action: null, prerequisite: null }
-    }
-
-    init = (utils, options) => {
-        this.utils = utils
-        this.i18n = utils.i18n
-        this.options = { ...this.options, ...options }
+        this.options = { objectFormat: "JSON", schema: [], data: {}, action: {}, rule: {}, dependencies: {} }
         this._bindEvents()
     }
 
-    render = ({ schema = [], data = {}, action = {} }) => {
-        this.options.schema = schema
-        this.options.action = action
-        this.options.data = JSON.parse(JSON.stringify(data))
-        this.options.prerequisite = this._buildPrerequisite(schema)
-
-        this.form.innerHTML = this._fillForm(schema)
+    setOptions = (options) => {
+        const ops = utils.pick(options, ["objectFormat"])
+        this.options = { ...this.options, ...ops }
     }
 
-    // type: set/push/removeIndex
-    _dispatchEvent(key, value, type = "set") {
-        const customEvent = new CustomEvent("form-crud", { detail: { key, value, type } })
-        this.dispatchEvent(customEvent)
-        this.utils.nestedPropertyHelpers[type](this.options.data, key, value)
-        this._toggleReadonly(key)
+    render = (options) => {
+        const { schema = [], data = {}, action = {}, rule = {} } = options
+
+        this.options.schema = schema
+        this.options.action = action
+        this.options.rule = rule
+        this.options.data = JSON.parse(JSON.stringify(data))
+        this.options.dependencies = this._buildDependencies(schema)
+
+        this.form.innerHTML = this._fillForm(schema)
     }
 
     _dispatchAction(key) {
@@ -47,12 +40,39 @@ customElements.define("fast-form", class extends HTMLElement {
         }
     }
 
+    // type: set/push/removeIndex
+    _validateAndSubmit(key, value, type = "set") {
+        const detail = { key, value, type }
+        const ok = this._validate(detail)
+        if (ok) {
+            this._submit(detail)
+        }
+        return ok
+    }
+
+    _submit(detail) {
+        this.dispatchEvent(new CustomEvent("form-crud", { detail }))
+        utils.nestedPropertyHelpers[detail.type](this.options.data, detail.key, detail.value)
+        this._toggleReadonly(detail.key)
+    }
+
+    _validate(detail) {
+        try {
+            const ruleFn = this.options.rule[detail.key]
+            if (ruleFn) ruleFn(detail)
+            return true
+        } catch (err) {
+            const msg = err.message || err.toString()
+            utils.notification.show(msg, "error")
+        }
+    }
+
     _bindEvents() {
         const that = this
         let shownSelectOption = null
 
         $(this.form).on("keydown", "input:not(.hotkey-input), textarea", function (ev) {
-            if (ev.key === "a" && that.utils.metaKeyPressed(ev)) {
+            if (ev.key === "a" && utils.metaKeyPressed(ev)) {
                 this.select()
                 return false
             }
@@ -60,18 +80,22 @@ customElements.define("fast-form", class extends HTMLElement {
             if (ev.key === "Enter") {
                 this.blur()
                 return false
+            } else if (ev.key === "Escape") {
+                this.textContent = ""
+                utils.hide(this)
+                utils.show(this.nextElementSibling)
             }
         }).on("click", function () {
             if (shownSelectOption) {
-                that.utils.hide(shownSelectOption)
+                utils.hide(shownSelectOption)
             }
             shownSelectOption = null
         }).on("click", ".select-wrap", function () {
             const optionBox = this.nextElementSibling
             const boxes = [...that.form.querySelectorAll(".option-box")]
-            boxes.filter(box => box !== optionBox).forEach(that.utils.hide)
-            that.utils.toggleVisible(optionBox)
-            const isShown = that.utils.isShow(optionBox)
+            boxes.filter(box => box !== optionBox).forEach(utils.hide)
+            utils.toggleVisible(optionBox)
+            const isShown = utils.isShow(optionBox)
             if (isShown) {
                 optionBox.scrollIntoView({ block: "nearest" })
             }
@@ -93,33 +117,37 @@ customElements.define("fast-form", class extends HTMLElement {
                 const itemCount = allOptionEl.filter(op => op.dataset.choose === "true").length + (deselect ? -1 : 1)
                 if (itemCount < minItems || itemCount > maxItems) {
                     const msg = itemCount < minItems
-                        ? that.i18n.t("global", "error.minItems", { minItems })
-                        : that.i18n.t("global", "error.maxItems", { maxItems })
-                    that.utils.notification.show(msg, "error")
-                    that.utils.hide(boxEl)
+                        ? i18n.t("global", "error.minItems", { minItems })
+                        : i18n.t("global", "error.maxItems", { maxItems })
+                    utils.notification.show(msg, "error")
+                    utils.hide(boxEl)
                     return
                 }
-                optionEl.dataset.choose = deselect ? "false" : "true"
                 const idx = selectedValues.indexOf(optionValue)
                 if (idx === -1) {
                     selectedValues.push(optionValue)
                 } else {
                     selectedValues.splice(idx, 1)
                 }
-                const map = new Map(allOptionEl.map(op => [op.dataset.value, op]))
-                selectValueEl.textContent = selectedValues.length === 0
-                    ? that.i18n.t("global", "empty")
-                    : that._joinSelected(selectedValues.map(v => map.get(v).textContent))
-                selectEl.dataset.value = selectedValues.join("#")
-                that.utils.hide(boxEl)
-                that._dispatchEvent(selectEl.dataset.key, selectedValues)
+                const ok = that._validateAndSubmit(selectEl.dataset.key, selectedValues)
+                if (ok) {
+                    optionEl.dataset.choose = deselect ? "false" : "true"
+                    const map = new Map(allOptionEl.map(op => [op.dataset.value, op]))
+                    selectValueEl.textContent = selectedValues.length === 0
+                        ? i18n.t("global", "empty")
+                        : that._joinSelected(selectedValues.map(v => map.get(v).textContent))
+                    selectEl.dataset.value = selectedValues.join("#")
+                    utils.hide(boxEl)
+                }
             } else {
-                allOptionEl.forEach(op => op.dataset.choose = "false")
-                optionEl.dataset.choose = "true"
-                selectEl.dataset.value = optionEl.dataset.value
-                selectValueEl.textContent = optionEl.textContent
-                that.utils.hide(boxEl)
-                that._dispatchEvent(selectEl.dataset.key, optionValue)
+                const ok = that._validateAndSubmit(selectEl.dataset.key, optionValue)
+                if (ok) {
+                    allOptionEl.forEach(op => op.dataset.choose = "false")
+                    optionEl.dataset.choose = "true"
+                    selectEl.dataset.value = optionEl.dataset.value
+                    selectValueEl.textContent = optionEl.textContent
+                    utils.hide(boxEl)
+                }
             }
         }).on("click", ".table-add", async function () {
             const tableEl = this.closest(".table")
@@ -127,12 +155,13 @@ customElements.define("fast-form", class extends HTMLElement {
             const targetBox = that.options.schema.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
             const { nestedBoxes, defaultValues, thMap } = targetBox.fields[0]
             const op = { title: targetBox.title, schema: nestedBoxes, data: defaultValues }
-            const { response, data } = await that.utils.formDialog.modal(op)
-            if (response === 1) {
-                that._dispatchEvent(key, data, "push")
+            const { response, data } = await utils.formDialog.modal(op)
+            if (response === 0) return
+            const ok = that._validateAndSubmit(key, data, "push")
+            if (ok) {
                 const row = that._createTableRow(thMap, data).map(e => `<td>${e}</td>`).join("")
                 tableEl.querySelector("tbody").insertAdjacentHTML("beforeend", `<tr>${row}</tr>`)
-                that.utils.notification.show(that.i18n.t("global", "success.add"))
+                utils.notification.show(i18n.t("global", "success.add"))
             }
         }).on("click", ".table-edit", async function () {
             const trEl = this.closest("tr")
@@ -142,17 +171,18 @@ customElements.define("fast-form", class extends HTMLElement {
             const rowValue = that.options.data[key][idx]
             const targetBox = that.options.schema.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
             const { nestedBoxes, defaultValues, thMap } = targetBox.fields[0]
-            const modalValues = that.utils.merge(defaultValues, rowValue)  // rowValue may be missing certain attributes
+            const modalValues = utils.merge(defaultValues, rowValue)  // rowValue may be missing certain attributes
             const op = { title: targetBox.title, schema: nestedBoxes, data: modalValues }
-            const { response, data } = await that.utils.formDialog.modal(op)
-            if (response === 1) {
-                that._dispatchEvent(`${key}.${idx}`, data)
+            const { response, data } = await utils.formDialog.modal(op)
+            if (response === 0) return
+            const ok = that._validateAndSubmit(`${key}.${idx}`, data)
+            if (ok) {
                 const row = that._createTableRow(thMap, data)
                 const tds = trEl.querySelectorAll("td")
-                that.utils.zip(row, tds).slice(0, -1).forEach(([val, td]) => td.textContent = val)
-                that.utils.notification.show(that.i18n.t("global", "success.edit"))
+                utils.zip(row, tds).slice(0, -1).forEach(([val, td]) => td.textContent = val)
+                utils.notification.show(i18n.t("global", "success.edit"))
             }
-        }).on("click", ".table-delete", that.utils.createConsecutiveAction({
+        }).on("click", ".table-delete", utils.createConsecutiveAction({
             threshold: 2,
             timeWindow: 3000,
             getIdentifier: (ev) => ev.currentTarget,
@@ -160,30 +190,38 @@ customElements.define("fast-form", class extends HTMLElement {
                 const trEl = ev.currentTarget.closest("tr")
                 const tableEl = trEl.closest(".table")
                 const idx = [...tableEl.querySelectorAll("tbody tr")].indexOf(trEl)
-                that._dispatchEvent(tableEl.dataset.key, idx, "removeIndex")
-                trEl.remove()
-                that.utils.notification.show(that.i18n.t("global", "success.deleted"))
+                const ok = that._validateAndSubmit(tableEl.dataset.key, idx, "removeIndex")
+                if (ok) {
+                    trEl.remove()
+                    utils.notification.show(i18n.t("global", "success.deleted"))
+                }
             }
         })).on("click", ".object-confirm", function () {
             const textarea = this.closest(".control").querySelector(".object")
-            try {
-                const value = that._deserialize(textarea.value)
-                that._dispatchEvent(textarea.dataset.key, value)
-                that.utils.notification.show(that.i18n.t("global", "success.submit"))
-            } catch (e) {
-                console.error(e)
-                const msg = that.i18n.t("global", "error.IncorrectFormatContent", { format: that.options.objectFormat })
-                that.utils.notification.show(msg, "error")
+            const value = that._deserialize(textarea.value)
+            if (!value) {
+                const msg = i18n.t("global", "error.IncorrectFormatContent", { format: that.options.objectFormat })
+                utils.notification.show(msg, "error")
+                return
+            }
+            const ok = that._validateAndSubmit(textarea.dataset.key, value)
+            if (ok) {
+                utils.notification.show(i18n.t("global", "success.submit"))
             }
         }).on("click", ".hotkey-reset", function () {
             const input = this.closest(".hotkey-wrap").querySelector("input")
-            that._dispatchEvent(input.dataset.key, "")
-            that.utils.hotkeyHub.unregister(input.value)
-            input.value = ""
+            const ok = that._validateAndSubmit(input.dataset.key, "")
+            if (ok) {
+                utils.hotkeyHub.unregister(input.value)
+                input.value = ""
+            }
         }).on("click", ".hotkey-undo", function () {
             const input = this.closest(".hotkey-wrap").querySelector("input")
-            input.value = input.getAttribute("value")
-            that._dispatchEvent(input.dataset.key, input.value)
+            const value = input.getAttribute("value")
+            const ok = that._validateAndSubmit(input.dataset.key, value)
+            if (ok) {
+                input.value = value
+            }
         }).on("click", '.control[data-type="action"]', function () {
             const icon = this.querySelector(".action")
             that._dispatchAction(icon.dataset.action)
@@ -191,13 +229,15 @@ customElements.define("fast-form", class extends HTMLElement {
             const itemEl = this.parentElement
             const arrayEl = this.closest(".array")
             const idx = [...arrayEl.children].indexOf(itemEl)
-            that._dispatchEvent(arrayEl.dataset.key, idx, "removeIndex")
-            itemEl.remove()
+            const ok = that._validateAndSubmit(arrayEl.dataset.key, idx, "removeIndex")
+            if (ok) {
+                itemEl.remove()
+            }
         }).on("click", ".array-item-add", function () {
             const addEl = this
             const inputEl = addEl.previousElementSibling
-            that.utils.hide(addEl)
-            that.utils.show(inputEl)
+            utils.hide(addEl)
+            utils.show(inputEl)
             inputEl.focus()
         }).on("input", ".checkbox-input", function () {
             const checkboxInput = this
@@ -208,50 +248,52 @@ customElements.define("fast-form", class extends HTMLElement {
             const itemCount = checkboxValues.length
             if (itemCount < minItems || itemCount > maxItems) {
                 const msg = itemCount < minItems
-                    ? that.i18n.t("global", "error.minItems", { minItems })
-                    : that.i18n.t("global", "error.maxItems", { maxItems })
-                that.utils.notification.show(msg, "error")
+                    ? i18n.t("global", "error.minItems", { minItems })
+                    : i18n.t("global", "error.maxItems", { maxItems })
+                utils.notification.show(msg, "error")
                 setTimeout(() => checkboxInput.checked = !checkboxInput.checked)
             } else {
-                that._dispatchEvent(checkboxEl.dataset.key, checkboxValues)
+                that._validateAndSubmit(checkboxEl.dataset.key, checkboxValues)
             }
         }).on("input", ".radio-input", function () {
-            that._dispatchEvent(this.getAttribute("name"), this.value)
+            that._validateAndSubmit(this.getAttribute("name"), this.value)
         }).on("input", ".range-input", function () {
             this.nextElementSibling.textContent = that._toFixed2(Number(this.value))
         }).on("change", "input.switch-input", function () {
-            that._dispatchEvent(this.dataset.key, this.checked)
+            that._validateAndSubmit(this.dataset.key, this.checked)
         }).on("change", ".number-input, .range-input, .unit-input", function () {
-            that._dispatchEvent(this.dataset.key, Number(this.value))
+            that._validateAndSubmit(this.dataset.key, Number(this.value))
         }).on("change", ".text-input, .textarea", function () {
-            that._dispatchEvent(this.dataset.key, this.value)
+            that._validateAndSubmit(this.dataset.key, this.value)
         }).on("mousedown", '.control[data-type="action"]', function (ev) {
             that._rippled(this, ev.clientX, ev.clientY)
         })
 
         this.form.addEventListener("focusout", ev => {
             const input = ev.target.closest(".array-item-input")
-            if (!input) return
+            if (!input || utils.isHidden(input)) return
             const displayEl = input.parentElement
             const addEl = input.nextElementSibling
             const value = input.textContent
             const allowDuplicates = displayEl.dataset.allowDuplicates === "true"
             const arrayValues = [...displayEl.querySelectorAll(".array-item-value")].map(e => e.textContent)
             if (!allowDuplicates && arrayValues.includes(value)) {
-                const msg = this.i18n.t("global", "error.duplicateValue")
-                this.utils.notification.show(msg, "error")
+                const msg = i18n.t("global", "error.duplicateValue")
+                utils.notification.show(msg, "error")
                 input.focus()
                 return
             }
-            input.insertAdjacentHTML("beforebegin", this._createArrayItem(value))
-            input.textContent = ""
-            this.utils.hide(input)
-            this.utils.show(addEl)
-            this._dispatchEvent(displayEl.dataset.key, value, "push")
+            const ok = this._validateAndSubmit(displayEl.dataset.key, value, "push")
+            if (ok) {
+                input.insertAdjacentHTML("beforebegin", this._createArrayItem(value))
+                input.textContent = ""
+                utils.hide(input)
+                utils.show(addEl)
+            }
         })
 
         const ignoreKeys = ["control", "alt", "shift", "meta"]
-        const updateHotkey = this.utils.debounce(hk => this._dispatchEvent(hk.dataset.key, hk.value), 500)
+        const updateHotkey = utils.debounce(hk => this._validateAndSubmit(hk.dataset.key, hk.value), 500)
         this.form.addEventListener("keydown", ev => {
             if (ev.key === undefined) return
             const input = ev.target.closest(".hotkey-input")
@@ -260,9 +302,9 @@ customElements.define("fast-form", class extends HTMLElement {
             if (ev.key !== "Process") {
                 const key = ev.key.toLowerCase()
                 const arr = [
-                    this.utils.metaKeyPressed(ev) ? "ctrl" : undefined,
-                    this.utils.shiftKeyPressed(ev) ? "shift" : undefined,
-                    this.utils.altKeyPressed(ev) ? "alt" : undefined,
+                    utils.metaKeyPressed(ev) ? "ctrl" : undefined,
+                    utils.shiftKeyPressed(ev) ? "shift" : undefined,
+                    utils.altKeyPressed(ev) ? "alt" : undefined,
                     ignoreKeys.includes(key) ? undefined : key,
                 ]
                 input.value = arr.filter(Boolean).join("+")
@@ -276,15 +318,15 @@ customElements.define("fast-form", class extends HTMLElement {
     _createArrayItem(value) {
         return `
             <span class="array-item">
-                <span class="array-item-value">${this.utils.escape(value)}</span>
+                <span class="array-item-value">${utils.escape(value)}</span>
                 <span class="array-item-delete">×</span>
             </span>
         `
     }
 
     _createTableRow(thMap, item) {
-        const header = this.utils.pick(item, [...Object.keys(thMap)])
-        const headerValues = [...Object.values(header)].map(h => typeof h === "string" ? this.utils.escape(h) : h)
+        const header = utils.pick(item, [...Object.keys(thMap)])
+        const headerValues = [...Object.values(header)].map(h => typeof h === "string" ? utils.escape(h) : h)
         const editButtons = '<div class="table-edit fa fa-pencil"></div><div class="table-delete fa fa-trash-o"></div>'
         return [...headerValues, editButtons]
     }
@@ -327,7 +369,7 @@ customElements.define("fast-form", class extends HTMLElement {
                 case "action":
                     return `<div class="action fa fa-angle-right" data-action="${ctl.key}"></div>`
                 case "static":
-                    return `<div class="static" data-key="${ctl.key}">${this.utils.escape(value)}</div>`
+                    return `<div class="static" data-key="${ctl.key}">${utils.escape(value)}</div>`
                 case "custom":
                     return `<div class="custom-wrap">${ctl.content}</div>`
                 case "hint":
@@ -342,7 +384,7 @@ customElements.define("fast-form", class extends HTMLElement {
                     const isSelected = (option) => isMulti ? value.includes(option) : option === value
                     const options = Object.entries(ctl.options).map(([option, optionShowName]) => {
                         const choose = isSelected(option) ? "true" : "false"
-                        const showName = this.utils.escape(optionShowName)
+                        const showName = utils.escape(optionShowName)
                         return `<div class="option-item" data-value="${option}" data-choose="${choose}">${showName}</div>`
                     })
                     const val = isMulti ? value.join("#") : value
@@ -374,7 +416,7 @@ customElements.define("fast-form", class extends HTMLElement {
                     const cls = ctl.type + (ctl.noResize ? " no-resize" : "")
                     const textarea = `<textarea class="${cls}" rows="${rows}" ${readonly} data-key="${ctl.key}" ${placeholder(ctl)} ${disabled(ctl)}>${value_}</textarea>`
                     return isObject
-                        ? `<div class="object-wrap">${textarea}<button class="object-confirm">${this.i18n.t("global", "confirm")}</button></div>`
+                        ? `<div class="object-wrap">${textarea}<button class="object-confirm">${i18n.t("global", "confirm")}</button></div>`
                         : textarea
                 case "array":
                     const items = value.map(v => this._createArrayItem(v)).join("")
@@ -382,17 +424,17 @@ customElements.define("fast-form", class extends HTMLElement {
                         <div class="array" data-key="${ctl.key}" data-allow-duplicates="${Boolean(ctl.allowDuplicates)}">
                             ${items}
                             <span class="array-item-input plugin-common-hidden" contenteditable="true"></span>
-                            <span class="array-item-add">+ ${this.i18n.t("global", "add")}</span>
+                            <span class="array-item-add">+ ${i18n.t("global", "add")}</span>
                         </div>
                     `
                 case "table":
                     const addButton = '<div class="table-add fa fa-plus"></div>'
                     const trs = value.map(item => this._createTableRow(ctl.thMap, item))
                     const th = [...Object.values(ctl.thMap), addButton]
-                    const table = this.utils.buildTable([th, ...trs])
+                    const table = utils.buildTable([th, ...trs])
                     return `<div class="table" data-key="${ctl.key}">${table}</div>`
                 case "radio":
-                    const radioPrefix = this.utils.randomString()
+                    const radioPrefix = utils.randomString()
                     const radioOps = Object.entries(ctl.options).map(([k, v], idx) => {
                         const id = `${radioPrefix}_${idx}`
                         const checked = k === value ? "checked" : ""
@@ -410,7 +452,7 @@ customElements.define("fast-form", class extends HTMLElement {
                 case "checkbox":
                     const minItems_ = ctl.minItems != null ? ctl.minItems : 0
                     const maxItems_ = ctl.maxItems != null ? ctl.maxItems : Infinity
-                    const checkboxPrefix = this.utils.randomString()
+                    const checkboxPrefix = utils.randomString()
                     const checkboxOps = Object.entries(ctl.options).map(([k, v], idx) => {
                         const id = `${checkboxPrefix}_${idx}`
                         const checked = value.includes(k) ? "checked" : ""
@@ -434,7 +476,7 @@ customElements.define("fast-form", class extends HTMLElement {
                 field.type = "unit"
             }
             const isBlock = blockControls.has(field.type)
-            const value = this.utils.nestedPropertyHelpers.get(this.options.data, field.key)
+            const value = utils.nestedPropertyHelpers.get(this.options.data, field.key)
             const ctl = createGeneralControl(field, value)
             const label = isBlock ? "" : `<div class="control-left">${field.label}${createTooltip(field)}</div>`
             const control = isBlock ? ctl : `<div class="control-right">${ctl}</div>`
@@ -451,7 +493,7 @@ customElements.define("fast-form", class extends HTMLElement {
         return schema.map(createBox).join("")
     }
 
-    _buildPrerequisite(schema) {
+    _buildDependencies(schema) {
         const result = {}
         schema.forEach(box => {
             box.fields.forEach(field => {
@@ -467,7 +509,7 @@ customElements.define("fast-form", class extends HTMLElement {
     }
 
     _toggleReadonly(key) {
-        const fields = this.options.prerequisite[key]
+        const fields = this.options.dependencies[key]
         if (!fields) return
         fields.forEach(field => {
             const k = field.key
@@ -485,7 +527,7 @@ customElements.define("fast-form", class extends HTMLElement {
         if (field.dependencies) {
             // TODO: supports `AND` only now
             const configurable = Object.entries(field.dependencies).every(([k, v]) => {
-                return v === this.utils.nestedPropertyHelpers.get(this.options.data, k)
+                return v === utils.nestedPropertyHelpers.get(this.options.data, k)
             })
             return !configurable
         }
@@ -496,14 +538,14 @@ customElements.define("fast-form", class extends HTMLElement {
     }
 
     _joinSelected(options) {
-        return options.length ? options.join(", ") : this.i18n.t("global", "empty")
+        return options.length ? options.join(", ") : i18n.t("global", "empty")
     }
 
     _serialize(obj) {
         const funcMap = {
             JSON: (obj) => JSON.stringify(obj, null, "\t"),
-            TOML: (obj) => this.utils.stringifyToml(obj),
-            YAML: (obj) => this.utils.stringifyYaml(obj)
+            TOML: (obj) => utils.stringifyToml(obj),
+            YAML: (obj) => utils.stringifyYaml(obj)
         }
         const f = funcMap[this.options.objectFormat] || funcMap.JSON
         return f(obj)
@@ -512,11 +554,15 @@ customElements.define("fast-form", class extends HTMLElement {
     _deserialize(str) {
         const funcMap = {
             JSON: (str) => JSON.parse(str),
-            TOML: (str) => this.utils.readToml(str),
-            YAML: (str) => this.utils.readYaml(str),
+            TOML: (str) => utils.readToml(str),
+            YAML: (str) => utils.readYaml(str),
         }
-        const f = funcMap[this.options.objectFormat] || funcMap.JSON
-        return f(str)
+        try {
+            const f = funcMap[this.options.objectFormat] || funcMap.JSON
+            return f(str)
+        } catch (e) {
+            console.error(e)
+        }
     }
 
     _rippled(el, clientX, clientY) {

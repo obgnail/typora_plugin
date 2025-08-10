@@ -300,38 +300,38 @@ textarea::placeholder {
     outline: 1px solid transparent;
 }
 
-.hotkey-wrap:has(.hotkey-reset:hover) {
-    outline-color: #D70015;
-}
-
-.hotkey-wrap:has(.hotkey-undo:hover) {
-    outline-color: #F9C67F;
-}
-
 .hotkey-btn {
     position: absolute;
     display: inline-flex;
     flex-direction: row-reverse;
     justify-content: space-between;
     align-items: center;
-    top: 48%;
+    top: 50%;
     transform: translateY(-50%);
     right: 0;
     line-height: 1em;
-    width: 35px;
-    margin: 0 8px;
+    margin: 0 5px;
+}
+
+.hotkey-btn > div {
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+.hotkey-btn > .hotkey-undo:hover,
+.hotkey-btn > .hotkey-reset:hover {
+    background-color: #eee;
 }
 
 .hotkey-undo {
-    font-size: 19px;
-    cursor: pointer;
+    font-size: 18px;
 }
 
 .hotkey-reset {
     display: none;
-    cursor: pointer;
+    font-size: 24px;
     color: #D70015;
-    font-size: 25px;
 }
 
 .hotkey-input:not(:placeholder-shown) + .hotkey-btn > .hotkey-reset {
@@ -507,10 +507,6 @@ textarea::placeholder {
     transition: all .3s;
 }
 
-.array-item:has(.array-item-delete:hover) {
-    border-color: #D70015;
-}
-
 .array-item-input {
     min-width: 60px;
     outline: 1px solid #F9C67F;
@@ -521,10 +517,16 @@ textarea::placeholder {
     align-items: center;
     margin-left: 5px;
     cursor: pointer;
-    padding: 2px;
+    padding: 3px;
     color: #D70015;
-    height: 18px;
+    height: 20px;
     font-size: 18px;
+}
+
+.array-item-delete:hover {
+    border-radius: 50%;
+    background-color: #eee;
+    height: 11px;
 }
 
 /***** table *****/

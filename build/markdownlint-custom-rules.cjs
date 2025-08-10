@@ -6,7 +6,7 @@
 const { addErrorContext, isBlankLine } = require("markdownlint-rule-helpers")
 const { getParentOfType, filterByTypes } = require("markdownlint-rule-helpers/micromark")
 
-const mathBlockPrefixRe = /^(.*?)[$\[]/
+const mathBlockPrefixRe = /^(.*?)[$]/
 
 // eslint-disable-next-line jsdoc/valid-types
 /** @typedef {readonly string[]} ReadonlyStringArray */

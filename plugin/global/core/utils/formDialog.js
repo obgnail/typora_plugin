@@ -32,7 +32,6 @@ class formDialog {
             submit: document.querySelector(".form-dialog-submit"),
             cancel: document.querySelector(".form-dialog-cancel"),
         }
-        this.entities.form.init(this.utils, { objectFormat: "JSON" })
 
         this.entities.cover.addEventListener("click", () => this._onVisibilityChange(0))
         this.entities.cancel.addEventListener("click", () => this._onVisibilityChange(0))
@@ -69,16 +68,18 @@ class formDialog {
     }
 
     modal = ({ title, listener, ...options }) => {
-        return new Promise(resolve => {
-            this.resolver = resolve
-            this.listener = listener
+        const { promise, resolve } = Promise.withResolvers()
 
-            this.entities.title.textContent = title
-            this.entities.form.render(options)
-            this.utils.show(this.entities.dialog)
-            this.utils.show(this.entities.cover)
-            this.entities.submit.focus()
-        })
+        this.resolver = resolve
+        this.listener = listener
+
+        this.entities.title.textContent = title
+        this.entities.form.render(options)
+        this.utils.show(this.entities.dialog)
+        this.utils.show(this.entities.cover)
+        this.entities.submit.focus()
+
+        return promise
     }
 
     updateModal = async fn => {
