@@ -3,7 +3,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     hotkey = () => [
         { hotkey: this.config.hotkey, callback: this.callback },
-        { hotkey: this.config.hotkey_fix_lint_error, callback: this.fixLint },
+        { hotkey: this.config.hotkey_fix_lint_error, callback: this.linter.fix },
     ]
 
     html = () => `
@@ -25,10 +25,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
     `
 
     init = () => {
-        this.initLint = this.utils.noop
-        this.checkLint = this.utils.noop
-        this.fixLint = this.utils.noop
-
+        this.linter = this._createLinter(this._onCheck, this._onFix)
         this.fixInfos = []
         this.entities = {
             window: document.querySelector("#plugin-markdownlint"),
@@ -42,34 +39,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        const initWorker = (onCheck, onFix) => {
-            const ACTION = { INIT: "init", CHECK: "check", FIX: "fix" }
-            const worker = new Worker("plugin/custom/plugins/markdownLint/linter-worker.js")
-            worker.onmessage = event => {
-                const { action, result } = event.data
-                const fn = action === ACTION.FIX ? onFix : onCheck
-                fn(result)
-            }
-            const send = (action, customPayload) => {
-                const content = this.utils.getCurrentFileContent()
-                const payload = { content, ...customPayload }
-                worker.postMessage({ action, payload })
-            }
-            Object.assign(this, {
-                initLint: () => send(ACTION.INIT, {
-                    config: this.config.rule_config,
-                    libPath: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
-                    customRulesFiles: this.config.custom_rules_files.map(r => this.utils.joinPath(r)),
-                }),
-                checkLint: () => send(ACTION.CHECK),
-                fixLint: (fixInfo = this.fixInfos) => send(ACTION.FIX, { fixInfo }),
-            })
-        }
-
         const onLifecycle = () => {
             const { eventHub } = this.utils
-            eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.checkLint, 500))
-            eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => setTimeout(this.initLint, 1000))
+            eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.linter.check, 500))
+            eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => setTimeout(this.linter.configure, 1000))
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, force => {
                 if (force) {
                     this.entities.window.toggle(force)
@@ -87,7 +60,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             const content = JSON.stringify(value, null, "\t")
             const op = {
                 title: this.i18n.t("func.detailAll"),
-                schema: [{ fields: [{ type: "textarea", key: "detail", rows: 14 }] }],
+                schema: [{ fields: [{ type: "textarea", key: "detail", rows: 14, readonly: true }] }],
                 data: { detail: content }
             }
             await this.utils.formDialog.modal(op)
@@ -96,19 +69,19 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const funcMap = {
             close: () => this.callback(),
             refresh: () => {
-                this.checkLint()
+                this.linter.check()
                 this.utils.notification.show(this.i18n._t("global", "success.refresh"))
             },
             detailAll: () => _getDetail(this.fixInfos),
-            fixAll: () => this.fixLint(this.fixInfos),
+            fixAll: () => this.linter.fix(this.fixInfos),
             detailSingle: idx => _getDetail([this.fixInfos[idx]]),
-            fixSingle: idx => this.fixLint([this.fixInfos[idx]]),
+            fixSingle: idx => this.linter.fix([this.fixInfos[idx]]),
             toggleSourceMode: () => File.toggleSourceMode(),
             doc: async () => {
                 const op = {
                     title: this.i18n.t("func.doc"),
                     schema: [
-                        { fields: [{ type: "textarea", key: "doc", rows: 12 }] },
+                        { fields: [{ type: "textarea", key: "doc", rows: 12, readonly: true }] },
                         { fields: [{ type: "action", key: "viewRules", label: this.i18n.t("$label.viewMarkdownlintRules") }] },
                     ],
                     data: {
@@ -135,7 +108,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                     if (ev.button === 0) {
                         this.callback()
                     } else if (this.config.right_click_button_to_fix && ev.button === 2) {
-                        this.fixLint()
+                        this.linter.fix()
                     }
                 })
             }
@@ -160,14 +133,39 @@ class markdownLintPlugin extends BaseCustomPlugin {
             })
         }
 
-        initWorker(this._onCheck, this._onFix)
         onLifecycle()
         onElementEvent()
     }
 
     callback = async anchorNode => {
         this.entities.window.toggle()
-        this.checkLint()
+        this.linter.check()
+    }
+
+    _createLinter = (onCheck, onFix) => {
+        const ACTION = { CONFIGURE: "configure", CLOSE: "close", CHECK: "check", FIX: "fix" }
+        const worker = new Worker("plugin/custom/plugins/markdownLint/linter-worker.js")
+        worker.onmessage = event => {
+            const { action, result } = event.data
+            const onEvent = (action === ACTION.FIX) ? onFix : onCheck
+            onEvent(result)
+        }
+        worker.onerror = event => console.error(event.message)
+        const send = (action, customPayload) => {
+            const content = this.utils.getCurrentFileContent()
+            const payload = { content, ...customPayload }
+            worker.postMessage({ action, payload })
+        }
+        return {
+            configure: (options = this.config) => send(ACTION.CONFIGURE, {
+                config: options.rule_config,
+                libPath: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
+                customRulesFiles: options.custom_rules_files.map(f => this.utils.joinPath(f)),
+            }),
+            close: () => send(ACTION.CLOSE),
+            check: () => send(ACTION.CHECK),
+            fix: (fixInfo = this.fixInfos) => send(ACTION.FIX, { fixInfo }),
+        }
     }
 
     _initTableColumns = () => {
@@ -219,7 +217,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
     _onFix = async fileContent => {
         await this.utils.editCurrentFile(fileContent)
         this.utils.notification.show(this.i18n.t("func.fixAll.ok"))
-        this.checkLint()
+        this.linter.check()
     }
 }
 

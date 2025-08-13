@@ -2120,6 +2120,12 @@ HIDE_MENUS = []
 # 若为 true，将不再强制执行配置项之间的依赖关系
 IGNORE_CONFIG_DEPENDENCIES = false
 
+# 依赖失效行为
+# 若 IGNORE_CONFIG_DEPENDENCIES 为 true，则此选项失效
+#   readonly: 只读
+#   hide:     隐藏
+DEPENDENCIES_FAILURE_BEHAVIOR = "readonly"
+
 # 将插件的 fixedName 加入到搜索内容
 SEARCH_PLUGIN_FIXEDNAME = false
 

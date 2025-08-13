@@ -440,7 +440,14 @@ textarea::placeholder {
 }
 
 @keyframes ripple-effect {
-    to {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    75% {
+        opacity: 1;
+    }
+    100% {
         transform: scale(2);
         opacity: 0;
     }
@@ -541,6 +548,7 @@ textarea::placeholder {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    font-size: 15px;
 }
 
 .table th:last-child,
@@ -551,7 +559,7 @@ textarea::placeholder {
 
 .table th:last-child .fa,
 .table td:last-child .fa {
-    font-size: 18px;
+    font-size: 19px;
     cursor: pointer;
     border-radius: 50%;
     padding: 7px;

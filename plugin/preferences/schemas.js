@@ -168,6 +168,7 @@ const OPTIONS = {
     },
     preferences: {
         OBJECT_SETTINGS_FORMAT: ["JSON", "TOML", "YAML"],
+        DEPENDENCIES_FAILURE_BEHAVIOR: ["readonly", "hide"],
     },
     echarts: {
         RENDERER: ["svg", "canvas"],
@@ -930,11 +931,14 @@ const SETTING_SCHEMAS = {
             prop_HOTKEY,
         ),
         UntitledBox(
+            Switch("SEARCH_PLUGIN_FIXEDNAME"),
+            Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
             Select("DEFAULT_MENU"),
             Select("HIDE_MENUS"),
-            Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
+        ),
+        UntitledBox(
             Switch("IGNORE_CONFIG_DEPENDENCIES"),
-            Switch("SEARCH_PLUGIN_FIXEDNAME"),
+            Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR, { dependencies: { IGNORE_CONFIG_DEPENDENCIES: false } }),
         ),
         handleSettingsBox,
     ],

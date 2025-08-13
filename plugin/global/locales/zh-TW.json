@@ -84,7 +84,7 @@
     "error.pluginDisabled": "插件「{{plugin}}」未開啟",
     "error.incorrectCommand": "請輸入正確的指令",
     "$label.LOCALE": "語言",
-    "$label.EXIT_INTERACTIVE_MODE": "圖表退出互動模式方式",
+    "$label.EXIT_INTERACTIVE_MODE": "圖表退出互動模式",
     "$label.openPluginFolder": "插件目錄",
     "$label.openSettingsFolder": "設定目錄",
     "$label.backupSettings": "備份設定",
@@ -99,7 +99,7 @@
     "$label.sendEmail": "郵件反饋",
     "$label.donate": "贊助開發者一杯咖啡",
     "$label.pluginVersion": "版本",
-    "$option.LOCALE.auto": "AUTO",
+    "$option.LOCALE.auto": "自動檢測",
     "$option.LOCALE.en": "English",
     "$option.LOCALE.zh-CN": "简体中文",
     "$option.LOCALE.zh-TW": "繁體中文",
@@ -948,14 +948,17 @@
   },
   "preferences": {
     "pluginName": "插件配置",
-    "$label.SEARCH_PLUGIN_FIXEDNAME": "配置頁支援搜尋插件英文名",
-    "$label.OBJECT_SETTINGS_FORMAT": "配置頁中對象類型的數據格式",
+    "$label.SEARCH_PLUGIN_FIXEDNAME": "支援搜尋插件英文名",
+    "$label.OBJECT_SETTINGS_FORMAT": "對象類型的數據格式",
     "$label.DEFAULT_MENU": "預設的配置頁",
     "$label.HIDE_MENUS": "隱藏的配置頁",
     "$label.IGNORE_CONFIG_DEPENDENCIES": "忽略配置依賴",
+    "$label.DEPENDENCIES_FAILURE_BEHAVIOR": "依賴失效行為",
     "$option.OBJECT_SETTINGS_FORMAT.JSON": "JSON",
     "$option.OBJECT_SETTINGS_FORMAT.TOML": "TOML",
-    "$option.OBJECT_SETTINGS_FORMAT.YAML": "YAML"
+    "$option.OBJECT_SETTINGS_FORMAT.YAML": "YAML",
+    "$option.DEPENDENCIES_FAILURE_BEHAVIOR.readonly": "唯讀",
+    "$option.DEPENDENCIES_FAILURE_BEHAVIOR.hide": "隱藏"
   },
   "file_counter": {
     "pluginName": "檔案計數",

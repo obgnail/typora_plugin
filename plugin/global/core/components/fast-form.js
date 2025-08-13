@@ -11,13 +11,14 @@ customElements.define("fast-form", class extends HTMLElement {
         root.adoptedStyleSheets = sharedSheets
         root.innerHTML = this.constructor._template
 
+        this.separator = "#SEP#"
         this.form = root.querySelector("#form")
-        this.options = { objectFormat: "JSON", schema: [], data: {}, action: {}, rule: {}, dependencies: {} }
+        this.options = { objectFormat: "JSON", disableEffect: "readonly", schema: [], data: {}, action: {}, rule: {}, dependencies: {} }
         this._bindEvents()
     }
 
     setOptions = (options) => {
-        const ops = utils.pick(options, ["objectFormat"])
+        const ops = utils.pick(options, ["objectFormat", "disableEffect"])
         this.options = { ...this.options, ...ops }
     }
 
@@ -53,7 +54,7 @@ customElements.define("fast-form", class extends HTMLElement {
     _submit(detail) {
         this.dispatchEvent(new CustomEvent("form-crud", { detail }))
         utils.nestedPropertyHelpers[detail.type](this.options.data, detail.key, detail.value)
-        this._toggleReadonly(detail.key)
+        this._toggleDisable(detail.key)
     }
 
     _validate(detail) {
@@ -108,7 +109,7 @@ customElements.define("fast-form", class extends HTMLElement {
             const selectValueEl = selectEl.querySelector(".select-value")
             const allOptionEl = [...boxEl.querySelectorAll(".option-item")]
             const isMulti = selectEl.dataset.multi === "true"
-            const selectedValues = isMulti ? selectEl.dataset.value.split("#").filter(Boolean) : selectEl.dataset.value
+            const selectedValues = isMulti ? selectEl.dataset.value.split(that.separator).filter(Boolean) : selectEl.dataset.value
             const optionValue = optionEl.dataset.value
             if (isMulti) {
                 const deselect = optionEl.dataset.choose === "true"
@@ -136,7 +137,7 @@ customElements.define("fast-form", class extends HTMLElement {
                     selectValueEl.textContent = selectedValues.length === 0
                         ? i18n.t("global", "empty")
                         : that._joinSelected(selectedValues.map(v => map.get(v).textContent))
-                    selectEl.dataset.value = selectedValues.join("#")
+                    selectEl.dataset.value = selectedValues.join(that.separator)
                     utils.hide(boxEl)
                 }
             } else {
@@ -387,7 +388,7 @@ customElements.define("fast-form", class extends HTMLElement {
                         const showName = utils.escape(optionShowName)
                         return `<div class="option-item" data-value="${option}" data-choose="${choose}">${showName}</div>`
                     })
-                    const val = isMulti ? value.join("#") : value
+                    const val = isMulti ? value.join(this.separator) : value
                     const minItems = (isMulti && ctl.minItems != null) ? ctl.minItems : 0
                     const maxItems = (isMulti && ctl.maxItems != null) ? ctl.maxItems : Infinity
                     return `
@@ -480,8 +481,8 @@ customElements.define("fast-form", class extends HTMLElement {
             const ctl = createGeneralControl(field, value)
             const label = isBlock ? "" : `<div class="control-left">${field.label}${createTooltip(field)}</div>`
             const control = isBlock ? ctl : `<div class="control-right">${ctl}</div>`
-            const readonlyCls = this._isReadonly(field) ? " plugin-common-readonly" : ""
-            const cls = "control" + readonlyCls
+            const disableCls = this._isDisable(field) ? " " + this._getDisableClass() : ""
+            const cls = "control" + disableCls
             return `<div class="${cls}" data-type="${field.type}">${label}${control}</div>`
         }
         const createBox = ({ title, fields }) => {
@@ -508,9 +509,10 @@ customElements.define("fast-form", class extends HTMLElement {
         return result
     }
 
-    _toggleReadonly(key) {
+    _toggleDisable(key) {
         const fields = this.options.dependencies[key]
         if (!fields) return
+        const disableCls = this._getDisableClass()
         fields.forEach(field => {
             const k = field.key
             if (!this.form) return
@@ -518,12 +520,12 @@ customElements.define("fast-form", class extends HTMLElement {
             if (!el) return
             const control = el.closest(".control")
             if (!control) return
-            control.classList.toggle("plugin-common-readonly", this._isReadonly(field))
+            control.classList.toggle(disableCls, this._isDisable(field))
         })
-        fields.forEach(field => this._toggleReadonly(field.key))
+        fields.forEach(field => this._toggleDisable(field.key))
     }
 
-    _isReadonly(field) {
+    _isDisable(field) {
         if (field.dependencies) {
             // TODO: supports `AND` only now
             const configurable = Object.entries(field.dependencies).every(([k, v]) => {
@@ -531,6 +533,10 @@ customElements.define("fast-form", class extends HTMLElement {
             })
             return !configurable
         }
+    }
+
+    _getDisableClass() {
+        return this.options.disableEffect === "hide" ? "plugin-common-hidden" : "plugin-common-readonly"
     }
 
     _toFixed2(num) {

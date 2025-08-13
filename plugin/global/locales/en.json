@@ -99,7 +99,7 @@
     "$label.sendEmail": "Feedback Email",
     "$label.donate": "Buy the Developer a Coffee",
     "$label.pluginVersion": "Version",
-    "$option.LOCALE.auto": "AUTO",
+    "$option.LOCALE.auto": "Follow Typora",
     "$option.LOCALE.en": "English",
     "$option.LOCALE.zh-CN": "简体中文",
     "$option.LOCALE.zh-TW": "繁體中文",
@@ -948,14 +948,17 @@
   },
   "preferences": {
     "pluginName": "Preferences",
-    "$label.SEARCH_PLUGIN_FIXEDNAME": "Support Search Plugin English Name",
-    "$label.OBJECT_SETTINGS_FORMAT": "Object Data Format in Settings Window",
+    "$label.SEARCH_PLUGIN_FIXEDNAME": "Support Search Plugin Fixed Name",
+    "$label.OBJECT_SETTINGS_FORMAT": "Object Settings Format",
     "$label.DEFAULT_MENU": "Default Settings Tab",
     "$label.HIDE_MENUS": "Hidden Settings Tab",
     "$label.IGNORE_CONFIG_DEPENDENCIES": "Ignore Settings Dependencies",
+    "$label.DEPENDENCIES_FAILURE_BEHAVIOR": "Dependency Failure Behavior",
     "$option.OBJECT_SETTINGS_FORMAT.JSON": "JSON",
     "$option.OBJECT_SETTINGS_FORMAT.TOML": "TOML",
-    "$option.OBJECT_SETTINGS_FORMAT.YAML": "YAML"
+    "$option.OBJECT_SETTINGS_FORMAT.YAML": "YAML",
+    "$option.DEPENDENCIES_FAILURE_BEHAVIOR.readonly": "Read Only",
+    "$option.DEPENDENCIES_FAILURE_BEHAVIOR.hide": "Hide"
   },
   "file_counter": {
     "pluginName": "File Counter",

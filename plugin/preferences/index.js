@@ -207,7 +207,10 @@ class preferencesPlugin extends BasePlugin {
         return settings
     }
 
-    _initForm = () => this.entities.form.setOptions({ objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
+    _initForm = () => this.entities.form.setOptions({
+        objectFormat: this.config.OBJECT_SETTINGS_FORMAT,
+        disableEffect: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
+    })
 
     /** Will NOT modify the schemas structure, just i18n */
     _translateSchema = (schemas) => {

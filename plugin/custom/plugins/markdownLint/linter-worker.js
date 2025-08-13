@@ -3,15 +3,19 @@ let CUSTOM_RULES
 const RULES = { "default": true }
 
 const linter = {
-    init: ({ libPath, customRulesFiles, config, content }) => {
-        if (!LIB) {
+    configure: ({ libPath, customRulesFiles, config, content }) => {
+        if (libPath) {
             LIB = require(libPath)
         }
-        if (!CUSTOM_RULES) {
+        if (customRulesFiles) {
             CUSTOM_RULES = customRulesFiles.flatMap(e => require(e))
         }
-        Object.assign(RULES, config)
-        console.debug(`markdownlint@${LIB.getVersion()} worker is initialized with rules`, RULES)
+        if (config) {
+            Object.assign(RULES, config)
+        }
+        if (LIB) {
+            console.debug(`markdownlint@${LIB.getVersion()} worker is initialized with rules`, RULES)
+        }
         if (content) {
             return linter.check({ content })
         }
@@ -28,9 +32,13 @@ const linter = {
             return LIB.applyFixes(content, fixInfo)
         }
     },
+    close: () => {
+        self.close()
+    },
 }
 
-onmessage = async ({ data: { action, payload } }) => {
+self.onmessage = async (event) => {
+    const { data: { action, payload } } = event
     if (!payload) return
 
     const fn = linter[action]
