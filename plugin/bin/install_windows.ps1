@@ -1,4 +1,5 @@
 Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
 $Host.UI.RawUI.WindowTitle = "Typora Plugin Installer"
 
 $pluginScript = '<script src="./plugin/index.js" defer="defer"></script>'
@@ -49,7 +50,7 @@ try {
     $fileContent = Get-Content -Path $windowHtmlPath -Encoding UTF8 -Raw
 
     if ($fileContent -match [Regex]::Escape($pluginScript)) {
-        Write-Host "Plugin has already been installed. Nothing to do." -ForegroundColor Green
+        Write-Host "`nPlugin has already been installed. Nothing to do." -ForegroundColor Green
         return
     }
 

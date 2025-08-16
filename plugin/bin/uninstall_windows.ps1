@@ -1,4 +1,5 @@
 Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
 $Host.UI.RawUI.WindowTitle = "Typora Plugin Uninstaller"
 
 $pluginScript = '<script src="./plugin/index.js" defer="defer"></script>'
