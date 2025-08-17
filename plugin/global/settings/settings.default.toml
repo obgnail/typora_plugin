@@ -1364,6 +1364,10 @@ ENABLE_INDENT = true
 #   false: 禁用折叠功能，不显示折叠按钮
 ENABLE_FOLD = true
 
+# 折叠行数：折叠代码块成 x 行
+#   必须大于等于 1
+FOLD_LINES = 1
+
 # 默认折叠代码块：是否在加载时默认折叠代码块
 # 若置为 false，则选项 DEFAULT_FOLD_THRESHOLD 失效
 #   true:  默认折叠代码块
@@ -1378,7 +1382,7 @@ DEFAULT_FOLD_THRESHOLD = 0
 #   单位为毫秒，例如：1000 表示 1 秒
 WAIT_RECOVER_INTERVAL = 1000
 
-# 自定义按钮：允许用户添加自定义按钮到代码块，进行更高级的操作（高级配置，需要一定的 JavaScript 基础）
+# 自定义按钮：允许用户添加自定义按钮到代码块（高级配置，需要了解 JavaScript 基础）
 #   DISABLE: 是否禁用此按钮
 #       true:  禁用此按钮，不显示在代码块上
 #       false: 启用此按钮，显示在代码块上
@@ -1437,6 +1441,17 @@ INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 # 在下方插入一行
 INSERT_LINE_NEXT = "Ctrl-Enter"
+
+# 自定义代码块快捷键：允许用户添加自定义代码块的快捷键（高级配置，需要了解 JavaScript 基础）
+#   DISABLE: 是否禁用此快捷键
+#       true:  禁用此快捷键
+#       false: 启用此快捷键
+#   HOTKEY: 快捷键
+#       示例: Shift-Ctrl-K
+#   CALLBACK: 快捷键对应的回调函数
+#       参数: { pre, cid, fence, cursor, lineNum, lastNum, separator }
+#       示例: ({ pre, cid, fence, cursor, lineNum, lastNum, separator }) => console.log('callback')。此项不可为空
+CUSTOM_HOTKEYS = []
 
 # ------------------- 折叠功能 -------------------
 # 支持根据代码语言的语法折叠代码

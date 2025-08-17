@@ -104,16 +104,21 @@ class fenceEnhancePlugin extends BasePlugin {
                 const enhance = btn.closest(".fence-enhance")
                 if (!enhance) return
 
+                const getHeight = () => {
+                    const { lineHeight, height } = window.getComputedStyle(scroll)
+                    const maxHeight = Math.min(
+                        parseFloat(height),
+                        parseFloat(lineHeight) * this.config.FOLD_LINES,
+                    )
+                    return maxHeight + "px"
+                }
                 const folded = scroll.style.height && scroll.style.overflowY
-                const [height, overflowY, force, className, visibility] = folded
-                    ? ["", "", false, "fa fa-minus", "hidden"]
-                    : [window.getComputedStyle(scroll).lineHeight, "hidden", true, "fa fa-plus", ""]
-                scroll.style.height = height
-                scroll.style.overflowY = overflowY
-                btn.classList.toggle("folded", force)
-                btn.firstElementChild.className = className
+                scroll.style.height = folded ? "" : getHeight()
+                scroll.style.overflowY = folded ? "" : "hidden"
+                btn.classList.toggle("folded", !folded)
+                btn.firstElementChild.className = folded ? "fa fa-minus" : "fa fa-plus"
                 if (this.config.AUTO_HIDE) {
-                    enhance.style.visibility = visibility
+                    enhance.style.visibility = folded ? "hidden" : ""
                 }
             }
             const defaultFold = (foldButton, cid) => {
@@ -383,7 +388,14 @@ class editorHotkeyHelper {
     }
 
     process = () => {
-        const hotkeyDict = {};
+        const hotkeys = this.getHotkeys()
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, fence) => {
+            if (fence) fence.addKeyMap(hotkeys)
+        })
+    }
+
+    getHotkeys = () => {
+        const hotkeys = {}
         const keyMap = {
             SWAP_PREVIOUS_LINE: () => this.swapLine(true),
             SWAP_NEXT_LINE: () => this.swapLine(false),
@@ -393,16 +405,20 @@ class editorHotkeyHelper {
             INSERT_LINE_PREVIOUS: () => this.newlineAndIndent(true),
         }
         for (const [hotkey, callback] of Object.entries(keyMap)) {
-            const hk = this.config[hotkey];
+            const hk = this.config[hotkey]
             if (hk) {
-                hotkeyDict[hk] = callback;
+                hotkeys[hk] = callback
             }
         }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, fence) => {
-            if (fence) {
-                fence.addKeyMap(hotkeyDict)
+        this.config.CUSTOM_HOTKEYS.forEach(({ DISABLE, HOTKEY, CALLBACK }) => {
+            if (DISABLE || !HOTKEY || !CALLBACK) return
+            const fn = this.utils.safeEval(CALLBACK)
+            if (!(fn instanceof Function)) {
+                throw Error(`CALLBACK param is not function: ${CALLBACK}`)
             }
+            hotkeys[HOTKEY] = () => fn(this.getFence())
         })
+        return hotkeys
     }
 
     getFence = () => {

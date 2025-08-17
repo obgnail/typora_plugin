@@ -504,10 +504,11 @@ textarea::placeholder {
 .array .array-item-add {
     cursor: pointer;
     border-style: dashed;
+    font-size: 14px;
 }
 
 .array-item-add:hover {
-    border-color: #F69815;
+    background-color: #eee5;
 }
 
 .array-item {
@@ -526,14 +527,14 @@ textarea::placeholder {
     cursor: pointer;
     padding: 3px;
     color: #D70015;
-    height: 20px;
     font-size: 18px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
 }
 
 .array-item-delete:hover {
-    border-radius: 50%;
     background-color: #eee;
-    height: 11px;
 }
 
 /***** table *****/

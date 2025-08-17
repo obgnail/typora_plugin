@@ -243,6 +243,10 @@ const SETTING_SCHEMAS = {
             Select("TAB_SWITCH_ON_CLOSE", OPTIONS.window_tab.TAB_SWITCH_ON_CLOSE),
             Select("LAST_TAB_CLOSE_ACTION", OPTIONS.window_tab.LAST_TAB_CLOSE_ACTION),
         ),
+        UntitledBox(
+            Switch("USE_CONTEXT_MENU"),
+            Select("CONTEXT_MENU", OPTIONS.window_tab.CONTEXT_MENU, { dependencies: { USE_CONTEXT_MENU: true } }),
+        ),
         TitledBox(
             Title("mouseInteraction"),
             Switch("CTRL_CLICK_TO_NEW_WINDOW"),
@@ -250,8 +254,8 @@ const SETTING_SCHEMAS = {
             Switch("CTRL_WHEEL_TO_SWITCH"),
             Switch("MIDDLE_CLICK_TO_CLOSE"),
             Switch("SHOW_FULL_PATH_WHEN_HOVER"),
-            Switch("USE_CONTEXT_MENU"),
-            Select("CONTEXT_MENU", OPTIONS.window_tab.CONTEXT_MENU, { dependencies: { USE_CONTEXT_MENU: true } }),
+        ),
+        UntitledBox(
             Select("DRAG_STYLE", OPTIONS.window_tab.DRAG_STYLE),
             Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: { DRAG_STYLE: "JetBrains" } }),
             Number("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { DRAG_STYLE: "JetBrains", TAB_DETACHMENT: "resistant" } }),
@@ -636,8 +640,13 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("buttons"),
             Switch("ENABLE_COPY", fenceEnhanceButtonDep),
+        ),
+        UntitledBox(
             Switch("ENABLE_INDENT", fenceEnhanceButtonDep),
+        ),
+        UntitledBox(
             Switch("ENABLE_FOLD", fenceEnhanceButtonDep),
+            Number("FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, ...fenceEnhanceButtonDep }),
             Switch("DEFAULT_FOLD", fenceEnhanceButtonDep),
             Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { ENABLE_BUTTON: true, DEFAULT_FOLD: true } }),
         ),
@@ -674,6 +683,23 @@ const SETTING_SCHEMAS = {
             Text("INSERT_LINE_PREVIOUS", fenceEnhanceHotkeyDep),
             Text("INSERT_LINE_NEXT", fenceEnhanceHotkeyDep),
             Action("viewCodeMirrorKeymapsManual"),
+        ),
+        TableBox(
+            "CUSTOM_HOTKEYS",
+            ["HOTKEY", "CALLBACK"],
+            [
+                UntitledBox(
+                    { type: "switch", key: "DISABLE", label: "$label.CUSTOM_HOTKEYS.DISABLE" },
+                    { type: "text", key: "HOTKEY", label: "$label.CUSTOM_HOTKEYS.HOTKEY" },
+                ),
+                TitledBox("CUSTOM_HOTKEYS.CALLBACK", { type: "textarea", key: "CALLBACK", rows: 5 }),
+            ],
+            {
+                DISABLE: false,
+                HOTKEY: "",
+                CALLBACK: "({ pre, cid, fence, cursor, lineNum, lastNum, separator }) => console.log('callback')",
+            },
+            fenceEnhanceHotkeyDep,
         ),
         TitledBox(
             Title("advanced"),
