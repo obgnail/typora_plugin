@@ -2,6 +2,7 @@
  * typora_plugin is not a formally engineered project.
  * To maintain the independence of plugin, distributed dependencies are used.
  */
+const path = require("path")
 const esbuild = require("esbuild")
 
 const options = {
@@ -15,51 +16,51 @@ const options = {
 const allBuildTasks = {
     "markdown-it": {
         entryPoints: ["markdown-it.cjs"],
-        outfile: "../plugin/global/core/lib/markdown-it.js",
+        outfile: "plugin/global/core/lib/markdown-it.js",
     },
     "smol-toml": {
         entryPoints: ["smol-toml.mjs"],
-        outfile: "../plugin/global/core/lib/soml-toml.js",
+        outfile: "plugin/global/core/lib/soml-toml.js",
     },
     "mdast": {
         entryPoints: ["mdast.mjs"],
-        outfile: "../plugin/global/core/lib/mdast.js",
+        outfile: "plugin/global/core/lib/mdast.js",
     },
     "minimatch": {
         entryPoints: ["minimatch.mjs"],
-        outfile: "../plugin/global/core/lib/minimatch.js",
+        outfile: "plugin/global/core/lib/minimatch.js",
     },
     "https-proxy-agent": {
         entryPoints: ["https-proxy-agent.cjs"],
-        outfile: "../plugin/global/core/lib/https-proxy-agent.js",
+        outfile: "plugin/global/core/lib/https-proxy-agent.js",
     },
     "md-padding": {
         entryPoints: ["md-padding.mjs"],
-        outfile: "../plugin/md_padding/md-padding.min.js",
+        outfile: "plugin/md_padding/md-padding.min.js",
     },
     "aes-ecb": {
         entryPoints: ["aes-ecb.mjs"],
-        outfile: "../plugin/cipher/aes-ecb.min.js",
+        outfile: "plugin/cipher/aes-ecb.min.js",
     },
     "markmap": {
         entryPoints: ["markmap.mjs"],
-        outfile: "../plugin/markmap/resource/markmap.min.js",
+        outfile: "plugin/markmap/resource/markmap.min.js",
     },
     "abc": {
         entryPoints: ["abc.mjs"],
-        outfile: "../plugin/custom/plugins/abc/abcjs-basic-min.js",
+        outfile: "plugin/custom/plugins/abc/abcjs-basic-min.js",
     },
     "marp": {
         entryPoints: ["marp.mjs"],
-        outfile: "../plugin/custom/plugins/marp/marp.min.js",
+        outfile: "plugin/custom/plugins/marp/marp.min.js",
     },
     "markdownlint": {
         entryPoints: ["markdownlint.mjs"],
-        outfile: "../plugin/custom/plugins/markdownLint/markdownlint.min.js",
+        outfile: "plugin/custom/plugins/markdownLint/markdownlint.min.js",
     },
     "markdownlint-custom-rules": {
         entryPoints: ["markdownlint-custom-rules.cjs"],
-        outfile: "../plugin/custom/plugins/markdownLint/custom-rules.js",
+        outfile: "plugin/custom/plugins/markdownLint/custom-rules.js",
     },
 }
 
@@ -83,12 +84,19 @@ if (tasksToBuild.length === 0) {
     process.exit(1)
 }
 
-Promise.all(tasksToBuild.map(task => {
-    return esbuild.build({
-        ...options,
-        ...task,
-    })
-}))
+const pluginDir = path.dirname(path.dirname(__dirname))
+
+Promise.all(
+    tasksToBuild
+        .map(task => ({
+            entryPoints: task.entryPoints.map(e => path.join(__dirname, e)),
+            outfile: path.join(pluginDir, task.outfile)
+        }))
+        .map(task => esbuild.build({
+            ...options,
+            ...task,
+        }))
+)
     .then(() => {
         console.log("Selected packaging tasks have been successfully completed!")
     })

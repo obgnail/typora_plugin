@@ -1,8 +1,9 @@
 {
   "scripts": {
-    "build": "node index.cjs",
+    "build": "node build/index.cjs",
     "build-single": "npm run build markdownlint-custom-rules",
-    "build-selected": "npm run build md-padding markmap"
+    "build-selected": "npm run build md-padding markmap",
+    "test": "node --test"
   },
   "dependencies": {
     "@marp-team/marp-core": "^4.0.1",

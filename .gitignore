@@ -1,7 +1,7 @@
 /.idea
 /.vscode
 /temp
-/build/node_modules
+/dev/node_modules
 /plugin/sync.ffs_db
 /plugin/bin/version.json
 /plugin/global/user_styles/*.css
