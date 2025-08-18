@@ -54,6 +54,7 @@
     "search": "查找",
     "readonly": "只读",
     "processing": "处理中，请稍等",
+    "lastUsed": "上次使用的",
     "disableReminder": "不再提示",
     "takesEffectAfterRestart": "修改将在重启后生效",
     "incompatibilityWarning": "Typora 版本过低，部分插件可能失效。\n建议升级到 0.9.98 (最后一个免费版本)",
@@ -213,6 +214,8 @@
     "scope.linenum": "行数",
     "scope.charnum": "字符数",
     "scope.chinesenum": "中文字符数",
+    "scope.wordnum": "单词数",
+    "scope.readminutes": "阅读分钟数",
     "scope.imagenum": "图片数量",
     "scope.imgtagnum": "IMG 标签数量",
     "scope.isempty": "内容为空",
@@ -1477,7 +1480,8 @@
     "pluginName": "并列显示活动块"
   },
   "sortableOutline": {
-    "pluginName": "大纲拖拽排序"
+    "pluginName": "大纲拖拽排序",
+    "$label.auto_save_file": "自动保存文件"
   },
   "redirectLocalRootUrl": {
     "pluginName": "重定向本地资源根目录",

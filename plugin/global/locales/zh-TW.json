@@ -54,6 +54,7 @@
     "search": "搜尋",
     "readonly": "唯讀",
     "processing": "處理中，請稍等",
+    "lastUsed": "上次使用的",
     "disableReminder": "不再提示",
     "takesEffectAfterRestart": "修改將在重啟後生效",
     "incompatibilityWarning": "Typora 版本過低，部分插件可能失效。\n建議升級到 0.9.98 (最後一個免費版本)",
@@ -213,6 +214,8 @@
     "scope.linenum": "行數",
     "scope.charnum": "字元數",
     "scope.chinesenum": "中文字元數",
+    "scope.wordnum": "單詞數",
+    "scope.readminutes": "閱讀分鐘數",
     "scope.imagenum": "圖片數量",
     "scope.imgtagnum": "IMG 標籤數量",
     "scope.isempty": "內容爲空",
@@ -1477,7 +1480,8 @@
     "pluginName": "並排顯示活動區塊"
   },
   "sortableOutline": {
-    "pluginName": "大綱拖拽排序"
+    "pluginName": "大綱拖拽排序",
+    "$label.auto_save_file": "自動保存文檔"
   },
   "redirectLocalRootUrl": {
     "pluginName": "重新導向本地資源根目錄",

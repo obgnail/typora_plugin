@@ -680,11 +680,11 @@ class utils {
         return fileName
     }
 
-    static getStorage = (plugin) => ({
-        set: (key, value) => localStorage.setItem(`plugin.${plugin.fixedName}.${key}`, value + ""),
-        get: (key) => localStorage.getItem(`plugin.${plugin.fixedName}.${key}`),
-        has: (key) => localStorage.getItem(`plugin.${plugin.fixedName}.${key}`) != null,
-        remove: (key) => localStorage.removeItem(`plugin.${plugin.fixedName}.${key}`),
+    static getStorage = (key) => ({
+        set: value => localStorage.setItem(key, JSON.stringify(value)),
+        get: () => JSON.parse(localStorage.getItem(key)),
+        exist: () => localStorage.getItem(key) != null,
+        remove: () => localStorage.removeItem(key),
     })
 
     ////////////////////////////// Basic file operations //////////////////////////////

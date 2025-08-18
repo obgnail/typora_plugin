@@ -24,6 +24,8 @@ class preferencesPlugin extends BasePlugin {
     `
 
     init = () => {
+        this.fallbackMenu = "global"
+        this.menuStorage = this.utils.getStorage(`${this.fixedName}.menu`)
         this.entities = {
             dialog: document.querySelector(".plugin-preferences-dialog"),
             menu: document.querySelector(".plugin-preferences-menu"),
@@ -133,7 +135,8 @@ class preferencesPlugin extends BasePlugin {
                 this.utils.notification.show(this.i18n._t("global", "takesEffectAfterRestart"))
             }
         } else {
-            await this.showDialog(this.config.DEFAULT_MENU)
+            const menu = (this.config.DEFAULT_MENU === "__LAST__") ? this.menuStorage.get() : this.config.DEFAULT_MENU
+            await this.showDialog(menu)
             this.utils.show(this.entities.dialog)
         }
     }
@@ -147,8 +150,9 @@ class preferencesPlugin extends BasePlugin {
                 return `<div class="plugin-preferences-menu-item" data-plugin="${name}">${showName}</div>`
             })
         this.entities.menu.innerHTML = menus.join("")
-        fixedName = plugins.hasOwnProperty(fixedName) ? fixedName : "global"
-        await this.switchMenu(fixedName)
+
+        const menu = plugins.hasOwnProperty(fixedName) ? fixedName : this.fallbackMenu
+        await this.switchMenu(menu)
         setTimeout(() => {
             const active = this.entities.menu.querySelector(".plugin-preferences-menu-item.active")
             active.scrollIntoView({ block: "center" })
@@ -157,7 +161,7 @@ class preferencesPlugin extends BasePlugin {
 
     switchMenu = async (fixedName) => {
         if (this.config.HIDE_MENUS.includes(fixedName)) {
-            fixedName = "global"
+            fixedName = this.fallbackMenu
         }
         const schema = this.SETTING_SCHEMAS[fixedName]
         if (!schema) return
@@ -170,6 +174,8 @@ class preferencesPlugin extends BasePlugin {
         menuItem.classList.add("active")
         this.entities.title.textContent = menuItem.textContent
         $(this.entities.main).animate({ scrollTop: 0 }, 300)
+
+        this.menuStorage.set(fixedName)
     }
 
     _getAllPlugins = () => {
@@ -520,7 +526,7 @@ class preferencesPlugin extends BasePlugin {
             },
             "preferences.DEFAULT_MENU": (field, data) => {
                 if (!field.options) {
-                    field.options = this._getAllPlugins()
+                    field.options = { __LAST__: this.i18n._t("global", "lastUsed"), ...this._getAllPlugins() }
                 }
             },
             "preferences.HIDE_MENUS": (field, data) => {

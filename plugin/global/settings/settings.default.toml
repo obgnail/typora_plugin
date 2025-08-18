@@ -2126,6 +2126,8 @@ NAME = ""
 HOTKEY = ""
 
 # 打开设置页面时，默认定位到哪个插件的菜单
+#   填入插件 fixedName
+#   支持填入__LAST__，表示最近使用的菜单
 DEFAULT_MENU = "global"
 
 # 设置页面里隐藏菜单的插件

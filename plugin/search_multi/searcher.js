@@ -253,6 +253,29 @@ class Searcher {
                 const { yamlObject } = splitFrontMatter(content)
                 return yamlObject ? JSON.stringify(yamlObject) : ""
             },
+            wordnum: ({ path, file, stats, content }) => {
+                content = content.trim()
+                if (content.length === 0) {
+                    return 0
+                }
+                let replaceCount = 0
+                content = content
+                    // Replace Chinese characters with spaces
+                    .replace(/[\u3040-\uABFF\uD7A4-\uFAFF]/gi, function () {
+                        replaceCount++
+                        return " "
+                    })
+                    // Replace the letter following a single quotation mark or apostrophe with the b
+                    .replace(/['’]\w+/g, "b")
+                    // Replace specific punctuation marks with spaces
+                    .replace(/(^|\s+)[(\u3000-\u303F)!-\/:-@\[-`{-~]+(\s+|$)/gm, " ")
+                const words = content.split(/[(\u3000-\u303F)\s!-,\\:-@\[-`{-~]+/g)
+                return words.length - 2 + replaceCount
+            },
+            readminutes: ({ path, file, stats, content }) => {
+                const wordsPerMinute = File.option.wordsPerMinute || 300
+                return QUERY.wordnum({ path, file, stats, content }) / wordsPerMinute
+            }
         }
         const PROCESS = {
             size: { validate: isSize, cast: toBytes },
@@ -279,6 +302,8 @@ class Searcher {
             buildQualifier("atime", true, false, 1, none, PROCESS.date),
             buildQualifier("linenum", true, true, 2, none, PROCESS.number),
             buildQualifier("charnum", true, true, 2, none, PROCESS.number),
+            buildQualifier("wordnum", true, true, 3, none, PROCESS.number),
+            buildQualifier("readminutes", true, true, 3, none, PROCESS.number),
             buildQualifier("chinesenum", true, true, 2, none, PROCESS.number),
             buildQualifier("imagenum", true, true, 2, none, PROCESS.number),
             buildQualifier("imgtagnum", true, true, 2, none, PROCESS.number),

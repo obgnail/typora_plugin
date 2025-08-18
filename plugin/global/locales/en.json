@@ -54,6 +54,7 @@
     "search": "Search",
     "readonly": "ReadOnly",
     "processing": "Processing. One moment please...",
+    "lastUsed": "Last Used",
     "disableReminder": "Do not Show Again",
     "takesEffectAfterRestart": "Takes Effect After Restart",
     "incompatibilityWarning": "Typora version is too low, some plugins may not work.\nPlease upgrade to 0.9.98 (the last free version)",
@@ -213,6 +214,8 @@
     "scope.linenum": "Number of Lines",
     "scope.charnum": "Number of Characters",
     "scope.chinesenum": "Number of Chinese Characters",
+    "scope.wordnum": "Number of Words",
+    "scope.readminutes": "Reading minutes",
     "scope.imagenum": "Number of Images",
     "scope.imgtagnum": "Number of IMG Elements",
     "scope.isempty": "Empty Content",
@@ -1477,7 +1480,8 @@
     "pluginName": "Block Side By Side"
   },
   "sortableOutline": {
-    "pluginName": "Sortable Outline"
+    "pluginName": "Sortable Outline",
+    "$label.auto_save_file": "Auto Save File"
   },
   "redirectLocalRootUrl": {
     "pluginName": "Redirect Local Root Url",

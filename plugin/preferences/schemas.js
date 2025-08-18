@@ -1557,6 +1557,9 @@ const SETTING_SCHEMAS = {
     ],
     sortableOutline: [
         customPluginLiteBasePropBox,
+        UntitledBox(
+            Switch("auto_save_file"),
+        ),
         handleSettingsBox,
     ],
     redirectLocalRootUrl: [

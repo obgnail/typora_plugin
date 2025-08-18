@@ -23,9 +23,8 @@ class windowTabBarPlugin extends BasePlugin {
     ]
 
     init = () => {
-        this.manualSaveKey = "manualSaved"
-        this.autoSaveKey = "autoSaved"
-        this.storage = this.utils.getStorage(this)
+        this.manualSaveStorage = this.utils.getStorage(`${this.fixedName}.manual`)
+        this.autoSaveStorage = this.utils.getStorage(`${this.fixedName}.auto`)
 
         this.staticActions = this.i18n.fillActions([
             { act_value: "sort_tabs", act_hotkey: this.config.SORT_TABS_HOTKEY },
@@ -389,10 +388,10 @@ class windowTabBarPlugin extends BasePlugin {
         const reopenTabsWhenInit = () => {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
                 // Redirection is disabled when opening specific files (isDiscardableUntitled === false).
-                this.utils.loopDetector(this.utils.isDiscardableUntitled, () => this.openSaveTabs(this.autoSaveKey, true), 50, 2000, false)
+                this.utils.loopDetector(this.utils.isDiscardableUntitled, () => this.openSaveTabs(this.autoSaveStorage, true), 50, 2000, false)
 
                 setTimeout(() => {
-                    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveKey))
+                    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage))
                 }, 2000)
             })
         }
@@ -447,7 +446,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     getDynamicActions = () => this.i18n.fillActions([
-        { act_value: "open_save_tabs", act_hidden: !this.storage.has(this.manualSaveKey) },
+        { act_value: "open_save_tabs", act_hidden: !this.manualSaveStorage.exist() },
         { act_value: "toggle_file_ext", act_state: this.config.TRIM_FILE_EXT },
         { act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_ON_DUPLICATE },
         { act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
@@ -466,9 +465,9 @@ class windowTabBarPlugin extends BasePlugin {
             toggle_show_dir: () => toggleConfig("SHOW_DIR_ON_DUPLICATE"),
             toggle_file_ext: () => toggleConfig("TRIM_FILE_EXT"),
             toggle_show_close_button: () => toggleConfig("SHOW_TAB_CLOSE_BUTTON"),
-            save_tabs: this.saveTabs,
+            save_tabs: () => this.saveTabs(this.manualSaveStorage),
+            open_save_tabs: () => this.openSaveTabs(this.manualSaveStorage),
             sort_tabs: this.sortTabs,
-            open_save_tabs: this.openSaveTabs,
             toggle_tab_bar: this.forceToggleTabBar,
         }
         const func = callMap[action]
@@ -875,7 +874,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     openInNewWindow = idx => this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false)
 
-    saveTabs = (key = this.manualSaveKey) => {
+    saveTabs = (storage) => {
         const mount_folder = this.utils.getMountFolder()
         const save_tabs = this.tabUtil.tabs.map((tab, idx) => ({
             idx: idx,
@@ -883,13 +882,11 @@ class windowTabBarPlugin extends BasePlugin {
             active: idx === this.tabUtil.activeIdx,
             scrollTop: tab.scrollTop,
         }))
-        const result = JSON.stringify({ mount_folder, save_tabs })
-        this.storage.set(key, result)
+        storage.set({ mount_folder, save_tabs })
     }
 
-    openSaveTabs = (key = this.manualSaveKey, matchMountFolder = false) => {
-        const data = this.storage.get(key)
-        const { save_tabs, mount_folder } = JSON.parse(data || "{}")
+    openSaveTabs = (storage, matchMountFolder = false) => {
+        const { save_tabs, mount_folder } = storage.get() || {}
         if (!save_tabs || save_tabs.length === 0) return
         if (matchMountFolder && mount_folder !== this.utils.getMountFolder()) return
 
