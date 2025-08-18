@@ -3,7 +3,8 @@
     "build": "node build/index.cjs",
     "build-single": "npm run build markdownlint-custom-rules",
     "build-selected": "npm run build md-padding markmap",
-    "test": "node --test"
+    "test": "node --test",
+    "sync": "node scripts/sync.js"
   },
   "dependencies": {
     "@marp-team/marp-core": "^4.0.1",
@@ -29,6 +30,8 @@
     "smol-toml": "^1.4.2"
   },
   "devDependencies": {
-    "esbuild": "^0.25.4"
+    "chokidar": "^4.0.3",
+    "esbuild": "^0.25.4",
+    "fs-extra": "^11.3.1"
   }
 }
