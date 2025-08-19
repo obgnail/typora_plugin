@@ -6,36 +6,58 @@
 
 ## 如何使用
 
-启动 json_rpc 插件。当运行 Typora 后，内部就会自动运行一个 json-rpc-server。接着使用你喜欢的语言写一个 json-rpc-client，与 Typora 交互。
+启动 json_rpc 插件。当运行 Typora 后，内部就会自动运行一个 json-rpc-server。接着使用你喜欢的语言写一个 json-rpc-client，与 Typora 交互。以下为 Node.js 和 Python 的 example。
 
-以下为 node 和 python 的 example。
 
-### node
+
+### Node.js
 
 ```javascript
-// 文件位于./plugin/json_rpc/node-json-rpc.js，需要改为你的路径
-const rpc = require("D:/software/Typora/resources/app/plugin/json_rpc/node-json-rpc.js")
+// 改为你的路径
+const rpc = require("./plugin/json_rpc/node-json-rpc.js")
 
-const options = {
-    port: 5080,
-    host: '127.0.0.1',
-    path: '/',
-    strict: false
-};
+const initRPC = async (options) => {
+    const client = new rpc.Client(options)
+    return new Promise((resolve, reject) => {
+        client.call({ method: "ping", params: [] }, (err, response) => {
+            if (err || !response || response.result !== "pong from typora-plugin") {
+                reject(new Error("init rpc error", err, response))
+                return
+            }
 
-const client = new rpc.Client(options);
+            const client_ = {
+                call: async (method, params) => new Promise((resolve, reject) => {
+                    client.call({ method, params }, (err, resp) => {
+                        if (err) reject(err)
+                        else resolve(resp)
+                    })
+                }),
+                eval: async (x) => client_.call("eval", [x]),
+                invoke: async (plugin, fn, ...args) => client_.call("invokePlugin", [plugin, fn, ...args]),
+            }
 
-const handle = (err, res) => {
-    if (err) { console.log(err); }
-    else { console.log(res); }
+            resolve(client_)
+        })
+    })
 }
 
-client.call({ method: "ping", params: [] }, handle);
-client.call({ method: "callPluginFunction", params: ["search_multi", "call"] }, handle);
-client.call({ method: "eval", params: ["console.log(this, File)"] }, handle);
+const main = async () => {
+    const client = await initRPC({
+        port: 5080,
+        host: '127.0.0.1',
+        path: '/',
+        strict: false
+    })
+
+	await client.eval("console.log('hello world')")
+	const result = await client.invoke("search_multi", "call")
+    console.log(result)
+}
+
+main()
 ```
 
-### python
+### Python
 
 ```python
 import requests
@@ -51,8 +73,8 @@ def test():
     assert _call("ping") == "pong from typora-plugin"
 
 
-def call_plugin_function(fixed_name, *args):
-    _call("callPluginFunction", fixed_name, *args)
+def invoke_plugin(fixed_name, *args):
+    _call("invokePlugin", fixed_name, *args)
 
 
 def eval_typora(eval_str):
@@ -63,12 +85,11 @@ if __name__ == "__main__":
     # 测试
     test()
     # 切换只读模式
-    call_plugin_function("read_only", "call")
+    invoke_plugin("read_only", "call")
     # 切换到第一个标签页
-    call_plugin_function("window_tab", "switchTab", 0)
+    invoke_plugin("window_tab", "switchTab", 0)
     # 执行alert
     eval_typora("alert('this is test')")
-
 ```
 
 
@@ -82,7 +103,7 @@ if __name__ == "__main__":
 - 功能：验证功能是否打通，成功时返回 `pong from typora-plugin`
 - 参数：无
 
-### callPluginFunction
+### invokePlugin
 
 - 功能：调用 typora-plugin 能力
 - 参数：(fixedName，functionName，…args)

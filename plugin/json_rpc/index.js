@@ -1,59 +1,65 @@
 class jsonRpcPlugin extends BasePlugin {
     process = () => {
         try {
-            const { Server } = require("./node-json-rpc");
-            if (!Server) return;
+            const { Server } = require("./node-json-rpc")
+            if (!Server) return
 
-            const server = new Server(this.config.SERVER_OPTIONS);
-            this.registerRPCFunction(server);
+            const server = new Server(this.config.SERVER_OPTIONS)
+            this.registerRPCFunction(server)
             server.start(err => {
                 if (err) {
-                    console.error("RPC Server Error:", err);
+                    console.error("RPC Server Error:", err)
                 } else {
-                    console.debug("RPC Server running");
+                    console.debug("RPC Server running with options", this.config.SERVER_OPTIONS)
                 }
-            });
-        } catch (e) {
-            console.warn(e);
+            })
+        } catch (err) {
+            console.warn(err)
         }
     }
 
     registerRPCFunction = server => {
-        server.addMethod("ping", (para, callback) => callback(null, "pong from typora-plugin"));
+        server.addMethod("ping", (params, callback) => {
+            callback(null, "pong from typora-plugin")
+        })
 
-        server.addMethod("callPluginFunction", (para, callback) => {
-            let error, result;
+        server.addMethod("invokePlugin", (params, callback) => {
+            let error, result
 
-            const [plugin, func, ...args] = para;
+            const [plugin, func, ...args] = params
             if (!plugin || !func) {
-                error = { code: 404, message: "param has not plugin or function" };
+                callback({ code: 400, message: "params has not plugin or function" })
+                return
             }
 
-            const p = this.utils.tryGetPlugin(plugin);
-            const _func = p && p[func];
+            const _plugin = this.utils.tryGetPlugin(plugin)
+            const _func = _plugin && _plugin[func]
             if (!_func) {
-                error = { code: 404, message: "has not the plugin function" };
-            } else {
-                result = _func.apply(plugin, args) || {};
+                callback({ code: 404, message: "has not the plugin function" })
+                return
             }
-            callback(error, result);
-        });
-
-        server.addMethod("eval", (para, callback) => {
-            let error, result;
 
             try {
-                const code = para[0];
-                result = eval(code) || {};
-            } catch (e) {
-                error = { code: 500, message: e.toString() };
+                result = _func.apply(_plugin, args)
+            } catch (err) {
+                error = { code: 500, message: err.toString() }
             }
+            callback(error, result)
+        })
 
-            callback(error, result);
+        server.addMethod("eval", (params, callback) => {
+            let error, result
+
+            try {
+                result = eval(params[0])
+            } catch (err) {
+                error = { code: 500, message: err.toString() }
+            }
+            callback(error, result)
         })
     }
 }
 
 module.exports = {
     plugin: jsonRpcPlugin,
-};
+}

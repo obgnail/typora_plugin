@@ -1,10 +1,12 @@
 {
   "scripts": {
     "build": "node build/index.cjs",
-    "build-single": "npm run build markdownlint-custom-rules",
-    "build-selected": "npm run build md-padding markmap",
+    "build:selected": "npm run build md-padding markmap markdownlint-custom-rules",
     "test": "node --test",
-    "sync": "node scripts/sync.js"
+    "dev": "node --env-file=scripts/.env scripts/index.js",
+    "rpc": "npm run dev rpc",
+    "sync": "npm run dev sync",
+    "serve": "npm run dev serve"
   },
   "dependencies": {
     "@marp-team/marp-core": "^4.0.1",
