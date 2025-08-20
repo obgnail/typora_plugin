@@ -20,7 +20,7 @@ const allBuildTasks = {
     },
     "smol-toml": {
         entryPoints: ["smol-toml.mjs"],
-        outfile: "plugin/global/core/lib/soml-toml.js",
+        outfile: "plugin/global/core/lib/smol-toml.js",
     },
     "mdast": {
         entryPoints: ["mdast.mjs"],
@@ -33,6 +33,10 @@ const allBuildTasks = {
     "https-proxy-agent": {
         entryPoints: ["https-proxy-agent.cjs"],
         outfile: "plugin/global/core/lib/https-proxy-agent.js",
+    },
+    "node-json-rpc": {
+        entryPoints: ["node-json-rpc.cjs"],
+        outfile: "plugin/json_rpc/node-json-rpc.js",
     },
     "md-padding": {
         entryPoints: ["md-padding.mjs"],

@@ -3,7 +3,7 @@
     "build": "node build/index.cjs",
     "build:selected": "npm run build md-padding markmap markdownlint-custom-rules",
     "test": "node --test",
-    "dev": "node --env-file=scripts/.env scripts/index.js",
+    "dev": "node --env-file=.env scripts/index.js",
     "rpc": "npm run dev rpc",
     "sync": "npm run dev sync",
     "serve": "npm run dev serve"
@@ -29,11 +29,15 @@
     "micromark-extension-gfm": "^3.0.0",
     "micromark-extension-math": "^3.1.0",
     "minimatch": "^10.0.3",
+    "node-json-rpc": "^0.0.1",
     "smol-toml": "^1.4.2"
   },
   "devDependencies": {
     "chokidar": "^4.0.3",
     "esbuild": "^0.25.4",
     "fs-extra": "^11.3.1"
+  },
+  "engines": {
+    "node": ">=20.6.0"
   }
 }

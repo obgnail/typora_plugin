@@ -735,8 +735,8 @@ class utils {
         const yaml = require("../lib/js-yaml")
         return yaml.safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
     }
-    static readToml = content => require("../lib/soml-toml").parse(content)
-    static stringifyToml = obj => require("../lib/soml-toml").stringify(obj)
+    static readToml = content => require("../lib/smol-toml").parse(content)
+    static stringifyToml = obj => require("../lib/smol-toml").stringify(obj)
     static readTomlFile = async filepath => this.readToml(await FS.promises.readFile(filepath, "utf-8"))
 
     static unzip = async (buffer, workDir) => {

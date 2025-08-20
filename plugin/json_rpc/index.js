@@ -1,10 +1,8 @@
 class jsonRpcPlugin extends BasePlugin {
     process = () => {
         try {
-            const { Server } = require("./node-json-rpc")
-            if (!Server) return
-
-            const server = new Server(this.config.SERVER_OPTIONS)
+            const rpc = require("./node-json-rpc")
+            const server = new rpc.Server(this.config.SERVER_OPTIONS)
             this.registerRPCFunction(server)
             server.start(err => {
                 if (err) {

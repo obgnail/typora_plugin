@@ -2,8 +2,8 @@ const os = require("node:os")
 const path = require("node:path")
 const fs = require("node:fs/promises")
 const child_process = require("node:child_process")
-const toml = require("../../plugin/global/core/lib/soml-toml")
-const rpc = require("../../plugin/json_rpc/node-json-rpc")
+const toml = require("smol-toml")
+const rpc = require("node-json-rpc")
 
 const typoraPath = process.env.TYPORA_PATH
 

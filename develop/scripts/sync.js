@@ -1,11 +1,31 @@
-const chokidar = require("chokidar")
-const fs = require("fs-extra")
 const path = require("path")
+const fs = require("fs-extra")
+const chokidar = require("chokidar")
 const utils = require("./utils")
 
+const getDirs = () => {
+    let rootDir = path.resolve(process.env.TYPORA_PATH, "../resources")
+    try {
+        const appDir = path.join(rootDir, "app")
+        fs.accessSync(appDir)
+        rootDir = appDir
+        console.log("Assuming old version Typora")
+    } catch (err) {
+        console.log("Assuming new version Typora")
+    }
+    try {
+        fs.accessSync(path.join(rootDir, "window.html"))
+    } catch (e) {
+        throw new Error("Error env param: TYPORA_PATH")
+    }
+    return {
+        sourceDir: path.resolve(__dirname, "../../plugin"),
+        destDir: path.join(rootDir, "plugin"),
+    }
+}
+
 const sync = (callback) => {
-    const sourceDir = process.env.SOURCE_DIR
-    const destDir = process.env.DEST_DIR
+    const { sourceDir, destDir } = getDirs()
     const callback_ = callback ? utils.debounce(callback) : () => undefined
 
     console.log(`Starting sync from ${sourceDir} to ${destDir}`)
@@ -77,8 +97,6 @@ const sync = (callback) => {
         })
         .on("error", (error) => console.error(`Watcher error: ${error}`))
         .on("ready", () => console.log("Initial scan complete. Ready for changes."))
-
-    console.log("Sync script is running...")
 }
 
 module.exports = sync

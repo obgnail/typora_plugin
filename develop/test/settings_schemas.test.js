@@ -5,7 +5,7 @@ const fs = require("node:fs/promises")
 let schemas, settings
 
 test.before(async () => {
-    const toml = require("../../plugin/global/core/lib/soml-toml.js")
+    const toml = require("../../plugin/global/core/lib/smol-toml.js")
     const base = await fs.readFile("../plugin/global/settings/settings.default.toml", "utf-8")
     const custom = await fs.readFile("../plugin/global/settings/custom_plugin.default.toml", "utf-8")
     settings = { ...toml.parse(base), ...toml.parse(custom) }
