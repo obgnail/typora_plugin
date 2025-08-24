@@ -101,17 +101,17 @@
 
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A
 
-   - 正式版 Typora，路径为 `./resources/window.html`
+   - 正式版 Typora 对应的路径为 `./resources/window.html`
 
-   - 免费版 Typora，路径为 `./resources/app/window.html`
+   - 免费版 Typora 对应的路径为 `./resources/app/window.html`
 
 3. 将解压得到的 plugin 文件夹粘贴进文件夹 A 下
 
 4. 进入文件夹 `A/plugin/bin/`
 
-   - Windows 系统：双击运行 `install_windows_amd_x64.exe`，如果看到下图，说明安装成功
+   - Windows 系统：右键 `install_windows.ps1` 文件，点击 `使用 PowerShell 运行`
 
-   - Linux 系统：以管理员运行 `install_linux.sh`，如果看到下图，说明安装成功
+   - Linux 系统：以管理员运行 `install_linux.sh`
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
@@ -122,8 +122,6 @@
 |        | Windows                                        | Linux                                      |
 | ------ | ---------------------------------------------- | ------------------------------------------ |
 | 步骤 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
-
-> Windows 系统也可以通过执行 `install_windows.ps1` 安装插件
 
 
 
@@ -785,8 +783,6 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 
 ## 结语
-
-本人并非前端开发，前端技术全靠 Google，JS/CSS 写的很烂。
 
 **本项目遵循 MIT 协议，请自由地享受。**
 

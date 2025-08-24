@@ -3,68 +3,202 @@ const { utils } = require("../utils")
 const { i18n } = require("../i18n")
 
 customElements.define("fast-form", class extends HTMLElement {
-    static _template = `<link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous"><div id="form"></div>`
+    static template = `<link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous"><div id="form"></div>`
+    static hooks = {
+        onRender: (form) => void 0,
+        onParseValue: (key, rawValue, type) => rawValue,
+        onBeforeValidate: (detail) => void 0,         // return true or [] for success; return Error or [Error, ...] for failure
+        onAfterValidate: (detail, errors) => void 0,  // return true or [] for success; return Error or [Error, ...] for failure
+        onValidateFailed: (key, errors, targetEl) => {
+            if (!Array.isArray(errors) || errors.length === 0) return
+            errors.forEach(err => {
+                const msg = err instanceof Error
+                    ? err.message || err.toString()
+                    : typeof err === "string"
+                        ? err
+                        : "Verification Failed"  // fallback
+                utils.notification.show(msg, "error")
+            })
+        },
+        onBeforeSubmit: (data) => void 0,
+        onSubmit: (form, detail) => form.dispatchEvent(new CustomEvent("form-crud", { detail })),
+        onAfterSubmit: (newData, oldData) => void 0,
+    }
+    static validators = {
+        required: ({ value }, data) => {
+            const isEmpty = value == null
+                || (typeof value === "string" && value.trim() === "")
+                || (Array.isArray(value) && value.length === 0)
+            return !isEmpty ? true : i18n.t("global", "error.required")
+        },
+        isURL: ({ value }, data) => {
+            if (!value) return true
+            const pattern = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
+            return pattern.test(value) ? true : i18n.t("global", "error.invalidURL")
+        },
+        pattern: (pattern) => ({ value }, data) => {
+            if (!value) return true
+            return pattern.test(value) ? true : i18n.t("global", "error.pattern")
+        },
+        notEqual: (target) => ({ value }, data) => {
+            if (value == null) return true
+            return value !== target ? true : i18n.t("global", "error.invalid", { value: target })
+        },
+        min: (min) => ({ value }, data) => {
+            if (value == null || value === "") return true
+            if (isNaN(value)) return i18n.t("global", "error.isNaN")
+            return Number(value) >= min ? true : i18n.t("global", "error.min", { min })
+        },
+        max: (max) => ({ value }, data) => {
+            if (value == null || value === "") return true
+            if (isNaN(value)) return i18n.t("global", "error.isNaN")
+            return Number(value) <= max ? true : i18n.t("global", "error.max", { max })
+        },
+    }
 
     constructor() {
         super()
         const root = this.attachShadow({ mode: "open" })
         root.adoptedStyleSheets = sharedSheets
-        root.innerHTML = this.constructor._template
+        root.innerHTML = this.constructor.template
 
-        this.separator = "#SEP#"
         this.form = root.querySelector("#form")
-        this.options = { objectFormat: "JSON", disableEffect: "readonly", schema: [], data: {}, action: {}, rule: {}, dependencies: {} }
+        this.options = {
+            objectFormat: "JSON",
+            disableEffect: "readonly",
+            selectValueSeparator: "\u001F",
+            selectLabelJoiner: ", ",
+            hooks: this.constructor.hooks,
+            schema: [],
+            data: {},
+            actions: {},
+            rules: {},
+            dependencies: {},
+        }
+    }
+
+    connectedCallback() {
         this._bindEvents()
     }
 
-    setOptions = (options) => {
-        const ops = utils.pick(options, ["objectFormat", "disableEffect"])
-        this.options = { ...this.options, ...ops }
+    setFormatOptions = (options) => {
+        const picked = utils.pick(options, ["objectFormat", "disableEffect", "selectValueSeparator", "selectLabelJoiner"])
+        this.options = { ...this.options, ...picked }
     }
 
     render = (options) => {
-        const { schema = [], data = {}, action = {}, rule = {} } = options
+        const { schema = [], data = {}, actions = {}, rules = {}, hooks = {} } = options
 
         this.options.schema = schema
-        this.options.action = action
-        this.options.rule = rule
+        this.options.actions = actions
+        this.options.rules = rules
+        this.options.hooks = { ...this.constructor.hooks, ...hooks }
         this.options.data = JSON.parse(JSON.stringify(data))
         this.options.dependencies = this._buildDependencies(schema)
 
         this.form.innerHTML = this._fillForm(schema)
+        this._invokeHook("onRender", this)
     }
 
-    _dispatchAction(key) {
-        const actFn = this.options.action[key]
-        if (actFn) {
-            actFn(this.options)
+    _invokeAction(key) {
+        const fn = this.options.actions[key]
+        if (typeof fn === "function") {
+            return fn(this.options)
         }
+    }
+
+    _invokeHook(hookName, ...args) {
+        const fn = this.options.hooks[hookName]
+        if (typeof fn === "function") {
+            return fn(...args)
+        }
+    }
+
+    _invokeRules(detail) {
+        const rules = this.options.rules[detail.key]
+        if (!rules) return []
+
+        const data = this.options.data
+        return (Array.isArray(rules) ? rules : [rules])
+            .map(rule => {
+                switch (typeof rule) {
+                    case "string":
+                        const validator = this.constructor.validators[rule]
+                        if (validator) {
+                            return validator(detail, data)
+                        }
+                        break
+                    case "function":
+                        return rule(detail, data)
+                    case "object":
+                        if (typeof rule.validate === "function") {
+                            return rule.validate(detail, data)
+                        }
+                        const builtinFn = this.constructor.validators[rule.name]
+                        if (builtinFn) {
+                            return builtinFn(...rule.args)(detail, data)
+                        }
+                }
+                const msg = typeof rule === "object" ? JSON.stringify(rule) : rule
+                return new Error(`Invalid Rule: ${msg}`)
+            })
+            .filter(e => e !== true && e != null)
+            .map(e => e instanceof Error ? e : new Error(e.toString()))
     }
 
     // type: set/push/removeIndex
     _validateAndSubmit(key, value, type = "set") {
+        value = this._invokeHook("onParseValue", key, value, type)
         const detail = { key, value, type }
-        const ok = this._validate(detail)
-        if (ok) {
+        const errors = this._validate(detail)
+        const isValid = Array.isArray(errors) && errors.length === 0
+        if (isValid) {
             this._submit(detail)
+        } else {
+            const targetEl = this.form.querySelector(`[data-key="${key}"]`)
+            this._invokeHook("onValidateFailed", key, errors, targetEl)
         }
-        return ok
-    }
-
-    _submit(detail) {
-        this.dispatchEvent(new CustomEvent("form-crud", { detail }))
-        utils.nestedPropertyHelpers[detail.type](this.options.data, detail.key, detail.value)
-        this._toggleDisable(detail.key)
+        return isValid
     }
 
     _validate(detail) {
-        try {
-            const ruleFn = this.options.rule[detail.key]
-            if (ruleFn) ruleFn(detail)
-            return true
-        } catch (err) {
-            const msg = err.message || err.toString()
-            utils.notification.show(msg, "error")
+        // `removeIndex` need not validate
+        if (detail.type === "removeIndex") return []
+
+        const beforeHookResult = this._invokeHook("onBeforeValidate", detail)
+        if (beforeHookResult === true) return []
+        if (beforeHookResult instanceof Error) return [beforeHookResult]
+        if (Array.isArray(beforeHookResult)) return beforeHookResult
+
+        let errors = this._invokeRules(detail)
+
+        const afterHookResult = this._invokeHook("onAfterValidate", detail, errors)
+        if (afterHookResult === true) return []
+        if (afterHookResult instanceof Error) return [afterHookResult]
+        if (Array.isArray(afterHookResult)) return afterHookResult
+
+        return errors
+    }
+
+    _submit(detail) {
+        let oldData, newData
+        const noopOnBefore = this.options.hooks.onBeforeSubmit === this.constructor.hooks.onBeforeSubmit
+        const noopOnAfter = this.options.hooks.onAfterSubmit === this.constructor.hooks.onAfterSubmit
+
+        if (!noopOnBefore || !noopOnAfter) {
+            oldData = JSON.parse(JSON.stringify(this.options.data))
+        }
+        if (!noopOnBefore) {
+            this._invokeHook("onBeforeSubmit", oldData)
+        }
+
+        utils.nestedPropertyHelpers[detail.type](this.options.data, detail.key, detail.value)
+        this._toggleDisable(detail.key)
+        this._invokeHook("onSubmit", this, detail)
+
+        if (!noopOnAfter) {
+            newData = JSON.parse(JSON.stringify(this.options.data))
+            this._invokeHook("onAfterSubmit", newData, oldData)
         }
     }
 
@@ -109,7 +243,10 @@ customElements.define("fast-form", class extends HTMLElement {
             const selectValueEl = selectEl.querySelector(".select-value")
             const allOptionEl = [...boxEl.querySelectorAll(".option-item")]
             const isMulti = selectEl.dataset.multi === "true"
-            const selectedValues = isMulti ? selectEl.dataset.value.split(that.separator).filter(Boolean) : selectEl.dataset.value
+            const _selectValue = selectEl.dataset.value || ""
+            const selectedValues = isMulti
+                ? _selectValue.split(that.options.selectValueSeparator).filter(Boolean)
+                : _selectValue
             const optionValue = optionEl.dataset.value
             if (isMulti) {
                 const deselect = optionEl.dataset.choose === "true"
@@ -137,7 +274,7 @@ customElements.define("fast-form", class extends HTMLElement {
                     selectValueEl.textContent = selectedValues.length === 0
                         ? i18n.t("global", "empty")
                         : that._joinSelected(selectedValues.map(v => map.get(v).textContent))
-                    selectEl.dataset.value = selectedValues.join(that.separator)
+                    selectEl.dataset.value = selectedValues.join(that.options.selectValueSeparator)
                     utils.hide(boxEl)
                 }
             } else {
@@ -225,7 +362,7 @@ customElements.define("fast-form", class extends HTMLElement {
             }
         }).on("click", '.control[data-type="action"]', function () {
             const icon = this.querySelector(".action")
-            that._dispatchAction(icon.dataset.action)
+            that._invokeAction(icon.dataset.action)
         }).on("click", ".array-item-delete", function () {
             const itemEl = this.parentElement
             const arrayEl = this.closest(".array")
@@ -263,7 +400,18 @@ customElements.define("fast-form", class extends HTMLElement {
         }).on("change", "input.switch-input", function () {
             that._validateAndSubmit(this.dataset.key, this.checked)
         }).on("change", ".number-input, .range-input, .unit-input", function () {
-            that._validateAndSubmit(this.dataset.key, Number(this.value))
+            const value = Number(this.value)
+            const min = this.getAttribute("min")
+            const max = this.getAttribute("max")
+            if (min && Number(min) > value) {
+                const msg = i18n.t("global", "error.min", { min })
+                utils.notification.show(msg, "error")
+            } else if (max && Number(max) < value) {
+                const msg = i18n.t("global", "error.max", { max })
+                utils.notification.show(msg, "error")
+            } else {
+                that._validateAndSubmit(this.dataset.key, value)
+            }
         }).on("change", ".text-input, .textarea", function () {
             that._validateAndSubmit(this.dataset.key, this.value)
         }).on("mousedown", '.control[data-type="action"]', function (ev) {
@@ -302,13 +450,13 @@ customElements.define("fast-form", class extends HTMLElement {
 
             if (ev.key !== "Process") {
                 const key = ev.key.toLowerCase()
-                const arr = [
+                const keyCombination = [
                     utils.metaKeyPressed(ev) ? "ctrl" : undefined,
                     utils.shiftKeyPressed(ev) ? "shift" : undefined,
                     utils.altKeyPressed(ev) ? "alt" : undefined,
                     ignoreKeys.includes(key) ? undefined : key,
                 ]
-                input.value = arr.filter(Boolean).join("+")
+                input.value = keyCombination.filter(Boolean).join("+")
                 updateHotkey(input)
             }
             ev.stopPropagation()
@@ -335,7 +483,9 @@ customElements.define("fast-form", class extends HTMLElement {
     _fillForm(schema) {
         const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox", "hint", "custom"])
         const createTitle = (title) => `<div class="title">${title}</div>`
-        const createTooltip = (item) => item.tooltip ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${item.tooltip.replace("\n", "<br>")}</span></span>` : ""
+        const createTooltip = (item) => item.tooltip
+            ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${utils.escape(item.tooltip).replace("\n", "<br>")}</span></span>`
+            : ""
         const createGeneralControl = (ctl, value) => {
             const disabled = ctl => ctl.disabled ? "disabled" : ""
             const checked = () => value === true ? "checked" : ""
@@ -388,7 +538,7 @@ customElements.define("fast-form", class extends HTMLElement {
                         const showName = utils.escape(optionShowName)
                         return `<div class="option-item" data-value="${option}" data-choose="${choose}">${showName}</div>`
                     })
-                    const val = isMulti ? value.join(this.separator) : value
+                    const val = isMulti ? value.join(this.options.selectValueSeparator) : value
                     const minItems = (isMulti && ctl.minItems != null) ? ctl.minItems : 0
                     const maxItems = (isMulti && ctl.maxItems != null) ? ctl.maxItems : Infinity
                     return `
@@ -413,9 +563,9 @@ customElements.define("fast-form", class extends HTMLElement {
                     const isObject = ctl.type === "object"
                     const rows = ctl.rows || 3
                     const readonly = ctl.readonly ? "readonly" : ""
-                    const value_ = isObject ? this._serialize(value) : value
+                    const displayValue = isObject ? this._serialize(value) : value
                     const cls = ctl.type + (ctl.noResize ? " no-resize" : "")
-                    const textarea = `<textarea class="${cls}" rows="${rows}" ${readonly} data-key="${ctl.key}" ${placeholder(ctl)} ${disabled(ctl)}>${value_}</textarea>`
+                    const textarea = `<textarea class="${cls}" rows="${rows}" ${readonly} data-key="${ctl.key}" ${placeholder(ctl)} ${disabled(ctl)}>${displayValue}</textarea>`
                     return isObject
                         ? `<div class="object-wrap">${textarea}<button class="object-confirm">${i18n.t("global", "confirm")}</button></div>`
                         : textarea
@@ -499,7 +649,7 @@ customElements.define("fast-form", class extends HTMLElement {
         schema.forEach(box => {
             box.fields.forEach(field => {
                 const dep = field.dependencies
-                if (!dep || dep.length === 0) return
+                if (!dep) return
                 Object.keys(dep).forEach(k => {
                     result[k] = result[k] || []
                     result[k].push(field)
@@ -528,10 +678,10 @@ customElements.define("fast-form", class extends HTMLElement {
     _isDisable(field) {
         if (field.dependencies) {
             // TODO: supports `AND` only now
-            const configurable = Object.entries(field.dependencies).every(([k, v]) => {
+            const shouldBeEnabled = Object.entries(field.dependencies).every(([k, v]) => {
                 return v === utils.nestedPropertyHelpers.get(this.options.data, k)
             })
-            return !configurable
+            return !shouldBeEnabled
         }
     }
 
@@ -544,7 +694,7 @@ customElements.define("fast-form", class extends HTMLElement {
     }
 
     _joinSelected(options) {
-        return options.length ? options.join(", ") : i18n.t("global", "empty")
+        return options.length ? options.join(this.options.selectLabelJoiner) : i18n.t("global", "empty")
     }
 
     _serialize(obj) {

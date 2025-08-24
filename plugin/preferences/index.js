@@ -168,7 +168,7 @@ class preferencesPlugin extends BasePlugin {
 
         const data = await this._preprocess(fixedName)
         this.entities.form.dataset.plugin = fixedName
-        this.entities.form.render({ schema, data, action: this.ACTION_HANDLERS, rule: this.VALIDATION_RULES[fixedName] })
+        this.entities.form.render({ schema, data, actions: this.ACTION_HANDLERS, rules: this.VALIDATION_RULES[fixedName] })
         this.entities.menu.querySelectorAll(".active").forEach(e => e.classList.remove("active"))
         const menuItem = this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`)
         menuItem.classList.add("active")
@@ -213,7 +213,7 @@ class preferencesPlugin extends BasePlugin {
         return settings
     }
 
-    _initForm = () => this.entities.form.setOptions({
+    _initForm = () => this.entities.form.setFormatOptions({
         objectFormat: this.config.OBJECT_SETTINGS_FORMAT,
         disableEffect: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
     })
@@ -305,21 +305,8 @@ class preferencesPlugin extends BasePlugin {
         }
     }
 
-    // TODO: Validate rules for all settings
     _initRules = () => {
-        // Throwing an error when verification fails
-        this.VALIDATION_RULES = {
-            md_padding: {
-                IGNORE_PATTERNS: ({ key, value, type }) => {
-                    if (type === "push") new RegExp(value)
-                }
-            },
-            markdownLint: {
-                custom_rules_files: ({ key, value, type }) => {
-                    if (type === "push") this.utils.Package.Fs.accessSync(value)
-                },
-            },
-        }
+        this.VALIDATION_RULES = this.config.IGNORE_CONFIG_VALIDATION_RULES ? {} : require("./rules.js")
     }
 
     _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
@@ -456,15 +443,13 @@ class preferencesPlugin extends BasePlugin {
                     return `<div style="display: flex; flex-direction: column; align-items: center">${svg}<div style="font-weight: bold">${qr.label}</div></div>`
                 })
                 const content = `<div style="display: flex; justify-content: space-evenly; padding-top: 8px">${qrs.join("")}</div>`
-                const blessing = `<b><em>Farewell, Ashen One. Mayst thou thy peace discov'r.</em></b>`
                 const op = {
                     title: this.i18n._t("global", "$label.donate"),
                     schema: [
-                        { fields: [{ type: "custom", content: blessing }] },
-                        { fields: [{ type: "custom", content: content }] },
                         { fields: [{ type: "action", key: "starMe", label: "<b>Star this project on GitHub</b>" }] },
+                        { fields: [{ type: "custom", content: content }] },
                     ],
-                    action: {
+                    actions: {
                         starMe: this.ACTION_HANDLERS.visitRepo,
                     }
                 }
@@ -502,6 +487,24 @@ class preferencesPlugin extends BasePlugin {
                     if (data[field.key] === invalidOption) {
                         data[field.key] = "reconfirm"
                     }
+                }
+            },
+            "read_only.REMAIN_AVAILABLE_MENU_KEY": (field, data) => {
+                if (!field.options) {
+                    const all = [...document.querySelectorAll(".context-menu:not(.ext-context-menu) [data-key]")]
+                    const entries = all.map(op => {
+                        const key = op.dataset.key
+                        if (!key) return
+                        let hint
+                        if (op.classList.contains("menu-style-btn")) {
+                            hint = (op.getAttribute("ty-hint") || "").split("\t")[0] || key
+                        } else {
+                            const menu = op.querySelector('[data-lg="Menu"]')
+                            hint = menu ? menu.textContent.trim() : key
+                        }
+                        return [key, hint]
+                    }).filter(Boolean)
+                    field.options = Object.fromEntries(entries)
                 }
             },
             "fence_enhance.ENABLE_INDENT": (field, data) => {

@@ -407,27 +407,6 @@ class tocMarkmap {
             ]
         }
 
-        const getAction = () => ({
-            restoreSettings: async () => {
-                const fixedName = this.plugin.fixedName
-                await this.utils.settings.handleSettings(fixedName, settingObj => {
-                    const setting = settingObj[fixedName]
-                    if (setting) {
-                        settingObj[fixedName] = this.utils.pickBy(setting, (_, k) => !attrsToSave.includes(k))
-                    }
-                    return settingObj
-                })
-                const settings = await this.utils.settings.readBasePluginSettings()
-                this.config = settings[fixedName]
-                this.utils.notification.show(this.i18n._t("global", "success.restore"))
-                await this.utils.formDialog.updateModal(op => {
-                    op.data = getData()
-                    op.schema = getSchema()
-                })
-                hasEdit = true
-            },
-        })
-
         const getData = () => {
             const obj = this.utils.pick(this.config, attrsToSave)
             const data = JSON.parse(JSON.stringify(obj))
@@ -441,16 +420,37 @@ class tocMarkmap {
             await this.utils.settings.saveSettings(this.plugin.fixedName, result)
         }
 
-        let hasEdit = false
+        let _edited = false
         const op = {
             title: this.i18n.t("func.setting"),
             schema: getSchema(),
             data: getData(),
-            action: getAction(),
-            listener: () => hasEdit = true,
+            actions: {
+                restoreSettings: async () => {
+                    const fixedName = this.plugin.fixedName
+                    await this.utils.settings.handleSettings(fixedName, settingObj => {
+                        const setting = settingObj[fixedName]
+                        if (setting) {
+                            settingObj[fixedName] = this.utils.pickBy(setting, (_, k) => !attrsToSave.includes(k))
+                        }
+                        return settingObj
+                    })
+                    const settings = await this.utils.settings.readBasePluginSettings()
+                    this.config = settings[fixedName]
+                    this.utils.notification.show(this.i18n._t("global", "success.restore"))
+                    await this.utils.formDialog.updateModal(op => {
+                        op.schema = getSchema()
+                        op.data = getData()
+                    })
+                    _edited = true
+                },
+            },
+            hooks: {
+                onSubmit: () => _edited = true,
+            },
         }
         const { response, data } = await this.utils.formDialog.modal(op)
-        if (response === 1 && hasEdit) {
+        if (response === 1 && _edited) {
             await save(data)
             await this.draw()
             this.toggleContextMenu()

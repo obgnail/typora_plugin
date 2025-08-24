@@ -2131,11 +2131,18 @@ HOTKEY = ""
 DEFAULT_MENU = "global"
 
 # 设置页面里隐藏菜单的插件
+#   填入插件的 fixedName
 HIDE_MENUS = []
 
-# 忽略配置依赖
-# 若为 true，将不再强制执行配置项之间的依赖关系
+# 忽略配置间的依赖
+#   true:  忽略配置依赖，不强制执行配置项之间的依赖关系
+#   false: 强制执行配置项之间的依赖关系
 IGNORE_CONFIG_DEPENDENCIES = false
+
+# 不校验配置
+#   true:  不校验配置
+#   false: 校验配置
+IGNORE_CONFIG_VALIDATION_RULES = true
 
 # 依赖失效行为
 # 若 IGNORE_CONFIG_DEPENDENCIES 为 true，则此选项失效
@@ -2144,6 +2151,8 @@ IGNORE_CONFIG_DEPENDENCIES = false
 DEPENDENCIES_FAILURE_BEHAVIOR = "readonly"
 
 # 将插件的 fixedName 加入到搜索内容
+#   true:  插件的 fixedName 加入到搜索内容
+#   false: 不将插件的 fixedName 加入到搜索内容
 SEARCH_PLUGIN_FIXEDNAME = false
 
 # 配置页中对象类型的数据格式

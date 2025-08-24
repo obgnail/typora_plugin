@@ -87,7 +87,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                     data: {
                         doc: Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n"),
                     },
-                    action: {
+                    actions: {
                         viewRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
                     },
                 }

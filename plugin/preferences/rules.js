@@ -1,0 +1,199 @@
+const utils = require("../global/core/utils")
+
+const Try = (fn, buildErr) => {
+    try {
+        fn()
+    } catch (e) {
+        return new Error(buildErr(e))
+    }
+}
+
+const required = "required"
+const notEqualZero = { name: "notEqual", args: [0] }
+const url = "isURL"
+const hotkey = { name: "pattern", args: [/^((ctrl|shift|alt)\+)*\w+$/i] }
+const regex = ({ value }) => Try(() => new RegExp(value), () => `Error Regex: ${value}`)
+const path = ({ value }) => Try(() => utils.Package.Fs.accessSync(value), () => `No such path: ${value}`)
+const fileExt = { name: "pattern", args: [/^([a-zA-Z0-9]+)?$/] }
+const hexColor = { name: "pattern", args: [/^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i] }
+
+const hexColor2DArray = ({ value }) => {
+    if (!Array.isArray(value)) {
+        return new Error("Must Be A 2D Array")
+    }
+    const regex = /^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i
+    for (const rows of value) {
+        if (!Array.isArray(rows)) {
+            return new Error("Must Be A 2D Array")
+        }
+        for (const color of rows) {
+            if (!regex.test(value)) {
+                return new Error(`${color} is not valid hex color`)
+            }
+        }
+    }
+}
+
+const chartStyles = {
+    DEFAULT_FENCE_HEIGHT: required,
+    DEFAULT_FENCE_BACKGROUND_COLOR: [required, hexColor],
+    TEMPLATE: required,
+}
+
+// TODO: Experimental Features. Validate rules for all settings
+module.exports = {
+    window_tab: {
+        TAB_MIN_WIDTH: required,
+        TAB_MAX_WIDTH: required,
+        MAX_TAB_NUM: notEqualZero,
+        DRAG_NEW_WINDOW_THRESHOLD: notEqualZero,
+        CLOSE_HOTKEY: hotkey,
+        SWITCH_PREVIOUS_TAB_HOTKEY: hotkey,
+        SWITCH_NEXT_TAB_HOTKEY: hotkey,
+        SORT_TABS_HOTKEY: hotkey,
+        COPY_PATH_HOTKEY: hotkey,
+        TOGGLE_TAB_BAR_HOTKEY: hotkey,
+    },
+    search_multi: {
+        ALLOW_EXT: fileExt,
+        HIGHLIGHT_COLORS: [required, hexColor],
+        TIMEOUT: notEqualZero,
+        MAX_STATS: notEqualZero,
+        MAX_DEPTH: notEqualZero,
+    },
+    md_padding: {
+        IGNORE_WORDS: required,
+        IGNORE_PATTERNS: [required, regex],
+    },
+    markmap: {
+        NODE_BORDER_WHEN_HOVER: required,
+        "DEFAULT_TOC_OPTIONS.color": [required, hexColor],
+        CANDIDATE_COLOR_SCHEMES: [required, hexColor2DArray],
+        "DOWNLOAD_OPTIONS.FILENAME": required,
+        "DOWNLOAD_OPTIONS.BACKGROUND_COLOR": [required, hexColor],
+        "DOWNLOAD_OPTIONS.TEXT_COLOR": [required, hexColor],
+        "DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR": [required, hexColor],
+        DEFAULT_FENCE_HEIGHT: required,
+        DEFAULT_FENCE_BACKGROUND_COLOR: [required, hexColor],
+        "DEFAULT_FENCE_OPTIONS.height": required,
+        "DEFAULT_FENCE_OPTIONS.backgroundColor": [required, hexColor],
+        "DEFAULT_FENCE_OPTIONS.color": [required, hexColor],
+        FENCE_TEMPLATE: required,
+    },
+    auto_number: {
+        FONT_FAMILY: required,
+    },
+    fence_enhance: {
+        BUTTON_SIZE: required,
+        BUTTON_COLOR: required,
+        BUTTON_MARGIN: required,
+        BUTTON_TOP: required,
+        BUTTON_RIGHT: required,
+        HIGHLIGHT_LINE_COLOR: required,
+    },
+    text_stylize: {
+        "DEFAULT_COLORS.FOREGROUND": [required, hexColor],
+        "DEFAULT_COLORS.BACKGROUND": [required, hexColor],
+        "DEFAULT_COLORS.BORDER": [required, hexColor],
+        COLOR_TABLE: [required, hexColor2DArray],
+    },
+    slash_commands: {
+        TRIGGER_REGEXP: [required, regex]
+    },
+    file_counter: {
+        ALLOW_EXT: fileExt,
+    },
+    resource_manager: {
+        MAX_STATS: notEqualZero,
+        MAX_DEPTH: notEqualZero,
+    },
+    editor_width_slider: {
+        WIDTH_RATIO: notEqualZero,
+    },
+    article_uploader: {
+        "upload.wordpress.hostname": required,
+        "upload.wordpress.loginUrl": required,
+        "upload.wordpress.username": required,
+        "upload.wordpress.password": required,
+        "upload.cnblog.username": required,
+        "upload.cnblog.password": required,
+        "upload.csdn.cookie": required,
+    },
+    json_rpc: {
+        "SERVER_OPTIONS.host": required,
+        "SERVER_OPTIONS.path": required,
+    },
+    updater: {
+        UPDATE_LOOP_INTERVAL: notEqualZero,
+        START_UPDATE_INTERVAL: notEqualZero,
+    },
+    kanban: {
+        KANBAN_TASK_DESC_MAX_HEIGHT: notEqualZero,
+        KANBAN_COLOR: [required, hexColor],
+        TASK_COLOR: [required, hexColor],
+        TEMPLATE: required,
+    },
+    chat: {
+        "DEFAULT_OPTIONS.senderNickname": required,
+        "DEFAULT_OPTIONS.timeNickname": required,
+        TEMPLATE: required,
+    },
+    timeline: {
+        BACKGROUND_COLOR: [required, hexColor],
+        TITLE_COLOR: [required, hexColor],
+        TITLE_FONT_SIZE: required,
+        TITLE_FONT_WEIGHT: required,
+        LINE_COLOR: [required, hexColor],
+        LINE_WIDTH: required,
+        CIRCLE_COLOR: [required, hexColor],
+        CIRCLE_DIAMETER: required,
+        TIME_COLOR: [required, hexColor],
+        CIRCLE_TOP: [required, hexColor],
+        TEMPLATE: required,
+    },
+    echarts: chartStyles,
+    chart: chartStyles,
+    wavedrom: chartStyles,
+    calendar: chartStyles,
+    abc: chartStyles,
+    drawIO: {
+        ...chartStyles,
+        RESOURCE_URI: url,
+    },
+    marp: chartStyles,
+    callouts: {
+        font_family: required,
+        network_icon_url: url,
+        default_background_color: [required, hexColor],
+        default_left_line_color: [required, hexColor],
+        default_icon: required,
+        template: required,
+    },
+    templater: {
+        template_folders: [required, path],
+    },
+    toc: {
+        toc_font_size: required,
+    },
+    imageReviewer: {
+        thumbnail_height: required,
+    },
+    markdownLint: {
+        button_width: required,
+        button_height: required,
+        pass_color: [required, hexColor],
+        error_color: [required, hexColor],
+        custom_rules_files: [required, path],
+    },
+    quickButton: {
+        button_size: required,
+        button_border_radius: required,
+        button_box_shadow: required,
+        button_gap: required,
+        position_right: required,
+        position_bottom: required,
+    },
+    redirectLocalRootUrl: {
+        root: required,
+    },
+}

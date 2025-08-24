@@ -37,18 +37,20 @@ class editorWidthSliderPlugin extends BasePlugin {
                 },
             ],
             data: { width: this._getWidth(), tmpAdjust: true },
-            action: {
+            actions: {
                 restore: async () => {
                     await this._setWidth(-1, false)
                     this.utils.formDialog.exit()
                     this.utils.notification.show(this.i18n._t("global", "success.restore"))
                 }
             },
-            listener: ({ key, value }) => {
-                if (key === "width") {
-                    this._setWidth(value, true)
+            hooks: {
+                onSubmit: (form, { key, value }) => {
+                    if (key === "width") {
+                        this._setWidth(value, true)
+                    }
                 }
-            }
+            },
         }
         const { response, data } = await this.utils.formDialog.modal(op)
         if (response === 1) {

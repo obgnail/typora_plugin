@@ -3,12 +3,11 @@ $ErrorActionPreference = "Stop"
 $Host.UI.RawUI.WindowTitle = "Typora Plugin Permissions Ensurer"
 
 $banner = @"
-     ______                                      __            _
-    /_  __/_  ______  ____  _________ _   ____  / /_  ______ _(_)___
-     / / / / / / __ \/ __ \/ ___/ __ ``/  / __ \/ / / / / __ ``/ / __ \
-    / / / /_/ / /_/ / /_/ / /  / /_/ /  / /_/ / / /_/ / /_/ / / / / /
-   /_/  \__, / .___/\____/_/   \__,_/  / .___/_/\__,_/\__, /_/_/ /_/
-       /____/_/                       /_/            /____/
+    ______                        ___  __          _
+   /_  __/_ _____  ___  _______ _/ _ \/ /_ _____ _(_)__
+    / / / // / _ \/ _ \/ __/ _ ``/ ___/ / // / _ ``/ / _ \
+   /_/  \_, / .__/\___/_/  \_,_/_/  /_/\_,_/\_, /_/_//_/
+       /___/_/                             /___/
 "@
 
 Write-Host $banner -ForegroundColor Cyan
@@ -56,24 +55,30 @@ if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Adm
 
 try {
     $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-    $appDir = (Resolve-Path (Join-Path $scriptDir "..\..")).Path
-    $pluginDir = Join-Path -Path $appDir -ChildPath "plugin"
-    $settingsDir = Join-Path -Path $pluginDir -ChildPath "global/settings"
-
-    Write-Host "[1/3] Assuming Typora app directory is at: $appDir" -ForegroundColor Yellow
-    if (!(Test-Path -Path $appDir -PathType Container)) {
-        throw "Could not determine the app directory. Ensure this script is in the correct plugin folder structure."
-    }
-    if (!(Test-Path -Path $pluginDir -PathType Container)) {
-        throw "Could not determine the plugin directory. Ensure this script is in the correct plugin folder structure."
-    }
-    if (!(Test-Path -Path $settingsDir -PathType Container)) {
-        throw "Could not determine the settings directory. Ensure this script is in the correct plugin folder structure."
+    $rootDir = (Resolve-Path (Join-Path $scriptDir "..\..")).Path
+    $paths = [PSCustomObject]@{
+        RootDir         = $rootDir
+        PluginDir       = Join-Path -Path $rootDir -ChildPath "plugin"
+        SettingsDir     = Join-Path -Path $rootDir -ChildPath "plugin\global\settings"
+        BasePluginCfg   = Join-Path -Path $rootDir -ChildPath "plugin\global\settings\settings.user.toml"
+        CustomPluginCfg = Join-Path -Path $rootDir -ChildPath "plugin\global\settings\custom_plugin.user.toml"
     }
 
-    Write-Host "[2/3] Processing permissions for 'plugin' directory..." -ForegroundColor Yellow
+    Write-Host "[1/3] Validating paths" -ForegroundColor Yellow
+    $dirsToValidate = @(
+        $paths.RootDir
+        $paths.PluginDir
+        $paths.SettingsDir
+    )
+    foreach ($dir in $dirsToValidate) {
+        if (!(Test-Path -Path $dir -PathType Container)) {
+            throw "Could not determine '$dir' directory."
+        }
+    }
+
+    Write-Host "[2/3] Processing permissions for 'plugin' directory" -ForegroundColor Yellow
     $usersSid = New-Object System.Security.Principal.SecurityIdentifier([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid, $null)
-    $dirAcl = Get-Acl -Path $pluginDir
+    $dirAcl = Get-Acl -Path $paths.PluginDir
     $directoryAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
         $usersSid,
         [System.Security.AccessControl.FileSystemRights]::FullControl,
@@ -81,15 +86,15 @@ try {
         [System.Security.AccessControl.PropagationFlags]::None,
         [System.Security.AccessControl.AccessControlType]::Allow
     )
-    Write-Host "      -> Setting 'FullControl' with inheritance for Users group..."
+    Write-Host "      -> Setting 'FullControl' with inheritance for Users group."
     $dirAcl.SetAccessRule($directoryAccessRule)
-    Set-Acl -Path $pluginDir -AclObject $dirAcl
+    Set-Acl -Path $paths.PluginDir -AclObject $dirAcl
     Write-Host "      -> Permissions set successfully for 'plugin' directory."
 
-    Write-Host "[3/3] Processing permissions for settings files..." -ForegroundColor Yellow
+    Write-Host "[3/3] Processing permissions for settings files" -ForegroundColor Yellow
     $filesToProcess = @(
-        Join-Path -Path $settingsDir -ChildPath "settings.user.toml"
-        Join-Path -Path $settingsDir -ChildPath "custom_plugin.user.toml"
+        $paths.BasePluginCfg
+        $paths.CustomPluginCfg
     )
     $fileAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
         $usersSid,
@@ -99,9 +104,9 @@ try {
     foreach ($file in $filesToProcess) {
         $fileName = Split-Path $file -Leaf
         if (Test-Path -Path $file -PathType Leaf) {
-            Write-Host "     -> Processing permissions for '$fileName'..."
+            Write-Host "     -> Processing permissions for '$fileName'."
             $acl = Get-Acl -Path $file
-            Write-Host "          -> Resetting permissions and applying 'FullControl' for Users group..."
+            Write-Host "          -> Resetting permissions and applying 'FullControl' for Users group."
             $acl.ResetAccessRule($fileAccessRule)
             Set-Acl -Path $file -AclObject $acl
             Write-Host "          -> Permissions set successfully for '$fileName'."

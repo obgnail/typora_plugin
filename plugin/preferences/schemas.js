@@ -345,14 +345,18 @@ const SETTING_SCHEMAS = {
         pluginFullBasePropBox,
         TitledBox(
             Title("underReadOnly"),
-            Text("SHOW_TEXT"),
             Switch("READ_ONLY_DEFAULT"),
+            Text("SHOW_TEXT"),
+        ),
+        UntitledBox(
+            Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
+            Select("REMAIN_AVAILABLE_MENU_KEY", undefined, { dependencies: { DISABLE_CONTEXT_MENU_WHEN_READ_ONLY: true } }),
+        ),
+        UntitledBox(
             Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
             Switch("NO_EXPAND_WHEN_READ_ONLY"),
             Switch("REMOVE_EXPAND_WHEN_READ_ONLY", { dependencies: { NO_EXPAND_WHEN_READ_ONLY: false } }),
-            Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
         ),
-        ArrayBox("REMAIN_AVAILABLE_MENU_KEY", { dependencies: { DISABLE_CONTEXT_MENU_WHEN_READ_ONLY: true } }),
         handleSettingsBox,
     ],
     blur: [
@@ -394,7 +398,7 @@ const SETTING_SCHEMAS = {
             Select("DEFAULT_TOOL", OPTIONS.toolbar.DEFAULT_TOOL),
             Switch("USE_NEGATIVE_SEARCH"),
             Switch("BACKSPACE_TO_HIDE"),
-            Number("DEBOUNCE_INTERVAL", { unit: UNITS.millisecond, min: 0 }),
+            Number("DEBOUNCE_INTERVAL", { unit: UNITS.millisecond, min: 10 }),
         ),
         handleSettingsBox,
     ],
@@ -418,7 +422,7 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Switch("RECORD_RESIZE"),
             Switch("REMOVE_MIN_CELL_WIDTH"),
-            Number("DRAG_THRESHOLD", { unit: UNITS.pixel, min: 0 }),
+            Number("DRAG_THRESHOLD", { unit: UNITS.pixel, min: 1 }),
         ),
         handleSettingsBox,
     ],
@@ -646,9 +650,9 @@ const SETTING_SCHEMAS = {
         ),
         UntitledBox(
             Switch("ENABLE_FOLD", fenceEnhanceButtonDep),
-            Number("FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, ...fenceEnhanceButtonDep }),
-            Switch("DEFAULT_FOLD", fenceEnhanceButtonDep),
-            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { ENABLE_BUTTON: true, DEFAULT_FOLD: true } }),
+            Number("FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true } }),
+            Switch("DEFAULT_FOLD", { dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true } }),
+            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true, DEFAULT_FOLD: true } }),
         ),
         TableBox(
             "CUSTOM_BUTTONS",
@@ -963,6 +967,7 @@ const SETTING_SCHEMAS = {
             Select("HIDE_MENUS"),
         ),
         UntitledBox(
+            Switch("IGNORE_CONFIG_VALIDATION_RULES"),
             Switch("IGNORE_CONFIG_DEPENDENCIES"),
             Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR, { dependencies: { IGNORE_CONFIG_DEPENDENCIES: false } }),
         ),
@@ -1036,9 +1041,9 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("hotkey"),
             Hotkey("UPLOAD_ALL_HOTKEY"),
-            Hotkey("UPLOAD_CNBLOG_HOTKEY"),
-            Hotkey("UPLOAD_WORDPRESS_HOTKEY"),
-            Hotkey("UPLOAD_CSDN_HOTKEY"),
+            Hotkey("UPLOAD_CNBLOG_HOTKEY", { dependencies: { "upload.cnblog.enabled": true } }),
+            Hotkey("UPLOAD_WORDPRESS_HOTKEY", { dependencies: { "upload.wordpress.enabled": true } }),
+            Hotkey("UPLOAD_CSDN_HOTKEY", { dependencies: { "upload.csdn.enabled": true } }),
         ),
         TitledBox(
             Title("upload"),
@@ -1048,21 +1053,21 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("wordPress"),
             Switch("upload.wordpress.enabled"),
-            Text("upload.wordpress.hostname"),
-            Text("upload.wordpress.loginUrl"),
-            Text("upload.wordpress.username"),
-            Text("upload.wordpress.password"),
+            Text("upload.wordpress.hostname", { dependencies: { "upload.wordpress.enabled": true } }),
+            Text("upload.wordpress.loginUrl", { dependencies: { "upload.wordpress.enabled": true } }),
+            Text("upload.wordpress.username", { dependencies: { "upload.wordpress.enabled": true } }),
+            Text("upload.wordpress.password", { dependencies: { "upload.wordpress.enabled": true } }),
         ),
         TitledBox(
             Title("cnblog"),
             Switch("upload.cnblog.enabled"),
-            Text("upload.cnblog.username"),
-            Text("upload.cnblog.password"),
+            Text("upload.cnblog.username", { dependencies: { "upload.cnblog.enabled": true } }),
+            Text("upload.cnblog.password", { dependencies: { "upload.cnblog.enabled": true } }),
         ),
         TitledBox(
             Title("csdn"),
             Switch("upload.csdn.enabled"),
-            Text("upload.csdn.cookie"),
+            Text("upload.csdn.cookie", { dependencies: { "upload.csdn.enabled": true } }),
         ),
         UntitledBox(
             Action("viewArticleUploaderReadme"),
@@ -1137,7 +1142,7 @@ const SETTING_SCHEMAS = {
             Title("kanbanStyle"),
             Number("KANBAN_WIDTH", { unit: UNITS.pixel, min: 1 }),
             Number("KANBAN_MAX_HEIGHT", { unit: UNITS.pixel, min: 1 }),
-            Number("KANBAN_TASK_DESC_MAX_HEIGHT", { tooltip: "lowerThenZero", unit: UNITS.em, min: -1 }),
+            Number("KANBAN_TASK_DESC_MAX_HEIGHT", { tooltip: "minusOneMeansShowAll", unit: UNITS.em, min: -1 }),
             Switch("HIDE_DESC_WHEN_EMPTY"),
             Switch("WRAP"),
             Switch("CTRL_WHEEL_TO_SWITCH"),
@@ -1430,7 +1435,7 @@ const SETTING_SCHEMAS = {
             Switch("filter_error_image"),
             Select("first_image_strategies", OPTIONS.imageReviewer.first_image_strategies, { minItems: 1 }),
             Select("thumbnail_object_fit", OPTIONS.imageReviewer.thumbnail_object_fit),
-            Number("play_second", { unit: UNITS.second, min: 0 }),
+            Number("play_second", { unit: UNITS.second, min: 1 }),
         ),
         TitledBox(
             Title("mouseEvent"),
@@ -1572,6 +1577,4 @@ const SETTING_SCHEMAS = {
     ],
 }
 
-module.exports = {
-    ...JSON.parse(JSON.stringify(SETTING_SCHEMAS))
-}
+module.exports = JSON.parse(JSON.stringify(SETTING_SCHEMAS))

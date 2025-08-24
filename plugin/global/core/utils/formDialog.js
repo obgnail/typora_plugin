@@ -3,7 +3,6 @@ class formDialog {
         this.utils = utils
         this.i18n = i18n
         this.resolver = null
-        this.listener = null
     }
 
     process = async () => {
@@ -41,11 +40,6 @@ class formDialog {
                 this._onVisibilityChange(0)
             }
         })
-        this.entities.form.addEventListener("form-crud", ev => {
-            if (this.listener) {
-                this.listener(ev.detail)
-            }
-        })
     }
 
     _onVisibilityChange = (state = 1) => {
@@ -54,24 +48,11 @@ class formDialog {
 
         this.resolver({ response: state, data: this.entities.form.options.data })
         this.resolver = null
-        this.listener = null
     }
 
-    _updateModal = ({ title, listener, ...options }) => {
-        if (title) {
-            this.entities.title.textContent = title
-        }
-        if (listener) {
-            this.listener = listener
-        }
-        this.entities.form.render(options)
-    }
-
-    modal = ({ title, listener, ...options }) => {
+    modal = ({ title, ...options }) => {
         const { promise, resolve } = Promise.withResolvers()
-
         this.resolver = resolve
-        this.listener = listener
 
         this.entities.title.textContent = title
         this.entities.form.render(options)
@@ -83,16 +64,13 @@ class formDialog {
     }
 
     updateModal = async fn => {
-        const options = this.getOptions()
+        const options = this.entities.form.options
         await fn(options)
-        this._updateModal(options)
+        if (options.title) {
+            this.entities.title.textContent = options.title
+        }
+        this.entities.form.render(options)
     }
-
-    getOptions = () => ({
-        title: this.entities.title.textContent,
-        listener: this.listener,
-        ...this.entities.form.options,
-    })
 
     exit = () => this.entities.cancel.click()
 }

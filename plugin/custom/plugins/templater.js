@@ -41,13 +41,15 @@ class templaterPlugin extends BaseCustomPlugin {
                 template: defaultTpl.name,
                 preview: defaultTpl.text,
             },
-            listener: ({ key, value }) => {
-                if (key !== "template") return
-                const tpl = this.config.template.find(tpl => tpl.name === value)
-                if (tpl) {
-                    this.utils.formDialog.updateModal(op => op.data = { ...op.data, template: tpl.name, preview: tpl.text })
+            hooks: {
+                onSubmit: (form, { key, value }) => {
+                    if (key !== "template") return
+                    const tpl = this.config.template.find(tpl => tpl.name === value)
+                    if (tpl) {
+                        this.utils.formDialog.updateModal(op => op.data = { ...op.data, template: tpl.name, preview: tpl.text })
+                    }
                 }
-            }
+            },
         }
         const { response, data } = await this.utils.formDialog.modal(op)
         if (response === 1) {

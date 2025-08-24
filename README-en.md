@@ -103,28 +103,25 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 
    - For the official version of Typora, the path is `./resources/window.html`.
 
-   - For the free version of Typora, the path is `./resources/app/window.html`.
+   - For the beta version of Typora, the path is `./resources/app/window.html`.
 
 3. Paste the unzipped plugin folder into folder A.
 
 4. Go to the folder `A/plugin/bin/`.
 
-   - Windows: Double-click to run `install_windows_amd_x64.exe`. If you see the following image, the installation is successful.
-
-   - Linux: Run `install_linux.sh` as administrator. If you see the following image, the installation is successful.
+   - Windows: Right-Click on the file `installw_windows.ps1`. Select 'Run with PowerShell'. 
+   - Linux: Run `install_linux.sh` as administrator. 
 
 5. Verification: Restart Typora, right-click in the main text area, and if you see the `Often Used Plugins` column, everything is fine.
 
 
-|          | Official Version                            | Free Version                            |
-| -------- | -------------------------------------------- | ---------------------------------------- |
-| Steps 2-3| ![typora_dir_new](assets/typora_dir_new.png) | ![typora_dir_old](assets/typora_dir_old.png) |
+|           | Official Version                             | Beta Version                                 |
+| --------- | -------------------------------------------- | -------------------------------------------- |
+| Steps 2-3 | ![typora_dir_new](assets/typora_dir_new.png) | ![typora_dir_old](assets/typora_dir_old.png) |
 
 |        | Windows                                        | Linux                                      |
 | ------ | ---------------------------------------------- | ------------------------------------------ |
 | Step 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
-
-> You can also install plugins by executing `install_windows.ps1` in the Windows system.
 
 
 
@@ -682,8 +679,6 @@ For specific usage, refer to: [README.md](https://github.com/obgnail/typora_plug
 - no-licence: [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/)
 
 ## Conclusion
-
-I am not a front-end developer, and all my front-end knowledge comes from Google. My JS/CSS skills are quite poor.
 
 **This project follows the MIT license, feel free to enjoy it.**
 

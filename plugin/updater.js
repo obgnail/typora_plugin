@@ -55,23 +55,19 @@ class updaterPlugin extends BasePlugin {
         const updater = await this.getUpdater(proxy, timeout)
         const { state, info } = await updater.runWithProgressBar(timeout)
 
-        let title, detail, redirect
+        let title, detail
         if (state === "UPDATED") {
             title = I18N.success
             detail = JSON.stringify(info, null, "\t")
-            redirect = false
         } else if (state === "NO_NEED") {
             title = I18N.noNeed
             detail = JSON.stringify(info, null, "\t")
-            redirect = false
         } else if (state instanceof Error) {
             title = I18N.failed
             detail = state.stack
-            redirect = true
         } else {
             title = I18N.failed
             detail = I18N.unknownError
-            redirect = true
         }
 
         const op = {
@@ -79,23 +75,24 @@ class updaterPlugin extends BasePlugin {
             schema: [{ fields: [{ type: "textarea", key: "detail", rows: 14 }] }],
             data: { detail },
         }
-        const { response } = await this.utils.formDialog.modal(op)
-        if (response === 1 && redirect) {
-            this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
-        }
+        await this.utils.formDialog.modal(op)
     }
 
-    getDefaultProxy = async () => (this.config.PROXY || (await new ProxyGetter(this).getProxy()) || "").trim()
+    getDefaultProxy = async () => {
+        const p = this.config.PROXY || await new ProxyGetter(this).getProxy() || ""
+        return p.trim()
+    }
 
     getUpdater = async (proxy, timeout) => {
-        if (proxy === undefined) {
+        if (proxy == null) {
             proxy = await this.getDefaultProxy()
         }
+        proxy = proxy.trim()
         if (proxy && !/^https?:\/\//.test(proxy)) {
-            proxy = "http://" + proxy;
+            proxy = "http://" + proxy
         }
-        const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest";
-        return new updater(this, url, proxy, timeout);
+        const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest"
+        return new updater(this, url, proxy, timeout)
     }
 }
 

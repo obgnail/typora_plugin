@@ -21,7 +21,13 @@ escape_sed_regex() {
     sed -E 's/[][\/\.$*^|]/\\&/g' <<<"$1"
 }
 
-echo "Starting plugin installation script"
+echo -e "\033[36m
+   ______                        ___  __          _
+  /_  __/_ _____  ___  _______ _/ _ \/ /_ _____ _(_)__
+   / / / // / _ \/ _ \/ __/ _ \`/ ___/ / // / _ \`/ / _ \\
+  /_/  \_, / .__/\___/_/  \_,_/_/  /_/\_,_/\_, /_/_//_/
+      /___/_/                             /___/
+\033[0m"
 
 echo "[1/9] Checking for necessary commands"
 for cmd in cp chmod sed grep; do
@@ -75,5 +81,4 @@ ESCAPED_FRAME_SCRIPT=$(escape_sed_regex "$FRAME_SCRIPT")
 ESCAPED_PLUGIN_SCRIPT=$(escape_sed_regex "$PLUGIN_SCRIPT")
 sed -i "s|$ESCAPED_FRAME_SCRIPT|$ESCAPED_FRAME_SCRIPT$ESCAPED_PLUGIN_SCRIPT|" "$WINDOW_HTML_PATH" || panic "Failed to update window.html."
 
-echo "Plugin installed successfully"
-echo "Backup of original window.html created at: '$WINDOW_HTML_BAK_PATH'."
+echo -e "\033[32m \nPlugin installed successfully! Please restart Typora. \033[0m"

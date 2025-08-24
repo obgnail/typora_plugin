@@ -228,6 +228,7 @@ class Searcher {
             default: ({ path, file, stats, content }) => `${content}\n${path}`,
             path: ({ path, file, stats, content }) => path,
             dir: ({ path, file, stats, content }) => Path.dirname(path),
+            folder: ({ path, file, stats, content }) => Path.dirname(path),
             file: ({ path, file, stats, content }) => file,
             name: ({ path, file, stats, content }) => Path.parse(file).name,
             ext: ({ path, file, stats, content }) => Path.extname(file),
@@ -291,6 +292,7 @@ class Searcher {
             buildQualifier("default", false, true, 2, write),
             buildQualifier("path", true, false, 1, none),
             buildQualifier("dir", true, false, 1, none),
+            buildQualifier("folder", true, false, 1, none),
             buildQualifier("file", true, false, 1, none),
             buildQualifier("name", true, false, 1, none),
             buildQualifier("ext", true, false, 1, none),
@@ -833,8 +835,8 @@ class Searcher {
         const genOperator = (...operators) => operators.map(emphasis).join("、")
         const genUL = (...li) => `<ul style="padding-left: 1.2em; margin: 0; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
         const _scope = [
-            bold(t("modal.hintDetail.scope.meta")) + " " + genScope(metaScope),
-            bold(t("modal.hintDetail.scope.content")) + " " + genScope(contentScope),
+            bold(t("modal.hintDetail.scope.meta")) + ": " + genScope(metaScope),
+            bold(t("modal.hintDetail.scope.content")) + ": " + genScope(contentScope),
         ]
         const _operator = [
             bold(genOperator(":")) + " " + t("modal.hintDetail.operator.colon"),
@@ -951,12 +953,9 @@ class Searcher {
                 { key: "direction", type: "select", label: t("modal.playground.direction"), options: directionOps, ...dep },
                 { key: "translate", type: "switch", label: t("modal.playground.translate"), ...dep },
             ]
-            const otherFields = [
-                { key: "deepWiki", type: "action", label: t("modal.playground.deepWiki") },
-                { key: "showGrammar", type: "action", label: t("modal.title.grammar") },
-            ]
+            const otherFields = [{ key: "showGrammar", type: "action", label: t("modal.title.grammar") }]
             const grammarBox = grammar
-                ? [{ title: t("modal.title.grammar"), fields: [{ key: "grammar", type: "textarea", readonly: true, rows: 20 }] }]
+                ? [{ title: t("modal.title.grammar"), fields: [{ key: "grammar", type: "textarea", readonly: true, rows: 21 }] }]
                 : []
             return [
                 { title: undefined, fields: syntaxFields },
@@ -980,8 +979,7 @@ class Searcher {
             title: t("grammar"),
             schema: await getSchema(defaultData),
             data: defaultData,
-            action: {
-                deepWiki: () => this.utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
+            actions: {
                 showGrammar: () => {
                     this.utils.formDialog.updateModal(async op => {
                         op.data.grammar = op.data.grammar ? "" : grammar
@@ -989,14 +987,16 @@ class Searcher {
                     })
                 },
             },
-            listener: ({ key, value }) => {
-                this.utils.formDialog.updateModal(async op => {
-                    op.data[key] = value
-                    if ((key === "presentation" && value === "ast") || (key === "expression" && op.data.presentation === "ast")) {
-                        op.data.ast = await _toJSON(op.data)
-                    }
-                    op.schema = await getSchema(op.data)
-                })
+            hooks: {
+                onSubmit: (form, { key, value }) => {
+                    this.utils.formDialog.updateModal(async op => {
+                        op.data[key] = value
+                        if ((key === "presentation" && value === "ast") || (key === "expression" && op.data.presentation === "ast")) {
+                            op.data.ast = await _toJSON(op.data)
+                        }
+                        op.schema = await getSchema(op.data)
+                    })
+                }
             },
         }
         await this.utils.formDialog.modal(op)
