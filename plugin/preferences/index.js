@@ -306,7 +306,7 @@ class preferencesPlugin extends BasePlugin {
     }
 
     _initRules = () => {
-        this.VALIDATION_RULES = this.config.IGNORE_CONFIG_VALIDATION_RULES ? {} : require("./rules.js")
+        this.VALIDATION_RULES = this.config.VALIDATE_CONFIG_OPTIONS ? require("./rules.js") : {}
     }
 
     _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)

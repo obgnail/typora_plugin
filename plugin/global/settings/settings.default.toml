@@ -2134,15 +2134,15 @@ DEFAULT_MENU = "global"
 #   填入插件的 fixedName
 HIDE_MENUS = []
 
+# 不校验配置
+#   true:  不校验配置
+#   false: 校验配置
+VALIDATE_CONFIG_OPTIONS = true
+
 # 忽略配置间的依赖
 #   true:  忽略配置依赖，不强制执行配置项之间的依赖关系
 #   false: 强制执行配置项之间的依赖关系
 IGNORE_CONFIG_DEPENDENCIES = false
-
-# 不校验配置
-#   true:  不校验配置
-#   false: 校验配置
-IGNORE_CONFIG_VALIDATION_RULES = true
 
 # 依赖失效行为
 # 若 IGNORE_CONFIG_DEPENDENCIES 为 true，则此选项失效
@@ -2526,11 +2526,16 @@ NAME = ""
 #   留空则不设置快捷键
 HOTKEY = ""
 
-# ------------------- 代理 -------------------
+# ------------------- 网络 -------------------
 # 众所周知，有些地区无法裸连 GitHub，需要使用代理 (如：http://127.0.0.1:7890)
 # 若值为空，则将弹出窗口，让用户填入代理；若值不为空，则将直接使用此代理，不再弹出窗口
 # 除非你固定使用某代理，否则不建议使用此配置
 PROXY = ""
+
+# 网络请求超时时间
+# 单位：毫秒 (ms)
+# 最小值 30000
+NETWORK_REQUEST_TIMEOUT = 180000   # 3 * 60 * 1000
 
 # ------------------- 自动升级 -------------------
 # 是否启用自动静默升级（若为 false，则以下自动升级配置全部失效）

@@ -42,7 +42,7 @@ class updaterPlugin extends BasePlugin {
     }
 
     manualUpdate = async proxy => {
-        const timeout = 3 * 60 * 1000
+        const timeout = Math.max(this.config.NETWORK_REQUEST_TIMEOUT, 30 * 1000)
         const I18N = {
             pleaseWait: this.i18n.t("update.pleaseWait"),
             success: this.i18n.t("update.success"),
@@ -51,27 +51,33 @@ class updaterPlugin extends BasePlugin {
             unknownError: this.i18n._t("global", "error.unknown"),
         }
 
-        this.utils.notification.show(I18N.pleaseWait)
+        const close = this.utils.notification.show(I18N.pleaseWait)
         const updater = await this.getUpdater(proxy, timeout)
         const { state, info } = await updater.runWithProgressBar(timeout)
+        close()
 
-        let title, detail
+        let msg, msgType, detail
         if (state === "UPDATED") {
-            title = I18N.success
+            msg = I18N.success
+            msgType = "success"
             detail = JSON.stringify(info, null, "\t")
         } else if (state === "NO_NEED") {
-            title = I18N.noNeed
+            msg = I18N.noNeed
+            msgType = "success"
             detail = JSON.stringify(info, null, "\t")
         } else if (state instanceof Error) {
-            title = I18N.failed
+            msg = I18N.failed
+            msgType = "error"
             detail = state.stack
         } else {
-            title = I18N.failed
+            msg = I18N.failed
+            msgType = "error"
             detail = I18N.unknownError
         }
+        this.utils.notification.show(msg, msgType, 10000)
 
         const op = {
-            title,
+            title: this.pluginName,
             schema: [{ fields: [{ type: "textarea", key: "detail", rows: 14 }] }],
             data: { detail },
         }
@@ -97,7 +103,7 @@ class updaterPlugin extends BasePlugin {
 }
 
 class updater {
-    constructor(plugin, latestReleaseUrl, proxy, timeout = 3 * 60 * 1000) {
+    constructor(plugin, latestReleaseUrl, proxy, timeout) {
         this.utils = plugin.utils;
         this.latestReleaseUrl = latestReleaseUrl;
         this.requestOption = { proxy, timeout };

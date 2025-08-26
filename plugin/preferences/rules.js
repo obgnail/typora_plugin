@@ -8,9 +8,9 @@ const Try = (fn, buildErr) => {
     }
 }
 
+const url = "url"
 const required = "required"
 const notEqualZero = { name: "notEqual", args: [0] }
-const url = "isURL"
 const hotkey = { name: "pattern", args: [/^((ctrl|shift|alt)\+)*\w+$/i] }
 const regex = ({ value }) => Try(() => new RegExp(value), () => `Error Regex: ${value}`)
 const path = ({ value }) => Try(() => utils.Package.Fs.accessSync(value), () => `No such path: ${value}`)
@@ -36,7 +36,7 @@ const hexColor2DArray = ({ value }) => {
 
 const chartStyles = {
     DEFAULT_FENCE_HEIGHT: required,
-    DEFAULT_FENCE_BACKGROUND_COLOR: [required, hexColor],
+    DEFAULT_FENCE_BACKGROUND_COLOR: required,
     TEMPLATE: required,
 }
 
@@ -129,8 +129,8 @@ module.exports = {
     },
     kanban: {
         KANBAN_TASK_DESC_MAX_HEIGHT: notEqualZero,
-        KANBAN_COLOR: [required, hexColor],
-        TASK_COLOR: [required, hexColor],
+        KANBAN_COLOR: required,
+        TASK_COLOR: required,
         TEMPLATE: required,
     },
     chat: {
@@ -139,16 +139,16 @@ module.exports = {
         TEMPLATE: required,
     },
     timeline: {
-        BACKGROUND_COLOR: [required, hexColor],
-        TITLE_COLOR: [required, hexColor],
+        BACKGROUND_COLOR: required,
+        TITLE_COLOR: required,
         TITLE_FONT_SIZE: required,
         TITLE_FONT_WEIGHT: required,
-        LINE_COLOR: [required, hexColor],
+        LINE_COLOR: required,
         LINE_WIDTH: required,
-        CIRCLE_COLOR: [required, hexColor],
+        CIRCLE_COLOR: required,
         CIRCLE_DIAMETER: required,
-        TIME_COLOR: [required, hexColor],
-        CIRCLE_TOP: [required, hexColor],
+        TIME_COLOR: required,
+        CIRCLE_TOP: required,
         TEMPLATE: required,
     },
     echarts: chartStyles,
@@ -164,8 +164,8 @@ module.exports = {
     callouts: {
         font_family: required,
         network_icon_url: url,
-        default_background_color: [required, hexColor],
-        default_left_line_color: [required, hexColor],
+        default_background_color: required,
+        default_left_line_color: required,
         default_icon: required,
         template: required,
     },
@@ -181,8 +181,8 @@ module.exports = {
     markdownLint: {
         button_width: required,
         button_height: required,
-        pass_color: [required, hexColor],
-        error_color: [required, hexColor],
+        pass_color: required,
+        error_color: required,
         custom_rules_files: [required, path],
     },
     quickButton: {

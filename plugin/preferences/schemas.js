@@ -967,7 +967,7 @@ const SETTING_SCHEMAS = {
             Select("HIDE_MENUS"),
         ),
         UntitledBox(
-            Switch("IGNORE_CONFIG_VALIDATION_RULES"),
+            Switch("VALIDATE_CONFIG_OPTIONS"),
             Switch("IGNORE_CONFIG_DEPENDENCIES"),
             Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR, { dependencies: { IGNORE_CONFIG_DEPENDENCIES: false } }),
         ),
@@ -1116,6 +1116,7 @@ const SETTING_SCHEMAS = {
     updater: [
         pluginFullBasePropBox,
         UntitledBox(
+            Number("NETWORK_REQUEST_TIMEOUT", { unit: UNITS.millisecond, min: 30000 }),
             Text("PROXY"),
         ),
         TitledBox(

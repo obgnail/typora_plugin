@@ -31,7 +31,7 @@ customElements.define("fast-form", class extends HTMLElement {
                 || (Array.isArray(value) && value.length === 0)
             return !isEmpty ? true : i18n.t("global", "error.required")
         },
-        isURL: ({ value }, data) => {
+        url: ({ value }, data) => {
             if (!value) return true
             const pattern = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
             return pattern.test(value) ? true : i18n.t("global", "error.invalidURL")
