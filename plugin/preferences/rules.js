@@ -1,19 +1,9 @@
-const utils = require("../global/core/utils")
-
-const Try = (fn, buildErr) => {
-    try {
-        fn()
-    } catch (e) {
-        return new Error(buildErr(e))
-    }
-}
-
 const url = "url"
+const regex = "regex"
+const path = "path"
 const required = "required"
 const notEqualZero = { name: "notEqual", args: [0] }
 const hotkey = { name: "pattern", args: [/^((ctrl|shift|alt)\+)*\w+$/i] }
-const regex = ({ value }) => Try(() => new RegExp(value), () => `Error Regex: ${value}`)
-const path = ({ value }) => Try(() => utils.Package.Fs.accessSync(value), () => `No such path: ${value}`)
 const fileExt = { name: "pattern", args: [/^([a-zA-Z0-9]+)?$/] }
 const hexColor = { name: "pattern", args: [/^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i] }
 

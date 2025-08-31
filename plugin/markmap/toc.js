@@ -15,7 +15,7 @@ class tocMarkmap {
                 <div class="plugin-markmap-icon ion-chevron-up" action="pinTop" ty-hint="${this.i18n.t('func.pinTop')}"></div>
                 <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="${this.i18n.t('func.pinRight')}"></div>
                 <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="${this.i18n.t('func.fit')}"></div>
-                <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="${this.i18n.t('func.setting')}"></div>
+                <div class="plugin-markmap-icon ion-android-settings" action="settings" ty-hint="${this.i18n.t('func.settings')}"></div>
                 <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="${this.i18n.t('func.download')}"></div>
                 <div class="plugin-markmap-icon" action="resize"><svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg></div>
             </div>
@@ -302,7 +302,7 @@ class tocMarkmap {
         }
     }
 
-    setting = async () => {
+    settings = async () => {
         const attrsToSave = [
             "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
             "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITIONING",
@@ -409,7 +409,7 @@ class tocMarkmap {
 
         const getData = () => {
             const obj = this.utils.pick(this.config, attrsToSave)
-            const data = JSON.parse(JSON.stringify(obj))
+            const data = this.utils.naiveCloneDeep(obj)
             data.DEFAULT_TOC_OPTIONS.color = arr2Str(data.DEFAULT_TOC_OPTIONS.color)
             return data
         }
@@ -422,28 +422,28 @@ class tocMarkmap {
 
         let _edited = false
         const op = {
-            title: this.i18n.t("func.setting"),
+            title: this.i18n.t("func.settings"),
             schema: getSchema(),
             data: getData(),
             actions: {
-                restoreSettings: async () => {
-                    const fixedName = this.plugin.fixedName
-                    await this.utils.settings.handleSettings(fixedName, settingObj => {
-                        const setting = settingObj[fixedName]
-                        if (setting) {
-                            settingObj[fixedName] = this.utils.pickBy(setting, (_, k) => !attrsToSave.includes(k))
-                        }
-                        return settingObj
-                    })
-                    const settings = await this.utils.settings.readBasePluginSettings()
-                    this.config = settings[fixedName]
-                    this.utils.notification.show(this.i18n._t("global", "success.restore"))
-                    await this.utils.formDialog.updateModal(op => {
-                        op.schema = getSchema()
-                        op.data = getData()
-                    })
-                    _edited = true
-                },
+                restoreSettings: this.utils.createConsecutiveAction({
+                    threshold: 3,
+                    timeWindow: 3000,
+                    onConfirmed: async () => {
+                        const fixedName = this.plugin.fixedName
+                        await this.utils.settings.handleSettings(fixedName, (pluginSettings, allSettings) => {
+                            allSettings[fixedName] = this.utils.pickBy(pluginSettings, (_, k) => !attrsToSave.includes(k))
+                        })
+                        const settings = await this.utils.settings.readBasePluginSettings()
+                        this.config = settings[fixedName]
+                        this.utils.notification.show(this.i18n._t("global", "success.restore"))
+                        await this.utils.formDialog.updateModal(op => {
+                            op.schema = getSchema()
+                            op.data = getData()
+                        })
+                        _edited = true
+                    }
+                }),
             },
             hooks: {
                 onSubmit: () => _edited = true,
@@ -508,11 +508,11 @@ class tocMarkmap {
             this.utils.contextMenu.register(
                 this.entities.svg,
                 () => {
-                    const all = ["expand", "shrink", "hideToolbar", "showToolbar", "fit", "pinTop", "pinRight", "setting", "download", "close"]
+                    const all = ["expand", "shrink", "hideToolbar", "showToolbar", "fit", "pinTop", "pinRight", "settings", "download", "close"]
                     const menuItems = this.i18n.entries(all, "func.")
                     const fullScreen = this.entities.fullScreen.getAttribute("action")
                     const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar"
-                    const attrs = [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "setting", "download", "close"]
+                    const attrs = [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "settings", "download", "close"]
                     return this.utils.pick(menuItems, attrs)
                 },
                 (ev, key) => this.doAction(key),

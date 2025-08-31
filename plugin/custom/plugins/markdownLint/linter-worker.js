@@ -1,17 +1,17 @@
 let LIB
 let CUSTOM_RULES
-const RULES = { "default": true }
+let RULES
 
 const linter = {
-    configure: ({ libPath, customRulesFiles, config, content }) => {
+    configure: ({ libPath, customRulesFiles, rules, content }) => {
         if (libPath) {
             LIB = require(libPath)
         }
         if (customRulesFiles) {
             CUSTOM_RULES = customRulesFiles.flatMap(e => require(e))
         }
-        if (config) {
-            Object.assign(RULES, config)
+        if (rules) {
+            RULES = rules
         }
         if (LIB) {
             console.debug(`markdownlint@${LIB.getVersion()} worker is initialized with rules`, RULES)

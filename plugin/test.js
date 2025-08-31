@@ -25,7 +25,7 @@ class testPlugin extends BasePlugin {
         this.singleInstance()
         this.autoOpenDevTools()
         this.updateRequire()
-        this.test()
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.test)
     }
 }
 

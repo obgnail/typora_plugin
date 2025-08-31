@@ -49,6 +49,11 @@ const Select = (key, options, { tooltip, minItems, maxItems, dependencies, ...ar
     tooltip = Tooltip(tooltip)
     return { type: "select", key, label, tooltip, options, minItems, maxItems, dependencies, ...args }
 }
+const Composite = (key, subSchema, defaultValues, { tooltip, disabled, dependencies, ...args }) => {
+    const label = Label(key)
+    tooltip = Tooltip(tooltip)
+    return { type: "composite", key, label, subSchema, defaultValues, tooltip, disabled, dependencies, ...args }
+}
 
 const Title = title => title
 const UntitledBox = (...fields) => ({ title: undefined, fields })
@@ -1539,7 +1544,7 @@ const SETTING_SCHEMAS = {
                     { type: "text", key: "color", label: "$label.buttons.color" },
                     { type: "text", key: "bgColor", label: "$label.buttons.bgColor" },
                     { type: "text", key: "hint", label: "$label.buttons.hint" },
-                    { type: "text", key: "callback", label: "$label.buttons.callback", tooltip: "tooltip.exclusive" },
+                    { type: "text", key: "callback", label: "$label.buttons.callback", tooltip: "$tooltip.exclusive" },
                 ),
                 TitledBox("buttons.evil", { type: "textarea", key: "evil", placeholder: "$placeholder.customCallback", rows: 5 }),
             ],

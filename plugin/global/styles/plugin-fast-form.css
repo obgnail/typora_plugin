@@ -656,6 +656,40 @@ textarea::placeholder {
     color: #999;
 }
 
+/***** composite *****/
+.control[data-type="composite"] {
+    flex-direction: column;
+    padding: 0 12px;
+}
+
+.control[data-type="composite"] > .control,
+.control[data-type="composite"] > .sub-box-wrapper {
+    width: 100%;
+}
+
+.sub-box-wrapper {
+    border-left: 2px dashed #ccc;
+}
+
+.sub-box-wrapper .title {
+    padding: 0 12px;
+    font-weight: initial;
+}
+
+.sub-box-wrapper .box {
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.sub-box-wrapper > .box > .control {
+    padding-right: 0;
+}
+
+.sub-box-wrapper > .box > .control[data-type="composite"] {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 /***** custom *****/
 .custom-wrap {
     flex: 1;

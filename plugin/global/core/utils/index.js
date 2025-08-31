@@ -15,9 +15,9 @@ class utils {
     static tempFolder = window._options.tempPath || require("os").tmpdir()
     static Package = Object.freeze({ Path: PATH, Fs: FS, FsExtra: FS_EXTRA })
 
-    static nonExistSelector = "__non_exist__"                 // Plugin temporarily unavailable, return this.
-    static disableForeverSelector = "__disabled__"            // Plugin permanently unavailable, return this.
-    static stopLoadPluginError = new Error("stopLoadPlugin")  // For plugin's beforeProcess method; return this to stop loading the plugin.
+    static nonExistSelector = "__non_exist__"  // Plugin temporarily unavailable, return this.
+    static disableForeverSelector = "__disabled__"  // Plugin permanently unavailable, return this.
+    static stopLoadPluginError = Symbol("StopLoading")  // For plugin's beforeProcess method; return this to stop loading the plugin.
 
     // Do NOT manually call these variables
     static _sentinel = Symbol()  // As a sentinel value
@@ -400,6 +400,38 @@ class utils {
         }, Array.isArray(source) ? [] : {});
     }
 
+    /**
+     * Recursively creates a minimal version of an object by removing properties that are null, empty, or deeply equal to their counterparts in a default values object.
+     * @example minimize({ o: { a: 3, b: 4 } }, { o: { a: 3 } }) -> { o: { b: 4 } }
+     */
+    static minimize = (sourceObject, defaultValues, options = {}, result = {}) => {
+        const { allowNull = false, allowUndefined = false, allowEmptyArray = false, allowEmptyObject = false } = options
+
+        for (const key of Object.keys(sourceObject)) {
+            const sourceValue = sourceObject[key]
+            const defaultValue = defaultValues ? defaultValues[key] : undefined
+
+            if (sourceValue === null && !allowNull) continue
+            if (sourceValue === undefined && !allowUndefined) continue
+            if (this.deepEqual(sourceValue, defaultValue)) continue
+
+            if (Array.isArray(sourceValue)) {
+                if (allowEmptyArray || sourceValue.length > 0) {
+                    result[key] = sourceValue
+                }
+            } else if (typeof sourceValue === "object" && sourceValue !== null) {
+                const subDefault = (typeof defaultValue === "object" && defaultValue !== null) ? defaultValue : {}
+                const minimizedSubObject = this.minimize(sourceValue, subDefault, options, {})
+                if (allowEmptyObject || Object.keys(minimizedSubObject).length > 0) {
+                    result[key] = minimizedSubObject
+                }
+            } else {
+                result[key] = sourceValue
+            }
+        }
+        return result
+    }
+
     static pick = (obj, attrs) => {
         if (!obj || typeof obj !== "object") {
             return {}
@@ -416,6 +448,49 @@ class utils {
         }
         const entries = Object.entries(obj).filter(([key, value]) => predicate(value, key, obj))
         return Object.fromEntries(entries)
+    }
+
+    static deepEqual = (object, other) => _.isEqual(object, other)
+
+    static cloneDeep = (obj, memo = new WeakMap()) => {
+        if (obj == null || typeof obj !== "object") {
+            return obj
+        } else if (memo.has(obj)) {
+            return memo.get(obj)
+        } else if (obj instanceof Date) {
+            return new Date(obj.getTime())
+        } else if (obj instanceof RegExp) {
+            return new RegExp(obj.source, obj.flags)
+        } else if (obj instanceof Map) {
+            const clonedMap = new Map()
+            memo.set(obj, clonedMap)
+            obj.forEach((value, key) => {
+                clonedMap.set(this.cloneDeep(key, memo), this.cloneDeep(value, memo))
+            })
+            return clonedMap
+        } else if (obj instanceof Set) {
+            const clonedSet = new Set()
+            memo.set(obj, clonedSet)
+            obj.forEach(value => {
+                clonedSet.add(this.cloneDeep(value, memo))
+            })
+            return clonedSet
+        }
+        const clone = Array.isArray(obj) ? [] : Object.create(Object.getPrototypeOf(obj))
+        memo.set(obj, clone)
+        for (const key of [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)]) {
+            clone[key] = this.cloneDeep(obj[key], memo)
+        }
+        return clone
+    }
+
+    static naiveCloneDeep = (source) => {
+        if (source == null || typeof source !== "object") {
+            return source
+        }
+        return Array.isArray(source)
+            ? source.map(this.naiveCloneDeep)
+            : Object.fromEntries(Object.entries(source).map(([key, val]) => [key, this.naiveCloneDeep(val)]))
     }
 
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
@@ -543,20 +618,27 @@ class utils {
                 return false
             })
         },
-        handle: (obj, key, handler) => {
-            if (key == null) return
+        dive: (obj, key) => {
+            if (key == null) return {}
             const keys = key.split(".")
-            const lastKey = keys.pop()
-            let current = obj
+            const targetKey = keys.pop()
+            let keyContainer = obj
             for (const k of keys) {
-                if (current && typeof current === "object" && current.hasOwnProperty(k)) {
-                    current = current[k]
+                if (keyContainer && typeof keyContainer === "object" && keyContainer.hasOwnProperty(k)) {
+                    keyContainer = keyContainer[k]
                 } else {
                     throw new Error(`Object has no such nested property: ${key}`)
                 }
             }
-            if (current && typeof current === "object") {
-                return handler(current, lastKey, key)
+            if (keyContainer && typeof keyContainer === "object") {
+                return { keyContainer, targetKey }
+            }
+            return {}
+        },
+        handle: (obj, key, handler) => {
+            const { keyContainer, targetKey } = this.nestedPropertyHelpers.dive(obj, key)
+            if (keyContainer && targetKey) {
+                return handler(keyContainer, targetKey)
             }
         },
         get: (obj, key) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey]),
@@ -1284,7 +1366,7 @@ class utils {
         active.scrollIntoView({ block: "nearest" });
     }
 
-    static stopCallError = new Error("stopCall") // For the decorate method; return this to stop executing the native function.
+    static stopCallError = Symbol("stopCalling") // For the decorate method; return this to stop executing the native function.
     static decorate = (objGetter, attr, before, after, changeResult = false) => {
         function decorator(original, before, after) {
             const fn = function () {

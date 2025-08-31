@@ -19,20 +19,19 @@ class settings {
     }
 
     handleSettings = async (fixedName, handler) => {
-        const settingFileName = this.getSettingFileName(fixedName)
-        const settingPath = await this.getActualSettingPath(settingFileName)
-        const settingObj = await this.utils.readTomlFile(settingPath)
-        const resultObj = handler(settingObj)
-        const content = this.utils.stringifyToml(resultObj).replace(/\r\n/g, "\n")
+        const settingFile = this.getSettingFileName(fixedName)
+        const settingPath = await this.getActualSettingPath(settingFile)
+        const allSettings = await this.utils.readTomlFile(settingPath)
+        if (!allSettings[fixedName]) {
+            allSettings[fixedName] = {}
+        }
+        handler(allSettings[fixedName], allSettings)
+        const content = this.utils.stringifyToml(allSettings).replace(/\r\n/g, "\n")
         return this.utils.writeFile(settingPath, content)
     }
 
     clearSettings = async (fixedName) => {
-        const handler = settingObj => {
-            delete settingObj[fixedName]
-            return settingObj
-        }
-        return this.handleSettings(fixedName, handler)
+        return this.handleSettings(fixedName, (_, allSettings) => delete allSettings[fixedName])
     }
 
     clearAllSettings = async () => {
@@ -45,8 +44,9 @@ class settings {
     }
 
     saveSettings = async (fixedName, updateObj) => {
-        const handler = settingObj => this.utils.merge(settingObj, { [fixedName]: updateObj })
-        return this.handleSettings(fixedName, handler)
+        return this.handleSettings(fixedName, (pluginSettings, allSettings) => {
+            allSettings[fixedName] = this.utils.merge(pluginSettings, updateObj)
+        })
     }
 
     autoSaveSettings = plugin => {

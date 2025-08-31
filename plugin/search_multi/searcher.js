@@ -740,7 +740,7 @@ class Searcher {
             }
         }
 
-        ast = JSON.parse(JSON.stringify(ast))
+        ast = this.utils.naiveCloneDeep(ast)
         const { head, tail, result } = _eval(ast)
         const start = head.map(h => `S --> ${_getName(h)}`)
         const end = tail.map(t => `${_getName(t)} --> E`)
@@ -814,7 +814,7 @@ class Searcher {
             }
         }
 
-        ast = JSON.parse(JSON.stringify(ast))
+        ast = this.utils.naiveCloneDeep(ast)
         const { result } = _eval(ast)
         const content = result
             .map(path => path.map(_getName).join(I18N.and))

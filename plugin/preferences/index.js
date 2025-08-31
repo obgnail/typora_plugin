@@ -207,7 +207,7 @@ class preferencesPlugin extends BasePlugin {
         const promises = this.SETTING_SCHEMAS[fixedName].flatMap(box => {
             return box.fields
                 .filter(field => field.key && preprocessors.hasOwnProperty(`${fixedName}.${field.key}`))
-                .map(async field => await preprocessors[`${fixedName}.${field.key}`](field, settings))
+                .map(async field => await preprocessors[`${fixedName}.${field.key}`](field, settings, box))
         })
         await Promise.all(promises)
         return settings
@@ -333,6 +333,7 @@ class preferencesPlugin extends BasePlugin {
             openPluginFolder: () => this.utils.showInFinder(this.utils.joinPath("./plugin")),
             backupSettings: async () => this.utils.settings.backupSettingFile(),
             openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
+            invokeMarkdownLintSettings: async () => this.utils.callPluginFunction("markdownLint", "settings"),
             restoreSettings: consecutive(async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearSettings(fixedName)
@@ -489,7 +490,7 @@ class preferencesPlugin extends BasePlugin {
                     }
                 }
             },
-            "read_only.REMAIN_AVAILABLE_MENU_KEY": (field, data) => {
+            "read_only.REMAIN_AVAILABLE_MENU_KEY": (field) => {
                 if (!field.options) {
                     const all = [...document.querySelectorAll(".context-menu:not(.ext-context-menu) [data-key]")]
                     const entries = all.map(op => {
@@ -527,16 +528,22 @@ class preferencesPlugin extends BasePlugin {
                     _incompatibleSwitch(field, data, this.i18n._t("markmap", "$tooltip.experimental"))
                 }
             },
-            "preferences.DEFAULT_MENU": (field, data) => {
+            "preferences.DEFAULT_MENU": (field) => {
                 if (!field.options) {
                     field.options = { __LAST__: this.i18n._t("global", "lastUsed"), ...this._getAllPlugins() }
                 }
             },
-            "preferences.HIDE_MENUS": (field, data) => {
+            "preferences.HIDE_MENUS": (field) => {
                 if (!field.options) {
                     field.options = this._getAllPlugins()
                     _disableOption(field.options, "preferences")
                     _disableOption(field.options, "global")
+                }
+            },
+            "markdownLint.rule_config": (field, data, box) => {
+                const plu = this.utils.getCustomPlugin("markdownLint")
+                if (plu) {
+                    box.fields[0] = { type: "action", key: "invokeMarkdownLintSettings", label: this.i18n._t("markdownLint", "$label.invokeMarkdownLintSettings") }
                 }
             },
         }

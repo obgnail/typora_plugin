@@ -2,14 +2,33 @@ const { sharedSheets } = require("./common")
 const { utils } = require("../utils")
 const { i18n } = require("../i18n")
 
-customElements.define("fast-form", class extends HTMLElement {
+class FastForm extends HTMLElement {
     static template = `<link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous"><div id="form"></div>`
+    static fields = new Set([
+        "text", "number", "switch", "select", "textarea", "object", "array", "table", "radio", "checkbox",
+        "hint", "custom", "composite", "action", "static", "hotkey", "range", "unit",
+    ])
+    static blockFields = new Set(["textarea", "object", "array", "table", "radio", "checkbox", "hint", "custom", "composite"])
+    static serializers = {
+        JSON: {
+            parse: (str) => JSON.parse(str),
+            stringify: (obj) => JSON.stringify(obj, null, "\t"),
+        },
+        TOML: {
+            parse: (str) => utils.readToml(str),
+            stringify: (obj) => utils.stringifyToml(obj),
+        },
+        YAML: {
+            parse: (str) => utils.readYaml(str),
+            stringify: (obj) => utils.stringifyYaml(obj),
+        },
+    }
     static hooks = {
         onRender: (form) => void 0,
         onParseValue: (key, rawValue, type) => rawValue,
         onBeforeValidate: (detail) => void 0,         // return true or [] for success; return Error or [Error, ...] for failure
         onAfterValidate: (detail, errors) => void 0,  // return true or [] for success; return Error or [Error, ...] for failure
-        onValidateFailed: (key, errors, targetEl) => {
+        onValidateFailed: (key, errors, control) => {
             if (!Array.isArray(errors) || errors.length === 0) return
             errors.forEach(err => {
                 const msg = err instanceof Error
@@ -31,11 +50,6 @@ customElements.define("fast-form", class extends HTMLElement {
                 || (Array.isArray(value) && value.length === 0)
             return !isEmpty ? true : i18n.t("global", "error.required")
         },
-        url: ({ value }, data) => {
-            if (!value) return true
-            const pattern = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
-            return pattern.test(value) ? true : i18n.t("global", "error.invalidURL")
-        },
         pattern: (pattern) => ({ value }, data) => {
             if (!value) return true
             return pattern.test(value) ? true : i18n.t("global", "error.pattern")
@@ -56,6 +70,26 @@ customElements.define("fast-form", class extends HTMLElement {
         },
     }
 
+    static registerValidator(name, validatorDefinition) {
+        if (typeof validatorDefinition !== "function") {
+            throw new Error(`Validator Error: validator '${name}' must be a function.`)
+        }
+        if (this.validators.hasOwnProperty(name)) {
+            console.warn(`FastForm Warning: Overwriting validator definition for type '${name}'.`)
+        }
+        this.validators[name] = validatorDefinition
+    }
+
+    static registerSerializer(name, serializerDefinition) {
+        if (!serializerDefinition || typeof serializerDefinition.parse !== "function" || typeof serializerDefinition.stringify !== "function") {
+            throw new Error(`Serializer Error: '${name}'.`)
+        }
+        if (this.serializers.hasOwnProperty(name)) {
+            console.warn(`FastForm Warning: Overwriting serializer definition for type '${name}'.`)
+        }
+        this.serializers[name] = serializerDefinition
+    }
+
     constructor() {
         super()
         const root = this.attachShadow({ mode: "open" })
@@ -73,7 +107,8 @@ customElements.define("fast-form", class extends HTMLElement {
             data: {},
             actions: {},
             rules: {},
-            dependencies: {},
+            _dependencies: {},
+            _compositeMap: {},
         }
     }
 
@@ -89,14 +124,16 @@ customElements.define("fast-form", class extends HTMLElement {
     render = (options) => {
         const { schema = [], data = {}, actions = {}, rules = {}, hooks = {} } = options
 
-        this.options.schema = schema
-        this.options.actions = actions
-        this.options.rules = rules
-        this.options.hooks = { ...this.constructor.hooks, ...hooks }
-        this.options.data = JSON.parse(JSON.stringify(data))
-        this.options.dependencies = this._buildDependencies(schema)
+        this._checkSchema(schema)
+        this.options.data = this._normalizeData(data)           // `data` must be a JSON-like object
+        this.options.schema = this._normalizeSchema(schema)     // `schema` must be a JSON-like object
+        this.options.actions = this._normalizeActions(actions)  // map[fieldKey]actionFunc
+        this.options.hooks = this._normalizeHooks(hooks)        // map[fieldKey]hookFunc
+        this.options.rules = this._normalizeRules(rules)        // map[fieldKey][]validateFunc
+        this.options._dependencies = this._buildDependencies()  // map[filedKey][]field
+        this.options._compositeMap = this._buildCompositeMap()  // map[fieldKey]{subSchema,cache}
 
-        this.form.innerHTML = this._fillForm(schema)
+        this.form.innerHTML = this._createBoxes()
         this._invokeHook("onRender", this)
     }
 
@@ -115,56 +152,34 @@ customElements.define("fast-form", class extends HTMLElement {
     }
 
     _invokeRules(detail) {
-        const rules = this.options.rules[detail.key]
-        if (!rules) return []
+        const validators = this.options.rules[detail.key]
+        if (!validators) return []
 
-        const data = this.options.data
-        return (Array.isArray(rules) ? rules : [rules])
-            .map(rule => {
-                switch (typeof rule) {
-                    case "string":
-                        const validator = this.constructor.validators[rule]
-                        if (validator) {
-                            return validator(detail, data)
-                        }
-                        break
-                    case "function":
-                        return rule(detail, data)
-                    case "object":
-                        if (typeof rule.validate === "function") {
-                            return rule.validate(detail, data)
-                        }
-                        const builtinFn = this.constructor.validators[rule.name]
-                        if (builtinFn) {
-                            return builtinFn(...rule.args)(detail, data)
-                        }
-                }
-                const msg = typeof rule === "object" ? JSON.stringify(rule) : rule
-                return new Error(`Invalid Rule: ${msg}`)
-            })
+        return validators
+            .map(validator => validator(detail, this.options.data))
             .filter(e => e !== true && e != null)
             .map(e => e instanceof Error ? e : new Error(e.toString()))
     }
 
     // type: set/push/removeIndex
     _validateAndSubmit(key, value, type = "set") {
-        value = this._invokeHook("onParseValue", key, value, type)
+        let errors = []
         const detail = { key, value, type }
-        const errors = this._validate(detail)
+        if (type !== "removeIndex") {
+            detail.value = this._invokeHook("onParseValue", key, value, type)
+            errors = this._validate(detail)
+        }
         const isValid = Array.isArray(errors) && errors.length === 0
         if (isValid) {
             this._submit(detail)
         } else {
-            const targetEl = this.form.querySelector(`[data-key="${key}"]`)
-            this._invokeHook("onValidateFailed", key, errors, targetEl)
+            const control = this.form.querySelector(`[data-key="${key}"]`)
+            this._invokeHook("onValidateFailed", key, errors, control)
         }
         return isValid
     }
 
     _validate(detail) {
-        // `removeIndex` need not validate
-        if (detail.type === "removeIndex") return []
-
         const beforeHookResult = this._invokeHook("onBeforeValidate", detail)
         if (beforeHookResult === true) return []
         if (beforeHookResult instanceof Error) return [beforeHookResult]
@@ -182,22 +197,22 @@ customElements.define("fast-form", class extends HTMLElement {
 
     _submit(detail) {
         let oldData, newData
-        const noopOnBefore = this.options.hooks.onBeforeSubmit === this.constructor.hooks.onBeforeSubmit
-        const noopOnAfter = this.options.hooks.onAfterSubmit === this.constructor.hooks.onAfterSubmit
+        const hasBeforeSubmitHook = this.options.hooks.onBeforeSubmit !== this.constructor.hooks.onBeforeSubmit
+        const hasAfterSubmitHook = this.options.hooks.onAfterSubmit !== this.constructor.hooks.onAfterSubmit
 
-        if (!noopOnBefore || !noopOnAfter) {
-            oldData = JSON.parse(JSON.stringify(this.options.data))
+        if (hasBeforeSubmitHook || hasAfterSubmitHook) {
+            oldData = utils.naiveCloneDeep(this.options.data)
         }
-        if (!noopOnBefore) {
+        if (hasBeforeSubmitHook) {
             this._invokeHook("onBeforeSubmit", oldData)
         }
 
         utils.nestedPropertyHelpers[detail.type](this.options.data, detail.key, detail.value)
-        this._toggleDisable(detail.key)
+        this._updateDependentStates(detail.key)
         this._invokeHook("onSubmit", this, detail)
 
-        if (!noopOnAfter) {
-            newData = JSON.parse(JSON.stringify(this.options.data))
+        if (hasAfterSubmitHook) {
+            newData = utils.naiveCloneDeep(this.options.data)
             this._invokeHook("onAfterSubmit", newData, oldData)
         }
     }
@@ -219,6 +234,7 @@ customElements.define("fast-form", class extends HTMLElement {
                 this.textContent = ""
                 utils.hide(this)
                 utils.show(this.nextElementSibling)
+                return false
             }
         }).on("click", function () {
             if (shownSelectOption) {
@@ -397,8 +413,25 @@ customElements.define("fast-form", class extends HTMLElement {
             that._validateAndSubmit(this.getAttribute("name"), this.value)
         }).on("input", ".range-input", function () {
             this.nextElementSibling.textContent = that._toFixed2(Number(this.value))
-        }).on("change", "input.switch-input", function () {
+        }).on("change", "input.switch-input:not(.composite-switch)", function () {
             that._validateAndSubmit(this.dataset.key, this.checked)
+        }).on("change", "input.switch-input.composite-switch", function () {
+            const input = this
+            const key = input.dataset.key
+            const isChecked = input.checked
+            const container = input.closest('[data-type="composite"]').querySelector(".sub-box-wrapper")
+            const { subSchema, cache } = that.options._compositeMap[key] || {}
+            const valueToSubmit = isChecked ? cache : false
+            const successAction = isChecked
+                ? () => container.innerHTML = that._createBoxes(subSchema)
+                : () => undefined
+            const ok = that._validateAndSubmit(key, valueToSubmit)
+            if (ok) {
+                successAction()
+                utils.toggleVisible(container, !isChecked)
+            } else {
+                input.checked = !isChecked  // rollback
+            }
         }).on("change", ".number-input, .range-input, .unit-input", function () {
             const value = Number(this.value)
             const min = this.getAttribute("min")
@@ -480,13 +513,13 @@ customElements.define("fast-form", class extends HTMLElement {
         return [...headerValues, editButtons]
     }
 
-    _fillForm(schema) {
-        const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox", "hint", "custom"])
+    _createBoxes(schema = this.options.schema, data = this.options.data) {
+        const getValue = (field) => utils.nestedPropertyHelpers.get(data, field.key)
         const createTitle = (title) => `<div class="title">${title}</div>`
         const createTooltip = (item) => item.tooltip
             ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${utils.escape(item.tooltip).replace("\n", "<br>")}</span></span>`
             : ""
-        const createGeneralControl = (ctl, value) => {
+        const createControlCore = (ctl, value) => {
             const disabled = ctl => ctl.disabled ? "disabled" : ""
             const checked = () => value === true ? "checked" : ""
             const placeholder = ctl => ctl.placeholder ? `placeholder="${ctl.placeholder}"` : ""
@@ -618,21 +651,31 @@ customElements.define("fast-form", class extends HTMLElement {
                         `
                     })
                     return `<div class="checkbox" data-key="${ctl.key}" data-min-items="${minItems_}" data-max-items="${maxItems_}">${checkboxOps.join("")}</div>`
+                case "composite":
+                    const isChecked = typeof value === "object" && value != null
+                    const checkAttr = isChecked ? "checked" : ""
+                    const hideCls = isChecked ? "" : " " + "plugin-common-hidden"
+                    const subBoxes = isChecked ? this._createBoxes(ctl.subSchema) : ""
+                    const compositeCls = "sub-box-wrapper" + hideCls
+                    return `
+                        <div class="control" data-type="switch">
+                            <div class="control-left">${ctl.label}${createTooltip(ctl)}</div>
+                            <div class="control-right"><input class="switch-input composite-switch" type="checkbox" data-key="${ctl.key}" ${checkAttr} ${disabled(ctl)} /></div>
+                        </div>
+                        <div class="${compositeCls}" data-parent-key="${ctl.key}">${subBoxes}</div>
+                    `
                 default:
                     return ""
             }
         }
         const createControl = (field) => {
-            if (field.type === "number" && field.unit != null) {
-                field.type = "unit"
-            }
-            const isBlock = blockControls.has(field.type)
-            const value = utils.nestedPropertyHelpers.get(this.options.data, field.key)
-            const ctl = createGeneralControl(field, value)
+            const isBlock = this.constructor.blockFields.has(field.type)
+            const value = getValue(field)
+            const ctl = createControlCore(field, value)
             const label = isBlock ? "" : `<div class="control-left">${field.label}${createTooltip(field)}</div>`
             const control = isBlock ? ctl : `<div class="control-right">${ctl}</div>`
-            const disableCls = this._isDisable(field) ? " " + this._getDisableClass() : ""
-            const cls = "control" + disableCls
+            const disabledCls = this._shouldBeEnabled(field) ? "" : (" " + this._getDisabledClass())
+            const cls = "control" + disabledCls
             return `<div class="${cls}" data-type="${field.type}">${label}${control}</div>`
         }
         const createBox = ({ title, fields }) => {
@@ -644,48 +687,193 @@ customElements.define("fast-form", class extends HTMLElement {
         return schema.map(createBox).join("")
     }
 
-    _buildDependencies(schema) {
-        const result = {}
-        schema.forEach(box => {
-            box.fields.forEach(field => {
-                const dep = field.dependencies
-                if (!dep) return
-                Object.keys(dep).forEach(k => {
-                    result[k] = result[k] || []
-                    result[k].push(field)
-                })
-            })
-        })
-        return result
-    }
-
-    _toggleDisable(key) {
-        const fields = this.options.dependencies[key]
-        if (!fields) return
-        const disableCls = this._getDisableClass()
-        fields.forEach(field => {
-            const k = field.key
-            if (!this.form) return
-            const el = this.form.querySelector(`[data-key="${k}"], [data-action="${k}"]`)
-            if (!el) return
-            const control = el.closest(".control")
-            if (!control) return
-            control.classList.toggle(disableCls, this._isDisable(field))
-        })
-        fields.forEach(field => this._toggleDisable(field.key))
-    }
-
-    _isDisable(field) {
-        if (field.dependencies) {
-            // TODO: supports `AND` only now
-            const shouldBeEnabled = Object.entries(field.dependencies).every(([k, v]) => {
-                return v === utils.nestedPropertyHelpers.get(this.options.data, k)
-            })
-            return !shouldBeEnabled
+    _traverseFields(fn, schema = this.options.schema) {
+        for (const box of schema) {
+            for (const field of box.fields || []) {
+                fn(field, box)
+                if (Array.isArray(field.subSchema)) {
+                    this._traverseFields(fn, field.subSchema)
+                }
+            }
         }
     }
 
-    _getDisableClass() {
+    // TODO: Check all field types
+    _checkSchema(schema) {
+        const checker = {
+            select: (field) => !field.options || (typeof field.options !== "object" && !Array.isArray(field.options)),
+            radio: (field) => checker.select(field),
+            checkbox: (field) => checker.select(field),
+            composite: (field) => !Array.isArray(field.subSchema) || typeof field.defaultValues !== "object",
+            table: (field) => !Array.isArray(field.nestedBoxes) || typeof field.defaultValues !== "object" || typeof field.thMap !== "object",
+        }
+        this._traverseFields(field => {
+            if (!this.constructor.fields.has(field.type)) {
+                throw new Error(`No such Field type: ${field.type}`)
+            }
+            const check = checker[field.type]
+            if (check && check(field)) {
+                throw new Error(`Error Field: ${JSON.stringify(field)}`)
+            }
+        }, schema)
+    }
+
+    _normalizeData(data) {
+        data = utils.naiveCloneDeep(data)
+        this._traverseFields(field => {
+            if (field.type === "composite") {
+                const key = field.key
+                const val = data[key]
+                if (val === false || val == null) {
+                    data[key] = false
+                } else if (typeof val === "object") {
+                    data[key] = { ...field.defaultValues, ...val }
+                } else {
+                    data[key] = field.defaultValues
+                }
+            }
+        })
+        return data
+    }
+
+    _normalizeSchema(schema) {
+        this._traverseFields(field => {
+            if (field.type === "number" && field.unit != null) {
+                field.type = "unit"
+            }
+            if (field.options && Array.isArray(field.options) && field.options.every(e => typeof e === "string")) {
+                field.options = Object.fromEntries(field.options.map(op => [op, op]))
+            }
+        }, schema)
+        return schema
+    }
+
+    _normalizeActions(actions) {
+        this._traverseFields(field => {
+            if (field.type === "action") {
+                const act = actions[field.key]
+                if (typeof act !== "function") {
+                    actions[field.key] = () => console.warn(`No such action: ${field.key}`)
+                }
+            }
+        })
+        return actions
+    }
+
+    _normalizeHooks(hooks) {
+        if (hooks == null) {
+            return this.constructor.hooks
+        }
+        if (typeof hooks !== "object") {
+            throw new Error("Error: Hooks is not a Object")
+        }
+        Object.keys(hooks).forEach(key => {
+            if (this.constructor.hooks.hasOwnProperty(key) && typeof hooks[key] !== "function") {
+                throw new Error(`Hook is not Function: ${key}`)
+            }
+        })
+        return { ...this.constructor.hooks, ...hooks }
+    }
+
+    _normalizeRules(rules) {
+        const validatorMap = {}
+        Object.entries(rules).forEach(([key, validators]) => {
+            validators = Array.isArray(validators) ? validators : [validators]
+            validatorMap[key] = validators.map(validator => {
+                switch (typeof validator) {
+                    case "function":
+                        return validator
+                    case "string":
+                        const builtin = this.constructor.validators[validator]
+                        if (builtin) {
+                            return builtin
+                        }
+                        break
+                    case "object":
+                        if (typeof validator.validate === "function") {
+                            return validator.validate
+                        }
+                        const builtinFn = this.constructor.validators[validator.name]
+                        if (builtinFn) {
+                            return builtinFn(...validator.args)
+                        }
+                        break
+                }
+                const msg = typeof validator === "object" ? JSON.stringify(validator) : validator
+                throw new Error(`Invalid Rule: ${msg}`)
+            })
+        })
+        return validatorMap
+    }
+
+    _buildDependencies() {
+        const dep = {}
+        this._traverseFields(field => {
+            if (field.dependencies) {
+                Object.keys(field.dependencies).forEach(key => {
+                    if (!dep.hasOwnProperty(key)) {
+                        dep[key] = []
+                    }
+                    dep[key].push(field)
+                })
+            }
+        })
+        return dep
+    }
+
+    /**
+     * Recursively initializes the state for 'composite' type fields, setting up the data-caching mechanism for when they are toggled.
+     *
+     * This function enables the "memory" feature for composite fields by leveraging JavaScript's pass-by-reference behavior for objects.
+     *
+     * For each composite field, it ensures that `this.options.data[key]` and `this.options._compositeMap[key].cache`
+     * point to the *exact same object* when the field is active. This keeps them perfectly in sync.
+     *
+     * When the field is toggled off, the event handler sets `this.options.data[key]` to `false`. This only changes the live data's reference.
+     * The `cache` reference remains intact, effectively preserving the sub-form's state.
+     * When toggled back on, this cached reference is restored.
+     */
+    _buildCompositeMap() {
+        const map = {}
+        const { get, set } = utils.nestedPropertyHelpers
+        this._traverseFields(field => {
+            if (field.type === "composite") {
+                const val = get(this.options.data, field.key)
+                const _defaultValues = utils.naiveCloneDeep({ ...field.defaultValues, ...val })
+                if (val === true || typeof val === "object" && val != null) {
+                    set(this.options.data, field.key, _defaultValues)
+                }
+                map[field.key] = { subSchema: field.subSchema, cache: _defaultValues }
+            }
+        })
+        return map
+    }
+
+    _updateDependentStates(key) {
+        const depFields = this.options._dependencies[key]
+        if (!depFields) return
+        const disabledCls = this._getDisabledClass()
+        depFields.forEach(field => {
+            const el = this.form.querySelector(`[data-key="${field.key}"], [data-action="${field.key}"]`)
+            if (!el) return
+            const ctl = el.closest(".control")
+            if (!ctl) return
+            ctl.classList.toggle(disabledCls, !this._shouldBeEnabled(field))
+        })
+        depFields.forEach(field => this._updateDependentStates(field.key))
+    }
+
+    // TODO: supports `AND` only now
+    _shouldBeEnabled(field) {
+        if (field.dependencies) {
+            return Object.entries(field.dependencies).every(([key, val]) => {
+                return val === utils.nestedPropertyHelpers.get(this.options.data, key)
+            })
+        }
+        return true
+    }
+
+    _getDisabledClass() {
         return this.options.disableEffect === "hide" ? "plugin-common-hidden" : "plugin-common-readonly"
     }
 
@@ -698,24 +886,16 @@ customElements.define("fast-form", class extends HTMLElement {
     }
 
     _serialize(obj) {
-        const funcMap = {
-            JSON: (obj) => JSON.stringify(obj, null, "\t"),
-            TOML: (obj) => utils.stringifyToml(obj),
-            YAML: (obj) => utils.stringifyYaml(obj)
-        }
-        const f = funcMap[this.options.objectFormat] || funcMap.JSON
-        return f(obj)
+        const { serializers } = this.constructor
+        const fn = serializers[this.options.objectFormat] || serializers.JSON
+        return fn.stringify(obj)
     }
 
     _deserialize(str) {
-        const funcMap = {
-            JSON: (str) => JSON.parse(str),
-            TOML: (str) => utils.readToml(str),
-            YAML: (str) => utils.readYaml(str),
-        }
+        const { serializers } = this.constructor
+        const fn = serializers[this.options.objectFormat] || serializers.JSON
         try {
-            const f = funcMap[this.options.objectFormat] || funcMap.JSON
-            return f(str)
+            return fn.parse(str)
         } catch (e) {
             console.error(e)
         }
@@ -736,4 +916,31 @@ customElements.define("fast-form", class extends HTMLElement {
         el.appendChild(ripple)
         ripple.addEventListener("animationend", () => ripple.remove(), { once: true })
     }
-})
+}
+
+function Try(fn, buildErr) {
+    try {
+        fn()
+    } catch (err) {
+        return new Error(buildErr(err))
+    }
+}
+
+const validators = {
+    url: ({ value }) => {
+        if (!value) return true
+        const pattern = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
+        return pattern.test(value) ? true : i18n.t("global", "error.invalidURL")
+    },
+    regex: ({ value }) => Try(
+        () => value && new RegExp(value),
+        () => `Error Regex: ${value}`,
+    ),
+    path: ({ value }) => Try(
+        () => value && utils.Package.Fs.accessSync(utils.Package.Path.resolve(value)),
+        () => `No such path: ${utils.Package.Path.resolve(value)}`,
+    ),
+}
+Object.entries(validators).forEach(([name, fn]) => FastForm.registerValidator(name, fn))
+
+customElements.define("fast-form", FastForm)

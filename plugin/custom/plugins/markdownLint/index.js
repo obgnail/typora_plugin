@@ -1,4 +1,18 @@
 class markdownLintPlugin extends BaseCustomPlugin {
+    // Markdownlint config supports names and aliases,
+    // keys are not case-sensitive and processed in order from top to bottom with later values overriding earlier ones.
+    // To simplify the main processing logic, we first normalize the config by resolving all aliases to their names.
+    beforeProcess = () => {
+        const mapAliasToName = require("./rules-aliases.json")
+        this.config.rule_config = Object.fromEntries(
+            Object.entries(this.config.rule_config).map(([key, val]) => {
+                key = /^md\d{3}$/i.test(key) ? key.toUpperCase() : key.toLowerCase()
+                key = mapAliasToName[key] || key
+                return [key, val]
+            })
+        )
+    }
+
     styleTemplate = () => true
 
     hotkey = () => [
@@ -11,7 +25,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             id="plugin-markdownlint"
             hidden
             window-title="${this.pluginName}"
-            window-buttons="doc|fa-file-text|${this.i18n.t("func.doc")};
+            window-buttons="settings|fa-gear|${this.i18n.t("func.settings")};
                             detailAll|fa-info-circle|${this.i18n.t("func.detailAll")};
                             fixAll|fa-wrench|${this.i18n.t("func.fixAll")};
                             toggleSourceMode|fa-code|${this.i18n.t("func.toggleSourceMode")};
@@ -77,22 +91,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             detailSingle: idx => _getDetail([this.fixInfos[idx]]),
             fixSingle: idx => this.linter.fix([this.fixInfos[idx]]),
             toggleSourceMode: () => File.toggleSourceMode(),
-            doc: async () => {
-                const op = {
-                    title: this.i18n.t("func.doc"),
-                    schema: [
-                        { fields: [{ type: "textarea", key: "doc", rows: 12, readonly: true }] },
-                        { fields: [{ type: "action", key: "viewRules", label: this.i18n.t("$label.viewMarkdownlintRules") }] },
-                    ],
-                    data: {
-                        doc: Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n"),
-                    },
-                    actions: {
-                        viewRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
-                    },
-                }
-                await this.utils.formDialog.modal(op)
-            },
+            settings: this.settings,
             jumpToLine: lineToGo => {
                 if (!lineToGo) return
                 if (!File.editor.sourceView.inSourceMode) {
@@ -142,6 +141,90 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.linter.check()
     }
 
+    settings = async () => {
+        const defaultValues = require("./rules-default-values.json")
+        const getData = () => {
+            const cfg = this.config.rule_config
+            return {
+                ...defaultValues,
+                ...cfg,
+                default: true,  // Force `default` to true
+                extends: cfg.extends || "",  // `extends` type is null or string. Text fields do not support null, convert it to an empty string
+            }
+        }
+        const getHooks = () => ({
+            onParseValue: (key, value) => {
+                if (key === "extends") {
+                    value = value.trim()
+                } else if (key === "MD022.lines_above" || key === "MD022.lines_below") {
+                    try {
+                        return JSON.parse(value)
+                    } catch (err) {
+                        console.error(err)
+                    }
+                }
+                return value
+            }
+        })
+        const getRules = () => {
+            const readJSON = ({ value }) => {
+                if (!value) return
+                value = this.utils.Package.Path.resolve(value)
+                const cnt = this.utils.Package.FsExtra.readJsonSync(value, { throws: false })
+                if (cnt == null) {
+                    return new Error(`Read JSON file failed: ${value}`)
+                }
+            }
+            const numberOrNumberArray = ({ value }) => {
+                const isArr = Array.isArray(value)
+                if (!isArr && typeof value !== "number") {
+                    return new Error(`Must be Array or Number, got ${typeof value}`)
+                }
+                if (isArr && value.length !== 6) {
+                    return new Error(`The length of the Array must be 6, got ${value.length}`)
+                }
+            }
+            return {
+                "extends": ["path", readJSON],
+                "MD022.lines_above": numberOrNumberArray,
+                "MD022.lines_below": numberOrNumberArray,
+                "MD043.headings": { name: "pattern", args: [/^(\*|\+|\?|#{1,6}\s+\S.*)$/] },
+            }
+        }
+        const getActions = () => ({
+            viewRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+            restoreRules: this.utils.createConsecutiveAction({
+                threshold: 3,
+                timeWindow: 3000,
+                onConfirmed: async () => {
+                    await this.utils.settings.handleSettings(this.fixedName, pluginSettings => delete pluginSettings.rule_config)
+                    const settings = await this.utils.settings.readCustomPluginSettings()
+                    this.config = settings[this.fixedName]
+                    this.utils.notification.show(this.i18n._t("global", "success.restore"))
+                    await this.utils.formDialog.updateModal(op => op.data = getData())
+                }
+            }),
+        })
+
+        const op = {
+            title: this.i18n.t("func.settings"),
+            schema: require("./config-schema.js"),
+            data: getData(),
+            actions: getActions(),
+            hooks: getHooks(),
+            rules: getRules(),
+        }
+        const { response, data } = await this.utils.formDialog.modal(op)
+        if (response === 1) {
+            if (data.extends === "") {
+                data.extends = null  // Convert an empty string back to null
+            }
+            const minimizedRules = this.utils.minimize(data, defaultValues)
+            await this.linter.configure(minimizedRules, this.config.custom_rules_files, true)
+            this.utils.notification.show(this.i18n._t("global", "success.edit"))
+        }
+    }
+
     _createLinter = (onCheck, onFix) => {
         const ACTION = { CONFIGURE: "configure", CLOSE: "close", CHECK: "check", FIX: "fix" }
         const worker = new Worker("plugin/custom/plugins/markdownLint/linter-worker.js")
@@ -157,11 +240,22 @@ class markdownLintPlugin extends BaseCustomPlugin {
             worker.postMessage({ action, payload })
         }
         return {
-            configure: (options = this.config) => send(ACTION.CONFIGURE, {
-                config: options.rule_config,
-                libPath: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
-                customRulesFiles: options.custom_rules_files.map(f => this.utils.joinPath(f)),
-            }),
+            configure: async (
+                rule_config = this.config.rule_config,
+                custom_rules_files = this.config.custom_rules_files,
+                persistent = false,
+            ) => {
+                if (persistent) {
+                    const cfg = { rule_config, custom_rules_files }
+                    await this.utils.settings.handleSettings(this.fixedName, pluginSettings => Object.assign(pluginSettings, cfg))
+                    Object.assign(this.config, cfg)
+                }
+                send(ACTION.CONFIGURE, {
+                    rules: rule_config,
+                    libPath: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
+                    customRulesFiles: custom_rules_files.map(f => this.utils.joinPath(f)),
+                })
+            },
             close: () => send(ACTION.CLOSE),
             check: () => send(ACTION.CHECK),
             fix: (fixInfo = this.fixInfos) => send(ACTION.FIX, { fixInfo }),
