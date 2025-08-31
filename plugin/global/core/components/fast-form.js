@@ -102,6 +102,7 @@ class FastForm extends HTMLElement {
             disableEffect: "readonly",
             selectValueSeparator: "\u001F",
             selectLabelJoiner: ", ",
+            ignoreDependencies: false,
             hooks: this.constructor.hooks,
             schema: [],
             data: {},
@@ -117,7 +118,8 @@ class FastForm extends HTMLElement {
     }
 
     setFormatOptions = (options) => {
-        const picked = utils.pick(options, ["objectFormat", "disableEffect", "selectValueSeparator", "selectLabelJoiner"])
+        const pickAttrs = ["objectFormat", "disableEffect", "selectValueSeparator", "selectLabelJoiner", "ignoreDependencies"]
+        const picked = utils.pick(options, pickAttrs)
         this.options = { ...this.options, ...picked }
     }
 
@@ -743,6 +745,9 @@ class FastForm extends HTMLElement {
             }
             if (field.options && Array.isArray(field.options) && field.options.every(e => typeof e === "string")) {
                 field.options = Object.fromEntries(field.options.map(op => [op, op]))
+            }
+            if (this.options.ignoreDependencies && field.dependencies) {
+                field.dependencies = undefined
             }
         }, schema)
         return schema

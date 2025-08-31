@@ -216,6 +216,7 @@ class preferencesPlugin extends BasePlugin {
     _initForm = () => this.entities.form.setFormatOptions({
         objectFormat: this.config.OBJECT_SETTINGS_FORMAT,
         disableEffect: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
+        ignoreDependencies: this.config.IGNORE_CONFIG_DEPENDENCIES,
     })
 
     /** Will NOT modify the schemas structure, just i18n */
@@ -284,25 +285,9 @@ class preferencesPlugin extends BasePlugin {
         })
     }
 
-    _removeDependencies = (obj) => {
-        if (obj == null || typeof obj !== "object") return
-
-        for (const key of Object.keys(obj)) {
-            if (key === "dependencies") {
-                obj[key] = undefined
-            } else if (typeof obj[key] === "object") {
-                this._removeDependencies(obj[key])
-            }
-        }
-    }
-
     _initSchemas = () => {
         this.SETTING_SCHEMAS = require("./schemas.js")
-
         this._translateSchema(this.SETTING_SCHEMAS)
-        if (this.config.IGNORE_CONFIG_DEPENDENCIES) {
-            this._removeDependencies(this.SETTING_SCHEMAS)
-        }
     }
 
     _initRules = () => {

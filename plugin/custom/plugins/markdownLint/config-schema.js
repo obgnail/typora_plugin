@@ -13,6 +13,21 @@ const OPTIONS = {
     "MD055.style": ["consistent", "leading_only", "trailing_only", "leading_and_trailing", "no_leading_or_trailing"],
 }
 
+// const buildGeneralRuleDependencies = () => {
+//     const dep = {}
+//     for (const [generalRuleName, rules] of Object.entries(generalRulesMap)) {
+//         for (const specificRuleName of rules) {
+//             if (!dep.hasOwnProperty(specificRuleName)) {
+//                 dep[specificRuleName] = {}
+//             }
+//             dep[specificRuleName][generalRuleName] = true
+//         }
+//     }
+//     return dep
+// }
+//
+// const generalRuleDependencies = buildGeneralRuleDependencies()
+
 const _t = (key) => i18n.t("markdownLint", key)
 const RuleName = (name) => `${name} - ${_t(name)}`
 const Label = (key) => _t(`label.${key}`)
@@ -29,12 +44,18 @@ const UntitledBox = (...fields) => ({ title: undefined, fields })
 const TitledBox = (title, ...fields) => ({ title, fields })
 const ArrayBox = (key, { ...args } = {}) => TitledBox(Label(key), { key, type: "array", ...args })
 
-const SimpleRule = (name) => ({ key: name, type: "switch", label: RuleName(name) })
+const SimpleRule = (name) => ({
+    key: name,
+    type: "switch",
+    label: RuleName(name),
+    // dependencies: generalRuleDependencies[name],
+})
 const ConfigurableRule = (name, ...subSchema) => ({
     key: name,
     type: "composite",
     label: RuleName(name),
     defaultValues: rulesDefaultValues[name],
+    // dependencies: generalRuleDependencies[name],
     subSchema,
 })
 
@@ -71,8 +92,8 @@ const MD009 = ConfigurableRule(
 const MD010 = ConfigurableRule(
     "MD010",
     UntitledBox(
-        Switch("MD010.code_blocks"),
         Number("MD010.spaces_per_tab", { min: 0 }),
+        Switch("MD010.code_blocks"),
     ),
     ArrayBox("MD010.ignore_code_languages", { dependencies: { "MD010.code_blocks": true } }),
 )
