@@ -1104,7 +1104,7 @@ class utils {
     static isHidden = ele => ele.classList.contains("plugin-common-hidden");
     static hide = ele => ele.classList.add("plugin-common-hidden");
     static show = ele => ele.classList.remove("plugin-common-hidden");
-    static toggleVisible = (ele, hide) => ele.classList.toggle("plugin-common-hidden", hide);
+    static toggleInvisible = (ele, hide) => ele.classList.toggle("plugin-common-hidden", hide)
 
     static isImgEmbed = img => img.complete && img.naturalWidth !== 0 && img.naturalHeight !== 0
 

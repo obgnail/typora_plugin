@@ -94,7 +94,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
         return buttons
     }
 
-    toggle = force => this.utils.toggleVisible(this.buttonGroup, force)
+    toggle = force => this.utils.toggleInvisible(this.buttonGroup, force)
 }
 
 module.exports = {

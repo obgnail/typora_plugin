@@ -278,7 +278,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         const toggleComponent = hide => {
             Array.from(this.entities.reviewer.children)
                 .filter(el => !el.classList.contains("review-water-fall") && !el.classList.contains("review-mask"))
-                .forEach(el => this.utils.toggleVisible(el, hide))
+                .forEach(el => this.utils.toggleInvisible(el, hide))
         }
 
         const getMinHeightColumn = () => {
@@ -311,7 +311,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             this.entities.nav.append(...fallChildren)
         }
 
-        this.utils.toggleVisible(this.entities.waterFall)
+        this.utils.toggleInvisible(this.entities.waterFall)
         if (this.utils.isHidden(this.entities.waterFall)) {
             waterFall2Nav()
             toggleComponent(false)
@@ -343,7 +343,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             const autoSize = this.entities.ops.querySelector(`[option="autoSize"]`)
             const download = this.entities.ops.querySelector(`[option="download"]`)
             autoSize && (autoSize.className = "fa fa-search-plus")
-            download && this.utils.toggleVisible(download, !this.utils.isNetworkImage(src))
+            download && this.utils.toggleInvisible(download, !this.utils.isNetworkImage(src))
         }
 
         const handleThumbnail = showIdx => {
@@ -476,7 +476,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     thumbnailNav = force => {
         this.config.show_thumbnail_nav = !this.config.show_thumbnail_nav
-        this.utils.toggleVisible(this.entities.nav, force)
+        this.utils.toggleInvisible(this.entities.nav, force)
     }
     play = () => this.handlePlayTimer(!!this.playTimer)
     restore = () => {

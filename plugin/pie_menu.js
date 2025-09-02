@@ -44,7 +44,7 @@ class pieMenuPlugin extends BasePlugin {
 
     isMenuShown = () => this.utils.isShow(this.entities.menu)
     hideMenu = () => this.utils.hide(this.entities.menu)
-    toggleMenu = () => this.utils.toggleVisible(this.entities.menu)
+    toggleMenu = () => this.utils.toggleInvisible(this.entities.menu)
     isMenuPinned = () => this.entities.menu.classList.contains(this.pinMenuClass)
     togglePinMenu = () => this.entities.menu.classList.toggle(this.pinMenuClass)
     toggleExpandMenu = () => this.entities.menu.classList.toggle(this.expandMenuClass)

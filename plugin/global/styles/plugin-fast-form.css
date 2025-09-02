@@ -319,13 +319,8 @@ textarea::placeholder {
     border-radius: 50%;
 }
 
-.hotkey-btn > .hotkey-undo:hover,
 .hotkey-btn > .hotkey-reset:hover {
     background-color: #eee;
-}
-
-.hotkey-undo {
-    font-size: 18px;
 }
 
 .hotkey-reset {
@@ -491,7 +486,9 @@ textarea::placeholder {
     flex-wrap: wrap;
 }
 
-.array > span {
+.array > .array-item,
+.array > .array-item-input,
+.array > .array-item-add {
     display: inline-flex;
     align-items: center;
     padding: 0 6px;

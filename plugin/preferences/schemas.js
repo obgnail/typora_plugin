@@ -12,10 +12,13 @@ const Static = (key) => {
     const label = Label(key)
     return { type: "static", key, label }
 }
-const Hint = (header, detail) => {
+const Hint = (header, detail, unsafe = false) => {
     const hintHeader = HintHeader(header)
     const hintDetail = HintDetail(detail)
-    return { type: "hint", hintHeader, hintDetail }
+    return { type: "hint", hintHeader, hintDetail, unsafe }
+}
+const Custom = (content, unsafe = false) => {
+    return { type: "custom", content, unsafe }
 }
 const Switch = (key, { tooltip, disabled, dependencies, ...args } = {}) => {
     const label = Label(key)
@@ -37,7 +40,8 @@ const Hotkey = (key, { tooltip, placeholder, disabled, dependencies, ...args } =
 const Number = (key, { tooltip, unit, min, max, step, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
-    return { type: "number", key, unit, min, max, step, label, tooltip, dependencies, ...args }
+    const type = unit ? "unit" : "number"
+    return { type, key, unit, min, max, step, label, tooltip, dependencies, ...args }
 }
 const Range = (key, { tooltip, min, max, step, dependencies, ...args } = {}) => {
     const label = Label(key)
@@ -49,7 +53,22 @@ const Select = (key, options, { tooltip, minItems, maxItems, dependencies, ...ar
     tooltip = Tooltip(tooltip)
     return { type: "select", key, label, tooltip, options, minItems, maxItems, dependencies, ...args }
 }
-const Composite = (key, subSchema, defaultValues, { tooltip, disabled, dependencies, ...args }) => {
+const Array_Inline = (key, { tooltip, dependencies, ...args } = {}) => {
+    const label = Label(key)
+    tooltip = Tooltip(tooltip)
+    return { type: "array", isBlockLayout: false, key, label, tooltip, dependencies, ...args }
+}
+const Radio_Inline = (key, options, { tooltip, dependencies, ...args } = {}) => {
+    const label = Label(key)
+    tooltip = Tooltip(tooltip)
+    return { type: "radio", isBlockLayout: false, key, label, tooltip, options, dependencies, ...args }
+}
+const Checkbox_Inline = (key, options, { tooltip, minItems, maxItems, dependencies, ...args } = {}) => {
+    const label = Label(key)
+    tooltip = Tooltip(tooltip)
+    return { type: "checkbox", isBlockLayout: false, key, label, tooltip, options, minItems, maxItems, dependencies, ...args }
+}
+const Composite = (key, subSchema, defaultValues, { tooltip, disabled, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
     return { type: "composite", key, label, subSchema, defaultValues, tooltip, disabled, dependencies, ...args }
@@ -264,7 +283,7 @@ const SETTING_SCHEMAS = {
             Select("DRAG_STYLE", OPTIONS.window_tab.DRAG_STYLE),
             Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: { DRAG_STYLE: "JetBrains" } }),
             Number("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { DRAG_STYLE: "JetBrains", TAB_DETACHMENT: "resistant" } }),
-            Number("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1 }),
+            Number("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1, dependencies: { TAB_DETACHMENT: { $ne: "lockVertical" } } }),
         ),
         ArrayBox("CLOSE_HOTKEY"),
         ArrayBox("SWITCH_PREVIOUS_TAB_HOTKEY"),
@@ -973,9 +992,9 @@ const SETTING_SCHEMAS = {
         ),
         UntitledBox(
             Switch("VALIDATE_CONFIG_OPTIONS"),
-            Switch("IGNORE_CONFIG_DEPENDENCIES"),
-            Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR, { dependencies: { IGNORE_CONFIG_DEPENDENCIES: false } }),
+            Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR),
         ),
+        TextareaBox("FORM_RENDERING_HOOK", { rows: 3, readonly: true }),
         handleSettingsBox,
     ],
     file_counter: [
@@ -1044,8 +1063,8 @@ const SETTING_SCHEMAS = {
             Switch("HIDE"),
         ),
         TitledBox(
-            Title("hotkey"),
-            Hotkey("UPLOAD_ALL_HOTKEY"),
+            Title("hotkey", { dependencies: { $or: [{ $follow: "UPLOAD_CNBLOG_HOTKEY" }, { $follow: "UPLOAD_WORDPRESS_HOTKEY" }, { $follow: "UPLOAD_CSDN_HOTKEY" }] } }),
+            Hotkey("UPLOAD_ALL_HOTKEY", { dependencies: { $or: [{ "upload.cnblog.enabled": true }, { "upload.wordpress.enabled": true }, { "upload.csdn.enabled": true }] } }),
             Hotkey("UPLOAD_CNBLOG_HOTKEY", { dependencies: { "upload.cnblog.enabled": true } }),
             Hotkey("UPLOAD_WORDPRESS_HOTKEY", { dependencies: { "upload.wordpress.enabled": true } }),
             Hotkey("UPLOAD_CSDN_HOTKEY", { dependencies: { "upload.csdn.enabled": true } }),

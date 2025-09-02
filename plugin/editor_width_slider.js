@@ -45,7 +45,7 @@ class editorWidthSliderPlugin extends BasePlugin {
                 }
             },
             hooks: {
-                onSubmit: (form, { key, value }) => {
+                onCommit: ({ key, value }) => {
                     if (key === "width") {
                         this._setWidth(value, true)
                     }

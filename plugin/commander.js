@@ -86,7 +86,7 @@ class commanderPlugin extends BasePlugin {
         })
         this.entities.input.addEventListener("input", ev => {
             const hasCMD = ev.target.value.trim();
-            this.utils.toggleVisible(this.entities.commit, !hasCMD);
+            this.utils.toggleInvisible(this.entities.commit, !hasCMD)
             if (!hasCMD) {
                 this.entities.builtinSelect.value = "";
             }

@@ -42,7 +42,7 @@ class templaterPlugin extends BaseCustomPlugin {
                 preview: defaultTpl.text,
             },
             hooks: {
-                onSubmit: (form, { key, value }) => {
+                onCommit: ({ key, value }) => {
                     if (key !== "template") return
                     const tpl = this.config.template.find(tpl => tpl.name === value)
                     if (tpl) {

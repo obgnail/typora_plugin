@@ -114,7 +114,7 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const handleDrag = () => {
             const newWindowIfNeed = (offsetY, tab) => {
-                if (this.config.DRAG_NEW_WINDOW_THRESHOLD <= 0) return
+                if (this.config.TAB_DETACHMENT === "lockVertical" || this.config.DRAG_NEW_WINDOW_THRESHOLD <= 0) return
                 offsetY = Math.abs(offsetY);
                 const { height } = this.entities.tabBar.getBoundingClientRect();
                 if (offsetY > height * this.config.DRAG_NEW_WINDOW_THRESHOLD) {

@@ -35,12 +35,13 @@ class preferencesPlugin extends BasePlugin {
             searchInput: document.querySelector(".plugin-preferences-search input"),
             closeButton: document.querySelector(".plugin-preferences-close"),
         }
+        this._initHook()
         this._initActionHandlers()
         this._initPreProcessors()
         this._initPostProcessors()
         this._initSchemas()
         this._initRules()
-        this._initForm()
+        this._initWatchers()
     }
 
     process = () => {
@@ -163,12 +164,12 @@ class preferencesPlugin extends BasePlugin {
         if (this.config.HIDE_MENUS.includes(fixedName)) {
             fixedName = this.fallbackMenu
         }
-        const schema = this.SETTING_SCHEMAS[fixedName]
-        if (!schema) return
 
-        const data = await this._preprocess(fixedName)
+        const options = await this._getFormOptions(fixedName)
+        if (!options) return
+
         this.entities.form.dataset.plugin = fixedName
-        this.entities.form.render({ schema, data, actions: this.ACTION_HANDLERS, rules: this.VALIDATION_RULES[fixedName] })
+        this.entities.form.render(options)
         this.entities.menu.querySelectorAll(".active").forEach(e => e.classList.remove("active"))
         const menuItem = this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`)
         menuItem.classList.add("active")
@@ -176,6 +177,22 @@ class preferencesPlugin extends BasePlugin {
         $(this.entities.main).animate({ scrollTop: 0 }, 300)
 
         this.menuStorage.set(fixedName)
+    }
+
+    _getFormOptions = async (fixedName) => {
+        const schema = this.SETTING_SCHEMAS[fixedName]
+        if (!schema) return
+
+        const data = await this._preprocess(fixedName)
+        return this.editOptions({
+            schema,
+            data,
+            actions: this.ACTION_HANDLERS,
+            rules: this.VALIDATION_RULES[fixedName],
+            watchers: this.WATCHERS[fixedName],
+            controlOptions: { object: { format: this.config.OBJECT_SETTINGS_FORMAT } },
+            disableEffect: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
+        })
     }
 
     _getAllPlugins = () => {
@@ -212,12 +229,6 @@ class preferencesPlugin extends BasePlugin {
         await Promise.all(promises)
         return settings
     }
-
-    _initForm = () => this.entities.form.setFormatOptions({
-        objectFormat: this.config.OBJECT_SETTINGS_FORMAT,
-        disableEffect: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
-        ignoreDependencies: this.config.IGNORE_CONFIG_DEPENDENCIES,
-    })
 
     /** Will NOT modify the schemas structure, just i18n */
     _translateSchema = (schemas) => {
@@ -294,8 +305,17 @@ class preferencesPlugin extends BasePlugin {
         this.VALIDATION_RULES = this.config.VALIDATE_CONFIG_OPTIONS ? require("./rules.js") : {}
     }
 
+    _initWatchers = () => {
+        this.WATCHERS = require("./watchers.js")
+    }
+
     _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
     _hasDialogChanged = () => this.entities.dialog.hasAttribute("has-changed")
+
+    _initHook = () => {
+        const fn = this.utils.safeEval(this.config.FORM_RENDERING_HOOK)
+        this.editOptions = (typeof fn === "function") ? fn : this.utils.identity
+    }
 
     /** Callback functions for type="action" fields in schema */
     _initActionHandlers = () => {
@@ -433,7 +453,7 @@ class preferencesPlugin extends BasePlugin {
                     title: this.i18n._t("global", "$label.donate"),
                     schema: [
                         { fields: [{ type: "action", key: "starMe", label: "<b>Star this project on GitHub</b>" }] },
-                        { fields: [{ type: "custom", content: content }] },
+                        { fields: [{ type: "custom", content: content, unsafe: true }] },
                     ],
                     actions: {
                         starMe: this.ACTION_HANDLERS.visitRepo,

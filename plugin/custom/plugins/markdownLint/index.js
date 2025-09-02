@@ -62,7 +62,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                     this.entities.window.toggle(force)
                 }
                 if (this.entities.button) {
-                    this.utils.toggleVisible(this.entities.button, force)
+                    this.utils.toggleInvisible(this.entities.button, force)
                 }
             })
         }
@@ -153,7 +153,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             }
         }
         const getHooks = () => ({
-            onParseValue: (key, value) => {
+            onParseValue: ({ key, value }) => {
                 if (key === "extends") {
                     value = value.trim()
                 } else if (key === "MD022.lines_above" || key === "MD022.lines_below") {

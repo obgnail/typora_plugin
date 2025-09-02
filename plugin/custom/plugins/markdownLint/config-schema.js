@@ -13,20 +13,20 @@ const OPTIONS = {
     "MD055.style": ["consistent", "leading_only", "trailing_only", "leading_and_trailing", "no_leading_or_trailing"],
 }
 
-// const buildGeneralRuleDependencies = () => {
-//     const dep = {}
-//     for (const [generalRuleName, rules] of Object.entries(generalRulesMap)) {
-//         for (const specificRuleName of rules) {
-//             if (!dep.hasOwnProperty(specificRuleName)) {
-//                 dep[specificRuleName] = {}
-//             }
-//             dep[specificRuleName][generalRuleName] = true
-//         }
-//     }
-//     return dep
-// }
-//
-// const generalRuleDependencies = buildGeneralRuleDependencies()
+const buildGeneralRuleDependencies = () => {
+    const dep = {}
+    for (const [generalRuleName, rules] of Object.entries(generalRulesMap)) {
+        for (const specificRuleName of rules) {
+            if (!dep.hasOwnProperty(specificRuleName)) {
+                dep[specificRuleName] = {}
+            }
+            dep[specificRuleName][generalRuleName] = true
+        }
+    }
+    return dep
+}
+
+const generalRuleDependencies = buildGeneralRuleDependencies()
 
 const _t = (key) => i18n.t("markdownLint", key)
 const RuleName = (name) => `${name} - ${_t(name)}`
@@ -39,83 +39,70 @@ const Select = (key, { ...args } = {}) => {
     const options = Object.fromEntries(OPTIONS[key].map(op => [op, _t(`option.${key}.${op}`)]))
     return { key, type: "select", label: Label(key), options, ...args }
 }
+const Action = (key, label) => ({ key, type: "action", label })
+const Array_Inline = (key, { ...args } = {}) => ({ key, type: "array", isBlockLayout: false, label: Label(key), ...args })
 
 const UntitledBox = (...fields) => ({ title: undefined, fields })
 const TitledBox = (title, ...fields) => ({ title, fields })
-const ArrayBox = (key, { ...args } = {}) => TitledBox(Label(key), { key, type: "array", ...args })
 
 const SimpleRule = (name) => ({
     key: name,
     type: "switch",
     label: RuleName(name),
-    // dependencies: generalRuleDependencies[name],
+    dependencies: generalRuleDependencies[name],
 })
-const ConfigurableRule = (name, ...subSchema) => ({
+const ConfigurableRule = (name, ...subFiled) => ({
     key: name,
     type: "composite",
     label: RuleName(name),
     defaultValues: rulesDefaultValues[name],
-    // dependencies: generalRuleDependencies[name],
-    subSchema,
+    dependencies: generalRuleDependencies[name],
+    subSchema: [UntitledBox(...subFiled)],
 })
 
 const MD001 = SimpleRule("MD001")
 const MD003 = ConfigurableRule(
     "MD003",
-    UntitledBox(
-        Select("MD003.style"),
-    ),
+    Select("MD003.style"),
 )
 const MD004 = ConfigurableRule(
     "MD004",
-    UntitledBox(
-        Select("MD004.style"),
-    ),
+    Select("MD004.style"),
 )
 const MD005 = SimpleRule("MD005")
 const MD007 = ConfigurableRule(
     "MD007",
-    UntitledBox(
-        Number("MD007.indent", { min: 1 }),
-        Switch("MD007.start_indented"),
-        Number("MD007.start_indent", { min: 1, dependencies: { "MD007.start_indented": true } }),
-    )
+    Number("MD007.indent", { min: 1 }),
+    Switch("MD007.start_indented"),
+    Number("MD007.start_indent", { min: 1, dependencies: { "MD007.start_indented": true } }),
 )
 const MD009 = ConfigurableRule(
     "MD009",
-    UntitledBox(
-        Number("MD009.br_spaces", { min: 0 }),
-        Switch("MD009.list_item_empty_lines"),
-        Switch("MD009.strict"),
-    ),
+    Number("MD009.br_spaces", { min: 0 }),
+    Switch("MD009.list_item_empty_lines"),
+    Switch("MD009.strict"),
 )
 const MD010 = ConfigurableRule(
     "MD010",
-    UntitledBox(
-        Number("MD010.spaces_per_tab", { min: 0 }),
-        Switch("MD010.code_blocks"),
-    ),
-    ArrayBox("MD010.ignore_code_languages", { dependencies: { "MD010.code_blocks": true } }),
+    Number("MD010.spaces_per_tab", { min: 0 }),
+    Switch("MD010.code_blocks"),
+    Array_Inline("MD010.ignore_code_languages", { dependencies: { "MD010.code_blocks": true } }),
 )
 const MD011 = SimpleRule("MD011")
 const MD012 = ConfigurableRule(
     "MD012",
-    UntitledBox(
-        Number("MD012.maximum", { min: 1 }),
-    ),
+    Number("MD012.maximum", { min: 1 }),
 )
 const MD013 = ConfigurableRule(
     "MD013",
-    UntitledBox(
-        Number("MD013.line_length", { min: 1 }),
-        Switch("MD013.tables"),
-        Switch("MD013.strict"),
-        Switch("MD013.stern"),
-        Switch("MD013.code_blocks"),
-        Number("MD013.code_block_line_length", { min: 1, dependencies: { "MD013.code_blocks": true } }),
-        Switch("MD013.headings"),
-        Number("MD013.heading_line_length", { min: 1, dependencies: { "MD013.headings": true } }),
-    ),
+    Number("MD013.line_length", { min: 1 }),
+    Switch("MD013.tables"),
+    Switch("MD013.strict"),
+    Switch("MD013.stern"),
+    Switch("MD013.code_blocks"),
+    Number("MD013.code_block_line_length", { min: 1, dependencies: { "MD013.code_blocks": true } }),
+    Switch("MD013.headings"),
+    Number("MD013.heading_line_length", { min: 1, dependencies: { "MD013.headings": true } }),
 )
 const MD014 = SimpleRule("MD014")
 const MD018 = SimpleRule("MD018")
@@ -124,183 +111,137 @@ const MD020 = SimpleRule("MD020")
 const MD021 = SimpleRule("MD021")
 const MD022 = ConfigurableRule(
     "MD022",
-    UntitledBox(
-        Text("MD022.lines_above", { tooltip: _t("tooltip.numberOrArray") }),
-        Text("MD022.lines_below", { tooltip: _t("tooltip.numberOrArray") }),
-    ),
+    Text("MD022.lines_above", { tooltip: _t("tooltip.numberOrArray") }),
+    Text("MD022.lines_below", { tooltip: _t("tooltip.numberOrArray") }),
 )
 const MD023 = SimpleRule("MD023")
 const MD024 = ConfigurableRule(
     "MD024",
-    UntitledBox(
-        Switch("MD024.siblings_only"),
-    ),
+    Switch("MD024.siblings_only"),
 )
 const MD025 = ConfigurableRule(
     "MD025",
-    UntitledBox(
-        Text("MD025.front_matter_title"),
-        Number("MD025.level", { min: 1, max: 6 }),
-    ),
+    Text("MD025.front_matter_title"),
+    Number("MD025.level", { min: 1, max: 6 }),
 )
 const MD026 = ConfigurableRule(
     "MD026",
-    UntitledBox(
-        Text("MD026.punctuation"),
-    ),
+    Text("MD026.punctuation"),
 )
 const MD027 = ConfigurableRule(
     "MD027",
-    UntitledBox(
-        Switch("MD027.list_items"),
-    ),
+    Switch("MD027.list_items"),
 )
 const MD028 = SimpleRule("MD028")
 const MD029 = ConfigurableRule(
     "MD029",
-    UntitledBox(
-        Select("MD029.style"),
-    ),
+    Select("MD029.style"),
 )
 const MD030 = ConfigurableRule(
     "MD030",
-    UntitledBox(
-        Number("MD030.ul_single", { min: 1 }),
-        Number("MD030.ol_single", { min: 1 }),
-        Number("MD030.ul_multi", { min: 1 }),
-        Number("MD030.ol_multi", { min: 1 }),
-    ),
+    Number("MD030.ul_single", { min: 1 }),
+    Number("MD030.ol_single", { min: 1 }),
+    Number("MD030.ul_multi", { min: 1 }),
+    Number("MD030.ol_multi", { min: 1 }),
 )
 const MD031 = ConfigurableRule(
     "MD031",
-    UntitledBox(
-        Switch("MD031.list_items"),
-    ),
+    Switch("MD031.list_items"),
 )
 const MD032 = SimpleRule("MD032")
 const MD033 = ConfigurableRule(
     "MD033",
-    ArrayBox("MD033.allowed_elements"),
+    Array_Inline("MD033.allowed_elements"),
 )
 const MD034 = SimpleRule("MD034")
 const MD035 = ConfigurableRule(
     "MD035",
-    UntitledBox(
-        Text("MD035.style"),
-    ),
+    Text("MD035.style"),
 )
 const MD036 = ConfigurableRule(
     "MD036",
-    UntitledBox(
-        Text("MD036.punctuation"),
-    ),
+    Text("MD036.punctuation"),
 )
 const MD037 = SimpleRule("MD037")
 const MD038 = SimpleRule("MD038")
 const MD039 = SimpleRule("MD039")
 const MD040 = ConfigurableRule(
     "MD040",
-    UntitledBox(
-        Switch("MD040.language_only"),
-    ),
-    ArrayBox("MD040.allowed_languages"),
+    Switch("MD040.language_only"),
+    Array_Inline("MD040.allowed_languages"),
 )
 const MD041 = ConfigurableRule(
     "MD041",
-    UntitledBox(
-        Switch("MD041.allow_preamble"),
-        Text("MD041.front_matter_title"),
-        Number("MD041.level", { min: 1, max: 6 }),
-    ),
+    Switch("MD041.allow_preamble"),
+    Text("MD041.front_matter_title"),
+    Number("MD041.level", { min: 1, max: 6 }),
 )
 const MD042 = SimpleRule("MD042")
 const MD043 = ConfigurableRule(
     "MD043",
-    UntitledBox(
-        Switch("MD043.match_case"),
-    ),
-    ArrayBox("MD043.headings"),
+    Switch("MD043.match_case"),
+    Array_Inline("MD043.headings"),
 )
 const MD044 = ConfigurableRule(
     "MD044",
-    UntitledBox(
-        Switch("MD044.code_blocks"),
-        Switch("MD044.html_elements"),
-    ),
-    ArrayBox("MD044.names"),
+    Switch("MD044.code_blocks"),
+    Switch("MD044.html_elements"),
+    Array_Inline("MD044.names"),
 )
 const MD045 = SimpleRule("MD045")
 const MD046 = ConfigurableRule(
     "MD046",
-    UntitledBox(
-        Select("MD046.style"),
-    ),
+    Select("MD046.style"),
 )
 const MD047 = SimpleRule("MD047")
 const MD048 = ConfigurableRule(
     "MD048",
-    UntitledBox(
-        Select("MD048.style"),
-    ),
+    Select("MD048.style"),
 )
 const MD049 = ConfigurableRule(
     "MD049",
-    UntitledBox(
-        Select("MD049.style"),
-    ),
+    Select("MD049.style"),
 )
 const MD050 = ConfigurableRule(
     "MD050",
-    UntitledBox(
-        Select("MD050.style"),
-    ),
+    Select("MD050.style"),
 )
 const MD051 = ConfigurableRule(
     "MD051",
-    UntitledBox(
-        Switch("MD051.ignore_case"),
-        Text("MD051.ignored_pattern"),
-    ),
+    Switch("MD051.ignore_case"),
+    Text("MD051.ignored_pattern"),
 )
 const MD052 = ConfigurableRule(
     "MD052",
-    UntitledBox(
-        Switch("MD052.shortcut_syntax"),
-    ),
-    ArrayBox("MD052.ignored_labels"),
+    Switch("MD052.shortcut_syntax"),
+    Array_Inline("MD052.ignored_labels"),
 )
 const MD053 = ConfigurableRule(
     "MD053",
-    ArrayBox("MD053.ignored_definitions"),
+    Array_Inline("MD053.ignored_definitions"),
 )
 const MD054 = ConfigurableRule(
     "MD054",
-    UntitledBox(
-        Switch("MD054.autolink"),
-        Switch("MD054.inline"),
-        Switch("MD054.full"),
-        Switch("MD054.collapsed"),
-        Switch("MD054.shortcut"),
-        Switch("MD054.url_inline"),
-    ),
+    Switch("MD054.autolink"),
+    Switch("MD054.inline"),
+    Switch("MD054.full"),
+    Switch("MD054.collapsed"),
+    Switch("MD054.shortcut"),
+    Switch("MD054.url_inline"),
 )
 const MD055 = ConfigurableRule(
     "MD055",
-    UntitledBox(
-        Select("MD055.style"),
-    ),
+    Select("MD055.style"),
 )
 const MD056 = SimpleRule("MD056")
 const MD058 = SimpleRule("MD058")
 const MD059 = ConfigurableRule(
     "MD059",
-    ArrayBox("MD059.prohibited_texts"),
+    Array_Inline("MD059.prohibited_texts"),
 )
 const MD101 = ConfigurableRule(
     "MD101",
-    UntitledBox(
-        Switch("MD101.list_items"),
-    ),
+    Switch("MD101.list_items"),
 )
 const MD102 = SimpleRule("MD102")
 
@@ -321,8 +262,8 @@ const specificRules = [
 const generalRules = Object.entries(generalRulesMap).map(([name, rules]) => Switch(name, { tooltip: rules.join(", ") }))
 
 const actions = [
-    { type: "action", key: "viewRules", label: _t("$label.viewMarkdownlintRules") },
-    { type: "action", key: "restoreRules", label: i18n.t("settings", "$label.restoreSettings") },
+    Action("viewRules", _t("$label.viewMarkdownlintRules")),
+    Action("restoreRules", i18n.t("settings", "$label.restoreSettings")),
 ]
 
 module.exports = [

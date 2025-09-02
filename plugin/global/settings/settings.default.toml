@@ -2125,6 +2125,7 @@ NAME = ""
 #   留空则不设置快捷键
 HOTKEY = ""
 
+# ------------------- 配置页面 -------------------
 # 打开设置页面时，默认定位到哪个插件的菜单
 #   填入插件 fixedName
 #   支持填入__LAST__，表示最近使用的菜单
@@ -2139,13 +2140,7 @@ HIDE_MENUS = []
 #   false: 校验配置
 VALIDATE_CONFIG_OPTIONS = true
 
-# 忽略配置间的依赖
-#   true:  忽略配置依赖，不强制执行配置项之间的依赖关系
-#   false: 强制执行配置项之间的依赖关系
-IGNORE_CONFIG_DEPENDENCIES = false
-
 # 依赖失效行为
-# 若 IGNORE_CONFIG_DEPENDENCIES 为 true，则此选项失效
 #   readonly: 只读
 #   hide:     隐藏
 DEPENDENCIES_FAILURE_BEHAVIOR = "readonly"
@@ -2161,6 +2156,10 @@ SEARCH_PLUGIN_FIXEDNAME = false
 #   TOML
 #   YAML
 OBJECT_SETTINGS_FORMAT = "JSON"
+
+# 表单渲染钩子
+#   此选项面向开发者，普通用户请勿修改
+FORM_RENDERING_HOOK = "(options, fixedName) => options"
 
 
 ################### file_counter ###################

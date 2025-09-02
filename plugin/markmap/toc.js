@@ -446,7 +446,7 @@ class tocMarkmap {
                 }),
             },
             hooks: {
-                onSubmit: () => _edited = true,
+                onCommit: () => _edited = true,
             },
         }
         const { response, data } = await this.utils.formDialog.modal(op)
@@ -672,8 +672,8 @@ class tocMarkmap {
             : [this.pinUtils.isPinRight, this.entities.gripRight, "pinRight", "func.pinRight", "ion-chevron-right"]
 
         this.entities.modal.classList.toggle("pinned-window", pinned)
-        this.utils.toggleVisible(gripEl, !pinned)
-        this.utils.toggleVisible(this.entities.resize, pinned)
+        this.utils.toggleInvisible(gripEl, !pinned)
+        this.utils.toggleInvisible(this.entities.resize, pinned)
         this._setFullScreenStyles(false)
 
         const btn = this.entities.header.querySelector(`[action="${act}"]`)
@@ -702,11 +702,11 @@ class tocMarkmap {
         this._setModalRect(expand ? this.pinUtils.originContentRect : this.pinUtils.originModalRect)
         this._setFullScreenStyles(expand)
         this.entities.modal.classList.toggle("pinned-window", expand)
-        this.utils.toggleVisible(this.entities.resize, expand)
+        this.utils.toggleInvisible(this.entities.resize, expand)
     }
 
     _toggleToolbar = show => {
-        this.utils.toggleVisible(this.entities.header, !show)
+        this.utils.toggleInvisible(this.entities.header, !show)
         this.fit()
     }
 

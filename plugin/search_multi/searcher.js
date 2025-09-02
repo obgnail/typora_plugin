@@ -932,19 +932,19 @@ class Searcher {
             let presentField = { key: "ast", type: "textarea", readonly: true, rows: 5 }
             if (presentation === "graph" || presentation === "text") {
                 const to = presentation === "graph" ? _toGraph : _toText
-                const cnt = await to({ expression, optimize, translate, direction })
-                presentField = { type: "hint", hintDetail: cnt }
+                const content = await to({ expression, optimize, translate, direction })
+                presentField = { type: "hint", hintDetail: content, unsafe: true }
             }
 
             const syntaxFields = [
-                { type: "hint", hintHeader: t("modal.hintHeader.syntax"), hintDetail: hintDetail.syntax },
-                { type: "hint", hintHeader: t("modal.hintHeader.scope"), hintDetail: hintDetail.scope },
-                { type: "hint", hintHeader: t("modal.hintHeader.operator"), hintDetail: hintDetail.operator },
-                { type: "hint", hintHeader: t("modal.hintHeader.operand"), hintDetail: hintDetail.operand },
-                { type: "hint", hintHeader: t("modal.hintHeader.combineCond"), hintDetail: hintDetail.combineCond },
-                { type: "hint", hintHeader: t("modal.hintHeader.syntacticSugar"), hintDetail: hintDetail.syntacticSugar },
+                { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.syntax"), hintDetail: hintDetail.syntax },
+                { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.scope"), hintDetail: hintDetail.scope },
+                { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.operator"), hintDetail: hintDetail.operator },
+                { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.operand"), hintDetail: hintDetail.operand },
+                { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.combineCond"), hintDetail: hintDetail.combineCond },
+                { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.syntacticSugar"), hintDetail: hintDetail.syntacticSugar },
             ]
-            const exampleFields = [{ type: "custom", content: example }]
+            const exampleFields = [{ type: "custom", content: example, unsafe: true }]
             const playgroundFields = [
                 { key: "expression", type: "textarea", rows: 3, noResize: true },
                 presentField,
@@ -988,7 +988,7 @@ class Searcher {
                 },
             },
             hooks: {
-                onSubmit: (form, { key, value }) => {
+                onCommit: ({ key, value }) => {
                     this.utils.formDialog.updateModal(async op => {
                         op.data[key] = value
                         if ((key === "presentation" && value === "ast") || (key === "expression" && op.data.presentation === "ast")) {
