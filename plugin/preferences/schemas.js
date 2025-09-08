@@ -643,10 +643,10 @@ const SETTING_SCHEMAS = {
                 },
             },
         ),
-        TitledBox(
-            Title("advanced"),
+        UntitledBox(
             Switch("ENABLE_WHEN_EXPORT"),
         ),
+        TextareaBox("APPLY_EXPORT_HEADER_NUMBERING", { rows: 12, readonly: true, dependencies: { ENABLE_WHEN_EXPORT: true } }),
         handleSettingsBox,
     ],
     fence_enhance: [

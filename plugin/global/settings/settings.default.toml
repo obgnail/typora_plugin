@@ -1063,11 +1063,6 @@ ENABLE_IMAGE = false
 ENABLE_FENCE = false
 
 # ------------------- 样式与显示控制 -------------------
-# 导出时运用样式：是否在导出为 HTML 或 PDF 等格式时保留自动编号的样式
-#   true:  导出时应用编号样式
-#   false: 导出时不应用编号样式
-ENABLE_WHEN_EXPORT = true
-
 # 展示图片的名称：是否在图片编号旁边显示图片的原始文件名
 #   注意：不建议开启此选项，会消耗较多资源，并且可能导致排版混乱
 #   仅当 ENABLE_IMAGE 为 true 时此选项有效
@@ -1089,6 +1084,29 @@ ALIGN = "center"
 #   before: 先于表格出现
 #   after:  后于表格出现
 POSITION_TABLE = "after"
+
+# ------------------- 导出 -------------------
+# 导出时运用样式：是否在导出为 HTML 或 PDF 等格式时保留自动编号的样式
+#   true:  导出时应用编号样式
+#   false: 导出时不应用编号样式
+ENABLE_WHEN_EXPORT = true
+
+# 导出时对标题应用编号的处理函数
+# 此配置是高级配置，仅对有 javascript 基础的用户开放
+# 若 ENABLE_WHEN_EXPORT 为 false，则此选项失效
+APPLY_EXPORT_HEADER_NUMBERING = """
+(headers) => {
+    const counters = Array(7).fill(0)
+    headers.forEach(header => {
+        const [level, text, ...rest] = header
+        counters[level]++
+        counters.fill(0, level + 1)
+        const numbers = counters.slice(2, level + 1).join('.')
+        const numbering = numbers ? `${numbers}. ` : ""
+        header[1] = numbering + text
+    })
+}
+"""
 
 # ------------------- 编号格式 -------------------
 # 编号格式定义：

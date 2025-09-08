@@ -359,8 +359,12 @@ class autoNumberPlugin extends BasePlugin {
 // Adds CSS on export and resolves the issue of missing numbering in the PDF export table of contents.
 class exportHelper {
     constructor(plugin) {
-        this.inExport = false;
-        this.plugin = plugin;
+        this.inExport = false
+        this.plugin = plugin
+        this.utils = plugin.utils
+
+        const fn = this.utils.safeEval(this.plugin.config.APPLY_EXPORT_HEADER_NUMBERING)
+        this.applyHeaderNumbering = (typeof fn === "function") ? fn : this.applyHeaderNumberingDefault
     }
 
     beforeExport = () => {
@@ -368,52 +372,28 @@ class exportHelper {
         return `body {font-variant-ligatures: no-common-ligatures;} ` + this.plugin.getCSS(true)
     }
 
-    afterGetHeaderMatrix = headers => {
-        if (!this.inExport) return
-        this.inExport = false
-
-        const N = { H2: 0, H3: 0, H4: 0, H5: 0, H6: 0 }
+    applyHeaderNumberingDefault = (headers) => {
+        const counters = Array(7).fill(0)
         headers.forEach(header => {
-            const tagName = "H" + header[0]
-            if (!N.hasOwnProperty(tagName)) return
-
-            let val = ""
-            switch (tagName) {
-                case "H1":
-                    N.H2 = 0
-                    break
-                case "H2":
-                    N.H3 = 0
-                    N.H2++
-                    val = `${N.H2}. `
-                    break
-                case "H3":
-                    N.H4 = 0
-                    N.H3++
-                    val = `${N.H2}.${N.H3} `
-                    break
-                case "H4":
-                    N.H5 = 0
-                    N.H4++
-                    val = `${N.H2}.${N.H3}.${N.H4} `
-                    break
-                case "H5":
-                    N.H6 = 0
-                    N.H5++
-                    val = `${N.H2}.${N.H3}.${N.H4}.${N.H5} `
-                    break
-                case "H6":
-                    N.H6++
-                    val = `${N.H2}.${N.H3}.${N.H4}.${N.H5}.${N.H6} `
-                    break
-            }
-            header[1] = val + header[1]
+            const [level, text, ...rest] = header
+            counters[level]++
+            counters.fill(0, level + 1)
+            const numbers = counters.slice(2, level + 1).join('.')
+            const numbering = numbers ? `${numbers}. ` : ""
+            header[1] = numbering + text
         })
     }
 
+    afterGetHeaderMatrix = headers => {
+        if (this.inExport) {
+            this.inExport = false
+            this.applyHeaderNumbering(headers)
+        }
+    }
+
     process = () => {
-        this.plugin.utils.exportHelper.register(this.plugin.fixedName, this.beforeExport)
-        this.plugin.utils.decorate(
+        this.utils.exportHelper.register(this.plugin.fixedName, this.beforeExport)
+        this.utils.decorate(
             () => File && File.editor && File.editor.library && File.editor.library.outline,
             "getHeaderMatrix",
             null,

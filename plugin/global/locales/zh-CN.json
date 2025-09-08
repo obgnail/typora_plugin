@@ -649,6 +649,7 @@
     "$label.ENABLE_WHEN_EXPORT": "导出为 HTML、PDF 时保留编号",
     "$title.LAYOUTS": "编号格式",
     "$title.autoNumbering": "自动编号",
+    "$title.APPLY_EXPORT_HEADER_NUMBERING": "应用导出标题编号",
     "$hintHeader.layoutSyntax": "编号规则",
     "$hintDetail.layoutSyntax": "使用结构 “前缀{计数器名称:计数样式}后缀” 来自定义编号格式。其中，前缀和后缀是任意文本，{} 内是计数器占位符。计数器名称指定编号对象，计数样式指定编号的显示方式。您可以自由组合文本和多个计数器。例如，“图{i:cjk}” 将生成 “图一”, “图二”。",
     "$hintHeader.counterNames": "计数器名称",

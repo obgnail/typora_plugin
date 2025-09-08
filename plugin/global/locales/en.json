@@ -649,6 +649,7 @@
     "$label.ENABLE_WHEN_EXPORT": "Keep Numbering When Exporting to HTML/PDF",
     "$title.LAYOUTS": "Preset Numbering Formats",
     "$title.autoNumbering": "Auto Numbering",
+    "$title.APPLY_EXPORT_HEADER_NUMBERING": "Apply Export Header Numbering",
     "$hintHeader.layoutSyntax": "Numbering Syntax",
     "$hintDetail.layoutSyntax": "Numbering format uses the structure \"Prefix{Name:Style}Suffix\". Here, Prefix and Suffix are arbitrary text, and {} is the counter placeholder. Name specifies the object being numbered, and Style specifies how the number is displayed. You can freely combine text and multiple counters within the format string.",
     "$hintHeader.counterNames": "Counter Names",
