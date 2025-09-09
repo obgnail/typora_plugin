@@ -95,33 +95,46 @@ class FastForm extends HTMLElement {
         $in: { evaluate: (actual, expected) => Array.isArray(expected) && expected.includes(actual) },
         $bool: { evaluate: (actual, expected) => Boolean(actual) === expected },
     }
-    static controlLayout = {
-        createControlWrapper: (field, controlHtml, className) => {
+    static layout = {
+        createTitle: (title) => title ? `<div class="title">${title}</div>` : "",
+        createTooltip: (field) => field.tooltip ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${utils.escape(field.tooltip).replace("\n", "<br>")}</span></span>` : "",
+        createControlContainer: (field, controlHTML, className) => {
             const isBlockLayout = field.isBlockLayout || false
-            const label = isBlockLayout ? "" : `<div class="control-left">${field.label}${this.controlLayout.createTooltip(field)}</div>`
-            const control = isBlockLayout ? controlHtml : `<div class="control-right">${controlHtml}</div>`
+            const label = isBlockLayout ? "" : `<div class="control-left">${field.label}${this.layout.createTooltip(field)}</div>`
+            const control = isBlockLayout ? controlHTML : `<div class="control-right">${controlHTML}</div>`
             const cls = "control" + (isBlockLayout ? " control-block" : "") + (className ? ` ${className}` : "")
             return `<div class="${cls}" data-type="${field.type}" data-control="${field.key}">${label}${control}</div>`
         },
-        createTooltip: (field) => {
-            return field.tooltip
-                ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${utils.escape(field.tooltip).replace("\n", "<br>")}</span></span>`
-                : ""
-        },
-        findControl: (key, form) => {
-            return form.querySelector(`[data-control="${CSS.escape(key)}"]`)
-        }
+        createBox: (controlHTMLs) => `<div class="box">${controlHTMLs.join("")}</div>`,
+        genBoxContainerId: (box, idx) => box.id || `box_${idx}`,
+        createBoxContainer: (id, titleHTML, boxHTML) => `<div class="box-container" data-box="${id}">${titleHTML}${boxHTML}</div>`,
+        findBox: (key, form) => form.querySelector(`[data-box="${CSS.escape(key)}"]`),
+        findControl: (key, form) => form.querySelector(`[data-control="${CSS.escape(key)}"]`),
     }
 
     static registerControl(name, definition) {
-        if (!definition || typeof definition.create !== "function") {
-            throw new Error(`Control Error: control '${name}' must be an object with 'create' function.`)
+        if (!definition || typeof definition !== "object") {
+            throw new Error(`Control Error: The definition for control '${name}' must be a non-null object.`)
+        }
+        if (typeof definition.create !== "function") {
+            throw new Error(`Control Error: control '${name}' must have a 'create' function.`)
+        }
+        const optionalFunctions = ["update", "bindEvents", "setup", "onFormInit"]
+        for (const funcName of optionalFunctions) {
+            if (definition.hasOwnProperty(funcName) && typeof definition[funcName] !== "function") {
+                throw new Error(`Control Error: The '${funcName}' property for control '${name}' must be a function.`)
+            }
+        }
+        if (definition.hasOwnProperty("controlOptions")) {
+            if (typeof definition.controlOptions !== "object" || definition.controlOptions === null || Array.isArray(definition.controlOptions)) {
+                throw new Error(`Control Error: The 'controlOptions' property for control '${name}' must be a plain object.`)
+            }
         }
         if (this.controls.hasOwnProperty(name)) {
             console.warn(`FastForm Warning: Overwriting control definition for type '${name}'.`)
         }
         this.controls[name] = definition
-        if (definition.controlOptions && typeof definition.controlOptions === "object") {
+        if (definition.controlOptions) {
             this.controlOptions[name] = definition.controlOptions
         }
     }
@@ -184,13 +197,13 @@ class FastForm extends HTMLElement {
         this.comparisonEvaluators[name] = definition
     }
 
-    static setControlLayout = (definition) => {
-        for (const [api, val] of Object.entries(this.controlLayout)) {
+    static setLayout = (definition) => {
+        for (const [api, val] of Object.entries(this.layout)) {
             if (!definition[api] || typeof definition[api] !== typeof val) {
                 throw new Error(`Control Layout Error: '${api}' must be a ${typeof val}.`)
             }
         }
-        this.controlLayout = definition
+        this.layout = definition
     }
 
     constructor() {
@@ -215,11 +228,13 @@ class FastForm extends HTMLElement {
             rules: {},
             watchers: {},
             cascades: {},
+            ruleMatchStrategy: "exact", // "exact" or "wildcard" or "regex"
         }
         this.helper = {
             fields: {},
             watchTriggerMap: {},
             cleanupFunctions: [],
+            compiledRules: [],
             updateQueue: new Map(),
             isUpdateTaskQueued: false,
         }
@@ -237,27 +252,43 @@ class FastForm extends HTMLElement {
         this._normalize(this.options)
         this._initHelper(this.options)
 
-        this._fillFields(this.options.schema, this.form)
+        this._fillForm(this.options.schema, this.form)
         this._bindAllEvents(this.options.controls)
         this._executeWatchers(Object.values(this.options.watchers))
         this._invokeHook("onRender", this)
     }
 
     _initOptions(options) {
-        return {
-            ...this.options,
-            schema: utils.naiveCloneDeep(options.schema || []),
-            data: utils.naiveCloneDeep(options.data || {}),
-            rules: { ...options.rules },
-            watchers: { ...options.watchers },
-            actions: { ...options.actions },
-            hooks: { ...this.constructor.hooks, ...options.hooks },
-            validators: { ...this.constructor.validators, ...options.validators },
-            conditionEvaluators: { ...this.constructor.conditionEvaluators, ...options.conditionEvaluators },
-            comparisonEvaluators: { ...this.constructor.comparisonEvaluators, ...options.comparisonEvaluators },
-            controls: { ...this.constructor.controls, ...options.controls },
-            controlOptions: { ...this.constructor.controlOptions, ...options.controlOptions },
+        const {
+            schema = [],
+            data = {},
+            rules = {},
+            watchers = {},
+            actions = {},
+            hooks = {},
+            validators = {},
+            conditionEvaluators = {},
+            comparisonEvaluators = {},
+            controls = {},
+            controlOptions = {},
+            ...rest
+        } = options
+
+        const fixed = {
+            schema: utils.naiveCloneDeep(schema),
+            data: utils.naiveCloneDeep(data),
+            rules: { ...rules },
+            watchers: { ...watchers },
+            actions: { ...actions },
+            hooks: { ...this.constructor.hooks, ...hooks },
+            validators: { ...this.constructor.validators, ...validators },
+            conditionEvaluators: { ...this.constructor.conditionEvaluators, ...conditionEvaluators },
+            comparisonEvaluators: { ...this.constructor.comparisonEvaluators, ...comparisonEvaluators },
+            controls: { ...this.constructor.controls, ...controls },
+            controlOptions: { ...this.constructor.controlOptions, ...controlOptions },
         }
+
+        return { ...this.options, ...fixed, ...rest }
     }
 
     traverseFields = (visitorFn, schema = this.options.schema, parentField = null) => {
@@ -435,7 +466,7 @@ class FastForm extends HTMLElement {
         const controlDef = this.options.controls[field.type]
         if (!controlDef || typeof controlDef.update !== "function") return
 
-        const element = this.constructor.controlLayout.findControl(key, this.form)
+        const element = this.constructor.layout.findControl(key, this.form)
         if (!element) return
 
         controlDef.update({
@@ -448,8 +479,9 @@ class FastForm extends HTMLElement {
         })
     }
 
-    _fillFields(schema, container, updateControl = true) {
-        const createField = (field) => {
+    _fillForm(schema, container, updateControl = true) {
+        const layout = this.constructor.layout
+        const createControl = (field) => {
             const controlDef = this.options.controls[field.type]
             if (!controlDef) {
                 console.warn(`FastForm Warning: No control registered for type "${field.type}".`)
@@ -457,15 +489,17 @@ class FastForm extends HTMLElement {
             }
             const controlOptions = this.getControlOptions(field)
             const controlContext = { field, controlOptions, form: this }
-            const controlHtml = controlDef.create(controlContext)
-            return this.constructor.controlLayout.createControlWrapper(field, controlHtml, controlOptions.className)
+            const controlHTML = controlDef.create(controlContext)
+            return layout.createControlContainer(field, controlHTML, controlOptions.className)
         }
-        const createBox = ({ title, fields = [] }) => {
-            const title_ = title ? `<div class="title">${title}</div>` : ""
-            const items = fields.map(createField).join("")
-            return title_ + `<div class="box">${items}</div>`
+        const createBoxContainer = (box, idx) => {
+            const titleHTML = layout.createTitle(box.title)
+            const controlHTMLs = (box.fields || []).map(createControl)
+            const boxHTML = layout.createBox(controlHTMLs)
+            const containerId = layout.genBoxContainerId(box, idx)
+            return layout.createBoxContainer(containerId, titleHTML, boxHTML)
         }
-        container.innerHTML = schema.map(createBox).join("")
+        container.innerHTML = schema.map(createBoxContainer).join("")
         if (updateControl) {
             this.traverseFields(field => {
                 if (field.key) {
@@ -528,15 +562,18 @@ class FastForm extends HTMLElement {
         }
 
         const normalizeRules = () => {
-            const rules = {}
-            Object.entries(options.rules).forEach(([key, validators]) => {
-                validators = Array.isArray(validators) ? validators : [validators]
-                rules[key] = validators.map(validator => {
+            const { rules, ruleMatchStrategy, validators: builtinValidators } = options
+            if (!rules) return
+
+            const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+            this.helper.compiledRules = Object.entries(rules).map(([key, rawValidators]) => {
+                rawValidators = Array.isArray(rawValidators) ? rawValidators : [rawValidators]
+                const validators = rawValidators.map(validator => {
                     switch (typeof validator) {
                         case "function":
                             return validator
                         case "string":
-                            const builtinValidator = options.validators[validator]
+                            const builtinValidator = builtinValidators[validator]
                             if (builtinValidator) {
                                 return builtinValidator
                             }
@@ -545,17 +582,26 @@ class FastForm extends HTMLElement {
                             if (typeof validator.validate === "function") {
                                 return validator.validate
                             }
-                            const builtinValidatorFactory = options.validators[validator.name]
+                            const builtinValidatorFactory = builtinValidators[validator.name]
                             if (builtinValidatorFactory) {
                                 return builtinValidatorFactory(...validator.args)
                             }
                             break
                     }
                     const msg = typeof validator === "object" ? JSON.stringify(validator) : validator
-                    throw new Error(`Invalid Rule: ${msg}`)
+                    throw new Error(`Invalid rule type for '${msg}': '${key}'.`)
                 })
+                try {
+                    const exp = (ruleMatchStrategy === "regex")
+                        ? key
+                        : (ruleMatchStrategy === "wildcard")
+                            ? `^${escapeRegex(key).replace(/\\\*/g, "[^.]+")}$`
+                            : `^${escapeRegex(key)}$`  // "exact" and default
+                    return { regex: new RegExp(exp), validators }
+                } catch (e) {
+                    throw new Error(`Invalid rule pattern for '${ruleMatchStrategy}' mode: '${key}'.`)
+                }
             })
-            options.rules = rules
         }
 
         normalizeControls()
@@ -637,7 +683,7 @@ class FastForm extends HTMLElement {
     }
 
     _invokeRules(changeContext) {
-        const validators = this.options.rules[changeContext.key]
+        const validators = this._findMatchValidators(changeContext.key)
         if (!validators) return []
 
         return validators
@@ -650,6 +696,12 @@ class FastForm extends HTMLElement {
             })
             .filter(ret => ret !== true && ret != null)
             .map(err => (typeof err.message === "string") ? err : new Error(err.toString()))
+    }
+
+    _findMatchValidators(fieldKey) {
+        return this.helper.compiledRules
+            .filter(rule => rule.regex.test(fieldKey))
+            .flatMap(rule => rule.validators)
     }
 
     _commit(changeContext) {
@@ -1522,7 +1574,7 @@ const Table_Control = defineControl({
             const op = { title: i18n.t("global", "edit"), schema: nestedBoxes, data: modalValues }
             const { response, data } = await utils.formDialog.modal(op)
             if (response === 0) return
-            const ok = form.validateAndCommit(`${key}.${idx}`, data)
+            const ok = form.validateAndCommit(`${key}.${idx}`, data, "set")
             if (ok) {
                 const row = Table_Control._createTableRow(thMap, data)
                 const tds = trEl.querySelectorAll("td")
@@ -1587,7 +1639,7 @@ const Composite_Control = defineControl({
         }
     },
     create: ({ field, form }) => {
-        const layout = form.constructor.controlLayout
+        const layout = form.constructor.layout
         const switchControlDef = form.options.controls["switch"]
 
         const newSwitchField = { ...field, type: "switch", isBlockLayout: false }
@@ -1595,7 +1647,7 @@ const Composite_Control = defineControl({
         const newSwitchFieldContext = { form, field: newSwitchField, controlOptions: newSwitchControlOptions }
 
         const toggleControlHtml = switchControlDef.create(newSwitchFieldContext)
-        const fullToggleHtml = layout.createControlWrapper(newSwitchField, toggleControlHtml, newSwitchControlOptions.className)
+        const fullToggleHtml = layout.createControlContainer(newSwitchField, toggleControlHtml, newSwitchControlOptions.className)
         const subBoxWrapper = `<div class="sub-box-wrapper" data-parent-key="${field.key}"></div>`
         return fullToggleHtml + subBoxWrapper
     },
@@ -1609,7 +1661,7 @@ const Composite_Control = defineControl({
         const isChecked = typeof value === "object" && value != null
         utils.toggleInvisible(container, !isChecked)
         if (isChecked && container.childElementCount === 0) {
-            form._fillFields(field.subSchema, container)
+            form._fillForm(field.subSchema, container)
         }
     },
     bindEvents: ({ form, space }) => {
