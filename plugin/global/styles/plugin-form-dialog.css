@@ -8,6 +8,12 @@
     background-color: rgba(0, 0, 0, 0.5);
 }
 
+@media (prefers-color-scheme: dark) {
+    .form-dialog {
+        filter: invert(.9) hue-rotate(.5turn);
+    }
+}
+
 .form-dialog {
     display: flex;
     flex-direction: column;

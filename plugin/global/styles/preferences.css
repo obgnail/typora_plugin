@@ -1,4 +1,10 @@
 /***** dialog *****/
+@media (prefers-color-scheme: dark) {
+    .plugin-preferences-dialog {
+        filter: invert(.9) hue-rotate(.5turn);
+    }
+}
+
 .plugin-preferences-dialog {
     display: flex;
     position: fixed;

@@ -1,3 +1,9 @@
+@media (prefers-color-scheme: dark) {
+    :host {
+        filter: invert(.9) hue-rotate(.5turn);
+    }
+}
+
 :host {
     --window-resize: both;
     --window-min-width: 320px;
