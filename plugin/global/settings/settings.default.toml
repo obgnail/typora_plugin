@@ -2037,6 +2037,7 @@ LIST = [
     "truncate_text",
     "export_enhance",
     "cipher",
+    "static_markers",
     "right_click_menu",
     "---",
     "pie_menu",
@@ -2485,6 +2486,23 @@ WIDTH_PERCENT = 80
 # 搜索窗口出现时距离页面顶部的距离，以页面百分比表示
 #  例如，20 表示窗口顶部距离页面顶部 20% 的位置
 TOP_PERCENT = 20
+
+
+################### static_markers ###################
+[static_markers]
+# ------------------- 基础 -------------------
+# 启用或禁用插件
+#   true:  启用插件
+#   false: 禁用插件
+ENABLE = false
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 快捷键 -------------------
+#  触发插件的快捷键
+#   留空则不设置快捷键
+HOTKEY = ""
 
 
 ################### cursor_history ###################

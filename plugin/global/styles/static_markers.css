@@ -1,0 +1,4 @@
+.md-content, .md-meta {
+    display: inline !important;
+    opacity: inherit !important;
+}

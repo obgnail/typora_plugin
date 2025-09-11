@@ -1051,6 +1051,10 @@
     "$title.windowPosition": "窗口位置",
     "$title.interaction": "交互"
   },
+  "static_markers": {
+    "pluginName": "标记常显",
+    "act.toggle_state": "启用标记常显"
+  },
   "cursor_history": {
     "pluginName": "光标跳转",
     "$label.HOTKEY_GO_FORWARD": "光标前进",
@@ -1462,8 +1466,8 @@
     "label.MD009.list_item_empty_lines": "允许列表项中的空行包含空格",
     "label.MD009.strict": "包含不必要的换行",
     "label.MD010.code_blocks": "包含代码块",
-    "label.MD010.ignore_code_languages": "要忽略的代码块语言",
-    "label.MD010.spaces_per_tab": "每个制表符的空格数",
+    "label.MD010.ignore_code_languages": "忽略的代码块语言",
+    "label.MD010.spaces_per_tab": "制表符对应空格数",
     "label.MD012.maximum": "允许连续空行数",
     "label.MD013.line_length": "最大字符数",
     "label.MD013.heading_line_length": "标题最大字符数",

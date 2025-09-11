@@ -1051,6 +1051,10 @@
     "$title.windowPosition": "Window Position",
     "$title.interaction": "Interaction"
   },
+  "static_markers": {
+    "pluginName": "Static Markers",
+    "act.toggle_state": "Enable Static Markers"
+  },
   "cursor_history": {
     "pluginName": "Cursor History",
     "$label.HOTKEY_GO_FORWARD": "Cursor Go Forward",

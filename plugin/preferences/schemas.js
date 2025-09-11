@@ -1143,6 +1143,10 @@ const SETTING_SCHEMAS = {
         ),
         handleSettingsBox,
     ],
+    static_markers: [
+        pluginFullBasePropBox,
+        handleSettingsBox,
+    ],
     cursor_history: [
         pluginLiteBasePropBox,
         TitledBox(
