@@ -96,11 +96,25 @@ class FastForm extends HTMLElement {
         $bool: { evaluate: (actual, expected) => Boolean(actual) === expected },
     }
     static layout = {
-        createTitle: (title) => title ? `<div class="title">${title}</div>` : "",
-        createTooltip: (field) => field.tooltip ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${utils.escape(field.tooltip).replace("\n", "<br>")}</span></span>` : "",
+        createTitle: (box) => {
+            return box.title
+                ? `<div class="title">${box.title}${this.layout.createTooltip(box)}</div>`
+                : ""
+        },
+        createTooltip: (item) => {
+            return item.tooltip
+                ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${utils.escape(item.tooltip).replace("\n", "<br>")}</span></span>`
+                : ""
+        },
+        createExplain: (field) => `<div class="explain">${utils.escape(field.explain)}</div>`,
+        createLabel: (field) => {
+            return field.explain
+                ? `<div><div>${field.label}${this.layout.createTooltip(field)}</div>${this.layout.createExplain(field)}</div>`
+                : field.label + this.layout.createTooltip(field)
+        },
         createControlContainer: (field, controlHTML, className) => {
             const isBlockLayout = field.isBlockLayout || false
-            const label = isBlockLayout ? "" : `<div class="control-left">${field.label}${this.layout.createTooltip(field)}</div>`
+            const label = isBlockLayout ? "" : `<div class="control-left">${this.layout.createLabel(field)}</div>`
             const control = isBlockLayout ? controlHTML : `<div class="control-right">${controlHTML}</div>`
             const cls = "control" + (isBlockLayout ? " control-block" : "") + (className ? ` ${className}` : "")
             return `<div class="${cls}" data-type="${field.type}" data-control="${field.key}">${label}${control}</div>`
@@ -479,6 +493,8 @@ class FastForm extends HTMLElement {
         })
     }
 
+    getFormElement = () => this.form
+
     _fillForm(schema, container, updateControl = true) {
         const layout = this.constructor.layout
         const createControl = (field) => {
@@ -493,7 +509,7 @@ class FastForm extends HTMLElement {
             return layout.createControlContainer(field, controlHTML, controlOptions.className)
         }
         const createBoxContainer = (box, idx) => {
-            const titleHTML = layout.createTitle(box.title)
+            const titleHTML = layout.createTitle(box)
             const controlHTMLs = (box.fields || []).map(createControl)
             const boxHTML = layout.createBox(controlHTMLs)
             const containerId = layout.genBoxContainerId(box, idx)
@@ -979,7 +995,7 @@ const Switch_Control = defineControl({
         form.onEvent("change", ".native-switch .switch-input", function () {
             form.validateAndCommit(this.dataset.key, this.checked)
         })
-    }
+    },
 })
 
 const Text_Control = defineControl({
@@ -997,7 +1013,25 @@ const Text_Control = defineControl({
         form.onEvent("change", ".text-input", function () {
             form.validateAndCommit(this.dataset.key, this.value)
         })
-    }
+    },
+})
+
+const Color_Control = defineControl({
+    create: ({ field }) => {
+        const { key, placeholder } = getCommonHTMLAttrs(field)
+        return `<input class="color-input" type="color" ${key} ${placeholder}>`
+    },
+    update: ({ element, value, field }) => {
+        const input = element.querySelector(".color-input")
+        if (input) {
+            updateInputState(input, field, value || "#000000")
+        }
+    },
+    bindEvents: ({ form }) => {
+        form.onEvent("change", ".color-input", function () {
+            form.validateAndCommit(this.dataset.key, this.value)
+        })
+    },
 })
 
 const Number_Control = defineControl({
@@ -1018,7 +1052,7 @@ const Number_Control = defineControl({
             const value = this.value === "" ? null : Number(this.value)
             form.validateAndCommit(this.dataset.key, value)
         })
-    }
+    },
 })
 
 const Unit_Control = defineControl({
@@ -1040,7 +1074,7 @@ const Unit_Control = defineControl({
             const value = this.value === "" ? null : Number(this.value)
             form.validateAndCommit(this.dataset.key, value)
         })
-    }
+    },
 })
 
 const Range_Control = defineControl({
@@ -1066,8 +1100,7 @@ const Range_Control = defineControl({
         form.onEvent("input", ".range-input", function () {
             this.nextElementSibling.textContent = Range_Control._toFixed2(Number(this.value))
         }).onEvent("change", ".range-input", function () {
-            const value = Number(this.value)
-            form.validateAndCommit(this.dataset.key, value)
+            form.validateAndCommit(this.dataset.key, Number(this.value))
         })
     },
     _toFixed2: (num) => {
@@ -1185,7 +1218,7 @@ const Hotkey_Control = defineControl({
             ev.stopPropagation()
             ev.preventDefault()
         }, true)
-    }
+    },
 })
 
 const Textarea_Control = defineControl({
@@ -1210,7 +1243,7 @@ const Textarea_Control = defineControl({
         form.onEvent("change", ".textarea", function () {
             form.validateAndCommit(this.dataset.key, this.value)
         })
-    }
+    },
 })
 
 const Object_Control = defineControl({
@@ -1367,7 +1400,7 @@ const Array_Control = defineControl({
             <div class="array-item-delete">×</div>
         </div>
     `,
-    _createItems: (items) => (Array.isArray(items) ? items : []).map(Array_Control._createItem).join("")
+    _createItems: (items) => (Array.isArray(items) ? items : []).map(Array_Control._createItem).join(""),
 })
 
 const Select_Control = defineControl({
@@ -1416,7 +1449,7 @@ const Select_Control = defineControl({
             ev.stopPropagation()
             ev.preventDefault()
             const optionBox = this.nextElementSibling
-            const boxes = [...form.form.querySelectorAll(".option-box")]
+            const boxes = [...form.getFormElement().querySelectorAll(".option-box")]
             boxes.filter(box => box !== optionBox).forEach(utils.hide)
             utils.toggleInvisible(optionBox)
             const isShown = utils.isShow(optionBox)
@@ -1482,7 +1515,7 @@ const Radio_Control = defineControl({
             const name = this.getAttribute("name")
             form.validateAndCommit(name, this.value)
         })
-    }
+    },
 })
 
 const Checkbox_Control = defineControl({
@@ -1522,7 +1555,7 @@ const Checkbox_Control = defineControl({
             const checkboxValues = [...checkboxEl.querySelectorAll(".checkbox-input:checked")].map(e => e.value)
             form.validateAndCommit(checkboxEl.dataset.key, checkboxValues)
         })
-    }
+    },
 })
 
 const Table_Control = defineControl({
@@ -1678,6 +1711,7 @@ const Composite_Control = defineControl({
 
 FastForm.registerControl("switch", Switch_Control)
 FastForm.registerControl("text", Text_Control)
+FastForm.registerControl("color", Color_Control)
 FastForm.registerControl("number", Number_Control)
 FastForm.registerControl("unit", Unit_Control)
 FastForm.registerControl("range", Range_Control)
@@ -1735,7 +1769,7 @@ FastForm.registerConditionEvaluator("$length", {
                 : (typeof fieldValue === "string" ? fieldValue.length : 0)
             return ctx.compare(actualLength, subCond)
         })
-    }
+    },
 })
 
 FastForm.registerComparisonEvaluator("$regex", {
@@ -1767,7 +1801,7 @@ FastForm.registerComparisonEvaluator("$regex", {
             return true
         }
         return processedExpected_Regex.test(processedActual)
-    }
+    },
 })
 
 function Try(fn, buildErr = utils.identity) {

@@ -259,7 +259,7 @@ const specificRules = [
     MD058, MD059, MD101, MD102,
 ]
 
-const generalRules = Object.entries(generalRulesMap).map(([name, rules]) => Switch(name, { tooltip: rules.join(", ") }))
+const generalRules = Object.entries(generalRulesMap).map(([name, rules]) => Switch(name, { explain: rules.join("、") }))
 
 const actions = [
     Action("viewRules", _t("$label.viewMarkdownlintRules")),

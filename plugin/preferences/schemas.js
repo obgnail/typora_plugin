@@ -31,6 +31,11 @@ const Text = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {
     placeholder = Placeholder(placeholder)
     return { type: "text", key, label, tooltip, placeholder, disabled, dependencies, ...args }
 }
+const Color = (key, { tooltip, disabled, dependencies, ...args } = {}) => {
+    const label = Label(key)
+    tooltip = Tooltip(tooltip)
+    return { type: "color", key, label, tooltip, disabled, dependencies, ...args }
+}
 const Hotkey = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
@@ -73,29 +78,30 @@ const Composite = (key, subSchema, defaultValues, { tooltip, disabled, dependenc
     tooltip = Tooltip(tooltip)
     return { type: "composite", key, label, subSchema, defaultValues, tooltip, disabled, dependencies, ...args }
 }
+const Field = (field) => field
 
-const Title = title => title
+const Title = (title) => `$title.${title}`
 const UntitledBox = (...fields) => ({ title: undefined, fields })
-const TitledBox = (title, ...fields) => ({ title: `$title.${title}`, fields })
+const TitledBox = (title, ...fields) => ({ title, fields })
 
-const ObjectBOX = (key, { rows = 10, dependencies, ...args } = {}) => {
-    return TitledBox(key, { type: "object", key, rows, dependencies, ...args })
+const ObjectBox = (key, { rows = 10, dependencies, ...args } = {}) => {
+    return TitledBox(Title(key), Field({ type: "object", key, rows, dependencies, ...args }))
 }
 const TextareaBox = (key, { rows = 10, dependencies, ...args } = {}) => {
-    return TitledBox(key, { type: "textarea", key, rows, dependencies, ...args })
+    return TitledBox(Title(key), Field({ type: "textarea", key, rows, dependencies, ...args }))
 }
 const ArrayBox = (key, { dependencies, ...args } = {}) => {
-    return TitledBox(key, { type: "array", key, dependencies, ...args })
+    return TitledBox(Title(key), Field({ type: "array", key, dependencies, ...args }))
 }
 const TableBox = (key, ths, nestedBoxes, defaultValues, { dependencies, ...args } = {}) => {
     const thMap = Object.fromEntries(ths.map(th => [th, `$label.${key}.${th}`]))
-    return TitledBox(key, { type: "table", key, nestedBoxes, defaultValues, thMap, dependencies, ...args })
+    return TitledBox(Title(key), Field({ type: "table", key, nestedBoxes, defaultValues, thMap, dependencies, ...args }))
 }
 const RadioBox = (key, options, { dependencies, ...args } = {}) => {
-    return TitledBox(key, { type: "radio", key, options, dependencies, ...args })
+    return TitledBox(Title(key), Field({ type: "radio", key, options, dependencies, ...args }))
 }
 const CheckboxBox = (key, options, { minItems, maxItems, dependencies, ...args } = {}) => {
-    return TitledBox(key, { type: "checkbox", options, key, minItems, maxItems, dependencies, ...args })
+    return TitledBox(Title(key), Field({ type: "checkbox", options, key, minItems, maxItems, dependencies, ...args }))
 }
 
 const prop_ENABLE = Switch("ENABLE")
@@ -344,11 +350,14 @@ const SETTING_SCHEMAS = {
             ["name", "shell", "cmd"],
             [
                 UntitledBox(
-                    { type: "switch", key: "disable", label: "$label.BUILTIN.disable" },
-                    { type: "select", key: "shell", label: "$label.BUILTIN.shell", options: OPTIONS.commander["BUILTIN.shell"] },
-                    { type: "text", key: "name", label: "$label.BUILTIN.name" },
+                    Field({ type: "switch", key: "disable", label: "$label.BUILTIN.disable" }),
+                    Field({ type: "select", key: "shell", label: "$label.BUILTIN.shell", options: OPTIONS.commander["BUILTIN.shell"] }),
+                    Field({ type: "text", key: "name", label: "$label.BUILTIN.name" }),
                 ),
-                TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 5, placeholder: "envInfo" }),
+                TitledBox(
+                    Title("BUILTIN.cmd"),
+                    Field({ type: "textarea", key: "cmd", rows: 5, placeholder: "envInfo" }),
+                ),
             ],
             {
                 name: "",
@@ -511,7 +520,7 @@ const SETTING_SCHEMAS = {
             Number("DEFAULT_TOC_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...markmapTocDep }),
         ),
         ArrayBox("DEFAULT_TOC_OPTIONS.color", markmapTocDep),
-        ObjectBOX("CANDIDATE_COLOR_SCHEMES", markmapTocDep),
+        ObjectBox("CANDIDATE_COLOR_SCHEMES", markmapTocDep),
         TitledBox(
             Title("mindmapDiagramExport"),
             Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL", markmapTocDep),
@@ -590,29 +599,29 @@ const SETTING_SCHEMAS = {
                     Hint("counterStyles", "counterStyles"),
                 ),
                 UntitledBox(
-                    { type: "switch", key: "selected", label: "$label.LAYOUTS.selected" },
-                    { type: "text", key: "name", label: "$label.LAYOUTS.name" },
-                    { type: "text", key: "layout.content-h1", label: "$label.LAYOUTS.layout.content-h1" },
-                    { type: "text", key: "layout.content-h2", label: "$label.LAYOUTS.layout.content-h2" },
-                    { type: "text", key: "layout.content-h3", label: "$label.LAYOUTS.layout.content-h3" },
-                    { type: "text", key: "layout.content-h4", label: "$label.LAYOUTS.layout.content-h4" },
-                    { type: "text", key: "layout.content-h5", label: "$label.LAYOUTS.layout.content-h5" },
-                    { type: "text", key: "layout.content-h6", label: "$label.LAYOUTS.layout.content-h6" },
-                    { type: "text", key: "layout.outline-h1", label: "$label.LAYOUTS.layout.outline-h1" },
-                    { type: "text", key: "layout.outline-h2", label: "$label.LAYOUTS.layout.outline-h2" },
-                    { type: "text", key: "layout.outline-h3", label: "$label.LAYOUTS.layout.outline-h3" },
-                    { type: "text", key: "layout.outline-h4", label: "$label.LAYOUTS.layout.outline-h4" },
-                    { type: "text", key: "layout.outline-h5", label: "$label.LAYOUTS.layout.outline-h5" },
-                    { type: "text", key: "layout.outline-h6", label: "$label.LAYOUTS.layout.outline-h6" },
-                    { type: "text", key: "layout.toc-h1", label: "$label.LAYOUTS.layout.toc-h1" },
-                    { type: "text", key: "layout.toc-h2", label: "$label.LAYOUTS.layout.toc-h2" },
-                    { type: "text", key: "layout.toc-h3", label: "$label.LAYOUTS.layout.toc-h3" },
-                    { type: "text", key: "layout.toc-h4", label: "$label.LAYOUTS.layout.toc-h4" },
-                    { type: "text", key: "layout.toc-h5", label: "$label.LAYOUTS.layout.toc-h5" },
-                    { type: "text", key: "layout.toc-h6", label: "$label.LAYOUTS.layout.toc-h6" },
-                    { type: "text", key: "layout.table", label: "$label.LAYOUTS.layout.table" },
-                    { type: "text", key: "layout.image", label: "$label.LAYOUTS.layout.image" },
-                    { type: "text", key: "layout.fence", label: "$label.LAYOUTS.layout.fence" },
+                    Field({ type: "switch", key: "selected", label: "$label.LAYOUTS.selected" }),
+                    Field({ type: "text", key: "name", label: "$label.LAYOUTS.name" }),
+                    Field({ type: "text", key: "layout.content-h1", label: "$label.LAYOUTS.layout.content-h1" }),
+                    Field({ type: "text", key: "layout.content-h2", label: "$label.LAYOUTS.layout.content-h2" }),
+                    Field({ type: "text", key: "layout.content-h3", label: "$label.LAYOUTS.layout.content-h3" }),
+                    Field({ type: "text", key: "layout.content-h4", label: "$label.LAYOUTS.layout.content-h4" }),
+                    Field({ type: "text", key: "layout.content-h5", label: "$label.LAYOUTS.layout.content-h5" }),
+                    Field({ type: "text", key: "layout.content-h6", label: "$label.LAYOUTS.layout.content-h6" }),
+                    Field({ type: "text", key: "layout.outline-h1", label: "$label.LAYOUTS.layout.outline-h1" }),
+                    Field({ type: "text", key: "layout.outline-h2", label: "$label.LAYOUTS.layout.outline-h2" }),
+                    Field({ type: "text", key: "layout.outline-h3", label: "$label.LAYOUTS.layout.outline-h3" }),
+                    Field({ type: "text", key: "layout.outline-h4", label: "$label.LAYOUTS.layout.outline-h4" }),
+                    Field({ type: "text", key: "layout.outline-h5", label: "$label.LAYOUTS.layout.outline-h5" }),
+                    Field({ type: "text", key: "layout.outline-h6", label: "$label.LAYOUTS.layout.outline-h6" }),
+                    Field({ type: "text", key: "layout.toc-h1", label: "$label.LAYOUTS.layout.toc-h1" }),
+                    Field({ type: "text", key: "layout.toc-h2", label: "$label.LAYOUTS.layout.toc-h2" }),
+                    Field({ type: "text", key: "layout.toc-h3", label: "$label.LAYOUTS.layout.toc-h3" }),
+                    Field({ type: "text", key: "layout.toc-h4", label: "$label.LAYOUTS.layout.toc-h4" }),
+                    Field({ type: "text", key: "layout.toc-h5", label: "$label.LAYOUTS.layout.toc-h5" }),
+                    Field({ type: "text", key: "layout.toc-h6", label: "$label.LAYOUTS.layout.toc-h6" }),
+                    Field({ type: "text", key: "layout.table", label: "$label.LAYOUTS.layout.table" }),
+                    Field({ type: "text", key: "layout.image", label: "$label.LAYOUTS.layout.image" }),
+                    Field({ type: "text", key: "layout.fence", label: "$label.LAYOUTS.layout.fence" }),
                 ),
             ],
             {
@@ -683,13 +692,22 @@ const SETTING_SCHEMAS = {
             ["HINT", "ICON"],
             [
                 UntitledBox(
-                    { type: "switch", key: "DISABLE", label: "$label.CUSTOM_BUTTONS.DISABLE" },
-                    { type: "text", key: "ICON", label: "$label.CUSTOM_BUTTONS.ICON" },
-                    { type: "text", key: "HINT", label: "$label.CUSTOM_BUTTONS.HINT" },
+                    Field({ type: "switch", key: "DISABLE", label: "$label.CUSTOM_BUTTONS.DISABLE" }),
+                    Field({ type: "text", key: "ICON", label: "$label.CUSTOM_BUTTONS.ICON" }),
+                    Field({ type: "text", key: "HINT", label: "$label.CUSTOM_BUTTONS.HINT" }),
                 ),
-                TitledBox("CUSTOM_BUTTONS.ON_INIT", { type: "textarea", key: "ON_INIT", rows: 3 }),
-                TitledBox("CUSTOM_BUTTONS.ON_RENDER", { type: "textarea", key: "ON_RENDER", rows: 3 }),
-                TitledBox("CUSTOM_BUTTONS.ON_CLICK", { type: "textarea", key: "ON_CLICK", rows: 3 }),
+                TitledBox(
+                    Title("CUSTOM_BUTTONS.ON_INIT"),
+                    Field({ type: "textarea", key: "ON_INIT", rows: 3 }),
+                ),
+                TitledBox(
+                    Title("CUSTOM_BUTTONS.ON_RENDER"),
+                    Field({ type: "textarea", key: "ON_RENDER", rows: 3 }),
+                ),
+                TitledBox(
+                    Title("CUSTOM_BUTTONS.ON_CLICK"),
+                    Field({ type: "textarea", key: "ON_CLICK", rows: 3 }),
+                ),
             ],
             {
                 DISABLE: false,
@@ -717,10 +735,13 @@ const SETTING_SCHEMAS = {
             ["HOTKEY", "CALLBACK"],
             [
                 UntitledBox(
-                    { type: "switch", key: "DISABLE", label: "$label.CUSTOM_HOTKEYS.DISABLE" },
-                    { type: "text", key: "HOTKEY", label: "$label.CUSTOM_HOTKEYS.HOTKEY" },
+                    Field({ type: "switch", key: "DISABLE", label: "$label.CUSTOM_HOTKEYS.DISABLE" }),
+                    Field({ type: "text", key: "HOTKEY", label: "$label.CUSTOM_HOTKEYS.HOTKEY" }),
                 ),
-                TitledBox("CUSTOM_HOTKEYS.CALLBACK", { type: "textarea", key: "CALLBACK", rows: 5 }),
+                TitledBox(
+                    Title("CUSTOM_HOTKEYS.CALLBACK"),
+                    Field({ type: "textarea", key: "CALLBACK", rows: 5 }),
+                ),
             ],
             {
                 DISABLE: false,
@@ -807,8 +828,8 @@ const SETTING_SCHEMAS = {
             ["hotkey", "action"],
             [
                 UntitledBox(
-                    { type: "hotkey", key: "hotkey", label: "$label.ACTION_HOTKEYS.hotkey" },
-                    { type: "select", key: "action", label: "$label.ACTION_HOTKEYS.action", options: OPTIONS.text_stylize.TOOLS },
+                    Field({ type: "hotkey", key: "hotkey", label: "$label.ACTION_HOTKEYS.hotkey" }),
+                    Field({ type: "select", key: "action", label: "$label.ACTION_HOTKEYS.action", options: OPTIONS.text_stylize.TOOLS }),
                 ),
             ],
             {
@@ -818,12 +839,12 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             Title("buttonDefaultOptions"),
-            Text("DEFAULT_COLORS.FOREGROUND"),
-            Text("DEFAULT_COLORS.BACKGROUND"),
-            Text("DEFAULT_COLORS.BORDER"),
+            Color("DEFAULT_COLORS.FOREGROUND"),
+            Color("DEFAULT_COLORS.BACKGROUND"),
+            Color("DEFAULT_COLORS.BORDER"),
             Text("DEFAULT_FORMAT_BRUSH", { tooltip: "brushExample" }),
         ),
-        ObjectBOX("COLOR_TABLE"),
+        ObjectBox("COLOR_TABLE"),
         handleSettingsBox,
     ],
     cipher: [
@@ -902,16 +923,19 @@ const SETTING_SCHEMAS = {
             ["keyword", "type"],
             [
                 UntitledBox(
-                    { type: "switch", key: "enable", label: "$label.COMMANDS.enable" },
-                    { type: "select", key: "type", label: "$label.COMMANDS.type", options: OPTIONS.slash_commands["COMMANDS.type"] },
-                    { type: "select", key: "scope", label: "$label.COMMANDS.scope", options: OPTIONS.slash_commands["COMMANDS.scope"] },
-                    { type: "text", key: "keyword", label: "$label.COMMANDS.keyword", placeholder: "$placeholder.LettersAndNumbersOnly" },
-                    { type: "text", key: "icon", label: "$label.COMMANDS.icon", placeholder: "$placeholder.emojiOnly" },
-                    { type: "text", key: "hint", label: "$label.COMMANDS.hint" },
-                    { type: "number", key: "cursorOffset.0", label: "$label.COMMANDS.cursorOffset.0" },
-                    { type: "number", key: "cursorOffset.1", label: "$label.COMMANDS.cursorOffset.1" },
+                    Field({ type: "switch", key: "enable", label: "$label.COMMANDS.enable" }),
+                    Field({ type: "select", key: "type", label: "$label.COMMANDS.type", options: OPTIONS.slash_commands["COMMANDS.type"] }),
+                    Field({ type: "select", key: "scope", label: "$label.COMMANDS.scope", options: OPTIONS.slash_commands["COMMANDS.scope"] }),
+                    Field({ type: "text", key: "keyword", label: "$label.COMMANDS.keyword", placeholder: "$placeholder.LettersAndNumbersOnly" }),
+                    Field({ type: "text", key: "icon", label: "$label.COMMANDS.icon", placeholder: "$placeholder.emojiOnly" }),
+                    Field({ type: "text", key: "hint", label: "$label.COMMANDS.hint" }),
+                    Field({ type: "number", key: "cursorOffset.0", label: "$label.COMMANDS.cursorOffset.0" }),
+                    Field({ type: "number", key: "cursorOffset.1", label: "$label.COMMANDS.cursorOffset.1" }),
                 ),
-                TitledBox("COMMANDS.callback", { type: "textarea", key: "callback", rows: 5, placeholder: "$placeholder.callbackType" }),
+                TitledBox(
+                    Title("COMMANDS.callback"),
+                    Field({ type: "textarea", key: "callback", rows: 5, placeholder: "$placeholder.callbackType" }),
+                ),
             ],
             {
                 enable: true,
@@ -943,8 +967,13 @@ const SETTING_SCHEMAS = {
             "MENUS",
             ["NAME", "LIST"],
             [
-                UntitledBox({ type: "text", key: "NAME", label: "$label.MENUS.NAME" }),
-                TitledBox("MENUS.LIST", { type: "object", key: "LIST", rows: 10 }),
+                UntitledBox(
+                    Field({ type: "text", key: "NAME", label: "$label.MENUS.NAME" })
+                ),
+                TitledBox(
+                    Title("MENUS.LIST"),
+                    Field({ type: "object", key: "LIST", rows: 10 }),
+                ),
             ],
             {
                 NAME: "",
@@ -967,8 +996,8 @@ const SETTING_SCHEMAS = {
             ["CALLBACK", "ICON"],
             [
                 UntitledBox(
-                    { type: "text", key: "ICON", label: "$label.BUTTONS.ICON" },
-                    { type: "text", key: "CALLBACK", label: "$label.BUTTONS.CALLBACK" },
+                    Field({ type: "text", key: "ICON", label: "$label.BUTTONS.ICON" }),
+                    Field({ type: "text", key: "CALLBACK", label: "$label.BUTTONS.CALLBACK" }),
                 ),
             ],
             {
@@ -1029,14 +1058,17 @@ const SETTING_SCHEMAS = {
             ["hotkey", "desc"],
             [
                 UntitledBox(
-                    { type: "switch", key: "enable", label: "$label.CUSTOM_HOTKEYS.enable" },
-                    { type: "hotkey", key: "hotkey", label: "$label.CUSTOM_HOTKEYS.hotkey" },
-                    { type: "text", key: "desc", label: "$label.CUSTOM_HOTKEYS.desc" },
-                    { type: "text", key: "plugin", label: "$label.CUSTOM_HOTKEYS.plugin" },
-                    { type: "text", key: "function", label: "$label.CUSTOM_HOTKEYS.function" },
-                    { type: "text", key: "closestSelector", label: "$label.CUSTOM_HOTKEYS.closestSelector" },
+                    Field({ type: "switch", key: "enable", label: "$label.CUSTOM_HOTKEYS.enable" }),
+                    Field({ type: "hotkey", key: "hotkey", label: "$label.CUSTOM_HOTKEYS.hotkey" }),
+                    Field({ type: "text", key: "desc", label: "$label.CUSTOM_HOTKEYS.desc" }),
+                    Field({ type: "text", key: "plugin", label: "$label.CUSTOM_HOTKEYS.plugin" }),
+                    Field({ type: "text", key: "function", label: "$label.CUSTOM_HOTKEYS.function" }),
+                    Field({ type: "text", key: "closestSelector", label: "$label.CUSTOM_HOTKEYS.closestSelector" }),
                 ),
-                TitledBox("CUSTOM_HOTKEYS.evil", { type: "textarea", key: "evil", rows: 3 }),
+                TitledBox(
+                    Title("CUSTOM_HOTKEYS.evil"),
+                    Field({ type: "textarea", key: "evil", rows: 3 }),
+                ),
             ],
             {
                 enable: true,
@@ -1261,7 +1293,7 @@ const SETTING_SCHEMAS = {
         langModeBox,
         chartStyleBox,
         TextareaBox("TEMPLATE"),
-        ObjectBOX("VISUAL_OPTIONS", { rows: 5 }),
+        ObjectBox("VISUAL_OPTIONS", { rows: 5 }),
         UntitledBox(
             Action("viewAbcVisualOptionsHelp"),
         ),
@@ -1312,10 +1344,10 @@ const SETTING_SCHEMAS = {
             ["type", "icon", "background_color"],
             [
                 UntitledBox(
-                    { type: "text", key: "type", label: "$label.list.type" },
-                    { type: "text", key: "icon", label: "$label.list.icon" },
-                    { type: "text", key: "background_color", label: "$label.list.background_color" },
-                    { type: "text", key: "left_line_color", label: "$label.list.left_line_color" },
+                    Field({ type: "text", key: "type", label: "$label.list.type" }),
+                    Field({ type: "text", key: "icon", label: "$label.list.icon" }),
+                    Field({ type: "text", key: "background_color", label: "$label.list.background_color" }),
+                    Field({ type: "text", key: "left_line_color", label: "$label.list.left_line_color" }),
                 ),
             ],
             {
@@ -1338,10 +1370,13 @@ const SETTING_SCHEMAS = {
             ["name", "callback"],
             [
                 UntitledBox(
-                    { type: "switch", key: "enable", label: "$label.template_variables.enable" },
-                    { type: "text", key: "name", label: "$label.template_variables.name" },
+                    Field({ type: "switch", key: "enable", label: "$label.template_variables.enable" }),
+                    Field({ type: "text", key: "name", label: "$label.template_variables.name" }),
                 ),
-                TitledBox("template_variables.callback", { type: "textarea", key: "callback", rows: 5 }),
+                TitledBox(
+                    Title("template_variables.callback"),
+                    Field({ type: "textarea", key: "callback", rows: 5 }),
+                ),
             ],
             {
                 enable: true,
@@ -1354,7 +1389,10 @@ const SETTING_SCHEMAS = {
             ["name", "text"],
             [
                 UntitledBox({ type: "text", key: "name", label: "$label.template.name" }),
-                TitledBox("template.text", { type: "textarea", key: "text", rows: 10 }),
+                TitledBox(
+                    Title("template.text"),
+                    Field({ type: "textarea", key: "text", rows: 10 }),
+                ),
             ],
             {
                 name: "",
@@ -1378,8 +1416,8 @@ const SETTING_SCHEMAS = {
             ["0", "1"],
             [
                 UntitledBox(
-                    { type: "text", key: "0", label: "$label.auto_pair_symbols.0" },
-                    { type: "text", key: "1", label: "$label.auto_pair_symbols.1" },
+                    Field({ type: "text", key: "0", label: "$label.auto_pair_symbols.0" }),
+                    Field({ type: "text", key: "1", label: "$label.auto_pair_symbols.1" }),
                 ),
             ],
             ["", ""],
@@ -1389,8 +1427,8 @@ const SETTING_SCHEMAS = {
             ["0", "1"],
             [
                 UntitledBox(
-                    { type: "text", key: "0", label: "$label.auto_swap_symbols.0" },
-                    { type: "text", key: "1", label: "$label.auto_swap_symbols.1" },
+                    Field({ type: "text", key: "0", label: "$label.auto_swap_symbols.0" }),
+                    Field({ type: "text", key: "1", label: "$label.auto_swap_symbols.1" }),
                 ),
             ],
             ["", ""],
@@ -1491,8 +1529,8 @@ const SETTING_SCHEMAS = {
             ["0", "1"],
             [
                 UntitledBox(
-                    { type: "hotkey", key: "0", label: "$label.hotkey_function.0" },
-                    { type: "select", key: "1", label: "$label.hotkey_function.1", options: OPTIONS.imageReviewer.operations },
+                    Field({ type: "hotkey", key: "0", label: "$label.hotkey_function.0" }),
+                    Field({ type: "select", key: "1", label: "$label.hotkey_function.1", options: OPTIONS.imageReviewer.operations }),
                 ),
             ],
             ["", "nextImage"],
@@ -1524,10 +1562,10 @@ const SETTING_SCHEMAS = {
             Text("button_width", { dependencies: { use_button: true } }),
             Text("button_height", { dependencies: { use_button: true } }),
             Text("button_border_radius", { dependencies: { use_button: true } }),
-            Text("pass_color", { dependencies: { use_button: true } }),
-            Text("error_color", { dependencies: { use_button: true } }),
+            Color("pass_color", { dependencies: { use_button: true } }),
+            Color("error_color", { dependencies: { use_button: true } }),
         ),
-        ObjectBOX("rule_config", { rows: 10 }),
+        ObjectBox("rule_config", { rows: 10 }),
         ArrayBox("custom_rules_files"),
         UntitledBox(
             Action("viewMarkdownlintRules"),
@@ -1555,17 +1593,20 @@ const SETTING_SCHEMAS = {
             ["coordinate", "icon"],
             [
                 UntitledBox(
-                    { type: "switch", key: "disable", label: "$label.buttons.disable" },
-                    { type: "number", key: "coordinate.0", label: "$label.buttons.coordinate.0", tooltip: "$tooltip.buttons.coordinate.0" },
-                    { type: "number", key: "coordinate.1", label: "$label.buttons.coordinate.1", tooltip: "$tooltip.buttons.coordinate.1" },
-                    { type: "text", key: "icon", label: "$label.buttons.icon" },
-                    { type: "text", key: "size", label: "$label.buttons.size" },
-                    { type: "text", key: "color", label: "$label.buttons.color" },
-                    { type: "text", key: "bgColor", label: "$label.buttons.bgColor" },
-                    { type: "text", key: "hint", label: "$label.buttons.hint" },
-                    { type: "text", key: "callback", label: "$label.buttons.callback", tooltip: "$tooltip.exclusive" },
+                    Field({ type: "switch", key: "disable", label: "$label.buttons.disable" }),
+                    Field({ type: "number", key: "coordinate.0", label: "$label.buttons.coordinate.0", tooltip: "$tooltip.buttons.coordinate.0" }),
+                    Field({ type: "number", key: "coordinate.1", label: "$label.buttons.coordinate.1", tooltip: "$tooltip.buttons.coordinate.1" }),
+                    Field({ type: "text", key: "icon", label: "$label.buttons.icon" }),
+                    Field({ type: "text", key: "size", label: "$label.buttons.size" }),
+                    Field({ type: "text", key: "color", label: "$label.buttons.color" }),
+                    Field({ type: "text", key: "bgColor", label: "$label.buttons.bgColor" }),
+                    Field({ type: "text", key: "hint", label: "$label.buttons.hint" }),
+                    Field({ type: "text", key: "callback", label: "$label.buttons.callback", tooltip: "$tooltip.exclusive" }),
                 ),
-                TitledBox("buttons.evil", { type: "textarea", key: "evil", placeholder: "$placeholder.customCallback", rows: 5 }),
+                TitledBox(
+                    Title("buttons.evil"),
+                    Field({ type: "textarea", key: "evil", placeholder: "$placeholder.customCallback", rows: 5 }),
+                ),
             ],
             {
                 disable: true,
