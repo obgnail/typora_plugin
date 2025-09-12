@@ -593,7 +593,7 @@
     "$title.fence": "Code Block",
     "$title.fenceDiagramDefaultOptions": "Code Block Diagram Default Options",
     "$tooltip.zero": "0 indicates unlimited",
-    "$tooltip.tempDir": "If empty or non-existent, the TEMP directory will be used",
+    "$tooltip.tempDir": "If empty, the TEMP directory will be used",
     "$tooltip.experimental": "Experimental feature, only available when the 'collapse_paragraph' plugin is enabled.",
     "$tooltip.removeForeignObj": "Sacrifices style for compatibility. If the downloaded image is abnormal, check this option",
     "$tooltip.positioningViewPort": "Position the target section to the current viewport height",

@@ -80,7 +80,7 @@
 .plugin-preferences-menu {
     flex: 1;
     overflow: hidden auto;
-    padding: 8px 12px;
+    padding: 8px 8px 8px 12px;
 }
 
 .plugin-preferences-menu-item {

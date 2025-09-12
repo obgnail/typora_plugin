@@ -84,7 +84,7 @@ const MD009 = ConfigurableRule(
 )
 const MD010 = ConfigurableRule(
     "MD010",
-    Number("MD010.spaces_per_tab", { min: 0 }),
+    Number("MD010.spaces_per_tab", { min: 1 }),
     Switch("MD010.code_blocks"),
     Array_Inline("MD010.ignore_code_languages", { dependencies: { "MD010.code_blocks": true } }),
 )

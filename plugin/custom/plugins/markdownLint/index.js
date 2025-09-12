@@ -152,20 +152,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 extends: cfg.extends || "",  // `extends` type is null or string. Text fields do not support null, convert it to an empty string
             }
         }
-        const getHooks = () => ({
-            onParseValue: ({ key, value }) => {
-                if (key === "extends") {
-                    value = value.trim()
-                } else if (key === "MD022.lines_above" || key === "MD022.lines_below") {
-                    try {
-                        return JSON.parse(value)
-                    } catch (err) {
-                        console.error(err)
-                    }
-                }
-                return value
-            }
-        })
         const getRules = () => {
             const readJSON = ({ value }) => {
                 if (!value) return
@@ -183,12 +169,35 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 if (isArr && value.length !== 6) {
                     return new Error(`The length of the Array must be 6, got ${value.length}`)
                 }
+                if (isArr && value.some(item => isNaN(item))) {
+                    return new Error(`Array elements must be numbers`)
+                }
             }
             return {
                 "extends": ["path", readJSON],
                 "MD022.lines_above": numberOrNumberArray,
                 "MD022.lines_below": numberOrNumberArray,
+                "MD025.front_matter_title": ["required", "regex"],
+                "MD041.front_matter_title": ["required", "regex"],
                 "MD043.headings": { name: "pattern", args: [/^(\*|\+|\?|#{1,6}\s+\S.*)$/] },
+            }
+        }
+        const getParsers = () => {
+            const toNumberOrNumberArray = (value) => {
+                if (!isNaN(value)) {
+                    return Number(value)
+                }
+                try {
+                    return JSON.parse(`[${value}]`).flat()  // supports: [1,2,3] or 1,2,3
+                } catch (err) {
+                    console.error(err)
+                }
+                return value
+            }
+            return {
+                "extends": (value) => value.trim(),
+                "MD022.lines_above": toNumberOrNumberArray,
+                "MD022.lines_below": toNumberOrNumberArray,
             }
         }
         const getActions = () => ({
@@ -211,8 +220,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
             schema: require("./config-schema.js"),
             data: getData(),
             actions: getActions(),
-            hooks: getHooks(),
             rules: getRules(),
+            parsers: getParsers(),
         }
         const { response, data } = await this.utils.formDialog.modal(op)
         if (response === 1) {

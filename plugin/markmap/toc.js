@@ -391,9 +391,9 @@ class tocMarkmap {
                     field("DOWNLOAD_OPTIONS.IMAGE_SCALE", "number", { min: 0.1, step: 0.1 }),
                     field("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", "number", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
                     field("DOWNLOAD_OPTIONS.PADDING_VERTICAL", "number", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
-                    field("DOWNLOAD_OPTIONS.TEXT_COLOR", "text"),
-                    field("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", "text"),
-                    field("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", "text", { tooltip: "jpgFormatOnly" }),
+                    field("DOWNLOAD_OPTIONS.TEXT_COLOR", "color"),
+                    field("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", "color"),
+                    field("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", "color", { tooltip: "jpgFormatOnly" }),
                     field("DOWNLOAD_OPTIONS.IMAGE_QUALITY", "range", { tooltip: "pixelImagesOnly", min: 0.01, max: 1, step: 0.01 }),
                 ),
                 untitledBox(
@@ -444,6 +444,9 @@ class tocMarkmap {
                         _edited = true
                     }
                 }),
+            },
+            rules: {
+                "DOWNLOAD_OPTIONS.FOLDER": "path",
             },
             hooks: {
                 onCommit: () => _edited = true,

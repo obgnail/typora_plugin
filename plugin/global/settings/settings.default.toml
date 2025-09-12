@@ -1101,9 +1101,9 @@ APPLY_EXPORT_HEADER_NUMBERING = """
         const [level, text, ...rest] = header
         counters[level]++
         counters.fill(0, level + 1)
-        const numbers = counters.slice(2, level + 1).join('.')
-        const numbering = numbers ? `${numbers}. ` : ""
-        header[1] = numbering + text
+        const numbering = counters.slice(2, level + 1).join('.')
+        const prefix = numbering ? `${numbering}. ` : ""
+        header[1] = prefix + text
     })
 }
 """

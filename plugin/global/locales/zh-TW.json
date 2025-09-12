@@ -593,7 +593,7 @@
     "$title.fence": "程式碼區塊",
     "$title.fenceDiagramDefaultOptions": "程式碼區塊預設圖形",
     "$tooltip.zero": "0 表示無限制",
-    "$tooltip.tempDir": "為空或不存在則使用 TEMP 目錄",
+    "$tooltip.tempDir": "為空則使用 TEMP 目錄",
     "$tooltip.experimental": "實驗性功能，僅當「章節摺疊」插件開啟時可用",
     "$tooltip.removeForeignObj": "牺牲樣式提高兼容性，匯出圖片異常時勾選",
     "$tooltip.positioningViewPort": "定位目標章節滾動到當前視口高度",

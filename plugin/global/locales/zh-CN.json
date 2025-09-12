@@ -593,7 +593,7 @@
     "$title.fence": "代码块",
     "$title.fenceDiagramDefaultOptions": "代码块默认图形",
     "$tooltip.zero": "0 表示无限制",
-    "$tooltip.tempDir": "为空或不存在则使用 TEMP 目录",
+    "$tooltip.tempDir": "为空则使用 TEMP 目录",
     "$tooltip.experimental": "实验性特性，仅当「章节折叠」插件开启时可用",
     "$tooltip.removeForeignObj": "牺牲样式提高兼容性，导出图片异常时勾选",
     "$tooltip.positioningViewPort": "定位目标章节滚动到当前视口高度",

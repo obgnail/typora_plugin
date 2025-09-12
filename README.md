@@ -72,10 +72,11 @@
 | 53   | article_uploader        | 一键上传博客到支持的所有平台         | ×        |
 | 54   | sortableOutline         | 拖动大纲标题，调整文章结构           | ×        |
 | 55   | cursor_history          | 光标跳转                             | ×        |
-| 56   | custom                  | 开放平台，用户自定义插件（高级）     |          |
-| 57   | hotkeys                 | 快捷键注册中心（高级）               |          |
-| 58   | quickButton             | 于右下角添加功能按钮（高级）         |          |
-| 59   | json_rpc                | 外部操纵 Typora（高级）              | ×        |
+| 56   | static_markers          | Markdown 标记常显                    | ×        |
+| 57   | custom                  | 开放平台，用户自定义插件（高级）     |          |
+| 58   | hotkeys                 | 快捷键注册中心（高级）               |          |
+| 59   | quickButton             | 于右下角添加功能按钮（高级）         |          |
+| 60   | json_rpc                | 外部操纵 Typora（高级）              | ×        |
 
 > 如果有需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果觉得本项目对您有帮助，请不吝点亮一个 Star ⭐！
 
@@ -722,6 +723,16 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 - 上一个光标历史的快捷键：alt+←
 - 下一个光标历史的快捷键：alt+→
+
+> 此插件默认关闭，需手动开启。
+
+
+
+### static_markers：Markdown 标记常显
+
+告别格式刷新的干扰，让您的 Markdown 语法标记 **始终可见、保持静态**。
+
+禁用所见即所得模式下的语法标记自动隐藏功能，让 **、##、_ 等所有 Markdown 标记像在源码模式中一样，永远清晰地展示在您的文本周围。
 
 > 此插件默认关闭，需手动开启。
 

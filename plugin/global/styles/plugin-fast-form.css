@@ -103,6 +103,7 @@
 }
 
 .box {
+    padding: 5px 0;
     background: #FFF;
     border-radius: 8px;
 }
@@ -706,6 +707,10 @@ textarea::placeholder {
 .sub-box-wrapper > .box-container {
     padding: 0;
     margin-bottom: 0;
+}
+
+.sub-box-wrapper > .box-container > .box {
+    padding: 0;
 }
 
 .sub-box-wrapper > .box-container > .box > .control {

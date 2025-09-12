@@ -72,10 +72,11 @@
 | 53   | article_uploader        | One-click upload blog to supported platforms              | ×                  |
 | 54   | sortableOutline         | Drag & drop outline to rearrange                          | ×                  |
 | 55   | cursor_history          | Cursor History                                            | ×                  |
-| 56   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
-| 57   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
-| 58   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
-| 59   | json_rpc                | External control of Typora (advanced)                     | ×                  |
+| 56   | static_markers          | Static Markers                                            | ×                  |
+| 57   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
+| 58   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
+| 59   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
+| 60   | json_rpc                | External control of Typora (advanced)                     | ×                  |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
@@ -632,6 +633,14 @@ Typora comes with ripgrep. This plugin supports using the built-in ripgrep to se
 
 - hotkey for the previous cursor: alt+←
 - hotkey for the next cursor: alt+→
+
+> This plugin is disabled by default and needs to be manually enabled.
+
+### static_markers：Static Markers
+
+Say goodbye to distracting format refreshes. This plugin keeps your Markdown syntax markers always visible and static.
+
+This plugin disables the auto-hiding feature for syntax markers in WYSIWYG mode. It ensures that all Markdown characters—like **, ##, and _—remain persistently visible around your text, just as they would in a source code editor.
 
 > This plugin is disabled by default and needs to be manually enabled.
 

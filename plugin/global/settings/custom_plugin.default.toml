@@ -1406,7 +1406,7 @@ columns = ["line", "rule", "desc", "ops"]
 tools = ["info", "locate", "fix"]
 
 # 检测结果的排序规则
-#   idx:    按序号排列
+#   idx:        按序号排列
 #   lineNumber: 按行排序
 #   ruleName:   按规则名排序
 #   ruleDesc:   按规则描述排序
