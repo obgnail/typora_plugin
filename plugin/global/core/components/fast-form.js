@@ -180,7 +180,6 @@ class FastForm extends HTMLElement {
         queueMicrotask(() => {
             const changesToProcess = new Map(this._runtime.pendingChanges)
             this._runtime.pendingChanges.clear()
-            // Reset the flag to allow new tasks to be queued for the next event loop tick.
             this._runtime.isTaskQueued = false
 
             if (changesToProcess.size === 0) return
@@ -368,53 +367,7 @@ class FastForm extends HTMLElement {
     }
 }
 
-function defineFeature(feature) {
-    return feature
-}
-
-function defineConditionEvaluator(evaluator) {
-    return evaluator
-}
-
-function defineComparisonEvaluator(evaluator) {
-    return evaluator
-}
-
-function defineEffectHandler(handler) {
-    return handler
-}
-
-function defineValidator(validator) {
-    return validator
-}
-
-function defineControl(control) {
-    return control
-}
-
-function compileMatchers({ source, strategy, processValue, errorContext }) {
-    if (!source || typeof source !== "object") {
-        return []
-    }
-    const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-    return Object.entries(source).map(([key, rawValue]) => {
-        const payload = processValue(rawValue, key)
-        if (payload == null) return
-        try {
-            const exp = (strategy === "regex")
-                ? key
-                : (strategy === "wildcard")
-                    ? `^${escapeRegex(key).replace(/\\\*/g, ".*")}$`
-                    : `^${escapeRegex(key)}$`
-            const regex = new RegExp(exp)
-            return { key, regex, ...payload }
-        } catch (e) {
-            throw new Error(`Invalid ${errorContext} pattern for '${strategy}' mode: '${key}'.`)
-        }
-    }).filter(Boolean)
-}
-
-const Feature_EventDelegation = defineFeature({
+const Feature_EventDelegation = {
     install: (FastFormClass) => {
         /**
          * onEvent(events, handler, [options])                 -- onEvent("click", Fn)
@@ -477,9 +430,9 @@ const Feature_EventDelegation = defineFeature({
             return this
         }
     }
-})
+}
 
-const Feature_DefaultKeybindings = defineFeature({
+const Feature_DefaultKeybindings = {
     normalize: ({ options }) => {
         const originalOnRender = options.hooks.onRender
         options.hooks.onRender = (formInstance) => {
@@ -493,23 +446,110 @@ const Feature_DefaultKeybindings = defineFeature({
             originalOnRender(formInstance)
         }
     }
-})
+}
+
+class EventBus {
+    constructor() {
+        this.listeners = {}
+    }
+
+    on(eventName, callback) {
+        if (!this.listeners[eventName]) {
+            this.listeners[eventName] = new Set()
+        }
+        this.listeners[eventName].add(callback)
+    }
+
+    off(eventName, callback) {
+        if (this.listeners[eventName]) {
+            this.listeners[eventName].delete(callback)
+        }
+    }
+
+    emit(eventName, detail) {
+        if (this.listeners[eventName]) {
+            this.listeners[eventName].forEach(callback => callback(detail))
+        }
+    }
+
+    clear() {
+        this.listeners = {}
+    }
+}
 
 const Feature_Watchers = (() => {
     const instanceStates = new WeakMap()
 
     const getState = (form) => {
         if (!instanceStates.has(form)) {
-            instanceStates.set(form, { watchers: new Map(), watchTriggerMap: {}, watcherTriggerCache: new Map() })
+            instanceStates.set(form, {
+                watchers: new Map(),
+                watchTriggerMap: {},
+                watcherTriggerCache: new Map(),
+                eventBus: new EventBus(),
+                isExecutingWatchers: false,
+                pendingWatchers: new Set(),
+            })
         }
         return instanceStates.get(form)
     }
 
     const clearState = (form) => {
         const state = getState(form)
+        state.eventBus.clear()
         state.watchers.clear()
         state.watchTriggerMap = {}
         state.watcherTriggerCache.clear()
+        state.isExecutingWatchers = false
+        state.pendingWatchers.clear()
+    }
+
+    const _activators = {
+        $event: {
+            install: (eventName, ctx) => {
+                const { state, watcherKey, triggerReEvaluation } = ctx
+                if (typeof eventName !== "string") {
+                    console.warn(`FastForm Warning: The value for $event in watcher "${watcherKey}" must be a string (event name).`)
+                    return
+                }
+                const listener = (payload) => triggerReEvaluation(payload)
+                state.eventBus.on(eventName, listener)
+                return () => state.eventBus.off(eventName, listener)
+            },
+        },
+        $interval: {
+            install: (duration, ctx) => {
+                if (typeof duration !== "number" || duration <= 0) {
+                    console.warn(`FastForm Warning: The value for $interval in watcher "${ctx.watcherKey}" must be a positive number (milliseconds). Got: ${duration}`)
+                    return
+                }
+                const tick = () => ctx.triggerReEvaluation()
+                const timerId = setInterval(tick, duration)
+                return () => clearInterval(timerId)
+            }
+        },
+        $promise: {
+            install: (promise, ctx) => {
+                if (!promise || typeof promise.then !== "function") {
+                    console.warn(`FastForm Warning: The value for $promise in watcher "${ctx.watcherKey}" must be a Promise.`)
+                    return
+                }
+                promise
+                    .then(value => ctx.triggerReEvaluation({ status: "resolved", value }))
+                    .catch(reason => ctx.triggerReEvaluation({ status: "rejected", reason }))
+            }
+        },
+        $signal: {
+            install: (signal, ctx) => {
+                if (!(signal instanceof AbortSignal)) {
+                    console.warn(`FastForm Warning: The value for $signal in watcher "${ctx.watcherKey}" must be an AbortSignal instance.`)
+                    return
+                }
+                const listener = (payload) => ctx.triggerReEvaluation(payload)
+                signal.addEventListener("abort", listener, { once: true })
+                return () => signal.removeEventListener("abort", listener)
+            }
+        },
     }
 
     const _conditionEvaluators = {
@@ -550,21 +590,21 @@ const Feature_Watchers = (() => {
     const _effectHandlers = {
         $set: {
             collectAffects: (fieldKeys) => Object.keys(fieldKeys || {}),
-            execute: (isConditionMet, value, context) => {
+            execute: (isConditionMet, value, ctx) => {
                 if (!isConditionMet) return
                 Object.entries(value).forEach(([key, val]) => {
-                    const resolvedValue = (typeof val === "function") ? val(context) : val
-                    if (!utils.deepEqual(resolvedValue, context.getValue(key))) {
-                        context.setValue(key, resolvedValue)
+                    const resolvedValue = (typeof val === "function") ? val(ctx) : val
+                    if (!utils.deepEqual(resolvedValue, ctx.getValue(key))) {
+                        ctx.setValue(key, resolvedValue)
                     }
                 })
             }
         },
         $ui: {
             collectAffects: (keys) => Object.keys(keys).map(key => `@ui/${key}`),
-            execute: (isConditionMet, value, context) => {
+            execute: (isConditionMet, value, ctx) => {
                 Object.entries(value).forEach(([targetKey, actions]) => {
-                    const el = context.getControl(targetKey) || context.getBox(targetKey)
+                    const el = ctx.getControl(targetKey) || ctx.getBox(targetKey)
                     if (!el) return
                     const fns = {
                         toggleClass: (params) => el.classList.toggle(params, isConditionMet),
@@ -581,6 +621,35 @@ const Feature_Watchers = (() => {
                 })
             }
         },
+        $dispatch: {
+            collectAffects: () => [],
+            execute: (isConditionMet, value, context) => {
+                if (!isConditionMet) return
+                Object.entries(value).forEach(([eventName, detail]) => {
+                    const resolvedDetail = (typeof detail === "function") ? detail(context) : detail
+                    context.dispatchEvent(eventName, resolvedDetail)
+                })
+            }
+        },
+        $dispatchDomEvent: {
+            collectAffects: () => [],
+            execute: (isConditionMet, value, context) => {
+                if (!isConditionMet) return
+                Object.entries(value).forEach(([eventName, detail]) => {
+                    const resolvedDetail = (typeof detail === "function") ? detail(context) : detail
+                    context.dispatchDomEvent(new CustomEvent(eventName, { detail: resolvedDetail }))
+                })
+            }
+        },
+    }
+
+    function warnOrPanic(judge, msg, payload = null) {
+        if (judge) {
+            const errorMsg = payload ? `${msg} \nDetails: ${JSON.stringify(payload, null, 2)}` : msg
+            throw new Error(`FastForm Error: ${errorMsg}`)
+        } else {
+            payload ? console.warn(`FastForm Warning: ${msg}`, payload) : console.warn(`FastForm Warning: ${msg}`)
+        }
     }
 
     function evaluateCondition(form, cond) {
@@ -658,8 +727,18 @@ const Feature_Watchers = (() => {
         const state = getState(form)
         const triggerMap = {}
         state.watchers.forEach(watcher => {
-            if (!watcher.when) return
-            const triggerKeys = collectConditionTriggers(form, watcher.when)
+            const triggerKeys = new Set()
+            if (typeof watcher.when === "function" && !Array.isArray(watcher.triggers)) {
+                const msg = `Watcher with a function 'when' is missing the required 'triggers' array. It will not be triggered by data changes.`
+                warnOrPanic(form.options.requireTriggersForFunctionWhen, msg, watcher)
+            }
+            if (Array.isArray(watcher.triggers)) {
+                watcher.triggers.forEach(key => triggerKeys.add(key))
+            }
+            if (watcher.when != null && typeof watcher.when === "object") {
+                collectConditionTriggers(form, watcher.when).forEach(key => triggerKeys.add(key))
+            }
+
             state.watcherTriggerCache.set(watcher, triggerKeys)
             triggerKeys.forEach(key => {
                 if (!triggerMap.hasOwnProperty(key)) {
@@ -685,96 +764,142 @@ const Feature_Watchers = (() => {
         return [...affectSet]
     }
 
-    function getAffects(node, effectHandlers) {
-        let affectArr = []
-        if (typeof node.effect === "function") {
-            if (!Array.isArray(node.affects)) {
-                console.warn("FastForm Warning: A watcher with an imperative function `effect` is missing the required `affects` array. Dependency analysis may be incorrect.", node)
-            }
-            affectArr = node.affects || []
-        } else if (typeof node.effect === "object" && node.effect !== null) {
-            node._inferredAffects = node._inferredAffects || inferAffects(node.effect, effectHandlers)
-            affectArr = node._inferredAffects
+    function collectAffects(node, options) {
+        const affectSet = new Set()
+        if (typeof node.effect === "function" && !Array.isArray(node.affects)) {
+            const msg = `A watcher with an imperative function 'effect' is missing the required 'affects' array. Dependency analysis may be incorrect.`
+            warnOrPanic(options.requireAffectsForFunctionEffect, msg, node)
         }
-        return affectArr
+        if (Array.isArray(node.affects)) {
+            node.affects.forEach(key => affectSet.add(key))
+        }
+        if (node.effect !== null && typeof node.effect === "object") {
+            node._inferredAffects = node._inferredAffects || inferAffects(node.effect, options.effectHandlers)
+            node._inferredAffects.forEach(key => affectSet.add(key))
+        }
+        return affectSet
     }
 
-    // Topological Sorting
-    function executeWatchers(form, initialWatchers) {
-        if (initialWatchers.size === 0) return
-
-        const { watcherTriggerCache } = getState(form)
-        const nodes = [...initialWatchers]
-        const graph = new Map(nodes.map(node => [node, []])) // watcher => [dependent1, dependent2] (Watchers that can only be executed after it)
-        const inDegree = new Map(nodes.map(node => [node, 0])) // watcher => count of dependencies (How many watchers must be executed before it)
-
-        for (const producer of nodes) {
-            for (const consumer of nodes) {
-                if (producer === consumer) continue
-
-                const producerAffects = getAffects(producer, form.options.effectHandlers)
-                if (producerAffects.length === 0) continue
-
-                const consumerTriggerKeys = watcherTriggerCache.get(consumer) || new Set()
-                const hasDependency = producerAffects.some(affectKey => consumerTriggerKeys.has(affectKey))
-                if (hasDependency) {
-                    graph.get(producer).push(consumer) // producer -> consumer
-                    inDegree.set(consumer, inDegree.get(consumer) + 1)
-                }
-            }
-        }
-
-        const queue = nodes.filter(node => inDegree.get(node) === 0)
-        const sortedWatchers = []
-
-        while (queue.length > 0) {
-            const currentWatcher = queue.shift()
-            sortedWatchers.push(currentWatcher)
-
-            const dependents = graph.get(currentWatcher) || []
-            for (const dependent of dependents) {
-                inDegree.set(dependent, inDegree.get(dependent) - 1)
-                if (inDegree.get(dependent) === 0) {
-                    queue.push(dependent)
-                }
-            }
-        }
-
-        if (sortedWatchers.length !== nodes.length) {
-            const cycleNodeKeys = nodes
-                .filter(node => inDegree.get(node) > 0)
-                .map(w => {
-                    const state = getState(form)
-                    for (const [key, watcher] of state.watchers.entries()) {
-                        if (watcher === w) return key
-                    }
-                    return "unknown watcher"
-                })
-                .join(", ")
-            throw new Error(`FastForm Error: Circular dependency detected in watchers. Involved watchers might be: ${cycleNodeKeys}`)
-        }
-
-        const effectContext = {
-            dispatchEvent: (event) => form.form.dispatchEvent(event),
+    function getEffectContext(form, payload) {
+        return {
             getBox: (boxId) => form.form.querySelector(`[data-box="${CSS.escape(boxId)}"]`),
             getControl: (key) => form.form.querySelector(`[data-control="${CSS.escape(key)}"]`),
             getValue: (key) => form.getData(key),
             setValue: (key, value, type) => form.setFieldValue(key, value, type),
+            dispatchEvent: (eventName, detail) => getState(form).eventBus.emit(eventName, { detail }),
+            dispatchDomEvent: (event) => form.form.dispatchEvent(event),
+            getPayload: () => payload,
         }
+    }
 
-        for (const watcher of sortedWatchers) {
-            const isConditionMet = evaluateCondition(form, watcher.when || {})
-            const effect = watcher.effect
-            if (typeof effect === "function") {
-                effect(isConditionMet, effectContext)
-            } else if (typeof effect === "object" && effect !== null) {
-                for (const [effectName, value] of Object.entries(effect)) {
-                    const handler = form.options.effectHandlers[effectName]
-                    if (handler) {
-                        handler.execute(isConditionMet, value, effectContext)
+    function executeEffect(form, effect, isConditionMet, context) {
+        if (typeof effect === "function") {
+            effect(isConditionMet, context)
+        } else if (typeof effect === "object" && effect !== null) {
+            for (const [effectName, value] of Object.entries(effect)) {
+                const handler = form.options.effectHandlers[effectName]
+                if (handler) {
+                    handler.execute(isConditionMet, value, context)
+                }
+            }
+        }
+    }
+
+    // Topological Sorting
+    function executeWatchersCore(form, state, initialWatchers, payload) {
+        const watchersToProcess = new Set(initialWatchers)
+        while (watchersToProcess.size > 0) {
+            const nodes = [...watchersToProcess]
+            watchersToProcess.clear()
+
+            const { watcherTriggerCache, watchers } = state
+            const graph = new Map(nodes.map(node => [node, []])) // watcher => [dependent1, dependent2] (Watchers that can only be executed after it)
+            const inDegree = new Map(nodes.map(node => [node, 0])) // watcher => count of dependencies (How many watchers must be executed before it)
+
+            for (const producer of nodes) {
+                for (const consumer of nodes) {
+                    if (producer === consumer) continue
+
+                    const producerAffects = collectAffects(producer, form.options)
+                    if (producerAffects.size === 0) continue
+
+                    const consumerTriggerKeys = watcherTriggerCache.get(consumer) || new Set()
+                    const hasDependency = [...producerAffects].some(affectKey => consumerTriggerKeys.has(affectKey))
+                    if (hasDependency) {
+                        graph.get(producer).push(consumer) // producer -> consumer
+                        inDegree.set(consumer, inDegree.get(consumer) + 1)
                     }
                 }
             }
+
+            const queue = nodes.filter(node => inDegree.get(node) === 0)
+            const sortedWatchers = []
+
+            while (queue.length > 0) {
+                const currentWatcher = queue.shift()
+                sortedWatchers.push(currentWatcher)
+                const dependents = graph.get(currentWatcher) || []
+                for (const dependent of dependents) {
+                    inDegree.set(dependent, inDegree.get(dependent) - 1)
+                    if (inDegree.get(dependent) === 0) {
+                        queue.push(dependent)
+                    }
+                }
+            }
+
+            const effectContext = getEffectContext(form, payload)
+            const executeWatchersLogic = (watchersToExecute) => {
+                for (const watcher of watchersToExecute) {
+                    let isConditionMet
+                    if (typeof watcher.when === "function") {
+                        isConditionMet = watcher.when(effectContext)
+                    } else if (watcher.when) {
+                        isConditionMet = evaluateCondition(form, watcher.when || {})
+                    } else {
+                        isConditionMet = true
+                    }
+                    executeEffect(form, watcher.effect, isConditionMet, effectContext)
+                }
+            }
+
+            if (sortedWatchers.length === nodes.length) {
+                executeWatchersLogic(sortedWatchers)
+            } else {
+                const cycleNodes = nodes.filter(node => inDegree.get(node) > 0)
+                const cycleNodeKeys = cycleNodes
+                    .map((watcher) => {
+                        const entry = [...watchers.entries()].find(([key, w]) => w === watcher)
+                        return entry ? entry[0] : "unknown watcher"
+                    })
+                    .join(", ")
+                const msg = `Circular dependency detected in watchers.`
+                warnOrPanic(!form.options.allowCircularDependencies, msg, cycleNodeKeys)
+                executeWatchersLogic([...sortedWatchers, ...cycleNodes])
+            }
+
+            // If new watcher enter `pendingWatchers` during the execution of the effect,
+            // move them to `watchersToProcess` for the next loop processing
+            if (state.pendingWatchers.size > 0) {
+                state.pendingWatchers.forEach(watcher => watchersToProcess.add(watcher))
+                state.pendingWatchers.clear()
+            }
+        }
+    }
+
+    // All watchers triggered directly or indirectly in a *macro task* will be executed in sequence
+    function executeWatchers(form, initialWatchers, payload) {
+        if (initialWatchers.size === 0) return
+
+        const state = getState(form)
+        if (state.isExecutingWatchers) {
+            initialWatchers.forEach(watcher => state.pendingWatchers.add(watcher))
+            return
+        }
+        state.isExecutingWatchers = true
+        try {
+            executeWatchersCore(form, state, initialWatchers, payload)
+        } finally {
+            state.isExecutingWatchers = false
         }
     }
 
@@ -800,40 +925,74 @@ const Feature_Watchers = (() => {
         }
     }
 
-    return defineFeature({
+    function init(form, options) {
+        clearState(form)
+
+        const addWatcher = (key, watcher) => {
+            const state = getState(form)
+            if (state.watchers.has(key)) {
+                console.warn(`FastForm Warning: Watcher with key "${key}" already exists. It will not be overwritten.`)
+                return
+            }
+            state.watchers.set(key, watcher)
+        }
+        const installActivators = (condition, watcher, watcherKey) => {
+            if (!condition || typeof condition !== "object") return
+
+            const installContext = {
+                watcher,
+                watcherKey,
+                state: getState(form),
+                install: (subCond) => installActivators(subCond, watcher, watcherKey),
+                triggerReEvaluation: (payload) => executeWatchers(form, new Set([watcher]), payload),
+            }
+            for (const [activatorName, value] of Object.entries(condition)) {
+                const handler = options.activators[activatorName]
+                if (handler && typeof handler.install === "function") {
+                    const cleanupFn = handler.install(value, installContext)
+                    if (typeof cleanupFn === "function") {
+                        form.registerCleanup(cleanupFn)
+                    }
+                }
+            }
+        }
+
+        Object.entries((options.watchers || {})).forEach(([key, watcher]) => {
+            addWatcher(key, watcher)
+            if (watcher.on && typeof watcher.on === "object") {
+                installActivators(watcher.on, watcher, key)
+            }
+        })
+
+        form.addWatcher = addWatcher
+        form.getWatcherState = function () {
+            const state = getState(this)
+            return {
+                watchers: new Map(state.watchers),
+                watchTriggerMap: { ...state.watchTriggerMap },
+                watcherTriggerCache: new Map(state.watcherTriggerCache),
+            }
+        }
+    }
+
+    return {
         featureOptions: {
             watchers: {},
+            activators: {},
             conditionEvaluators: {},
             comparisonEvaluators: {},
             effectHandlers: {},
+            allowCircularDependencies: false,
+            requireTriggersForFunctionWhen: false,
+            requireAffectsForFunctionEffect: false,
         },
         normalize: ({ form, options }) => {
+            options.activators = { ..._activators, ...options.activators }
             options.conditionEvaluators = { ..._conditionEvaluators, ...options.conditionEvaluators }
             options.comparisonEvaluators = { ..._comparisonEvaluators, ...options.comparisonEvaluators }
             options.effectHandlers = { ..._effectHandlers, ...options.effectHandlers }
 
-            clearState(form)
-
-            const addWatcher = (key, watcher) => {
-                const state = getState(form)
-                if (state.watchers.has(key)) {
-                    console.warn(`FastForm Warning: Watcher with key "${key}" already exists. It will not be overwritten.`)
-                    return
-                }
-                state.watchers.set(key, watcher)
-            }
-            Object.entries((options.watchers || {})).forEach(([key, watcher]) => addWatcher(key, watcher))
-
-            form.addWatcher = addWatcher
-            form.getWatcherState = function () {
-                const state = getState(this)
-                return {
-                    watchers: new Map(state.watchers),
-                    watchTriggerMap: { ...state.watchTriggerMap },
-                    watcherTriggerCache: new Map(state.watcherTriggerCache)
-                }
-            }
-
+            init(form, options)
             const originalOnRender = options.hooks.onRender
             options.hooks.onRender = (formInstance) => {
                 buildTriggerMap(formInstance)
@@ -847,6 +1006,18 @@ const Feature_Watchers = (() => {
             }
         },
         install: (FastFormClass) => {
+            FastFormClass.registerActivator = function (name, definition) {
+                if (!name.startsWith("$")) {
+                    throw new Error(`Activator Error: handler for '${name}' must start with '$'.`)
+                }
+                if (typeof definition.install !== "function") {
+                    throw new Error(`Activator Error: '${name}' must be an object with an 'install' function.`)
+                }
+                if (_activators.hasOwnProperty(name)) {
+                    console.warn(`FastForm Warning: Overwriting Activator definition for '${name}'.`)
+                }
+                _activators[name] = definition
+            }
             FastFormClass.registerConditionEvaluator = function (name, definition) {
                 if (!name.startsWith("$")) {
                     throw new Error(`Condition Evaluator Error: handler for '${name}' must start with '$'.`)
@@ -893,10 +1064,10 @@ const Feature_Watchers = (() => {
                 _effectHandlers[name] = definition
             }
         },
-    })
+    }
 })()
 
-const Feature_Layout = defineFeature({
+const Feature_Layout = {
     featureOptions: {
         layout: {
             createTitle(box) {
@@ -954,9 +1125,31 @@ const Feature_Layout = defineFeature({
             }
         }
     }
-})
+}
 
-const Feature_Parsing = defineFeature({
+function compileMatchers({ source, strategy, processValue, errorContext }) {
+    if (!source || typeof source !== "object") {
+        return []
+    }
+    const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    return Object.entries(source).map(([key, rawValue]) => {
+        const payload = processValue(rawValue, key)
+        if (payload == null) return
+        try {
+            const exp = (strategy === "regex")
+                ? key
+                : (strategy === "wildcard")
+                    ? `^${escapeRegex(key).replace(/\\\*/g, ".*")}$`
+                    : `^${escapeRegex(key)}$`
+            const regex = new RegExp(exp)
+            return { key, regex, ...payload }
+        } catch (e) {
+            throw new Error(`Invalid ${errorContext} pattern for '${strategy}' mode: '${key}'.`)
+        }
+    }).filter(Boolean)
+}
+
+const Feature_Parsing = {
     featureOptions: {
         parsers: {},
         parserMatchStrategy: "exact", // "exact", "wildcard", "regex"
@@ -993,9 +1186,9 @@ const Feature_Parsing = defineFeature({
             return matchedParsers[0].parser(newChangeContext.value, newChangeContext)
         }
     }
-})
+}
 
-const Feature_Validation = defineFeature({
+const Feature_Validation = {
     featureOptions: {
         rules: {},
         validators: {},
@@ -1119,10 +1312,14 @@ const Feature_Validation = defineFeature({
             if (value == null) return true
             return (!Array.isArray(value) && typeof value === "object") ? true : i18n.t("global", "error.pattern")
         },
+        isArrayOrObject: ({ value }) => {
+            if (value == null) return true
+            return (Array.isArray(value) && typeof value === "object") ? true : i18n.t("global", "error.pattern")
+        },
     }
-})
+}
 
-const Feature_Dependencies = defineFeature({
+const Feature_Dependencies = {
     featureOptions: {
         dependencies: {},
         disableEffect: "readonly", // "hide" or "readonly"
@@ -1152,9 +1349,9 @@ const Feature_Dependencies = defineFeature({
             })
         })
     }
-})
+}
 
-const Feature_Cascades = defineFeature({
+const Feature_Cascades = {
     featureOptions: {
         cascades: {},
     },
@@ -1182,7 +1379,7 @@ const Feature_Cascades = defineFeature({
             })
         })
     }
-})
+}
 
 const Feature_ConditionalBoxes = (() => {
     const instanceStates = new WeakMap()
@@ -1218,7 +1415,7 @@ const Feature_ConditionalBoxes = (() => {
         }
     }
 
-    return defineFeature({
+    return {
         featureOptions: {
             conditionalBoxes: {},
             destroyStateOnHide: false,
@@ -1276,7 +1473,7 @@ const Feature_ConditionalBoxes = (() => {
                 })
             })
         }
-    })
+    }
 })()
 
 FastForm.registerFeature("eventDelegation", Feature_EventDelegation)
@@ -1291,7 +1488,7 @@ FastForm.registerFeature("conditionalBoxes", Feature_ConditionalBoxes)
 
 // usage:
 //  $compareFields: { left: "fieldKeyA", operator: "$lt", right: "fieldKeyB" }
-const Condition_CompareFields = defineConditionEvaluator({
+const Condition_CompareFields = {
     collectTriggers: (cond, ctx) => {
         if (cond && typeof cond.left === "string") ctx.addKey(cond.left)
         if (cond && typeof cond.right === "string") ctx.addKey(cond.right)
@@ -1312,12 +1509,12 @@ const Condition_CompareFields = defineConditionEvaluator({
             return false
         }
     },
-})
+}
 
 // usage:
 //  $follow: "fieldKey1"
 //  $follow: ["fieldKey1", "fieldKey2"]
-const Condition_Follow = defineConditionEvaluator({
+const Condition_Follow = {
     collectTriggers: (fieldKeyOrKeys, ctx) => {
         const keys = Array.isArray(fieldKeyOrKeys) ? fieldKeyOrKeys : [fieldKeyOrKeys]
         keys.filter(key => typeof key === "string").forEach(key => {
@@ -1341,12 +1538,12 @@ const Condition_Follow = defineConditionEvaluator({
             ? (field.dependencies ? ctx.evaluate(field.dependencies) : true)
             : false
     },
-})
+}
 
 // usage:
 //   $length: { fieldKey1: 3, fieldKey2: 4 }
 //   $length: { fieldKey1: { $gt: 1 }, fieldKey2: { $eq: 4 } }
-const Condition_Length = defineConditionEvaluator({
+const Condition_Length = {
     collectTriggers: (cond, ctx) => ctx.collectTriggers(cond),
     evaluate: (cond, ctx) => {
         if (Array.isArray(cond) || typeof cond !== "object") {
@@ -1361,9 +1558,9 @@ const Condition_Length = defineConditionEvaluator({
             return ctx.compare(actualLength, subCond)
         })
     },
-})
+}
 
-const Comparison_Regex = defineComparisonEvaluator({
+const Comparison_Regex = {
     beforeEvaluate: (actual, expected, ctx) => {
         let pattern, flags
         if (typeof expected === "object" && expected !== null) {
@@ -1393,9 +1590,28 @@ const Comparison_Regex = defineComparisonEvaluator({
         }
         return processedExpected_Regex.test(processedActual)
     },
-})
+}
 
-const Effect_Map = defineEffectHandler({
+const Activator_Store = {
+    install: (options, ctx) => {
+        if (typeof options !== "object" || typeof options.selector !== "function" || !options.store || typeof options.store.subscribe !== "function") {
+            console.warn(`FastForm Warning: The value for $store in watcher "${ctx.watcherKey}" must be an object with 'store' and 'selector' function.`)
+            return
+        }
+        const { store, selector } = options
+        return store.subscribe(
+            (newState, oldState) => {
+                const newSelection = selector(newState)
+                const oldSelection = selector(oldState)
+                if (utils.deepEqual(newSelection, oldSelection)) {
+                    ctx.triggerReEvaluation(newSelection)
+                }
+            }
+        )
+    }
+}
+
+const Effect_Map = {
     collectAffects: (value) => {
         if (!value || typeof value.to !== "string") {
             console.warn(`FastForm Warning: $map effect is missing a valid 'to' property.`, value)
@@ -1420,25 +1636,14 @@ const Effect_Map = defineEffectHandler({
             context.setValue(value.to, finalValue)
         }
     }
-})
-
-const Effect_Dispatch = defineEffectHandler({
-    collectAffects: () => [],
-    execute: (isConditionMet, value, context) => {
-        if (!isConditionMet) return
-        Object.entries(value).forEach(([eventName, eventConfig]) => {
-            const detail = (typeof eventConfig.detail === "function") ? eventConfig.detail(context) : eventConfig.detail
-            context.dispatchEvent(new CustomEvent(eventName, { ...eventConfig, detail }))
-        })
-    }
-})
+}
 
 FastForm.registerConditionEvaluator("$compareFields", Condition_CompareFields)
 FastForm.registerConditionEvaluator("$follow", Condition_Follow)
 FastForm.registerConditionEvaluator("$length", Condition_Length)
 FastForm.registerComparisonEvaluator("$regex", Comparison_Regex)
+FastForm.registerActivator("$store", Activator_Store)
 FastForm.registerEffectHandler("$map", Effect_Map)
-FastForm.registerEffectHandler("$dispatch", Effect_Dispatch)
 
 function Try(fn, buildErr = utils.identity) {
     try {
@@ -1448,19 +1653,19 @@ function Try(fn, buildErr = utils.identity) {
     }
 }
 
-const Validator_Url = defineValidator(({ value }) => {
+const Validator_Url = ({ value }) => {
     if (!value) return true
     const pattern = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
     return pattern.test(value) ? true : i18n.t("global", "error.invalidURL")
-})
+}
 
-const Validator_Regex = defineValidator(({ value }) => {
+const Validator_Regex = ({ value }) => {
     return Try(() => value && new RegExp(value), () => `Error Regex: ${value}`)
-})
+}
 
-const Validator_Path = defineValidator(({ value }) => {
+const Validator_Path = ({ value }) => {
     return Try(() => value && utils.Package.Fs.accessSync(utils.Package.Path.resolve(value)), () => `No such path: ${utils.Package.Path.resolve(value)}`)
-})
+}
 
 FastForm.validator.register("url", Validator_Url)
 FastForm.validator.register("regex", Validator_Regex)
@@ -1542,7 +1747,7 @@ const setRandomKey = (() => {
     return (field) => field.key = field.key || `_random_key_${num++}`
 })()
 
-const Control_Switch = defineControl({
+const Control_Switch = {
     controlOptions: {
         className: "native-switch",
     },
@@ -1563,9 +1768,9 @@ const Control_Switch = defineControl({
             form.validateAndCommit(this.dataset.key, this.checked)
         })
     },
-})
+}
 
-const Control_Text = defineControl({
+const Control_Text = {
     create: ({ field }) => {
         const { key, placeholder } = getCommonHTMLAttrs(field)
         return `<input class="text-input" type="text" ${key} ${placeholder}>`
@@ -1581,27 +1786,33 @@ const Control_Text = defineControl({
             form.validateAndCommit(this.dataset.key, this.value)
         })
     },
-})
+}
 
-const Control_Color = defineControl({
+const Control_Color = {
     create: ({ field }) => {
         const { key, placeholder } = getCommonHTMLAttrs(field)
-        return `<input class="color-input" type="color" ${key} ${placeholder}>`
+        const input = `<input class="color-input" type="color" ${key} ${placeholder}>`
+        return `<div class="color-wrap"><div class="color-display"></div>${input}</div>`
     },
     update: ({ element, value, field }) => {
         const input = element.querySelector(".color-input")
-        if (input) {
-            updateInputState(input, field, value || "#000000")
+        const display = element.querySelector(".color-display")
+        if (input && display) {
+            value = value || "#000000"
+            updateInputState(input, field, value)
+            display.textContent = value.toUpperCase()
         }
     },
     bindEvents: ({ form }) => {
-        form.onEvent("change", ".color-input", function () {
+        form.onEvent("input", ".color-input", function () {
+            this.previousElementSibling.textContent = this.value.toUpperCase()
+        }).onEvent("change", ".color-input", function () {
             form.validateAndCommit(this.dataset.key, this.value)
         })
     },
-})
+}
 
-const Control_Number = defineControl({
+const Control_Number = {
     setup: registerNumericalDefaultRules,
     create: ({ field }) => {
         const { key, placeholder } = getCommonHTMLAttrs(field)
@@ -1620,9 +1831,9 @@ const Control_Number = defineControl({
             form.validateAndCommit(this.dataset.key, value)
         })
     },
-})
+}
 
-const Control_Unit = defineControl({
+const Control_Unit = {
     setup: registerNumericalDefaultRules,
     create: ({ field }) => {
         const { key, placeholder } = getCommonHTMLAttrs(field)
@@ -1642,9 +1853,9 @@ const Control_Unit = defineControl({
             form.validateAndCommit(this.dataset.key, value)
         })
     },
-})
+}
 
-const Control_Range = defineControl({
+const Control_Range = {
     setup: registerNumericalDefaultRules,
     create: ({ field }) => {
         const { key } = getCommonHTMLAttrs(field)
@@ -1673,9 +1884,9 @@ const Control_Range = defineControl({
     _toFixed2: (num) => {
         return Number.isInteger(num) ? num : num.toFixed(2)
     },
-})
+}
 
-const Control_Action = defineControl({
+const Control_Action = {
     setup: ({ field, options }) => {
         const handler = options.actions[field.key]
         if (typeof handler !== "function") {
@@ -1706,9 +1917,9 @@ const Control_Action = defineControl({
             }
         })
     },
-})
+}
 
-const Control_Static = defineControl({
+const Control_Static = {
     create: () => `<div class="static"></div>`,
     update: ({ element, value }) => {
         const staticEl = element.querySelector(".static")
@@ -1716,9 +1927,9 @@ const Control_Static = defineControl({
             staticEl.textContent = utils.escape(value)
         }
     },
-})
+}
 
-const Control_Custom = defineControl({
+const Control_Custom = {
     setup: ({ field }) => {
         defaultBlockLayout(field)
         setRandomKey(field)
@@ -1727,9 +1938,9 @@ const Control_Custom = defineControl({
         const content = field.unsafe ? field.content : utils.escape(field.content)
         return `<div class="custom-wrap">${content}</div>`
     },
-})
+}
 
-const Control_Hint = defineControl({
+const Control_Hint = {
     setup: ({ field }) => {
         defaultBlockLayout(field)
         setRandomKey(field)
@@ -1740,9 +1951,9 @@ const Control_Hint = defineControl({
         const detail = field.hintDetail ? `<div class="hint-detail">${getUnsafeAttr("hintDetail").replace(/\n/g, "<br>")}</div>` : ""
         return `<div class="hint-wrap">${header}${detail}</div>`
     },
-})
+}
 
-const Control_Hotkey = defineControl({
+const Control_Hotkey = {
     create: ({ field }) => {
         const { key, placeholder } = getCommonHTMLAttrs(field, true)
         return `<div class="hotkey-wrap">
@@ -1786,9 +1997,9 @@ const Control_Hotkey = defineControl({
             ev.preventDefault()
         }, true)
     },
-})
+}
 
-const Control_Textarea = defineControl({
+const Control_Textarea = {
     controlOptions: {
         rows: 3,
         noResize: false,
@@ -1811,9 +2022,9 @@ const Control_Textarea = defineControl({
             form.validateAndCommit(this.dataset.key, this.value)
         })
     },
-})
+}
 
-const Control_Object = defineControl({
+const Control_Object = {
     controlOptions: {
         format: "JSON",
         rows: 3,
@@ -1821,7 +2032,7 @@ const Control_Object = defineControl({
     },
     setup: ({ field, options }) => {
         defaultBlockLayout(field)
-        registerRules(options, field.key, "isObject")
+        registerRules(options, field.key, "isArrayOrObject")
     },
     create: ({ field, controlOptions }) => {
         const { key, placeholder } = getCommonHTMLAttrs(field)
@@ -1874,9 +2085,9 @@ const Control_Object = defineControl({
             stringify: (obj) => utils.stringifyYaml(obj),
         },
     },
-})
+}
 
-const Control_Array = defineControl({
+const Control_Array = {
     controlOptions: {
         allowDuplicates: false,
         dataType: "string",  // number or string
@@ -1936,7 +2147,7 @@ const Control_Array = defineControl({
         }).onEvent("click", ".array-item-delete", function () {
             const itemEl = this.parentElement
             const arrayEl = this.closest(".array")
-            const idx = [...arrayEl.children].indexOf(itemEl)
+            const idx = [...arrayEl.querySelectorAll(".array-item")].indexOf(itemEl)
             const ok = form.validateAndCommit(arrayEl.dataset.key, idx, "removeIndex")
             if (ok) {
                 itemEl.remove()
@@ -1968,9 +2179,9 @@ const Control_Array = defineControl({
         </div>
     `,
     _createItems: (items) => (Array.isArray(items) ? items : []).map(Control_Array._createItem).join(""),
-})
+}
 
-const Control_Select = defineControl({
+const Control_Select = {
     controlOptions: {
         labelJoiner: ", ",
     },
@@ -2046,9 +2257,9 @@ const Control_Select = defineControl({
     _joinSelected: (labels, labelJoiner) => {
         return labels.length ? labels.join(labelJoiner) : i18n.t("global", "empty")
     },
-})
+}
 
-const Control_Radio = defineControl({
+const Control_Radio = {
     setup: ({ field }) => {
         normalizeOptionsAttr(field)
         defaultBlockLayout(field)
@@ -2083,9 +2294,9 @@ const Control_Radio = defineControl({
             form.validateAndCommit(name, this.value)
         })
     },
-})
+}
 
-const Control_Checkbox = defineControl({
+const Control_Checkbox = {
     setup: ({ field, options, form }) => {
         normalizeOptionsAttr(field)
         defaultBlockLayout(field)
@@ -2123,9 +2334,9 @@ const Control_Checkbox = defineControl({
             form.validateAndCommit(checkboxEl.dataset.key, checkboxValues)
         })
     },
-})
+}
 
-const Control_Table = defineControl({
+const Control_Table = {
     setup: ({ field }) => defaultBlockLayout(field),
     create: ({ field }) => {
         const addButton = '<div class="table-add fa fa-plus"></div>'
@@ -2203,9 +2414,9 @@ const Control_Table = defineControl({
         const editButtons = '<div class="table-edit fa fa-pencil"></div><div class="table-delete fa fa-trash-o"></div>'
         return [...headerValues, editButtons]
     },
-})
+}
 
-const Control_Composite = defineControl({
+const Control_Composite = {
     onFormInit: ({ form, space }) => {
         space.composite_cache = {}
         form.traverseFields(field => {
@@ -2274,7 +2485,7 @@ const Control_Composite = defineControl({
             form.reactiveCommit(key, valueToCommit)
         })
     },
-})
+}
 
 FastForm.registerControl("switch", Control_Switch)
 FastForm.registerControl("text", Control_Text)
