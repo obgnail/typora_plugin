@@ -61,8 +61,8 @@ class FastForm extends HTMLElement {
         if (!definition) {
             throw new Error(`Feature Error: feature '${name}' must be non-null.`)
         }
-        if (definition.hasOwnProperty("normalize") && typeof definition.normalize !== "function") {
-            throw new Error(`Feature Error: 'normalize' for '${name}' must be a function.`)
+        if (definition.hasOwnProperty("configureInstance") && typeof definition.configureInstance !== "function") {
+            throw new Error(`Feature Error: 'configureInstance' for '${name}' must be a function.`)
         }
         if (this.features.hasOwnProperty(name)) {
             console.warn(`FastForm Warning: Overwriting feature definition for '${name}'.`)
@@ -340,8 +340,8 @@ class FastForm extends HTMLElement {
     _normalizeFeatures = (options) => {
         const featureContext = { form: this, options }
         for (const feature of Object.values(this.constructor.features)) {
-            if (typeof feature.normalize === "function") {
-                feature.normalize(featureContext)
+            if (typeof feature.configureInstance === "function") {
+                feature.configureInstance(featureContext)
             }
         }
     }
@@ -433,16 +433,10 @@ const Feature_EventDelegation = {
 }
 
 const Feature_DefaultKeybindings = {
-    normalize: ({ options }) => {
+    configureInstance: ({ options }) => {
         const originalOnRender = options.hooks.onRender
         options.hooks.onRender = (formInstance) => {
-            formInstance.onEvent("keydown", "input:not(.hotkey-input), textarea", function (ev) {
-                if (ev.key === "a" && utils.metaKeyPressed(ev)) {
-                    this.select()
-                    ev.stopPropagation()
-                    ev.preventDefault()
-                }
-            })
+            formInstance.onEvent("keydown", ev => ev.stopPropagation(), true)
             originalOnRender(formInstance)
         }
     }
@@ -986,7 +980,7 @@ const Feature_Watchers = (() => {
             requireTriggersForFunctionWhen: false,
             requireAffectsForFunctionEffect: false,
         },
-        normalize: ({ form, options }) => {
+        configureInstance: ({ form, options }) => {
             options.activators = { ..._activators, ...options.activators }
             options.conditionEvaluators = { ..._conditionEvaluators, ...options.conditionEvaluators }
             options.comparisonEvaluators = { ..._comparisonEvaluators, ...options.comparisonEvaluators }
@@ -1154,7 +1148,7 @@ const Feature_Parsing = {
         parsers: {},
         parserMatchStrategy: "exact", // "exact", "wildcard", "regex"
     },
-    normalize: ({ form, options }) => {
+    configureInstance: ({ form, options }) => {
         const { parsers, parserMatchStrategy } = options
         if (!parsers || typeof parsers !== "object" || Object.keys(parsers).length === 0) return
 
@@ -1194,7 +1188,7 @@ const Feature_Validation = {
         validators: {},
         ruleMatchStrategy: "exact", // "exact", "wildcard", "regex"
     },
-    normalize: ({ form, options }) => {
+    configureInstance: ({ form, options }) => {
         const { rules, validators, ruleMatchStrategy } = options
         const allValidators = { ...form.constructor.validator.getAll(), ...validators }
         if (!rules || typeof rules !== "object" || Object.keys(rules).length === 0) return
@@ -1324,7 +1318,7 @@ const Feature_Dependencies = {
         dependencies: {},
         disableEffect: "readonly", // "hide" or "readonly"
     },
-    normalize: ({ form, options }) => {
+    configureInstance: ({ form, options }) => {
         const allDependencies = { ...options.dependencies }
         form.traverseFields(field => {
             if (!field.dependencies) return
@@ -1355,7 +1349,7 @@ const Feature_Cascades = {
     featureOptions: {
         cascades: {},
     },
-    normalize: ({ form, options }) => {
+    configureInstance: ({ form, options }) => {
         if (!options.cascades || typeof options.cascades !== "object") return
 
         Object.entries(options.cascades).forEach(([cascadeKey, rule]) => {
@@ -1420,7 +1414,7 @@ const Feature_ConditionalBoxes = (() => {
             conditionalBoxes: {},
             destroyStateOnHide: false,
         },
-        normalize: ({ form, options }) => {
+        configureInstance: ({ form, options }) => {
             clearState(form)
 
             const conditionalBoxes = options.conditionalBoxes
