@@ -37,11 +37,11 @@ class timelinePlugin extends BaseCustomPlugin {
     newTimelineElement = (pre, cid, content) => {
         // timeline: {title, bucket: [{time, itemList: [{ type, value }]}]}
         const timeline = { title: "", bucket: [] };
-        const lines = content.split("\n");
+        const lines = content.split("\n").map(line => line.trim());
         const dir = this.utils.getCurrentDirPath();
         const { throwParseError } = this.utils.diagramParser;
         lines.forEach((line, idx) => {
-            if (!line.trim()) return;
+            if (!line) return;
             idx += 1;
 
             if (line.startsWith("# ")) {
