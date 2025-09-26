@@ -24,53 +24,23 @@ class autoNumberPlugin extends BasePlugin {
 
     initCSS = () => {
         const layout = (this.config.LAYOUTS.find(e => e.selected) || this.config.LAYOUTS[0]).layout
+        const css = this._getNumberingCSSs(layout)
 
         this.base_css = `
-        :root { ${this._buildCSSVar(layout)} }
         #write { counter-reset: content-h1 content-h2 image table fence; }
         #write > h1 { counter-set: content-h2; }
         #write > h2 { counter-set: content-h3; }
         #write > h3 { counter-set: content-h4; }
         #write > h4 { counter-set: content-h5; }
-        #write > h5 { counter-set: content-h6; }
-        `
+        #write > h5 { counter-set: content-h6; }`
 
         this.content_css = `
-        #write > h1:before,
-        #write > h1.md-focus.md-heading:before {
-            counter-increment: content-h1;
-            content: var(--count-content-h1);
-        }
-        
-        #write > h2:before,
-        #write > h2.md-focus.md-heading:before {
-            counter-increment: content-h2;
-            content: var(--count-content-h2);
-        }
-        
-        #write > h3:before,
-        #write > h3.md-focus.md-heading:before {
-            counter-increment: content-h3;
-            content: var(--count-content-h3);
-        }
-        
-        #write > h4:before,
-        #write > h4.md-focus.md-heading:before {
-            counter-increment: content-h4;
-            content: var(--count-content-h4);
-        }
-        
-        #write > h5:before,
-        #write > h5.md-focus.md-heading:before {
-            counter-increment: content-h5;
-            content: var(--count-content-h5);
-        }
-        
-        #write > h6:before,
-        #write > h6.md-focus.md-heading:before {
-            counter-increment: content-h6;
-            content: var(--count-content-h6);
-        }
+        #write > h1:before, #write > h1.md-focus.md-heading:before {${css["content-h1"]}}
+        #write > h2:before, #write > h2.md-focus.md-heading:before {${css["content-h2"]}}
+        #write > h3:before, #write > h3.md-focus.md-heading:before {${css["content-h3"]}}
+        #write > h4:before, #write > h4.md-focus.md-heading:before {${css["content-h4"]}}
+        #write > h5:before, #write > h5.md-focus.md-heading:before {${css["content-h5"]}}
+        #write > h6:before, #write > h6.md-focus.md-heading:before {${css["content-h6"]}}
         
         #write > h3.md-focus:before,
         #write > h4.md-focus:before,
@@ -104,35 +74,12 @@ class autoNumberPlugin extends BasePlugin {
         .outline-h4 { counter-set: outline-h5; }
         .outline-h5 { counter-set: outline-h6; }
         
-        .outline-content .outline-h1 .outline-label:before {
-            counter-increment: outline-h1;
-            content: var(--count-outline-h1);
-        }
-        
-        .outline-content .outline-h2 .outline-label:before {
-            counter-increment: outline-h2;
-            content: var(--count-outline-h2);
-        }
-        
-        .outline-content .outline-h3 .outline-label:before {
-            counter-increment: outline-h3;
-            content: var(--count-outline-h3);
-        }
-        
-        .outline-content .outline-h4 .outline-label:before {
-            counter-increment: outline-h4;
-            content: var(--count-outline-h4);
-        }
-        
-        .outline-content .outline-h5 .outline-label:before {
-            counter-increment: outline-h5;
-            content: var(--count-outline-h5);
-        }
-        
-        .outline-content .outline-h6 .outline-label:before {
-            counter-increment: outline-h6;
-            content: var(--count-outline-h6);
-        }`
+        .outline-content .outline-h1 .outline-label:before {${css["outline-h1"]}}
+        .outline-content .outline-h2 .outline-label:before {${css["outline-h2"]}}
+        .outline-content .outline-h3 .outline-label:before {${css["outline-h3"]}}
+        .outline-content .outline-h4 .outline-label:before {${css["outline-h4"]}}
+        .outline-content .outline-h5 .outline-label:before {${css["outline-h5"]}}
+        .outline-content .outline-h6 .outline-label:before {${css["outline-h6"]}}`
 
         this.toc_css = `
         .md-toc-content { counter-reset: toc-h1 toc-h2; }
@@ -142,40 +89,16 @@ class autoNumberPlugin extends BasePlugin {
         .md-toc-h4 { counter-set: toc-h5; }
         .md-toc-h5 { counter-set: toc-h6; }
         
-        .md-toc-content .md-toc-h1 a:before {
-            counter-increment: toc-h1;
-            content: var(--count-toc-h1);
-        }
-        
-        .md-toc-content .md-toc-h2 a:before {
-            counter-increment: toc-h2;
-            content: var(--count-toc-h2);
-        }
-        
-        .md-toc-content .md-toc-h3 a:before {
-            counter-increment: toc-h3;
-            content: var(--count-toc-h3);
-        }
-        
-        .md-toc-content .md-toc-h4 a:before {
-            counter-increment: toc-h4;
-            content: var(--count-toc-h4);
-        }
-        
-        .md-toc-content .md-toc-h5 a:before {
-            counter-increment: toc-h5;
-            content: var(--count-toc-h5);
-        }
-        
-        .md-toc-content .md-toc-h6 a:before {
-            counter-increment: toc-h6;
-            content: var(--count-toc-h6);
-        }`
+        .md-toc-content .md-toc-h1 a:before {${css["toc-h1"]}}
+        .md-toc-content .md-toc-h2 a:before {${css["toc-h2"]}}
+        .md-toc-content .md-toc-h3 a:before {${css["toc-h3"]}}
+        .md-toc-content .md-toc-h4 a:before {${css["toc-h4"]}}
+        .md-toc-content .md-toc-h5 a:before {${css["toc-h5"]}}
+        .md-toc-content .md-toc-h6 a:before {${css["toc-h6"]}}`
 
         this.table_css = `
         #write .table-figure::${this.config.POSITION_TABLE} {
-            counter-increment: table;
-            content: var(--count-table);
+            ${css["table"]}
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -183,12 +106,9 @@ class autoNumberPlugin extends BasePlugin {
         }`
 
         this.fence_css = `
-        #write .md-fences {
-            margin-bottom: 2.4em;
-        }
+        #write .md-fences { margin-bottom: 2.4em }
         #write .md-fences::after {
-            counter-increment: fence;
-            content: var(--count-fence);
+            ${css["fence"]}
             position: absolute;
             width: 100%;
             text-align: ${this.config.ALIGN};
@@ -197,13 +117,10 @@ class autoNumberPlugin extends BasePlugin {
             font-size: 1.1em;
             z-index: 9;
         }
-        #write .md-fences.md-fences-advanced.md-focus::after {
-            content: ""
-        }`
+        #write .md-fences.md-fences-advanced.md-focus::after { content: "" }`
 
         const image_content = `
-            counter-increment: image;
-            content: var(--count-image);
+            ${css["image"]}
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -274,7 +191,7 @@ class autoNumberPlugin extends BasePlugin {
         }
     }
 
-    _buildCSSVar = layout => {
+    _getNumberingCSSs = (layout) => {
         const NAMES = {
             c1: "content-h1",
             c2: "content-h2",
@@ -343,16 +260,18 @@ class autoNumberPlugin extends BasePlugin {
             if (remain) {
                 content.push(`"${remain}"`)
             }
-            const val = content.length ? content.join(" ") : `""`
-            return `--count-${type}: ${val}`
+            return content.length ? content.join(" ") : `""`
         }
 
-        const vars = Object.entries(layout).map(([type, lo]) => {
-            const extra = type === "image" ? ` " " attr(data-alt)` : ""
-            const counter = buildCounter(type, lo)
-            return counter + extra + ";"
-        })
-        return vars.join("\n")
+        return Object.fromEntries(
+            Object.entries(layout).map(([type, lo]) => {
+                const counter = buildCounter(type, lo)
+                const extra = type === "image" ? ` " " attr(data-alt)` : ""
+                const content = counter + extra
+                const css = `counter-increment: ${type}; content: ${content};`
+                return [type, css]
+            })
+        )
     }
 }
 
