@@ -35,7 +35,7 @@ class FastForm extends HTMLElement {
         if (typeof definition.create !== "function") {
             throw new Error(`Control Error: control '${name}' must have a 'create' function.`)
         }
-        const optionalFunctions = ["update", "bindEvents", "setup", "onFormInit", "onMount"]
+        const optionalFunctions = ["update", "bindEvents", "setup", "setupType", "onMount"]
         for (const funcName of optionalFunctions) {
             if (definition.hasOwnProperty(funcName) && typeof definition[funcName] !== "function") {
                 throw new Error(`Control Error: The '${funcName}' property for control '${name}' must be a function.`)
@@ -161,6 +161,17 @@ class FastForm extends HTMLElement {
                 visitorFn(field, parentField, box)
                 if (Array.isArray(field.subSchema)) {
                     this.traverseFields(visitorFn, field.subSchema, field)
+                }
+            }
+        }
+    }
+
+    traverseBoxes = (visitorFn, schema = this.options.schema, parentBox = null) => {
+        for (const box of schema) {
+            visitorFn(box, parentBox)
+            for (const field of box.fields || []) {
+                if (Array.isArray(field.subSchema)) {
+                    this.traverseBoxes(visitorFn, field.subSchema, box)
                 }
             }
         }
@@ -338,17 +349,17 @@ class FastForm extends HTMLElement {
     }
 
     _normalizeControls = (options) => {
+        for (const control of Object.values(options.controls)) {
+            if (typeof control.setupType === "function") {
+                control.setupType({ options, form: this, space: this.space })
+            }
+        }
         this.traverseFields(field => {
             const control = options.controls[field.type]
             if (control && typeof control.setup === "function") {
                 control.setup({ field, options, form: this, space: this.space })
             }
         })
-        for (const control of Object.values(options.controls)) {
-            if (typeof control.onFormInit === "function") {
-                control.onFormInit({ options, form: this, space: this.space })
-            }
-        }
     }
 
     _normalizeFeatures = (options) => {
@@ -535,6 +546,22 @@ const Feature_Watchers = (() => {
     })()
 
     const Registries = (() => {
+        const genWrapperActivator = (name, decorator) => {
+            const install = (definition, ctx) => {
+                const { delay, source, decoratorOptions = {} } = definition || {}
+                if (!definition || typeof delay !== "number" || typeof source !== "object") {
+                    console.warn(`FastForm Warning: The value for ${name} in watcher "${ctx.watcherKey}" must be an object with 'delay'(number) and 'source'(object).`)
+                    return
+                }
+                const modifiedTrigger = decorator(ctx.triggerReEvaluation, delay, decoratorOptions)
+                const modifiedCtx = { ...ctx, triggerReEvaluation: modifiedTrigger }
+                const activatorName = Object.keys(source)[0]
+                const activatorDef = source[activatorName]
+                return ctx.installActivatorByName(activatorName, activatorDef, modifiedCtx)
+            }
+            return { install }
+        }
+
         const activators = {
             $event: {
                 install: (eventName, ctx) => {
@@ -555,6 +582,16 @@ const Feature_Watchers = (() => {
                     }
                     const timerId = setInterval(() => ctx.triggerReEvaluation(), duration)
                     return () => clearInterval(timerId)
+                }
+            },
+            $timeout: {
+                install: (duration, ctx) => {
+                    if (typeof duration !== "number" || duration < 0) {
+                        console.warn(`FastForm Warning: The value for $timeout in watcher "${ctx.watcherKey}" must be a positive number (milliseconds). Got: ${duration}`)
+                        return
+                    }
+                    const timerId = setTimeout(() => ctx.triggerReEvaluation(), duration)
+                    return () => clearTimeout(timerId)
                 }
             },
             $promise: {
@@ -579,6 +616,8 @@ const Feature_Watchers = (() => {
                     return () => signal.removeEventListener("abort", listener)
                 }
             },
+            $debounce: genWrapperActivator("$debounce", utils.debounce),
+            $throttle: genWrapperActivator("$throttle", utils.throttle),
         }
 
         const conditionEvaluators = {
@@ -603,7 +642,7 @@ const Feature_Watchers = (() => {
                 evaluate: () => true,
             },
             /**
-             * $uiState: A read-only condition checker, NOT a trigger.
+             * $checkUI: A read-only condition checker, NOT a trigger.
              * It queries the current state of a UI element (e.g., visibility, class, attribute)
              * at the moment a watcher is evaluated.
              *
@@ -611,7 +650,7 @@ const Feature_Watchers = (() => {
              * This design enforces a strict one-way data flow, where logic is driven solely by
              * data changes, preventing unpredictable side-effects and infinite loops.
              */
-            $uiState: {
+            $checkUI: {
                 collectTriggers: (declaration, ctx) => {
                     Object.entries(declaration).forEach(([target, evaluators]) => {
                         Object.keys(evaluators).forEach(assertionKey => {
@@ -619,7 +658,7 @@ const Feature_Watchers = (() => {
                             if (property) {
                                 ctx.addKey(ctx.createUiStateKey({ target, property }))
                             } else {
-                                console.warn(`FastForm Warning: Unknown assertion '${assertionKey}' in $uiState trigger collection.`)
+                                console.warn(`FastForm Warning: Unknown assertion '${assertionKey}' in $checkUI trigger collection.`)
                             }
                         })
                     })
@@ -628,7 +667,7 @@ const Feature_Watchers = (() => {
                     return Object.entries(declaration).every(([target, evaluators]) => {
                         const el = ctx.getControl(target) || ctx.getBox(target)
                         if (!el) {
-                            console.warn(`FastForm Warning: $uiState could not find element for target '${target}'.`)
+                            console.warn(`FastForm Warning: $checkUI could not find element for target '${target}'.`)
                             return false
                         }
                         return Object.entries(evaluators).every(([assertionKey, expected]) => {
@@ -659,7 +698,7 @@ const Feature_Watchers = (() => {
         }
 
         const effectHandlers = {
-            $set: {
+            $update: {
                 collectAffects: (fieldKeys) => Object.keys(fieldKeys || {}),
                 execute: (isMet, value, ctx) => {
                     if (!isMet) return
@@ -671,7 +710,7 @@ const Feature_Watchers = (() => {
                     })
                 }
             },
-            $setUI: {
+            $updateUI: {
                 collectAffects: (declaration) => {
                     if (declaration && (declaration.$then || declaration.$else)) {
                         const thenAffects = declaration.$then ? DependencyAnalyzer.collectUIAffects(declaration.$then) : []
@@ -965,7 +1004,7 @@ const Feature_Watchers = (() => {
                 },
             }
 
-            // Handle logical evaluators like $and, $or, $uiState
+            // Handle logical evaluators like $and, $or, $checkUI
             for (const [name, handler] of Object.entries(context.conditionEvaluators)) {
                 if (condition.hasOwnProperty(name)) {
                     let value = condition[name]
@@ -999,16 +1038,6 @@ const Feature_Watchers = (() => {
     })()
 
     const ExecutionEngine = (() => {
-        const getEffectContext = (form, payload) => ({
-            getPayload: () => payload,
-            getBox: (boxId) => form.form.querySelector(`[data-box="${CSS.escape(boxId)}"]`),
-            getControl: (key) => form.form.querySelector(`[data-control="${CSS.escape(key)}"]`),
-            getValue: (key) => form.getData(key),
-            setValue: (key, value, type) => form.setFieldValue(key, value, type),
-            dispatchEvent: (eventName, detail) => form.api.watchers.dispatchEvent(eventName, detail),
-            dispatchDomEvent: (event) => form.api.watchers.dispatchDomEvent(event),
-        })
-
         const _doSingleEffect = (form, watcher, isConditionMet, context) => {
             const { effect } = watcher
             if (typeof effect === "function") {
@@ -1056,7 +1085,6 @@ const Feature_Watchers = (() => {
                 while (queue.length > 0) {
                     const current = queue.shift()
                     sortedWatchers.push(current)
-
                     for (const dependent of graph.get(current) || []) {
                         inDegree.set(dependent, inDegree.get(dependent) - 1)
                         if (inDegree.get(dependent) === 0) {
@@ -1066,11 +1094,25 @@ const Feature_Watchers = (() => {
                 }
 
                 // Step 4: Execute watchers. If a cycle was detected, handle it gracefully.
-                const effectContext = getEffectContext(form, payload)
                 const run = (watchers) => {
+                    const conditionContext = {
+                        getPayload: () => payload,
+                        getBox: (boxId) => form.form.querySelector(`[data-box="${CSS.escape(boxId)}"]`),
+                        getControl: (key) => form.form.querySelector(`[data-control="${CSS.escape(key)}"]`),
+                        evaluateWhen: (conditionObject) => ConditionEvaluator.evaluate(form, conditionObject),
+                        getValue: (key) => form.getData(key),
+                    }
+                    const effectContext = {
+                        ...conditionContext,
+                        setValue: (key, value, type) => form.setFieldValue(key, value, type),
+                        updateUI: (declaration, customContext) => DependencyAnalyzer.applyUiEffects(declaration, customContext || effectContext),
+                        dispatchEvent: (eventName, detail) => form.api.watchers.dispatchEvent(eventName, detail),
+                        dispatchDomEvent: (event) => form.api.watchers.dispatchDomEvent(event),
+                    }
+
                     for (const watcher of watchers) {
                         const isMet = watcher.when
-                            ? (typeof watcher.when === "function" ? watcher.when(effectContext) : ConditionEvaluator.evaluate(form, watcher.when))
+                            ? (typeof watcher.when === "function" ? watcher.when(conditionContext) : ConditionEvaluator.evaluate(form, watcher.when))
                             : true
                         _doSingleEffect(form, watcher, isMet, effectContext)
                     }
@@ -1136,22 +1178,54 @@ const Feature_Watchers = (() => {
     })()
 
     const Lifecycle = (() => {
-        const _installActivators = (form, condition, watcher, watcherKey) => {
-            if (!condition || typeof condition !== "object") return
+        const _installActivators = (form, on, watcher, watcherKey) => {
+            if (!on) return
 
             const installContext = {
                 watcher,
                 watcherKey,
                 state: State.get(form),
                 triggerReEvaluation: (payload) => ExecutionEngine.execute(form, new Set([watcher]), payload),
+                installActivator: (fn, definition, customContext) => installActivator(form, fn, definition, customContext || installContext),
+                installActivatorByName: (name, definition, customContext) => {
+                    const handler = form.options.activators[name]
+                    if (handler && typeof handler.install !== "function") {
+                        console.warn(`FastForm Warning: No such an activator ${name}, it will be ignored.`)
+                        return
+                    }
+                    return installActivator(form, handler.install, definition, customContext || installContext)
+                },
             }
-            for (const [name, value] of Object.entries(condition)) {
-                const handler = form.options.activators[name]
-                if (handler && typeof handler.install === "function") {
-                    const cleanup = handler.install(value, installContext)
-                    if (typeof cleanup === "function") form.registerCleanup(cleanup)
+            const setupContext = {
+                ...installContext,
+                getInitialValue: (key) => form.getData(key),
+                getControl: (key) => form.options.layout.findControl(key, form.form),
+                getBox: (boxId) => form.options.layout.findBox(boxId, form.form),
+            }
+
+            if (typeof on === "function") {
+                try {
+                    const cleanup = on(setupContext)
+                    if (typeof cleanup === "function") {
+                        form.registerCleanup(cleanup)
+                    } else {
+                        console.warn(`FastForm Warning: Functional activator for watcher "${watcherKey}" did not return a cleanup function. This may cause memory leaks.`)
+                    }
+                } catch (error) {
+                    console.error(`FastForm Error: Failed to install functional activator for watcher "${watcherKey}".`, error)
                 }
+            } else if (typeof on === "object") {
+                for (const [name, installDefinition] of Object.entries(on)) {
+                    installContext.installActivatorByName(name, installDefinition)
+                }
+            } else {
+                console.warn(`FastForm Warning: The 'on' property for watcher "${watcherKey}" must be an object or a function.`)
             }
+        }
+
+        const installActivator = (form, installFn, definition, context) => {
+            const cleanup = installFn(definition, context)
+            if (typeof cleanup === "function") form.registerCleanup(cleanup)
         }
 
         const initialize = (form, options, registerApi) => {
@@ -1184,9 +1258,7 @@ const Feature_Watchers = (() => {
 
             Object.entries(options.watchers || {}).forEach(([key, watcher]) => {
                 form.api.watchers.register(key, watcher)
-                if (watcher.on && typeof watcher.on === "object") {
-                    _installActivators(form, watcher.on, watcher, key)
-                }
+                _installActivators(form, watcher.on, watcher, key)
             })
         }
 
@@ -1203,7 +1275,7 @@ const Feature_Watchers = (() => {
             return { onRender, onAfterCommit }
         }
 
-        return { initialize, createLifecycleHooks }
+        return { initialize, createLifecycleHooks, installActivator }
     })()
 
     return {
@@ -1549,7 +1621,7 @@ const Feature_Dependencies = {
                 on: on,
                 triggers: triggers,
                 effect: {
-                    $setUI: {
+                    $updateUI: {
                         $then: { [fieldKey]: { $classes: { $remove: className } } },
                         $else: { [fieldKey]: { $classes: { $add: className } } },
                     },
@@ -1574,13 +1646,13 @@ const Feature_Dependencies = {
             },
             evaluate: (fieldKeyOrKeys, ctx) => {
                 if (typeof fieldKeyOrKeys === "string") {
-                    return Condition_Follow.isFieldEnabled(ctx, fieldKeyOrKeys)
+                    return Condition_Follow._isFieldAvailable(ctx, fieldKeyOrKeys)
                 } else if (Array.isArray(fieldKeyOrKeys)) {
-                    return fieldKeyOrKeys.every(key => (typeof key === "string") && Condition_Follow.isFieldEnabled(ctx, key))
+                    return fieldKeyOrKeys.every(key => (typeof key === "string") && Condition_Follow._isFieldAvailable(ctx, key))
                 }
                 return false
             },
-            isFieldEnabled: (ctx, key) => {
+            _isFieldAvailable: (ctx, key) => {
                 const field = ctx.getField(key)
                 return field ? (field.dependencies ? ctx.evaluate(field.dependencies) : true) : false
             },
@@ -1605,22 +1677,10 @@ const Feature_ConditionalBoxes = (() => {
     }
     const initState = (form, schema) => {
         const state = getState(form)
-        traverseBoxes(box => {
-            if (box.id) {
-                state.boxSchemaMap[box.id] = box
-            }
+        form.traverseBoxes(box => {
+            if (box.id) state.boxSchemaMap[box.id] = box
         }, schema)
         return state
-    }
-    const traverseBoxes = (visitorFn, schema) => {
-        for (const box of schema) {
-            visitorFn(box)
-            for (const field of box.fields || []) {
-                if (Array.isArray(field.subSchema)) {
-                    traverseBoxes(visitorFn, field.subSchema)
-                }
-            }
-        }
     }
 
     return {
@@ -1813,12 +1873,12 @@ const Comparison_Regex = {
 // usage:
 //   $store: { store: myStore, selector: (state) => state.auth.isLoggedIn }
 const Activator_Store = {
-    install: (options, ctx) => {
-        if (typeof options !== "object" || typeof options.selector !== "function" || !options.store || typeof options.store.subscribe !== "function") {
+    install: (definition, ctx) => {
+        if (typeof definition !== "object" || typeof definition.selector !== "function" || !definition.store || typeof definition.store.subscribe !== "function") {
             console.warn(`FastForm Warning: The value for $store in watcher "${ctx.watcherKey}" must be an object with 'store' and 'selector' function.`)
             return
         }
-        const { store, selector } = options
+        const { store, selector } = definition
         return store.subscribe((curState, prevState) => {
             const curSelection = selector(curState)
             const preSelection = selector(prevState)
@@ -2644,43 +2704,20 @@ const Control_Table = {
 }
 
 const Control_Composite = {
-    /**
-     * For each composite field, it ensures that `this.options.data[key]` and `this.space.composite_cache[key]`
-     * point to the *exact same object* when the field is active. This keeps them perfectly in sync.
-     * When the field is toggled off, the event handler sets `this.options.data[key]` to `false`.
-     * This only changes the live data's reference. The `cache` reference remains intact, effectively preserving the sub-form's state.
-     * When toggled back on, this cached reference is restored.
-     */
-    onFormInit: ({ form, space }) => {
-        space.composite_cache = {}
-        form.traverseFields(field => {
-            if (field.type !== "composite") return
-            const originValue = form.getData(field.key)
-            const newValue = utils.naiveCloneDeep({ ...field.defaultValues, ...(typeof originValue === "object" && originValue) })
-            if (originValue) {
-                form.setData(field.key, newValue)
-            }
-            space.composite_cache[field.key] = newValue
-        }, form.options.schema)
-    },
-    setup: ({ field, form }) => {
+    setupType: ({ space }) => space.composite_cache = {},
+    setup: ({ field, form, options, space }) => {
         defaultBlockLayout(field)
 
         const originValue = form.getData(field.key)
-        if (originValue === false || originValue == null) {
-            form.setData(field.key, false)
-        } else if (typeof originValue !== "object") {
-            form.setData(field.key, field.defaultValues)
-        }
+        const fixedValue = (originValue === false || originValue == null)
+            ? false
+            : typeof originValue !== "object"
+                ? field.defaultValues
+                : { ...field.defaultValues, ...originValue }
 
-        const parentEnabled = { [field.key]: { $bool: true } }
-        const parentDeps = field.dependencies ? [field.dependencies] : []
-        for (const box of field.subSchema || []) {
-            for (const subField of box.fields || []) {
-                const subFieldDeps = subField.dependencies ? [subField.dependencies] : []
-                subField.dependencies = { $and: [parentEnabled, ...parentDeps, ...subFieldDeps] }
-            }
-        }
+        form.setData(field.key, fixedValue)  // Fix data
+        Control_Composite._setCacheWatcher(space, options, field, fixedValue)
+        Control_Composite._setDependencies(field)
     },
     create: ({ field, form }) => {
         const layout = form.options.layout
@@ -2706,18 +2743,55 @@ const Control_Composite = {
         const isChecked = typeof value === "object" && value != null
         utils.toggleInvisible(container, !isChecked)
         if (isChecked && container.childElementCount === 0) {
-            form._fillForm(field.subSchema, container)
+            form._fillForm(field.subSchema, container)  // Lazy rendering
         }
     },
     bindEvents: ({ form, space }) => {
         form.onEvent("change", ".composite-switch .switch-input", function () {
-            const input = this
-            const key = input.dataset.key
-            const isChecked = input.checked
-            const cache = space.composite_cache[key] || {}
-            const valueToCommit = isChecked ? cache : false
+            const key = this.dataset.key
+            const valueToCommit = this.checked ? space.composite_cache[key] : false
             form.reactiveCommit(key, valueToCommit)
         })
+    },
+    _setDependencies: (field) => {
+        const fieldDeps = { $follow: field.key }
+        const fieldEnabled = { [field.key]: { $bool: true } }
+        for (const box of field.subSchema || []) {
+            for (const subField of box.fields || []) {
+                const subFieldDeps = subField.dependencies ? [subField.dependencies] : []
+                subField.dependencies = { $and: [fieldEnabled, fieldDeps, ...subFieldDeps] }
+            }
+        }
+    },
+    _setCacheWatcher: (space, options, field, fixedValue) => {
+        space.composite_cache[field.key] = { ...field.defaultValues, ...fixedValue }  // Set cache
+
+        const subFieldKeys = Control_Composite._collectAllKeys(field.subSchema)
+        if (subFieldKeys.length === 0) return
+        if (!options.watchers) options.watchers = {}
+        const watcherKey = `_composite_cache_sync_${field.key}`
+        options.watchers[watcherKey] = {
+            triggers: subFieldKeys,
+            when: { [field.key]: { $typeof: "object" } },
+            affects: [],
+            effect: (isMet, ctx) => {
+                if (isMet) space.composite_cache[field.key] = { ...field.defaultValues, ...ctx.getValue(field.key) }
+            }
+        }
+    },
+    _collectAllKeys: (schema, prefix) => {
+        const keys = []
+        for (const box of schema || []) {
+            for (const field of (box.fields || [])) {
+                if (!field.key) return
+                const fullKey = prefix ? `${prefix}.${field.key}` : field.key
+                keys.push(fullKey)
+                if (field.type === "composite" && Array.isArray(field.subSchema)) {
+                    keys.push(...Control_Composite._collectAllKeys(field.subSchema, fullKey))
+                }
+            }
+        }
+        return keys
     },
 }
 
