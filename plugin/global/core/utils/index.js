@@ -1366,37 +1366,40 @@ class utils {
         active.scrollIntoView({ block: "nearest" });
     }
 
-    static stopCallError = Symbol("stopCalling") // For the decorate method; return this to stop executing the native function.
-    static decorate = (objGetter, attr, before, after, changeResult = false) => {
-        function decorator(original, before, after) {
-            const fn = function () {
+    static stopCallError = Symbol("StopCalling") // For the decorate method; return this to stop executing the native function.
+    static decorate = (objGetter, attr, beforeFn, afterFn, modifyResult = false, modifyArgs = false) => {
+        const createDecorator = (originalFn, before, after) => {
+            const decoratedFn = function (...args) {
+                let executionArgs = args
                 if (before) {
-                    const error = before.call(this, ...arguments)
-                    if (error === utils.stopCallError) return
+                    const beforeFnResult = before.call(this, ...args)
+                    if (beforeFnResult === utils.stopCallError) return
+                    if (modifyArgs) executionArgs = beforeFnResult
                 }
-                let result = original.apply(this, arguments)
+                const result = originalFn.apply(this, executionArgs)
                 if (after) {
-                    const afterResult = after.call(this, result, ...arguments)
-                    if (changeResult) {
-                        result = afterResult
-                    }
+                    const afterFnResult = after.call(this, result, ...executionArgs)
+                    if (modifyResult) return afterFnResult
                 }
                 return result
             }
-            return Object.defineProperty(fn, "name", { value: original.name })
+            return Object.defineProperties(decoratedFn, {
+                name: { value: originalFn.name, configurable: true },
+                length: { value: originalFn.length, configurable: true },
+            })
         }
 
         const start = new Date().getTime()
         const timer = setInterval(() => {
             if (new Date().getTime() - start > 10000) {
-                console.error("decorate timeout!", objGetter, attr, before, after, changeResult)
+                console.error("decorate timeout!", objGetter, attr, beforeFn, afterFn, modifyResult)
                 clearInterval(timer)
                 return
             }
             const obj = objGetter()
             if (obj && obj[attr]) {
                 clearInterval(timer)
-                obj[attr] = decorator(obj[attr], before, after)
+                obj[attr] = createDecorator(obj[attr], beforeFn, afterFn)
             }
         }, 50)
     }

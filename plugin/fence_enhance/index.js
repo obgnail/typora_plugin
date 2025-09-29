@@ -534,15 +534,10 @@ class highlightHelper {
             .map(i => Math.max(i - 1, 0))
     }
 
-    getHighlightObj = fence => fence.options && fence.options.mode && fence.options.mode._highlightObj
-
-    highlightLines = (fence, obj) => {
-        obj = obj || this.getHighlightObj(fence)
-        if (!obj) return
-
-        const { line } = obj
-        if (line) {
-            const needHighlightLines = this.parseRange(line)
+    highlightLines = (fence) => {
+        const info = fence.options && fence.options.mode && fence.options.mode._highlightInfo
+        if (info && info.line) {
+            const needHighlightLines = this.parseRange(info.line)
             needHighlightLines.forEach(i => fence.addLineClass(i, "background", this.cls))
         }
     }
@@ -555,31 +550,29 @@ class highlightHelper {
     }
 
     process = () => {
-        this.utils.decorate(() => window, "getCodeMirrorMode", null, mode => {
-            if (!mode) {
-                return mode
+        let _highlightInfo
+        const before = (mode, ...rest) => {
+            _highlightInfo = this.extract(mode)
+            const newMode = _highlightInfo.lang || mode
+            return [newMode, ...rest]
+        }
+        const after = (mode) => {
+            if (typeof mode !== "object") {
+                mode = { name: mode }
             }
-            const isObj = typeof mode === "object"
-            const lang = isObj ? mode.name : mode
-            const obj = this.extract(lang)
-            if (!obj || !obj.lang) {
-                return mode
-            }
-            mode = !isObj ? {} : mode
-            mode.name = obj.lang
-            mode._highlightObj = obj
+            mode._highlightInfo = _highlightInfo
             return mode
-        }, true)
+        }
+        this.utils.decorate(() => window, "getCodeMirrorMode", before, after, true, true)
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (_, fence) => this.highlightLines(fence))
-        this.utils.decorate(() => File && File.editor && File.editor.fences, "tryAddLangUndo", null, (result, ...args) => {
-            const cid = args[0].cid
-            const fence = File.editor.fences.queue[cid]
 
-            this.clearHighlightLines(fence)
-            const obj = this.getHighlightObj(fence)
-            if (obj) {
-                this.highlightLines(fence, obj)
+        this.utils.decorate(() => File && File.editor && File.editor.fences, "tryAddLangUndo", null, (result, cm) => {
+            const cid = cm && cm.cid
+            if (cid) {
+                const fence = File.editor.fences.queue[cid]
+                this.clearHighlightLines(fence)
+                this.highlightLines(fence)
             }
         })
     }
