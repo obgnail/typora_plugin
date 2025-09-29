@@ -1386,6 +1386,11 @@ ENABLE_FOLD = true
 #   必须大于等于 1
 FOLD_LINES = 1
 
+# 折叠形式：
+#   hidden: 隐藏
+#   scroll: 滚动条
+FOLD_OVERFLOW = "hidden"
+
 # 默认折叠代码块：是否在加载时默认折叠代码块
 # 若置为 false，则选项 DEFAULT_FOLD_THRESHOLD 失效
 #   true:  默认折叠代码块

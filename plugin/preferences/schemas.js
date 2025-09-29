@@ -182,6 +182,9 @@ const OPTIONS = {
         ALIGN: ["left", "right", "center"],
         POSITION_TABLE: ["before", "after"],
     },
+    fence_enhance: {
+        FOLD_OVERFLOW: ["hidden", "scroll"],
+    },
     text_stylize: {
         TOOLS: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush"],
     },
@@ -683,9 +686,10 @@ const SETTING_SCHEMAS = {
         ),
         UntitledBox(
             Switch("ENABLE_FOLD", fenceEnhanceButtonDep),
-            Number("FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true } }),
-            Switch("DEFAULT_FOLD", { dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true } }),
-            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true, DEFAULT_FOLD: true } }),
+            Select("FOLD_OVERFLOW", OPTIONS.fence_enhance.FOLD_OVERFLOW, { dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true } }),
+            Number("FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "FOLD_OVERFLOW" } }),
+            Switch("DEFAULT_FOLD", { dependencies: { $follow: "FOLD_OVERFLOW" } }),
+            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { $and: [{ $follow: "FOLD_OVERFLOW" }, { DEFAULT_FOLD: true }] } }),
         ),
         TableBox(
             "CUSTOM_BUTTONS",

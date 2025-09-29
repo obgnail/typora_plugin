@@ -106,15 +106,12 @@ class fenceEnhancePlugin extends BasePlugin {
 
                 const getHeight = () => {
                     const { lineHeight, height } = window.getComputedStyle(scroll)
-                    const maxHeight = Math.min(
-                        parseFloat(height),
-                        parseFloat(lineHeight) * this.config.FOLD_LINES,
-                    )
+                    const maxHeight = Math.min(parseFloat(height), parseFloat(lineHeight) * this.config.FOLD_LINES)
                     return maxHeight + "px"
                 }
                 const folded = scroll.style.height && scroll.style.overflowY
                 scroll.style.height = folded ? "" : getHeight()
-                scroll.style.overflowY = folded ? "" : "hidden"
+                scroll.style.overflowY = folded ? "" : this.config.FOLD_OVERFLOW
                 btn.classList.toggle("folded", !folded)
                 btn.firstElementChild.className = folded ? "fa fa-minus" : "fa fa-plus"
                 if (this.config.AUTO_HIDE) {
