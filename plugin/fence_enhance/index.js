@@ -44,33 +44,29 @@ class fenceEnhancePlugin extends BasePlugin {
                 const cont = cm && cm.getValue()
                 return { ev, btn, cont, fence, cm, cid, plu: this }
             }
-            const customButtons = this.config.CUSTOM_BUTTONS.map(btn => {
+            const normalize = ({ DISABLE, ICON, HINT, ON_INIT, ON_CLICK, ON_RENDER }) => {
+                if (DISABLE || !ON_CLICK) return
                 try {
-                    const { DISABLE, ICON, HINT, ON_INIT, ON_CLICK, ON_RENDER } = btn
-                    if (DISABLE) return
                     if (ON_INIT) {
-                        const initFunc = evalFn(ON_INIT)
-                        initFunc(this)
+                        const initFn = evalFn(ON_INIT)
+                        initFn(this)
                     }
-                    const renderFunc = ON_RENDER ? evalFn(ON_RENDER) : null
-                    if (!ON_CLICK) return
-                    const callbackFunc = evalFn(ON_CLICK)
-                    const listener = (ev, btn) => callbackFunc(getParams(ev, btn))
-                    const action = this.utils.randomString()
+                    const renderFn = ON_RENDER ? evalFn(ON_RENDER) : null
+                    const callbackFn = evalFn(ON_CLICK)
                     return {
-                        className: `custom-${action}`,
-                        action,
+                        className: "custom-btn",
+                        action: this.utils.randomString(),
                         hint: HINT,
                         iconClassName: ICON,
                         enable: !DISABLE,
-                        listener,
-                        extraFunc: renderFunc,
+                        listener: (ev, btn) => callbackFn(getParams(ev, btn)),
+                        extraFunc: renderFn,
                     }
                 } catch (e) {
-                    console.error("custom button error:", e)
+                    console.error("Register custom button error:", e)
                 }
-            })
-            customButtons.filter(Boolean).forEach(btn => this.registerButton(btn))
+            }
+            this.config.CUSTOM_BUTTONS.map(normalize).filter(Boolean).forEach(this.registerButton)
         }
 
         const registerBuiltinButtons = () => {
@@ -508,22 +504,20 @@ class indentedWrappedLineHelper {
 class highlightHelper {
     constructor(plugin) {
         this.utils = plugin.utils
-        this.regex = /^([^\(\)]+)\(([^}]+)\)$/
-        this.cls = "plugin-fence-enhance-highlight"
+        this.pattern = new RegExp(plugin.config.HIGHLIGHT_PATTERN)
+        this.numberingBase = (plugin.config.NUMBERING_BASE === "0-based") ? 0 : 1
+        this.className = "plugin-fence-enhance-highlight"
     }
 
-    extract = Lang => {
-        const match = Lang.match(this.regex)
-        if (!match) {
-            return { origin: Lang }
-        }
-        const [origin, lang, line] = match
-        return { origin, lang, line }
+    extract = langStr => {
+        const match = langStr.match(this.pattern)
+        return match ? { origin: langStr, ...match.groups } : { origin: langStr }
     }
 
-    parseRange = line => {
+    parse = line => {
         return line
             .split(",")
+            .filter(Boolean)
             .flatMap(part => {
                 if (!part.includes("-")) {
                     return [Number(part)]
@@ -531,21 +525,21 @@ class highlightHelper {
                 const [start, end] = part.split("-").map(Number)
                 return Array.from({ length: end - start + 1 }, (_, i) => start + i)
             })
-            .map(i => Math.max(i - 1, 0))
+            .map(i => Math.max(i - this.numberingBase, 0))
     }
 
-    highlightLines = (fence) => {
+    _setHighlightLines = (fence) => {
         const info = fence.options && fence.options.mode && fence.options.mode._highlightInfo
         if (info && info.line) {
-            const needHighlightLines = this.parseRange(info.line)
-            needHighlightLines.forEach(i => fence.addLineClass(i, "background", this.cls))
+            const needHighlightLines = this.parse(info.line)
+            needHighlightLines.forEach(i => fence.addLineClass(i, "background", this.className))
         }
     }
 
-    clearHighlightLines = fence => {
+    _clearHighlightLines = fence => {
         const last = fence.lastLine()
         for (let i = 0; i <= last; i++) {
-            fence.removeLineClass(i, "background", this.cls)
+            fence.removeLineClass(i, "background", this.className)
         }
     }
 
@@ -565,14 +559,16 @@ class highlightHelper {
         }
         this.utils.decorate(() => window, "getCodeMirrorMode", before, after, true, true)
 
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (_, fence) => this.highlightLines(fence))
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (_, fence) => fence.operation(() => this._setHighlightLines(fence)))
 
         this.utils.decorate(() => File && File.editor && File.editor.fences, "tryAddLangUndo", null, (result, cm) => {
             const cid = cm && cm.cid
             if (cid) {
                 const fence = File.editor.fences.queue[cid]
-                this.clearHighlightLines(fence)
-                this.highlightLines(fence)
+                fence.operation(() => {
+                    this._clearHighlightLines(fence)
+                    this._setHighlightLines(fence)
+                })
             }
         })
     }

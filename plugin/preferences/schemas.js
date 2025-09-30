@@ -184,6 +184,7 @@ const OPTIONS = {
     },
     fence_enhance: {
         FOLD_OVERFLOW: ["hidden", "scroll"],
+        NUMBERING_BASE: ["0-based", "1-based"],
     },
     text_stylize: {
         TOOLS: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush"],
@@ -755,12 +756,18 @@ const SETTING_SCHEMAS = {
             fenceEnhanceHotkeyDep,
         ),
         TitledBox(
+            Title("lineHighlighting"),
+            Switch("HIGHLIGHT_BY_LANGUAGE"),
+            Switch("HIGHLIGHT_WHEN_HOVER"),
+            Select("NUMBERING_BASE", OPTIONS.fence_enhance.NUMBERING_BASE, { dependencies: { HIGHLIGHT_BY_LANGUAGE: true } }),
+            Text("HIGHLIGHT_PATTERN", { dependencies: { $follow: "NUMBERING_BASE" } }),
+            Text("HIGHLIGHT_LINE_COLOR", { dependencies: { $or: [{ $follow: "NUMBERING_BASE" }, { HIGHLIGHT_WHEN_HOVER: true }] } }),
+            Action("viewVitePressLineHighlighting"),
+        ),
+        TitledBox(
             Title("advanced"),
             Switch("ENABLE_LANGUAGE_FOLD"),
             Switch("INDENTED_WRAPPED_LINE"),
-            Switch("HIGHLIGHT_WHEN_HOVER"),
-            Switch("HIGHLIGHT_BY_LANGUAGE"),
-            Text("HIGHLIGHT_LINE_COLOR", { dependencies: { HIGHLIGHT_BY_LANGUAGE: true } }),
         ),
         handleSettingsBox,
     ],
@@ -801,9 +808,9 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("hotkey"),
             Hotkey("HIDE_FRONT_HOTKEY"),
-            Hotkey("SHOW_ALL_HOTKEY"),
             Hotkey("HIDE_BASE_VIEW_HOTKEY"),
-            Number("REMAIN_LENGTH", { min: 1 }),
+            Hotkey("SHOW_ALL_HOTKEY"),
+            Number("REMAIN_LENGTH", { min: 1, dependencies: { $or: [{ HIDE_FRONT_HOTKEY: { $bool: true } }, { HIDE_BASE_VIEW_HOTKEY: { $bool: true } }] } }),
         ),
         handleSettingsBox,
     ],

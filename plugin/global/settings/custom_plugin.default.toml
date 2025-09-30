@@ -151,18 +151,18 @@ senderNickname: me      # Nickname for the sender on the right.
 timeNickname: time      # Nickname for timestamps.
 avatars:                # Avatar URLs.
   me: https://avatars.githubusercontent.com/u/48992887?s=96&v=4
-  nickname1: ./assets/1.jpg
+  senderB: ./assets/senderB.jpg
 ---
 
 time: Yesterday 18:21
 
-testUser1: Messages are separated from usernames by a colon.
+senderA: Messages are separated from usernames by a colon.
 
-me:  The user on the right is 'me', and timestamps are under the 'time' nickname.
+me: The sender's nickname on the right is 'me', and timestamp's nickname is 'time'.
 
 me: Supports basic Markdown syntax: **bold**, *italic*, `code`, ~~strikethrough~~, [link](https://github.com/obgnail/typora_plugin), \\n![image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
 
-nickname1: Configuration can be modified using YAML front matter (similar to Markdown). \\n\\nThe `avatars` option sets user avatars. If an avatar is not configured, the user's initial is used as the avatar. \\n\\nTry adding `./assets/1.jpg` to the directory containing this file to see the corresponding user's avatar change.
+senderB: You can use YAML front matter to modify the configuration. \\n\\nThe `avatars` option sets user avatars, If not configured, The first letter of the user name is used as the avatar. \\n\\nTry adding `./assets/senderB.jpg` to current directory to see the user senderB's avatar change.
 
 Note: Supports exporting to HTML, PDF, etc. This syntax is plugin-specific and not universal.
 ```
@@ -649,11 +649,13 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```drawio
 /**
- * Due to frequent changes in the .drawio file format, the draw.io website strongly recommends fetching dependencies via CDN. This plugin defaults to pulling dependencies from the network. If you prefer to store dependencies locally, modify the configuration file.
+ * Due to frequent changes in the .drawio file format, The official strongly recommends fetching dependencies via CDN.
+ *
+ * This plugin defaults to pulling dependencies from the network. If you prefer to store dependencies locally, modify the configuration.
  *
  * Supported configuration options: allow-zoom-in, allow-zoom-out, auto-crop, auto-fit, auto-origin, border, center, check-visible-state, dark-mode, edit, editable, forceCenter, highlight, layerIds, layers, lightbox, max-height, move, nav, page, pageId, resize, responsive, source, target, title, titleTooltip, toolbar, toolbar-buttons, toolbar-nohide, toolbar-position, tooltips, xml, zoom.
  *
- * For usage of configuration options, refer to: https://github.com/jgraph/drawio/blob/f7158bfb0029a6456c215791b7fd005ccb5c3e76/src/main/webapp/js/diagramly/GraphViewer.js#L118C1-L118C71
+ * Configuration options refer to: https://github.com/jgraph/drawio/blob/f7158bfb0029a6456c215791b7fd005ccb5c3e76/src/main/webapp/js/diagramly/GraphViewer.js#L118C1-L118C71
  */
 graphConfig = {
     // Required configuration. Specifies the path to the .drawio file, supporting both local and network paths.

@@ -21,16 +21,6 @@ class migrate {
         await Promise.all(promises)
     }
 
-    fixCustomPluginConfigs = (files) => {
-        const config = files.find(e => e.file === "custom_plugin.user.toml")
-        Object.values(config.configUser).forEach(plugin => {
-            if (plugin.config) {
-                Object.assign(plugin, plugin.config)
-                delete plugin.config
-            }
-        })
-    }
-
     cleanInvalidPlugins = async (files) => {
         const promises = files.map(({ configDefault, configUser }) => {
             const fixedNames = new Set([...Object.keys(configDefault), ...Object.keys(configUser)])
@@ -92,7 +82,6 @@ class migrate {
     run = async () => {
         const files = await this.getConfigs()
         await this.deleteUselessPlugins()
-        await this.fixCustomPluginConfigs(files)
         await this.cleanInvalidPlugins(files)
         await this.cleanPluginsAndKeys(files)
         await this.saveFiles(files)

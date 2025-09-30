@@ -2,27 +2,11 @@ const url = "url"
 const regex = "regex"
 const path = "path"
 const required = "required"
+const array = "array"
 const notEqualZero = { name: "notEqual", args: [0] }
 const hotkey = { name: "pattern", args: [/^((ctrl|shift|alt)\+)*\w+$/i] }
 const fileExt = { name: "pattern", args: [/^([a-zA-Z0-9]+)?$/] }
 const hexColor = { name: "pattern", args: [/^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i] }
-
-const hexColor2DArray = ({ value }) => {
-    if (!Array.isArray(value)) {
-        return new Error("Must Be A 2D Array")
-    }
-    const regex = /^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i
-    for (const rows of value) {
-        if (!Array.isArray(rows)) {
-            return new Error("Must Be A 2D Array")
-        }
-        for (const color of rows) {
-            if (!regex.test(value)) {
-                return new Error(`${color} is not valid hex color`)
-            }
-        }
-    }
-}
 
 const chartStyles = {
     DEFAULT_FENCE_HEIGHT: required,
@@ -30,7 +14,6 @@ const chartStyles = {
     TEMPLATE: required,
 }
 
-// TODO: Experimental Features. Validate rules for all settings
 module.exports = {
     window_tab: {
         TAB_MIN_WIDTH: required,
@@ -46,6 +29,7 @@ module.exports = {
     },
     search_multi: {
         ALLOW_EXT: fileExt,
+        IGNORE_FOLDERS: required,
         HIGHLIGHT_COLORS: [required, hexColor],
         TIMEOUT: notEqualZero,
         MAX_STATS: notEqualZero,
@@ -58,7 +42,7 @@ module.exports = {
     markmap: {
         NODE_BORDER_WHEN_HOVER: required,
         "DEFAULT_TOC_OPTIONS.color": [required, hexColor],
-        CANDIDATE_COLOR_SCHEMES: [required, hexColor2DArray],
+        CANDIDATE_COLOR_SCHEMES: [required, array],
         "DOWNLOAD_OPTIONS.FILENAME": required,
         "DOWNLOAD_OPTIONS.BACKGROUND_COLOR": [required, hexColor],
         "DOWNLOAD_OPTIONS.TEXT_COLOR": [required, hexColor],
@@ -79,23 +63,26 @@ module.exports = {
         BUTTON_MARGIN: required,
         BUTTON_TOP: required,
         BUTTON_RIGHT: required,
+        HIGHLIGHT_PATTERN: [required, regex],
         HIGHLIGHT_LINE_COLOR: required,
     },
     text_stylize: {
         "DEFAULT_COLORS.FOREGROUND": [required, hexColor],
         "DEFAULT_COLORS.BACKGROUND": [required, hexColor],
         "DEFAULT_COLORS.BORDER": [required, hexColor],
-        COLOR_TABLE: [required, hexColor2DArray],
+        COLOR_TABLE: [required, array],
     },
     slash_commands: {
         TRIGGER_REGEXP: [required, regex]
     },
     file_counter: {
         ALLOW_EXT: fileExt,
+        IGNORE_FOLDERS: required,
     },
     resource_manager: {
         MAX_STATS: notEqualZero,
         MAX_DEPTH: notEqualZero,
+        IGNORE_FOLDERS: required,
     },
     editor_width_slider: {
         WIDTH_RATIO: notEqualZero,
@@ -185,5 +172,6 @@ module.exports = {
     },
     redirectLocalRootUrl: {
         root: required,
+        filter_regexp: regex,
     },
 }

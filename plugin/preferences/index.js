@@ -329,6 +329,7 @@ class preferencesPlugin extends BasePlugin {
             viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
             viewCustomMarkdownlintRules: () => this.utils.openUrl("https://github.com/obgnail/markdownlint-custom-rules"),
             viewCodeMirrorKeymapsManual: () => this.utils.openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
+            viewVitePressLineHighlighting: ()=> this.utils.openUrl("https://vitepress.dev/guide/markdown#line-highlighting-in-code-blocks"),
             viewAbcVisualOptionsHelp: () => this.utils.openUrl("https://paulrosen.github.io/abcjs/visual/render-abc-options.html"),
             chooseEchartsRenderer: () => this.utils.openUrl("https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/"),
             viewArticleUploaderReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),

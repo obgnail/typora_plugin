@@ -48,6 +48,7 @@ class formDialog {
 
         this.resolver({ response: state, data: this.entities.form.options.data })
         this.resolver = null
+        this.entities.form.clear()
     }
 
     modal = ({ title, ...options }) => {

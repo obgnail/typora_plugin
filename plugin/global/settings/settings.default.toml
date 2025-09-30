@@ -1415,7 +1415,7 @@ WAIT_RECOVER_INTERVAL = 1000
 #   HINT: 鼠标悬停在按钮上时显示的功能提示，填入任意字符串
 #   ON_INIT: 初始化函数字符串，此函数只在插件初始化时执行一次
 #       参数: plugin - 插件实例对象
-#       示例: plu => console.log('The button has been initialized')，不需要则置为空字符串 ""
+#       示例: plu => console.log('The button has been initialized')
 #   ON_RENDER: 渲染后回调函数字符串，每次页面渲染代码块时都会执行此函数
 #       参数: buttonElement - 按钮的 DOM 元素对象
 #       示例: btn => console.log('The button has been rendered')，不需要则置为空字符串 ""
@@ -1480,6 +1480,23 @@ CUSTOM_HOTKEYS = []
 # 支持根据代码语言的语法折叠代码
 ENABLE_LANGUAGE_FOLD = true
 
+# ------------------- 代码行高亮功能 -------------------
+# 通过代码块的语言设置高亮行
+# 使用方法：在语言后面添加大括号，大括号里注明需要高亮的行。详见：https://vitepress.dev/guide/markdown#line-highlighting-in-code-blocks
+# 举例：```js{2, 5-8, 10-12}``` 表示：高亮 js 代码块的第 2 行，第 5-8，10-12 行
+HIGHLIGHT_BY_LANGUAGE = false
+
+# 行号基准
+#   1-based: 从 1 开始
+#   0-based: 从 0 开始
+NUMBERING_BASE = "1-based"
+
+# 行高亮格式
+HIGHLIGHT_PATTERN = '^(?<lang>[^{}]+){(?<line>[\d\s,-]+)}$'
+
+# 高亮行的背景色
+HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
+
 # ------------------- 其他功能 -------------------
 # 长文本的换行会保持相同的缩进（详见：https://github.com/codemirror/codemirror5/issues/2085）
 # 不建议开启此功能，有较大的性能损失，会消耗大量时间去计算缩进
@@ -1487,14 +1504,6 @@ INDENTED_WRAPPED_LINE = false
 
 # 高亮鼠标悬停的代码行
 HIGHLIGHT_WHEN_HOVER = false
-
-# 通过代码块的语言设置高亮行
-# 使用方法：在语言后面添加小括号，小括号里注明需要高亮的行（详见：https://github.com/obgnail/typora_plugin/issues/615）
-# 举例：```js(2, 5-8, 10-12)``` 表示：高亮 js 代码块的第 2 行，第 5-8，10-12 行
-HIGHLIGHT_BY_LANGUAGE = false
-
-# 代码行高亮时的颜色
-HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 
 
 ################### collapse_paragraph ###################
