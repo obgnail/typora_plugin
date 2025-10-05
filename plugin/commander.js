@@ -18,7 +18,7 @@ class commanderPlugin extends BasePlugin {
 
     html = () => {
         const runText = this.i18n.t("runCommand")
-        const envText = this.i18n.t("envInfo")
+        const envText = this.i18n.t("$placeholder.envInfo")
         const { CMD_BASH, POWER_SHELL, GIT_BASH, WSL } = this.SHELL
         const genShell = (shell, text) => `<option value="${shell}">${text}</option>`
         const shells = [genShell(CMD_BASH, "CMD/Bash")]

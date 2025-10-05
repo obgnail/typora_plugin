@@ -587,11 +587,6 @@ class utils {
     }
 
     static compareVersion = (ver1, ver2) => {
-        if (ver1 === "" && ver2 !== "") {
-            return -1
-        } else if (ver2 === "" && ver1 !== "") {
-            return 1
-        }
         const arr1 = ver1.split(".");
         const arr2 = ver2.split(".");
         const maxLength = Math.max(arr1.length, arr2.length);

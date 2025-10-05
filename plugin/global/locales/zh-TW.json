@@ -328,7 +328,6 @@
     "pluginName": "命令行環境",
     "act.toggle_modal": "顯示 / 隱藏",
     "runCommand": "執行命令",
-    "envInfo": "環境變數:\n$f 當前檔案路徑\n$d 當前檔案目錄\n$m 當前掛載目錄",
     "$option.QUICK_RUN_DISPLAY.echo": "立即彈出視窗並回顯輸出",
     "$option.QUICK_RUN_DISPLAY.always": "執行結束後彈出視窗並顯示輸出",
     "$option.QUICK_RUN_DISPLAY.error": "僅在錯誤時彈出視窗並顯示輸出",
@@ -349,7 +348,8 @@
     "$title.cmdDisplay": "命令顯示方式",
     "$title.windowInteraction": "視窗互動",
     "$title.BUILTIN": "預設命令",
-    "$title.BUILTIN.cmd": "命令"
+    "$title.BUILTIN.cmd": "命令",
+    "$placeholder.envInfo": "環境變數:\n$f 當前檔案路徑\n$d 當前檔案目錄\n$m 當前掛載目錄"
   },
   "md_padding": {
     "pluginName": "中英文混排優化",

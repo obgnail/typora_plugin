@@ -328,7 +328,6 @@
     "pluginName": "命令行环境",
     "act.toggle_modal": "显示 / 隐藏",
     "runCommand": "运行命令",
-    "envInfo": "环境变量:\n$f 当前文件路径\n$d 当前文件目录\n$m 当前挂载目录",
     "$option.QUICK_RUN_DISPLAY.echo": "立即弹窗并回显输出",
     "$option.QUICK_RUN_DISPLAY.always": "执行结束后弹窗并显示输出",
     "$option.QUICK_RUN_DISPLAY.error": "仅在错误时弹窗并显示输出",
@@ -349,7 +348,8 @@
     "$title.cmdDisplay": "命令显示方式",
     "$title.windowInteraction": "窗口交互",
     "$title.BUILTIN": "预设命令",
-    "$title.BUILTIN.cmd": "命令"
+    "$title.BUILTIN.cmd": "命令",
+    "$placeholder.envInfo": "环境变量:\n$f 当前文件路径\n$d 当前文件目录\n$m 当前挂载目录"
   },
   "md_padding": {
     "pluginName": "中英文混排优化",

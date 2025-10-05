@@ -328,7 +328,6 @@
     "pluginName": "Commander",
     "act.toggle_modal": "Show / Hide",
     "runCommand": "Run Command",
-    "envInfo": "Environment variables:\n$f: Current file path\n$d: Directory of the current file\n$m: Current mount directory",
     "$option.QUICK_RUN_DISPLAY.echo": "Echo Output Immediately",
     "$option.QUICK_RUN_DISPLAY.always": "Show Output After Execution",
     "$option.QUICK_RUN_DISPLAY.error": "Show Output Only on Error",
@@ -349,7 +348,8 @@
     "$title.cmdDisplay": "Command Display",
     "$title.windowInteraction": "Window Interaction",
     "$title.BUILTIN": "Built-in Commands",
-    "$title.BUILTIN.cmd": "Command"
+    "$title.BUILTIN.cmd": "Command",
+    "$placeholder.envInfo": "Environment variables:\n$f: Current file path\n$d: Directory of the current file\n$m: Current mount directory"
   },
   "md_padding": {
     "pluginName": "Chinese-English Text Spacer",
