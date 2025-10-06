@@ -7,27 +7,6 @@ class FastForm extends HTMLElement {
     static controls = {}
     static features = {}
     static layouts = {}
-    static hooks = {
-        onSchemaReady: (schema, form) => schema,
-        onRender: (form) => void 0,
-        onProcessValue: (changeContext) => changeContext.value,
-        onBeforeValidate: (changeContext) => void 0,        // return true or [] for success; return Error or [Error, ...] for failure
-        onValidate: (changeContext) => void 0,              // return true or [] for success; return Error or [Error, ...] for failure
-        onAfterValidate: (changeContext, errors) => void 0, // return true or [] for success; return Error or [Error, ...] for failure
-        onValidateFailed: (changeContext, errors) => {
-            if (!Array.isArray(errors) || errors.length === 0) return
-            const err = errors[0]  // show first error only
-            const msg = (typeof err.message === "string")
-                ? err.message || err.toString()
-                : typeof err === "string"
-                    ? err
-                    : "Verification Failed"  // fallback
-            utils.notification.show(msg, "error")
-        },
-        onBeforeCommit: (changeContext, form) => void 0,
-        onCommit: (changeContext, form) => form.dispatchEvent(new CustomEvent("form-crud", { detail: changeContext })),
-        onAfterCommit: (changeContext, form) => void 0,
-    }
 
     static registerControl = (name, definition) => {
         validateDefinition(name, definition, {
@@ -81,6 +60,7 @@ class FastForm extends HTMLElement {
         this.form = root.querySelector("#form")
         this.options = {}
         this.states = new States()
+        this.hooks = this._createHooksManager()
         this._runtime = {
             fields: {},
             cleanups: [],
@@ -100,13 +80,49 @@ class FastForm extends HTMLElement {
         this.options = this._initOptions(options)
         this._normalizeFeatures(this.options)
         this._normalizeControls(this.options)
+        this._applyUserHooks(this.options.hooks)
         this._collectFields(this.options)
 
-        this.options.schema = this._invokeHook("onSchemaReady", this.options.schema, this) || this.options.schema
+        this.options.schema = this.hooks.invoke("onSchemaReady", this.options.schema, this) || this.options.schema
 
         this.fillForm(this.options.schema, this.form)
         this._bindAllEvents(this.options.controls)
-        this._invokeHook("onRender", this)
+        this.hooks.invoke("onRender", this)
+    }
+
+    _createHooksManager = () => {
+        const getValidationResult = (result) => {
+            return result instanceof Error
+                ? [result]
+                : Array.isArray(result) ? result : []
+        }
+        const defaultHooks = {
+            onSchemaReady: (schema, form) => schema,
+            onRender: (form) => void 0,
+            onProcessValue: (value, changeContext) => value,
+            onBeforeValidate: (changeContext) => [],             // return true or [] for success; return Error or [Error, ...] for failure
+            onValidate: (changeContext) => [],                   // return true or [] for success; return Error or [Error, ...] for failure
+            onAfterValidate: (errors, changeContext) => errors,  // return true or [] for success; return Error or [Error, ...] for failure
+            onValidateFailed: (errors, changeContext) => {
+                if (!Array.isArray(errors) || errors.length === 0) return
+                const err = errors[0]  // show first error only
+                const msg = (typeof err.message === "string")
+                    ? err.message || err.toString()
+                    : typeof err === "string" ? err : "Verification Failed"
+                utils.notification.show(msg, "error")
+            },
+            onBeforeCommit: (changeContext, form) => void 0,
+            onCommit: (changeContext, form) => form.dispatchEvent(new CustomEvent("form-crud", { detail: changeContext })),
+            onAfterCommit: (changeContext, form) => void 0,
+        }
+        const hookStrategies = {
+            onSchemaReady: { strategy: "pipeline" },
+            onProcessValue: { strategy: "pipeline" },
+            onAfterValidate: { strategy: "pipeline" },
+            onBeforeValidate: { strategy: "aggregate", getResult: getValidationResult },
+            onValidate: { strategy: "aggregate", getResult: getValidationResult },
+        }
+        return new LifecycleHooks(defaultHooks, hookStrategies)
     }
 
     _initOptions(options) {
@@ -125,7 +141,7 @@ class FastForm extends HTMLElement {
             schema: utils.naiveCloneDeep(schema),
             data: utils.naiveCloneDeep(data),
             actions: { ...actions },
-            hooks: { ...this.constructor.hooks, ...hooks },
+            hooks: { ...hooks },
             features: { ...this.constructor.features, ...features },
             controls: { ...this.constructor.controls, ...controls },
             controlOptions: { ...controlOptions },
@@ -181,88 +197,59 @@ class FastForm extends HTMLElement {
     setData = (key, value, type = "set") => utils.nestedPropertyHelpers[type](this.options.data, key, value)
 
     // type: set/push/removeIndex
-    setFieldValue = (key, value, type = "set") => {
+    queueFieldValueUpdate = (key, value, type = "set") => {
         this._runtime.pendingChanges.set(key, { key, value, type })
-        // Ensures that multiple synchronous calls to `setFieldValue` result in only one batch update.
-        if (this._runtime.isTaskQueued) return
-
-        this._runtime.isTaskQueued = true
-
-        // Processes all pending changes in a single batch.
-        queueMicrotask(() => {
-            const changesToProcess = new Map(this._runtime.pendingChanges)
-            this._runtime.pendingChanges.clear()
-            this._runtime.isTaskQueued = false
-
-            if (changesToProcess.size === 0) return
-
-            const successfullyChangedKeys = new Set()
-            for (const changeContext of changesToProcess.values()) {
-                const isValid = this._processSingleChange(changeContext)
-                if (isValid) {
-                    successfullyChangedKeys.add(changeContext.key)
-                }
-            }
-            successfullyChangedKeys.forEach(key => this._updateControl(key))
-        })
+        if (!this._runtime.isTaskQueued) {
+            this._runtime.isTaskQueued = true
+            queueMicrotask(this._processPendingChanges)
+        }
     }
 
-    _resolveLayout(layout) {
-        const { layouts } = this.constructor
-        if (!layout) {
-            return layouts.default || {}
-        }
+    _processPendingChanges = () => {
+        const changesToProcess = new Map(this._runtime.pendingChanges)
+        this._runtime.pendingChanges.clear()
+        this._runtime.isTaskQueued = false
 
-        const inheritances = new Set()
-        let current = layout
-        while (current) {
-            const currentDef = (typeof current === "string") ? layouts[current] : current
-            if (!currentDef || typeof currentDef !== "object") {
-                break
+        if (changesToProcess.size === 0) return
+
+        const successfullyChangedKeys = new Set()
+        for (const changeContext of changesToProcess.values()) {
+            const isValid = this._processSingleChange(changeContext)
+            if (isValid) {
+                successfullyChangedKeys.add(changeContext.key)
             }
-            if (inheritances.has(currentDef)) {
-                console.warn("FastForm Warning: Circular layout inheritance detected.")
-                break
-            }
-            inheritances.add(currentDef)
-            current = currentDef.base
         }
-        return Object.assign({}, layouts.default, ...[...inheritances].reverse())
+        successfullyChangedKeys.forEach(key => this._updateControl(key))
     }
 
     _processSingleChange(changeContext) {
         if (changeContext.type !== "removeIndex") {
-            changeContext.value = this._invokeHook("onProcessValue", changeContext)
+            changeContext.value = this.hooks.invoke("onProcessValue", changeContext.value, changeContext)
         }
         const errors = (changeContext.type !== "removeIndex") ? this._validate(changeContext) : []
         const isValid = Array.isArray(errors) && errors.length === 0
         if (isValid) {
-            this._invokeHook("onBeforeCommit", changeContext, this)
+            this.hooks.invoke("onBeforeCommit", changeContext, this)
             this.setData(changeContext.key, changeContext.value, changeContext.type)
-            this._invokeHook("onCommit", changeContext, this)
-            this._invokeHook("onAfterCommit", changeContext, this)
+            this.hooks.invoke("onCommit", changeContext, this)
+            this.hooks.invoke("onAfterCommit", changeContext, this)
         } else {
-            this._invokeHook("onValidateFailed", changeContext, errors)
+            this.hooks.invoke("onValidateFailed", errors, changeContext)
         }
         return isValid
     }
 
-    _getValidationErrors(result) {
-        if (result === true || (Array.isArray(result) && result.length === 0)) return []
-        if (result instanceof Error) return [result]
-        if (Array.isArray(result)) return result
-        return []
-    }
-
     _validate(changeContext) {
-        let errors = this._getValidationErrors(this._invokeHook("onBeforeValidate", changeContext))
+        let errors = this.hooks.invoke("onBeforeValidate", changeContext)
         if (errors.length > 0) return errors
-        errors = this._getValidationErrors(this._invokeHook("onValidate", changeContext)) || []
-        const finalErrors = this._getValidationErrors(this._invokeHook("onAfterValidate", changeContext, errors))
-        return finalErrors.length > 0 ? finalErrors : errors
+        errors = this.hooks.invoke("onValidate", changeContext)
+        return this.hooks.invoke("onAfterValidate", errors, changeContext)
     }
 
     validateAndCommit = (key, value, type = "set") => {
+        // Flush any pending async changes to prevent race conditions and ensure this synchronous commit operates on the latest state.
+        this._processPendingChanges()
+
         const changeContext = { key, value, type }
         const oldValue = this.getData(key)
         const isValid = this._processSingleChange(changeContext)
@@ -272,7 +259,7 @@ class FastForm extends HTMLElement {
         return isValid
     }
 
-    // Synchronized version function of `setFieldValue`
+    // Synchronized version function of `queueFieldValueUpdate`
     reactiveCommit = (key, value, type = "set") => {
         const isValid = this.validateAndCommit(key, value, type)
         if (isValid) {
@@ -298,6 +285,7 @@ class FastForm extends HTMLElement {
         this._runtime.cleanups = []
         this._runtime.apis.clear()
         this.states.clear()
+        this.hooks.clear()
     }
 
     _bindAllEvents(controls) {
@@ -378,6 +366,7 @@ class FastForm extends HTMLElement {
             const context = {
                 options,
                 form: this,
+                hooks: { on: this.hooks.on, override: this.hooks.override },
                 registerApi: this._registerApi,
                 initState: (initialState, clear) => {
                     const state = this.states.init(name, initialState)
@@ -399,6 +388,44 @@ class FastForm extends HTMLElement {
         }
     }
 
+    _applyUserHooks = (userHooks) => {
+        for (const [name, config] of Object.entries(userHooks)) {
+            if (typeof config === "function") {
+                this.hooks.on(name, config)
+            } else if (config && typeof config === "object") {
+                if (typeof config.on === "function") {
+                    this.hooks.on(name, config.on)
+                }
+                if (typeof config.override === "function") {
+                    this.hooks.override(name, config.override)
+                }
+            }
+        }
+    }
+
+    _resolveLayout(layout) {
+        const { layouts } = this.constructor
+        if (!layout) {
+            return layouts.default || {}
+        }
+
+        const inheritances = new Set()
+        let current = layout
+        while (current) {
+            const currentDef = (typeof current === "string") ? layouts[current] : current
+            if (!currentDef || typeof currentDef !== "object") {
+                break
+            }
+            if (inheritances.has(currentDef)) {
+                console.warn("FastForm Warning: Circular layout inheritance detected.")
+                break
+            }
+            inheritances.add(currentDef)
+            current = currentDef.base
+        }
+        return Object.assign({}, layouts.default, ...[...inheritances].reverse())
+    }
+
     _registerApi = (namespace, api, destroy) => {
         if (typeof namespace !== "string" || !namespace) {
             throw new TypeError("API registration error: namespace must be a non-empty string.")
@@ -417,15 +444,74 @@ class FastForm extends HTMLElement {
 
     _collectFields = (options) => {
         const fields = {}
-        this.traverseFields(field => field.key && (fields[field.key] = field) , options.schema)
+        this.traverseFields(field => field.key && (fields[field.key] = field), options.schema)
         this._runtime.fields = fields
     }
+}
 
-    _invokeHook(hookName, ...args) {
-        const fn = this.options.hooks[hookName]
-        if (typeof fn === "function") {
-            return fn(...args)
+class LifecycleHooks {
+    constructor(defaultImplementations, strategies) {
+        this._listeners = new Map()
+        this._overrides = new Map()
+        this._definitions = new Map(
+            Object.entries(defaultImplementations).map(([hookName, impl]) => {
+                const strategy = strategies[hookName] || {}
+                return [hookName, { impl, ...strategy }]
+            })
+        )
+    }
+
+    on = (hookName, listener) => {
+        if (!this._definitions.has(hookName)) {
+            console.warn(`Attempting to subscribe to an unknown hook "${hookName}".`)
+            return
         }
+        if (!this._listeners.has(hookName)) {
+            this._listeners.set(hookName, new Set())
+        }
+        if (typeof listener === "function") {
+            this._listeners.get(hookName).add(listener)
+        }
+    }
+    override = (hookName, listener) => {
+        if (!this._definitions.has(hookName)) {
+            console.warn(`Attempting to override an unknown hook "${hookName}".`)
+            return
+        }
+        if (typeof listener === "function") {
+            this._overrides.set(hookName, listener)
+        }
+    }
+    invoke = (hookName, ...initialArgs) => {
+        if (!this._definitions.has(hookName)) return
+
+        const overrideFn = this._overrides.get(hookName)
+        if (overrideFn) {
+            return overrideFn(...initialArgs)
+        }
+
+        const { strategy, impl, getResult } = this._definitions.get(hookName)
+        const userImpl = this._listeners.get(hookName) || []
+        const allFns = [...userImpl, impl]
+        if (allFns.length === 0) return
+        switch (strategy) {
+            case "pipeline":
+                const [initialValue, ...otherArgs] = initialArgs
+                return allFns.reduce((currentValue, fn) => fn(currentValue, ...otherArgs), initialValue)
+            case "aggregate":
+                if (typeof getResult !== "function") {
+                    console.error(`FastForm Error: Hook "${hookName}" uses 'aggregate' strategy but is missing a 'getResult' function.`)
+                    return []
+                }
+                return allFns.flatMap(fn => getResult(fn(...initialArgs)))
+            case "broadcast":
+            default:
+                return allFns.reduce((_, fn) => fn(...initialArgs), undefined)
+        }
+    }
+    clear = () => {
+        this._listeners.clear()
+        this._overrides.clear()
     }
 }
 
@@ -602,12 +688,8 @@ const Feature_EventDelegation = {
 }
 
 const Feature_DefaultKeybindings = {
-    configureInstance: ({ options }) => {
-        const originalOnRender = options.hooks.onRender
-        options.hooks.onRender = (formInstance) => {
-            formInstance.onEvent("keydown", ev => ev.stopPropagation(), true)
-            originalOnRender(formInstance)
-        }
+    configureInstance: ({ hooks }) => {
+        hooks.on("onRender", (form) => form.onEvent("keydown", ev => ev.stopPropagation(), true))
     }
 }
 
@@ -616,28 +698,23 @@ class EventBus {
         this.listeners = {}
     }
 
-    on(eventName, callback) {
+    on = (eventName, callback) => {
         if (!this.listeners[eventName]) {
             this.listeners[eventName] = new Set()
         }
         this.listeners[eventName].add(callback)
     }
-
-    off(eventName, callback) {
+    off = (eventName, callback) => {
         if (this.listeners[eventName]) {
             this.listeners[eventName].delete(callback)
         }
     }
-
-    emit(eventName, detail) {
+    emit = (eventName, detail) => {
         if (this.listeners[eventName]) {
             this.listeners[eventName].forEach(callback => callback(detail))
         }
     }
-
-    clear() {
-        this.listeners = {}
-    }
+    clear = () => this.listeners = {}
 }
 
 const Feature_Watchers = (() => {
@@ -753,6 +830,8 @@ const Feature_Watchers = (() => {
              * at the moment a watcher is evaluated. Its behavior as a trigger depends on the
              * form's `reactiveUiEffects` option.
              *
+             * NOTE: UI is a function of state. Try NOT to use this.
+             *
              * BEHAVIOR with `reactiveUiEffects: false` (Default):
              * It acts as a read-only check. The watcher will NOT be re-triggered by UI state changes,
              * enforcing a strict, one-way data flow from data to UI.
@@ -774,6 +853,10 @@ const Feature_Watchers = (() => {
                             }
                         })
                     })
+                },
+                beforeEvaluate: (declaration, ctx) => {
+                    ctx._flushUI()
+                    return declaration
                 },
                 evaluate: (declaration, ctx) => {
                     return Object.entries(declaration).every(([target, evaluators]) => {
@@ -1108,37 +1191,21 @@ const Feature_Watchers = (() => {
         return { createUiStateKey, collectUIAffects, applyUiEffects, collectAffects, buildTriggerMap }
     })()
 
-    const ConditionEvaluator = (() => {
-        const evaluate = (form, condition) => {
-            const context = {
-                conditionEvaluators: form.options.conditionEvaluators,
-                comparisonEvaluators: form.options.comparisonEvaluators,
-                createUiStateKey: DependencyAnalyzer.createUiStateKey,
-                evaluate: (subCond) => evaluate(form, subCond),
-                getValue: (key) => form.getData(key),
-                getField: (key) => form.getField(key),
-                getControl: (key) => form.options.layout.findControl(key, form.form),
-                getBox: (boxId) => form.options.layout.findBox(boxId, form.form),
-                compare: (actual, conditionObject, defaultOperator = "$eq") => {
-                    const finalCond = (conditionObject == null || typeof conditionObject !== "object")
-                        ? { [defaultOperator]: conditionObject }
-                        : conditionObject
-                    return Object.entries(finalCond).every(([operator, expected]) => {
-                        const handler = context.comparisonEvaluators[operator]
-                        if (!handler || typeof handler.evaluate !== "function") {
-                            console.warn(`FastForm Warning: Unknown comparison operator "${operator}".`)
-                            return false
-                        }
-                        return handler.evaluate(actual, expected)
-                    })
-                },
+    const ExecutionEngine = (() => {
+        const _evaluateCondition = (condition, context = {}) => {
+            if (typeof condition === "function") {
+                return condition(context)
+            } else if (!condition || typeof condition !== "object") {
+                return true
             }
 
             // Handle logical evaluators like $and, $or, $checkUI
             for (const [name, handler] of Object.entries(context.conditionEvaluators)) {
                 if (condition.hasOwnProperty(name)) {
                     let value = condition[name]
-                    if (typeof handler.beforeEvaluate === "function") value = handler.beforeEvaluate(value, context)
+                    if (typeof handler.beforeEvaluate === "function") {
+                        value = handler.beforeEvaluate(value, context)
+                    }
                     return handler.evaluate(value, context)
                 }
             }
@@ -1164,10 +1231,6 @@ const Feature_Watchers = (() => {
             })
         }
 
-        return { evaluate }
-    })()
-
-    const ExecutionEngine = (() => {
         const _doSingleEffect = (form, watcher, isConditionMet, context) => {
             const { effect } = watcher
             if (typeof effect === "function") {
@@ -1191,7 +1254,8 @@ const Feature_Watchers = (() => {
             return new Set(watchers)
         }
 
-        const _executeWatchersCore = (state, form, initialWatchers, payload) => {
+        const _execute = (state, form, initialWatchers, payload) => {
+            const transactionalData = new Map()
             const watchersToProcess = new Set(initialWatchers)
             const watchers = state.get(StateKey.Watchers)
             const pendingWatchers = state.get(StateKey.PendingQueue)
@@ -1240,16 +1304,37 @@ const Feature_Watchers = (() => {
 
                 // Step 4: Execute watchers. If a cycle was detected, handle it gracefully.
                 const run = (watchers) => {
-                    const conditionContext = {
+                    const evaluateContext = {
                         getPayload: () => payload,
+                        conditionEvaluators: form.options.conditionEvaluators,
+                        comparisonEvaluators: form.options.comparisonEvaluators,
                         getBox: (boxId) => form.options.layout.findBox(boxId, form.form),
                         getControl: (key) => form.options.layout.findControl(key, form.form),
-                        evaluateWhen: (conditionObject) => ConditionEvaluator.evaluate(form, conditionObject),
-                        getValue: (key) => form.getData(key),
+                        getValue: (key) => transactionalData.has(key) ? transactionalData.get(key) : form.getData(key),
+                        getField: (key) => form.getField(key),
+                        _flushUI: () => transactionalData.forEach((val, key) => form._updateControl(key, val)),
+                        createUiStateKey: DependencyAnalyzer.createUiStateKey,
+                        evaluate: (condition) => _evaluateCondition(condition, evaluateContext),
+                        compare: (actual, conditionObject, defaultOperator = "$eq") => {
+                            const finalCond = (conditionObject == null || typeof conditionObject !== "object")
+                                ? { [defaultOperator]: conditionObject }
+                                : conditionObject
+                            return Object.entries(finalCond).every(([operator, expected]) => {
+                                const handler = form.options.comparisonEvaluators[operator]
+                                if (!handler || typeof handler.evaluate !== "function") {
+                                    console.warn(`FastForm Warning: Unknown comparison operator "${operator}".`)
+                                    return false
+                                }
+                                return handler.evaluate(actual, expected)
+                            })
+                        },
                     }
                     const effectContext = {
-                        ...conditionContext,
-                        setValue: (key, value, type) => form.setFieldValue(key, value, type),
+                        ...evaluateContext,
+                        setValue: (key, value, type) => {
+                            transactionalData.set(key, value)
+                            form.queueFieldValueUpdate(key, value, type)
+                        },
                         updateUI: (declaration, customContext) => DependencyAnalyzer.applyUiEffects(declaration, customContext || effectContext),
                         propagateUiEffects: (declaration) => {
                             if (!form.options.reactiveUiEffects) return
@@ -1263,9 +1348,7 @@ const Feature_Watchers = (() => {
                     }
 
                     for (const watcher of watchers) {
-                        const isMet = watcher.when
-                            ? (typeof watcher.when === "function" ? watcher.when(conditionContext) : ConditionEvaluator.evaluate(form, watcher.when))
-                            : true
+                        const isMet = _evaluateCondition(watcher.when, evaluateContext)
                         _doSingleEffect(form, watcher, isMet, effectContext)
                     }
                 }
@@ -1279,9 +1362,7 @@ const Feature_Watchers = (() => {
                     const msg = `Circular dependency detected in watchers: ${cycleKeys}`
                     if (!form.options.allowCircularDependencies) throw new TypeError(`FastForm Error: ${msg}`)
                     else console.warn(`FastForm Warning: ${msg}`)
-
-                    // Run the non-cyclic part first, then the cyclic part.
-                    run([...sortedWatchers, ...cycleNodes])
+                    run([...sortedWatchers, ...cycleNodes])  // Run the non-cyclic part first, then the cyclic part.
                 }
 
                 // If new watchers were queued during execution, add them to the next batch.
@@ -1304,7 +1385,7 @@ const Feature_Watchers = (() => {
 
             state.set(StateKey.IsExecuting, true)
             try {
-                _executeWatchersCore(state, form, initialWatchers, payload)
+                _execute(state, form, initialWatchers, payload)
             } finally {
                 state.set(StateKey.IsExecuting, false)
             }
@@ -1381,18 +1462,14 @@ const Feature_Watchers = (() => {
             Object.entries(options.watchers || {}).forEach(([key, watcher]) => registerWatcher(state, form, key, watcher))
         }
 
-        const hookLifecycle = (state, form, options) => {
-            const onRender = (originalOnRender) => (formInstance) => {
-                DependencyAnalyzer.buildTriggerMap(state, formInstance)
-                ExecutionEngine.executeAll(state, formInstance)
-                originalOnRender(formInstance)
-            }
-            const onAfterCommit = (originalOnAfterCommit) => (changeContext, formInstance) => {
-                originalOnAfterCommit(changeContext, formInstance)
+        const hookLifecycle = (state, hooks) => {
+            hooks.on("onRender", (form) => {
+                DependencyAnalyzer.buildTriggerMap(state, form)
+                ExecutionEngine.executeAll(state, form)
+            })
+            hooks.on("onAfterCommit", (changeContext, form) => {
                 ExecutionEngine.executeForKeys(state, form, [changeContext.key])
-            }
-            options.hooks.onRender = onRender(options.hooks.onRender)
-            options.hooks.onAfterCommit = onAfterCommit(options.hooks.onAfterCommit)
+            })
         }
 
         return { initWatcher, hookLifecycle }
@@ -1410,7 +1487,7 @@ const Feature_Watchers = (() => {
             requireAffectsForFunctionEffect: false,
             reactiveUiEffects: false, // Violating the principle of the Single Source of Truth. Do NOT edit this option unless you know what you are doing.
         },
-        configureInstance: ({ form, options, registerApi, initState }) => {
+        configureInstance: ({ form, options, registerApi, initState, hooks }) => {
             options.activators = { ...Registries.activators, ...options.activators }
             options.conditionEvaluators = { ...Registries.conditionEvaluators, ...options.conditionEvaluators }
             options.comparisonEvaluators = { ...Registries.comparisonEvaluators, ...options.comparisonEvaluators }
@@ -1426,7 +1503,7 @@ const Feature_Watchers = (() => {
             ]))
 
             Lifecycle.initWatcher(state, form, options, registerApi)
-            Lifecycle.hookLifecycle(state, form, options)
+            Lifecycle.hookLifecycle(state, hooks)
         },
         install: (FastFormClass) => {
             const validationOptions = { prefix: "$" }
@@ -1486,7 +1563,7 @@ const Feature_Parsing = {
         parsers: {},
         parserMatchStrategy: "exact", // "exact", "wildcard", "regex"
     },
-    configureInstance: ({ options }) => {
+    configureInstance: ({ options, hooks }) => {
         const { parsers, parserMatchStrategy } = options
         if (!parsers || typeof parsers !== "object" || Object.keys(parsers).length === 0) return
 
@@ -1504,19 +1581,17 @@ const Feature_Parsing = {
         })
         if (compiledParsers.length === 0) return
 
-        const originalOnProcessValue = options.hooks.onProcessValue
-        options.hooks.onProcessValue = (changeContext) => {
-            const processedValue = originalOnProcessValue(changeContext)
-            const newChangeContext = { ...changeContext, value: processedValue }
+        hooks.on("onProcessValue", (value, changeContext) => {
+            const newChangeContext = { ...changeContext, value }
             const matchedParsers = compiledParsers.filter(p => p.regex.test(newChangeContext.key))
             if (matchedParsers.length === 0) {
-                return newChangeContext.value
+                return value
             }
             if (matchedParsers.length > 1) {
                 matchedParsers.sort((a, b) => b.key.length - a.key.length)
             }
-            return matchedParsers[0].parser(newChangeContext.value, newChangeContext)
-        }
+            return matchedParsers[0].parser(value, newChangeContext)
+        })
     }
 }
 
@@ -1526,7 +1601,7 @@ const Feature_Validation = {
         validators: {},
         ruleMatchStrategy: "exact", // "exact", "wildcard", "regex"
     },
-    configureInstance: ({ form, options }) => {
+    configureInstance: ({ form, options, hooks }) => {
         const { rules, validators, ruleMatchStrategy } = options
         const allValidators = { ...form.constructor.validator.getAll(), ...validators }
         if (!rules || typeof rules !== "object" || Object.keys(rules).length === 0) return
@@ -1565,19 +1640,12 @@ const Feature_Validation = {
         })
         if (compiledRules.length === 0) return
 
-        const originalOnValidate = options.hooks.onValidate
-        options.hooks.onValidate = (changeContext) => {
-            const previousErrors = originalOnValidate(changeContext) || []
-
+        hooks.on("onValidate", (changeContext) => {
             const matchedValidators = compiledRules
                 .filter(rule => rule.regex.test(changeContext.key))
                 .flatMap(rule => rule.validators)
-
-            if (matchedValidators.length === 0) {
-                return previousErrors
-            }
-
-            const currentErrors = matchedValidators
+            if (matchedValidators.length === 0) return []
+            return matchedValidators
                 .map(validator => {
                     try {
                         return validator(changeContext, form.options.data)
@@ -1587,8 +1655,7 @@ const Feature_Validation = {
                 })
                 .filter(ret => ret !== true && ret != null)
                 .map(err => (err instanceof Error) ? err : new Error(String(err)))
-            return [...previousErrors, ...currentErrors]
-        }
+        })
     },
     install: (FastFormClass) => {
         FastFormClass.validator = {
