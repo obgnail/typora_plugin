@@ -667,7 +667,6 @@
     "act.add_fences_lang": "Fill Language to All BlockCode",
     "act.replace_fences_lang": "Replace BlockCode Language in Bulk",
     "act.indent_all_fences": "(Danger) Adjust Indentation for All BlockCode",
-    "actHint.dangerous": "Warning: Consumes a lot of resources and may cause Typora to be unresponsive for a long time",
     "btn.hint.copy": "Copy",
     "btn.hint.indent": "Indent",
     "btn.hint.fold": "Fold",
@@ -725,6 +724,7 @@
     "$label.viewVitePressLineHighlighting": "Help",
     "$label.ENABLE_LANGUAGE_FOLD": "Foldable Code",
     "$label.INDENTED_WRAPPED_LINE": "Auto-align Indent",
+    "$label.PRELOAD_ALL_FENCES": "Load All Fences in Advance",
     "$label.HIGHLIGHT_WHEN_HOVER": "Highlight on Hover",
     "$label.HIGHLIGHT_LINE_COLOR": "Highlight Line Background Color",
     "$title.CUSTOM_BUTTONS": "Custom Buttons",
@@ -738,6 +738,7 @@
     "$title.buttonStyle": "Button Style",
     "$title.buttons": "Function Buttons",
     "$title.buttonHotkeys": "Code Block Hotkeys",
+    "$tooltip.dangerous": "High resource consumption may cause Typora to lag for a long time",
     "$tooltip.codeMirrorStyle": "CodeMirror style representation"
   },
   "collapse_paragraph": {

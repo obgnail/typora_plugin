@@ -59,12 +59,10 @@ class diagramParser {
 
     renderAllLangFence = lang => {
         document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
-            const codeMirror = fence.querySelector(":scope > .CodeMirror")
-            if (!codeMirror) {
-                const cid = fence.getAttribute("cid")
-                if (cid) {
-                    File.editor.fences.addCodeBlock(cid)
-                }
+            const cid = fence.getAttribute("cid")
+            const cm = File.editor.fences.queue[cid]
+            if (!cm) {
+                File.editor.fences.addCodeBlock(cid)
             }
         })
     }
@@ -382,9 +380,9 @@ class diagramParser {
             if (!editBtn || !hasInteractive) return;
 
             const editText = this.i18n.t("global", "edit")
-            const listener = (ev, button) => {
-                button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
-                enableFocus();
+            const listener = ({ btn }) => {
+                btn.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "")
+                enableFocus()
             }
             const ok = registerFenceEnhanceButton("edit-diagram", "editDiagram", editText, "fa fa-pencil", false, listener);
             if (!ok) return;

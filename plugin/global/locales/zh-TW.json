@@ -667,7 +667,6 @@
     "act.add_fences_lang": "為無語言程式碼區塊新增語言",
     "act.replace_fences_lang": "批次替換程式碼區塊語言",
     "act.indent_all_fences": "(危) 調整所有程式碼區塊縮排",
-    "actHint.dangerous": "警告：消耗資源可能導致 Typora 長期無回應",
     "btn.hint.copy": "複製",
     "btn.hint.indent": "調整縮排",
     "btn.hint.fold": "摺疊",
@@ -725,6 +724,7 @@
     "$label.viewVitePressLineHighlighting": "幫助",
     "$label.ENABLE_LANGUAGE_FOLD": "程式碼可摺疊",
     "$label.INDENTED_WRAPPED_LINE": "自動對齊縮排",
+    "$label.PRELOAD_ALL_FENCES": "提前加載全部程式碼區塊",
     "$label.HIGHLIGHT_WHEN_HOVER": "滑鼠懸停高亮",
     "$label.HIGHLIGHT_LINE_COLOR": "高亮背景色",
     "$title.CUSTOM_BUTTONS": "自訂按鈕",
@@ -738,6 +738,7 @@
     "$title.buttonStyle": "按鈕樣式",
     "$title.buttons": "功能按鈕",
     "$title.buttonHotkeys": "程式碼區塊快捷鍵",
+    "$tooltip.dangerous": "資源消耗過大，Typora 可能會長時間卡頓",
     "$tooltip.codeMirrorStyle": "使用 CodeMirror 風格的表示方式"
   },
   "collapse_paragraph": {

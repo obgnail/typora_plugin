@@ -1399,7 +1399,7 @@ DEFAULT_FOLD = false
 
 # 代码块折叠阈值：开启默认折叠后，仅当代码块行数大于此值时才会被默认折叠
 #   设置为 0 则所有代码块都会被折叠
-DEFAULT_FOLD_THRESHOLD = 0
+DEFAULT_FOLD_THRESHOLD = 5
 
 # 聚焦代码块时展开已折叠的代码块
 # 注意：此选项受 DEFAULT_FOLD_THRESHOLD 影响，若未达到折叠阈值，则不折叠
@@ -1429,7 +1429,7 @@ WAIT_RECOVER_INTERVAL = 1000
 #       示例: plu => console.log('The button has been initialized')
 #   ON_RENDER: 渲染后回调函数字符串，每次页面渲染代码块时都会执行此函数
 #       参数: buttonElement - 按钮的 DOM 元素对象
-#       示例: btn => console.log('The button has been rendered')，不需要则置为空字符串 ""
+#       示例: ({ btn, fence, cid, enhance }) => console.log('The button has been rendered')，不需要则置为空字符串 ""
 #   ON_CLICK: 鼠标点击按钮时的回调函数字符串，点击时执行此函数
 #       参数: { ev, btn, cont, fence, cm, cid, plu }，分别表示：click event，按钮的 DOM 元素，代码块内容，代码块的 DOM 元素, CodeMirror 实例对象，代码块 CID，插件实例对象
 #       示例: ({ ev, btn, cont, fence, cm, cid, plu }) => console.log('The button has been clicked')。此项不可为空
@@ -1497,6 +1497,9 @@ ENABLE_LANGUAGE_FOLD = true
 # 举例：```js{2, 5-8, 10-12}``` 表示：高亮 js 代码块的第 2 行，第 5-8，10-12 行
 HIGHLIGHT_BY_LANGUAGE = false
 
+# 高亮鼠标悬停的代码行
+HIGHLIGHT_WHEN_HOVER = false
+
 # 行号基准
 #   1-based: 从 1 开始
 #   0-based: 从 0 开始
@@ -1513,8 +1516,11 @@ HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 # 不建议开启此功能，有较大的性能损失，会消耗大量时间去计算缩进
 INDENTED_WRAPPED_LINE = false
 
-# 高亮鼠标悬停的代码行
-HIGHLIGHT_WHEN_HOVER = false
+# 提前加载全部代码块
+# 警告：资源消耗过大，Typora 可能会长时间卡顿。不建议开启
+#   true:  提前加载全部代码块
+#   false: 延迟并按需加载代码块
+PRELOAD_ALL_FENCES = false
 
 
 ################### collapse_paragraph ###################

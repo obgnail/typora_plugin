@@ -1043,7 +1043,6 @@ class utils {
             return fence.getValue()
         }
     }
-    static getFenceContentByPre = pre => this.getFenceContentByCid(pre && pre.getAttribute("cid"))
 
     /** Backup before `File.editor.stylize.toggleFences()` as it uses `File.option` to set block code language. Restore after. */
     static insertFence = (lang = "") => {
