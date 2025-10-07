@@ -26,7 +26,8 @@ class FastForm extends HTMLElement {
 
     static registerFeature = (name, definition) => {
         validateDefinition(name, definition, {
-            configureInstance: { type: "function" },
+            configure: { type: "function" },
+            compile: { type: "function" },
             install: { type: "function" },
             featureOptions: { type: "plainObject" },
         })
@@ -78,8 +79,9 @@ class FastForm extends HTMLElement {
         this.clear()
 
         this.options = this._initOptions(options)
-        this._normalizeFeatures(this.options)
-        this._normalizeControls(this.options)
+        this._configureFeatures(this.options)  // register feature APIs and hooks
+        this._normalizeControls(this.options)  // init control and expand options
+        this._compileFeatures(this.options)    // compile features base on the final options
         this._applyUserHooks(this.options.hooks)
         this._collectFields(this.options)
 
@@ -246,6 +248,7 @@ class FastForm extends HTMLElement {
         return this.hooks.invoke("onAfterValidate", errors, changeContext)
     }
 
+    // Not updating the UI upon success, attempting to restore the UI upon failure
     validateAndCommit = (key, value, type = "set") => {
         // Flush any pending async changes to prevent race conditions and ensure this synchronous commit operates on the latest state.
         this._processPendingChanges()
@@ -361,9 +364,9 @@ class FastForm extends HTMLElement {
         })
     }
 
-    _normalizeFeatures = (options) => {
+    _configureFeatures = (options) => {
         for (const [name, feature] of Object.entries(options.features)) {
-            const context = {
+            const configureContext = {
                 options,
                 form: this,
                 hooks: { on: this.hooks.on, override: this.hooks.override },
@@ -380,10 +383,24 @@ class FastForm extends HTMLElement {
                 },
             }
             if (options._instanceFeatures.hasOwnProperty(name) && typeof feature.install === "function") {
-                console.warn(`FastForm Warning: The 'install' method of the feature '${name}' will be ignored. For instance-specific logic, use 'configureInstance'.`)
+                console.warn(`FastForm Warning: The 'install' method of the feature '${name}' will be ignored. For instance-specific logic, use 'configure'.`)
             }
-            if (typeof feature.configureInstance === "function") {
-                feature.configureInstance(context)
+            if (typeof feature.configure === "function") {
+                feature.configure(configureContext)
+            }
+        }
+    }
+
+    _compileFeatures = (options) => {
+        for (const [name, feature] of Object.entries(options.features)) {
+            if (typeof feature.compile === "function") {
+                const compileContext = {
+                    options,
+                    form: this,
+                    hooks: { on: this.hooks.on, override: this.hooks.override },
+                    state: this.states.get(name),
+                }
+                feature.compile(compileContext)
             }
         }
     }
@@ -413,9 +430,7 @@ class FastForm extends HTMLElement {
         let current = layout
         while (current) {
             const currentDef = (typeof current === "string") ? layouts[current] : current
-            if (!currentDef || typeof currentDef !== "object") {
-                break
-            }
+            if (!currentDef || typeof currentDef !== "object") break
             if (inheritances.has(currentDef)) {
                 console.warn("FastForm Warning: Circular layout inheritance detected.")
                 break
@@ -688,7 +703,7 @@ const Feature_EventDelegation = {
 }
 
 const Feature_DefaultKeybindings = {
-    configureInstance: ({ hooks }) => {
+    configure: ({ hooks }) => {
         hooks.on("onRender", (form) => form.onEvent("keydown", ev => ev.stopPropagation(), true))
     }
 }
@@ -1302,7 +1317,7 @@ const Feature_Watchers = (() => {
                     }
                 }
 
-                // Step 4: Execute watchers. If a cycle was detected, handle it gracefully.
+                // Step 4: Execute watchers.
                 const run = (watchers) => {
                     const evaluateContext = {
                         getPayload: () => payload,
@@ -1442,7 +1457,7 @@ const Feature_Watchers = (() => {
             installActivators(state, form, watcherKey, watcher)
         }
 
-        const initWatcher = (state, form, options, registerApi) => {
+        const initWatcher = (state, form, registerApi) => {
             registerApi(ApiKey, {
                 register: (key, watcher) => registerWatcher(state, form, key, watcher),
                 inspect: () => ({
@@ -1459,20 +1474,9 @@ const Feature_Watchers = (() => {
                     }
                 },
             })
-            Object.entries(options.watchers || {}).forEach(([key, watcher]) => registerWatcher(state, form, key, watcher))
         }
 
-        const hookLifecycle = (state, hooks) => {
-            hooks.on("onRender", (form) => {
-                DependencyAnalyzer.buildTriggerMap(state, form)
-                ExecutionEngine.executeAll(state, form)
-            })
-            hooks.on("onAfterCommit", (changeContext, form) => {
-                ExecutionEngine.executeForKeys(state, form, [changeContext.key])
-            })
-        }
-
-        return { initWatcher, hookLifecycle }
+        return { initWatcher, registerWatcher }
     })()
 
     return {
@@ -1487,7 +1491,7 @@ const Feature_Watchers = (() => {
             requireAffectsForFunctionEffect: false,
             reactiveUiEffects: false, // Violating the principle of the Single Source of Truth. Do NOT edit this option unless you know what you are doing.
         },
-        configureInstance: ({ form, options, registerApi, initState, hooks }) => {
+        configure: ({ form, options, registerApi, initState, hooks }) => {
             options.activators = { ...Registries.activators, ...options.activators }
             options.conditionEvaluators = { ...Registries.conditionEvaluators, ...options.conditionEvaluators }
             options.comparisonEvaluators = { ...Registries.comparisonEvaluators, ...options.comparisonEvaluators }
@@ -1502,8 +1506,13 @@ const Feature_Watchers = (() => {
                 [StateKey.EventBus, new EventBus()],
             ]))
 
-            Lifecycle.initWatcher(state, form, options, registerApi)
-            Lifecycle.hookLifecycle(state, hooks)
+            Lifecycle.initWatcher(state, form, registerApi)
+            hooks.on("onAfterCommit", (changeContext, form) => ExecutionEngine.executeForKeys(state, form, [changeContext.key]))
+        },
+        compile: ({ state, form, options }) => {
+            Object.entries(options.watchers || {}).forEach(([key, watcher]) => Lifecycle.registerWatcher(state, form, key, watcher))
+            DependencyAnalyzer.buildTriggerMap(state, form)
+            ExecutionEngine.executeAll(state, form)
         },
         install: (FastFormClass) => {
             const validationOptions = { prefix: "$" }
@@ -1563,7 +1572,7 @@ const Feature_Parsing = {
         parsers: {},
         parserMatchStrategy: "exact", // "exact", "wildcard", "regex"
     },
-    configureInstance: ({ options, hooks }) => {
+    configure: ({ options, hooks }) => {
         const { parsers, parserMatchStrategy } = options
         if (!parsers || typeof parsers !== "object" || Object.keys(parsers).length === 0) return
 
@@ -1601,12 +1610,31 @@ const Feature_Validation = {
         validators: {},
         ruleMatchStrategy: "exact", // "exact", "wildcard", "regex"
     },
-    configureInstance: ({ form, options, hooks }) => {
+    configure: ({ form, hooks, initState }) => {
+        const state = initState({ compiledRules: [] }, state => state.compiledRules = [])
+        hooks.on("onValidate", (changeContext) => {
+            const matchedValidators = state.compiledRules
+                .filter(rule => rule.regex.test(changeContext.key))
+                .flatMap(rule => rule.validators)
+            if (matchedValidators.length === 0) return []
+            return matchedValidators
+                .map(validator => {
+                    try {
+                        return validator(changeContext, form.options.data)
+                    } catch (err) {
+                        return new Error(err)
+                    }
+                })
+                .filter(ret => ret !== true && ret != null)
+                .map(err => (err instanceof Error) ? err : new Error(String(err)))
+        })
+    },
+    compile: ({ state, form, options }) => {
         const { rules, validators, ruleMatchStrategy } = options
-        const allValidators = { ...form.constructor.validator.getAll(), ...validators }
         if (!rules || typeof rules !== "object" || Object.keys(rules).length === 0) return
 
-        const compiledRules = compileMatchers({
+        const allValidators = { ...form.constructor.validator.getAll(), ...validators }
+        state.compiledRules = compileMatchers({
             source: rules,
             strategy: ruleMatchStrategy,
             errorContext: "rule",
@@ -1618,9 +1646,7 @@ const Feature_Validation = {
                             return validator
                         case "string":
                             const builtin = allValidators[validator]
-                            if (builtin) {
-                                return builtin
-                            }
+                            if (builtin) return builtin
                             break
                         case "object":
                             if (validator && typeof validator.validate === "function") {
@@ -1637,24 +1663,6 @@ const Feature_Validation = {
                 })
                 return { validators }
             }
-        })
-        if (compiledRules.length === 0) return
-
-        hooks.on("onValidate", (changeContext) => {
-            const matchedValidators = compiledRules
-                .filter(rule => rule.regex.test(changeContext.key))
-                .flatMap(rule => rule.validators)
-            if (matchedValidators.length === 0) return []
-            return matchedValidators
-                .map(validator => {
-                    try {
-                        return validator(changeContext, form.options.data)
-                    } catch (err) {
-                        return new Error(err)
-                    }
-                })
-                .filter(ret => ret !== true && ret != null)
-                .map(err => (err instanceof Error) ? err : new Error(String(err)))
         })
     },
     install: (FastFormClass) => {
@@ -1735,7 +1743,7 @@ const Feature_Dependencies = {
         dependencies: {},
         disableEffect: "readonly", // "hide" or "readonly"
     },
-    configureInstance: ({ form, options }) => {
+    configure: ({ form, options }) => {
         const allDependencies = { ...options.dependencies }
         form.traverseFields(field => {
             if (!field.dependencies) return
@@ -1801,7 +1809,7 @@ const Feature_ConditionalBoxes = {
         conditionalBoxes: {},
         destroyStateOnHide: false,
     },
-    configureInstance: ({ form, options, initState }) => {
+    configure: ({ form, options, initState }) => {
         const conditionalBoxes = options.conditionalBoxes
         if (!conditionalBoxes || typeof conditionalBoxes !== "object" || Object.keys(conditionalBoxes).length === 0) return
 
@@ -1868,7 +1876,7 @@ const Feature_Cascades = {
     featureOptions: {
         cascades: {},
     },
-    configureInstance: ({ form, options }) => {
+    configure: ({ form, options }) => {
         if (!options.cascades || typeof options.cascades !== "object") return
 
         const { register } = form.getApi("watchers")
@@ -2161,7 +2169,7 @@ const Control_Switch = {
     },
     bindEvents: ({ form }) => {
         form.onEvent("change", ".native-switch .switch-input", function () {
-            form.validateAndCommit(this.dataset.key, this.checked)
+            form.reactiveCommit(this.dataset.key, this.checked)
         })
     },
 }
@@ -2179,7 +2187,7 @@ const Control_Text = {
     },
     bindEvents: ({ form }) => {
         form.onEvent("change", ".text-input", function () {
-            form.validateAndCommit(this.dataset.key, this.value)
+            form.reactiveCommit(this.dataset.key, this.value)
         })
     },
 }
@@ -2203,7 +2211,7 @@ const Control_Color = {
         form.onEvent("input", ".color-input", function () {
             this.previousElementSibling.textContent = this.value.toUpperCase()
         }).onEvent("change", ".color-input", function () {
-            form.validateAndCommit(this.dataset.key, this.value)
+            form.reactiveCommit(this.dataset.key, this.value)
         })
     },
 }
@@ -2224,7 +2232,7 @@ const Control_Number = {
     bindEvents: ({ form }) => {
         form.onEvent("change", ".number-input", function () {
             const value = this.value === "" ? null : Number(this.value)
-            form.validateAndCommit(this.dataset.key, value)
+            form.reactiveCommit(this.dataset.key, value)
         })
     },
 }
@@ -2246,7 +2254,7 @@ const Control_Unit = {
     bindEvents: ({ form }) => {
         form.onEvent("change", ".unit-input", function () {
             const value = this.value === "" ? null : Number(this.value)
-            form.validateAndCommit(this.dataset.key, value)
+            form.reactiveCommit(this.dataset.key, value)
         })
     },
 }
@@ -2274,7 +2282,7 @@ const Control_Range = {
         form.onEvent("input", ".range-input", function () {
             this.nextElementSibling.textContent = Control_Range._toFixed2(Number(this.value))
         }).onEvent("change", ".range-input", function () {
-            form.validateAndCommit(this.dataset.key, Number(this.value))
+            form.reactiveCommit(this.dataset.key, Number(this.value))
         })
     },
     _toFixed2: (num) => {
@@ -2374,14 +2382,13 @@ const Control_Hotkey = {
     },
     bindEvents: ({ form }) => {
         const ignoreKeys = ["control", "alt", "shift", "meta"]
-        const updateHotkey = utils.debounce(hk => form.validateAndCommit(hk.dataset.key, hk.value), 500)
+        const updateHotkey = utils.debounce(hk => form.reactiveCommit(hk.dataset.key, hk.value), 500)
 
         form.onEvent("click", ".hotkey-reset", function () {
             const input = this.closest(".hotkey-wrap").querySelector("input")
-            const ok = form.validateAndCommit(input.dataset.key, "")
+            const ok = form.reactiveCommit(input.dataset.key, "")
             if (ok) {
                 utils.hotkeyHub.unregister(input.value)
-                input.value = ""
             }
         }).onEvent("keydown", ".hotkey-input", function (ev) {
             if (ev.key === undefined) return
@@ -2422,7 +2429,7 @@ const Control_Textarea = {
     },
     bindEvents: ({ form }) => {
         form.onEvent("change", ".textarea", function () {
-            form.validateAndCommit(this.dataset.key, this.value)
+            form.reactiveCommit(this.dataset.key, this.value)
         })
     },
 }
@@ -2467,7 +2474,7 @@ const Control_Object = {
                 utils.notification.show(msg, "error")
                 return
             }
-            const ok = form.validateAndCommit(key, parsedValue)
+            const ok = form.reactiveCommit(key, parsedValue)
             if (ok) {
                 utils.notification.show(i18n.t("global", "success.submit"))
             }
@@ -2518,20 +2525,19 @@ const Control_Array = {
     create: ({ field }) => {
         const { key } = getCommonHTMLAttrs(field)
         return `<div class="array" ${key}>
+                    <div class="array-item-container"></div>
                     <div class="array-item-input plugin-common-hidden" contenteditable="true"></div>
                     <div class="array-item-add">+ ${i18n.t("global", "add")}</div>
                 </div>`
     },
     update: ({ element, value }) => {
-        const arrayEl = element.querySelector(".array")
-        if (arrayEl) {
-            const inputEl = arrayEl.querySelector(".array-item-input")
-            arrayEl.querySelectorAll(".array-item").forEach(item => item.remove())
-            const itemsHtml = Control_Array._createItems(value)
-            if (inputEl) {
-                inputEl.insertAdjacentHTML("beforebegin", itemsHtml)
-                inputEl.textContent = ""
-            }
+        const container = element.querySelector(".array-item-container")
+        if (container) {
+            container.innerHTML = Control_Array._createItems(value)
+        }
+        const inputEl = element.querySelector(".array-item-input")
+        if (inputEl) {
+            inputEl.textContent = ""
         }
     },
     bindEvents: ({ form }) => {
@@ -2697,7 +2703,7 @@ const Control_Radio = {
     bindEvents: ({ form }) => {
         form.onEvent("input", ".radio-input", function () {
             const name = this.getAttribute("name")
-            form.validateAndCommit(name, this.value)
+            form.reactiveCommit(name, this.value)
         })
     },
 }
@@ -2737,7 +2743,7 @@ const Control_Checkbox = {
         form.onEvent("input", ".checkbox-input", function () {
             const checkboxEl = this.closest(".checkbox")
             const checkboxValues = [...checkboxEl.querySelectorAll(".checkbox-input:checked")].map(e => e.value)
-            form.validateAndCommit(checkboxEl.dataset.key, checkboxValues)
+            form.reactiveCommit(checkboxEl.dataset.key, checkboxValues)
         })
     },
 }

@@ -536,7 +536,7 @@ textarea::placeholder {
     flex-wrap: wrap;
 }
 
-.array > .array-item,
+.array > .array-item-container > .array-item,
 .array > .array-item-input,
 .array > .array-item-add {
     display: inline-flex;
@@ -548,14 +548,18 @@ textarea::placeholder {
     border: 1px solid rgba(150, 162, 170, 0.4);
 }
 
-.array .array-item-add {
+.array-item-container {
+    display: contents;
+}
+
+.array > .array-item-add {
     cursor: pointer;
     border-style: dashed;
     font-size: 14px;
 }
 
 .array-item-add:hover {
-    background-color: #eee5;
+    background-color: rgba(238, 238, 238, 0.333);
 }
 
 .array-item {
@@ -570,6 +574,7 @@ textarea::placeholder {
 .array-item-delete {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     margin-left: 5px;
     cursor: pointer;
     padding: 3px;
