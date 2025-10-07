@@ -686,6 +686,8 @@ const SETTING_SCHEMAS = {
             Select("FOLD_OVERFLOW", OPTIONS.fence_enhance.FOLD_OVERFLOW, { dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true } }),
             Number("FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "FOLD_OVERFLOW" } }),
             Switch("DEFAULT_FOLD", { dependencies: { $follow: "FOLD_OVERFLOW" } }),
+            Switch("EXPAND_ON_FOCUS", { dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
+            Switch("FOLD_ON_BLUR", { dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
             Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { $and: [{ $follow: "FOLD_OVERFLOW" }, { DEFAULT_FOLD: true }] } }),
         ),
         TableBox(
@@ -1580,16 +1582,16 @@ const SETTING_SCHEMAS = {
             [
                 UntitledBox(
                     Switch("disable"),
-                    Number("coordinate.0", { tooltip: "buttons.coordinate.0" }),
-                    Number("coordinate.1", { tooltip: "buttons.coordinate.1" }),
+                    Number("coordinate.0", { tooltip: "buttons.coordinate.0", min: 0 }),
+                    Number("coordinate.1", { tooltip: "buttons.coordinate.1", min: 0 }),
                     Text("icon"),
                     Text("size"),
                     Text("color"),
                     Text("bgColor"),
                     Text("hint"),
-                    Text("callback", { tooltip: "exclusive" }),
+                    Text("callback", { tooltip: "exclusive", dependencies: { evil: { $bool: false } } }),
                 ),
-                TextareaBox("evil", { placeholder: "customCallback", rows: 5 }),
+                TextareaBox("evil", { placeholder: "customCallback", rows: 5, dependencies: { callback: { $bool: false } } }),
             ],
             {
                 disable: true,

@@ -93,33 +93,69 @@ class fenceEnhancePlugin extends BasePlugin {
             const foldCode = (ev, btn) => {
                 const fence = btn.closest(".md-fences")
                 if (!fence) return
+                const cm = File.editor.fences.queue[fence.getAttribute("cid")]
+                if (!cm) return
+                const scroller = cm.display.scroller
+                if (!scroller) return
                 const isDiagram = fence.classList.contains("md-fences-advanced")
                 if (isDiagram) return  // diagram cannot be folded
-                const scroll = fence.querySelector(".CodeMirror-scroll")
-                if (!scroll) return
-                const enhance = btn.closest(".fence-enhance")
-                if (!enhance) return
 
                 const getHeight = () => {
-                    const { lineHeight, height } = window.getComputedStyle(scroll)
-                    const maxHeight = Math.min(parseFloat(height), parseFloat(lineHeight) * this.config.FOLD_LINES)
-                    return maxHeight + "px"
+                    const textHeight = cm.display.cachedTextHeight || cm.defaultTextHeight()
+                    const height = Math.min(cm.lineCount(), this.config.FOLD_LINES) * textHeight
+                    return height + "px"
                 }
-                const folded = scroll.style.height && scroll.style.overflowY
-                scroll.style.height = folded ? "" : getHeight()
-                scroll.style.overflowY = folded ? "" : this.config.FOLD_OVERFLOW
+                const folded = btn.classList.contains("folded")
+                cm.setSize(null, folded ? "100%" : getHeight())
+                scroller.style.overflowY = folded ? "" : this.config.FOLD_OVERFLOW
                 btn.classList.toggle("folded", !folded)
                 btn.firstElementChild.className = folded ? "fa fa-minus" : "fa fa-plus"
                 if (this.config.AUTO_HIDE) {
+                    const enhance = btn.closest(".fence-enhance")
                     enhance.style.visibility = folded ? "hidden" : ""
                 }
             }
             const defaultFold = (foldButton, cid) => {
-                const { DEFAULT_FOLD, DEFAULT_FOLD_THRESHOLD: t } = this.config
-                const shouldFold = DEFAULT_FOLD && (t <= 0 || t < File.editor.fences.queue[cid].lineCount())
+                const { DEFAULT_FOLD, DEFAULT_FOLD_THRESHOLD: threshold } = this.config
+                if (!DEFAULT_FOLD) return
+                const cm = File.editor.fences.queue[cid]
+                if (!cm) return
+                const shouldFold = threshold <= 0 || threshold < cm.lineCount()
                 if (shouldFold) {
                     foldButton.click()
                 }
+            }
+            const autoFold = () => {
+                const { EXPAND_ON_FOCUS, FOLD_ON_BLUR, DEFAULT_FOLD } = this.config
+                if (!DEFAULT_FOLD) return
+                if (!EXPAND_ON_FOCUS && !FOLD_ON_BLUR) return
+
+                let lastFocusFenceCid = ""
+                const fold = (cid) => {
+                    if (FOLD_ON_BLUR && cid) {
+                        const btn = this.utils.entities.querySelectorInWrite(`[cid="${cid}"] .fold-code:not(.folded)`)
+                        if (btn) defaultFold(btn, cid)
+                    }
+                    lastFocusFenceCid = ""
+                }
+                const expand = (fence) => {
+                    const cid = fence.getAttribute("cid")
+                    if (EXPAND_ON_FOCUS && lastFocusFenceCid !== cid) {
+                        const btn = fence.querySelector(".fold-code.folded")
+                        if (btn) defaultFold(btn, cid)
+                        if (lastFocusFenceCid) fold(lastFocusFenceCid)
+                    }
+                    lastFocusFenceCid = cid
+                }
+                $("#write").on("cursorChange", (ev, cursorContext) => {
+                    if (!cursorContext) return
+                    const focusing = cursorContext.style.block.includes("fences")
+                    if (focusing) {
+                        expand(cursorContext.cursor.commonAncestorContainer.closest(".md-fences"))
+                    } else {
+                        fold(lastFocusFenceCid)
+                    }
+                })
             }
             const builtinButtons = [
                 {
@@ -130,6 +166,7 @@ class fenceEnhancePlugin extends BasePlugin {
                     enable: this.config.ENABLE_COPY,
                     listener: copyCode,
                     extraFunc: null,
+                    initFunc: null,
                 },
                 {
                     className: "indent-code",
@@ -139,6 +176,7 @@ class fenceEnhancePlugin extends BasePlugin {
                     enable: this.enableIndent,
                     listener: indentCode,
                     extraFunc: null,
+                    initFunc: null,
                 },
                 {
                     className: "fold-code",
@@ -148,9 +186,13 @@ class fenceEnhancePlugin extends BasePlugin {
                     enable: this.config.ENABLE_FOLD,
                     listener: foldCode,
                     extraFunc: defaultFold,
+                    initFunc: autoFold,
                 },
             ]
-            builtinButtons.forEach(btn => this.registerButton(btn))
+            builtinButtons.forEach(btn => {
+                if (btn.enable && btn.initFunc) btn.initFunc()
+                this.registerButton(btn)
+            })
         }
 
         const handleLifecycleEvents = () => {

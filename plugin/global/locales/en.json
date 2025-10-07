@@ -699,6 +699,8 @@
     "$label.FOLD_LINES": "Fold Lines",
     "$label.FOLD_OVERFLOW": "Fold Overflow",
     "$label.DEFAULT_FOLD": "Fold by Default",
+    "$label.EXPAND_ON_FOCUS": "Expand On Focus",
+    "$label.FOLD_ON_BLUR": "Fold On Blur",
     "$label.DEFAULT_FOLD_THRESHOLD": "Fold Threshold",
     "$label.CUSTOM_BUTTONS.DISABLE": "Disable",
     "$label.CUSTOM_BUTTONS.ICON": "Icon",

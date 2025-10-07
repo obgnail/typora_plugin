@@ -699,6 +699,8 @@
     "$label.FOLD_LINES": "摺疊行數",
     "$label.FOLD_OVERFLOW": "折疊形式",
     "$label.DEFAULT_FOLD": "預設摺疊",
+    "$label.EXPAND_ON_FOCUS": "聚焦展開",
+    "$label.FOLD_ON_BLUR": "失焦折疊",
     "$label.DEFAULT_FOLD_THRESHOLD": "摺疊閾值",
     "$label.CUSTOM_BUTTONS.DISABLE": "禁用",
     "$label.CUSTOM_BUTTONS.ICON": "圖示",

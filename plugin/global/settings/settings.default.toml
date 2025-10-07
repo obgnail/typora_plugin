@@ -1383,16 +1383,16 @@ ENABLE_INDENT = true
 ENABLE_FOLD = true
 
 # 折叠行数：折叠代码块成 x 行
-#   必须大于等于 1
-FOLD_LINES = 1
+#   必须大于等于 5
+FOLD_LINES = 5
 
 # 折叠形式：
 #   hidden: 隐藏
 #   scroll: 滚动条
-FOLD_OVERFLOW = "hidden"
+FOLD_OVERFLOW = "scroll"
 
 # 默认折叠代码块：是否在加载时默认折叠代码块
-# 若置为 false，则选项 DEFAULT_FOLD_THRESHOLD 失效
+# 若置为 false，则选项 DEFAULT_FOLD_THRESHOLD、EXPAND_ON_FOCUS、FOLD_ON_BLUR 失效
 #   true:  默认折叠代码块
 #   false: 默认不折叠代码块
 DEFAULT_FOLD = false
@@ -1400,6 +1400,17 @@ DEFAULT_FOLD = false
 # 代码块折叠阈值：开启默认折叠后，仅当代码块行数大于此值时才会被默认折叠
 #   设置为 0 则所有代码块都会被折叠
 DEFAULT_FOLD_THRESHOLD = 0
+
+# 聚焦代码块时展开已折叠的代码块
+# 注意：此选项受 DEFAULT_FOLD_THRESHOLD 影响，若未达到折叠阈值，则不折叠
+#   true:  聚焦代码块时展开已折叠的代码块
+#   false: 聚焦代码块时不展开已折叠的代码块
+EXPAND_ON_FOCUS = false
+
+# 失焦代码块时折叠已展开的代码块
+#   true:  失焦代码块时折叠已展开的代码块
+#   false: 失焦代码块时不折叠已展开的代码块
+FOLD_ON_BLUR = false
 
 # 操作成功时，icon提示的保持时间（单位：毫秒）：设置点击按钮后，图标变化（例如复制成功时的勾选标记）的显示时间
 #   单位为毫秒，例如：1000 表示 1 秒

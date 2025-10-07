@@ -699,6 +699,8 @@
     "$label.FOLD_LINES": "折叠行数",
     "$label.FOLD_OVERFLOW": "折叠形式",
     "$label.DEFAULT_FOLD": "默认折叠",
+    "$label.EXPAND_ON_FOCUS": "聚焦展开",
+    "$label.FOLD_ON_BLUR": "失焦折叠",
     "$label.DEFAULT_FOLD_THRESHOLD": "折叠阈值",
     "$label.CUSTOM_BUTTONS.DISABLE": "禁用",
     "$label.CUSTOM_BUTTONS.ICON": "图标",
