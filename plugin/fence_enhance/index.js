@@ -584,11 +584,13 @@ class highlightHelper {
     process = () => {
         let _highlightInfo
         const before = (mode, ...rest) => {
+            if (mode == null) return [mode, ...rest]
             _highlightInfo = this.extract(mode)
             const newMode = _highlightInfo.lang || mode
             return [newMode, ...rest]
         }
         const after = (mode) => {
+            if (mode == null) return mode
             if (typeof mode !== "object") {
                 mode = { name: mode }
             }
