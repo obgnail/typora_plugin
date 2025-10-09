@@ -103,13 +103,10 @@ class preferencesPlugin extends BasePlugin {
                 }
             })
             this.entities.form.addEventListener("form-crud", async ev => {
-                const { key, value, type } = ev.detail
-                const handleProperty = this.utils.nestedPropertyHelpers[type]
-                if (!handleProperty) return
-
+                const { key, value } = ev.detail
                 const fixedName = this.entities.form.dataset.plugin
                 const settings = await this._getSettings(fixedName)
-                handleProperty(settings, key, value)
+                this.utils.nestedPropertyHelpers.set(settings, key, value)
                 await this.utils.settings.saveSettings(fixedName, settings)
 
                 this._setDialogState(true)
@@ -188,7 +185,7 @@ class preferencesPlugin extends BasePlugin {
             schema,
             data,
             actions: this.ACTION_HANDLERS,
-            rules: this.VALIDATION_RULES[fixedName] || {},
+            // rules: this.VALIDATION_RULES[fixedName] || {},
             watchers: this.WATCHERS[fixedName] || {},
             controlOptions: { object: { format: this.config.OBJECT_SETTINGS_FORMAT } },
             disableEffect: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,

@@ -66,8 +66,8 @@ class FastForm extends HTMLElement {
             fields: {},
             cleanups: [],
             apis: new Map(),
-            pendingChanges: new Map(),
-            isTaskQueued: false,
+            pendingUpdates: new Map(),
+            isUpdateQueued: false,
         }
     }
 
@@ -89,7 +89,7 @@ class FastForm extends HTMLElement {
 
         this.fillForm(this.options.schema, this.form)
         this._bindAllEvents(this.options.controls)
-        this.hooks.invoke("onRender", this)
+        this.hooks.invoke("onRender", { form: this, options: this.options })
     }
 
     _createHooksManager = () => {
@@ -100,7 +100,7 @@ class FastForm extends HTMLElement {
         }
         const defaultHooks = {
             onSchemaReady: (schema, form) => schema,
-            onRender: (form) => void 0,
+            onRender: (renderContext) => void 0,
             onProcessValue: (value, changeContext) => value,
             onBeforeValidate: (changeContext) => [],             // return true or [] for success; return Error or [Error, ...] for failure
             onValidate: (changeContext) => [],                   // return true or [] for success; return Error or [Error, ...] for failure
@@ -194,51 +194,46 @@ class FastForm extends HTMLElement {
     getControlOptionsFromKey = (key) => this.getControlOptions(this.getField(key))
 
     getField = (key) => this._runtime.fields[key]
-
     getData = (key) => utils.nestedPropertyHelpers.get(this.options.data, key)
-    setData = (key, value, type = "set") => utils.nestedPropertyHelpers[type](this.options.data, key, value)
+    setData = (key, value) => utils.nestedPropertyHelpers.set(this.options.data, key, value)
 
-    // type: set/push/removeIndex
-    queueFieldValueUpdate = (key, value, type = "set") => {
-        this._runtime.pendingChanges.set(key, { key, value, type })
-        if (!this._runtime.isTaskQueued) {
-            this._runtime.isTaskQueued = true
-            queueMicrotask(this._processPendingChanges)
-        }
-    }
+    reactiveCommit = (key, updater, onSuccessCallback) => {
+        this._runtime.pendingUpdates.set(key, { key, updater, onSuccessCallback })
+        if (this._runtime.isUpdateQueued) return
 
-    _processPendingChanges = () => {
-        const changesToProcess = new Map(this._runtime.pendingChanges)
-        this._runtime.pendingChanges.clear()
-        this._runtime.isTaskQueued = false
+        this._runtime.isUpdateQueued = true
+        queueMicrotask(() => {
+            const updatesToProcess = new Map(this._runtime.pendingUpdates)
+            this._runtime.pendingUpdates.clear()
+            this._runtime.isUpdateQueued = false
+            if (updatesToProcess.size === 0) return
 
-        if (changesToProcess.size === 0) return
-
-        const successfullyChangedKeys = new Set()
-        for (const changeContext of changesToProcess.values()) {
-            const isValid = this._processSingleChange(changeContext)
-            if (isValid) {
-                successfullyChangedKeys.add(changeContext.key)
+            const successCallbacks = []
+            const successKeys = new Set()
+            for (const { key, updater, onSuccessCallback } of updatesToProcess.values()) {
+                const oldValue = this.getData(key)
+                const value = typeof updater === "function" ? updater(oldValue) : updater
+                const changeContext = { key, value, oldValue }
+                changeContext.value = this.hooks.invoke("onProcessValue", changeContext.value, changeContext)
+                const errors = this._validate(changeContext)
+                const isValid = Array.isArray(errors) && errors.length === 0
+                if (isValid) {
+                    this.hooks.invoke("onBeforeCommit", changeContext, this)
+                    this.setData(key, changeContext.value)
+                    this.hooks.invoke("onCommit", changeContext, this)
+                    this.hooks.invoke("onAfterCommit", changeContext, this)
+                    successKeys.add(key)
+                    if (typeof onSuccessCallback === "function") {
+                        successCallbacks.push(onSuccessCallback)
+                    }
+                } else {
+                    this.hooks.invoke("onValidateFailed", errors, changeContext)
+                }
             }
-        }
-        successfullyChangedKeys.forEach(key => this._updateControl(key))
-    }
 
-    _processSingleChange(changeContext) {
-        if (changeContext.type !== "removeIndex") {
-            changeContext.value = this.hooks.invoke("onProcessValue", changeContext.value, changeContext)
-        }
-        const errors = (changeContext.type !== "removeIndex") ? this._validate(changeContext) : []
-        const isValid = Array.isArray(errors) && errors.length === 0
-        if (isValid) {
-            this.hooks.invoke("onBeforeCommit", changeContext, this)
-            this.setData(changeContext.key, changeContext.value, changeContext.type)
-            this.hooks.invoke("onCommit", changeContext, this)
-            this.hooks.invoke("onAfterCommit", changeContext, this)
-        } else {
-            this.hooks.invoke("onValidateFailed", errors, changeContext)
-        }
-        return isValid
+            successKeys.forEach(key => this._updateControl(key))
+            successCallbacks.forEach(cb => cb())
+        })
     }
 
     _validate(changeContext) {
@@ -246,29 +241,6 @@ class FastForm extends HTMLElement {
         if (errors.length > 0) return errors
         errors = this.hooks.invoke("onValidate", changeContext)
         return this.hooks.invoke("onAfterValidate", errors, changeContext)
-    }
-
-    // Not updating the UI upon success, attempting to restore the UI upon failure
-    validateAndCommit = (key, value, type = "set") => {
-        // Flush any pending async changes to prevent race conditions and ensure this synchronous commit operates on the latest state.
-        this._processPendingChanges()
-
-        const changeContext = { key, value, type }
-        const oldValue = this.getData(key)
-        const isValid = this._processSingleChange(changeContext)
-        if (!isValid) {
-            this._updateControl(key, oldValue)
-        }
-        return isValid
-    }
-
-    // Synchronized version function of `queueFieldValueUpdate`
-    reactiveCommit = (key, value, type = "set") => {
-        const isValid = this.validateAndCommit(key, value, type)
-        if (isValid) {
-            this._updateControl(key)
-        }
-        return isValid
     }
 
     getFormEl = () => this.form
@@ -300,14 +272,12 @@ class FastForm extends HTMLElement {
         }
     }
 
-    _updateControl = (key, value) => {
+    _updateControl = (key) => {
         if (!key) return
         const field = this.getField(key)
         if (!field) return
-
         const controlDef = this.options.controls[field.type]
         if (!controlDef || typeof controlDef.update !== "function") return
-
         const element = this.options.layout.findControl(key, this.form)
         if (!element) return
 
@@ -316,7 +286,8 @@ class FastForm extends HTMLElement {
             field,
             form: this,
             data: this.options.data,
-            value: (value === undefined) ? this.getData(key) : value,
+            value: this.getData(key),
+            state: this.states.get(field.type),
             controlOptions: this.getControlOptions(field),
         }
         controlDef.update(updateContext)
@@ -533,14 +504,62 @@ class LifecycleHooks {
 class States {
     modules = new Map()
     init = (moduleKey, initialState) => {
-        if (this.modules.has(moduleKey)) {
-            return this.modules.get(moduleKey)
+        if (!this.modules.has(moduleKey)) {
+            this.modules.set(moduleKey, initialState)
         }
-        this.modules.set(moduleKey, initialState)
-        return initialState
+        return this.modules.get(moduleKey)
     }
     get = (moduleKey) => this.modules.get(moduleKey)
+    set = (moduleKey, state) => this.modules.set(moduleKey, state)
     clear = () => this.modules.clear()
+}
+
+const reconciliation = {
+    keyed: ({ parentEl, oldData = [], newData = [], getKey, createItemHTML, updateItemNode }) => {
+        const oldChildren = [...parentEl.children]
+        const oldKeyMap = new Map(oldData.map((item, index) => [getKey(item, index), { item, index, el: oldChildren[index] }]))
+        const newKeySet = new Set(newData.map((item, index) => getKey(item, index)))
+
+        let lastPlacedNode = null
+        newData.forEach((newItemData, newIndex) => {
+            const key = getKey(newItemData, newIndex)
+            const oldEntry = oldKeyMap.get(key)
+            if (oldEntry) {
+                const node = oldEntry.el
+                updateItemNode(node, newItemData, newIndex)
+
+                if (lastPlacedNode) {
+                    if (lastPlacedNode.nextSibling !== node) {
+                        parentEl.insertBefore(node, lastPlacedNode.nextSibling)
+                    }
+                } else {
+                    if (parentEl.firstChild !== node) {
+                        parentEl.insertBefore(node, parentEl.firstChild)
+                    }
+                }
+                lastPlacedNode = node
+            } else {
+                const newItemHTML = createItemHTML(newItemData, newIndex, getKey)
+                const template = document.createElement("template")
+                template.innerHTML = newItemHTML.trim()
+                const newNode = template.content.firstChild
+                if (newNode) {
+                    const referenceNode = lastPlacedNode ? lastPlacedNode.nextSibling : parentEl.firstChild
+                    parentEl.insertBefore(newNode, referenceNode)
+                    lastPlacedNode = newNode
+                }
+            }
+        })
+        oldData.forEach((oldItemData, i) => {
+            const key = getKey(oldItemData, i)
+            if (!newKeySet.has(key)) {
+                const oldEntry = oldKeyMap.get(key)
+                if (oldEntry && oldEntry.el) {
+                    parentEl.removeChild(oldEntry.el)
+                }
+            }
+        })
+    }
 }
 
 function validateDefinition(name, definition, checks, options = {}) {
@@ -581,14 +600,14 @@ const Layout_Default = {
             const controlHTML = controlDef.create(controlContext)
             return this.createControlContainer(field, controlHTML, controlOptions.className)
         }
-        const createBoxContainer = (box, idx) => {
+        const createBox = (box, idx) => {
             const titleHTML = this.createTitle(box)
             const controlHTMLs = (box.fields || []).map(createControl)
-            const boxHTML = this.createBox(controlHTMLs)
+            const boxHTML = this.createBoxContent(controlHTMLs)
             const containerId = this.genBoxContainerId(box, idx)
             return this.createBoxContainer(containerId, titleHTML, boxHTML)
         }
-        container.innerHTML = schema.map(createBoxContainer).join("")
+        container.innerHTML = schema.map(createBox).join("")
     },
     findBox(key, formEl) {
         return formEl.querySelector(`[data-box="${CSS.escape(key)}"]`)
@@ -621,7 +640,7 @@ const Layout_Default = {
         const cls = "control" + (isBlockLayout ? " control-block" : "") + (className ? ` ${className}` : "")
         return `<div class="${cls}" data-type="${field.type}" data-control="${field.key}">${label}${control}</div>`
     },
-    createBox(controlHTMLs) {
+    createBoxContent(controlHTMLs) {
         return `<div class="box">${controlHTMLs.join("")}</div>`
     },
     genBoxContainerId(box, idx) {
@@ -704,7 +723,7 @@ const Feature_EventDelegation = {
 
 const Feature_DefaultKeybindings = {
     configure: ({ hooks }) => {
-        hooks.on("onRender", (form) => form.onEvent("keydown", ev => ev.stopPropagation(), true))
+        hooks.on("onRender", ({ form }) => form.onEvent("keydown", ev => ev.stopPropagation(), true))
     }
 }
 
@@ -1327,7 +1346,7 @@ const Feature_Watchers = (() => {
                         getControl: (key) => form.options.layout.findControl(key, form.form),
                         getValue: (key) => transactionalData.has(key) ? transactionalData.get(key) : form.getData(key),
                         getField: (key) => form.getField(key),
-                        _flushUI: () => transactionalData.forEach((val, key) => form._updateControl(key, val)),
+                        _flushUI: () => transactionalData.forEach((_, key) => form._updateControl(key)),
                         createUiStateKey: DependencyAnalyzer.createUiStateKey,
                         evaluate: (condition) => _evaluateCondition(condition, evaluateContext),
                         compare: (actual, conditionObject, defaultOperator = "$eq") => {
@@ -1346,9 +1365,9 @@ const Feature_Watchers = (() => {
                     }
                     const effectContext = {
                         ...evaluateContext,
-                        setValue: (key, value, type) => {
+                        setValue: (key, value) => {
                             transactionalData.set(key, value)
-                            form.queueFieldValueUpdate(key, value, type)
+                            form.reactiveCommit(key, value)
                         },
                         updateUI: (declaration, customContext) => DependencyAnalyzer.applyUiEffects(declaration, customContext || effectContext),
                         propagateUiEffects: (declaration) => {
@@ -1508,11 +1527,11 @@ const Feature_Watchers = (() => {
 
             Lifecycle.initWatcher(state, form, registerApi)
             hooks.on("onAfterCommit", (changeContext, form) => ExecutionEngine.executeForKeys(state, form, [changeContext.key]))
-        },
-        compile: ({ state, form, options }) => {
-            Object.entries(options.watchers || {}).forEach(([key, watcher]) => Lifecycle.registerWatcher(state, form, key, watcher))
-            DependencyAnalyzer.buildTriggerMap(state, form)
-            ExecutionEngine.executeAll(state, form)
+            hooks.on("onRender", () => {
+                Object.entries(options.watchers || {}).forEach(([key, watcher]) => Lifecycle.registerWatcher(state, form, key, watcher))
+                DependencyAnalyzer.buildTriggerMap(state, form)
+                ExecutionEngine.executeAll(state, form)
+            })
         },
         install: (FastFormClass) => {
             const validationOptions = { prefix: "$" }
@@ -1626,7 +1645,7 @@ const Feature_Validation = {
                     }
                 })
                 .filter(ret => ret !== true && ret != null)
-                .map(err => (err instanceof Error) ? err : new Error(String(err)))
+                .map(err => (err instanceof Error) ? err : new Error(err))
         })
     },
     compile: ({ state, form, options }) => {
@@ -1721,7 +1740,7 @@ const Feature_Validation = {
         },
         arrayOrObject: ({ value }) => {
             if (value == null) return true
-            return (Array.isArray(value) && typeof value === "object") ? true : i18n.t("global", "error.pattern")
+            return (Array.isArray(value) || typeof value === "object") ? true : i18n.t("global", "error.pattern")
         },
     }
 }
@@ -1743,7 +1762,7 @@ const Feature_Dependencies = {
         dependencies: {},
         disableEffect: "readonly", // "hide" or "readonly"
     },
-    configure: ({ form, options }) => {
+    compile: ({ form, options }) => {
         const allDependencies = { ...options.dependencies }
         form.traverseFields(field => {
             if (!field.dependencies) return
@@ -1809,11 +1828,10 @@ const Feature_ConditionalBoxes = {
         conditionalBoxes: {},
         destroyStateOnHide: false,
     },
-    configure: ({ form, options, initState }) => {
+    configure: ({ initState }) => initState(new Map()),
+    compile: ({ form, options, state }) => {
         const conditionalBoxes = options.conditionalBoxes
         if (!conditionalBoxes || typeof conditionalBoxes !== "object" || Object.keys(conditionalBoxes).length === 0) return
-
-        const state = initState(new Map())
 
         const boxSchemaMap = {}
         form.traverseBoxes(box => box.id && (boxSchemaMap[box.id] = box), options.schema)
@@ -1876,7 +1894,7 @@ const Feature_Cascades = {
     featureOptions: {
         cascades: {},
     },
-    configure: ({ form, options }) => {
+    compile: ({ form, options }) => {
         if (!options.cascades || typeof options.cascades !== "object") return
 
         const { register } = form.getApi("watchers")
@@ -2117,7 +2135,7 @@ function defaultBlockLayout(field) {
 function registerRules(options, key, rules) {
     const toAdd = Array.isArray(rules) ? rules : [rules]
     const origin = options.rules[key] || []
-    options.rules[key] = [origin, ...toAdd].flat()
+    options.rules[key] = [...toAdd, origin].flat()  // Place default rules at the beginning
 }
 
 function registerNumericalDefaultRules({ field, options, form }) {
@@ -2133,16 +2151,17 @@ function registerNumericalDefaultRules({ field, options, form }) {
     registerRules(options, key, rules)
 }
 
-function registerItemLengthLimitRule({ field, options, form }) {
-    registerRules(options, field.key, ({ key, value, type }) => {
-        const currentValue = form.getData(key)
-        if (!Array.isArray(currentValue)) return
-
+function registerItemLengthLimitRule({ field, options }) {
+    registerRules(options, field.key, ({ value }) => {
+        if (!Array.isArray(value)) return true
         const { minItems, maxItems } = field
-        const tooLittle = typeof minItems === "number" && type === "set" && value.length < minItems
-        const tooMuch = typeof maxItems === "number" && type === "set" && value.length > maxItems
-        if (tooLittle) return new Error(i18n.t("global", "error.minItems", { minItems }))
-        if (tooMuch) return new Error(i18n.t("global", "error.maxItems", { maxItems }))
+        if (typeof minItems === "number" && value.length < minItems) {
+            return new Error(i18n.t("global", "error.minItems", { minItems }))
+        }
+        if (typeof maxItems === "number" && value.length > maxItems) {
+            return new Error(i18n.t("global", "error.maxItems", { maxItems }))
+        }
+        return true
     })
 }
 
@@ -2268,8 +2287,8 @@ const Control_Range = {
                     <div class="range-value"></div>
                 </div>`
     },
-    update: ({ element, value = field.min, field }) => {
-        const resolvedValue = value != null ? value : 0
+    update: ({ element, value, field }) => {
+        const resolvedValue = value != null ? value : field.min ?? 0
         const input = element.querySelector(".range-input")
         const valueDisplay = element.querySelector(".range-value")
         if (input && valueDisplay) {
@@ -2328,7 +2347,7 @@ const Control_Static = {
     update: ({ element, value }) => {
         const staticEl = element.querySelector(".static")
         if (staticEl) {
-            staticEl.textContent = utils.escape(value)
+            staticEl.textContent = value
         }
     },
 }
@@ -2386,10 +2405,7 @@ const Control_Hotkey = {
 
         form.onEvent("click", ".hotkey-reset", function () {
             const input = this.closest(".hotkey-wrap").querySelector("input")
-            const ok = form.reactiveCommit(input.dataset.key, "")
-            if (ok) {
-                utils.hotkeyHub.unregister(input.value)
-            }
+            form.reactiveCommit(input.dataset.key, "", () => utils.hotkeyHub.unregister(input.value))
         }).onEvent("keydown", ".hotkey-input", function (ev) {
             if (ev.key === undefined) return
             if (ev.key !== "Process") {
@@ -2474,10 +2490,7 @@ const Control_Object = {
                 utils.notification.show(msg, "error")
                 return
             }
-            const ok = form.reactiveCommit(key, parsedValue)
-            if (ok) {
-                utils.notification.show(i18n.t("global", "success.submit"))
-            }
+            form.reactiveCommit(key, parsedValue, () => utils.notification.show(i18n.t("global", "success.submit")))
         })
     },
     _getSerializer: (format) => Control_Object._serializers[format] || Control_Object._serializers.JSON,
@@ -2502,25 +2515,21 @@ const Control_Array = {
         allowDuplicates: false,
         dataType: "string",  // number or string
     },
+    setupType: ({ initState }) => initState(new Map()),
     setup: ({ field, options, form }) => {
         defaultBlockLayout(field)
-        const correctType = ({ value, type }) => {
-            const { dataType } = form.getControlOptions(field)
-            const arr = (type === "push") ? [value] : value
-            if (!Array.isArray(arr) || !arr.every(e => typeof e === dataType)) {
-                return i18n.t("global", "error.pattern")
+        const controlOptions = form.getControlOptions(field)
+        const defaultValidator = ({ value }) => {
+            const { dataType, allowDuplicates } = controlOptions
+            if (!Array.isArray(value) || !value.every(e => typeof e === dataType)) {
+                return new Error(i18n.t("global", "error.pattern"))
             }
+            if (!allowDuplicates && new Set(value).size !== value.length) {
+                return new Error(i18n.t("global", "error.duplicateValue"))
+            }
+            return true
         }
-        const repeatable = ({ key, value, type }) => {
-            const { allowDuplicates } = form.getControlOptions(field)
-            if (allowDuplicates) return
-            const duplication = (
-                type === "push" && form.getData(key).includes(value)
-                || type === "set" && new Set(value).size !== value.length
-            )
-            if (duplication) return new Error(i18n.t("global", "error.duplicateValue"))
-        }
-        registerRules(options, field.key, [correctType, repeatable])
+        registerRules(options, field.key, [defaultValidator])
     },
     create: ({ field }) => {
         const { key } = getCommonHTMLAttrs(field)
@@ -2530,64 +2539,70 @@ const Control_Array = {
                     <div class="array-item-add">+ ${i18n.t("global", "add")}</div>
                 </div>`
     },
-    update: ({ element, value }) => {
+    update: ({ element, value, field, state }) => {
         const container = element.querySelector(".array-item-container")
-        if (container) {
-            container.innerHTML = Control_Array._createItems(value)
-        }
-        const inputEl = element.querySelector(".array-item-input")
-        if (inputEl) {
-            inputEl.textContent = ""
-        }
+        if (!container) return
+
+        reconciliation.keyed({
+            parentEl: container,
+            oldData: state.get(field.key) || [],
+            newData: value,
+            getKey: (item, index) => `${item}_${index}`,
+            createItemHTML: (itemValue, index, getKey) => `
+                <div class="array-item" data-item-key="${getKey(itemValue, index)}">
+                    <div class="array-item-value">${utils.escape(itemValue)}</div>
+                    <div class="array-item-delete">×</div>
+                </div>
+            `,
+            updateItemNode: (itemEl, itemValue) => {
+                const valueEl = itemEl.querySelector(".array-item-value")
+                if (valueEl && valueEl.textContent !== itemValue) {
+                    valueEl.textContent = itemValue
+                }
+            }
+        })
+        state.set(field.key, value)
     },
     bindEvents: ({ form }) => {
+        const hideInput = (inputEl) => {
+            inputEl.textContent = ""
+            utils.hide(inputEl)
+            utils.show(inputEl.nextElementSibling)
+        }
         form.onEvent("keydown", ".array-item-input", function (ev) {
             if (ev.key === "Enter" || ev.key === "Escape") {
                 if (ev.key === "Enter") {
                     this.blur()
                 } else {
-                    this.textContent = ""
-                    utils.hide(this)
-                    utils.show(this.nextElementSibling)
+                    hideInput(this)
                 }
                 ev.stopPropagation()
                 ev.preventDefault()
             }
-        }).onEvent("click", ".array-item-delete", function () {
-            const itemEl = this.parentElement
-            const arrayEl = this.closest(".array")
-            const idx = [...arrayEl.querySelectorAll(".array-item")].indexOf(itemEl)
-            const ok = form.validateAndCommit(arrayEl.dataset.key, idx, "removeIndex")
-            if (ok) {
-                itemEl.remove()
-            }
+        }, true).onEvent("focusout", ".array-item-input", function () {
+            const inputEl = this
+            if (utils.isHidden(inputEl)) return
+            const key = inputEl.closest(".array").dataset.key
+            const controlOptions = form.getControlOptionsFromKey(key)
+            const textValue = inputEl.textContent
+            const resolvedValue = controlOptions.dataType === "number" ? Number(textValue) : textValue
+            form.reactiveCommit(key, prevList => [...(prevList || []), resolvedValue])
+            hideInput(inputEl)
         }).onEvent("click", ".array-item-add", function () {
             const addEl = this
             const inputEl = addEl.previousElementSibling
             utils.hide(addEl)
             utils.show(inputEl)
             inputEl.focus()
-        }).onEvent("focusout", ".array-item-input", function () {
-            const input = this
-            if (utils.isHidden(input)) return
-            const displayEl = input.parentElement
-            const addEl = input.nextElementSibling
-            const value = input.textContent
-            const key = displayEl.dataset.key
-            const controlOptions = form.getControlOptionsFromKey(key)
-            const resolvedValue = (controlOptions.dataType === "number") ? Number(value) : value
-            form.reactiveCommit(key, resolvedValue, "push")
-            utils.hide(input)
-            utils.show(addEl)
+        }).onEvent("click", ".array-item-delete", function () {
+            const itemEl = this.closest(".array-item")
+            const containerEl = itemEl.parentElement
+            const arrayEl = this.closest(".array")
+            const key = arrayEl.dataset.key
+            const idx = Array.prototype.indexOf.call(containerEl.children, itemEl)
+            form.reactiveCommit(key, prevList => prevList.filter((_, index) => index !== idx))
         })
     },
-    _createItem: (value) => `
-        <div class="array-item">
-            <div class="array-item-value">${utils.escape(value.toString())}</div>
-            <div class="array-item-delete">×</div>
-        </div>
-    `,
-    _createItems: (items) => (Array.isArray(items) ? items : []).map(Control_Array._createItem).join(""),
 }
 
 const Control_Select = {
@@ -2595,9 +2610,9 @@ const Control_Select = {
     controlOptions: {
         labelJoiner: ", ",
     },
-    setup: ({ field, options, form }) => {
+    setup: ({ field, options }) => {
         normalizeOptionsAttr(field)
-        registerItemLengthLimitRule({ field, options, form })
+        registerItemLengthLimitRule({ field, options })
     },
     create: ({ field }) => {
         const toOptionItem = ([optionKey, optionShowName]) => {
@@ -2618,9 +2633,9 @@ const Control_Select = {
         if (!selectEl || !selectValueEl) return
 
         const isMulti = Array.isArray(value)
-        const selectedKeys = isMulti ? (value || []) : (value != null ? [String(value)] : [])
+        const selectedKeys = isMulti ? (value || []) : (value != null ? [value] : [])
         optionItems.forEach(item => {
-            item.dataset.choose = selectedKeys.includes(item.dataset.optionKey) ? "true" : "false"
+            item.dataset.choose = selectedKeys.map(String).includes(item.dataset.optionKey) ? "true" : "false"
         })
         const validSelectedLabels = selectedKeys.map(key => field.options[key]).filter(op => op != null)
         selectValueEl.textContent = validSelectedLabels.length > 0
@@ -2650,19 +2665,19 @@ const Control_Select = {
         }, true).onEvent("click", ".option-item", function () {
             const optionEl = this
             const toggleOptionKey = optionEl.dataset.optionKey
-
             const fieldKey = optionEl.closest(".select").dataset.key
-            const value = form.getData(fieldKey)
-            let commitValue = toggleOptionKey
-            if (Array.isArray(value)) {
-                if (optionEl.dataset.choose === "true") {
-                    const idx = value.indexOf(toggleOptionKey)
-                    commitValue = [...value.slice(0, idx), ...value.slice(idx + 1)]
+            form.reactiveCommit(fieldKey, (prevValue) => {
+                if (Array.isArray(prevValue)) {
+                    const prevSet = new Set(prevValue.map(String))
+                    if (prevSet.has(toggleOptionKey)) {
+                        return prevValue.filter(v => v !== toggleOptionKey)
+                    } else {
+                        return [...prevValue, toggleOptionKey]
+                    }
                 } else {
-                    commitValue = [...value, toggleOptionKey]
+                    return toggleOptionKey
                 }
-            }
-            form.reactiveCommit(fieldKey, commitValue)
+            })
             utils.hide(optionEl.closest(".option-box"))
         })
     },
@@ -2696,9 +2711,7 @@ const Control_Radio = {
     },
     update: ({ element, value }) => {
         const radioInputs = element.querySelectorAll(".radio-input")
-        radioInputs.forEach(input => {
-            input.checked = (input.value === String(value))
-        })
+        radioInputs.forEach(input => input.checked = (input.value === value))
     },
     bindEvents: ({ form }) => {
         form.onEvent("input", ".radio-input", function () {
@@ -2709,10 +2722,10 @@ const Control_Radio = {
 }
 
 const Control_Checkbox = {
-    setup: ({ field, options, form }) => {
+    setup: ({ field, options }) => {
         normalizeOptionsAttr(field)
         defaultBlockLayout(field)
-        registerItemLengthLimitRule({ field, options, form })
+        registerItemLengthLimitRule({ field, options })
     },
     create: ({ field }) => {
         const prefix = utils.randomString()
@@ -2749,61 +2762,84 @@ const Control_Checkbox = {
 }
 
 const Control_Table = {
-    setup: ({ field }) => defaultBlockLayout(field),
+    setupType: ({ initState }) => initState(new Map()),
+    setup: ({ field, options }) => {
+        defaultBlockLayout(field)
+
+        const defaultValidator = ({ value }) => {
+            if (!Array.isArray(value) || !value.every(e => typeof e === "object")) {
+                return new Error(i18n.t("global", "error.pattern"))
+            }
+            return true
+        }
+        registerRules(options, field.key, [defaultValidator])
+    },
     create: ({ field }) => {
         const addButton = '<div class="table-add fa fa-plus"></div>'
-        const th = [...Object.values(field.thMap), addButton]
-        const table = utils.buildTable([th])
+        const ths = [...Object.values(field.thMap), addButton]
+        const table = `<table><thead><tr>${ths.map(th => `<th>${th}</th>`).join("")}</tr></thead><tbody data-table-body-key="${field.key}"></tbody></table>`
         const { key } = getCommonHTMLAttrs(field)
         return `<div class="table" ${key}>${table}</div>`
     },
-    update: ({ element, value, field }) => {
-        const tableEl = element.querySelector("table")
-        if (!tableEl) return
+    update: ({ element, value, field, state }) => {
+        const tbody = element.querySelector(`[data-table-body-key="${field.key}"]`)
+        if (!tbody) return
 
-        let tbody = tableEl.querySelector("tbody")
-        if (tbody) {
-            tbody.innerHTML = ""
-        } else {
-            tbody = document.createElement("tbody")
-            tableEl.appendChild(tbody)
-        }
-        tbody.innerHTML = (value || [])
-            .map(item => `<tr>${Control_Table._createTableRow(field.thMap, item).map(e => `<td>${e}</td>`).join("")}</tr>`)
-            .join("")
+        reconciliation.keyed({
+            parentEl: tbody,
+            oldData: state.get(field.key) || [],
+            newData: value,
+            getKey: (item, index) => item.id || `_row_${index}`,
+            createItemHTML: (itemData, index, getKey) => {
+                const itemKey = getKey(itemData, index)
+                const cellContent = Control_Table._getRowCellValues(field.thMap, itemData)
+                const actionButtons = '<div class="table-edit fa fa-pencil"></div><div class="table-delete fa fa-trash-o"></div>'
+                const cells = [...cellContent, actionButtons].map(content => `<td>${content}</td>`).join("")
+                return `<tr data-item-key="${itemKey}">${cells}</tr>`
+            },
+            updateItemNode: (tr, itemData) => {
+                const tds = tr.querySelectorAll("td:not(:last-child)")
+                const newCellContent = Control_Table._getRowCellValues(field.thMap, itemData)
+                tds.forEach((td, i) => {
+                    const newContent = newCellContent[i]
+                    if (td.innerHTML !== newContent) {
+                        td.innerHTML = newContent
+                    }
+                })
+            }
+        })
+        state.set(field.key, value)
     },
     bindEvents: ({ form }) => {
         form.onEvent("click", ".table-add", async function () {
             const tableEl = this.closest(".table")
             const key = tableEl.dataset.key
-            const { nestedBoxes, defaultValues, thMap, ...rest } = form.getField(key)
-            const op = { title: i18n.t("global", "add"), schema: nestedBoxes, data: defaultValues, ...rest }
+            const field = form.getField(key)
+            const op = { title: i18n.t("global", "add"), schema: field.nestedBoxes, data: field.defaultValues, ...field }
             const { response, data } = await utils.formDialog.modal(op)
             if (response === 0) return
-            const ok = form.validateAndCommit(key, data, "push")
-            if (ok) {
-                const row = Control_Table._createTableRow(thMap, data).map(e => `<td>${e}</td>`).join("")
-                tableEl.querySelector("tbody").insertAdjacentHTML("beforeend", `<tr>${row}</tr>`)
-                utils.notification.show(i18n.t("global", "success.add"))
-            }
+            const updater = prevList => [...(prevList || []), data]
+            const callback = () => utils.notification.show(i18n.t("global", "success.add"))
+            form.reactiveCommit(key, updater, callback)
         }).onEvent("click", ".table-edit", async function () {
             const trEl = this.closest("tr")
-            const tableEl = trEl.closest(".table")
-            const idx = [...tableEl.querySelectorAll("tbody tr")].indexOf(trEl)
+            const tableEl = this.closest(".table")
+            const tbody = trEl.parentElement
             const key = tableEl.dataset.key
-            const rowValue = form.options.data[key][idx]
-            const { nestedBoxes, defaultValues, thMap, ...rest } = form.getField(key)
-            const modalValues = utils.merge(defaultValues, rowValue)  // rowValue may be missing some attributes
-            const op = { title: i18n.t("global", "edit"), schema: nestedBoxes, data: modalValues, ...rest }
+            const field = form.getField(key)
+            const idx = Array.prototype.indexOf.call(tbody.children, trEl)
+            const rowValue = form.getData(key)[idx]
+            const modalValues = utils.merge(field.defaultValues, rowValue)
+            const op = { title: i18n.t("global", "edit"), schema: field.nestedBoxes, data: modalValues, ...field }
             const { response, data } = await utils.formDialog.modal(op)
             if (response === 0) return
-            const ok = form.validateAndCommit(`${key}.${idx}`, data, "set")
-            if (ok) {
-                const row = Control_Table._createTableRow(thMap, data)
-                const tds = trEl.querySelectorAll("td")
-                utils.zip(row, tds).slice(0, -1).forEach(([val, td]) => td.textContent = val)
-                utils.notification.show(i18n.t("global", "success.edit"))
+            const updater = prevList => {
+                const newList = [...prevList]
+                newList[idx] = data
+                return newList
             }
+            const callback = () => utils.notification.show(i18n.t("global", "success.edit"))
+            form.reactiveCommit(key, updater, callback)
         }).onEvent("click", ".table-delete", utils.createConsecutiveAction({
             threshold: 2,
             timeWindow: 3000,
@@ -2811,20 +2847,20 @@ const Control_Table = {
             onConfirmed: (ev) => {
                 const trEl = ev.target.closest("tr")
                 const tableEl = trEl.closest(".table")
-                const idx = [...tableEl.querySelectorAll("tbody tr")].indexOf(trEl)
-                const ok = form.validateAndCommit(tableEl.dataset.key, idx, "removeIndex")
-                if (ok) {
-                    trEl.remove()
-                    utils.notification.show(i18n.t("global", "success.deleted"))
-                }
-            }
+                const tbody = trEl.parentElement
+                const key = tableEl.dataset.key
+                const idx = Array.prototype.indexOf.call(tbody.children, trEl)
+                const updater = prevList => prevList.filter((_, index) => index !== idx)
+                const callback = () => utils.notification.show(i18n.t("global", "success.deleted"))
+                form.reactiveCommit(key, updater, callback)
+            },
         }))
     },
-    _createTableRow: (thMap, item) => {
-        const header = utils.pick(item, [...Object.keys(thMap)])
-        const headerValues = [...Object.values(header)].map(headerValue => typeof headerValue === "string" ? utils.escape(headerValue) : headerValue)
-        const editButtons = '<div class="table-edit fa fa-pencil"></div><div class="table-delete fa fa-trash-o"></div>'
-        return [...headerValues, editButtons]
+    _getRowCellValues: (thMap, item) => {
+        return Object.keys(thMap).map(dataKey => {
+            const value = item[dataKey]
+            return value == null ? "" : (typeof value === "string" ? utils.escape(value) : value)
+        })
     },
 }
 
