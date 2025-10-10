@@ -264,7 +264,7 @@ class fenceEnhancePlugin extends BasePlugin {
 
     preloadAllFences = () => {
         const preload = () => this.traverseAllFences(this.utils.noop)
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.firstFileInit, preload)
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.firstFileInit, this.utils.debounce(preload, 3000))
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, preload)
     }
 
