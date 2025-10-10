@@ -516,6 +516,11 @@ class preferencesPlugin extends BasePlugin {
                     _incompatibleSwitch(field, data)
                 }
             },
+            "fence_enhance.PRELOAD_ALL_FENCES": (field, data) => {
+                if (!File.hasOwnProperty("loadFile")) {
+                    _incompatibleSwitch(field, data)
+                }
+            },
             "blur.ENABLE": (field, data) => {
                 if (!this.utils.supportHasSelector) {
                     _incompatibleSwitch(field, data)

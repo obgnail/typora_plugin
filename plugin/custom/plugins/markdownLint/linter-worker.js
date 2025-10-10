@@ -3,9 +3,12 @@ let CUSTOM_RULES
 let RULES
 
 const linter = {
-    configure: ({ libPath, customRulesFiles, rules, content }) => {
-        if (libPath) {
-            LIB = require(libPath)
+    configure: ({ polyfillLib, lib, customRulesFiles, rules, content }) => {
+        if (polyfillLib) {
+            require(polyfillLib)
+        }
+        if (lib) {
+            LIB = require(lib)
         }
         if (customRulesFiles) {
             CUSTOM_RULES = customRulesFiles.flatMap(e => require(e))
