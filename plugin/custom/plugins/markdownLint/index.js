@@ -261,7 +261,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 }
                 send(ACTION.CONFIGURE, {
                     rules: rule_config,
-                    libPath: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
+                    lib: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
+                    polyfillLib: this.utils.joinPath("plugin/global/core/polyfill.js"),
                     customRulesFiles: custom_rules_files.map(f => this.utils.joinPath(f)),
                 })
             },
