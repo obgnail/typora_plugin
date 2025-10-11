@@ -179,7 +179,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 "MD022.lines_below": numberOrNumberArray,
                 "MD025.front_matter_title": ["required", "regex"],
                 "MD041.front_matter_title": ["required", "regex"],
-                "MD043.headings": { name: "pattern", args: [/^(\*|\+|\?|#{1,6}\s+\S.*)$/] },
+                "MD043.headings": { $each: { $validator: "pattern", $args: [/^(\*|\+|\?|#{1,6}\s+\S.*)$/] } },
             }
         }
         const getParsers = () => {

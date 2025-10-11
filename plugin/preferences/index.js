@@ -185,7 +185,7 @@ class preferencesPlugin extends BasePlugin {
             schema,
             data,
             actions: this.ACTION_HANDLERS,
-            // rules: this.VALIDATION_RULES[fixedName] || {},
+            rules: this.VALIDATION_RULES[fixedName] || {},
             watchers: this.WATCHERS[fixedName] || {},
             controlOptions: { object: { format: this.config.OBJECT_SETTINGS_FORMAT } },
             disableEffect: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,

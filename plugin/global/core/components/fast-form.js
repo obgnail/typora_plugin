@@ -209,8 +209,9 @@ class FastForm extends HTMLElement {
             if (updatesToProcess.size === 0) return
 
             const successCallbacks = []
-            const successKeys = new Set()
+            const updateKeys = new Set()
             for (const { key, updater, onSuccessCallback } of updatesToProcess.values()) {
+                updateKeys.add(key)
                 const oldValue = this.getData(key)
                 const value = typeof updater === "function" ? updater(oldValue) : updater
                 const changeContext = { key, value, oldValue }
@@ -222,7 +223,6 @@ class FastForm extends HTMLElement {
                     this.setData(key, changeContext.value)
                     this.hooks.invoke("onCommit", changeContext, this)
                     this.hooks.invoke("onAfterCommit", changeContext, this)
-                    successKeys.add(key)
                     if (typeof onSuccessCallback === "function") {
                         successCallbacks.push(onSuccessCallback)
                     }
@@ -231,7 +231,7 @@ class FastForm extends HTMLElement {
                 }
             }
 
-            successKeys.forEach(key => this._updateControl(key))
+            updateKeys.forEach(key => this._updateControl(key))
             successCallbacks.forEach(cb => cb())
         })
     }
@@ -1623,109 +1623,28 @@ const Feature_Parsing = {
     }
 }
 
-const Feature_Validation = {
-    featureOptions: {
-        rules: {},
-        validators: {},
-        ruleMatchStrategy: "exact", // "exact", "wildcard", "regex"
-    },
-    configure: ({ form, hooks, initState }) => {
-        const state = initState({ compiledRules: [] }, state => state.compiledRules = [])
-        hooks.on("onValidate", (changeContext) => {
-            const matchedValidators = state.compiledRules
-                .filter(rule => rule.regex.test(changeContext.key))
-                .flatMap(rule => rule.validators)
-            if (matchedValidators.length === 0) return []
-            return matchedValidators
-                .map(validator => {
-                    try {
-                        return validator(changeContext, form.options.data)
-                    } catch (err) {
-                        return new Error(err)
-                    }
-                })
-                .filter(ret => ret !== true && ret != null)
-                .map(err => (err instanceof Error) ? err : new Error(err))
-        })
-    },
-    compile: ({ state, form, options }) => {
-        const { rules, validators, ruleMatchStrategy } = options
-        if (!rules || typeof rules !== "object" || Object.keys(rules).length === 0) return
-
-        const allValidators = { ...form.constructor.validator.getAll(), ...validators }
-        state.compiledRules = compileMatchers({
-            source: rules,
-            strategy: ruleMatchStrategy,
-            errorContext: "rule",
-            processValue: (rawValidators, key) => {
-                rawValidators = Array.isArray(rawValidators) ? rawValidators : [rawValidators]
-                const validators = rawValidators.map(validator => {
-                    switch (typeof validator) {
-                        case "function":
-                            return validator
-                        case "string":
-                            const builtin = allValidators[validator]
-                            if (builtin) return builtin
-                            break
-                        case "object":
-                            if (validator && typeof validator.validate === "function") {
-                                return validator.validate
-                            }
-                            const factory = allValidators[validator.name]
-                            if (factory) {
-                                const args = validator.args || []
-                                return factory(...args)
-                            }
-                            break
-                    }
-                    throw new TypeError(`Invalid rule type for '${JSON.stringify(validator)}': '${key}'.`)
-                })
-                return { validators }
-            }
-        })
-    },
-    install: (FastFormClass) => {
-        FastFormClass.validator = {
-            get: (...names) => {
-                if (names.length === 0) return
-                const validators = names.map(name => Feature_Validation._validators[name])
-                return (names.length === 1) ? validators[0] : validators
-            },
-            getAll: () => Feature_Validation._validators,
-            register: (name, definition) => {
-                if (typeof definition !== "function") {
-                    throw new TypeError(`Validator Error: validator '${name}' must be a function.`)
-                }
-                if (Feature_Validation._validators.hasOwnProperty(name)) {
-                    console.warn(`FastForm Warning: Overwriting validator for '${name}'.`)
-                }
-                Feature_Validation._validators[name] = definition
-            }
-        }
-    },
-    _validators: {
-        required: ({ value }, allData) => {
+const Feature_Validation = (() => {
+    const _validators = {
+        required: ({ value }) => {
             const isEmpty = value == null
                 || (typeof value === "string" && value.trim() === "")
                 || (Array.isArray(value) && value.length === 0)
             return !isEmpty ? true : i18n.t("global", "error.required")
         },
-        pattern: (pattern) => ({ value }, allData) => {
-            if (!value) return true
+        pattern: (pattern) => ({ value }) => {
+            if (value == null) return true
             return pattern.test(value) ? true : i18n.t("global", "error.pattern")
         },
-        notEqual: (target) => ({ value }, allData) => {
+        notEqual: (target) => ({ value }) => {
             if (value == null) return true
             return value !== target ? true : i18n.t("global", "error.invalid", { value: target })
         },
-        min: (min) => ({ value }, allData) => {
+        min: (min) => ({ value }) => {
             if (value == null || value === "") return true
-            if ((typeof value !== "string" && typeof value !== "number") || isNaN(value)) {
-                return i18n.t("global", "error.isNaN")
-            }
+            if (isNaN(value)) return i18n.t("global", "error.isNaN")
             return Number(value) >= min ? true : i18n.t("global", "error.min", { min })
         },
-        max: (max) => ({ value }, allData) => {
+        max: (max) => ({ value }) => {
             if (value == null || value === "") return true
             if (isNaN(value)) return i18n.t("global", "error.isNaN")
             return Number(value) <= max ? true : i18n.t("global", "error.max", { max })
@@ -1734,7 +1653,7 @@ const Feature_Validation = {
             if (value == null) return true
             return Array.isArray(value) ? true : i18n.t("global", "error.pattern")
         },
-        object: ({ value }, allData) => {
+        object: ({ value }) => {
             if (value == null) return true
             return (!Array.isArray(value) && typeof value === "object") ? true : i18n.t("global", "error.pattern")
         },
@@ -1743,7 +1662,228 @@ const Feature_Validation = {
             return (Array.isArray(value) || typeof value === "object") ? true : i18n.t("global", "error.pattern")
         },
     }
-}
+
+    const _structuralOperators = {
+        $self: (ruleConfig, compileContext) => compileContext.compile(ruleConfig),
+        $each: (ruleConfig, compileContext) => {
+            const subRuleRunner = compileContext.compile(ruleConfig)
+            return (context) => {
+                if (!Array.isArray(context.value)) return
+                context.value.forEach((item, index) => {
+                    const itemContext = { ...context, key: `${context.key}.${index}`, value: item }
+                    subRuleRunner(itemContext)
+                })
+            }
+        },
+        $keys: (ruleConfig, compileContext) => {
+            const keyRunner = compileContext.compile(ruleConfig)
+            return (context) => {
+                if (context.value == null || typeof context.value !== "object" || Array.isArray(context.value)) return
+                for (const objectKey of Object.keys(context.value)) {
+                    const keyContext = { ...context, key: `${context.key}.${objectKey}`, value: objectKey }
+                    keyRunner(keyContext)
+                }
+            }
+        },
+        $values: (ruleConfig, compileContext) => {
+            const valueRunner = compileContext.compile(ruleConfig)
+            return (context) => {
+                if (context.value == null || typeof context.value !== "object" || Array.isArray(context.value)) return
+                for (const [objectKey, objectValue] of Object.entries(context.value)) {
+                    const valueContext = { ...context, key: `${context.key}.${objectKey}`, value: objectValue }
+                    valueRunner(valueContext)
+                }
+            }
+        },
+    }
+
+    const _setDebugInfo = (validator, { key, type, sourceRule }) => {
+        Object.defineProperty(validator, "name", { value: `${type}-${key}`, configurable: true })
+        validator.sourceRule = sourceRule
+        return validator
+    }
+
+    const _isValidators = (rule) => rule == null || Array.isArray(rule) || typeof rule !== "object" || (typeof rule === "object" && rule.$validator)
+
+    const _compileValidators = (ruleConfig, allValidators) => {
+        const compiler = def => {
+            switch (typeof def) {
+                case "function":
+                    return def
+                case "string":
+                    const builtin = allValidators[def]
+                    if (builtin) return builtin
+                    break
+                case "object":
+                    const factory = allValidators[def.$validator]
+                    if (factory) {
+                        const args = def.$args || []
+                        return factory(...args)
+                    }
+            }
+            console.warn(`Invalid rule type for '${JSON.stringify(def)}'.`)
+        }
+        const ruleDefs = Array.isArray(ruleConfig) ? ruleConfig : [ruleConfig]
+        return ruleDefs.map(compiler).filter(Boolean)
+    }
+
+    const _createValidatorRunners = (validators) => {
+        return (context) => {
+            for (const validator of validators) {
+                const result = validator(context)
+                if (result !== true && result != null) {
+                    const error = result instanceof Error ? result : new Error(String(result))
+                    error.key = context.key
+                    context.setError(error)
+                }
+            }
+        }
+    }
+
+    function _compileRule(ruleConfig, allValidators) {
+        if (_isValidators(ruleConfig)) {
+            const validators = _compileValidators(ruleConfig, allValidators)
+            const validatorRunners = _createValidatorRunners(validators)
+            _setDebugInfo(validatorRunners, { key: "self", type: "leaf", sourceRule: ruleConfig })
+            return validatorRunners
+        }
+
+        const subRunners = []
+        const compileContext = { allValidators, compile: (config) => _compileRule(config, allValidators) }
+        for (const [key, subRuleConfig] of Object.entries(ruleConfig)) {
+            const operatorCompiler = _structuralOperators[key]
+            if (operatorCompiler) {
+                const operatorRunner = operatorCompiler(subRuleConfig, compileContext)
+                subRunners.push(operatorRunner)
+            } else {
+                const compiledSubRule = _compileRule(subRuleConfig, allValidators)
+                const propertyRunner = (context) => {
+                    if (context.value == null || typeof context.value !== "object") return
+                    const nextContext = { ...context, key: `${context.key}.${key}`, value: context.value[key] }
+                    compiledSubRule(nextContext)
+                }
+                _setDebugInfo(propertyRunner, { key: key, type: "property", sourceRule: compiledSubRule.sourceRule })
+                subRunners.push(propertyRunner)
+            }
+        }
+        const structuralValidator = (context) => subRunners.forEach(runner => runner(context))
+        _setDebugInfo(structuralValidator, { key: "structural", type: "node", sourceRule: ruleConfig })
+        return structuralValidator
+    }
+
+    const _findValidator = (path, validators) => {
+        const validator = validators.get(path)
+        if (validator) {
+            return { validator, path }
+        }
+        const parts = path.split(".")
+        while (parts.length > 1) {
+            parts.pop()
+            const parentKey = parts.join(".")
+            const v = validators.get(parentKey)
+            if (v) {
+                return { validator: v, path: parentKey }
+            }
+        }
+        return {}
+    }
+
+    return {
+        featureOptions: {
+            rules: {},
+            validators: {},
+        },
+        configure: ({ initState, hooks, registerApi }) => {
+            const state = initState({ controlRules: new Map(), masterValidators: new Map() })
+            registerApi("validation", {
+                addRule: (key, rulesToAdd) => {
+                    if (!key || !rulesToAdd) return
+                    const existingRules = state.controlRules.get(key) || []
+                    const newRules = existingRules.concat(rulesToAdd).flat()
+                    state.controlRules.set(key, newRules)
+                }
+            })
+            hooks.on("onValidate", (changeContext, form) => {
+                const errors = []
+
+                const { key: triggerKey, value: triggerValue } = changeContext
+                const { validator, path } = _findValidator(triggerKey, state.masterValidators)
+                if (!validator) return errors
+
+                const setError = (err) => errors.push(err)
+                const getValue = (fieldKeyToGet) => {
+                    if (fieldKeyToGet === triggerKey) return triggerValue
+                    if (fieldKeyToGet.startsWith(triggerKey + ".")) {
+                        const subPath = fieldKeyToGet.substring(triggerKey.length + 1)
+                        return utils.nestedPropertyHelpers.get(triggerValue, subPath)
+                    }
+                    return form.getData(fieldKeyToGet)
+                }
+                const validateContext = { key: path, value: getValue(path), getValue, setError }
+                validator(validateContext)
+                return errors
+            })
+        },
+        compile: ({ state, options }) => {
+            const userRules = options.rules || {}
+            const controlRules = state.controlRules
+
+            const finalRules = {}
+            const allKeys = new Set([...Object.keys(userRules), ...controlRules.keys()])
+            allKeys.forEach(key => {
+                let normalizedRuleObject
+                const userConfig = userRules[key]
+                if (userConfig == null) {
+                    normalizedRuleObject = {}
+                } else if (_isValidators(userConfig)) {
+                    normalizedRuleObject = { $self: userConfig }
+                } else if (typeof userConfig === "object") {
+                    normalizedRuleObject = { ...userConfig }
+                } else {
+                    console.warn(`Invalid validation rule format for key '${key}'. It will be ignored.`)
+                    normalizedRuleObject = {}
+                }
+
+                const existingSelfRules = normalizedRuleObject.$self || []
+                const existingSelfRulesArray = Array.isArray(existingSelfRules) ? existingSelfRules : [existingSelfRules]
+                normalizedRuleObject.$self = [...(controlRules.get(key) || []), ...existingSelfRulesArray]
+                finalRules[key] = normalizedRuleObject
+            })
+
+            if (Object.keys(finalRules).length === 0) return
+
+            const allValidators = { ..._validators, ...options.validators }
+            state.masterValidators = new Map(
+                Object.entries(finalRules).map(([key, ruleConfig]) => {
+                    const validator = _compileRule(ruleConfig, allValidators)
+                    _setDebugInfo(validator, { key: key, type: "master", sourceRule: ruleConfig })
+                    return [key, validator]
+                })
+            )
+        },
+        install: (FastFormClass) => {
+            FastFormClass.validator = {
+                get: (...names) => {
+                    if (names.length === 0) return
+                    const validators = names.map(name => _validators[name])
+                    return (names.length === 1) ? validators[0] : validators
+                },
+                getAll: () => _validators,
+                register: (name, definition) => {
+                    if (typeof definition !== "function") throw new TypeError(`Validator '${name}' must be a function.`)
+                    if (_validators.hasOwnProperty(name)) console.warn(`Overwriting validator: '${name}'.`)
+                    _validators[name] = definition
+                },
+                registerStructuralOperator: (name, compilerFunc) => {
+                    if (typeof name !== "string" || !name.startsWith("$")) throw new TypeError(`Structural operator name must be a string starting with '$'. Got: ${name}`)
+                    if (typeof compilerFunc !== "function") throw new TypeError(`Structural operator compiler for '${name}' must be a function.`)
+                    if (_structuralOperators.hasOwnProperty(name)) console.warn(`Overwriting structural operator: '${name}'.`)
+                    _structuralOperators[name] = compilerFunc
+                },
+            }
+        },
+    }
+})()
 
 function getWatcherAttrs(rule) {
     let when, on, triggers
@@ -2132,14 +2272,15 @@ function defaultBlockLayout(field) {
     }
 }
 
-function registerRules(options, key, rules) {
-    const toAdd = Array.isArray(rules) ? rules : [rules]
-    const origin = options.rules[key] || []
-    options.rules[key] = [...toAdd, origin].flat()  // Place default rules at the beginning
+function registerRules({ form, field }, rules) {
+    const validationApi = form.getApi("validation")
+    if (validationApi) {
+        validationApi.addRule(field.key, rules)
+    }
 }
 
-function registerNumericalDefaultRules({ field, options, form }) {
-    const { key, min, max } = field
+function registerNumericalDefaultRules({ field, form }) {
+    const { min, max } = field
     const [required, minFactory, maxFactory] = form.constructor.validator.get("required", "min", "max")
     const rules = [required]
     if (typeof min === "number") {
@@ -2148,11 +2289,11 @@ function registerNumericalDefaultRules({ field, options, form }) {
     if (typeof max === "number") {
         rules.push(maxFactory(max))
     }
-    registerRules(options, key, rules)
+    registerRules({ field, form }, rules)
 }
 
-function registerItemLengthLimitRule({ field, options }) {
-    registerRules(options, field.key, ({ value }) => {
+function registerItemLengthLimitRule({ field, form }) {
+    registerRules({ field, form }, ({ value }) => {
         if (!Array.isArray(value)) return true
         const { minItems, maxItems } = field
         if (typeof minItems === "number" && value.length < minItems) {
@@ -2456,9 +2597,9 @@ const Control_Object = {
         rows: 3,
         noResize: false,
     },
-    setup: ({ field, options }) => {
-        defaultBlockLayout(field)
-        registerRules(options, field.key, "arrayOrObject")
+    setup: (context) => {
+        defaultBlockLayout(context.field)
+        registerRules(context, "arrayOrObject")
     },
     create: ({ field, controlOptions }) => {
         const { key, placeholder } = getCommonHTMLAttrs(field)
@@ -2516,10 +2657,10 @@ const Control_Array = {
         dataType: "string",  // number or string
     },
     setupType: ({ initState }) => initState(new Map()),
-    setup: ({ field, options, form }) => {
+    setup: ({ field, form }) => {
         defaultBlockLayout(field)
         const controlOptions = form.getControlOptions(field)
-        const defaultValidator = ({ value }) => {
+        registerRules({ field, form }, ({ value }) => {
             const { dataType, allowDuplicates } = controlOptions
             if (!Array.isArray(value) || !value.every(e => typeof e === dataType)) {
                 return new Error(i18n.t("global", "error.pattern"))
@@ -2528,8 +2669,7 @@ const Control_Array = {
                 return new Error(i18n.t("global", "error.duplicateValue"))
             }
             return true
-        }
-        registerRules(options, field.key, [defaultValidator])
+        })
     },
     create: ({ field }) => {
         const { key } = getCommonHTMLAttrs(field)
@@ -2610,9 +2750,9 @@ const Control_Select = {
     controlOptions: {
         labelJoiner: ", ",
     },
-    setup: ({ field, options }) => {
-        normalizeOptionsAttr(field)
-        registerItemLengthLimitRule({ field, options })
+    setup: (context) => {
+        normalizeOptionsAttr(context.field)
+        registerItemLengthLimitRule(context)
     },
     create: ({ field }) => {
         const toOptionItem = ([optionKey, optionShowName]) => {
@@ -2722,10 +2862,10 @@ const Control_Radio = {
 }
 
 const Control_Checkbox = {
-    setup: ({ field, options }) => {
-        normalizeOptionsAttr(field)
-        defaultBlockLayout(field)
-        registerItemLengthLimitRule({ field, options })
+    setup: (context) => {
+        normalizeOptionsAttr(context.field)
+        defaultBlockLayout(context.field)
+        registerItemLengthLimitRule(context)
     },
     create: ({ field }) => {
         const prefix = utils.randomString()
@@ -2763,16 +2903,14 @@ const Control_Checkbox = {
 
 const Control_Table = {
     setupType: ({ initState }) => initState(new Map()),
-    setup: ({ field, options }) => {
-        defaultBlockLayout(field)
-
-        const defaultValidator = ({ value }) => {
+    setup: (context) => {
+        defaultBlockLayout(context.field)
+        registerRules(context, ({ value }) => {
             if (!Array.isArray(value) || !value.every(e => typeof e === "object")) {
                 return new Error(i18n.t("global", "error.pattern"))
             }
             return true
-        }
-        registerRules(options, field.key, [defaultValidator])
+        })
     },
     create: ({ field }) => {
         const addButton = '<div class="table-add fa fa-plus"></div>'
