@@ -1825,6 +1825,12 @@ HOTKEY_FILTER_INVISIBLE_CHARACTERS = ""
 # 快捷键：添加结尾空格 (根据严格的 Markdown 换行语法，需要在结尾添加两个空格以表示换行)
 HOTKEY_TRAILING_WHITE_SPACE = ""
 
+# 快捷键：图片转为 Base64
+HOTKEY_CONVERT_IMAGE_TO_BASE64 = ""
+
+# 快捷键：所有图片转为 Base64
+HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64 = ""
+
 
 ################### custom ###################
 [custom]

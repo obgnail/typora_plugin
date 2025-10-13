@@ -724,29 +724,31 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     openTab = wantOpenPath => {
-        const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config;
-        const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath);
-        if (!include) {
-            // Modify the file path of the current tab when opening in place and no tab exists.
-            if (this.localOpen) {
-                this.tabUtil.currentTab.path = wantOpenPath;
-            } else {
-                const newTab = { path: wantOpenPath, scrollTop: 0 };
-                if (NEW_TAB_POSITION === "end") {
-                    this.tabUtil.tabs.push(newTab);
-                } else if (NEW_TAB_POSITION === "right") {
-                    this.tabUtil.spliceTabs(this.tabUtil.activeIdx + 1, 0, newTab)
+        queueMicrotask(() => {
+            const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config
+            const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath)
+            if (!include) {
+                // Modify the file path of the current tab when opening in place and no tab exists.
+                if (this.localOpen) {
+                    this.tabUtil.currentTab.path = wantOpenPath
+                } else {
+                    const newTab = { path: wantOpenPath, scrollTop: 0 }
+                    if (NEW_TAB_POSITION === "end") {
+                        this.tabUtil.tabs.push(newTab)
+                    } else if (NEW_TAB_POSITION === "right") {
+                        this.tabUtil.spliceTabs(this.tabUtil.activeIdx + 1, 0, newTab)
+                    }
                 }
             }
-        }
-        if (0 < MAX_TAB_NUM && MAX_TAB_NUM < this.tabUtil.tabCount) {
-            this.tabUtil.spliceTabs(0, this.tabUtil.tabCount - MAX_TAB_NUM)
-        }
-        this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
-        this.tabUtil.currentTab.timestamp = new Date().getTime();
-        this._showTabBar();
-        this._startCheckTabsInterval();
-        this._renderDOM(wantOpenPath);
+            if (0 < MAX_TAB_NUM && MAX_TAB_NUM < this.tabUtil.tabCount) {
+                this.tabUtil.spliceTabs(0, this.tabUtil.tabCount - MAX_TAB_NUM)
+            }
+            this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath)
+            this.tabUtil.currentTab.timestamp = new Date().getTime()
+            this._showTabBar()
+            this._startCheckTabsInterval()
+            this._renderDOM(wantOpenPath)
+        })
     }
 
     rerenderTabBar = () => {

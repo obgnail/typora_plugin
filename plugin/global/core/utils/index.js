@@ -122,6 +122,16 @@ class utils {
         return { ok: state === "completed", filepath: PATH.join(folder, filename) }
     }
 
+    // MIME type detection should use magic number checks or a dedicated library.
+    // Manually checking magic numbers is impractical and a library adds too much overhead.
+    // This uses a simplified approach. Modern browsers can often infer the subtype reliably.
+    static convertImageToBase64 = (bin) => {
+        const prefix = bin.slice(0, 5).toString()
+        const mime = ["<svg", "<?xml"].some(e => prefix.startsWith(e)) ? "image/svg+xml" : "image"
+        const base64 = bin.toString("base64")
+        return `data:${mime};base64,${base64}`
+    }
+
 
     ////////////////////////////// event //////////////////////////////
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey

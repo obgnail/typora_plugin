@@ -10,6 +10,8 @@ class easyModifyPlugin extends BasePlugin {
         { hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE, callback: () => this.dynamicCall("extract_rang_to_new_file") },
         { hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, callback: () => this.dynamicCall("insert_mermaid_mindmap") },
         { hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, callback: () => this.dynamicCall("insert_mermaid_graph") },
+        { hotkey: this.config.HOTKEY_CONVERT_IMAGE_TO_BASE64, callback: () => this.dynamicCall("convert_image_to_base64") },
+        { hotkey: this.config.HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64, callback: () => this.dynamicCall("convert_all_images_to_base64") },
         { hotkey: this.config.HOTKEY_UNWRAP_OUTERMOST_BLOCK, callback: () => this.dynamicCall("unwrap_outermost_block") },
     ]
 
@@ -49,14 +51,18 @@ class easyModifyPlugin extends BasePlugin {
         meta.innermostAnchor = anchorNode.closest("#write [cid]")
         meta.outermostAnchor = anchorNode.closest("#write > [cid]")
         meta.insertAnchor = anchorNode.closest('#write > p[mdtype="paragraph"]')
+        meta.imageAnchor = anchorNode.closest("#write .md-image.md-img-loaded")
         const act_disabled = !meta.insertAnchor || meta.insertAnchor.querySelector("p > span")
         const act_hint = act_disabled ? I18N.positionEmptyLine : ""
         const insert = [
             { act_value: "insert_mermaid_mindmap", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, act_disabled, act_hint },
             { act_value: "insert_mermaid_graph", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, act_disabled, act_hint },
         ]
-
-        return this.i18n.fillActions([...insert, extract])
+        const convert = [
+            { act_value: "convert_image_to_base64", act_hotkey: this.config.HOTKEY_CONVERT_IMAGE_TO_BASE64, act_disabled: !meta.imageAnchor },
+            { act_value: "convert_all_images_to_base64", act_hotkey: this.config.HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64 },
+        ]
+        return this.i18n.fillActions([...insert, ...convert, extract])
     }
 
     dynamicCall = action => this.utils.updateAndCallPluginDynamicAction(this.fixedName, action)
@@ -73,6 +79,8 @@ class easyModifyPlugin extends BasePlugin {
             trailing_white_space: this.trailingWhiteSpace,
             convert_crlf_to_lf: this.convertCRLF2LF,
             convert_lf_to_crlf: this.convertLF2CRLF,
+            convert_image_to_base64: async () => this.convertImageToBase64(meta.imageAnchor),
+            convert_all_images_to_base64: this.convertAllImagesToBase64,
             filter_invisible_characters: this.filterInvisibleCharacters,
         }
         const func = funcMap[action]
@@ -316,6 +324,42 @@ class easyModifyPlugin extends BasePlugin {
         }
         const type = Object.keys(handlers).find(selector => outermostAnchor.matches(selector))
         if (type) handlers[type]()
+    }
+
+    convertImageToBase64 = async (imageElem) => {
+        if (!imageElem) return
+        let src = File.editor.imgEdit.getSrcFromDom(imageElem, true)
+        if (!src) return
+
+        if (this.utils.isSpecialImage(src)) return
+        if (this.utils.isNetworkImage(src)) {
+            try {
+                const { ok, filepath } = await this.utils.downloadImage(src)
+                if (!ok) {
+                    this.utils.notification.show(this.i18n._t("global", "error.timeout"))
+                    return
+                }
+                src = filepath
+            } catch (e) {
+                this.utils.notification.show(e.toString(), "error")
+                return
+            }
+        }
+
+        const bin = await this.utils.Package.Fs.promises.readFile(src)
+        const base64 = this.utils.convertImageToBase64(bin)
+
+        const { range } = this.utils.getRangy()
+        const bookmark = range.getBookmark(imageElem)
+        range.moveToBookmark(bookmark)
+        range.select()
+        File.editor.imgEdit.insertImageFromURL(base64)
+    }
+
+    convertAllImagesToBase64 = async () => {
+        const images = [...document.querySelectorAll("#write .md-image.md-img-loaded")]
+        const promises = images.map(async image => this.convertImageToBase64(image))
+        return Promise.all(promises)
     }
 }
 
