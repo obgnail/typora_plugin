@@ -651,29 +651,38 @@ class windowTabBarPlugin extends BasePlugin {
 
     // openFile is a delayed operation, and it needs to wait for content to load before setting scrollTop
     // The problem is that I have no idea when the content is fully loaded
-    // Solution: Poll to set scrollTop, and if scrollTop does not change for 3 consecutive times, it is judged that the content is loaded
+    // Solution: Poll to set scrollTop, and if scrollTop does not change for 5 consecutive times, it is judged that the content is loaded
     // This method is not environmentally friendly and very ugly. However, I can't think of any other way to do it without modifying frame.js.
     _scrollContent = filepath => {
-        const activeTab = this.tabUtil.tabs.find(e => e.path === filepath);
-        if (!activeTab) return;
+        requestAnimationFrame((startTime) => {
+            const activeTab = this.tabUtil.tabs.find(e => e.path === filepath)
+            if (!activeTab) return
 
-        let count = 0;
-        const stopCount = 3;
-        const timeout = 2000;
-        const end = new Date().getTime() + timeout;
-        const scrollTop = activeTab.scrollTop;
-        const _timer = setInterval(() => {
-            const filePath = this.utils.getFilePath();
-            if (filePath === activeTab.path && this.entities.content.scrollTop !== scrollTop) {
-                this.entities.content.scrollTop = scrollTop;
-                count = 0;
-            } else {
-                count++;
+            let lastScrollHeight = -1
+            let count = 0
+            const stopCount = 5
+            const timeout = 2000
+            const scrollTop = activeTab.scrollTop
+            const contentEl = this.entities.content
+            const pollAndScroll = (timestamp) => {
+                if (this.utils.getFilePath() === activeTab.path && contentEl.scrollHeight !== lastScrollHeight) {
+                    lastScrollHeight = contentEl.scrollHeight
+                    count = 0
+                } else {
+                    count++
+                }
+                const isStable = count >= stopCount
+                const isTimedOut = timestamp - startTime > timeout
+                if (isStable || isTimedOut) {
+                    if (this.utils.getFilePath() === activeTab.path) {
+                        contentEl.scrollTop = scrollTop
+                    }
+                    return
+                }
+                requestAnimationFrame(pollAndScroll)
             }
-            if (count === stopCount || new Date().getTime() > end) {
-                clearInterval(_timer);
-            }
-        }, 70);
+            requestAnimationFrame(pollAndScroll)
+        })
     }
 
     _renderDOM = wantOpenPath => {
@@ -724,7 +733,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     openTab = wantOpenPath => {
-        queueMicrotask(() => {
+        requestAnimationFrame(() => {
             const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config
             const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath)
             if (!include) {
