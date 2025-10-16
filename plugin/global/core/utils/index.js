@@ -1393,9 +1393,9 @@ class utils {
             })
         }
 
-        const start = new Date().getTime()
+        const endTime = 10000 + Date.now()
         const timer = setInterval(() => {
-            if (new Date().getTime() - start > 10000) {
+            if (Date.now() > endTime) {
                 console.error("decorate timeout!", objGetter, attr, beforeFn, afterFn, modifyResult)
                 clearInterval(timer)
                 return
@@ -1410,9 +1410,9 @@ class utils {
 
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
         let run = false
-        const start = new Date().getTime()
+        const endTime = timeout + Date.now()
         const timer = setInterval(() => {
-            if (new Date().getTime() - start > timeout) {
+            if (Date.now() > endTime) {
                 run = runWhenTimeout
                 if (!run) {
                     clearInterval(timer)

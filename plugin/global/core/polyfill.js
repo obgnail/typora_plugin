@@ -55,6 +55,20 @@ function typedArray() {
     }
 }
 
+function array() {
+    _impl(Array.prototype, "toReversed", function () {
+        return [...this].reverse()
+    })
+    _impl(Array.prototype, "toSorted", function (compareFn) {
+        return [...this].sort(compareFn)
+    })
+    _impl(Array.prototype, "toSpliced", function (start, deleteCount, ...items) {
+        const newArray = [...this]
+        newArray.splice(start, deleteCount, ...items)
+        return newArray
+    })
+}
+
 function promise() {
     _impl(Promise, "withResolvers", function () {
         const out = {}
@@ -118,6 +132,7 @@ function abortSignal() {
 }
 
 object()
+array()
 typedArray()
 promise()
 abortSignal()

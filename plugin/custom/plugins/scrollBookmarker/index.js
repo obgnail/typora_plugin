@@ -13,7 +13,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         this.recordName = this.fixedName
         this.recordSelector = "#write [cid]";
         this.className = "plu-bookmark";
-        this.locateUtils = { file: "", idx: -1, time: new Date().getTime() };
+        this.locateUtils = { file: "", idx: -1, time: Date.now() }
         this.entities = {
             write: this.utils.entities.eWrite,
             window: document.querySelector("#plugin-scroll-bookmarker"),
@@ -70,8 +70,8 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         })
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
-            if (new Date().getTime() > this.locateUtils.time + 2000) {
-                this.refreshIfNeed();
+            if (Date.now() > this.locateUtils.time + 2000) {
+                this.refreshIfNeed()
             }
         })
     }
@@ -161,7 +161,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         if (filepath && filepath_ !== filepath) {
             this.locateUtils.file = filepath;
             this.locateUtils.idx = idx;
-            this.locateUtils.time = new Date().getTime();
+            this.locateUtils.time = Date.now()
             this.utils.openFile(filepath);
         } else {
             this._locate(idx);

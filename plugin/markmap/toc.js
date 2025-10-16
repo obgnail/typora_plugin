@@ -477,7 +477,7 @@ class tocMarkmap {
             const tpl = {
                 uuid: this.utils.getUUID(),
                 random: this.utils.randomString(),
-                timestamp: new Date().getTime(),
+                timestamp: Date.now(),
                 filename: this.utils.getFileName() || "MARKMAP",
             }
             const name = file.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)

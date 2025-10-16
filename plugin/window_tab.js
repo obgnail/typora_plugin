@@ -661,7 +661,7 @@ class windowTabBarPlugin extends BasePlugin {
             let lastScrollHeight = -1
             let count = 0
             const stopCount = 5
-            const timeout = 2000
+            const stopTime = startTime + 2000
             const scrollTop = activeTab.scrollTop
             const contentEl = this.entities.content
             const pollAndScroll = (timestamp) => {
@@ -671,11 +671,9 @@ class windowTabBarPlugin extends BasePlugin {
                 } else {
                     count++
                 }
-                const isStable = count >= stopCount
-                const isTimedOut = timestamp - startTime > timeout
-                if (isStable || isTimedOut) {
+                if (count >= stopCount || timestamp > stopTime) {
                     if (this.utils.getFilePath() === activeTab.path) {
-                        contentEl.scrollTop = scrollTop
+                        requestAnimationFrame(() => contentEl.scrollTop = scrollTop)
                     }
                     return
                 }
@@ -753,7 +751,7 @@ class windowTabBarPlugin extends BasePlugin {
                 this.tabUtil.spliceTabs(0, this.tabUtil.tabCount - MAX_TAB_NUM)
             }
             this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath)
-            this.tabUtil.currentTab.timestamp = new Date().getTime()
+            this.tabUtil.currentTab.timestamp = Date.now()
             this._showTabBar()
             this._startCheckTabsInterval()
             this._renderDOM(wantOpenPath)
