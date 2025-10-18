@@ -16,7 +16,7 @@
     "crypto-js": "^4.2.0",
     "https-proxy-agent": "^7.0.6",
     "markdown-it": "^14.1.0",
-    "markdownlint": "^0.38.0",
+    "markdownlint": "^0.39.0",
     "markdownlint-rule-helpers": "^0.29.0",
     "markmap-common": "^0.17.1",
     "markmap-lib": "^0.17.2",
