@@ -12,7 +12,7 @@
     "@marp-team/marp-core": "^4.0.1",
     "@moritzrs/mdast-util-ofm": "^0.0.1",
     "@moritzrs/micromark-extension-ofm": "^0.0.1",
-    "abcjs": "^6.4.4",
+    "abcjs": "^6.5.2",
     "crypto-js": "^4.2.0",
     "https-proxy-agent": "^7.0.6",
     "markdown-it": "^14.1.0",
