@@ -1,4 +1,4 @@
-简体中文 | [English](https://github.com/obgnail/typora_plugin/blob/master/README-en.md)
+[简体中文](https://github.com/obgnail/typora_plugin/blob/master/README-cn.md) | English
 
 <div align="center">
     <h1>Typora Plugin</h1>
@@ -15,120 +15,120 @@
 </div>
 
 
-| #    | 插件                    | 功能                                 | 默认启用 |
-| ---- | ----------------------- | ------------------------------------ | -------- |
-| 1    | window_tab              | 标签页管理                           |          |
-| 2    | search_multi            | 多元文件搜索                         |          |
-| 3    | collapse_paragraph      | 章节折叠                             | ×        |
-| 4    | collapse_list           | 列表折叠                             | ×        |
-| 5    | collapse_table          | 表格折叠                             | ×        |
-| 6    | md_padding              | 中英文混排优化                       |          |
-| 7    | slash_commands          | 斜杠命令                             |          |
-| 8    | templater               | 文件模板                             |          |
-| 9    | resource_manager        | 一键清除无用图片                     |          |
-| 10   | fence_enhance           | 复制、折叠、格式化代码               |          |
-| 11   | toc                     | 在右侧生成大纲目录                   |          |
-| 12   | commander               | 命令行环境                           |          |
-| 13   | toolbar                 | 多功能搜索                           |          |
-| 14   | right_click_menu        | 右键菜单统一管理插件                 |          |
-| 15   | pie_menu                | 圆盘菜单                             | ×        |
-| 16   | datatables              | 表格增强（搜索、过滤、分页、排序等） | ×        |
-| 17   | preferences             | 插件配置                             |          |
-| 18   | markmap                 | 提供 markmap 组件支持                |          |
-| 19   | echarts                 | 提供 echarts 组件支持                |          |
-| 20   | chart                   | 提供 chartjs 组件支持                |          |
-| 21   | drawIO                  | 提供 drawIO 组件支持                 |          |
-| 22   | abc                     | 提供 abcjs 组件支持                  |          |
-| 23   | calendar                | 提供 tui.calendar 组件支持           |          |
-| 24   | wavedrom                | 提供 wavedrom 组件支持               |          |
-| 25   | marp                    | 提供 marp 组件支持                   |          |
-| 26   | callouts                | 提供 callouts 支持                   |          |
-| 27   | text_stylize            | 文字风格化                           |          |
-| 28   | read_only               | 只读模式                             |          |
-| 29   | blur                    | 模糊模式                             |          |
-| 30   | kanban                  | 看板                                 |          |
-| 31   | timeline                | 时间线                               |          |
-| 32   | chat                    | 聊天                                 |          |
-| 33   | file_counter            | 显示目录下的文件数                   |          |
-| 34   | auto_number             | 章节、表格、图片、代码块等自动编号   |          |
-| 35   | imageReviewer           | 图片查看器                           |          |
-| 36   | chineseSymbolAutoPairer | 中文符号自动补全                     |          |
-| 37   | resize_table            | 调整表格行高列宽                     |          |
-| 38   | resize_image            | 调整图片显示大小                     |          |
-| 39   | export_enhance          | 导出 HTML 时避免图片丢失             |          |
-| 40   | markdownLint            | markdown 格式检查                    |          |
-| 41   | go_top                  | 一键到文章顶部、底部                 |          |
-| 42   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能     | ×        |
-| 43   | dark                    | 夜间模式                             |          |
-| 44   | no_image                | 无图模式                             |          |
-| 45   | updater                 | 一键升级插件                         |          |
-| 46   | easy_modify             | 编辑工具                             |          |
-| 47   | editor_width_slider     | 写作区宽度调整                       |          |
-| 48   | redirectLocalRootUrl    | 重定向本地资源根目录                 | ×        |
-| 49   | blockSideBySide         | 并列显示活动块                       | ×        |
-| 50   | scrollBookmarker        | 书签管理器                           | ×        |
-| 51   | cipher                  | 加密文件                             | ×        |
-| 52   | ripgrep                 | 使用 ripgrep 搜索文件                | ×        |
-| 53   | article_uploader        | 一键上传博客到支持的所有平台         | ×        |
-| 54   | sortableOutline         | 拖动大纲标题，调整文章结构           | ×        |
-| 55   | cursor_history          | 光标跳转                             | ×        |
-| 56   | static_markers          | Markdown 标记常显                    | ×        |
-| 57   | custom                  | 开放平台，用户自定义插件（高级）     |          |
-| 58   | hotkeys                 | 快捷键注册中心（高级）               |          |
-| 59   | quickButton             | 于右下角添加功能按钮（高级）         |          |
-| 60   | json_rpc                | 外部操纵 Typora（高级）              | ×        |
+| #    | Plugin                  | Function                                                  | Enabled by Default |
+| ---- | ----------------------- | --------------------------------------------------------- | ------------------ |
+| 1    | window_tab              | Window Tab Bar                                            |                    |
+| 2    | search_multi            | Multi-Fields File Searcher                                |                    |
+| 3    | collapse_paragraph      | Chapter Folding                                           | ×                  |
+| 4    | collapse_list           | List Folding                                              | ×                  |
+| 5    | collapse_table          | Table Folding                                             | ×                  |
+| 6    | md_padding              | Chinese-English Text Spacer                               |                    |
+| 7    | slash_commands          | Slash Commands                                            |                    |
+| 8    | templater               | File Templater                                            |                    |
+| 9    | resource_manager        | Resource Management                                       |                    |
+| 10   | fence_enhance           | Enhance Fence                                             |                    |
+| 11   | toc                     | TOC                                                       |                    |
+| 12   | commander               | Commander                                                 |                    |
+| 13   | toolbar                 | Multi-Purpose Searcher                                    |                    |
+| 14   | right_click_menu        | Right-Click Menu                                          |                    |
+| 15   | pie_menu                | Pie menu                                                  | ×                  |
+| 16   | datatables              | Enhance Table                                             | ×                  |
+| 17   | preferences             | Preferences                                               |                    |
+| 18   | markmap                 | Provides Markmap support                                  |                    |
+| 19   | echarts                 | Provides Echarts support                                  |                    |
+| 20   | chart                   | Provides Chartjs support                                  |                    |
+| 21   | drawIO                  | Provides DrawIO support                                   |                    |
+| 22   | abc                     | Provides abcjs support                                    |                    |
+| 23   | calendar                | Provides tui.calendar support                             |                    |
+| 24   | wavedrom                | Provides WaveDrom support                                 |                    |
+| 25   | marp                    | Provides Marp support                                     |                    |
+| 26   | callouts                | Provides Callouts support                                 |                    |
+| 27   | text_stylize            | Text stylization                                          |                    |
+| 28   | read_only               | Read-only mode                                            |                    |
+| 29   | blur                    | Blur mode                                                 |                    |
+| 30   | kanban                  | Kanban                                                    |                    |
+| 31   | timeline                | Timeline                                                  |                    |
+| 32   | chat                    | Chat                                                      |                    |
+| 33   | file_counter            | Show file count in directory                              |                    |
+| 34   | auto_number             | Auto Numbering                                            |                    |
+| 35   | imageReviewer           | Image reviewer                                            |                    |
+| 36   | chineseSymbolAutoPairer | Automatic completion of Chinese symbols                   |                    |
+| 37   | resize_table            | Adjust table row height and column width                  |                    |
+| 38   | resize_image            | Adjust image display size                                 |                    |
+| 39   | export_enhance          | Avoid image loss when exporting to HTML                   |                    |
+| 40   | markdownLint            | Markdown Lint Check                                       |                    |
+| 41   | go_top                  | One-click to top of the article                           |                    |
+| 42   | truncate_text           | Hide content to improve performance for large files       | ×                  |
+| 43   | dark                    | Dark mode                                                 |                    |
+| 44   | no_image                | No image mode                                             |                    |
+| 45   | updater                 | One-click plugin update                                   |                    |
+| 46   | easy_modify             | Editing tools                                             |                    |
+| 47   | editor_width_slider     | Adjust writing area width                                 |                    |
+| 48   | redirectLocalRootUrl    | Redirect local resource root directory                    | ×                  |
+| 49   | blockSideBySide         | Display active blocks side by side                        | ×                  |
+| 50   | scrollBookmarker        | Bookmark manager                                          | ×                  |
+| 51   | cipher                  | Encrypt files                                             | ×                  |
+| 52   | ripgrep                 | Search files using ripgrep                                | ×                  |
+| 53   | article_uploader        | One-click upload blog to supported platforms              | ×                  |
+| 54   | sortableOutline         | Drag & drop outline to rearrange                          | ×                  |
+| 55   | cursor_history          | Cursor History                                            | ×                  |
+| 56   | static_markers          | Static Markers                                            | ×                  |
+| 57   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
+| 58   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
+| 59   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
+| 60   | json_rpc                | External control of Typora (advanced)                     | ×                  |
 
-> 如果有需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果觉得本项目对您有帮助，请不吝点亮一个 Star ⭐！
+> If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
 
 
 ## Q&A
 
-- **我的 Typora 能用吗？** 要求 Typora 版本大于等于 0.9.98（最后一个免费版本）。
-- **如何修改插件配置？** 通过右键菜单 -> 少用插件 -> 插件配置。**尊重用户的一切选择**，所有的插件和功能皆可永久启用 / 禁用。
-- **如何升级插件？** 通过右键菜单 -> 少用插件 -> 插件配置 -> 升级插件。
-- **如何卸载插件？** 通过右键菜单 -> 少用插件 -> 插件配置 -> 卸载插件。
-- **如何编写插件？** 本项目坚持 **No BuildTime**，因此无需安装任何开发环境，详情请参考 [Readme](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README.md)。
-- **支持 Typora for Mac 吗？** 我没有 Mac 设备，故暂不支持。
-- **还有其他问题？** 欢迎前往 [AI Wiki](https://deepwiki.com/obgnail/typora_plugin) 提问或查阅社区讨论。
+- **Is my Typora supported?** Typora's version should be ≥ 0.9.98 (the last free version).
+- **How to modify plugin configurations?** Right-click menu -> Less Used Plugins -> Preferences. **Respect all user choices**. Any plugin or feature can be permanently enabled/disabled.
+- **How to upgrade plugins?** Right-click menu -> Less Used Plugins -> Upgrade Plugins.
+- **How to uninstall plugins?** Right-click menu -> Less Used Plugins -> Preferences -> Uninstall Plugins.
+- **How to develop plugins?** This project adheres to **No BuildTime**, so there is no need to install any development environment. Please refer to [Readme](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README-en.md) for details.
+- **Does it support Typora for Mac?** I don't have a Mac device, so I haven't tested it.
+- **Any other questions?** Please ask [AI Wiki](https://deepwiki.com/obgnail/typora_plugin).
 
 
 
-## 如何使用：Windows/Linux 平台
+## How to Use: Windows/Linux Platform
 
-前往 [视频安装教程](https://github.com/obgnail/typora_plugin/issues/847)
+Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/issues/847)
 
-1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压
+1. [Download](https://github.com/obgnail/typora_plugin/releases/latest) the plugin source code package and unzip it.
 
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A
+2. Go to the Typora installation path and find the folder A containing `window.html`.
 
-   - 正式版 Typora 对应的路径为 `./resources/window.html`
+   - For the official version of Typora, the path is `./resources/window.html`.
 
-   - 免费版 Typora 对应的路径为 `./resources/app/window.html`
+   - For the beta version of Typora, the path is `./resources/app/window.html`.
 
-3. 将解压得到的 plugin 文件夹粘贴进文件夹 A 下
+3. Paste the unzipped plugin folder into folder A.
 
-4. 进入文件夹 `A/plugin/bin/`
+4. Go to the folder `A/plugin/bin/`.
 
-   - Windows 系统：右键 `install_windows.ps1` 文件，点击 `使用 PowerShell 运行`
+   - Windows: Right-Click on the file `installw_windows.ps1`. Select 'Run with PowerShell'.
+   - Linux: Run `install_linux.sh` as administrator.
 
-   - Linux 系统：以管理员运行 `install_linux.sh`
+5. Verification: Restart Typora, right-click in the main text area, and if you see the `Often Used Plugins` column, everything is fine.
 
-5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
-|          | 正式版                                       | 免费版                                       |
-| -------- | -------------------------------------------- | -------------------------------------------- |
-| 步骤 2-3 | ![typora_dir_new](assets/typora_dir_new.png) | ![typora_dir_old](assets/typora_dir_old.png) |
+|           | Official Version                             | Beta Version                                 |
+| --------- | -------------------------------------------- | -------------------------------------------- |
+| Steps 2-3 | ![typora_dir_new](assets/typora_dir_new.png) | ![typora_dir_old](assets/typora_dir_old.png) |
 
 |        | Windows                                        | Linux                                      |
 | ------ | ---------------------------------------------- | ------------------------------------------ |
-| 步骤 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
+| Step 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
 
 
 
-## 如何使用：archlinux 平台
+## How to Use: Archlinux Platform
 
-> 目前此方法仅限 archlinux 平台，aur 见 [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)
+> Currently, this method is only for the Archlinux platform, see [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)
 
 ```sh
 yay -S typora-plugin
@@ -136,235 +136,220 @@ yay -S typora-plugin
 
 
 
-## 插件使用说明
+## Plugin Usage Instructions
 
-所有的插件都提供了四种使用方法：
+All plugins provide four usage methods:
 
-- 键盘党：
-  - `Ctrl+J` 调出插件列表（详见 `toolbar` 插件）
-  - 快捷键（详见 `hotkeys` 插件）
-- 鼠标党：
-  - 在正文区域右键调用（详见 `right_click_menu` 插件）
-  - 快捷按钮（详见 `quickButton` 插件）
+- Keyboard enthusiasts:
+  - `Ctrl+J` to bring up the plugin list (see `toolbar` plugin)
+  - Shortcut keys (see `hotkeys` plugin)
+- Mouse enthusiasts:
+  - Right-click in the main text area (see `right_click_menu` plugin)
+  - Quick buttons (see `quickButton` plugin)
 
 
+### window_tab: Window Tab Bar
 
-### window_tab：标签页管理
-
-- `切换标签`：Ctrl+滚轮滚动、ctrl+shift+tab、ctrl+tab、ctrl+PgUp、ctrl+PgDn
-- `关闭标签`：ctrl+w、鼠标中键
-- `新窗口打开`：ctrl+单击标签
-- `排序标签`：拖拽
-- `弹出标签的菜单选项`：右键单击标签页
+- `Switch tabs`: Ctrl + scroll wheel, ctrl + shift + tab, ctrl + tab, ctrl + PgUp, ctrl + PgDn
+- `Close tab`: ctrl + w, middle mouse button
+- `Open in new window`: ctrl + click tab
+- `Sort tabs`: Drag and drop
+- `Pop up menu options for tabs`: Right-click the tab
 
 ![window_tab](assets/window_tab.gif)
 
 
+### search_multi: Multi-Fields File Searcher
 
-### search_multi：多元文件搜索
+Function: Search through a combination of different conditions to accurately find files.
 
-功能：搜索通过组合不同的条件来精确查找文件。
+Usage:
 
-使用方式：
-
-- 方式一：右键菜单 -> 常用插件 -> 多元文件搜索
-- 方式二：快捷键 `ctrl+shift+P`
+- Method 1: Right-click menu -> Often Used Plugins -> Multi-Fields File Searcher
+- Method 2: Shortcut key `ctrl+shift+P`
 
 
-使用示例：搜索语法类似于 Google 搜索语法，支持正则表达式。
+Usage example: The search syntax is similar to Google search syntax and supports regular expressions.
 
-| 输入                                                | 搜索文件                                                     |
-| --------------------------------------------------- | ------------------------------------------------------------ |
-| `pear`                                              | 包含 pear                                                    |
-| `sour pear`                                         | 包含 sour 和 pear                                            |
-| `sour OR pear`                                      | 包含 sour 或 pear                                            |
-| `"sour pear"`                                       | 包含 sour pear 词组                                          |
-| `sour pear -apple`                                  | 包含 sour 和 pear，且不含 apple                              |
-| `/\bsour\b/ pear mtime=2024-03-12`                  | 匹配正则 \bsour\b，且包含 pear，且文件的修改时间为 2024-03-12 |
-| `frontmatter:开发 OR head=plugin OR strong:MIT`     | YAML Front Matter 包含开发 或者 标题内容为 plugin 或者 加粗文字包含 MIT |
-| `size>10kb (linenum>=1000 OR hasimage=true)`        | 文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片  |
-| `thead:k8s h2:prometheus blockcode:"kubectl apply"` | 表头包含 k8s，且二级标题包含 prometheus，且代码块内容包含 kubectl apply |
+| Input                                                 | Search File                                                 |
+| ----------------------------------------------------- | ------------------------------------------------------------ |
+| `pear`                                                | Contains pear                                                |
+| `sour pear`                                           | Contains sour and pear                                       |
+| `sour OR pear`                                        | Contains sour or pear                                        |
+| `"sour pear"`                                         | Contains the phrase sour pear                                |
+| `sour pear -apple`                                    | Contains sour and pear, but not apple                        |
+| `/\bsour\b/ pear mtime=2024-03-12`                    | Matches regex \bsour\b, contains pear, and file modification date is 2024-03-12 |
+| `frontmatter:development OR head=plugin OR strong:MIT` | YAML Front Matter contains development or title content is plugin or bold text contains MIT |
+| `size>10kb (linenum>=1000 OR hasimage=true)`          | File size exceeds 10KB, and the file either has at least 1000 lines or contains images |
+| `thead:k8s h2:prometheus blockcode:"kubectl apply"`   | Table header contains k8s, h2 contains prometheus, code block contains kubectl apply |
 
 ![search_mutli](assets/search_mutli.gif)
 
 
+### collapse_paragraph: Chapter Folding
 
-### collapse_paragraph：章节折叠
+Function: Fold/expand all text under the section. Supported tags: h1~h6.
 
-功能：折叠 / 展开 章节下所有文本。支持折叠的标签：h1~h6。
-
-- `折叠/展开单个章节`：ctrl+click
-- `折叠/展开父章节下所有同级的章节`：ctrl+alt+click
-- `折叠/展开所有同级的章节`：ctrl+shift+alt+click
+- `Fold/expand a single section`: ctrl + click
+- `Fold/expand all sibling sections under the parent section`: ctrl + alt + click
+- `Fold/expand all sibling sections`: ctrl + shift + alt + click
 
 ![collapse_paragraph](assets/collapse_paragraph.gif)
 
 
+### collapse_list: List Folding
 
-### collapse_list：列表折叠
-
-功能：折叠 / 展开 无序列表、有序列表、任务列表。
-
+Function: Fold/expand unordered lists, ordered lists, task lists.
 
 
-### collapse_table：表格折叠
+### collapse_table: Table Folding
 
-功能：折叠 / 展开 表格。
+Function: Fold/expand tables.
 
 
+### md_padding: Chinese-English Text Spacer
 
-### md_padding：中英文混排优化
+Function: Add spaces between Chinese and English, Chinese and numbers when mixed.
 
-功能：中英文混排时，中文与英文之间、中文与数字之间添加空格。
-
-快捷键：ctrl+shift+B
+Shortcut: ctrl + shift + B
 
 ![md_padding](assets/md_padding.gif)
 
 
+### slash_commands: Slash Commands
 
-### slash_commands：斜杠命令
+Function: Similar to Notion's slash command.
 
-功能：类似于 notion 的 slash command。
+Supports:
 
-支持：
-
-- 插入文字片段（snippet）
-- 插入组件
-- 编辑样式
-- 执行任意逻辑
+- Insert text snippets (snippet)
+- Insert components
+- Edit styles
+- Execute arbitrary logic
 
 ![slash_commands](assets/slash_commands.gif)
 
 
+### templater: File Templater
 
-### templater：文件模板功能
+Function: Similar to Obsidian's file template function, quickly create files based on templates.
 
-功能：类似于 obsidian 的文件模板功能，根据模板快速创建文件。
-
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 文件模板。
+Usage: Right-click menu -> Often Used Plugins -> Secondary Plugins -> File Templates.
 
 ![templater](assets/templater.gif)
 
 
+### resource_manager: Resource Management
 
-### resource_manager：一键清除无用图片
+Function: Resource management, cleanup of unused images
 
-功能：资源管理，清除无用图片
-
-使用方式：右键菜单 -> 少用插件 -> 资源管理
-
+Usage: Right-click menu -> Less Used Plugins -> Resource Management
 
 
-### fence_enhance：复制，折叠，格式化代码
+### fence_enhance: Enhance Fence
 
 ![fence_enhance](assets/fence_enhance.png)
 
 
+### toc: Generate Outline on the Right
 
-### toc：在右侧生成大纲目录
+Function: Typora's sidebar cannot display both [File] and [Outline] simultaneously. To solve this problem, this plugin adds an [Outline] on the right.
 
-功能：Typora 侧边栏的【文件】和【大纲】不能同时显示，为了解决此问题，此插件会在右侧新增一个【大纲】。
+Usage:
 
-使用方式：
-
-- 方式一：常用插件 -> 二级插件 -> 大纲目录
-- 方式二：右键点击侧边栏的【大纲】按钮
-
+- Method 1: Often Used Plugins -> Secondary Plugins -> Outline
+- Method 2: Right-click the [Outline] button on the sidebar
 
 
-### commander：命令行环境
+### commander: Command Line Environment
 
-功能：类似于 total commander 的命令行，一个快速执行命令的工具，并提供少量交互。
+Function: Similar to Total Commander's command line, a tool for quickly executing commands and providing minimal interaction.
 
-使用方式：右键菜单 -> 常用插件 -> 命令行环境
+Usage: Right-click menu -> Often Used Plugins -> Command Line Environment
 
-支持 shell：
+Supported shells:
 
-- `cmd/bash`：Windows 或 Linux 的默认终端
-- `powershell`：微软的傻儿子 :D
-- `git bash`：需确保安装 Git Bash 并添加到环境变量
-- `wsl`：需确保安装 WSL2 并添加到环境变量
+- `cmd/bash`: Default terminal for Windows or Linux
+- `powershell`: Microsoft's silly kid :D
+- `git bash`: Ensure it is installed and added to the environment variable
+- `wsl`: Ensure WSL2 is installed and added to the environment variable
 
-内置环境变量：
+Built-in environment variables:
 
-- `$f`：当前文件路径
-- `$d`：当前文件的所属目录
-- `$m`：当前挂载的根目录
+- `$f`: Current file path
+- `$d`: Directory of the current file
+- `$m`: Mounted root directory
 
 
 
 ![commander](assets/commander.gif)
 
 
+### markmap: Provides Markmap Support
 
-### markmap：提供 markmap 支持
+Usage:
 
-使用方式：
-
-- 方式一：右键菜单 -> 少用插件 -> markmap
-- 方式二：直接点击右下角的 markmap 按钮
+- Method 1: Right-click menu -> Less Used Plugins -> markmap
+- Method 2: Directly click the markmap button in the lower right corner
 
 ![markmap](assets/markmap.gif)
 
 
+### toolbar: Multi-Purpose Searcher
 
-### toolbar：多功能搜索
+Function: Similar to VSCode's ctrl + shift + p function
 
-功能：类似于 vscode 的 ctrl+shift+p 功能
+Usage:
 
-使用方式：
+- Method 1: Right-click menu -> Less Used Plugins -> Multi-functional Search
+- Method 2: Shortcut key `ctrl + j`
 
-- 方式一：右键菜单 -> 少用插件 -> 多功能搜索
-- 方式二：快捷键 `ctrl+j`
+Supports search:
 
-支持搜索：
+- `his`: Recently opened files
+- `plu`: Plugins
+- `tab`: Open tabs
+- `ops`: Common operations
+- `out`: Document outline
+- `mode`: Switch file mode
+- `theme`: Temporarily switch theme
+- `func`: Function list
+- `all`: Mixed search (search all items mixed together)
 
-- `his`：最新打开过的文件
-- `plu`：插件
-- `tab`：打开的标签页
-- `ops`：常用操作
-- `out`：文档大纲
-- `mode`：切换文件模式
-- `theme`：临时切换主题
-- `func`：功能列表
-- `all`：混合查找（所有项目都混在一起查找）
+Input content description:
 
-键入内容说明：
+- Input content = search tool name + space + search content
+- Supports `intersection queries`, `difference queries`, and can be freely combined (similar to Google's positive and negative queries)
 
-- 键入内容 = 搜索工具名称 + 空格 + 搜索内容
-- 支持 `交集查询`、`差集查询`，并且可以随意组合（类似于 google 的正负向查询）
+Examples:
 
-举例：
-
-- `his node learn`：查找最近打开的文件，要求文件标题【包含 node 和 learn 两个关键字】
-- `plu multi -search`：查找插件，要求插件名【包含 multi 关键字，但是不包含 search 关键字】
-- `tab -messing`：查找所有打开的标签页，要求标签页名称【不包含 messing 关键字】
-- `his close -win -mark 标签`：查找最近打开的文件，要求文件标题【包含 close、标签，不包含 win、mark】
+- `his node learn`: Find recently opened files that have titles containing both node and learn keywords
+- `plu multi -search`: Find plugins whose names contain the multi keyword but do not contain the search keyword
+- `tab -messing`: Find all open tabs whose names do not contain the messing keyword
+- `his close -win -mark tab`: Find recently opened files whose titles contain close and tab keywords, but do not contain win and mark keywords
 
 ![toolbar](assets/toolbar.gif)
 
 
+### right_click_menu
 
-### right_click_menu：右键菜单统一管理插件
+All plugins support direct invocation through the right-click menu. Mouse enthusiasts can use the right-click menu as the main way to call all plugins.
 
-所有插件都支持在右键菜单中直接调用。鼠标党可以将右键菜单作为所有插件的主要调用方式。
-
-可以通过修改配置自定义右键菜单：
+You can customize the right-click menu by modifying the configuration:
 
 ```toml
-#  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
-#  NAME: 一级菜单的名称
-#  LIST: 二级菜单的插件列表（使用"---"代表在页面上插入一个divider，以作分隔）
+# Each MENUS corresponds to a primary menu, allowing unlimited additions of primary menus and repeated addition of the same plugin
+# NAME: The name of the primary menu
+# LIST: List of secondary menu plugins (use "---" to insert a divider on the page for separation)
 [[right_click_menu.MENUS]]
-NAME = "少用插件"
+NAME = "Less Used Plugins"
 LIST = [
     "window_tab",
     "fence_enhance",
     ...
 ]
 [[right_click_menu.MENUS]]
-NAME = "常用插件"
+NAME = "Often Used Plugins"
 LIST = [
     "commander",
     "markmap",
@@ -373,409 +358,320 @@ LIST = [
 ```
 
 
+### pie_menu
 
-### pie_menu：圆盘菜单
+Usage:
 
-使用方式：
+- `Open circular menu`: Ctrl + right mouse button
+- `Rotate circular menu`: Middle mouse button
+- `Pin the circular menu, so it doesn't automatically disappear`: Left mouse button on the center of the circle
+- `Expand the circular menu, so it doesn't automatically collapse`: Right mouse button on the center of the circle
 
-- `弹出圆盘菜单`：Ctrl+鼠标右键
-- `旋转圆盘菜单`：鼠标中键
-- `固定圆盘菜单，圆盘不再自动消失`：鼠标左键圆心
-- `展开圆盘菜单，圆盘不再自动收缩`：鼠标右键圆心
+### preferences
 
+Usage: Right-click menu -> Less Used Plugins -> preferences
 
+### echarts: Provide Echarts Support
 
-### preferences：插件配置
+Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Echarts
 
-使用方式：右键菜单 -> 少用插件 -> 插件配置
+![echarts](assets/echarts.png)
 
+### chart: Provide Chart.js Support
 
-
-### echarts：提供 echarts 支持
-
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Echarts
-
-![echats](assets/echarts.png)
-
-
-
-### chart：提供 chartjs 支持
-
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Chart
+Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Chart
 
 ![chart](./assets/chart.png)
 
-
-
-### drawIO：提供 drawIO 组件支持
+### drawIO: Provide DrawIO Support
 
 ![drawIO](./assets/drawIO.png)
 
+### abc: Provide abc.js Support
 
-
-### abc：提供 abc 组件支持
-
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> ABC
+Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> ABC
 
 ![abcjs](./assets/abcjs.png)
 
+### calendar: Provide tui.Calendar Support
 
-
-### calendar：  提供 tui.calendar 组件支持
-
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Calendar
+Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Calendar
 
 ![calendar](./assets/calendar.png)
 
+### wavedrom: Provide WaveDrom Support
 
-
-### wavedrom：提供 wavedrom 组件支持
-
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Wavedrom
+Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Wavedrom
 
 ![wavedrom](./assets/wavedrom.png)
 
+### marp: Provide Marp Support
 
+Function: Use markdown to create PPT.
 
-### marp：提供 marp 组件支持
+Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Marp
 
-功能：使用 markdown 做 PPT。
+### callouts: Provide Callouts Support
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Marp
-
-
-
-### callouts：  提供 callouts 支持
-
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Callouts
+Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Callouts
 
 ![callouts](./assets/callouts.png)
 
-数量、类型、颜色、icon 皆可自己定义，请前往配置修改。
+The quantity, type, color, and icon can all be defined by yourself. Please modify the configuration.
 
+### kanban
 
-
-### kanban：看板
-
-拓展代码语法，添加看板功能。
+Extend the code syntax to add Kanban functionality.
 
 ![kanban](assets/kanban.png)
 
+### timeline
 
-
-### timeline：时间线
-
-拓展代码语法，添加时间线功能。
+Extend the code syntax to add timeline functionality.
 
 ![timeline](./assets/timeline.png)
 
+### chat
 
-
-### chat：聊天
-
-拓展代码语法，添加聊天功能。
+Extend the code syntax to add chat functionality.
 
 ![chat](./assets/chat.png)
 
+### text_stylize
 
+Function: Convert text to HTML format, changing the text style.
 
-### text_stylize：文字风格化
-
-功能：将文字转为 HTML 格式，改变文字样式。
-
-使用方式：右键菜单 -> 少用插件 -> 文字风格化。
+Usage: Right-click menu -> Less Used Plugins -> Text Stylize.
 
 ![text_stylize](./assets/text_stylize.gif)
 
+### read_only: Read-Only Mode
 
+Function: In read-only mode, the document cannot be edited (after enabling, the bottom right corner of the statistics area will show `ReadOnly`).
 
-### read_only：只读模式
+Shortcut: ctrl+shift+R
 
-功能：只读模式下文档不可编辑（开启后，右下角数字统计区域会出现 `ReadOnly` 字样）
+### blur: Blur Mode
 
-快捷键：ctrl+shift+R
+Function: After enabling, only the currently focused component is visible, the rest are blurred. It can be used to prevent peeking.
 
+Usage: Right-click menu -> Less Used Plugins -> Blur Mode
 
+> This plugin can only be used with the official version of Typora.
 
-### blur：模糊模式
-
-功能：开启后，只有当前聚焦的组件可见，其余模糊。可以用于防偷窥。
-
-使用方式：右键菜单 -> 少用插件 -> 模糊模式
-
-> 此插件只能于正式版 Typora 使用。
-
-
-
-### file_counter：显示文件数
+### file_counter: Display File Count
 
 ![file_count](assets/file_counter.png)
 
-
-
-### auto_number：自动编号
+### auto_number
 
 ![auto_number](assets/auto_number.png)
 
-和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题 :)
+Unlike other implementations using theme CSS, this plugin perfectly solves the problem of no numbering in the sidebar after exporting to PDF by modifying the built-in function :)
 
 
 
-### imageReviewer：图片查看器
+### imageReviewer
 
-功能：一站式图片查看，并且提供简单图片编辑。
+Function: One-stop image viewing, and provides simple image editing.
 
-使用方式：
+Usage:
 
-- 方式一：点击右下角【查看图片】按钮
-- 方式二：右键菜单 -> 常用插件 ->  二级插件 -> 图片查看器
+- Method 1: Click the "View Image" button at the bottom right corner
+- Method 2: Right-click menu -> Often Used Plugins -> Secondary plugins -> Image Viewer
 
 ![image-reviewer](./assets/image-reviewer.png)
 
+### chineseSymbolAutoPairer
 
+Function: Automatically pair symbols when typing `《 【 （ ‘ “ 「`.
 
-### chineseSymbolAutoPairer：中文符号自动补全
+### datatables: Table Enhancement
 
-功能：输入 `《 【 （ ‘ “ 「` 符号时自动补全。
+Function: Enhance tables. Provides functions such as search, filter, pagination, and sorting.
 
-
-
-### datatables：表格增强
-
-功能：增强表格。提供搜索、过滤、分页、排序等功能。
-
-使用方式：将光标定位在表格 -> 右键菜单 -> 少用插件 -> 表格增强。
+Usage: Place the cursor on the table -> Right-click menu -> Less Used Plugins -> Table Enhancement.
 
 ![datatables](assets/datatables.png)
 
+### resize_table
 
-
-### resize_table：拖动调整表格大小
-
-功能：`ctrl+鼠标拖动`：修改表格的行高列宽。
+Function: `ctrl + mouse drag`: Modify the row height and column width of the table.
 
 ![resize_table](assets/resize_table.gif)
 
+### resize_image
 
+Function: `alt + mouse scroll`: Adjust the image size.
 
-### resize_image：调整图片大小
+### export_enhance
 
-功能：`alt+鼠标滚轮滚动`：调整图片大小。
+Function: When exporting HTML, convert images to base64 to avoid image loss.
 
+### go_top
 
+Function: Add a "Go to Top" button at the bottom right corner.
 
-### export_enhance：导出增强
+### dark: Dark Mode
 
-功能：导出 HTML 时，将图片转为 base64，避免图片丢失。
+Usage: Right-click menu -> Often Used Plugins -> Night Mode
 
+### no_image: No Image Mode
 
+Usage: Right-click menu -> Often Used Plugins -> No Image Mode
 
-### go_top： 一键到顶
+### markdownLint
 
-功能：在右下角添加一个一键到顶的按钮。
+Function: Check whether the current file complies with markdown best practices.
 
+Usage:
 
+1. Method 1: Click the small square at the top right corner
+2. Method 2: Right-click menu -> Often Used Plugins -> Secondary plugins -> Format Check
 
-### dark：夜间模式
+### updater: One-Click Plugin Upgrade
 
-使用方式：右键菜单 -> 常用插件 -> 夜间模式
+Usage: Right-click menu -> Less Used Plugins -> Upgrade Plugin
 
+> As we all know, some users cannot download the latest plugin directly from GitHub, so a proxy setting function is provided (default is system proxy).
 
+### easy_modify: Editing Tools
 
-### no_image：无图模式
+Usage: Right-click menu -> Often Used Plugins -> Editing Tools
 
-使用方式：右键菜单 -> 常用插件 -> 无图模式
+This plugin is a collection of commonly used editing tools, currently including:
 
+1. Copy title path
+2. Promote the title level of the selected paragraph
+3. Demote the title level of the selected paragraph
+4. Convert line break CRLF to LF
+5. Convert line break LF to CRLF
+6. Remove invisible characters
+7. Generate mind map based on the document outline: mindmap
+8. Generate mind map based on the document outline: graph
+9. Extract selected text to a new file
+10. Add trailing spaces
 
+### editor_width_slider: Adjust Writing Area Width
 
-### markdownLint：markdown 格式检查
+Usage: Right-click menu -> Less Used Plugins -> Adjust Writing Area Width
 
-功能：检测当前文件是否符合 markdown 最佳实践规范。
+Function: Adjust the width of the writing area.
 
-使用方式：
+### redirectLocalRootUrl
 
-1. 方法一：点击右上角的小方块
-2. 方法二：右键菜单 -> 常用插件 -> 二级插件 -> 格式检查
+Function: If you mainly use Obsidian or Joplin to manage files and occasionally use Typora to open files, you will encounter a problem: both Obsidian and Joplin put local resources in the same directory, but Typora defaults to using relative paths to reference local resources.
 
-
-
-### updater：一键升级插件
-
-使用方式：右键菜单 -> 少用插件 -> 升级插件
-
-> 众所周知，有些用户并不能裸连 github 下载最新插件，故提供了设置代理功能（默认为系统代理）
-
-
-
-### easy_modify：编辑工具
-
-使用方式：右键菜单 -> 常用插件 -> 编辑工具
-
-本插件是常用的编辑工具集合，目前包括：
-
-1. 复制标题路径
-2. 提升选中文段的标题等级
-3. 降低选中文段的标题等级
-4. 换行符 CRLF 转为 LF
-5. 换行符 LF 转为 CRLF
-6. 移除不可见字符
-7. 根据文档大纲一键生成思维导图：mindmap
-8. 根据文档大纲一键生成思维导图：graph
-9. 提取选区文字到新文件
-10. 添加结尾空格
+> This plugin is disabled by default and needs to be manually enabled.
 
 
 
-### editor_width_slider：写作区宽度调整
+### blockSideBySide: Display Active Blocks Side by Side
 
-使用方式：右键菜单 -> 少用插件 -> 写作区宽度调整
-
-功能：调整写作区的宽度
-
-
-
-### redirectLocalRootUrl：重定向本地资源根目录
-
-功能：如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中，这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
-
-> 此插件默认关闭，需手动开启。
-
-
-
-### blockSideBySide：并列显示活动块
-
-功能：活动块默认是上下显示，改为并列显示。
+Function: The active block is displayed vertically by default, changed to side by side.
 
 ![blockSideBySide](./assets/blockSideBySide.png)
 
-> 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突。
+> Note: This function is achieved by injecting CSS, which may conflict with the theme you are using.
 
+### scrollBookmarker: Bookmark Manager
 
+Usage:
 
-### scrollBookmarker： 书签管理器
+1. Use alt + click on the text content to bookmark.
+2. This will automatically bring up the bookmark manager. Click on the bookmark above to jump to the bookmark.
 
-使用方式：
+Show/Hide Bookmark Manager: Right-click menu -> Often Used Plugins -> Secondary plugins -> Bookmark Manager
 
-1. 使用 alt+click 正文内容，打上书签。
-2. 此时会自动调出书签管理器，点击上面的书签，即可跳转到书签。
+### cipher: Encrypt File
 
-显示/隐藏书签管理器：右键菜单 -> 常用插件 -> 二级插件 -> 书签管理器
+Usage: Right-click menu -> Less Used Plugins -> Encrypt File.
 
+### truncate_text: Hide Content to Improve Large File Rendering Performance
 
+Function: The rendering performance of large files in Typora is very poor. Use this plugin to temporarily hide content (just hide the display, not modify the file) to improve rendering performance. It can also be used to prevent peeking.
 
-### cipher：加密文件
+Usage: Right-click menu -> Less Used Plugins -> Text Truncate.
 
-使用方式：右键菜单 -> 少用插件 -> 加密文件。
+The included functions are as follows:
 
+- Hide the front part: Hide the text in the front part, leaving only the last 80 paragraphs.
+- Redisplay: Redisplay all previously hidden text.
+- Display according to the current visible range: Display text according to the current visible range.
 
+> Principle: By setting the display style of DOM elements to none, elements are hidden so that they do not occupy a position in the rendering tree, and operations on hidden elements do not cause reflow of other elements.
 
-### truncate_text：暂时隐藏内容，提高大文件渲染性能
+### ripgrep: Use Ripgrep to Search Files
 
-功能：大文件在 Typora 的渲染性能很糟糕，用此插件暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。也可以用于防偷窥。
+Typora comes with ripgrep. This plugin supports using the built-in ripgrep to search files.
 
-使用方式：右键菜单 -> 少用插件 -> 文本截断。
+> To use this plugin, you need to be familiar with the ripgrep tool. This plugin is disabled by default and needs to be manually enabled.
 
-包含的功能如下：
+### sortableOutline：Drag & drop outline to rearrange
 
-- 隐藏最前面：隐藏最前面的文本段，只留下最后 80 段。
-- 重新显示：重新显示之前隐藏的所有文本段。
-- 根据当前可视范围显示：根据当前可视范围显示文本段。
+> This plugin is disabled by default and needs to be manually enabled.
 
-> 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
+### cursor_history：Cursor History
 
+- hotkey for the previous cursor: alt+←
+- hotkey for the next cursor: alt+→
 
+> This plugin is disabled by default and needs to be manually enabled.
 
-### ripgrep：使用 ripgrep 搜索文件
+### static_markers：Static Markers
 
-Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜索。
+Say goodbye to distracting format refreshes. This plugin keeps your Markdown syntax markers always visible and static.
 
-> 使用此插件需要您熟悉 ripgrep 工具。此插件默认关闭，需手动开启。
+This plugin disables the auto-hiding feature for syntax markers in WYSIWYG mode. It ensures that all Markdown characters—like **, ##, and _—remain persistently visible around your text, just as they would in a source code editor.
 
+> This plugin is disabled by default and needs to be manually enabled.
 
+### hotkeys: Hotkey Registration Center (Advanced)
 
-### sortableOutline：拖动大纲标题，调整文章结构
+> This plugin is an advanced plugin, only available to users with a JavaScript background.
 
-> 此插件默认关闭，需手动开启。
+Function: Bind hotkeys to [any plugin system function] or [any custom function] in a declarative form.
 
+### quickButton: Add Function Buttons to the Bottom Right Corner (Advanced)
 
+> This plugin is an advanced plugin, only available to users with a JavaScript background.
 
-### cursor_history：光标跳转
+Function: Similar to hotkeys, set function buttons for [any plugin system function] in a declarative form.
 
-- 上一个光标历史的快捷键：alt+←
-- 下一个光标历史的快捷键：alt+→
+### custom: Open Platform, User-Defined Plugins (Advanced)
 
-> 此插件默认关闭，需手动开启。
+> This plugin is an advanced plugin, only available to users with a JavaScript background.
 
+Function: Provide open capabilities, support users to write their own plugins.
 
+For specific usage, please refer to [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README.md).
 
-### static_markers：Markdown 标记常显
+### json_rpc: External Manipulation of Typora (Advanced)
 
-告别格式刷新的干扰，让您的 Markdown 语法标记 **始终可见、保持静态**。
+Function: Expose all capabilities including the typora-plugin in the form of `json-rpc` for external manipulation of Typora.
 
-禁用所见即所得模式下的语法标记自动隐藏功能，让 **、##、_ 等所有 Markdown 标记像在源码模式中一样，永远清晰地展示在您的文本周围。
+For specific usage, please refer to [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/json_rpc/README.md).
 
-> 此插件默认关闭，需手动开启。
+> This plugin is an advanced plugin, only available to developers. After enabling this plugin, the external will have both node and browser environments, which can fully control the computer, so if you are not a developer, please do not enable it.
 
+### article_uploader: Upload Blog Articles
 
+Function: The user clicks or uses a shortcut key to trigger the automatic publishing function of the current article. The program automatically publishes blog articles to major platforms according to user configuration.
 
-### hotkeys：快捷键注册中心（高级）
+For specific usage, refer to: [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/article_uploader/README.md). Taking uploading to CSDN as an example, the GIF is as follows:
 
-> 此插件是高级插件，仅对有 JavaScript 基础的用户开放。
+![CSDN Success Demonstration](https://my-picture-bed1-1321100201.cos.ap-beijing.myqcloud.com/mypictures/CSDN%E6%88%90%E5%8A%9F%E6%BC%94%E7%A4%BA.gif)
 
-功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】绑定快捷键。
 
+## Acknowledgements
 
+- Apache: [ECharts](https://echarts.apache.org/zh/index.html) | [draw.io](https://github.com/jgraph/drawio)
+- MIT: [markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
+- no-licence: [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/)
 
-### quickButton：于右下角添加功能按钮（高级）
+## Conclusion
 
-> 此插件是高级插件，仅对有 JavaScript 基础的用户开放。
+**This project follows the MIT license, feel free to enjoy it.**
 
-功能和 hotkeys 类似，以声明的形式，为【任意插件系统函数】设置快捷按钮。
-
-
-
-### custom：开放平台，用户自定义插件（高级）
-
-> 此插件是高级插件，仅对有 JavaScript 基础的用户开放。
-
-功能：提供开放能力，支持用户自己写插件。
-
-具体使用请参考 [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README.md)。
-
-
-
-### json_rpc：外部操纵 Typora（高级）
-
-功能：将包括 typora-plugin 所有功能在内的一切能力通过 `json-rpc` 的形式暴露出去，以供外部操纵 Typora。
-
-具体使用请参考 [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/json_rpc/README.md)。
-
-> 此插件是高级插件，仅对开发人员开放。开启此插件后，外部将拥有 node、browser 两套环境，能完全控制电脑，因此如果您不是开发人员，请勿开启此插件。
->
-
-
-
-### article_uploader：上传博客文章
-
-功能：用户点击或者使用快捷键触发当前文章的自动发布功能，程序根据用户配置自动发布博客文章到各大平台
-
-具体使用参考： [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/article_uploader/README.md)。以上传到 CSDN 为例，Gif 图如下：
-
-![CSDN 成功演示](https://my-picture-bed1-1321100201.cos.ap-beijing.myqcloud.com/mypictures/CSDN%E6%88%90%E5%8A%9F%E6%BC%94%E7%A4%BA.gif)
-
-
-
-## 致谢
-
-- Apache：[ECharts](https://echarts.apache.org/zh/index.html) | [draw.io](https://github.com/jgraph/drawio)
-- MIT：[markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
-- no-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/harttle/md-padding)
-
-
-
-## 结语
-
-**本项目遵循 MIT 协议，请自由地享受。**
-
-如果对各位有用的话，欢迎 star ⭐，欢迎推荐给你志同道合的朋友使用。
+If you find it useful, please give it a star ⭐, and feel free to recommend it to like-minded friends.
 
