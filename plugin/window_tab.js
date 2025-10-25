@@ -72,11 +72,6 @@ class windowTabBarPlugin extends BasePlugin {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial");
             const isHeaderReady = () => this.utils.isBetaVersion ? document.querySelector("header").getBoundingClientRect().height : true
             const adjustTop = () => setTimeout(() => {
-                // Adjust z-index of the notification component to prevent it from being obscured by the tab.
-                const container = document.querySelector(".md-notification-container");
-                if (container) {
-                    container.style.zIndex = "99999";
-                }
                 if (!this.config.HIDE_WINDOW_TITLE_BAR) {
                     const { height, top } = document.querySelector("header").getBoundingClientRect();
                     this.entities.windowTab.style.top = height + top + "px";
@@ -91,8 +86,6 @@ class windowTabBarPlugin extends BasePlugin {
                 const closeButton = ev.target.closest(".close-button");
                 const tabContainer = ev.target.closest(".tab-container");
                 if (!closeButton && !tabContainer) return;
-                ev.stopPropagation();
-                ev.preventDefault();
                 const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
                 const idx = parseInt(tab.dataset.idx)
                 if (this.config.CTRL_CLICK_TO_NEW_WINDOW && this.utils.metaKeyPressed(ev)) {
@@ -358,7 +351,7 @@ class windowTabBarPlugin extends BasePlugin {
             )
         }
         const adjustQuickOpen = () => {
-            const open = (item, ev) => {
+            const openTab = (item, ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
                 const path = item.dataset.path;
@@ -368,20 +361,22 @@ class windowTabBarPlugin extends BasePlugin {
                 } else {
                     this.utils.openFile(path);
                 }
-                $("#typora-quick-open:visible").hide().length && File.isMac && bridge.callHandler("quickOpen.stopQuery")
+                if (File.isMac && $("#typora-quick-open:visible").hide().length) {
+                    bridge.callHandler("quickOpen.stopQuery")
+                }
             }
             document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
                 const target = ev.target.closest(".typora-quick-open-item");
                 if (!target) return;
                 // Changed the original click behavior to ctrl+click.
                 if (this.utils.metaKeyPressed(ev)) return;
-                open(target, ev);
+                openTab(target, ev)
             }, true)
 
             document.querySelector("#typora-quick-open-input > input").addEventListener("keydown", ev => {
                 if (ev.key === "Enter") {
                     const ele = document.querySelector(".typora-quick-open-item.active");
-                    ele && open(ele, ev);
+                    if (ele) openTab(ele, ev)
                 }
             }, true)
         }
