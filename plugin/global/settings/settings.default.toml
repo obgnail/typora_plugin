@@ -1825,6 +1825,12 @@ HOTKEY_FILTER_INVISIBLE_CHARACTERS = ""
 # 快捷键：添加结尾空格 (根据严格的 Markdown 换行语法，需要在结尾添加两个空格以表示换行)
 HOTKEY_TRAILING_WHITE_SPACE = ""
 
+# 快捷键：图片转为 Base64
+HOTKEY_CONVERT_IMAGE_TO_BASE64 = ""
+
+# 快捷键：所有图片转为 Base64
+HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64 = ""
+
 
 ################### custom ###################
 [custom]
@@ -1988,7 +1994,7 @@ COMMANDS = [
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", callback = "() => this.utils.dateTimeFormat(new Date(), 'yyyy/MM/dd')" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", callback = "() => this.utils.dateTimeFormat(new Date(), 'HH:mm:ss')" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Weekday", callback = "() => this.utils.dateTimeFormat(new Date(), 'dddd')" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", callback = "() => new Date().getTime().toString()" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", callback = "() => Date.now().toString()" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "UUID", callback = "() => this.utils.getUUID()" },
     # 行内公式内才可使用
     { enable = true, type = "snippet", icon = "🧩", keyword = "alpha", hint = "α", scope = "inline_math", callback = "\\alpha " },

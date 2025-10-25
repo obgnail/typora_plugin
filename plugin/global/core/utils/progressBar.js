@@ -39,7 +39,7 @@ class progressBar {
 
     _fake = ({ timeout, isDone = this._timeout(), strategy = this._fade, animateTo100 = true, interval = 50 }) => new Promise(resolve => {
         let timer;
-        const start = new Date().getTime();
+        const start = Date.now()
         const end = start + timeout;
         const _stop = async ok => {
             if (ok && animateTo100) {
@@ -50,7 +50,7 @@ class progressBar {
             resolve(ok);
         }
         timer = setInterval(() => {
-            const now = new Date().getTime();
+            const now = Date.now()
             if (isDone() === true) {
                 _stop(true);
             } else if (now > end) {
@@ -63,8 +63,8 @@ class progressBar {
     })
 
     _timeout = (timeout = 30 * 1000) => {
-        const start = new Date().getTime();
-        return () => new Date().getTime() - start > timeout;
+        const endTime = timeout + Date.now()
+        return () => Date.now() > endTime
     }
 
     _linear = (start, end, now, timeout) => Math.min((now - start) * 100 / timeout, 99)

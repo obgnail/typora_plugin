@@ -122,6 +122,16 @@ class utils {
         return { ok: state === "completed", filepath: PATH.join(folder, filename) }
     }
 
+    // MIME type detection should use magic number checks or a dedicated library.
+    // Manually checking magic numbers is impractical and a library adds too much overhead.
+    // This uses a simplified approach. Modern browsers can often infer the subtype reliably.
+    static convertImageToBase64 = (bin) => {
+        const prefix = bin.slice(0, 5).toString()
+        const mime = ["<svg", "<?xml"].some(e => prefix.startsWith(e)) ? "image/svg+xml" : "image"
+        const base64 = bin.toString("base64")
+        return `data:${mime};base64,${base64}`
+    }
+
 
     ////////////////////////////// event //////////////////////////////
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
@@ -1383,9 +1393,9 @@ class utils {
             })
         }
 
-        const start = new Date().getTime()
+        const endTime = 10000 + Date.now()
         const timer = setInterval(() => {
-            if (new Date().getTime() - start > 10000) {
+            if (Date.now() > endTime) {
                 console.error("decorate timeout!", objGetter, attr, beforeFn, afterFn, modifyResult)
                 clearInterval(timer)
                 return
@@ -1400,9 +1410,9 @@ class utils {
 
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
         let run = false
-        const start = new Date().getTime()
+        const endTime = timeout + Date.now()
         const timer = setInterval(() => {
-            if (new Date().getTime() - start > timeout) {
+            if (Date.now() > endTime) {
                 run = runWhenTimeout
                 if (!run) {
                     clearInterval(timer)

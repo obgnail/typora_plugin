@@ -292,18 +292,7 @@ yay -S typora-plugin
 - `$d`：当前文件的所属目录
 - `$m`：当前挂载的根目录
 
-支持内建命令，方便快速调用。个人可按需自定义配置文件里的 `BUILTIN` 选项。
 
-```toml
-# 默认的内建命令
-BUILTIN = [
-    { name = "", shell = "cmd/bash", cmd = "" },
-    { name = "Explorer", shell = "powershell", hotkey = "ctrl+alt+e", cmd = "explorer $d" },
-    { name = "Vscode", shell = "cmd/bash",  cmd = "code $f" },
-    { name = "WT", shell = "cmd/bash",  cmd = "cd $d && wt" },
-    { name = "GitCommit", shell = "cmd/bash",  cmd = 'cd $m && git add . && git commit -m "update"' },
-]
-```
 
 ![commander](assets/commander.gif)
 
@@ -650,15 +639,6 @@ LIST = [
 功能：如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中，这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
 
 > 此插件默认关闭，需手动开启。
-
-使用此插件前需要设置如下配置选项：
-
-```toml
-# 资源根目录，支持绝对路径(如D:\\tmp\\img)和相对路径(如.\\assets)，填写时请注意转义反斜线（若为空，则此插件失效）
-root = "./"
-# 过滤的正则表达式：只有文件路径命中filter_regexp匹配的文件才使用此插件（若为空，则全部文件都使用此插件）
-filter_regexp = ""
-```
 
 
 

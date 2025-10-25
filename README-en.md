@@ -110,8 +110,8 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 
 4. Go to the folder `A/plugin/bin/`.
 
-   - Windows: Right-Click on the file `installw_windows.ps1`. Select 'Run with PowerShell'. 
-   - Linux: Run `install_linux.sh` as administrator. 
+   - Windows: Right-Click on the file `installw_windows.ps1`. Select 'Run with PowerShell'.
+   - Linux: Run `install_linux.sh` as administrator.
 
 5. Verification: Restart Typora, right-click in the main text area, and if you see the `Often Used Plugins` column, everything is fine.
 
@@ -280,18 +280,7 @@ Built-in environment variables:
 - `$d`: Directory of the current file
 - `$m`: Mounted root directory
 
-Supports built-in commands for quick calls. Users can customize the `BUILTIN` option in the configuration file as needed.
 
-```toml
-# Default built-in commands
-BUILTIN = [
-    { name = "", shell = "cmd/bash", cmd = "" },
-    { name = "Explorer", shell = "powershell", hotkey = "ctrl+alt+e", cmd = "explorer $d" },
-    { name = "Vscode", shell = "cmd/bash",  cmd = "code $f" },
-    { name = "WT", shell = "cmd/bash",  cmd = "cd $d && wt" },
-    { name = "GitCommit", shell = "cmd/bash",  cmd = 'cd $m && git add . && git commit -m "update"' },
-]
-```
 
 ![commander](assets/commander.gif)
 
@@ -575,14 +564,7 @@ Function: If you mainly use Obsidian or Joplin to manage files and occasionally 
 
 > This plugin is disabled by default and needs to be manually enabled.
 
-Before using this plugin, you need to set the following configuration options:
 
-```toml
-# Resource root directory, supports absolute paths (such as D:\\tmp\\img) and relative paths (such as .\\assets). Pay attention to escaping backslashes when filling in (if empty, this plugin is invalid)
-root = "./"
-# Filter regular expression: only files whose paths match filter_regexp will use this plugin (if empty, all files will use this plugin)
-filter_regexp = ""
-```
 
 ### blockSideBySide: Display Active Blocks Side by Side
 

@@ -33,8 +33,9 @@ class exportEnhancePlugin extends BasePlugin {
                 } else {
                     imagePath = this.utils.Package.Path.resolve(dirname, decodeURIComponent(src))
                 }
-                const base64Data = await this.toBase64(imagePath)
-                return origin.replace(src, base64Data)
+                const bin = await this.utils.Package.Fs.promises.readFile(imagePath)
+                const base64 = this.utils.convertImageToBase64(bin)
+                return origin.replace(src, base64)
             } catch (e) {
                 console.error(`[${this.fixedName}] toBase64 error:`, e)
             }
@@ -65,17 +66,6 @@ class exportEnhancePlugin extends BasePlugin {
             await this.utils.sleep(100)
         }
         return imageMap
-    }
-
-    toBase64 = async imagePath => {
-        const data = await this.utils.Package.Fs.promises.readFile(imagePath)
-        // MIME type detection should use magic number checks or a dedicated library.
-        // Manually checking magic numbers is impractical and a library adds too much overhead.
-        // This uses a simplified approach. Modern browsers can often infer the subtype reliably.
-        const prefix = data.slice(0, 5).toString()
-        const mime = ["<svg", "<?xml"].some(e => prefix.startsWith(e)) ? "image/svg+xml" : "image"
-        const base64 = data.toString("base64")
-        return `data:${mime};base64,${base64}`
     }
 
     getDynamicActions = () => this.i18n.fillActions([

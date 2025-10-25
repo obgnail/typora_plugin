@@ -1,3 +1,9 @@
-*.sh  text eol=lf
-*.ps1 text eol=crlf
-*.{toml,json} text eol=lf
+* text=auto eol=lf
+
+*.ps1 eol=crlf
+*.sh eol=lf
+
+*.{js,cjs,mjs,css,html,toml,json,md} eol=lf
+.{gitignore,gitattributes} eol=lf
+
+*.{png,jpg,jpeg,gif,svg} binary

@@ -72,11 +72,6 @@ class windowTabBarPlugin extends BasePlugin {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial");
             const isHeaderReady = () => this.utils.isBetaVersion ? document.querySelector("header").getBoundingClientRect().height : true
             const adjustTop = () => setTimeout(() => {
-                // Adjust z-index of the notification component to prevent it from being obscured by the tab.
-                const container = document.querySelector(".md-notification-container");
-                if (container) {
-                    container.style.zIndex = "99999";
-                }
                 if (!this.config.HIDE_WINDOW_TITLE_BAR) {
                     const { height, top } = document.querySelector("header").getBoundingClientRect();
                     this.entities.windowTab.style.top = height + top + "px";
@@ -91,8 +86,6 @@ class windowTabBarPlugin extends BasePlugin {
                 const closeButton = ev.target.closest(".close-button");
                 const tabContainer = ev.target.closest(".tab-container");
                 if (!closeButton && !tabContainer) return;
-                ev.stopPropagation();
-                ev.preventDefault();
                 const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
                 const idx = parseInt(tab.dataset.idx)
                 if (this.config.CTRL_CLICK_TO_NEW_WINDOW && this.utils.metaKeyPressed(ev)) {
@@ -358,7 +351,7 @@ class windowTabBarPlugin extends BasePlugin {
             )
         }
         const adjustQuickOpen = () => {
-            const open = (item, ev) => {
+            const openTab = (item, ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
                 const path = item.dataset.path;
@@ -368,20 +361,22 @@ class windowTabBarPlugin extends BasePlugin {
                 } else {
                     this.utils.openFile(path);
                 }
-                $("#typora-quick-open:visible").hide().length && File.isMac && bridge.callHandler("quickOpen.stopQuery")
+                if (File.isMac && $("#typora-quick-open:visible").hide().length) {
+                    bridge.callHandler("quickOpen.stopQuery")
+                }
             }
             document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
                 const target = ev.target.closest(".typora-quick-open-item");
                 if (!target) return;
                 // Changed the original click behavior to ctrl+click.
                 if (this.utils.metaKeyPressed(ev)) return;
-                open(target, ev);
+                openTab(target, ev)
             }, true)
 
             document.querySelector("#typora-quick-open-input > input").addEventListener("keydown", ev => {
                 if (ev.key === "Enter") {
                     const ele = document.querySelector(".typora-quick-open-item.active");
-                    ele && open(ele, ev);
+                    if (ele) openTab(ele, ev)
                 }
             }, true)
         }
@@ -651,29 +646,36 @@ class windowTabBarPlugin extends BasePlugin {
 
     // openFile is a delayed operation, and it needs to wait for content to load before setting scrollTop
     // The problem is that I have no idea when the content is fully loaded
-    // Solution: Poll to set scrollTop, and if scrollTop does not change for 3 consecutive times, it is judged that the content is loaded
+    // Solution: Poll to set scrollTop, and if scrollTop does not change for 5 consecutive times, it is judged that the content is loaded
     // This method is not environmentally friendly and very ugly. However, I can't think of any other way to do it without modifying frame.js.
     _scrollContent = filepath => {
-        const activeTab = this.tabUtil.tabs.find(e => e.path === filepath);
-        if (!activeTab) return;
+        requestAnimationFrame((startTime) => {
+            const activeTab = this.tabUtil.tabs.find(e => e.path === filepath)
+            if (!activeTab) return
 
-        let count = 0;
-        const stopCount = 3;
-        const timeout = 2000;
-        const end = new Date().getTime() + timeout;
-        const scrollTop = activeTab.scrollTop;
-        const _timer = setInterval(() => {
-            const filePath = this.utils.getFilePath();
-            if (filePath === activeTab.path && this.entities.content.scrollTop !== scrollTop) {
-                this.entities.content.scrollTop = scrollTop;
-                count = 0;
-            } else {
-                count++;
+            let lastScrollHeight = -1
+            let count = 0
+            const stopCount = 5
+            const stopTime = startTime + 2000
+            const scrollTop = activeTab.scrollTop
+            const contentEl = this.entities.content
+            const pollAndScroll = (timestamp) => {
+                if (this.utils.getFilePath() === activeTab.path && contentEl.scrollHeight !== lastScrollHeight) {
+                    lastScrollHeight = contentEl.scrollHeight
+                    count = 0
+                } else {
+                    count++
+                }
+                if (count >= stopCount || timestamp > stopTime) {
+                    if (this.utils.getFilePath() === activeTab.path) {
+                        requestAnimationFrame(() => contentEl.scrollTop = scrollTop)
+                    }
+                    return
+                }
+                requestAnimationFrame(pollAndScroll)
             }
-            if (count === stopCount || new Date().getTime() > end) {
-                clearInterval(_timer);
-            }
-        }, 70);
+            requestAnimationFrame(pollAndScroll)
+        })
     }
 
     _renderDOM = wantOpenPath => {
@@ -724,29 +726,31 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     openTab = wantOpenPath => {
-        const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config;
-        const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath);
-        if (!include) {
-            // Modify the file path of the current tab when opening in place and no tab exists.
-            if (this.localOpen) {
-                this.tabUtil.currentTab.path = wantOpenPath;
-            } else {
-                const newTab = { path: wantOpenPath, scrollTop: 0 };
-                if (NEW_TAB_POSITION === "end") {
-                    this.tabUtil.tabs.push(newTab);
-                } else if (NEW_TAB_POSITION === "right") {
-                    this.tabUtil.spliceTabs(this.tabUtil.activeIdx + 1, 0, newTab)
+        requestAnimationFrame(() => {
+            const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config
+            const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath)
+            if (!include) {
+                // Modify the file path of the current tab when opening in place and no tab exists.
+                if (this.localOpen) {
+                    this.tabUtil.currentTab.path = wantOpenPath
+                } else {
+                    const newTab = { path: wantOpenPath, scrollTop: 0 }
+                    if (NEW_TAB_POSITION === "end") {
+                        this.tabUtil.tabs.push(newTab)
+                    } else if (NEW_TAB_POSITION === "right") {
+                        this.tabUtil.spliceTabs(this.tabUtil.activeIdx + 1, 0, newTab)
+                    }
                 }
             }
-        }
-        if (0 < MAX_TAB_NUM && MAX_TAB_NUM < this.tabUtil.tabCount) {
-            this.tabUtil.spliceTabs(0, this.tabUtil.tabCount - MAX_TAB_NUM)
-        }
-        this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
-        this.tabUtil.currentTab.timestamp = new Date().getTime();
-        this._showTabBar();
-        this._startCheckTabsInterval();
-        this._renderDOM(wantOpenPath);
+            if (0 < MAX_TAB_NUM && MAX_TAB_NUM < this.tabUtil.tabCount) {
+                this.tabUtil.spliceTabs(0, this.tabUtil.tabCount - MAX_TAB_NUM)
+            }
+            this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath)
+            this.tabUtil.currentTab.timestamp = Date.now()
+            this._showTabBar()
+            this._startCheckTabsInterval()
+            this._renderDOM(wantOpenPath)
+        })
     }
 
     rerenderTabBar = () => {

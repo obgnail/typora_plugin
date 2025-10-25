@@ -1,7 +1,9 @@
 {
   "default": true,
   "extends": null,
-  "MD001": true,
+  "MD001": {
+    "front_matter_title": "^\\s*title\\s*[:=]"
+  },
   "MD003": {
     "style": "consistent"
   },
@@ -16,6 +18,7 @@
   },
   "MD009": {
     "br_spaces": 2,
+    "code_blocks": false,
     "list_item_empty_lines": false,
     "strict": false
   },
@@ -76,7 +79,8 @@
   },
   "MD032": true,
   "MD033": {
-    "allowed_elements": []
+    "allowed_elements": [],
+    "table_allowed_elements": []
   },
   "MD034": true,
   "MD035": {
@@ -156,6 +160,9 @@
       "link",
       "more"
     ]
+  },
+  "MD060": {
+    "style": "any"
   },
   "MD101": {
     "list_items": true

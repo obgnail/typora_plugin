@@ -893,6 +893,8 @@ const SETTING_SCHEMAS = {
             Hotkey("HOTKEY_CONVERT_LF_TO_CRLF"),
             Hotkey("HOTKEY_FILTER_INVISIBLE_CHARACTERS"),
             Hotkey("HOTKEY_TRAILING_WHITE_SPACE"),
+            Hotkey("HOTKEY_CONVERT_IMAGE_TO_BASE64"),
+            Hotkey("HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64"),
         ),
         handleSettingsBox,
     ],

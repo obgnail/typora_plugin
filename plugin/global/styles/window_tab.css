@@ -1,3 +1,7 @@
+.md-notification-container {
+    z-index: 99999 !important;
+}
+
 #plugin-window-tab {
     position: fixed;
     top: 0;
