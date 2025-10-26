@@ -37,7 +37,7 @@ class marpPlugin extends BaseCustomPlugin {
 
     destroy = shadowRoot => shadowRoot.innerHTML = ""
 
-    getVersion = () => "marp-core@3.9.0"
+    getVersion = () => "marp-core@4.1.0"
 
     lazyLoad = () => this.marpPkg = require("./marp.min.js")
 }
