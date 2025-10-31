@@ -329,7 +329,7 @@ class preferencesPlugin extends BasePlugin {
             viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
             viewCustomMarkdownlintRules: () => this.utils.openUrl("https://github.com/obgnail/markdownlint-custom-rules"),
             viewCodeMirrorKeymapsManual: () => this.utils.openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
-            viewVitePressLineHighlighting: ()=> this.utils.openUrl("https://vitepress.dev/guide/markdown#line-highlighting-in-code-blocks"),
+            viewVitePressLineHighlighting: () => this.utils.openUrl("https://vitepress.dev/guide/markdown#line-highlighting-in-code-blocks"),
             viewAbcVisualOptionsHelp: () => this.utils.openUrl("https://paulrosen.github.io/abcjs/visual/render-abc-options.html"),
             chooseEchartsRenderer: () => this.utils.openUrl("https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/"),
             viewArticleUploaderReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),
@@ -340,6 +340,27 @@ class preferencesPlugin extends BasePlugin {
             backupSettings: async () => this.utils.settings.backupSettingFile(),
             openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
             invokeMarkdownLintSettings: async () => this.utils.callPluginFunction("markdownLint", "settings"),
+            installPlantUMLServer: async () => {
+                const actionFields = [
+                    { key: "viewWebsite", type: "action", label: "Official Website" },
+                    { key: "viewDockerHub", type: "action", label: "Docker Hub" },
+                    { key: "viewGithub", type: "action", label: "Github" },
+                ]
+                const op = {
+                    title: this.i18n._t("plantUML", "$label.installPlantUMLServer"),
+                    schema: [
+                        { fields: [{ key: "dockerCommand", type: "textarea", readonly: true, rows: 3 }], title: "Run the server with Docker" },
+                        { fields: actionFields, title: "Help" },
+                    ],
+                    data: { dockerCommand: "docker pull plantuml/plantuml-server:jetty\ndocker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty" },
+                    actions: {
+                        viewDockerHub: () => this.utils.openUrl("https://hub.docker.com/r/plantuml/plantuml-server"),
+                        viewGithub: () => this.utils.openUrl("https://github.com/plantuml/plantuml-server"),
+                        viewWebsite: () => this.utils.openUrl("https://plantuml.com/en/starting"),
+                    }
+                }
+                await this.utils.formDialog.modal(op)
+            },
             restoreSettings: consecutive(async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearSettings(fixedName)

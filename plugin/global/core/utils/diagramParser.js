@@ -133,17 +133,17 @@ class diagramParser {
         if (error instanceof Error) {
             return this.utils.escape(error.stack)
         }
-        const { errorLine, reason } = error
+        const { errorLine, reason } = error || {}
         let msg = errorLine ? this.i18n.t("global", "error.atLine", { errorLine }) : ''
         if (reason instanceof Error) {
             msg += "\n" + this.utils.escape(reason.stack)
         } else if (reason) {
-            msg += `: ${reason}`
+            msg += "\n" + this.utils.escape(reason.toString())
         }
-        return msg || error.toString()
+        return msg || this.utils.escape(error.toString())
     }
 
-    whenCantDraw = async (cid, lang, $pre, content, error) => {
+    whenCannotDraw = async (cid, lang, $pre, content, error) => {
         if (!error) {
             $pre.removeClass("md-fences-advanced")
             $pre.children(".md-diagram-panel").remove()
@@ -210,7 +210,7 @@ class diagramParser {
         try {
             await parser.renderFunc(cid, content, $pre, lang);
         } catch (error) {
-            await this.whenCantDraw(cid, lang, $pre, content, error);
+            await this.whenCannotDraw(cid, lang, $pre, content, error)
         }
     }
 

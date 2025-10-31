@@ -1190,7 +1190,20 @@
     "error.messingSource": "缺失必须的配置项: source",
     "error.getFileFailedFromLocal": "从本地读取 .drawio 源文件失败",
     "error.getFileFailedFromNetwork": "从网络读取 .drawio 源文件失败",
-    "$label.RESOURCE_URI": "Viewer URL"
+    "$label.RESOURCE_URI": "Viewer URL",
+    "$label.SERVER_TIMEOUT": "服务超时时间",
+    "$label.MEMORIZED_URL_COUNT": "缓存数量"
+  },
+  "plantUML": {
+    "pluginName": "PlantUML",
+    "$label.SERVER_URL": "渲染服务 URL",
+    "$label.OUTPUT_FORMAT": "输出格式",
+    "$label.SERVER_TIMEOUT": "服务超时时间",
+    "$label.MEMORIZED_URL_COUNT": "缓存数量",
+    "$label.installPlantUMLServer": "安装 PlantUML 渲染服务",
+    "$option.OUTPUT_FORMAT.svg": "SVG",
+    "$option.OUTPUT_FORMAT.png": "PNG",
+    "$option.OUTPUT_FORMAT.txt": "TXT"
   },
   "marp": {
     "pluginName": "Marp"

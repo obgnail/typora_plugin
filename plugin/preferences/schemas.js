@@ -207,6 +207,9 @@ const OPTIONS = {
         RENDERER: ["svg", "canvas"],
         EXPORT_TYPE: ["svg", "png", "jpg"],
     },
+    plantUML: {
+        OUTPUT_FORMAT: ["svg", "png", "txt"],
+    },
     imageReviewer: {
         operations: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterFall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fixScreen", "autoSize", "restore", "info", "dummy"],
         tool_position: ["bottom", "top"],
@@ -1302,7 +1305,23 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("advanced"),
             Text("RESOURCE_URI"),
+            Number("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
+            Number("MEMORIZED_URL_COUNT", { min: 1 }),
         ),
+        handleSettingsBox,
+    ],
+    plantUML: [
+        customPluginLiteBasePropBox,
+        UntitledBox(
+            Text("SERVER_URL"),
+            Select("OUTPUT_FORMAT", OPTIONS.plantUML.OUTPUT_FORMAT),
+            Number("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
+            Number("MEMORIZED_URL_COUNT", { min: 1 }),
+            Action("installPlantUMLServer"),
+        ),
+        langModeBox,
+        chartStyleBox,
+        TextareaBox("TEMPLATE"),
         handleSettingsBox,
     ],
     marp: [

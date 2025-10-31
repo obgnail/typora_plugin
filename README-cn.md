@@ -1,4 +1,4 @@
-简体中文 | [English](https://github.com/obgnail/typora_plugin/blob/master/README.md)
+[English](https://github.com/obgnail/typora_plugin/blob/master/README.md) | 简体中文
 
 <div align="center">
     <h1>Typora Plugin</h1>
@@ -42,41 +42,42 @@
 | 23   | calendar                | 提供 tui.calendar 组件支持           |          |
 | 24   | wavedrom                | 提供 wavedrom 组件支持               |          |
 | 25   | marp                    | 提供 marp 组件支持                   |          |
-| 26   | callouts                | 提供 callouts 支持                   |          |
-| 27   | text_stylize            | 文字风格化                           |          |
-| 28   | read_only               | 只读模式                             |          |
-| 29   | blur                    | 模糊模式                             |          |
-| 30   | kanban                  | 看板                                 |          |
-| 31   | timeline                | 时间线                               |          |
-| 32   | chat                    | 聊天                                 |          |
-| 33   | file_counter            | 显示目录下的文件数                   |          |
-| 34   | auto_number             | 章节、表格、图片、代码块等自动编号   |          |
-| 35   | imageReviewer           | 图片查看器                           |          |
-| 36   | chineseSymbolAutoPairer | 中文符号自动补全                     |          |
-| 37   | resize_table            | 调整表格行高列宽                     |          |
-| 38   | resize_image            | 调整图片显示大小                     |          |
-| 39   | export_enhance          | 导出 HTML 时避免图片丢失             |          |
-| 40   | markdownLint            | markdown 格式检查                    |          |
-| 41   | go_top                  | 一键到文章顶部、底部                 |          |
-| 42   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能     | ×        |
-| 43   | dark                    | 夜间模式                             |          |
-| 44   | no_image                | 无图模式                             |          |
-| 45   | updater                 | 一键升级插件                         |          |
-| 46   | easy_modify             | 编辑工具                             |          |
-| 47   | editor_width_slider     | 写作区宽度调整                       |          |
-| 48   | redirectLocalRootUrl    | 重定向本地资源根目录                 | ×        |
-| 49   | blockSideBySide         | 并列显示活动块                       | ×        |
-| 50   | scrollBookmarker        | 书签管理器                           | ×        |
-| 51   | cipher                  | 加密文件                             | ×        |
-| 52   | ripgrep                 | 使用 ripgrep 搜索文件                | ×        |
-| 53   | article_uploader        | 一键上传博客到支持的所有平台         | ×        |
-| 54   | sortableOutline         | 拖动大纲标题，调整文章结构           | ×        |
-| 55   | cursor_history          | 光标跳转                             | ×        |
-| 56   | static_markers          | Markdown 标记常显                    | ×        |
-| 57   | custom                  | 开放平台，用户自定义插件（高级）     |          |
-| 58   | hotkeys                 | 快捷键注册中心（高级）               |          |
-| 59   | quickButton             | 于右下角添加功能按钮（高级）         |          |
-| 60   | json_rpc                | 外部操纵 Typora（高级）              | ×        |
+| 26   | plantUML                | 提供 PlantUML 组件支持               | ×        |
+| 27   | callouts                | 提供 callouts 支持                   |          |
+| 28   | text_stylize            | 文字风格化                           |          |
+| 29   | read_only               | 只读模式                             |          |
+| 30   | blur                    | 模糊模式                             |          |
+| 31   | kanban                  | 看板                                 |          |
+| 32   | timeline                | 时间线                               |          |
+| 33   | chat                    | 聊天                                 |          |
+| 34   | file_counter            | 显示目录下的文件数                   |          |
+| 35   | auto_number             | 章节、表格、图片、代码块等自动编号   |          |
+| 36   | imageReviewer           | 图片查看器                           |          |
+| 37   | chineseSymbolAutoPairer | 中文符号自动补全                     |          |
+| 38   | resize_table            | 调整表格行高列宽                     |          |
+| 39   | resize_image            | 调整图片显示大小                     |          |
+| 40   | export_enhance          | 导出 HTML 时避免图片丢失             |          |
+| 41   | markdownLint            | markdown 格式检查                    |          |
+| 42   | go_top                  | 一键到文章顶部、底部                 |          |
+| 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能     | ×        |
+| 44   | dark                    | 夜间模式                             |          |
+| 45   | no_image                | 无图模式                             |          |
+| 46   | updater                 | 一键升级插件                         |          |
+| 47   | easy_modify             | 编辑工具                             |          |
+| 48   | editor_width_slider     | 写作区宽度调整                       |          |
+| 49   | redirectLocalRootUrl    | 重定向本地资源根目录                 | ×        |
+| 50   | blockSideBySide         | 并列显示活动块                       | ×        |
+| 51   | scrollBookmarker        | 书签管理器                           | ×        |
+| 52   | cipher                  | 加密文件                             | ×        |
+| 53   | ripgrep                 | 使用 ripgrep 搜索文件                | ×        |
+| 54   | article_uploader        | 一键上传博客到支持的所有平台         | ×        |
+| 55   | sortableOutline         | 拖动大纲标题，调整文章结构           | ×        |
+| 56   | cursor_history          | 光标跳转                             | ×        |
+| 57   | static_markers          | Markdown 标记常显                    | ×        |
+| 58   | custom                  | 开放平台，用户自定义插件（高级）     |          |
+| 59   | hotkeys                 | 快捷键注册中心（高级）               |          |
+| 60   | quickButton             | 于右下角添加功能按钮（高级）         |          |
+| 61   | json_rpc                | 外部操纵 Typora（高级）              | ×        |
 
 > 如果有需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果觉得本项目对您有帮助，请不吝点亮一个 Star ⭐！
 
@@ -445,6 +446,21 @@ LIST = [
 
 
 
+## plantUML：提供 PlantUML 组件支持
+
+使用方式：右键菜单 -> 常用插件 -> 二级插件 -> PlantUML
+
+![plantUML](./assets/plantUML.png)
+
+由于 plantUML 是 B/S 架构，需要用户提供渲染服务器。建议使用 Docker 安装渲染服务器：
+
+```bash
+docker pull plantuml/plantuml-server:jetty
+docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
+```
+
+
+
 ### callouts：  提供 callouts 支持
 
 使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Callouts
@@ -767,6 +783,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 ## 致谢
 
+- GPL: [PlantUML](https://plantuml.com/)
 - Apache：[ECharts](https://echarts.apache.org/zh/index.html) | [draw.io](https://github.com/jgraph/drawio)
 - MIT：[markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
 - no-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/harttle/md-padding)

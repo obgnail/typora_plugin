@@ -1,7 +1,13 @@
 class drawIOPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
-    init = () => this.defaultConfig = this._getDefaultConfig()
+    init = () => {
+        this.defaultConfig = this._getDefaultConfig()
+        this._memorizedFetch = this.utils.memoizeLimited(async url => {
+            const resp = await this.utils.fetch(url, { timeout: this.config.SERVER_TIMEOUT })
+            return resp.text()
+        }, this.config.MEMORIZED_URL_COUNT)
+    }
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
@@ -68,12 +74,6 @@ class drawIOPlugin extends BaseCustomPlugin {
     }
 
     _refresh = this.utils.debounce(() => window.GraphViewer.processElements(), 100)
-
-    _memorizedFetch = this.utils.memorize(async url => {
-        console.debug(`memorized fetch url: ${url}`)
-        const resp = await this.utils.fetch(url, { timeout: 30 * 1000 })
-        return resp.text()
-    })
 
     _getDefaultConfig = (type = "showOnly") => {
         const config = {

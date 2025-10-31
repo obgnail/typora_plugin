@@ -1,4 +1,4 @@
-[简体中文](https://github.com/obgnail/typora_plugin/blob/master/README-cn.md) | English
+English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/README-cn.md)
 
 <div align="center">
     <h1>Typora Plugin</h1>
@@ -42,41 +42,42 @@
 | 23   | calendar                | Provides tui.calendar support                             |                    |
 | 24   | wavedrom                | Provides WaveDrom support                                 |                    |
 | 25   | marp                    | Provides Marp support                                     |                    |
-| 26   | callouts                | Provides Callouts support                                 |                    |
-| 27   | text_stylize            | Text stylization                                          |                    |
-| 28   | read_only               | Read-only mode                                            |                    |
-| 29   | blur                    | Blur mode                                                 |                    |
-| 30   | kanban                  | Kanban                                                    |                    |
-| 31   | timeline                | Timeline                                                  |                    |
-| 32   | chat                    | Chat                                                      |                    |
-| 33   | file_counter            | Show file count in directory                              |                    |
-| 34   | auto_number             | Auto Numbering                                            |                    |
-| 35   | imageReviewer           | Image reviewer                                            |                    |
-| 36   | chineseSymbolAutoPairer | Automatic completion of Chinese symbols                   |                    |
-| 37   | resize_table            | Adjust table row height and column width                  |                    |
-| 38   | resize_image            | Adjust image display size                                 |                    |
-| 39   | export_enhance          | Avoid image loss when exporting to HTML                   |                    |
-| 40   | markdownLint            | Markdown Lint Check                                       |                    |
-| 41   | go_top                  | One-click to top of the article                           |                    |
-| 42   | truncate_text           | Hide content to improve performance for large files       | ×                  |
-| 43   | dark                    | Dark mode                                                 |                    |
-| 44   | no_image                | No image mode                                             |                    |
-| 45   | updater                 | One-click plugin update                                   |                    |
-| 46   | easy_modify             | Editing tools                                             |                    |
-| 47   | editor_width_slider     | Adjust writing area width                                 |                    |
-| 48   | redirectLocalRootUrl    | Redirect local resource root directory                    | ×                  |
-| 49   | blockSideBySide         | Display active blocks side by side                        | ×                  |
-| 50   | scrollBookmarker        | Bookmark manager                                          | ×                  |
-| 51   | cipher                  | Encrypt files                                             | ×                  |
-| 52   | ripgrep                 | Search files using ripgrep                                | ×                  |
-| 53   | article_uploader        | One-click upload blog to supported platforms              | ×                  |
-| 54   | sortableOutline         | Drag & drop outline to rearrange                          | ×                  |
-| 55   | cursor_history          | Cursor History                                            | ×                  |
-| 56   | static_markers          | Static Markers                                            | ×                  |
-| 57   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
-| 58   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
-| 59   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
-| 60   | json_rpc                | External control of Typora (advanced)                     | ×                  |
+| 26   | plantUML                | Provides plantUML support                                 | ×                  |
+| 27   | callouts                | Provides Callouts support                                 |                    |
+| 28   | text_stylize            | Text stylization                                          |                    |
+| 29   | read_only               | Read-only mode                                            |                    |
+| 30   | blur                    | Blur mode                                                 |                    |
+| 31   | kanban                  | Kanban                                                    |                    |
+| 32   | timeline                | Timeline                                                  |                    |
+| 33   | chat                    | Chat                                                      |                    |
+| 34   | file_counter            | Show file count in directory                              |                    |
+| 35   | auto_number             | Auto Numbering                                            |                    |
+| 36   | imageReviewer           | Image reviewer                                            |                    |
+| 37   | chineseSymbolAutoPairer | Automatic completion of Chinese symbols                   |                    |
+| 38   | resize_table            | Adjust table row height and column width                  |                    |
+| 39   | resize_image            | Adjust image display size                                 |                    |
+| 40   | export_enhance          | Avoid image loss when exporting to HTML                   |                    |
+| 41   | markdownLint            | Markdown Lint Check                                       |                    |
+| 42   | go_top                  | One-click to top of the article                           |                    |
+| 43   | truncate_text           | Hide content to improve performance for large files       | ×                  |
+| 44   | dark                    | Dark mode                                                 |                    |
+| 45   | no_image                | No image mode                                             |                    |
+| 46   | updater                 | One-click plugin update                                   |                    |
+| 47   | easy_modify             | Editing tools                                             |                    |
+| 48   | editor_width_slider     | Adjust writing area width                                 |                    |
+| 49   | redirectLocalRootUrl    | Redirect local resource root directory                    | ×                  |
+| 50   | blockSideBySide         | Display active blocks side by side                        | ×                  |
+| 51   | scrollBookmarker        | Bookmark manager                                          | ×                  |
+| 52   | cipher                  | Encrypt files                                             | ×                  |
+| 53   | ripgrep                 | Search files using ripgrep                                | ×                  |
+| 54   | article_uploader        | One-click upload blog to supported platforms              | ×                  |
+| 55   | sortableOutline         | Drag & drop outline to rearrange                          | ×                  |
+| 56   | cursor_history          | Cursor History                                            | ×                  |
+| 57   | static_markers          | Static Markers                                            | ×                  |
+| 58   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
+| 59   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
+| 60   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
+| 61   | json_rpc                | External control of Typora (advanced)                     | ×                  |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
@@ -411,6 +412,19 @@ Function: Use markdown to create PPT.
 
 Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Marp
 
+## plantUML: Provide PlantUML Support
+
+Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> PlantUML
+
+![plantUML](./assets/plantUML.png)
+
+Due to the B/S architecture of plantUML, users are required to provide a rendering server. Suggest using Docker to install rendering server:
+
+```bash
+docker pull plantuml/plantuml-server:jetty
+docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
+```
+
 ### callouts: Provide Callouts Support
 
 Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Callouts
@@ -665,6 +679,7 @@ For specific usage, refer to: [README.md](https://github.com/obgnail/typora_plug
 
 ## Acknowledgements
 
+- GPL: [PlantUML](https://plantuml.com/)
 - Apache: [ECharts](https://echarts.apache.org/zh/index.html) | [draw.io](https://github.com/jgraph/drawio)
 - MIT: [markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
 - no-licence: [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/)

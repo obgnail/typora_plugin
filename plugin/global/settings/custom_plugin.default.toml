@@ -598,6 +598,7 @@ G2 G2|A2 A2|B2 B2|c3 z|G2 G2|A2 A2|B2 G2|c3 z||
 ```
 """
 
+
 ################### drawIO ###################
 [drawIO]
 # ------------------- 基础 -------------------
@@ -624,6 +625,12 @@ order = 1
 #     1. 下载并保存文件：https://viewer.diagrams.net/js/viewer-static.min.js
 #     2. 将 RESOURCE_URI 修改为本地的文件路径（比如：D:\\tmp\\viewer-static.min.js）
 RESOURCE_URI = "https://viewer.diagrams.net/js/viewer-static.min.js"
+
+# 超时时间（单位：毫秒）
+SERVER_TIMEOUT = 30000
+
+# 缓存的 URL 数量
+MEMORIZED_URL_COUNT = 20
 
 # ------------------- 代码块 -------------------
 # 代码块语言：用于识别代码块的语言标识符
@@ -666,6 +673,70 @@ graphConfig = {
     // If there are multiple pages, use 'page' to switch between them.
     "page": 0,
 }
+```
+"""
+
+
+################### plantUML ###################
+[plantUML]
+# ------------------- 基础 -------------------
+# 启用或禁用插件
+#   true:  启用插件
+#   false: 禁用插件
+enable = false
+
+# 插件名称（为空则使用默认名）
+name = ""
+
+# 插件是否在右键菜单中隐藏
+#   true:  隐藏右键菜单入口
+#   false: 显示右键菜单入口
+hide = false
+
+# 插件在右键菜单中的显示顺序（数值越大越靠后，支持负数）
+order = 1
+
+# ------------------- 渲染服务 -------------------
+# 渲染服务的URL。推荐使用 Docker 安装并启用服务
+#   docker pull plantuml/plantuml-server:jetty
+#   docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
+SERVER_URL = "http://localhost:8080"
+
+# 渲染格式，支持 png、svg、txt
+OUTPUT_FORMAT = "svg"
+
+# 超时时间（单位：毫秒）
+SERVER_TIMEOUT = 30000
+
+# 缓存的 URL 数量
+MEMORIZED_URL_COUNT = 20
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+#   强烈建议不要修改。如果要修改，请同步修改 TEMPLATE 配置项中的语言标识符
+LANGUAGE = "plantuml"
+
+# ------------------- 交互模式 -------------------
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块，允许在图表上进行交互操作
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# ------------------- 图表显示 -------------------
+# 图表默认高度：设置图表渲染后的默认高度
+#   可以使用 CSS 高度值（例如：200px），也可以设置为 "auto" 让高度自适应内容
+DEFAULT_FENCE_HEIGHT = "auto"
+
+# 图表背景颜色：设置图表的背景颜色
+#   例如：transparent 表示透明背景。可以使用 CSS 颜色值，例如：#FFFFFF 或 rgba(255, 255, 255, 0.5)
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """```plantuml
+@startuml
+Bob -> Alice : hello
+@enduml
 ```
 """
 

@@ -135,7 +135,11 @@ module.exports = {
     abc: chartStyles,
     drawIO: {
         ...chartStyles,
-        RESOURCE_URI: url,
+        RESOURCE_URI: [required, url],
+    },
+    plantUML: {
+        ...chartStyles,
+        SERVER_URL: [required, url],
     },
     marp: chartStyles,
     callouts: {

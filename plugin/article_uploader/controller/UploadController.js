@@ -13,27 +13,33 @@ class UploadController {
             csdn: "../uploader/CsdnUploader",
             wordpress: "../uploader/WordpressUploader",
         }
+        this.seleniumSites = ["cnblog", "wordpress"]
 
         this.init();
     }
 
     init = () => {
-        if (!this.options) {
-            const chrome = require('selenium-webdriver/chrome');
-            this.options = new chrome.Options();
-            this.options.addArguments(
-                '--disable-blink-features=AutomationControlled',
-                '--disable-infobars',
-                '--disable-extensions',
-                '--disable-gpu',
-                '--no-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-javascript'
-            );
-        }
-
-        if (this.config.upload.selenium.headless) {
-            this.options.addArguments("--headless");
+        const needSelenium = this.seleniumSites.some(site => {
+            const cfg = this.config.upload[site]
+            return cfg && cfg.enabled
+        })
+        if (needSelenium) {
+            if (!this.options) {
+                const chrome = require('selenium-webdriver/chrome');
+                this.options = new chrome.Options();
+                this.options.addArguments(
+                    '--disable-blink-features=AutomationControlled',
+                    '--disable-infobars',
+                    '--disable-extensions',
+                    '--disable-gpu',
+                    '--no-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-javascript'
+                );
+            }
+            if (this.config.upload.selenium.headless) {
+                this.options.addArguments("--headless");
+            }
         }
     }
 
@@ -61,7 +67,6 @@ class UploadController {
     uploadToAllPlatforms = async (filePath) => {
         const { title, content, extraData } = this.utils.readAndSplitFile(filePath);
         for (let [name, uploader] of this.uploaders) {
-            // 上传全部的时候不上传哪些平台，属于脱裤子放屁的需求
             const c = this.config.upload[name];
             if (c && c.enabled) {
                 await uploader.upload(title, content, extraData, this.options);

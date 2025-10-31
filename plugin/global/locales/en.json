@@ -1190,7 +1190,20 @@
     "error.messingSource": "Missing required configuration item: source",
     "error.getFileFailedFromLocal": "Failed to read .drawio source file from local",
     "error.getFileFailedFromNetwork": "Failed to read .drawio source file from network",
-    "$label.RESOURCE_URI": "Viewer URL"
+    "$label.RESOURCE_URI": "Viewer URL",
+    "$label.SERVER_TIMEOUT": "Timeout",
+    "$label.MEMORIZED_URL_COUNT": "Memorized URL Count"
+  },
+  "plantUML": {
+    "pluginName": "PlantUML",
+    "$label.SERVER_URL": "Server URL",
+    "$label.OUTPUT_FORMAT": "Output Format",
+    "$label.SERVER_TIMEOUT": "Timeout",
+    "$label.MEMORIZED_URL_COUNT": "Memorized URL Count",
+    "$label.installPlantUMLServer": "Install PlantUML Server",
+    "$option.OUTPUT_FORMAT.svg": "SVG",
+    "$option.OUTPUT_FORMAT.png": "PNG",
+    "$option.OUTPUT_FORMAT.txt": "TXT"
   },
   "marp": {
     "pluginName": "Marp"

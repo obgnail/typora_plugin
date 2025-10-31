@@ -11,7 +11,6 @@ class thirdPartyDiagramParser {
     }
 
     /**
-     *  Since JS doesn't support interfaces, interface functions are passed as parameters.
      * @param {string} lang: Language.
      * @param {string} mappingLang: Language to map to.
      * @param {boolean} destroyWhenUpdate: Whether to clear the HTML in the preview before updating.
@@ -62,10 +61,10 @@ class thirdPartyDiagramParser {
         await parser.lazyLoadFunc()
         const $wrap = this.getWrap(parser, $pre)
         try {
-            const meta = parser.beforeRenderFunc
+            const meta = parser.beforeRenderFunc instanceof Function
                 ? parser.beforeRenderFunc(cid, content, $pre)
                 : undefined
-            if (parser.setStyleFunc) {
+            if (parser.setStyleFunc instanceof Function) {
                 parser.setStyleFunc($pre, $wrap, content, meta)
             }
             let instance = this.createOrUpdate(parser, cid, content, $wrap, lang, meta)
@@ -78,8 +77,8 @@ class thirdPartyDiagramParser {
                 parser.instanceMap.set(cid, instance)
             }
         } catch (e) {
-            e.stack += this.getSettingMsg(parser)
-            this.utils.diagramParser.throwParseError(null, e)
+            const reason = `${e.stack}\n\nDiagram Parser Settings:\n${this.getSettingMsg(parser)}`
+            this.utils.diagramParser.throwParseError(null, reason)
         }
     }
 
@@ -106,8 +105,7 @@ class thirdPartyDiagramParser {
                 destroyWhenUpdate: parser.destroyWhenUpdate,
                 containerElement: parser.wrapElement,
             }
-            const msg = Object.entries(settings).map(([k, v]) => `    ${k}: ${v}`).join("\n")
-            parser.settingMsg = `\n\nDiagram Parser Settings:\n${msg}`
+            parser.settingMsg = Object.entries(settings).map(([k, v]) => `    ${k}: ${v}`).join("\n")
         }
         return parser.settingMsg
     }
@@ -115,7 +113,7 @@ class thirdPartyDiagramParser {
     getWrap = (parser, $pre) => {
         let $wrap = $pre.find(parser.checkSelector)
         if ($wrap.length === 0) {
-            const wrap = (parser.wrapElement instanceof Function)
+            const wrap = parser.wrapElement instanceof Function
                 ? parser.wrapElement($pre)
                 : parser.wrapElement
             $wrap = $(wrap)
@@ -158,30 +156,25 @@ class thirdPartyDiagramParser {
         return { height: "", width: "" }
     }
 
-    STYLE_SETTER = css => {
-        return ($pre, $wrap, content) => {
-            const { height, width } = this.getFenceUserSize(content)
-            const customCss = css instanceof Function ? css($pre, $wrap, content) : css
-            const { height: h, width: w, "background-color": bgc, ...args } = customCss || {}
-            $wrap.css({
-                width: width || w || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-                height: height || h || this.defaultHeight,
-                "background-color": bgc || this.defaultBackgroundColor,
-                ...args,
-            })
-        }
+    applyFenceStyles = ($pre, $wrap, userSize = {}, defaultCss = {}) => {
+        const { height: customH, width: customW, "background-color": customBackgroundColor, ...rest } = defaultCss
+        $wrap.css({
+            width: userSize.width || customW || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
+            height: userSize.height || customH || this.defaultHeight,
+            "background-color": customBackgroundColor || this.defaultBackgroundColor,
+            ...rest,
+        })
     }
 
-    STYLE_SETTER_SIMPLE = css => {
+    STYLE_SETTER = css => {
         return ($pre, $wrap, content) => {
-            const { height, width, "background-color": bgc, ...args } = css || {}
-            $wrap.css({
-                width: width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-                height: height || this.defaultHeight,
-                "background-color": bgc || this.defaultBackgroundColor,
-                ...args,
-            })
+            const userSize = this.getFenceUserSize(content)
+            const defaultCss = css instanceof Function ? css($pre, $wrap, content) : css
+            this.applyFenceStyles($pre, $wrap, userSize, defaultCss)
         }
+    }
+    STYLE_SETTER_SIMPLE = css => {
+        return ($pre, $wrap, content) => this.applyFenceStyles($pre, $wrap, {}, css)
     }
 
     process = () => {
