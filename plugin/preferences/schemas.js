@@ -1089,7 +1089,7 @@ const SETTING_SCHEMAS = {
             Switch("HIDE"),
         ),
         TitledBox(
-            Title("hotkey", { dependencies: { $or: [{ $follow: "UPLOAD_CNBLOG_HOTKEY" }, { $follow: "UPLOAD_WORDPRESS_HOTKEY" }, { $follow: "UPLOAD_CSDN_HOTKEY" }] } }),
+            Title("hotkey"),
             Hotkey("UPLOAD_ALL_HOTKEY", { dependencies: { $or: [{ "upload.cnblog.enabled": true }, { "upload.wordpress.enabled": true }, { "upload.csdn.enabled": true }] } }),
             Hotkey("UPLOAD_CNBLOG_HOTKEY", { dependencies: { "upload.cnblog.enabled": true } }),
             Hotkey("UPLOAD_WORDPRESS_HOTKEY", { dependencies: { "upload.wordpress.enabled": true } }),
@@ -1650,4 +1650,44 @@ const SETTING_SCHEMAS = {
     ],
 }
 
-module.exports = JSON.parse(JSON.stringify(SETTING_SCHEMAS))
+const I18N = (schemas) => {
+    const { data: i18nData } = require("../global/core/i18n").i18n
+
+    const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "unit"]
+    const specialProps = ["options", "thMap"]
+    const translateBox = (box, translate) => {
+        const newBox = { ...box }
+        if (newBox.title != null) {
+            newBox.title = translate(newBox.title)
+        }
+        newBox.fields = newBox.fields.map(field => {
+            const newField = { ...field }
+            baseProps.forEach(prop => {
+                if (newField[prop] != null) {
+                    newField[prop] = translate(newField[prop])
+                }
+            })
+            specialProps.forEach(prop => {
+                const propVal = newField[prop]
+                if (propVal != null && typeof propVal === "object" && !Array.isArray(propVal)) {
+                    newField[prop] = Object.fromEntries(Object.entries(propVal).map(([k, v]) => [k, translate(v)]))
+                }
+            })
+            if (newField.nestedBoxes != null) {
+                newField.nestedBoxes = newField.nestedBoxes.map(box => translateBox(box, translate))
+            }
+            return newField
+        })
+        return newBox
+    }
+
+    return Object.fromEntries(
+        Object.entries(schemas).map(([fixedName, boxes]) => {
+            const translate = (key) => i18nData[fixedName][key] || i18nData.settings[key] || key
+            const translatedBoxes = boxes.map(box => translateBox(box, translate))
+            return [fixedName, translatedBoxes]
+        })
+    )
+}
+
+module.exports = I18N(SETTING_SCHEMAS)

@@ -1291,7 +1291,6 @@
   },
   "scrollBookmarker": {
     "pluginName": "書籤管理",
-    "tryClick": "請嘗試 {{click}} 正文內容",
     "$label.modifier_key": "左鍵修飾鍵",
     "$label.auto_popup_modal": "標註書籤的同時彈出管理視窗",
     "$tooltip.modifierKeyExample": "舉例：填入 alt，則 Alt+LClick 標註書籤"

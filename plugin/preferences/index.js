@@ -35,13 +35,14 @@ class preferencesPlugin extends BasePlugin {
             searchInput: document.querySelector(".plugin-preferences-search input"),
             closeButton: document.querySelector(".plugin-preferences-close"),
         }
+        this.SCHEMAS = require("./schemas.js")
+        this.WATCHERS = require("./watchers.js")
+        this.RULES = this.config.VALIDATE_CONFIG_OPTIONS ? require("./rules.js") : {}
+
         this._initHook()
         this._initActionHandlers()
         this._initPreProcessors()
         this._initPostProcessors()
-        this._initSchemas()
-        this._initRules()
-        this._initWatchers()
     }
 
     process = () => {
@@ -180,7 +181,7 @@ class preferencesPlugin extends BasePlugin {
     }
 
     _getFormOptions = async (fixedName) => {
-        const schema = this.SETTING_SCHEMAS[fixedName]
+        const schema = this.SCHEMAS[fixedName]
         if (!schema) return
 
         const data = await this._preprocess(fixedName)
@@ -188,7 +189,7 @@ class preferencesPlugin extends BasePlugin {
             schema,
             data,
             actions: this.ACTION_HANDLERS,
-            rules: this.VALIDATION_RULES[fixedName] || {},
+            rules: this.RULES[fixedName] || {},
             watchers: this.WATCHERS[fixedName] || {},
             controlOptions: { object: { format: this.config.OBJECT_SETTINGS_FORMAT } },
             disableEffect: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
@@ -202,7 +203,7 @@ class preferencesPlugin extends BasePlugin {
             ...Object.keys(this.utils.getAllCustomPluginSettings())
         ]
         const plugins = names
-            .filter(name => this.SETTING_SCHEMAS.hasOwnProperty(name))
+            .filter(name => this.SCHEMAS.hasOwnProperty(name))
             .map(name => {
                 const p = this.utils.tryGetPlugin(name)
                 const pluginName = p ? p.pluginName : this.i18n._t(name, "pluginName")
@@ -221,92 +222,13 @@ class preferencesPlugin extends BasePlugin {
     _preprocess = async (fixedName) => {
         const preprocessors = this.PREPROCESSORS
         const settings = await this._getSettings(fixedName)
-        const promises = this.SETTING_SCHEMAS[fixedName].flatMap(box => {
+        const promises = this.SCHEMAS[fixedName].flatMap(box => {
             return box.fields
                 .filter(field => field.key && preprocessors.hasOwnProperty(`${fixedName}.${field.key}`))
                 .map(async field => await preprocessors[`${fixedName}.${field.key}`](field, settings, box))
         })
         await Promise.all(promises)
         return settings
-    }
-
-    /** Will NOT modify the schemas structure, just i18n */
-    _translateSchema = (schemas) => {
-        const specialProps = ["options", "thMap"]
-        const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail"]
-        const commonProps = [...baseProps, "title", "unit"]
-
-        const i18nData = this.i18n.noConflict.data
-        const commonI18N = Object.fromEntries(
-            commonProps.map(prop => {
-                const val = this.utils.pickBy(i18nData.settings, (val, key) => key.startsWith(`$${prop}.`))
-                return [prop, val]
-            })
-        )
-
-        const translateFieldBaseProps = (field, pluginI18N) => {
-            baseProps.forEach(prop => {
-                const propVal = field[prop]
-                if (propVal != null) {
-                    const commonVal = commonI18N[prop][propVal]
-                    const pluginVal = pluginI18N[propVal]
-                    field[prop] = commonVal || pluginVal
-                }
-            })
-        }
-        const translateFieldSpecialProps = (field, pluginI18N) => {
-            specialProps.forEach(prop => {
-                const propVal = field[prop]
-                if (propVal != null) {
-                    Object.keys(propVal).forEach(k => {
-                        const i18nKey = propVal[k]
-                        propVal[k] = pluginI18N[i18nKey]
-                    })
-                }
-            })
-        }
-        const translateFieldNestedBoxesProp = (field, pluginI18N) => {
-            if (field.nestedBoxes != null) {
-                field.nestedBoxes.forEach(box => translateBox(box, pluginI18N))
-            }
-        }
-        const translateFieldUnitProp = (field) => {
-            if (field.unit != null) {
-                field.unit = commonI18N.unit[field.unit]
-            }
-        }
-        const translateBox = (box, pluginI18N) => {
-            const t = box.title
-            if (t) {
-                const commonVal = commonI18N.title[t]
-                const pluginVal = pluginI18N[t]
-                box.title = commonVal || pluginVal
-            }
-            box.fields.forEach(field => {
-                translateFieldBaseProps(field, pluginI18N)
-                translateFieldSpecialProps(field, pluginI18N)
-                translateFieldNestedBoxesProp(field, pluginI18N)
-                translateFieldUnitProp(field)
-            })
-        }
-
-        Object.entries(schemas).forEach(([fixedName, boxes]) => {
-            const pluginI18N = i18nData[fixedName]
-            boxes.forEach(box => translateBox(box, pluginI18N))
-        })
-    }
-
-    _initSchemas = () => {
-        this.SETTING_SCHEMAS = require("./schemas.js")
-        this._translateSchema(this.SETTING_SCHEMAS)
-    }
-
-    _initRules = () => {
-        this.VALIDATION_RULES = this.config.VALIDATE_CONFIG_OPTIONS ? require("./rules.js") : {}
-    }
-
-    _initWatchers = () => {
-        this.WATCHERS = require("./watchers.js")
     }
 
     _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
@@ -583,7 +505,13 @@ class preferencesPlugin extends BasePlugin {
 
     /** PostProcessors for specific settings in schema */
     _initPostProcessors = () => {
-        this.POSTPROCESSORS = {}
+        this.POSTPROCESSORS = {
+            "plantUML.enable": (value, settings) => {
+                if (value === true) {
+                    this.utils.notification.show(`Plugin Enabled!\nPlease ensure server ${settings.SERVER_URL} is available.`)
+                }
+            },
+        }
     }
 }
 

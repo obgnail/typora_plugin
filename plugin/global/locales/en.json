@@ -1291,7 +1291,6 @@
   },
   "scrollBookmarker": {
     "pluginName": "Bookmarker",
-    "tryClick": "Try to {{click}} the content",
     "$label.modifier_key": "Left Modifier Key",
     "$label.auto_popup_modal": "Auto Popup Management Window",
     "$tooltip.modifierKeyExample": "Example: Enter 'alt' to use Alt+LClick to bookmark"

@@ -1291,7 +1291,6 @@
   },
   "scrollBookmarker": {
     "pluginName": "书签管理",
-    "tryClick": "请尝试 {{click}} 正文内容",
     "$label.modifier_key": "左键修饰键",
     "$label.auto_popup_modal": "标注书签的同时弹出管理窗口",
     "$tooltip.modifierKeyExample": "举例：填入 alt，则 Alt+LClick 标注书签"
