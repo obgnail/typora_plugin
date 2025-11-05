@@ -1,3 +1,11 @@
+#write .CodeMirror-scroll {
+    cursor: default;
+}
+
+#write .CodeMirror-lines {
+    cursor: text;
+}
+
 #write .fence-enhance {
     display: inline-flex;
     flex-direction: row-reverse;
@@ -12,11 +20,11 @@
 .fence-enhance .enhance-btn {
     opacity: ${this.config.BUTTON_OPACITY};
     cursor: pointer;
-    margin-left: ${this.config.BUTTON_MARGIN};
+    padding-left: ${this.config.BUTTON_MARGIN};
 }
 
 .fence-enhance .enhance-btn:last-child {
-    margin-left: 0;
+    padding-left: 0;
 }
 
 .fence-enhance .enhance-btn:hover {
