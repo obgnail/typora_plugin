@@ -26,7 +26,8 @@ class FastForm extends HTMLElement {
 
     static registerFeature = (name, definition) => {
         validateDefinition(name, definition, {
-            configureInstance: { type: "function" },
+            configure: { type: "function" },
+            compile: { type: "function" },
             install: { type: "function" },
             featureOptions: { type: "plainObject" },
         })
@@ -78,8 +79,9 @@ class FastForm extends HTMLElement {
         this.clear()
 
         this.options = this._initOptions(options)
-        this._normalizeFeatures(this.options)
-        this._normalizeControls(this.options)
+        this._configureFeatures(this.options)  // register feature APIs and hooks
+        this._normalizeControls(this.options)  // init control and expand options
+        this._compileFeatures(this.options)    // compile features base on the final options
         this._applyUserHooks(this.options.hooks)
         this._collectFields(this.options)
 
@@ -192,7 +194,6 @@ class FastForm extends HTMLElement {
     getControlOptionsFromKey = (key) => this.getControlOptions(this.getField(key))
 
     getField = (key) => this._runtime.fields[key]
-
     getData = (key) => utils.nestedPropertyHelpers.get(this.options.data, key)
     setData = (key, value, type = "set") => utils.nestedPropertyHelpers[type](this.options.data, key, value)
 
@@ -314,6 +315,7 @@ class FastForm extends HTMLElement {
             form: this,
             data: this.options.data,
             value: (value === undefined) ? this.getData(key) : value,
+            state: this.states.get(field.type),
             controlOptions: this.getControlOptions(field),
         }
         controlDef.update(updateContext)
@@ -361,9 +363,9 @@ class FastForm extends HTMLElement {
         })
     }
 
-    _normalizeFeatures = (options) => {
+    _configureFeatures = (options) => {
         for (const [name, feature] of Object.entries(options.features)) {
-            const context = {
+            const configureContext = {
                 options,
                 form: this,
                 hooks: { on: this.hooks.on, override: this.hooks.override },
@@ -380,10 +382,24 @@ class FastForm extends HTMLElement {
                 },
             }
             if (options._instanceFeatures.hasOwnProperty(name) && typeof feature.install === "function") {
-                console.warn(`FastForm Warning: The 'install' method of the feature '${name}' will be ignored. For instance-specific logic, use 'configureInstance'.`)
+                console.warn(`FastForm Warning: The 'install' method of the feature '${name}' will be ignored. For instance-specific logic, use 'configure'.`)
             }
-            if (typeof feature.configureInstance === "function") {
-                feature.configureInstance(context)
+            if (typeof feature.configure === "function") {
+                feature.configure(configureContext)
+            }
+        }
+    }
+
+    _compileFeatures = (options) => {
+        for (const [name, feature] of Object.entries(options.features)) {
+            if (typeof feature.compile === "function") {
+                const compileContext = {
+                    options,
+                    form: this,
+                    hooks: { on: this.hooks.on, override: this.hooks.override },
+                    state: this.states.get(name),
+                }
+                feature.compile(compileContext)
             }
         }
     }
@@ -413,9 +429,7 @@ class FastForm extends HTMLElement {
         let current = layout
         while (current) {
             const currentDef = (typeof current === "string") ? layouts[current] : current
-            if (!currentDef || typeof currentDef !== "object") {
-                break
-            }
+            if (!currentDef || typeof currentDef !== "object") break
             if (inheritances.has(currentDef)) {
                 console.warn("FastForm Warning: Circular layout inheritance detected.")
                 break
@@ -518,13 +532,13 @@ class LifecycleHooks {
 class States {
     modules = new Map()
     init = (moduleKey, initialState) => {
-        if (this.modules.has(moduleKey)) {
-            return this.modules.get(moduleKey)
+        if (!this.modules.has(moduleKey)) {
+            this.modules.set(moduleKey, initialState)
         }
-        this.modules.set(moduleKey, initialState)
-        return initialState
+        return this.modules.get(moduleKey)
     }
     get = (moduleKey) => this.modules.get(moduleKey)
+    set = (moduleKey, state) => this.modules.set(moduleKey, state)
     clear = () => this.modules.clear()
 }
 
@@ -566,14 +580,14 @@ const Layout_Default = {
             const controlHTML = controlDef.create(controlContext)
             return this.createControlContainer(field, controlHTML, controlOptions.className)
         }
-        const createBoxContainer = (box, idx) => {
+        const createBox = (box, idx) => {
             const titleHTML = this.createTitle(box)
             const controlHTMLs = (box.fields || []).map(createControl)
-            const boxHTML = this.createBox(controlHTMLs)
+            const boxHTML = this.createBoxContent(controlHTMLs)
             const containerId = this.genBoxContainerId(box, idx)
             return this.createBoxContainer(containerId, titleHTML, boxHTML)
         }
-        container.innerHTML = schema.map(createBoxContainer).join("")
+        container.innerHTML = schema.map(createBox).join("")
     },
     findBox(key, formEl) {
         return formEl.querySelector(`[data-box="${CSS.escape(key)}"]`)
@@ -606,7 +620,7 @@ const Layout_Default = {
         const cls = "control" + (isBlockLayout ? " control-block" : "") + (className ? ` ${className}` : "")
         return `<div class="${cls}" data-type="${field.type}" data-control="${field.key}">${label}${control}</div>`
     },
-    createBox(controlHTMLs) {
+    createBoxContent(controlHTMLs) {
         return `<div class="box">${controlHTMLs.join("")}</div>`
     },
     genBoxContainerId(box, idx) {
@@ -688,7 +702,7 @@ const Feature_EventDelegation = {
 }
 
 const Feature_DefaultKeybindings = {
-    configureInstance: ({ hooks }) => {
+    configure: ({ hooks }) => {
         hooks.on("onRender", (form) => form.onEvent("keydown", ev => ev.stopPropagation(), true))
     }
 }
@@ -1302,7 +1316,7 @@ const Feature_Watchers = (() => {
                     }
                 }
 
-                // Step 4: Execute watchers. If a cycle was detected, handle it gracefully.
+                // Step 4: Execute watchers.
                 const run = (watchers) => {
                     const evaluateContext = {
                         getPayload: () => payload,
@@ -1442,7 +1456,7 @@ const Feature_Watchers = (() => {
             installActivators(state, form, watcherKey, watcher)
         }
 
-        const initWatcher = (state, form, options, registerApi) => {
+        const initWatcher = (state, form, registerApi) => {
             registerApi(ApiKey, {
                 register: (key, watcher) => registerWatcher(state, form, key, watcher),
                 inspect: () => ({
@@ -1459,20 +1473,8 @@ const Feature_Watchers = (() => {
                     }
                 },
             })
-            Object.entries(options.watchers || {}).forEach(([key, watcher]) => registerWatcher(state, form, key, watcher))
         }
-
-        const hookLifecycle = (state, hooks) => {
-            hooks.on("onRender", (form) => {
-                DependencyAnalyzer.buildTriggerMap(state, form)
-                ExecutionEngine.executeAll(state, form)
-            })
-            hooks.on("onAfterCommit", (changeContext, form) => {
-                ExecutionEngine.executeForKeys(state, form, [changeContext.key])
-            })
-        }
-
-        return { initWatcher, hookLifecycle }
+        return { initWatcher, registerWatcher }
     })()
 
     return {
@@ -1487,7 +1489,7 @@ const Feature_Watchers = (() => {
             requireAffectsForFunctionEffect: false,
             reactiveUiEffects: false, // Violating the principle of the Single Source of Truth. Do NOT edit this option unless you know what you are doing.
         },
-        configureInstance: ({ form, options, registerApi, initState, hooks }) => {
+        configure: ({ form, options, registerApi, initState, hooks }) => {
             options.activators = { ...Registries.activators, ...options.activators }
             options.conditionEvaluators = { ...Registries.conditionEvaluators, ...options.conditionEvaluators }
             options.comparisonEvaluators = { ...Registries.comparisonEvaluators, ...options.comparisonEvaluators }
@@ -1502,8 +1504,13 @@ const Feature_Watchers = (() => {
                 [StateKey.EventBus, new EventBus()],
             ]))
 
-            Lifecycle.initWatcher(state, form, options, registerApi)
-            Lifecycle.hookLifecycle(state, hooks)
+            Lifecycle.initWatcher(state, form, registerApi)
+            hooks.on("onAfterCommit", (changeContext, form) => ExecutionEngine.executeForKeys(state, form, [changeContext.key]))
+            hooks.on("onRender", () => {
+                Object.entries(options.watchers || {}).forEach(([key, watcher]) => Lifecycle.registerWatcher(state, form, key, watcher))
+                DependencyAnalyzer.buildTriggerMap(state, form)
+                ExecutionEngine.executeAll(state, form)
+            })
         },
         install: (FastFormClass) => {
             const validationOptions = { prefix: "$" }
@@ -1563,27 +1570,26 @@ const Feature_Parsing = {
         parsers: {},
         parserMatchStrategy: "exact", // "exact", "wildcard", "regex"
     },
-    configureInstance: ({ options, hooks }) => {
-        const { parsers, parserMatchStrategy } = options
-        if (!parsers || typeof parsers !== "object" || Object.keys(parsers).length === 0) return
-
-        const compiledParsers = compileMatchers({
-            source: parsers,
-            strategy: parserMatchStrategy,
-            errorContext: "parser",
-            processValue: (parser, key) => {
-                if (typeof parser !== "function") {
+    configure: ({ hooks, initState, registerApi }) => {
+        const state = initState(
+            { rawParsers: new Map(), compiledParsers: [] },
+            state => {
+                state.rawParsers.clear()
+                state.compiledParsers = []
+            },
+        )
+        registerApi("parsing", {
+            setParser: (key, parserToAdd) => {
+                if (key && typeof parserToAdd === "function") {
+                    state.rawParsers.set(key, parserToAdd)
+                } else {
                     console.warn(`FastForm Warning: Parser for key '${key}' is not a function.`)
-                    return
                 }
-                return { parser }
             }
         })
-        if (compiledParsers.length === 0) return
-
         hooks.on("onProcessValue", (value, changeContext) => {
             const newChangeContext = { ...changeContext, value }
-            const matchedParsers = compiledParsers.filter(p => p.regex.test(newChangeContext.key))
+            const matchedParsers = state.compiledParsers.filter(p => p.regex.test(newChangeContext.key))
             if (matchedParsers.length === 0) {
                 return value
             }
@@ -1592,7 +1598,20 @@ const Feature_Parsing = {
             }
             return matchedParsers[0].parser(value, newChangeContext)
         })
-    }
+    },
+    compile: ({ state, options, form }) => {
+        const { parsers, parserMatchStrategy } = options
+
+        const api = form.getApi("parsing")
+        Object.entries(parsers).forEach(([key, rule]) => api.setParser(key, rule))
+
+        state.compiledParsers = compileMatchers({
+            source: Object.fromEntries(state.rawParsers),
+            strategy: parserMatchStrategy,
+            errorContext: "parser",
+            processValue: (parser) => ({ parser })
+        })
+    },
 }
 
 const Feature_Validation = {
@@ -1601,13 +1620,48 @@ const Feature_Validation = {
         validators: {},
         ruleMatchStrategy: "exact", // "exact", "wildcard", "regex"
     },
-    configureInstance: ({ form, options, hooks }) => {
+    configure: ({ initState, hooks, registerApi, form }) => {
+        const state = initState(
+            { rawRules: new Map(), compiledRules: [] },
+            state => {
+                state.rawRules.clear()
+                state.compiledRules = []
+            }
+        )
+        registerApi("validation", {
+            addRule: (key, rulesToAdd) => {
+                if (!key || !rulesToAdd) return
+                const existingRules = state.rawRules.get(key) || []
+                const newRules = existingRules.concat(rulesToAdd).flat()
+                state.rawRules.set(key, newRules)
+            }
+        })
+        hooks.on("onValidate", (changeContext) => {
+            const matchedValidators = state.compiledRules
+                .filter(rule => rule.regex.test(changeContext.key))
+                .flatMap(rule => rule.validators)
+            if (matchedValidators.length === 0) return []
+            return matchedValidators
+                .map(validator => {
+                    try {
+                        return validator(changeContext, form.options.data)
+                    } catch (err) {
+                        return new Error(err)
+                    }
+                })
+                .filter(ret => ret !== true && ret != null)
+                .map(err => (err instanceof Error) ? err : new Error(String(err)))
+        })
+    },
+    compile: ({ state, form, options }) => {
         const { rules, validators, ruleMatchStrategy } = options
         const allValidators = { ...form.constructor.validator.getAll(), ...validators }
-        if (!rules || typeof rules !== "object" || Object.keys(rules).length === 0) return
 
-        const compiledRules = compileMatchers({
-            source: rules,
+        const validationApi = form.getApi("validation")
+        Object.entries(rules).forEach(([key, rule]) => validationApi.addRule(key, rule))
+
+        state.compiledRules = compileMatchers({
+            source: Object.fromEntries(state.rawRules),
             strategy: ruleMatchStrategy,
             errorContext: "rule",
             processValue: (rawValidators, key) => {
@@ -1638,24 +1692,6 @@ const Feature_Validation = {
                 return { validators }
             }
         })
-        if (compiledRules.length === 0) return
-
-        hooks.on("onValidate", (changeContext) => {
-            const matchedValidators = compiledRules
-                .filter(rule => rule.regex.test(changeContext.key))
-                .flatMap(rule => rule.validators)
-            if (matchedValidators.length === 0) return []
-            return matchedValidators
-                .map(validator => {
-                    try {
-                        return validator(changeContext, form.options.data)
-                    } catch (err) {
-                        return new Error(err)
-                    }
-                })
-                .filter(ret => ret !== true && ret != null)
-                .map(err => (err instanceof Error) ? err : new Error(String(err)))
-        })
     },
     install: (FastFormClass) => {
         FastFormClass.validator = {
@@ -1677,28 +1713,28 @@ const Feature_Validation = {
         }
     },
     _validators: {
-        required: ({ value }, allData) => {
+        required: ({ value }) => {
             const isEmpty = value == null
                 || (typeof value === "string" && value.trim() === "")
                 || (Array.isArray(value) && value.length === 0)
             return !isEmpty ? true : i18n.t("global", "error.required")
         },
-        pattern: (pattern) => ({ value }, allData) => {
+        pattern: (pattern) => ({ value }) => {
             if (!value) return true
             return pattern.test(value) ? true : i18n.t("global", "error.pattern")
         },
-        notEqual: (target) => ({ value }, allData) => {
+        notEqual: (target) => ({ value }) => {
             if (value == null) return true
             return value !== target ? true : i18n.t("global", "error.invalid", { value: target })
         },
-        min: (min) => ({ value }, allData) => {
+        min: (min) => ({ value }) => {
             if (value == null || value === "") return true
             if ((typeof value !== "string" && typeof value !== "number") || isNaN(value)) {
                 return i18n.t("global", "error.isNaN")
             }
             return Number(value) >= min ? true : i18n.t("global", "error.min", { min })
         },
-        max: (max) => ({ value }, allData) => {
+        max: (max) => ({ value }) => {
             if (value == null || value === "") return true
             if (isNaN(value)) return i18n.t("global", "error.isNaN")
             return Number(value) <= max ? true : i18n.t("global", "error.max", { max })
@@ -1707,13 +1743,13 @@ const Feature_Validation = {
             if (value == null) return true
             return Array.isArray(value) ? true : i18n.t("global", "error.pattern")
         },
-        object: ({ value }, allData) => {
+        object: ({ value }) => {
             if (value == null) return true
             return (!Array.isArray(value) && typeof value === "object") ? true : i18n.t("global", "error.pattern")
         },
         arrayOrObject: ({ value }) => {
             if (value == null) return true
-            return (Array.isArray(value) && typeof value === "object") ? true : i18n.t("global", "error.pattern")
+            return (Array.isArray(value) || typeof value === "object") ? true : i18n.t("global", "error.pattern")
         },
     }
 }
@@ -1735,7 +1771,7 @@ const Feature_Dependencies = {
         dependencies: {},
         disableEffect: "readonly", // "hide" or "readonly"
     },
-    configureInstance: ({ form, options }) => {
+    compile: ({ form, options }) => {
         const allDependencies = { ...options.dependencies }
         form.traverseFields(field => {
             if (!field.dependencies) return
@@ -1801,11 +1837,10 @@ const Feature_ConditionalBoxes = {
         conditionalBoxes: {},
         destroyStateOnHide: false,
     },
-    configureInstance: ({ form, options, initState }) => {
+    configure: ({ initState }) => initState(new Map()),
+    compile: ({ form, options, state }) => {
         const conditionalBoxes = options.conditionalBoxes
         if (!conditionalBoxes || typeof conditionalBoxes !== "object" || Object.keys(conditionalBoxes).length === 0) return
-
-        const state = initState(new Map())
 
         const boxSchemaMap = {}
         form.traverseBoxes(box => box.id && (boxSchemaMap[box.id] = box), options.schema)
@@ -1868,7 +1903,7 @@ const Feature_Cascades = {
     featureOptions: {
         cascades: {},
     },
-    configureInstance: ({ form, options }) => {
+    compile: ({ form, options }) => {
         if (!options.cascades || typeof options.cascades !== "object") return
 
         const { register } = form.getApi("watchers")
@@ -2106,14 +2141,15 @@ function defaultBlockLayout(field) {
     }
 }
 
-function registerRules(options, key, rules) {
-    const toAdd = Array.isArray(rules) ? rules : [rules]
-    const origin = options.rules[key] || []
-    options.rules[key] = [origin, ...toAdd].flat()
+function registerRules({ form, field }, rules) {
+    const validationApi = form.getApi("validation")
+    if (validationApi) {
+        validationApi.addRule(field.key, rules)
+    }
 }
 
-function registerNumericalDefaultRules({ field, options, form }) {
-    const { key, min, max } = field
+function registerNumericalDefaultRules({ field, form }) {
+    const { min, max } = field
     const [required, minFactory, maxFactory] = form.constructor.validator.get("required", "min", "max")
     const rules = [required]
     if (typeof min === "number") {
@@ -2122,11 +2158,11 @@ function registerNumericalDefaultRules({ field, options, form }) {
     if (typeof max === "number") {
         rules.push(maxFactory(max))
     }
-    registerRules(options, key, rules)
+    registerRules({ field, form }, rules)
 }
 
-function registerItemLengthLimitRule({ field, options, form }) {
-    registerRules(options, field.key, ({ key, value, type }) => {
+function registerItemLengthLimitRule({ field, form }) {
+    registerRules({ field, form }, ({ key, value, type }) => {
         const currentValue = form.getData(key)
         if (!Array.isArray(currentValue)) return
 
@@ -2320,7 +2356,7 @@ const Control_Static = {
     update: ({ element, value }) => {
         const staticEl = element.querySelector(".static")
         if (staticEl) {
-            staticEl.textContent = utils.escape(value)
+            staticEl.textContent = value
         }
     },
 }
@@ -2433,9 +2469,9 @@ const Control_Object = {
         rows: 3,
         noResize: false,
     },
-    setup: ({ field, options }) => {
-        defaultBlockLayout(field)
-        registerRules(options, field.key, "arrayOrObject")
+    setup: (context) => {
+        defaultBlockLayout(context.field)
+        registerRules(context, "arrayOrObject")
     },
     create: ({ field, controlOptions }) => {
         const { key, placeholder } = getCommonHTMLAttrs(field)
@@ -2495,7 +2531,7 @@ const Control_Array = {
         allowDuplicates: false,
         dataType: "string",  // number or string
     },
-    setup: ({ field, options, form }) => {
+    setup: ({ field, form }) => {
         defaultBlockLayout(field)
         const correctType = ({ value, type }) => {
             const { dataType } = form.getControlOptions(field)
@@ -2511,9 +2547,11 @@ const Control_Array = {
                 type === "push" && form.getData(key).includes(value)
                 || type === "set" && new Set(value).size !== value.length
             )
-            if (duplication) return new Error(i18n.t("global", "error.duplicateValue"))
+            if (duplication) {
+                return new Error(i18n.t("global", "error.duplicateValue"))
+            }
         }
-        registerRules(options, field.key, [correctType, repeatable])
+        registerRules({ form, field }, [correctType, repeatable])
     },
     create: ({ field }) => {
         const { key } = getCommonHTMLAttrs(field)
@@ -2589,9 +2627,9 @@ const Control_Select = {
     controlOptions: {
         labelJoiner: ", ",
     },
-    setup: ({ field, options, form }) => {
-        normalizeOptionsAttr(field)
-        registerItemLengthLimitRule({ field, options, form })
+    setup: (context) => {
+        normalizeOptionsAttr(context.field)
+        registerItemLengthLimitRule(context)
     },
     create: ({ field }) => {
         const toOptionItem = ([optionKey, optionShowName]) => {
@@ -2703,10 +2741,10 @@ const Control_Radio = {
 }
 
 const Control_Checkbox = {
-    setup: ({ field, options, form }) => {
-        normalizeOptionsAttr(field)
-        defaultBlockLayout(field)
-        registerItemLengthLimitRule({ field, options, form })
+    setup: (context) => {
+        normalizeOptionsAttr(context.field)
+        defaultBlockLayout(context.field)
+        registerItemLengthLimitRule(context)
     },
     create: ({ field }) => {
         const prefix = utils.randomString()
