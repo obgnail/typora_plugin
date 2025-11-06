@@ -16,29 +16,72 @@ test.before(() => {
                 const val = {
                     name: key,
                     path: p,
-                    obj: JSON.parse(fs.readFileSync(p, "utf-8"))
+                    obj: require(p),
                 }
                 return [key, val]
             })
     )
 })
 
-test("i18n testing suite", (t) => {
-    t.test("should have the same structure", () => {
-        const getStructure = (data) => {
-            return typeof data === "object" && data !== null && !Array.isArray(data)
-                ? Object.fromEntries(Object.keys(data).map(key => [key, getStructure(data[key])]))
-                : ""
-        }
+function compareStructure(base, compare, paths, errors) {
+    const pathStr = paths.length > 0 ? paths.join("->") : "(root)"
 
-        Object.values(i18nFiles)
-            .map(val => ({
-                name: val.name,
-                obj: JSON.stringify(getStructure(val.obj)),
-            }))
-            .reduce((pre, cur) => {
-                assert.strictEqual(pre.obj, cur.obj, `${pre.name} should equal to ${cur.name}`)
-                return cur
-            })
+    const isBaseObj = typeof base === "object" && base !== null && !Array.isArray(base)
+    const isCompareObj = typeof compare === "object" && compare !== null && !Array.isArray(compare)
+    if (isBaseObj !== isCompareObj) {
+        errors.push(`Type mismatch at "${pathStr}": Base is ${typeof base}, Compare is ${typeof compare}.`)
+        return
+    }
+    if (!isBaseObj) return
+
+    const baseKeys = Object.keys(base)
+    const compareKeys = Object.keys(compare)
+    const baseKeySet = new Set(baseKeys)
+    const compareKeySet = new Set(compareKeys)
+
+    const missingKeys = baseKeys.filter(k => !compareKeySet.has(k))
+    if (missingKeys.length > 0) {
+        errors.push(`Missing key(s) at "${pathStr}": ${missingKeys.join(", ")}`)
+    }
+
+    const extraKeys = compareKeys.filter(k => !baseKeySet.has(k))
+    if (extraKeys.length > 0) {
+        errors.push(`Extra key(s) at "${pathStr}": ${extraKeys.join(", ")}`)
+    }
+
+    const commonBaseKeys = baseKeys.filter(k => compareKeySet.has(k))
+    const commonCompareKeys = compareKeys.filter(k => baseKeySet.has(k))
+    for (let i = 0; i < commonBaseKeys.length; i++) {
+        if (commonBaseKeys[i] !== commonCompareKeys[i]) {
+            errors.push(`Key order mismatch at "${pathStr}":\n    > Expected: [${commonBaseKeys.join(", ")}]\n    > Got:      [${commonCompareKeys.join(", ")}]`)
+            break
+        }
+    }
+
+    for (const key of commonBaseKeys) {
+        compareStructure(base[key], compare[key], [...paths, key], errors)
+    }
+}
+
+test("i18n locale file structure and key order", async (t) => {
+    const baseFile = i18nFiles["zh-CN"] || Object.values(i18nFiles)[0]
+    const filesToTest = Object.values(i18nFiles).filter(file => file.name !== baseFile.name)
+    if (!baseFile) {
+        t.skip("No i18n files found in locales directory.")
+        return
+    }
+    if (filesToTest.length === 0) {
+        t.skip("Only one i18n file found. No comparisons needed.")
+        return
+    }
+
+    const testPromises = filesToTest.map(file => {
+        return t.test(`Compare: ${file.name} (Base: ${baseFile.name})`, () => {
+            const errors = []
+            compareStructure(baseFile.obj, file.obj, [], errors)
+            const assertionMessage = `[i18n Mismatch] File "${file.name}" (vs "${baseFile.name}") has ${errors.length} error(s):\n\n  - ${errors.join("\n\n  - ")}`
+            assert.strictEqual(errors.length, 0, assertionMessage)
+        })
     })
+    await Promise.all(testPromises)
 })
