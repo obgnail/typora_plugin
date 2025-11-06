@@ -1206,7 +1206,8 @@
     "$option.OUTPUT_FORMAT.txt": "TXT"
   },
   "marp": {
-    "pluginName": "Marp"
+    "pluginName": "Marp",
+    "$title.MARP_CORE_OPTIONS": "marp-core Options"
   },
   "callouts": {
     "pluginName": "Callouts",

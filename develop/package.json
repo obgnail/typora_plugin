@@ -9,7 +9,7 @@
     "serve": "npm run dev serve"
   },
   "dependencies": {
-    "@marp-team/marp-core": "^4.1.0",
+    "@marp-team/marp-core": "^4.2.0",
     "@moritzrs/mdast-util-ofm": "^0.0.1",
     "@moritzrs/micromark-extension-ofm": "^0.0.1",
     "abcjs": "^6.5.2",

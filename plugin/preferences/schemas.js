@@ -1327,6 +1327,7 @@ const SETTING_SCHEMAS = {
     marp: [
         customPluginLiteBasePropBox,
         langModeBox,
+        ObjectBox("MARP_CORE_OPTIONS", { rows: 5 }),
         TextareaBox("TEMPLATE"),
         handleSettingsBox,
     ],

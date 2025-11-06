@@ -771,6 +771,10 @@ LANGUAGE = "marp"
 #   false: 关闭交互模式，鼠标点击图表将展开代码块
 INTERACTIVE_MODE = true
 
+# ------------------- marp-core 配置 -------------------
+# more detail: https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options
+MARP_CORE_OPTIONS = { html = true }
+
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```marp

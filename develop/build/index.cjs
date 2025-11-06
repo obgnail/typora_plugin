@@ -54,9 +54,9 @@ const allBuildTasks = {
         entryPoints: ["abc.mjs"],
         outfile: "plugin/custom/plugins/abc/abcjs-basic-min.js",
     },
-    "marp": {
-        entryPoints: ["marp.mjs"],
-        outfile: "plugin/custom/plugins/marp/marp.min.js",
+    "marp-core": {
+        entryPoints: ["marp-core.mjs"],
+        outfile: "plugin/custom/plugins/marp/marp-core.min.js",
     },
     "markdownlint": {
         entryPoints: ["markdownlint.mjs"],
