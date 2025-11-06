@@ -33,8 +33,9 @@ test("schemas should have no extra keys", t => {
 
 test("schemas should have no messing keys", t => {
     const isIgnored = (fixedName, key) => (
-        fixedName === "abc" && key.startsWith("VISUAL_OPTIONS")
-        || (fixedName === "markdownLint") && key.startsWith("rule_config")
+        (fixedName === "abc" && key.startsWith("VISUAL_OPTIONS"))
+        || (fixedName === "markdownLint" && key.startsWith("rule_config"))
+        || (fixedName === "marp" && key.startsWith("MARP_CORE_OPTIONS") )
     )
     const flattenKeys = (obj, prefix = [], result = new Set()) => {
         for (const [key, val] of Object.entries(obj)) {
