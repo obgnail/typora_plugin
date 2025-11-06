@@ -42,7 +42,38 @@ class marpPlugin extends BaseCustomPlugin {
     lazyLoad = () => {
         const { Marp } = require("./marp-core.min.js")
         this.Marp = Marp
-        this.marp = new Marp(this.config.MARP_CORE_OPTIONS)
+        this.marp = new Marp(this.config.MARP_CORE_OPTIONS).use(this._marpAbsoluteImagePath())
+    }
+
+    _marpAbsoluteImagePath = () => {
+        const toAbsPath = (url) => {
+            const decodedURL = decodeURIComponent(url)
+            const dir = this.utils.getCurrentDirPath()
+            const absPath = (this.utils.isNetworkImage(decodedURL) || this.utils.isSpecialImage(decodedURL))
+                ? decodedURL
+                : this.utils.Package.Path.resolve(dir, decodedURL)
+            return absPath.split(this.utils.Package.Path.sep).join("/")
+        }
+
+        return function (marp) {
+            // Image commands (`![bg](...) `): They will be processed by `marp.normalizeLink`, replaced to the `background-image: url(...)` in `style` attribute.
+            const originalNormalizeLink = marp.normalizeLink
+            marp.normalizeLink = (url) => {
+                const normalized = originalNormalizeLink(url)
+                return toAbsPath(normalized)
+            }
+            const originalImageRule = marp.renderer.rules.image
+
+            // Ordinary images (`![alt](...) `): They will be processed by `md.renderer.rules.images`, replaced to the `src` attribute of the `<img>` tag.
+            marp.renderer.rules.image = (tokens, idx, options, env, self) => {
+                const token = tokens[idx]
+                const srcIndex = token.attrIndex("src")
+                if (srcIndex >= 0) {
+                    token.attrs[srcIndex][1] = toAbsPath(token.attrs[srcIndex][1])
+                }
+                return originalImageRule ? originalImageRule(tokens, idx, options, env, self) : self.renderToken(tokens, idx, options)
+            }
+        }
     }
 }
 
