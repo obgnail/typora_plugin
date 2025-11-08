@@ -1,5 +1,5 @@
-const { utils } = require("./utils")
-const { i18n } = require("./i18n")
+const utils = require("./utils")
+const i18n = require("./i18n")
 
 class IPlugin {
     constructor(fixedName, setting, i18n) {
@@ -40,7 +40,7 @@ class BaseCustomPlugin extends IPlugin {
 
 const LoadPlugin = async (fixedName, setting, isBasePlugin) => {
     const path = isBasePlugin ? "./plugin" : "./plugin/custom/plugins"
-    const { plugin } = utils.requireFilePath(path, fixedName)
+    const { plugin } = utils.require(path, fixedName)
     if (!plugin) {
         return new Error(`There is not ${fixedName} in ${path}`)
     }
@@ -64,7 +64,7 @@ const LoadPlugin = async (fixedName, setting, isBasePlugin) => {
     return instance
 }
 
-const LoadPlugins = async (settings) => {
+const LoadPlugins = async (settings, logging = true) => {
     const isBase = settings.hasOwnProperty("global")
     const plugins = { enable: {}, disable: {}, stop: {}, error: {}, nosetting: {} }
     const promises = Object.entries(settings).map(async ([fixedName, setting]) => {
@@ -88,11 +88,12 @@ const LoadPlugins = async (settings) => {
     })
     await Promise.all(promises)
 
-    // log
-    const COLORS = { enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35" }
-    console.group(`${isBase ? "Base" : "Custom"} Plugin`)
-    Object.entries(plugins).forEach(([t, p]) => console.debug(`[ \x1B[${COLORS[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p))
-    console.groupEnd()
+    if (logging) {
+        const COLORS = { enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35" }
+        console.group(`${isBase ? "Base" : "Custom"} Plugin`)
+        Object.entries(plugins).forEach(([t, p]) => console.debug(`[ \x1B[${COLORS[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p))
+        console.groupEnd()
+    }
 
     return plugins
 }

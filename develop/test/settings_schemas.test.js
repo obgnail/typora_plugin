@@ -116,7 +116,7 @@ test("Schema and Settings Key Synchronization", async t => {
 })
 
 test("all schemas keys should be translated", async t => {
-    const { i18n } = require("../../plugin/global/core/i18n.js")
+    const i18n = require("../../plugin/global/core/i18n.js")
     await i18n.init("zh-CN")
 
     const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "unit"]

@@ -1,60 +1,63 @@
 require("./polyfill")
 require("./components")
-const { i18n } = require("./i18n")
-const { utils, hook } = require("./utils")
+const i18n = require("./i18n")
+const utils = require("./utils")
+const serviceContainer = require("./serviceContainer")
 const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin")
 
 async function entry() {
-    /**
-     * Initializes global variables.
-     * The plugin system exposes the following global variables, but only 3 are actually useful: BasePlugin, BaseCustomPlugin, and LoadPlugins.
-     * The remaining variables are exposed by the static class `utils` and should never be referenced by business plugins.
-     * Furthermore, `utils` is an instance property of BasePlugin and BaseCustomPlugin, so `utils` itself doesn't need to be exposed.
-     * Since they will never be referenced by business plugins, why are they set as global variables? Answer: For debugging convenience.
-     **/
-    const initGlobalVars = settings => {
-        // "global" is a general setting, not a specific plugin setting
-        Object.defineProperty(settings, "global", { enumerable: false })
-
-        global.BasePlugin = BasePlugin
-        global.BaseCustomPlugin = BaseCustomPlugin
-        global.LoadPlugins = LoadPlugins
-        global.__base_plugins__ = null
-        global.__plugin_settings__ = settings
-        global.__plugin_utils__ = utils
-        global.__plugin_i18n__ = i18n
-    }
-
-    const initI18N = async locate => i18n.init(locate)
-
-    const loadPlugins = async () => {
-        const { enable, disable, stop, error, nosetting } = await LoadPlugins(global.__plugin_settings__)
-        // Ignore all plugins that cannot function properly
-        global.__base_plugins__ = enable
-    }
-
-    /** For Typora versions below 0.9.98, a compatibility warning is issued when running the plugin system. */
-    const warn = () => {
-        const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0
-        if (incompatible) {
-            const msg = i18n.t("global", "incompatibilityWarning")
-            utils.notification.show(msg, "warning", 5000)
-        }
-    }
+    const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0
+    if (incompatible) return
 
     const settings = await utils.settings.readBasePluginSettings()
-    const enable = settings && settings.global && settings.global.ENABLE
-    if (!enable) {
-        console.warn("typora plugin disabled")
+    if (!settings?.global?.ENABLE) {
+        console.warn("Typora-Plugin disabled")
         return
     }
 
-    initGlobalVars(settings)
-    await initI18N(settings.global.LOCALE)
-    await hook(loadPlugins)
-    warn()
+    setupGlobalVars()
+    serviceContainer.setSettings(settings)
+    serviceContainer.setUtils(utils)
+
+    await i18n.init(settings.global.LOCALE)
+    await loadPlugins(serviceContainer, settings)
 }
 
-module.exports = {
-    entry
+function setupGlobalVars() {
+    global.BasePlugin = BasePlugin
+    global.BaseCustomPlugin = BaseCustomPlugin
+
+    // Convenient for debugging
+    global.__plugin_i18n__ = i18n
+    global.__plugin_utils__ = utils
+    global.__plugin_service_container__ = serviceContainer
 }
+
+async function loadPlugins(container, settings) {
+    const _processMixins = async (...mixins) => Promise.all(mixins.map(m => m.process?.()))
+    const _postprocessMixins = async (...mixins) => Promise.all(mixins.map(m => m.afterProcess?.()))
+
+    const {
+        styleTemplater, contextMenu, notification, progressBar, formDialog, stateRecorder, hotkeyHub, exportHelper,
+        eventHub, diagramParser, thirdPartyDiagramParser,
+    } = utils.mixins
+
+    await _processMixins(styleTemplater)
+    await _processMixins(contextMenu, notification, progressBar, formDialog, stateRecorder, hotkeyHub, exportHelper)
+
+    const { enable } = await LoadPlugins(settings)
+    container.setPlugins(enable)
+
+    await _processMixins(eventHub)
+    await _processMixins(diagramParser, thirdPartyDiagramParser)
+
+    eventHub.publishEvent(eventHub.eventType.allPluginsHadInjected)
+    await _postprocessMixins(...Object.values(utils.mixins))
+
+    // Due to being an asynchronous function, some events (such as afterAddCodeBlock) may have been missed. Reload it
+    if (File.getMountFolder() != null) {
+        setTimeout(utils.reload, 50)
+    }
+}
+
+module.exports = entry

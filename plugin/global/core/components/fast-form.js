@@ -1,6 +1,6 @@
 const { sharedSheets } = require("./common")
-const { utils } = require("../utils")
-const { i18n } = require("../i18n")
+const utils = require("../utils")
+const i18n = require("../i18n")
 
 class FastForm extends HTMLElement {
     static style = '<link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous">'

@@ -57,7 +57,6 @@
     "lastUsed": "上次使用的",
     "disableReminder": "不再提示",
     "takesEffectAfterRestart": "修改将在重启后生效",
-    "incompatibilityWarning": "Typora 版本过低，部分插件可能失效。\n建议升级到 0.9.98 (最后一个免费版本)",
     "confirmNeeded": "还需操作 {{count}} 次以确认",
     "uninstallPluginWarning": "警告：即将移除所有插件，此操作不可撤销！",
     "uninstallPluginDetail": "您即将卸载插件系统，所有与插件系统相关的设置和数据将被永久删除。请在下方输入框中精确键入「{{reconfirm}}」以确认您的意愿。卸载完成后，请重启 Typora。",

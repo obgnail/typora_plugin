@@ -1652,7 +1652,7 @@ const SETTING_SCHEMAS = {
 }
 
 const I18N = (schemas) => {
-    const { data: i18nData } = require("../global/core/i18n").i18n
+    const i18nData = require("../global/core/i18n").data
 
     const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "unit"]
     const specialProps = ["options", "thMap"]

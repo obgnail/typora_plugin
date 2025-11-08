@@ -1,8 +1,15 @@
+const { LoadPlugins } = require("../global/core/plugin")
+
 class CustomPlugin extends BasePlugin {
     beforeProcess = async () => {
-        this.plugins = {}          // enabled plugins
-        this.pluginsSettings = {}  // all plugin configurations
-        await new customPluginLoader(this).process()
+        const settings = await this.utils.settings.readCustomPluginSettings()
+        const { enable } = await LoadPlugins(settings)
+
+        this.settings = settings // enabled plugins
+        this.plugins = enable    // all plugin configurations
+
+        await this.fixCallback()
+        this.utils.eventHub.publishEvent(this.utils.eventHub.eventType.allCustomPluginsHadInjected)
     }
 
     hotkey = () => {
@@ -30,7 +37,7 @@ class CustomPlugin extends BasePlugin {
             disabledForever: this.i18n.t("actHint.disabledForever"),
             disabledTemp: this.i18n.t("actHint.disabledTemp")
         }
-        const settings = Object.entries(this.pluginsSettings).sort(([, { order: o1 = 1 }], [, { order: o2 = 1 }]) => o1 - o2)
+        const settings = Object.entries(this.settings).sort(([, { order: o1 = 1 }], [, { order: o2 = 1 }]) => o1 - o2)
 
         meta.target = anchorNode
         const dynamicActions = []
@@ -81,44 +88,21 @@ class CustomPlugin extends BasePlugin {
             console.error("plugin callback error", plugin.fixedName, e);
         }
     }
-}
-
-class customPluginLoader {
-    constructor(plugin) {
-        this.controller = plugin
-        this.utils = plugin.utils
-        this.i18n = plugin.i18n
-        this.config = plugin.config
-    }
-
-    loadCustomPlugins = async settings => {
-        const { enable, disable, stop, error, nosetting } = await global.LoadPlugins(settings)
-        this.controller.plugins = enable
-    }
 
     fixCallback = async () => {
         const { hasOverrideCustomPluginFn: hasOverride } = this.utils
-        for (const plugin of Object.values(this.controller.plugins)) {
+        for (const plugin of Object.values(this.plugins)) {
             if (!plugin || !hasOverride(plugin, "callback") || !hasOverride(plugin, "selector")) continue
             const originCallback = plugin.callback
             plugin.callback = anchorNode => {
                 if (!anchorNode) {
-                    const $anchor = this.utils.getAnchorNode()
-                    const anchor = $anchor && $anchor[0]
+                    const anchor = this.utils.getAnchorNode()?.[0]
                     const selector = plugin.selector(true)
                     anchorNode = (selector && anchor) ? anchor.closest(selector) : anchor
                 }
                 originCallback(anchorNode)
             }
         }
-    }
-
-    process = async () => {
-        const settings = await this.utils.settings.readCustomPluginSettings()
-        this.controller.pluginsSettings = settings
-        await this.loadCustomPlugins(settings)
-        await this.fixCallback()
-        this.utils.eventHub.publishEvent(this.utils.eventHub.eventType.allCustomPluginsHadInjected)
     }
 }
 

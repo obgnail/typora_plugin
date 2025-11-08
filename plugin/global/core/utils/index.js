@@ -1,7 +1,25 @@
 const PATH = require("path")
 const FS = require("fs")
 const FS_EXTRA = require("fs-extra")
-const { i18n } = require("../i18n")
+const i18n = require("../i18n")
+
+const MIXINS = {
+    ...require("./settings"),
+    ...require("./migrate"),
+    ...require("./hotkeyHub"),
+    ...require("./eventHub"),
+    ...require("./stateRecorder"),
+    ...require("./exportHelper"),
+    ...require("./styleTemplater"),
+    ...require("./contextMenu"),
+    ...require("./notification"),
+    ...require("./progressBar"),
+    ...require("./formDialog"),
+    ...require("./diagramParser"),
+    ...require("./thirdPartyDiagramParser"),
+    ...require("./mermaid"),
+    ...require("./entities"),
+}
 
 class utils {
     static nodeVersion = process && process.versions && process.versions.node
@@ -19,22 +37,31 @@ class utils {
     static disableForeverSelector = "__disabled__"  // Plugin permanently unavailable, return this.
     static stopLoadPluginError = Symbol("StopLoading")  // For plugin's beforeProcess method; return this to stop loading the plugin.
 
+    static mixins = Object.fromEntries(
+        Object.entries(MIXINS).map(([name, cls]) => [[name], new cls(this, i18n)])
+    )
+
     // Do NOT manually call these variables
     static _sentinel = Symbol()  // As a sentinel value
     static _meta = {}            // Used to pass data in the context menu
 
     ////////////////////////////// plugin //////////////////////////////
-    static getAllBasePlugins = () => global.__base_plugins__
-    static getAllCustomPlugins = () => global.__base_plugins__.custom && global.__base_plugins__.custom.plugins
-    static getBasePlugin = fixedName => global.__base_plugins__[fixedName]
-    static getCustomPlugin = fixedName => global.__base_plugins__.custom && global.__base_plugins__.custom.plugins[fixedName]
-    static getAllBasePluginSettings = () => global.__plugin_settings__
-    static getAllCustomPluginSettings = () => (global.__base_plugins__.custom && global.__base_plugins__.custom.pluginsSettings) || {}
-    static getGlobalSetting = name => global.__plugin_settings__.global[name]
-    static getBasePluginSetting = fixedName => global.__plugin_settings__[fixedName]
-    static getCustomPluginSetting = fixedName => this.getAllCustomPluginSettings()[fixedName]
-    static tryGetPlugin = fixedName => this.getBasePlugin(fixedName) || this.getCustomPlugin(fixedName)
-    static tryGetPluginSetting = fixedName => this.getAllBasePluginSettings()[fixedName] || this.getAllCustomPluginSettings()[fixedName]
+    static container = null
+    static registerContainer = container => {
+        Object.entries(this.mixins).forEach(([name, instance]) => container.registerService(name, instance))
+        this.container = container
+    }
+    static getAllBasePlugins = () => this.container.getAllBasePlugins()
+    static getAllCustomPlugins = () => this.container.getAllCustomPlugins()
+    static getBasePlugin = fixedName => this.container.getBasePlugin(fixedName)
+    static getCustomPlugin = fixedName => this.container.getCustomPlugin(fixedName)
+    static getAllBasePluginSettings = () => this.container.getAllBasePluginSettings()
+    static getAllCustomPluginSettings = () => this.container.getAllCustomPluginSettings()
+    static getGlobalSetting = fixedName => this.container.getGlobalSetting(fixedName)
+    static getBasePluginSetting = fixedName => this.container.getBasePluginSetting(fixedName)
+    static getCustomPluginSetting = fixedName => this.container.getCustomPluginSetting(fixedName)
+    static tryGetPlugin = fixedName => this.container.tryGetPlugin(fixedName)
+    static tryGetPluginSetting = fixedName => this.container.tryGetPluginSetting(fixedName)
 
     static getPluginFunction = (fixedName, func) => {
         const plugin = this.tryGetPlugin(fixedName);
@@ -68,9 +95,9 @@ class utils {
     }
     static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true);
     static reload = async () => {
-        const content = await File.getContent();
-        const arg = { fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true };
-        File.reloadContent(content, arg);
+        const content = await File.getContent()
+        const arg = { fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true }
+        File.reloadContent(content, arg)
     }
 
     static showHiddenElementByPlugin = target => {
@@ -781,7 +808,7 @@ class utils {
     static getMountFolder = () => File.getMountFolder() || ""
     static getCurrentDirPath = () => PATH.dirname(this.getFilePath())
     static joinPath = (...paths) => PATH.join(this.getDirname(), ...paths)
-    static requireFilePath = (...paths) => require(this.joinPath(...paths))
+    static require = (...paths) => require(this.joinPath(...paths))
     static getUserSpaceFile = (file = "") => this.joinPath("./plugin/global/user_space", file)
 
     static readFiles = async files => Promise.all(
@@ -1429,63 +1456,4 @@ class utils {
     }
 }
 
-const newMixin = (utils) => {
-    const MIXIN = {
-        ...require("./settings"),
-        ...require("./migrate"),
-        ...require("./hotkeyHub"),
-        ...require("./eventHub"),
-        ...require("./stateRecorder"),
-        ...require("./exportHelper"),
-        ...require("./styleTemplater"),
-        ...require("./contextMenu"),
-        ...require("./notification"),
-        ...require("./progressBar"),
-        ...require("./formDialog"),
-        ...require("./diagramParser"),
-        ...require("./thirdPartyDiagramParser"),
-        ...require("./mermaid"),
-        ...require("./entities"),
-    }
-    return Object.fromEntries(Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils, i18n)]))
-}
-
-const getHook = utils => {
-    const mixin = newMixin(utils)
-    Object.assign(utils, mixin)
-
-    const {
-        styleTemplater, hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,
-        notification, progressBar, formDialog, diagramParser, thirdPartyDiagramParser,
-    } = mixin
-
-    const registerMixin = (...ele) => Promise.all(ele.map(h => h.process && h.process()))
-    const optimizeMixin = () => Promise.all(Object.values(mixin).map(h => h.afterProcess && h.afterProcess()))
-
-    const registerPreMixin = async () => {
-        await registerMixin(styleTemplater)
-        await registerMixin(contextMenu, notification, progressBar, formDialog, stateRecorder, hotkeyHub, exportHelper)
-    }
-
-    const registerPostMixin = async () => {
-        await registerMixin(eventHub)
-        await registerMixin(diagramParser, thirdPartyDiagramParser)
-        eventHub.publishEvent(eventHub.eventType.allPluginsHadInjected)
-    }
-
-    return async pluginLoader => {
-        await registerPreMixin()
-        await pluginLoader()
-        await registerPostMixin()
-        await optimizeMixin()
-        // Due to being an asynchronous function, some events (such as afterAddCodeBlock) may have been missed. Reload it
-        if (File.getMountFolder() != null) {
-            setTimeout(utils.reload, 50)
-        }
-    }
-}
-
-module.exports = {
-    utils,
-    hook: getHook(utils),
-}
+module.exports = Object.assign(utils, utils.mixins)

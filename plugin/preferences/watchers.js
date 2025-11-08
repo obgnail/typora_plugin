@@ -1,4 +1,4 @@
-const { utils } = require("../global/core/utils")
+const utils = require("../global/core/utils")
 
 // `SetValue` will write file, and a short write event interval can cause bugs
 function setValueDelay(context, key, value, delay = 500) {

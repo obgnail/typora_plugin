@@ -128,7 +128,7 @@
 }
 
 .control-left {
-    flex: 1;
+    flex: 58;
     word-break: keep-all;
     padding-right: 12px;
     max-width: 100%;
@@ -147,7 +147,7 @@
 .control[data-type="color"] > .control-right,
 .control[data-type="unit"] > .control-right,
 .control[data-type="range"] > .control-right {
-    width: 240px
+    flex: 42;
 }
 
 input[type="text"],
