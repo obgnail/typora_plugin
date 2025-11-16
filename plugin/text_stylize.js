@@ -1,4 +1,4 @@
-class textStylizePlugin extends BasePlugin {
+class TextStylizePlugin extends BasePlugin {
     styleTemplate = () => ({ backgroundColor: this.config.MODAL_BACKGROUND_COLOR || "var(--side-bar-bg-color)" })
 
     html = () => {
@@ -53,8 +53,7 @@ class textStylizePlugin extends BasePlugin {
                 window-buttons="close|fa-times">
                 <div class="stylize-tool">${tools}</div>
                 <table class="stylize-palette"><tbody>${trs}</tbody></table>
-            </fast-window>
-        `
+            </fast-window>`
     }
 
     hotkey = () => {
@@ -76,7 +75,7 @@ class textStylizePlugin extends BasePlugin {
             toolbar: document.querySelector("#plugin-text-stylize .stylize-tool"),
             palette: document.querySelector("#plugin-text-stylize .stylize-palette"),
         }
-        this.styleSetter = new styleSetter(this, this.config.DEFAULT_FORMAT_BRUSH)
+        this.styleSetter = new StyleSetter(this, this.config.DEFAULT_FORMAT_BRUSH)
         this.setStyle = this.styleSetter.setStyle
     }
 
@@ -131,11 +130,7 @@ class textStylizePlugin extends BasePlugin {
 
     call = () => this.entities.window.toggle()
 
-    onAction = (action, color) => {
-        const callMap = this.getFuncMap(color);
-        const func = callMap[action];
-        if (func) func()
-    }
+    onAction = (action, color) => this.getFuncMap(color)[action]?.()
 
     getFuncMap = color => ({
         close: this.call,
@@ -265,7 +260,7 @@ class textStylizePlugin extends BasePlugin {
  * 6. Overall Styling Process:
  *    The main function `setStyle` orchestrates the entire process, calling `genRanges`, `setMultilineStyle`, and the helper functions as needed.
  */
-class styleSetter {
+class StyleSetter {
     constructor(plugin, formatBrushString) {
         this.utils = plugin.utils
         this.formatBrushObj = this.parseStyleString(formatBrushString)
@@ -641,5 +636,5 @@ class styleSetter {
 }
 
 module.exports = {
-    plugin: textStylizePlugin
+    plugin: TextStylizePlugin
 }

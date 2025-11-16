@@ -1,4 +1,4 @@
-class marpPlugin extends BaseCustomPlugin {
+class MarpPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
     init = () => this.marp = null
@@ -78,5 +78,5 @@ class marpPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: marpPlugin
+    plugin: MarpPlugin
 }

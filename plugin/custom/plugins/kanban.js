@@ -1,4 +1,4 @@
-class kanbanPlugin extends BaseCustomPlugin {
+class KanbanPlugin extends BaseCustomPlugin {
     styleTemplate = () => ({
         maxHeight: (this.config.KANBAN_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_MAX_HEIGHT + "px",
         taskDescMaxHeight: (this.config.KANBAN_TASK_DESC_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_TASK_DESC_MAX_HEIGHT + "em",
@@ -115,7 +115,7 @@ class kanbanPlugin extends BaseCustomPlugin {
                             if (this.config.ALLOW_MARKDOWN_INLINE_STYLE) {
                                 desc = this.utils.markdownInlineStyleToHTML(desc, dir);
                             }
-                            last && last.item.push({ title, desc });
+                            if (last) last.item.push({ title, desc })
                         }
                     } else {
                         this.throwParseError(idx, this.i18n.t("error.taskTitleNonExist"))
@@ -143,5 +143,5 @@ class kanbanPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: kanbanPlugin
+    plugin: KanbanPlugin
 }

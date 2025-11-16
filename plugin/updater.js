@@ -1,4 +1,4 @@
-class updaterPlugin extends BasePlugin {
+class UpdaterPlugin extends BasePlugin {
     hotkey = () => [this.config.HOTKEY]
 
     process = () => {
@@ -98,11 +98,11 @@ class updaterPlugin extends BasePlugin {
             proxy = "http://" + proxy
         }
         const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest"
-        return new updater(this, url, proxy, timeout)
+        return new Updater(this, url, proxy, timeout)
     }
 }
 
-class updater {
+class Updater {
     constructor(plugin, latestReleaseUrl, proxy, timeout) {
         this.utils = plugin.utils;
         this.latestReleaseUrl = latestReleaseUrl;
@@ -311,5 +311,5 @@ class ProxyGetter {
 }
 
 module.exports = {
-    plugin: updaterPlugin
+    plugin: UpdaterPlugin
 }

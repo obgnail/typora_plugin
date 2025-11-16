@@ -1,4 +1,4 @@
-class truncateTextPlugin extends BasePlugin {
+class TruncateTextPlugin extends BasePlugin {
     beforeProcess = () => {
         this.className = "plugin-truncate-text";
         this.staticActions = this.i18n.fillActions([
@@ -63,10 +63,9 @@ class truncateTextPlugin extends BasePlugin {
     }
 
     rollback = () => {
-        if (this.utils.entities.querySelectorInWrite(`:scope > .${this.className}`)) {
-            this.showAll();
-        }
-    };
+        const el = this.utils.entities.querySelectorInWrite(`:scope > .${this.className}`)
+        if (el) this.showAll()
+    }
 
     call = action => {
         if (action === "hide_front") {
@@ -81,5 +80,5 @@ class truncateTextPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: truncateTextPlugin
+    plugin: TruncateTextPlugin
 }

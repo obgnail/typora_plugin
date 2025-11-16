@@ -1684,7 +1684,7 @@ const I18N = (schemas) => {
 
     return Object.fromEntries(
         Object.entries(schemas).map(([fixedName, boxes]) => {
-            const translate = (key) => (i18nData[fixedName] && i18nData[fixedName][key]) || (i18nData.settings && i18nData.settings[key]) || key
+            const translate = (key) => i18nData[fixedName]?.[key] || i18nData.settings?.[key] || key
             const translatedBoxes = boxes.map(box => translateBox(box, translate))
             return [fixedName, translatedBoxes]
         })

@@ -1,4 +1,4 @@
-class scrollBookmarkerPlugin extends BaseCustomPlugin {
+class ScrollBookmarkerPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
     html = () => `
@@ -138,5 +138,5 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: scrollBookmarkerPlugin,
+    plugin: ScrollBookmarkerPlugin
 }

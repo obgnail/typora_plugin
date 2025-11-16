@@ -1,4 +1,4 @@
-class entities {
+class Entities {
     constructor(utils) {
         this.utils = utils;
         this.eWrite = document.querySelector("#write");
@@ -11,6 +11,4 @@ class entities {
     }
 }
 
-module.exports = {
-    entities
-}
+module.exports = Entities

@@ -1,4 +1,4 @@
-class cursorHistoryPlugin extends BasePlugin {
+class CursorHistoryPlugin extends BasePlugin {
     hotkey = () => [
         { hotkey: this.config.HOTKEY_GO_FORWARD, callback: this.goForward },
         { hotkey: this.config.HOTKEY_GO_BACK, callback: this.goBack },
@@ -124,5 +124,5 @@ class cursorHistoryPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: cursorHistoryPlugin
+    plugin: CursorHistoryPlugin
 }

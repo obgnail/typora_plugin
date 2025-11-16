@@ -1,4 +1,4 @@
-class blockSideBySidePlugin extends BaseCustomPlugin {
+class BlockSideBySidePlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     styleTemplate = () => true
@@ -11,5 +11,5 @@ class blockSideBySidePlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: blockSideBySidePlugin,
-};
+    plugin: BlockSideBySidePlugin,
+}

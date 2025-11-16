@@ -1,4 +1,4 @@
-class abcPlugin extends BaseCustomPlugin {
+class ABCPlugin extends BaseCustomPlugin {
     init = () => this.ABCJS = null
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
@@ -32,11 +32,11 @@ class abcPlugin extends BaseCustomPlugin {
         this.ABCJS.renderAbc($wrap[0], content, this.config.VISUAL_OPTIONS)
     }
 
-    getVersion = () => this.ABCJS && this.ABCJS.signature
+    getVersion = () => this.ABCJS?.signature
 
     lazyLoad = () => this.ABCJS = require("./abcjs-basic-min.js")
 }
 
 module.exports = {
-    plugin: abcPlugin
+    plugin: ABCPlugin
 }

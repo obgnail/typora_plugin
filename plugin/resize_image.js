@@ -1,4 +1,4 @@
-class resizeImagePlugin extends BasePlugin {
+class ResizeImagePlugin extends BasePlugin {
     init = () => {
         this.checklist = Object.entries(this.config.MODIFIER_KEY)
             .filter(([_, modifier]) => Boolean(modifier))
@@ -130,11 +130,10 @@ class resizeImagePlugin extends BasePlugin {
             set_align_center: meta => this.setAlign("center", meta.target),
             set_align_right: meta => this.setAlign("right", meta.target),
         }
-        const func = callMap[action]
-        func && func(meta)
+        callMap[action]?.(meta)
     }
 }
 
 module.exports = {
-    plugin: resizeImagePlugin
+    plugin: ResizeImagePlugin
 }

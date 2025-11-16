@@ -1,4 +1,4 @@
-class formDialog {
+class FormDialog {
     constructor(utils, i18n) {
         this.utils = utils
         this.i18n = i18n
@@ -76,6 +76,4 @@ class formDialog {
     exit = () => this.entities.cancel.click()
 }
 
-module.exports = {
-    formDialog
-}
+module.exports = FormDialog

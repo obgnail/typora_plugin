@@ -1,4 +1,4 @@
-class timelinePlugin extends BaseCustomPlugin {
+class TimelinePlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
     process = () => {
@@ -152,5 +152,5 @@ class timelinePlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: timelinePlugin
+    plugin: TimelinePlugin
 }

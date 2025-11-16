@@ -1,4 +1,4 @@
-class hotkeysPlugin extends BasePlugin {
+class HotkeysPlugin extends BasePlugin {
     hotkey = () => [this.config.HOTKEY]
 
     process = () => {
@@ -45,5 +45,5 @@ class hotkeysPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: hotkeysPlugin,
+    plugin: HotkeysPlugin
 }

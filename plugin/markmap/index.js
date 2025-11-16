@@ -1,16 +1,16 @@
-const { fenceMarkmap } = require("./fence.js")
-const { tocMarkmap } = require("./toc.js")
+const FenceMarkmap = require("./fence.js")
+const TOCMarkmap = require("./toc.js")
 
-class markmapPlugin extends BasePlugin {
+class MarkmapPlugin extends BasePlugin {
     beforeProcess = () => {
         this.Lib = {}
-        this.tocMarkmap = this.config.ENABLE_TOC_MARKMAP ? new tocMarkmap(this) : null
-        this.fenceMarkmap = this.config.ENABLE_FENCE_MARKMAP ? new fenceMarkmap(this) : null
+        this.tocMarkmap = this.config.ENABLE_TOC_MARKMAP ? new TOCMarkmap(this) : null
+        this.fenceMarkmap = this.config.ENABLE_FENCE_MARKMAP ? new FenceMarkmap(this) : null
     }
 
     styleTemplate = () => this
 
-    html = () => this.tocMarkmap && this.tocMarkmap.html()
+    html = () => this.tocMarkmap?.html()
 
     hotkey = () => [this.tocMarkmap, this.fenceMarkmap].filter(Boolean).flatMap(p => p.hotkey())
 
@@ -44,11 +44,7 @@ class markmapPlugin extends BasePlugin {
         }
     }
 
-    onButtonClick = () => {
-        if (this.tocMarkmap) {
-            this.tocMarkmap.callback()
-        }
-    }
+    onButtonClick = () => this.tocMarkmap?.callback()
 
     getToc = (
         fixSkip = this.config.FIX_SKIPPED_LEVEL_HEADERS,
@@ -92,5 +88,5 @@ class markmapPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: markmapPlugin
+    plugin: MarkmapPlugin
 }

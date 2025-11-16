@@ -1,12 +1,7 @@
 /**
  * Dynamically register, unregister, and publish lifecycle events.
- *
- * Why implement a custom event listener and publisher instead of using Node's built-in EventEmitter?
- * Answer: For immediate callbacks. This project is not official, and I want the system design to minimize potential bugs.
- *         Lifecycle events are implemented by hooking corresponding functions.
- *         However, emitter.emit is asynchronous, meaning the timing of callback execution is uncertain. Immediate callbacks are inherently safer.
  */
-class eventHub {
+class EventHub {
     constructor(utils) {
         this.utils = utils
         this.observer = null
@@ -88,7 +83,7 @@ class eventHub {
             }
         )
 
-        this.utils.loopDetector(() => File, () => {
+        this.utils.pollUntil(() => File, () => {
             const attr = File.loadInitData ? "loadInitData" : "loadFile";
             const onContentLoaded = () => this.publishEvent(this.eventType.fileContentLoaded, this.utils.getFilePath());
             this.utils.decorate(() => File, attr, null, result => {
@@ -100,7 +95,7 @@ class eventHub {
             })
         })
 
-        this.utils.loopDetector(() => File && this.utils.getFilePath(), () => {
+        this.utils.pollUntil(() => File && this.utils.getFilePath(), () => {
             const filePath = this.utils.getFilePath();
             if (filePath) this.publishEvent(this.eventType.firstFileInit, filePath)
         });
@@ -180,6 +175,4 @@ class eventHub {
     }
 }
 
-module.exports = {
-    eventHub
-}
+module.exports = EventHub

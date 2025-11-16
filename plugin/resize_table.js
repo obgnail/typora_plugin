@@ -1,4 +1,4 @@
-class resizeTablePlugin extends BasePlugin {
+class ResizeTablePlugin extends BasePlugin {
     styleTemplate = () => this.config.REMOVE_MIN_CELL_WIDTH
 
     process = () => {
@@ -123,5 +123,5 @@ class resizeTablePlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: resizeTablePlugin
+    plugin: ResizeTablePlugin
 }

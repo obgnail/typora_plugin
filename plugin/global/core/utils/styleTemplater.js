@@ -1,7 +1,7 @@
 /**
  * Dynamically register CSS files.
  */
-class styleTemplater {
+class StyleTemplater {
     constructor(utils) {
         this.utils = utils;
     }
@@ -43,6 +43,4 @@ class styleTemplater {
     }
 }
 
-module.exports = {
-    styleTemplater
-}
+module.exports = StyleTemplater

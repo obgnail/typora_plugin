@@ -385,6 +385,4 @@ class Highlighter {
     }
 }
 
-module.exports = {
-    Highlighter
-}
+module.exports = Highlighter

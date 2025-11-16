@@ -1,4 +1,4 @@
-class rightClickMenuPlugin extends BasePlugin {
+class RightClickMenuPlugin extends BasePlugin {
     styleTemplate = () => ({
         menu_min_width: this.config.MENU_MIN_WIDTH,
         menu_option_display: this.config.HIDE_OTHER_OPTIONS ? "none" : ""
@@ -253,9 +253,7 @@ class rightClickMenuPlugin extends BasePlugin {
                 if (!plugin || plugin.staticActions || plugin.getDynamicActions) {
                     return false
                 }
-                if (plugin.call) {
-                    plugin.call()
-                }
+                plugin.call?.()
             }
             that.hideMenuIfNeed()
         })
@@ -316,5 +314,5 @@ class rightClickMenuPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: rightClickMenuPlugin
+    plugin: RightClickMenuPlugin
 }

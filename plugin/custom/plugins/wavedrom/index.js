@@ -30,7 +30,7 @@
  *
  * Wavedrom's documentation is incomplete; source code inspection is often required.
  */
-class wavedromPlugin extends BaseCustomPlugin {
+class WavedromPlugin extends BaseCustomPlugin {
     init = () => {
         this.wavedromPkg = null
         this.prefix = "WaveDrom_Display_"
@@ -73,7 +73,7 @@ class wavedromPlugin extends BaseCustomPlugin {
         this.wavedromPkg.renderWaveForm(index, waveJson, this.prefix, notFirstSignal)
     }
 
-    getVersion = () => this.wavedromPkg && this.wavedromPkg.version
+    getVersion = () => this.wavedromPkg?.version
 
     lazyLoad = () => {
         this.wavedromPkg = require("./wavedrom.min.js")
@@ -82,5 +82,5 @@ class wavedromPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: wavedromPlugin
+    plugin: WavedromPlugin
 }

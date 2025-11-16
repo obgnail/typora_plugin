@@ -9,7 +9,7 @@ const options = {
     bundle: true,
     minify: true,
     platform: "node",
-    target: "es6",
+    target: "node12.14",
     logLevel: "info",
 }
 

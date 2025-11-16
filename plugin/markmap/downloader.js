@@ -1,4 +1,4 @@
-class downloader {
+class Downloader {
     static _toSVG = (
         plugin,
         svg = plugin.entities.svg.cloneNode(true),
@@ -296,6 +296,4 @@ class downloader {
     }
 }
 
-module.exports = {
-    downloader
-}
+module.exports = Downloader

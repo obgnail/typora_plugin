@@ -1,4 +1,4 @@
-class redirectLocalRootUrlPlugin extends BaseCustomPlugin {
+class RedirectLocalRootUrlPlugin extends BaseCustomPlugin {
     beforeProcess = () => {
         if (!this.config.root) {
             return this.utils.stopLoadPluginError
@@ -21,10 +21,10 @@ class redirectLocalRootUrlPlugin extends BaseCustomPlugin {
                 ? typoraRootUrl
                 : this.utils.Package.Path.resolve(this.utils.getCurrentDirPath(), this.config.root)
         }
-        this.utils.decorate(() => File && File.editor && File.editor.docMenu, "getLocalRootUrl", null, redirect, true)
+        this.utils.decorate(() => File?.editor?.docMenu, "getLocalRootUrl", null, redirect, true)
     }
 }
 
 module.exports = {
-    plugin: redirectLocalRootUrlPlugin
+    plugin: RedirectLocalRootUrlPlugin
 }

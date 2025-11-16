@@ -256,7 +256,7 @@ class Parser {
                     _eval(right)
                     break
                 case NOT:
-                    left && _eval(left)
+                    if (left) _eval(left)
                     _eval(right)
                     break
                 default:
@@ -268,6 +268,4 @@ class Parser {
     }
 }
 
-module.exports = {
-    Parser
-}
+module.exports = Parser

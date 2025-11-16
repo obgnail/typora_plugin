@@ -4,7 +4,7 @@
  * For example: plugin `collapse_paragraph`: It is necessary to record which chapters are folded before the user switches tabs,
  *              and then automatically fold the chapters back after the user switches back to maintain consistency.
  */
-class stateRecorder {
+class StateRecorder {
     constructor(utils) {
         this.utils = utils;
         this.recorders = new Map(); // map[name]recorder
@@ -32,7 +32,7 @@ class stateRecorder {
                 const collection = new Map();
                 document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
                     const state = recorder.stateGetter(ele);
-                    state && collection.set(idx, state);
+                    if (state) collection.set(idx, state)
                 })
                 if (collection.size) {
                     recorder.collections.set(filepath, collection)
@@ -49,9 +49,9 @@ class stateRecorder {
             if (collection && collection.size) {
                 document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
                     const state = collection.get(idx);
-                    state && recorder.stateRestorer(ele, state);
+                    if (state) recorder.stateRestorer(ele, state);
                 })
-                recorder.finalFunc && recorder.finalFunc();
+                recorder.finalFunc?.()
             }
         }
     }
@@ -68,7 +68,7 @@ class stateRecorder {
 
     deleteState = (name, filepath, idx) => {
         const map = this.getState(name, filepath);
-        map && map.delete(idx);
+        if (map) map.delete(idx)
     }
 
     setState = (name, collections) => {
@@ -93,6 +93,4 @@ class stateRecorder {
     }
 }
 
-module.exports = {
-    stateRecorder
-}
+module.exports = StateRecorder

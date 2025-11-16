@@ -1,4 +1,4 @@
-class fileCounterPlugin extends BasePlugin {
+class FileCounterPlugin extends BasePlugin {
     styleTemplate = () => ({
         font_weight: this.config.FONT_WEIGHT,
         color: this.config.COLOR || "var(--active-file-text-color)",
@@ -6,8 +6,7 @@ class fileCounterPlugin extends BasePlugin {
     })
 
     init = () => {
-        this.controller = new AbortController()
-
+        this.abortController = new AbortController()
         this.className = "plugin-file-counter"
         this.libraryTreeEl = document.getElementById("file-library-tree")
         this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => {
@@ -80,7 +79,7 @@ class fileCounterPlugin extends BasePlugin {
             maxStats: this.config.MAX_STATS,
             semaphore: this.config.CONCURRENCY_LIMIT,
             followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
-            signal: this.controller.signal,
+            signal: this.abortController.signal,
             onFinished: this._onFinished,
         })
         return count
@@ -121,11 +120,11 @@ class fileCounterPlugin extends BasePlugin {
         const msg = this.i18n.t("error.tooManyFiles", { pluginName: this.pluginName })
         this.utils.notification.show(msg, "warning", 7000)
         this.observer.disconnect()
-        this.controller.abort(new DOMException("Stop Plugin", "AbortError"))
-        this.controller = null
+        this.abortController.abort(new DOMException("Stop Plugin", "AbortError"))
+        this.abortController = null
     }
 }
 
 module.exports = {
-    plugin: fileCounterPlugin
+    plugin: FileCounterPlugin
 }

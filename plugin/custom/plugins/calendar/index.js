@@ -1,4 +1,4 @@
-class calendarPlugin extends BaseCustomPlugin {
+class CalendarPlugin extends BaseCustomPlugin {
     init = () => this.Calendar = null
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
@@ -52,5 +52,5 @@ class calendarPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: calendarPlugin
+    plugin: CalendarPlugin
 }

@@ -1,13 +1,25 @@
-class testPlugin extends BasePlugin {
+class TestPlugin extends BasePlugin {
+    process = () => {
+        this.singleInstance()
+        this.autoOpenDevTools()
+        this.updateRequire()
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.test)
+    }
+
     singleInstance = () => {
-        const objGetter = () => File && File.editor && File.editor.library
-        const callback = () => setTimeout(() => ClientCommand.close(), 500)
-        this.utils.decorate(objGetter, "openFileInNewWindow", null, callback)
+        this.utils.decorate(
+            () => File?.editor?.library,
+            "openFileInNewWindow",
+            null,
+            () => setTimeout(() => ClientCommand.close(), 500)
+        )
     }
 
     autoOpenDevTools = () => {
-        const { eventHub } = this.utils
-        eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => JSBridge.invoke("window.toggleDevTools"))
+        this.utils.eventHub.addEventListener(
+            this.utils.eventHub.eventType.allPluginsHadInjected,
+            () => JSBridge.invoke("window.toggleDevTools")
+        )
     }
 
     updateRequire = () => {
@@ -20,15 +32,8 @@ class testPlugin extends BasePlugin {
     test = async () => {
 
     }
-
-    process = () => {
-        this.singleInstance()
-        this.autoOpenDevTools()
-        this.updateRequire()
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.test)
-    }
 }
 
 module.exports = {
-    plugin: testPlugin
+    plugin: TestPlugin
 }

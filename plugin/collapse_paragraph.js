@@ -1,4 +1,4 @@
-class collapseParagraphPlugin extends BasePlugin {
+class CollapseParagraphPlugin extends BasePlugin {
     styleTemplate = () => true
 
     init = () => {
@@ -166,7 +166,7 @@ class collapseParagraphPlugin extends BasePlugin {
         const result = [paragraph];
         this.rangeSiblings(paragraph, ele => {
             if (stop.indexOf(ele.tagName) !== -1) return true;
-            (ele.tagName === paragraph.tagName) && result.push(ele);
+            if (ele.tagName === paragraph.tagName) result.push(ele)
         })
         return result;
     }
@@ -177,7 +177,7 @@ class collapseParagraphPlugin extends BasePlugin {
         const result = [paragraph];
         this.rangeSiblings(paragraph, ele => {
             if (stop.indexOf(ele.tagName) !== -1) return true;
-            (idx < this.paragraphList.indexOf(ele.tagName)) && result.push(ele);
+            if (idx < this.paragraphList.indexOf(ele.tagName)) result.push(ele)
         })
         return result;
     }
@@ -263,5 +263,5 @@ class collapseParagraphPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: collapseParagraphPlugin
+    plugin: CollapseParagraphPlugin
 }

@@ -1,4 +1,4 @@
-class staticMarkersPlugin extends BasePlugin {
+class StaticMarkersPlugin extends BasePlugin {
     beforeProcess = () => {
         this.cssId = this.utils.styleTemplater.getID(this.fixedName)
         this.enableStaticMarkers = this.config.ENABLE
@@ -21,5 +21,5 @@ class staticMarkersPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: staticMarkersPlugin
+    plugin: StaticMarkersPlugin
 }

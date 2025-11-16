@@ -1,4 +1,4 @@
-class imageReviewerPlugin extends BaseCustomPlugin {
+class ImageReviewerPlugin extends BaseCustomPlugin {
     styleTemplate = () => ({
         imageMaxWidth: this.config.image_max_width + "%",
         imageMaxHeight: this.config.image_max_height + "%",
@@ -146,22 +146,19 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             ev.preventDefault()
             const list = this.getFuncList(ev, "wheel")
             const func = list[ev.deltaY > 0 ? 1 : 0]
-            const isFunc = func instanceof Function
-            isFunc && func()
+            if (func instanceof Function) func()
         }, { passive: false })
         this.entities.image.addEventListener("mousedown", ev => {
             const list = this.getFuncList(ev, "mousedown")
             const func = list[ev.button]
-            const isFunc = func instanceof Function
-            isFunc && func()
+            if (func instanceof Function) func()
         })
         this.entities.ops.addEventListener("click", ev => {
             const target = ev.target.closest("[option]")
             if (!target) return
             const option = target.getAttribute("option")
             const arg = option.indexOf("rotate") !== -1 ? 90 : undefined
-            const isFunc = this[option] instanceof Function
-            isFunc && this[option](arg)
+            if (this[option] instanceof Function) this[option](arg)
         })
         this.entities.nav.addEventListener("click", ev => {
             const target = ev.target.closest(".review-thumbnail")
@@ -195,7 +192,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     replaceImageTransform = (regex, func, moveCenter = true) => {
         this.entities.image.style.transform = this.entities.image.style.transform.replace(regex, func)
-        moveCenter && this.moveImageCenter()
+        if (moveCenter) this.moveImageCenter()
     }
 
     rotate = (dec, newRotate, rotateScale) => this.replaceImageTransform(/rotate\((.*?)deg\)/, (_, curRotate) => {
@@ -334,21 +331,21 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             const index = this.entities.msg.querySelector(".review-index")
             const title = this.entities.msg.querySelector(".review-title")
             const size = this.entities.msg.querySelector(".review-size")
-            index && (index.textContent = `[ ${showIdx} / ${total} ]`)
-            title && (title.textContent = alt)
-            size && (size.textContent = `${naturalWidth} × ${naturalHeight}`)
+            if (index) (index.textContent = `[ ${showIdx} / ${total} ]`)
+            if (title) (title.textContent = alt)
+            if (size) (size.textContent = `${naturalWidth} × ${naturalHeight}`)
         }
 
         const handleToolIcon = src => {
             const autoSize = this.entities.ops.querySelector(`[option="autoSize"]`)
             const download = this.entities.ops.querySelector(`[option="download"]`)
-            autoSize && (autoSize.className = "fa fa-search-plus")
-            download && this.utils.toggleInvisible(download, !this.utils.isNetworkImage(src))
+            if (autoSize) (autoSize.className = "fa fa-search-plus")
+            if (download) this.utils.toggleInvisible(download, !this.utils.isNetworkImage(src))
         }
 
         const handleThumbnail = showIdx => {
             const s = this.entities.nav.querySelector(".select")
-            s && s.classList.remove("select")
+            if (s) s.classList.remove("select")
             const active = this.entities.nav.querySelector(`.review-thumbnail[data-idx="${showIdx - 1}"]`)
             if (active) {
                 active.classList.add("select")
@@ -496,7 +493,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         } else {
             // src = src.replace(/^file:\/[2-3]/, "")
             src = decodeURI(src).substring(0, src.indexOf("?"))
-            src && this.utils.showInFinder(src)
+            if (src) this.utils.showInFinder(src)
         }
     }
     download = async () => {
@@ -513,7 +510,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         const idx = parseInt(this.entities.image.dataset.idx)
         const image = this._collectImage()[idx]
         this.close()
-        image && this.utils.scroll(image, 30)
+        if (image) this.utils.scroll(image, 30)
     }
     show = () => {
         document.activeElement.blur()
@@ -554,5 +551,5 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: imageReviewerPlugin,
+    plugin: ImageReviewerPlugin
 }

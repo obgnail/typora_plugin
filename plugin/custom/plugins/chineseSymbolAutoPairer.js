@@ -1,7 +1,7 @@
 // This plugin does not handle Chinese input under fences.
 // If needed, you can listen to the afterAddCodeBlock event and modify File.editor.fences.queue.n90.state.keyMaps[1].
 // You can refer to the fence_enhance plugin's editorHotkey for more details.
-class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
+class ChineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     // Older versions of Typora delay setting noPairingMatch.
     // Therefore, to maintain compatibility with older versions, this configuration will be checked again later.
     beforeProcess = () => File.option.noPairingMatch ? this.utils.stopLoadPluginError : undefined
@@ -23,10 +23,9 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
             "Backquote", "BracketLeft", "BracketRight", "Backslash", "Semicolon", "Quote", "Comma", "Period", "Slash",
         ])
         this.reversePairMap = reverseMap(this.pairMap)
-        // Older versions of Typora load SnapFlag with a delay.
-        const until = () => File && File.editor && File.editor.undo && File.editor.undo.UndoManager && File.editor.undo.UndoManager.SnapFlag
+        const until = () => File?.editor?.undo?.UndoManager?.SnapFlag
         const after = () => this.undoSnapType = File.editor.undo.UndoManager.SnapFlag
-        this.utils.loopDetector(until, after);
+        this.utils.pollUntil(until, after)
     }
 
     process = () => {
@@ -165,5 +164,5 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: chineseSymbolAutoPairerPlugin
+    plugin: ChineseSymbolAutoPairerPlugin
 }

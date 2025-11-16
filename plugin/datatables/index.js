@@ -1,4 +1,4 @@
-class datatablesPlugin extends BasePlugin {
+class DataTablesPlugin extends BasePlugin {
     init = () => {
         this.dataTablesConfig = null;
         this.tableList = [];
@@ -8,19 +8,18 @@ class datatablesPlugin extends BasePlugin {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.destroyAllDataTable);
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeToggleSourceMode, this.destroyAllDataTable);
 
-        this.utils.decorate(() => File && File.editor && File.editor.tableEdit, "showTableEdit", (...args) => {
-                if (!args[0] || !args[0].find) return;
+        this.utils.decorate(() => File?.editor?.tableEdit, "showTableEdit", (...args) => {
+            if (!args[0] || !args[0].find) return;
 
-                const table = args[0].find("table");
-                if (table.length === 0) return
+            const table = args[0].find("table");
+            if (table.length === 0) return
 
-                const uuid = table.attr("table-uuid");
-                const idx = this.tableList.findIndex(table => table.uuid === uuid);
-                if (idx !== -1) {
-                    return this.utils.stopCallError
-                }
+            const uuid = table.attr("table-uuid");
+            const idx = this.tableList.findIndex(table => table.uuid === uuid);
+            if (idx !== -1) {
+                return this.utils.stopCallError
             }
-        )
+        })
     }
 
     destroyAllDataTable = () => {
@@ -50,7 +49,7 @@ class datatablesPlugin extends BasePlugin {
     }
 
     lazyLoad = async () => {
-        if (!($ && $.fn && $.fn.dataTable)) {
+        if (!$?.fn?.dataTable) {
             this.initDataTablesConfig();
             await this.utils.insertScript("./plugin/datatables/resource/datatables.min.js");
             this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/datatables.min.css");
@@ -101,7 +100,7 @@ class datatablesPlugin extends BasePlugin {
         const table = $table.dataTable(this.dataTablesConfig);
         this.appendFilter(table.api());
         this.tableList.push({ uuid, table });
-        edit && edit.parentNode.removeChild(edit);
+        if (edit) edit.parentNode.removeChild(edit)
         return uuid
     }
 
@@ -149,5 +148,5 @@ class datatablesPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: datatablesPlugin,
+    plugin: DataTablesPlugin
 }

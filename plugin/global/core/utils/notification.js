@@ -1,4 +1,4 @@
-class notification {
+class Notification {
     constructor(utils) {
         this.utils = utils
         this.types = {
@@ -59,6 +59,4 @@ class notification {
     }
 }
 
-module.exports = {
-    notification
-}
+module.exports = Notification

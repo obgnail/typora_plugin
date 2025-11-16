@@ -1,4 +1,4 @@
-class progressBar {
+class ProgressBar {
     constructor(utils) {
         this.utils = utils;
         this.progressBar = null;
@@ -74,6 +74,4 @@ class progressBar {
     }
 }
 
-module.exports = {
-    progressBar
-}
+module.exports = ProgressBar

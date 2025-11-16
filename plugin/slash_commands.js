@@ -1,4 +1,4 @@
-class slashCommandsPlugin extends BasePlugin {
+class SlashCommandsPlugin extends BasePlugin {
     beforeProcess = () => {
         this.SCOPE = { INLINE_MATH: "inline_math", PLAIN: "plain" }
         this.TYPE = { COMMAND: "command", SNIPPET: "snippet", GENERATE_SNIPPET: "gen-snp" }
@@ -27,7 +27,7 @@ class slashCommandsPlugin extends BasePlugin {
 
     process = () => {
         if (this.config.SUGGESTION_TIMING === "on_input") {
-            this.utils.decorate(() => File && File.editor && File.editor.brush, "triggerAutoComplete", null, this._onEdit)
+            this.utils.decorate(() => File?.editor?.brush, "triggerAutoComplete", null, this._onEdit)
         } else {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this._onEdit)
         }
@@ -246,5 +246,5 @@ class slashCommandsPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: slashCommandsPlugin
+    plugin: SlashCommandsPlugin
 }

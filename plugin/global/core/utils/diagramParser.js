@@ -1,7 +1,7 @@
 /**
  * Dynamically register and unregister new code block diagram.
  */
-class diagramParser {
+class DiagramParser {
     constructor(utils, i18n) {
         this.utils = utils;
         this.i18n = i18n;
@@ -232,7 +232,7 @@ class diagramParser {
             const parser = this.parsers.get(lang);
             if (parser) {
                 $pre.addClass("plugin-custom-diagram");
-                parser.interactiveMode && $pre.addClass("md-fences-interactive");
+                if (parser.interactiveMode) $pre.addClass("md-fences-interactive")
                 await this.renderCustomDiagram(cid, lang, $pre);
             } else {
                 $pre.removeClass("md-fences-interactive plugin-custom-diagram");
@@ -258,9 +258,7 @@ class diagramParser {
     onTryAddLangUndo = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, args => args && args[0] && this.renderDiagram(args[0].cid))
 
     onUpdateDiagram = () => {
-        const objGetter = () => File && File.editor && File.editor.diagrams;
-        const after = (result, ...args) => this.renderDiagram(args[0]);
-        this.utils.decorate(objGetter, "updateDiagram", null, after);
+        this.utils.decorate(() => File?.editor?.diagrams, "updateDiagram", null, (result, ...args) => this.renderDiagram(args[0]))
     }
 
     onExport = () => {
@@ -330,8 +328,8 @@ class diagramParser {
             }
         }
 
-        this.utils.decorate(() => File && File.editor && File.editor.fences, "focus", stopCall);
-        this.utils.decorate(() => File && File.editor, "refocus", stopCall);
+        this.utils.decorate(() => File?.editor?.fences, "focus", stopCall)
+        this.utils.decorate(() => File?.editor, "refocus", stopCall)
 
         const showAllTButton = fence => {
             const enhance = fence.querySelector(".fence-enhance");
@@ -405,13 +403,12 @@ class diagramParser {
     onChangeFile = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, () => {
             for (const { destroyAllFunc } of this.parsers.values()) {
-                destroyAllFunc && destroyAllFunc();
+                destroyAllFunc?.()
             }
         });
     }
 
     onCheckIsDiagramType = () => {
-        const objGetter = () => File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor
         const after = (result, ...args) => {
             if (result === true) return true;
 
@@ -428,10 +425,8 @@ class diagramParser {
             }
             return result
         }
-        this.utils.decorate(objGetter, "isDiagramType", null, after, true);
+        this.utils.decorate(() => File?.editor?.diagrams?.constructor, "isDiagramType", null, after, true)
     }
 }
 
-module.exports = {
-    diagramParser
-}
+module.exports = DiagramParser

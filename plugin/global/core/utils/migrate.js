@@ -1,7 +1,7 @@
 /**
  * Handles migration operations during the upgrade process.
  */
-class migrate {
+class Migrate {
     constructor(utils) {
         this.utils = utils
     }
@@ -93,6 +93,4 @@ class migrate {
     }
 }
 
-module.exports = {
-    migrate
-}
+module.exports = Migrate

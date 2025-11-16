@@ -1,4 +1,4 @@
-class mermaid {
+class Mermaid {
     constructor(utils) {
         this.utils = utils
     }
@@ -13,6 +13,4 @@ class mermaid {
     }
 }
 
-module.exports = {
-    mermaid
-}
+module.exports = Mermaid

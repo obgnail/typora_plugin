@@ -1,9 +1,8 @@
-class fenceEnhancePlugin extends BasePlugin {
+class FenceEnhancePlugin extends BasePlugin {
     styleTemplate = () => ({ bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial" })
 
     init = () => {
-        const supportIndent = File && File.editor && File.editor.fences && File.editor.fences.formatContent
-        this.supportIndent = this.config.ENABLE_INDENT && supportIndent
+        this.supportIndent = this.config.ENABLE_INDENT && File?.editor?.fences?.formatContent
         this.enableIndent = this.supportIndent
         this.buttons = []
     }
@@ -12,22 +11,22 @@ class fenceEnhancePlugin extends BasePlugin {
         this.utils.settings.autoSaveSettings(this)
 
         if (this.config.ENABLE_HOTKEY) {
-            new editorHotkeyHelper(this).process();
+            new EditorHotkeyHelper(this).process()
         }
         if (this.config.INDENTED_WRAPPED_LINE) {
-            new indentedWrappedLineHelper(this).process();
+            new IndentedWrappedLineHelper(this).process()
         }
         if (this.config.ENABLE_BUTTON) {
-            this.processButton();
+            this.processButton()
         }
         if (this.config.PRELOAD_ALL_FENCES) {
             this.preloadAllFences()
         }
         if (this.config.HIGHLIGHT_BY_LANGUAGE) {
-            new highlightHelper(this).process();
+            new HighlightHelper(this).process()
         }
         if (this.config.ENABLE_LANGUAGE_FOLD) {
-            await new languageFoldHelper(this).process();
+            await new LanguageFoldHelper(this).process()
         }
     }
 
@@ -105,9 +104,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 const cm = File.editor.fences.queue[cid]
                 if (!cm) return
                 const shouldFold = threshold <= 0 || threshold < cm.lineCount()
-                if (shouldFold) {
-                    btn.click()
-                }
+                if (shouldFold) btn.click()
             }
             const autoFold = () => {
                 const { EXPAND_ON_FOCUS, FOLD_ON_BLUR, DEFAULT_FOLD } = this.config
@@ -215,11 +212,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 })
                 enhance.append(...buttons)
                 fence.appendChild(enhance)
-                this.buttons.forEach((b, idx) => {
-                    if (b.extraFunc) {
-                        b.extraFunc({ btn: buttons[idx], cid, fence, enhance })
-                    }
-                })
+                this.buttons.forEach((b, idx) => b.extraFunc?.({ btn: buttons[idx], cid, fence, enhance }))
             })
         }
 
@@ -240,9 +233,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 ev.stopPropagation()
                 document.activeElement.blur()
                 const button = this.buttons.find(b => b.action === action)
-                if (button) {
-                    button.listener({ ev, btn, fence, cid, cm })
-                }
+                button?.listener({ ev, btn, fence, cid, cm })
             })
             const config = this.config
             this.utils.entities.$eWrite.on("mouseenter", ".md-fences", function () {
@@ -276,10 +267,7 @@ class fenceEnhancePlugin extends BasePlugin {
     copyFence = fence => fence.querySelector(".copy-code").click()
     indentFence = fence => fence.querySelector(".indent-code").click()
     foldFence = fence => fence.querySelector(".fold-code").click()
-    expandFence = fence => {
-        const button = fence.querySelector(".fence-enhance .fold-code.folded")
-        if (button) button.click()
-    }
+    expandFence = fence => fence.querySelector(".fence-enhance .fold-code.folded")?.click()
     indentAllFences = () => this.traverseAllFences(({ fence }) => this.indentFence(fence))
 
     traverseAllFences = (visitor) => {
@@ -405,13 +393,12 @@ class fenceEnhancePlugin extends BasePlugin {
                 }
             },
         }
-        const func = callMap[action]
-        if (func) func()
+        callMap[action]?.()
     }
 }
 
 // doc: https://codemirror.net/5/doc/manual.html
-class editorHotkeyHelper {
+class EditorHotkeyHelper {
     constructor(controller) {
         this.controller = controller;
         this.utils = controller.utils;
@@ -420,9 +407,7 @@ class editorHotkeyHelper {
 
     process = () => {
         const hotkeys = this.getHotkeys()
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, fence) => {
-            if (fence) fence.addKeyMap(hotkeys)
-        })
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, fence) => fence?.addKeyMap(hotkeys))
     }
 
     getHotkeys = () => {
@@ -516,7 +501,7 @@ class editorHotkeyHelper {
 }
 
 // doc: https://codemirror.net/5/demo/indentwrap.html
-class indentedWrappedLineHelper {
+class IndentedWrappedLineHelper {
     constructor(controller) {
         this.utils = controller.utils;
     }
@@ -533,13 +518,13 @@ class indentedWrappedLineHelper {
             if (fence) {
                 charWidth = charWidth || fence.defaultCharWidth();
                 fence.on("renderLine", callback);
-                setTimeout(() => fence && fence.refresh(), 100);
+                setTimeout(() => fence?.refresh(), 100)
             }
         })
     }
 }
 
-class highlightHelper {
+class HighlightHelper {
     constructor(plugin) {
         this.utils = plugin.utils
         this.pattern = new RegExp(plugin.config.HIGHLIGHT_PATTERN)
@@ -567,9 +552,9 @@ class highlightHelper {
     }
 
     _setHighlightLines = (fence) => {
-        const info = fence.options && fence.options.mode && fence.options.mode._highlightInfo
-        if (info && info.line) {
-            const needHighlightLines = this.parse(info.line)
+        const line = fence?.options?.mode?._highlightInfo?.line
+        if (line) {
+            const needHighlightLines = this.parse(line)
             needHighlightLines.forEach(i => fence.addLineClass(i, "background", this.className))
         }
     }
@@ -601,8 +586,8 @@ class highlightHelper {
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (_, fence) => fence.operation(() => this._setHighlightLines(fence)))
 
-        this.utils.decorate(() => File && File.editor && File.editor.fences, "tryAddLangUndo", null, (result, cm) => {
-            const cid = cm && cm.cid
+        this.utils.decorate(() => File?.editor?.fences, "tryAddLangUndo", null, (result, cm) => {
+            const cid = cm?.cid
             if (cid) {
                 const fence = File.editor.fences.queue[cid]
                 fence.operation(() => {
@@ -615,7 +600,7 @@ class highlightHelper {
 }
 
 // doc: https://codemirror.net/5/demo/folding.html
-class languageFoldHelper {
+class LanguageFoldHelper {
     constructor(controller) {
         this.utils = controller.utils;
         this.gutter = "CodeMirror-foldgutter";
@@ -649,5 +634,5 @@ class languageFoldHelper {
 }
 
 module.exports = {
-    plugin: fenceEnhancePlugin,
+    plugin: FenceEnhancePlugin
 }

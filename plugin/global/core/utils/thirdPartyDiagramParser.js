@@ -1,7 +1,7 @@
 /**
  * Dynamically register and unregister third-party code block diagram (derived from DiagramParser).
  */
-class thirdPartyDiagramParser {
+class ThirdPartyDiagramParser {
     constructor(utils) {
         this.utils = utils;
         this.parsers = new Map();
@@ -194,6 +194,4 @@ class thirdPartyDiagramParser {
     }
 }
 
-module.exports = {
-    thirdPartyDiagramParser
-}
+module.exports = ThirdPartyDiagramParser

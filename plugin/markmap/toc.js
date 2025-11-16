@@ -1,4 +1,4 @@
-class tocMarkmap {
+class TOCMarkmap {
     constructor(plugin) {
         this.plugin = plugin
         this.utils = plugin.utils
@@ -462,7 +462,7 @@ class tocMarkmap {
     }
 
     download = async () => {
-        const { downloader } = require("./downloader.js")
+        const Downloader = require("./downloader.js")
 
         let {
             SHOW_PATH_INQUIRY_DIALOG,
@@ -490,13 +490,13 @@ class tocMarkmap {
                 title: this.i18n.t("func.download"),
                 properties: ["saveFile", "showOverwriteConfirmation"],
                 defaultPath: downloadPath,
-                filters: downloader.getFormats(),
+                filters: Downloader.getFormats(),
             }
             const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", op)
             if (canceled) return
             downloadPath = filePath
         }
-        const ok = await downloader.download(this, downloadPath)
+        const ok = await Downloader.download(this, downloadPath)
         if (!ok) return
         if (SHOW_IN_FINDER) {
             this.utils.showInFinder(downloadPath)
@@ -596,7 +596,7 @@ class tocMarkmap {
         const md = this.plugin.getToc()
         if (md === undefined) return
 
-        const options = this.plugin.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm && this.mm.options)
+        const options = this.plugin.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm?.options)
         this.transformContext = this.Lib.transformer.transform(md)
         const { root } = this.transformContext
 
@@ -620,7 +620,7 @@ class tocMarkmap {
         if (!this.config.KEEP_FOLD_STATE_WHEN_UPDATE) return
 
         const preorder = (node, fn, parent) => {
-            const parentPath = (parent && parent.__path) || ""
+            const parentPath = parent?.__path || ""
             node.__path = `${parentPath}\n${node.content}`
             fn(node)
             for (const child of node.children) {
@@ -631,7 +631,7 @@ class tocMarkmap {
         const needFold = new Set()
         const { data: oldRoot } = this.mm.state || {}
         preorder(oldRoot, node => {
-            if (node.payload && node.payload.fold) {
+            if (node.payload?.fold) {
                 needFold.add(node.__path)
             }
         })
@@ -717,6 +717,4 @@ class tocMarkmap {
     _rollbackTransition = () => this.entities.modal.style.transition = ""
 }
 
-module.exports = {
-    tocMarkmap
-}
+module.exports = TOCMarkmap

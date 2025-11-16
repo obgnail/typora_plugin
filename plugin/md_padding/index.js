@@ -1,4 +1,4 @@
-class mdPaddingPlugin extends BasePlugin {
+class MdPaddingPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     format = content => {
@@ -14,5 +14,5 @@ class mdPaddingPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: mdPaddingPlugin
+    plugin: MdPaddingPlugin
 }

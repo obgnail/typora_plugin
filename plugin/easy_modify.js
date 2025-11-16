@@ -1,4 +1,4 @@
-class easyModifyPlugin extends BasePlugin {
+class EasyModifyPlugin extends BasePlugin {
     hotkey = () => [
         { hotkey: this.config.HOTKEY_COPY_FULL_PATH, callback: () => this.call("copy_full_path") },
         { hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, callback: () => this.call("increase_headers_level") },
@@ -364,5 +364,5 @@ class easyModifyPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: easyModifyPlugin,
+    plugin: EasyModifyPlugin
 }

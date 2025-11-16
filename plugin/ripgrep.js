@@ -1,4 +1,4 @@
-class ripgrepPlugin extends BasePlugin {
+class RipgrepPlugin extends BasePlugin {
     styleTemplate = () => ({ topPercent: parseInt(this.config.TOP_PERCENT) + "%" })
 
     html = () => `
@@ -8,8 +8,7 @@ class ripgrepPlugin extends BasePlugin {
                 <input type="text" placeholder='[options] PATTERN [path]'/>
             </form>
             <div class="plugin-ripgrep-output plugin-common-hidden"><pre tabindex="0"></pre></div>
-        </div>
-    `
+        </div>`
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
@@ -58,16 +57,18 @@ class ripgrepPlugin extends BasePlugin {
     }
 
     ripgrep = (args, callback) => {
-        const argsList = this._parseCommandLineArgs(args);
-        const onData = data => data && (this.entities.pre.textContent += data.toString());
-        const addErrorClass = this.utils.once(() => this.entities.pre.classList.add("error"));
-        const onError = data => {
-            this.entities.pre.textContent += data.toString();
-            addErrorClass();
+        const argsList = this._parseCommandLineArgs(args)
+        const addErrorClass = this.utils.once(() => this.entities.pre.classList.add("error"))
+        const onData = data => {
+            if (data) this.entities.pre.textContent += data.toString()
         }
-        const onClose = callback || (code => undefined);
-        this.resetOutput();
-        this._ripgrep(argsList, onData, onError, onClose);
+        const onError = data => {
+            onData(data)
+            addErrorClass()
+        }
+        const onClose = callback || this.utils.noop
+        this.resetOutput()
+        this._ripgrep(argsList, onData, onError, onClose)
     }
 
     /**
@@ -147,5 +148,5 @@ class ripgrepPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: ripgrepPlugin
-};
+    plugin: RipgrepPlugin
+}

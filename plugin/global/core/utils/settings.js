@@ -1,4 +1,4 @@
-class settings {
+class Settings {
     constructor(utils) {
         this.utils = utils
     }
@@ -106,6 +106,4 @@ class settings {
     }
 }
 
-module.exports = {
-    settings
-}
+module.exports = Settings

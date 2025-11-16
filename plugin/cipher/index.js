@@ -1,4 +1,4 @@
-class cipherPlugin extends BasePlugin {
+class CipherPlugin extends BasePlugin {
     hotkey = () => [
         { hotkey: this.config.ENCRYPT_HOTKEY, callback: () => this.call("encrypt") },
         { hotkey: this.config.DECRYPT_HOTKEY, callback: () => this.call("decrypt") },
@@ -65,5 +65,5 @@ class cipherPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: cipherPlugin,
+    plugin: CipherPlugin
 }

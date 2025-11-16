@@ -1,4 +1,4 @@
-class drawIOPlugin extends BaseCustomPlugin {
+class DrawIOPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
     init = () => {
@@ -114,5 +114,5 @@ class drawIOPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: drawIOPlugin,
+    plugin: DrawIOPlugin
 }

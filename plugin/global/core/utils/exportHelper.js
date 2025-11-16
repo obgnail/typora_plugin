@@ -1,7 +1,7 @@
 /**
  * Dynamically register additional actions on export.
  */
-class exportHelper {
+class ExportHelper {
     constructor(utils) {
         this.utils = utils
         this.htmlHelpers = new Map()
@@ -79,12 +79,14 @@ class exportHelper {
 
         // The exportToHTML function in older versions of Typora is not an AsyncFunction.
         // Make every effort to be compatible with older versions.
-        const callback = () => {
-            this.isAsync = this.utils.isAsyncFunction(File.editor.export.exportToHTML)
-            const after = this.isAsync ? afterFn : afterFnSync
-            this.utils.decorate(() => File.editor.export, "exportToHTML", beforeFn, after, true)
-        }
-        this.utils.loopDetector(() => File && File.editor && File.editor.export && File.editor.export.exportToHTML, callback)
+        this.utils.pollUntil(
+            () => File?.editor?.export?.exportToHTML,
+            () => {
+                this.isAsync = this.utils.isAsyncFunction(File.editor.export.exportToHTML)
+                const after = this.isAsync ? afterFn : afterFnSync
+                this.utils.decorate(() => File.editor.export, "exportToHTML", beforeFn, after, true)
+            }
+        )
     }
 
     processExportToNative = () => {
@@ -101,8 +103,10 @@ class exportHelper {
         }
         const beforeFn = getLifeCycleFn("beforeExportToNative")
         const afterFn = getLifeCycleFn("afterExportToNative")
-        const callback = () => this.utils.decorate(() => File.editor.export, "exportToNative", beforeFn, afterFn)
-        this.utils.loopDetector(() => File && File.editor && File.editor.export && File.editor.export.exportToNative, callback)
+        this.utils.pollUntil(
+            () => File?.editor?.export?.exportToNative,
+            () => this.utils.decorate(() => File.editor.export, "exportToNative", beforeFn, afterFn)
+        )
     }
 
     process = () => {
@@ -111,6 +115,4 @@ class exportHelper {
     }
 }
 
-module.exports = {
-    exportHelper
-}
+module.exports = ExportHelper

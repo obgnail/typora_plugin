@@ -1,4 +1,4 @@
-class sortableOutlinePlugin extends BaseCustomPlugin {
+class SortableOutlinePlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
     process = () => {
@@ -7,7 +7,7 @@ class sortableOutlinePlugin extends BaseCustomPlugin {
         const fresh = this.utils.debounce(() => outline.querySelectorAll(".outline-item").forEach(e => e.draggable = true), 200)
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, fresh)
         this.utils.decorate(() => File, "freshMenu", null, fresh)
-        this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "renderOutline", null, fresh)
+        this.utils.decorate(() => File?.editor?.library?.outline, "renderOutline", null, fresh)
 
         let dragItem
         const that = this
@@ -94,5 +94,5 @@ class sortableOutlinePlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: sortableOutlinePlugin
+    plugin: SortableOutlinePlugin
 }

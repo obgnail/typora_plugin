@@ -1,4 +1,4 @@
-class jsonRpcPlugin extends BasePlugin {
+class JsonRPCPlugin extends BasePlugin {
     process = () => {
         try {
             const rpc = require("./node-json-rpc")
@@ -31,7 +31,7 @@ class jsonRpcPlugin extends BasePlugin {
             }
 
             const _plugin = this.utils.tryGetPlugin(plugin)
-            const _func = _plugin && _plugin[func]
+            const _func = _plugin?.[func]
             if (!_func) {
                 callback({ code: 404, message: "has not the plugin function" })
                 return
@@ -59,5 +59,5 @@ class jsonRpcPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: jsonRpcPlugin,
+    plugin: JsonRPCPlugin
 }

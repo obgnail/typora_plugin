@@ -1,9 +1,5 @@
-class blurPlugin extends BasePlugin {
-    beforeProcess = () => {
-        if (!this.utils.supportHasSelector) {
-            return this.utils.stopLoadPluginError
-        }
-    }
+class BlurPlugin extends BasePlugin {
+    beforeProcess = () => this.utils.supportHasSelector ? undefined : this.utils.stopLoadPluginError
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
@@ -47,5 +43,5 @@ class blurPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: blurPlugin,
+    plugin: BlurPlugin
 }

@@ -1,8 +1,8 @@
-const getUserLocale = (lang) => {
-    if (lang === "auto") {
-        lang = window._options.userLocale
+const normalizeLocale = (locale) => {
+    if (locale === "auto") {
+        locale = window._options.userLocale
     }
-    switch (lang) {
+    switch (locale) {
         case "zh-CN":
         case "zh-Hans":
             return "zh-CN"
@@ -24,66 +24,55 @@ const getUserLocale = (lang) => {
     }
 }
 
+const noSpaceLanguages = ["zh-CN", "zh-TW"]
+
 const i18n = {
     locale: "",
     data: {},
-    init: async function (locale) {
-        try {
-            locale = getUserLocale(locale)
-            const path = require("path")
-            const file = path.join(path.dirname(__dirname), "locales", `${locale}.json`)
-            const json = await require("fs").promises.readFile(file, "utf8")
-            this.data = JSON.parse(json)
-            this.locale = locale
-        } catch (error) {
-            console.error("Could not load translations:", error)
-        }
+    init: async (locale) => {
+        const normalized = normalizeLocale(locale)
+        const path = require("path")
+        const file = path.join(path.dirname(__dirname), "locales", `${normalized}.json`)
+        const json = await require("fs").promises.readFile(file, "utf8")
+        i18n.data = JSON.parse(json)
+        i18n.locale = normalized
     },
-    t: function (field, key, variables) {
-        const field_ = i18n.data[field]
-        if (field_ === undefined) {
-            return key
-        }
-        let text = field_[key]
+    t: (field, key, variables) => {
+        let text = i18n.data[field]?.[key]
         if (text === undefined) {
             return key
         }
-        if (variables) {
-            for (const [k, v] of Object.entries(variables)) {
-                const placeholder = new RegExp(`{{${k}}}`, "g")
-                text = text.replace(placeholder, v)
-            }
+        if (variables && typeof text === "string") {
+            text = text.replace(/{{\s*(\w+)\s*}}/g, (match, varKey) => variables[varKey] ?? match)
         }
         return text
     },
-    link: function (parts) {
-        return parts.join(i18n.locale.startsWith("zh") ? "" : " ")
+    link: (parts) => {
+        const joiner = noSpaceLanguages.includes(i18n.locale) ? "" : " "
+        return parts.join(joiner)
     },
-    array: function (field, keys, prefix = "") {
+    array: (field, keys, prefix = "") => {
         return keys.map(k => i18n.t(field, prefix + k))
     },
-    entries: function (field, keys, prefix = "") {
+    entries: (field, keys, prefix = "") => {
         return Object.fromEntries(keys.map(k => [k, i18n.t(field, prefix + k)]))
     },
-    bind: function (field) {
-        return {
-            noConflict: i18n,
-            data: i18n.data[field],
-            link: i18n.link,
-            _t: i18n.t,
-            t: (key, variables) => i18n.t(field, key, variables),
-            array: (keys, prefix) => i18n.array(field, keys, prefix),
-            entries: (keys, prefix) => i18n.entries(field, keys, prefix),
-            fillActions: (actions) => {
-                for (const act of actions) {
-                    if (!act.act_name && act.act_value) {
-                        act.act_name = i18n.t(field, `act.${act.act_value}`)
-                    }
+    bind: (field) => ({
+        data: i18n.data[field],
+        link: i18n.link,
+        _t: i18n.t,
+        t: (key, variables) => i18n.t(field, key, variables),
+        array: (keys, prefix) => i18n.array(field, keys, prefix),
+        entries: (keys, prefix) => i18n.entries(field, keys, prefix),
+        fillActions: (actions) => {
+            for (const act of actions) {
+                if (!act.act_name && act.act_value) {
+                    act.act_name = i18n.t(field, `act.${act.act_value}`)
                 }
-                return actions
-            },
-        }
-    }
+            }
+            return actions
+        },
+    })
 }
 
 module.exports = i18n

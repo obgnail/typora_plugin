@@ -1,4 +1,4 @@
-class windowTabBarPlugin extends BasePlugin {
+class WindowTabPlugin extends BasePlugin {
     beforeProcess = () => {
         if (window._options.framelessWindow && this.config.HIDE_WINDOW_TITLE_BAR) {
             document.querySelector("header").style.zIndex = "897";
@@ -32,6 +32,7 @@ class windowTabBarPlugin extends BasePlugin {
         ])
         this.entities = {
             content: this.utils.entities.eContent,
+            header: document.querySelector("header"),
             source: document.querySelector("#typora-source"),
             tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
             windowTab: document.querySelector("#plugin-window-tab"),
@@ -70,16 +71,16 @@ class windowTabBarPlugin extends BasePlugin {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.firstFileInit, this.openTab);
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this._scrollContent);
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial");
-            const isHeaderReady = () => this.utils.isBetaVersion ? document.querySelector("header").getBoundingClientRect().height : true
+            const isHeaderReady = () => this.utils.isBetaVersion ? this.entities.header.getBoundingClientRect().height : true
             const adjustTop = () => setTimeout(() => {
                 if (!this.config.HIDE_WINDOW_TITLE_BAR) {
-                    const { height, top } = document.querySelector("header").getBoundingClientRect();
+                    const { height, top } = this.entities.header.getBoundingClientRect()
                     this.entities.windowTab.style.top = height + top + "px";
                 }
                 // Adjust the top position of the content Tag to prevent it from being obscured by the tab.
                 this._adjustContentTop();
             }, 200);
-            this.utils.loopDetector(isHeaderReady, adjustTop, 35, 1000);
+            this.utils.pollUntil(isHeaderReady, adjustTop, 50, 1000)
         }
         const handleClick = () => {
             this.entities.tabBar.addEventListener("click", ev => {
@@ -294,7 +295,7 @@ class windowTabBarPlugin extends BasePlugin {
                     }
                 }
                 const current = this.tabUtil.currentTab;
-                if (current && current.path) {
+                if (current?.path) {
                     this.openTab(current.path);
                 }
             })
@@ -325,7 +326,7 @@ class windowTabBarPlugin extends BasePlugin {
             this.entities.tabBar.addEventListener("mousedown", ev => {
                 if (ev.button === 1) {
                     const tabContainer = ev.target.closest(".tab-container");
-                    tabContainer && tabContainer.querySelector(".close-button").click();
+                    if (tabContainer) tabContainer.querySelector(".close-button").click()
                 }
             })
         }
@@ -383,7 +384,13 @@ class windowTabBarPlugin extends BasePlugin {
         const reopenTabsWhenInit = () => {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
                 // Redirection is disabled when opening specific files (isDiscardableUntitled === false).
-                this.utils.loopDetector(this.utils.isDiscardableUntitled, () => this.openSaveTabs(this.autoSaveStorage, true), 50, 2000, false)
+                this.utils.pollUntil(
+                    this.utils.isDiscardableUntitled,
+                    () => this.openSaveTabs(this.autoSaveStorage, true),
+                    50,
+                    2000,
+                    false
+                )
 
                 setTimeout(() => {
                     this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage))
@@ -402,7 +409,7 @@ class windowTabBarPlugin extends BasePlugin {
                 _linkUtils.file = "";
                 _linkUtils.anchor = "";
                 const ele = File.editor.EditHelper.findAnchorElem(anchor);
-                ele && this.utils.scroll(ele, 10);
+                if (ele) this.utils.scroll(ele, 10)
             });
             this.utils.decorate(() => JSBridge, "invoke", (...args) => {
                 if (args.length < 3 || args[0] !== "app.openFileOrFolder") return;
@@ -465,8 +472,7 @@ class windowTabBarPlugin extends BasePlugin {
             sort_tabs: this.sortTabs,
             toggle_tab_bar: this.forceToggleTabBar,
         }
-        const func = callMap[action]
-        func && func()
+        callMap[action]?.()
     }
 
     _hideTabBar = () => {
@@ -550,7 +556,7 @@ class windowTabBarPlugin extends BasePlugin {
             await this.utils.reload();
             document.getElementById("title-text").innerHTML = "Typora";
             const activeElement = document.querySelector(".file-library-node.active");
-            activeElement && activeElement.classList.remove("active");
+            if (activeElement) activeElement.classList.remove("active")
         }
         this._hideTabBar();
         this._stopCheckTabsInterval();
@@ -916,5 +922,5 @@ class windowTabBarPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: windowTabBarPlugin
+    plugin: WindowTabPlugin
 }

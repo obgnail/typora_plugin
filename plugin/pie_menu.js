@@ -1,21 +1,18 @@
-class pieMenuPlugin extends BasePlugin {
+class PieMenuPlugin extends BasePlugin {
     styleTemplate = () => true
 
     html = () => {
-        const { BUTTONS } = this.config;
-        const innerItems = BUTTONS.slice(0, 8);
-        const outerItems = BUTTONS.slice(8, 16);
-
+        const innerItems = this.config.BUTTONS.slice(0, 8)
+        const outerItems = this.config.BUTTONS.slice(8, 16)
         const genCircle = (type, items = []) => {
             const item = items.map(({ ICON, CALLBACK }) => `<div class="plugin-pie-menu-item" data-callback="${CALLBACK}"><div class="plugin-pie-menu-item-text-${type} ${ICON}"></div></div>`)
             return `<div class="plugin-pie-menu-circle plugin-pie-menu-${type}">${item.join("")}</div>`
-        };
-
+        }
         const circles = [
             genCircle("solid", []),
             genCircle("inner", innerItems),
             outerItems.length ? genCircle("outer", outerItems) : ""
-        ];
+        ]
         return `<div class="plugin-pie-menu plugin-common-hidden">${circles.join("")}</div>`
     }
 
@@ -105,5 +102,5 @@ class pieMenuPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: pieMenuPlugin
-};
+    plugin: PieMenuPlugin
+}

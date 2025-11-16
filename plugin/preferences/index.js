@@ -1,4 +1,4 @@
-class preferencesPlugin extends BasePlugin {
+class PreferencesPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     styleTemplate = () => true
@@ -516,5 +516,5 @@ class preferencesPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: preferencesPlugin
+    plugin: PreferencesPlugin
 }

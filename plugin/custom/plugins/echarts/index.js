@@ -1,4 +1,4 @@
-class echartsPlugin extends BaseCustomPlugin {
+class EchartsPlugin extends BaseCustomPlugin {
     init = () => this.echartsPkg = null
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
@@ -66,11 +66,11 @@ class echartsPlugin extends BaseCustomPlugin {
         }
     }
 
-    getVersion = () => this.echartsPkg && this.echartsPkg.version
+    getVersion = () => this.echartsPkg?.version
 
     lazyLoad = () => this.echartsPkg = require("./echarts.min.js")
 }
 
 module.exports = {
-    plugin: echartsPlugin
+    plugin: EchartsPlugin
 }

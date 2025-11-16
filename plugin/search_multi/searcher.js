@@ -1,4 +1,4 @@
-const { Parser } = require("./parser")
+const Parser = require("./parser")
 
 class QualifierMixin {
     static _normalizeDate = date => new Date(date).setHours(0, 0, 0, 0)
@@ -437,7 +437,7 @@ class Searcher {
                         output.push(node)
                     }
                     const c = node.children
-                    if (c && c.length) {
+                    if (c?.length) {
                         recurse(c)
                     }
                 }
@@ -1003,6 +1003,4 @@ class Searcher {
     }
 }
 
-module.exports = {
-    Searcher
-}
+module.exports = Searcher

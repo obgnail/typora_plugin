@@ -1,4 +1,4 @@
-class calloutsPlugin extends BaseCustomPlugin {
+class CalloutsPlugin extends BaseCustomPlugin {
     styleTemplate = () => {
         const { list, hover_to_show_fold_callout, set_title_color } = this.config;
         const callouts = list.map(c => (
@@ -96,5 +96,5 @@ class calloutsPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: calloutsPlugin,
+    plugin: CalloutsPlugin
 }

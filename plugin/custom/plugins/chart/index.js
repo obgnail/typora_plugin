@@ -1,4 +1,4 @@
-class chartPlugin extends BaseCustomPlugin {
+class ChartPlugin extends BaseCustomPlugin {
     init = () => this.ChartPkg = null
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
@@ -54,11 +54,11 @@ class chartPlugin extends BaseCustomPlugin {
         $(preview).html(img)
     }
 
-    getVersion = () => this.ChartPkg && this.ChartPkg.version
+    getVersion = () => this.ChartPkg?.version
 
     lazyLoad = () => this.ChartPkg = require("./chart.min.js")
 }
 
 module.exports = {
-    plugin: chartPlugin
+    plugin: ChartPlugin
 }

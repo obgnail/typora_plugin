@@ -1,4 +1,4 @@
-class markdownLintPlugin extends BaseCustomPlugin {
+class MarkdownLintPlugin extends BaseCustomPlugin {
     // Markdownlint config supports names and aliases,
     // keys are not case-sensitive and processed in order from top to bottom with later values overriding earlier ones.
     // To simplify the main processing logic, we first normalize the config by resolving all aliases to their names.
@@ -326,5 +326,5 @@ class markdownLintPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: markdownLintPlugin
+    plugin: MarkdownLintPlugin
 }

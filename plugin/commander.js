@@ -4,13 +4,13 @@
  * 2. Abstracting shell differences to support cmd, WSL, and bash, including nested shell calls.
  * 3. Abstracting parameter differences, where cmd uses %VAR% and bash uses $VAR.
  */
-class commanderPlugin extends BasePlugin {
+class CommanderPlugin extends BasePlugin {
     beforeProcess = () => {
         this.SHELL = { CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl" }
         const shellList = Object.values(this.SHELL)
-        this.builtin = this.config.BUILTIN.filter(e => !e.disable && e.shell && shellList.includes(e.shell))
+        this.builtins = this.config.BUILTIN.filter(e => !e.disable && e.shell && shellList.includes(e.shell))
         if (!File.isWin) {
-            this.builtin = this.builtin.filter(e => e.shell !== this.SHELL.CMD_BASH)
+            this.builtins = this.builtins.filter(e => e.shell !== this.SHELL.CMD_BASH)
         }
     }
 
@@ -23,13 +23,9 @@ class commanderPlugin extends BasePlugin {
         const genShell = (shell, text) => `<option value="${shell}">${text}</option>`
         const shells = [genShell(CMD_BASH, "CMD/Bash")]
         if (File.isWin) {
-            shells.push(
-                genShell(POWER_SHELL, "PowerShell"),
-                genShell(GIT_BASH, "Git Bash"),
-                genShell(WSL, "WSL"),
-            )
+            shells.push(genShell(POWER_SHELL, "PowerShell"), genShell(GIT_BASH, "Git Bash"), genShell(WSL, "WSL"))
         }
-        const builtin = this.builtin.map(e => `<option data-shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`)
+        const builtins = this.builtins.map(e => `<option data-shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`)
         return `
             <fast-window id="plugin-commander" window-title="${this.pluginName}" window-buttons="close|fa-times" hidden>
                 <form id="plugin-commander-form">
@@ -38,7 +34,7 @@ class commanderPlugin extends BasePlugin {
                         <input type="text" class="plugin-commander-input" title="${envText}">
                     </div>
                     <select class="plugin-commander-shell">${shells.join("")}</select>
-                    <select class="plugin-commander-builtin">${builtin.join("")}</select>
+                    <select class="plugin-commander-builtin">${builtins.join("")}</select>
                 </form>
                 <div class="plugin-commander-output plugin-common-hidden"><pre></pre></div>
             </fast-window>
@@ -47,7 +43,7 @@ class commanderPlugin extends BasePlugin {
 
     hotkey = () => {
         const defaultHotkey = { hotkey: this.config.HOTKEY, callback: this.call }
-        const customHotkeys = this.builtin
+        const customHotkeys = this.builtins
             .filter(({ hotkey, cmd }) => hotkey && cmd)
             .map(({ hotkey, cmd, shell }) => ({ hotkey, callback: () => this.quickExecute(cmd, shell) }))
         return [defaultHotkey, ...customHotkeys]
@@ -66,11 +62,11 @@ class commanderPlugin extends BasePlugin {
         }
 
         this.act_value_prefix = "call_builtin@"
-        const defaultAct = { act_name: this.i18n.t("act.toggle_modal"), act_value: "toggle_modal", act_hotkey: this.config.HOTKEY }
-        const customActs = this.builtin
+        const defaultAction = { act_name: this.i18n.t("act.toggle_modal"), act_value: "toggle_modal", act_hotkey: this.config.HOTKEY }
+        const customActions = this.builtins
             .filter(a => a.name && a.cmd)
             .map(a => ({ act_name: a.name, act_value: this.act_value_prefix + a.name, act_hotkey: a.hotkey }))
-        this.staticActions = [defaultAct, ...customActs]
+        this.staticActions = [defaultAction, ...customActions]
     }
 
     process = () => {
@@ -102,26 +98,23 @@ class commanderPlugin extends BasePlugin {
             }
         })
         this.entities.window.addEventListener("btn-click", ev => {
-            const { action } = ev.detail
-            if (action === "close") {
+            if (ev.detail.action === "close") {
                 this.entities.window.hide()
             }
         })
     }
 
-    _convertPath = (path, shell) => {
-        if (File.isWin) {
-            if (shell === this.SHELL.WSL) {
-                return "/mnt" + this.utils.windowsPathToUnix(path)
-            } else if (shell === this.SHELL.GIT_BASH) {
-                return this.utils.windowsPathToUnix(path)
-            }
+    _normalizePath = (path, shell) => {
+        if (File.isWin && (shell === this.SHELL.GIT_BASH || shell === this.SHELL.WSL)) {
+            const prefix = shell === this.SHELL.GIT_BASH ? "" : "/mnt"
+            const posixPath = path.replace(/\\/g, "/").replace(/^(\w+):/, (_, drive) => `/${drive.toLowerCase()}`)
+            return prefix + posixPath
         }
         return path
     }
-    _getFile = shell => this._convertPath(this.utils.getFilePath(), shell);
-    _getFolder = shell => this._convertPath(this.utils.getCurrentDirPath(), shell);
-    _getMountFolder = shell => this._convertPath(this.utils.getMountFolder(), shell);
+    _getFile = shell => this._normalizePath(this.utils.getFilePath(), shell)
+    _getFolder = shell => this._normalizePath(this.utils.getCurrentDirPath(), shell)
+    _getMountFolder = shell => this._normalizePath(this.utils.getMountFolder(), shell)
 
     // TODO: Too hacky. Reversing shell is better.
     _getCommand = (cmd, shell) => {
@@ -216,7 +209,7 @@ class commanderPlugin extends BasePlugin {
     commitExecute = () => {
         const cmd = this.entities.input.value;
         if (!cmd) {
-            this._showStderr("command is empty");
+            this._showStderr("Empty Command")
         } else {
             const option = this.entities.shellSelect.selectedOptions[0];
             if (option) {
@@ -238,7 +231,7 @@ class commanderPlugin extends BasePlugin {
             this.toggleModal()
         } else if (action.startsWith(this.act_value_prefix)) {
             const name = action.slice(this.act_value_prefix.length)
-            const builtin = this.builtin.find(c => c.name === name)
+            const builtin = this.builtins.find(c => c.name === name)
             if (builtin) {
                 this.quickExecute(builtin.cmd, builtin.shell)
             }
@@ -247,5 +240,5 @@ class commanderPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: commanderPlugin
+    plugin: CommanderPlugin
 }

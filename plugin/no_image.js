@@ -1,4 +1,4 @@
-class noImageModePlugin extends BasePlugin {
+class NoImageModePlugin extends BasePlugin {
     init = () => {
         this.isNoImageMode = this.config.DEFAULT_NO_IMAGE_MODE;
     }
@@ -33,5 +33,5 @@ class noImageModePlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: noImageModePlugin,
+    plugin: NoImageModePlugin
 }

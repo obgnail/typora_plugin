@@ -1,4 +1,4 @@
-class resourceManagerPlugin extends BasePlugin {
+class ResourceManagerPlugin extends BasePlugin {
     styleTemplate = () => true
 
     hotkey = () => [this.config.HOTKEY]
@@ -19,8 +19,7 @@ class resourceManagerPlugin extends BasePlugin {
                 <div class="resource-manager-config-caption"></div>
                 <textarea rows="10" readonly></textarea>
             </div>
-        </fast-window>
-    `
+        </fast-window>`
 
     init = () => {
         this.showWarnDialog = true
@@ -37,11 +36,7 @@ class resourceManagerPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.entities.window.addEventListener("btn-click", ev => {
-            const { action } = ev.detail
-            const fn = this[action]
-            if (fn) fn()
-        })
+        this.entities.window.addEventListener("btn-click", ev => this[ev.detail.action]?.())
         this.entities.fileTable.addEventListener("row-action", async ev => {
             const { action, rowData } = ev.detail
             if (action === "locate") {
@@ -275,7 +270,7 @@ class ResourceFinder {
     // Typora supports redirecting resource paths using the `typora-root-url` in front matter
     _getCompatibleRootURI = (filePath, content) => {
         const { yamlObject } = this.utils.splitFrontMatter(content)
-        const redirectURL = yamlObject && yamlObject["typora-root-url"]
+        const redirectURL = yamlObject?.["typora-root-url"]
         if (redirectURL) {
             return redirectURL
         }
@@ -299,5 +294,5 @@ class ResourceFinder {
 }
 
 module.exports = {
-    plugin: resourceManagerPlugin,
+    plugin: ResourceManagerPlugin
 }

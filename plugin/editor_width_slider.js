@@ -1,4 +1,4 @@
-class editorWidthSliderPlugin extends BasePlugin {
+class EditorWidthSliderPlugin extends BasePlugin {
     process = async () => {
         await this._setWidth(this.config.WIDTH_RATIO)
     }
@@ -21,22 +21,21 @@ class editorWidthSliderPlugin extends BasePlugin {
     }
 
     setWidth = async () => {
+        const field = {
+            width: { key: "width", type: "range", min: 30, max: 100, label: this.i18n.t("$label.WIDTH_RATIO") },
+            tmpAdjust: { key: "tmpAdjust", type: "switch", label: this.i18n.t("tmpAdjust") },
+            restore: { key: "restore", type: "action", label: this.i18n.t("restore") },
+        }
         const op = {
             title: this.pluginName,
             schema: [
-                {
-                    fields: [
-                        { key: "width", type: "range", min: 30, max: 100, label: this.i18n.t("$label.WIDTH_RATIO") },
-                        { key: "tmpAdjust", type: "switch", label: this.i18n.t("tmpAdjust") },
-                    ]
-                },
-                {
-                    fields: [
-                        { key: "restore", type: "action", label: this.i18n.t("restore") },
-                    ]
-                },
+                { fields: [field.width, field.tmpAdjust] },
+                { fields: [field.restore] },
             ],
-            data: { width: this._getWidth(), tmpAdjust: true },
+            data: {
+                width: this._getWidth(),
+                tmpAdjust: true,
+            },
             actions: {
                 restore: async () => {
                     await this._setWidth(-1, false)
@@ -46,9 +45,7 @@ class editorWidthSliderPlugin extends BasePlugin {
             },
             hooks: {
                 onCommit: ({ key, value }) => {
-                    if (key === "width") {
-                        this._setWidth(value, true)
-                    }
+                    if (key === "width") this._setWidth(value, true)
                 }
             },
         }
@@ -62,5 +59,5 @@ class editorWidthSliderPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: editorWidthSliderPlugin,
+    plugin: EditorWidthSliderPlugin
 }

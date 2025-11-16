@@ -1,7 +1,7 @@
-class toolbarPlugin extends BasePlugin {
+class ToolbarPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.toolController = new toolController(this);
-        const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, themeTool, outlineTool, functionTool, mixTool];
+        this.toolController = new ToolController(this)
+        const tools = [TabTool, PluginTool, RecentFileTool, OperationTool, ModeTool, ThemeTool, OutlineTool, FunctionTool, MixTool]
         tools.forEach(tool => this.toolController.register(new tool()));
     }
 
@@ -133,7 +133,7 @@ class toolbarPlugin extends BasePlugin {
     }
 }
 
-class baseToolInterface {
+class BaseToolInterface {
     name = () => ""
     translate = () => ""
     icon = () => "🎯"
@@ -151,7 +151,7 @@ class baseToolInterface {
     }
 }
 
-class toolController {
+class ToolController {
     constructor(plugin) {
         this.plugin = plugin;
         this.utils = plugin.utils;
@@ -174,7 +174,7 @@ class toolController {
 
     callback = (toolName, fixedName, meta) => {
         const tool = this.tools.get(toolName);
-        tool && tool.callback(fixedName, meta);
+        if (tool) tool.callback(fixedName, meta)
     }
 
     setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
@@ -224,13 +224,13 @@ class toolController {
         all.forEach(ele => {
             if (ele.startsWith("-")) {
                 const value = ele.slice(1);
-                value && negative.push(value);
+                if (value) negative.push(value)
             } else {
                 positive.push(ele);
             }
         })
-        positive.length === 0 && positive.push("");
-        all.length === 0 && all.push("");
+        if (positive.length === 0) positive.push("")
+        if (all.length === 0) all.push("")
         return { all, positive, negative }
     }
 
@@ -279,13 +279,13 @@ class toolController {
         if (!tool) return
 
         const { inputList, matches } = await this.search(tool, input);
-        if (matches && matches.length) {
+        if (matches?.length) {
             return { tool, input: inputList, matches }
         }
     }
 }
 
-class tabTool extends baseToolInterface {
+class TabTool extends BaseToolInterface {
     name = () => "tab"
     translate = () => this.i18n.t("tool.tab")
     icon = () => "📖"
@@ -302,7 +302,7 @@ class tabTool extends baseToolInterface {
     callback = fixedName => this.windowTabPlugin.switchTabByPath(fixedName)
 }
 
-class pluginTool extends baseToolInterface {
+class PluginTool extends BaseToolInterface {
     name = () => "plu"
     translate = () => this.i18n.t("tool.plu")
     icon = () => "🔌"
@@ -334,7 +334,7 @@ class pluginTool extends baseToolInterface {
     }
 }
 
-class recentFileTool extends baseToolInterface {
+class RecentFileTool extends BaseToolInterface {
     name = () => "his"
     translate = () => this.i18n.t("tool.his")
     icon = () => "🕖"
@@ -374,7 +374,7 @@ class recentFileTool extends baseToolInterface {
     }
 }
 
-class operationTool extends baseToolInterface {
+class OperationTool extends BaseToolInterface {
     name = () => "ops"
     translate = () => this.i18n.t("tool.ops")
     icon = () => "🔨"
@@ -411,14 +411,14 @@ class operationTool extends baseToolInterface {
     }
 }
 
-class modeTool extends baseToolInterface {
+class ModeTool extends BaseToolInterface {
     name = () => "mode"
     translate = () => this.i18n.t("tool.mode")
     icon = () => "🌗"
     init = () => {
         const outlineView = () => {
             File.editor.library.toggleSidebar();
-            File.isNode && ClientCommand.refreshViewMenu();
+            if (File.isNode) ClientCommand.refreshViewMenu()
         }
         this.modes = [
             { fixedName: "outlineView", callback: outlineView },
@@ -455,7 +455,7 @@ class modeTool extends baseToolInterface {
     }
 }
 
-class themeTool extends baseToolInterface {
+class ThemeTool extends BaseToolInterface {
     name = () => "theme"
     translate = () => this.i18n.t("tool.theme")
     icon = () => "🎨"
@@ -469,12 +469,12 @@ class themeTool extends baseToolInterface {
     callback = fixedName => this.setThemeForever(fixedName);
 }
 
-class outlineTool extends baseToolInterface {
+class OutlineTool extends BaseToolInterface {
     name = () => "out"
     translate = () => this.i18n.t("tool.out")
     icon = () => "🧷"
     getAll = () => {
-        const headers = File.editor.nodeMap.toc && File.editor.nodeMap.toc.headers
+        const headers = File?.editor?.nodeMap?.toc?.headers
         if (!headers) return []
         return headers.flatMap(header => {
             const { attributes, cid } = header || {}
@@ -487,7 +487,7 @@ class outlineTool extends baseToolInterface {
     callback = fixedName => this.utils.scrollByCid(fixedName)
 }
 
-class functionTool extends baseToolInterface {
+class FunctionTool extends BaseToolInterface {
     name = () => "func"
     translate = () => this.i18n.t("tool.func")
     icon = () => "💡"
@@ -505,7 +505,7 @@ class functionTool extends baseToolInterface {
     }
 }
 
-class mixTool extends baseToolInterface {
+class MixTool extends BaseToolInterface {
     name = () => "all"
     translate = () => this.i18n.t("tool.all")
     icon = () => "🔱"
@@ -541,6 +541,5 @@ class mixTool extends baseToolInterface {
 }
 
 module.exports = {
-    plugin: toolbarPlugin,
-    baseToolInterface,
+    plugin: ToolbarPlugin
 }

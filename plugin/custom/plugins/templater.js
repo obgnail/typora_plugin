@@ -1,4 +1,4 @@
-class templaterPlugin extends BaseCustomPlugin {
+class TemplaterPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
 
     hint = isDisable => isDisable ? this.i18n._t("global", "error.onBlankPage") : undefined
@@ -64,7 +64,7 @@ class templaterPlugin extends BaseCustomPlugin {
         }
         filename = await this.utils.newFilePath(filename)
         const title = this.utils.Package.Path.basename(filename)
-        const content = (new templateHelper(title, this))._convert(template)
+        const content = (new TemplateHelper(title, this))._convert(template)
         const ok = await this.utils.writeFile(filename, content)
         if (!ok) return
         if (autoOpen) {
@@ -73,7 +73,7 @@ class templaterPlugin extends BaseCustomPlugin {
     }
 }
 
-class templateHelper {
+class TemplateHelper {
     constructor(title, plugin) {
         this._title = title.substring(0, title.lastIndexOf("."))
         this.utils = plugin.utils
@@ -135,5 +135,5 @@ class templateHelper {
 }
 
 module.exports = {
-    plugin: templaterPlugin,
+    plugin: TemplaterPlugin
 }

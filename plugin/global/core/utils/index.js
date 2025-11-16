@@ -4,27 +4,27 @@ const FS_EXTRA = require("fs-extra")
 const i18n = require("../i18n")
 
 const MIXINS = {
-    ...require("./settings"),
-    ...require("./migrate"),
-    ...require("./hotkeyHub"),
-    ...require("./eventHub"),
-    ...require("./stateRecorder"),
-    ...require("./exportHelper"),
-    ...require("./styleTemplater"),
-    ...require("./contextMenu"),
-    ...require("./notification"),
-    ...require("./progressBar"),
-    ...require("./formDialog"),
-    ...require("./diagramParser"),
-    ...require("./thirdPartyDiagramParser"),
-    ...require("./mermaid"),
-    ...require("./entities"),
+    settings: require("./settings"),
+    migrate: require("./migrate"),
+    hotkeyHub: require("./hotkeyHub"),
+    eventHub: require("./eventHub"),
+    stateRecorder: require("./stateRecorder"),
+    exportHelper: require("./exportHelper"),
+    styleTemplater: require("./styleTemplater"),
+    contextMenu: require("./contextMenu"),
+    notification: require("./notification"),
+    progressBar: require("./progressBar"),
+    formDialog: require("./formDialog"),
+    diagramParser: require("./diagramParser"),
+    thirdPartyDiagramParser: require("./thirdPartyDiagramParser"),
+    mermaid: require("./mermaid"),
+    entities: require("./entities"),
 }
 
 class utils {
-    static nodeVersion = process && process.versions && process.versions.node
-    static electronVersion = process && process.versions && process.versions.electron
-    static chromeVersion = process && process.versions && process.versions.chrome
+    static nodeVersion = process?.versions?.node
+    static electronVersion = process?.versions?.electron
+    static chromeVersion = process?.versions?.chrome
     static typoraVersion = window._options.appVersion
     static isBetaVersion = this.typoraVersion[0] === "0"
 
@@ -35,7 +35,7 @@ class utils {
 
     static nonExistSelector = "__non_exist__"  // Plugin temporarily unavailable, return this.
     static disableForeverSelector = "__disabled__"  // Plugin permanently unavailable, return this.
-    static stopLoadPluginError = Symbol("StopLoading")  // For plugin's beforeProcess method; return this to stop loading the plugin.
+    static stopLoadPluginError = Symbol("stop_loading")  // For plugin's beforeProcess method; return this to stop loading the plugin.
 
     static mixins = Object.fromEntries(
         Object.entries(MIXINS).map(([name, cls]) => [[name], new cls(this, i18n)])
@@ -63,24 +63,19 @@ class utils {
     static tryGetPlugin = fixedName => this.container.tryGetPlugin(fixedName)
     static tryGetPluginSetting = fixedName => this.container.tryGetPluginSetting(fixedName)
 
-    static getPluginFunction = (fixedName, func) => {
-        const plugin = this.tryGetPlugin(fixedName);
-        return plugin && plugin[func];
-    }
+    static getPluginFunction = (fixedName, func) => this.tryGetPlugin(fixedName)?.[func]
     static callPluginFunction = (fixedName, func, ...args) => {
         const plugin = this.tryGetPlugin(fixedName)
-        const _func = plugin && plugin[func]
-        if (_func) {
-            _func.apply(plugin, args)
-        }
-        return _func
+        const fn = plugin?.[func]
+        if (fn) fn.apply(plugin, args)
+        return fn
     }
 
     static hasOverrideBasePluginFn = (plugin, fn) => plugin[fn] !== global.BasePlugin.prototype[fn]
     static hasOverrideCustomPluginFn = (plugin, fn) => plugin[fn] !== global.BaseCustomPlugin.prototype[fn]
 
     static isUnderMountFolder = path => {
-        const mountFolder = PATH.resolve(File.getMountFolder());
+        const mountFolder = PATH.resolve(this.getMountFolder());
         const _path = PATH.resolve(path);
         return _path && mountFolder && _path.startsWith(mountFolder);
     }
@@ -540,7 +535,7 @@ class utils {
         const reg = new RegExp(regexp);  // To avoid modifying the RegExp.lastIndex property, copy a new object
         const promises = [];
 
-        while ((match = reg.exec(content))) {
+        while (match = reg.exec(content)) {
             const args = [...match, match.index, match.input];
             promises.push(content.slice(lastIndex, match.index), replaceFunc(...args));
             lastIndex = reg.lastIndex;
@@ -586,12 +581,7 @@ class utils {
             s: () => date.getSeconds().toString(),
             SSS: () => date.getMilliseconds().toString().padStart(3, "0"),
             S: () => date.getMilliseconds().toString(),
-            a: () => {
-                const time = new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true })
-                    .formatToParts(date)
-                    .find(part => part.type === "dayPeriod")
-                return time ? time.value : ""
-            }
+            a: () => new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true }).formatToParts(date).find(part => part.type === "dayPeriod")?.value || ""
         }
         const regex = /(yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a)/g
         return format.replace(regex, (match) => fns[match] ? fns[match]() : match)
@@ -607,15 +597,6 @@ class utils {
     static isObject = value => {
         const type = typeof value
         return value !== null && (type === "object" || type === "function")
-    }
-
-    static windowsPathToUnix = filepath => {
-        if (!File.isWin) {
-            return filepath
-        }
-        const sep = filepath.split(PATH.win32.sep);
-        const newS = [].concat([sep[0].toLowerCase()], sep.slice(1));
-        return "/" + PATH.posix.join.apply(PATH.posix, newS).replace(":", "")
     }
 
     static escape = html => {
@@ -804,7 +785,7 @@ class utils {
     ////////////////////////////// Basic file operations //////////////////////////////
     static getDirname = () => global.dirname || global.__dirname
     static getHomeDir = () => require("os").homedir() || File.option.userPath
-    static getFilePath = () => File.filePath || (File.bundle && File.bundle.filePath) || ""
+    static getFilePath = () => File.filePath || File.bundle?.filePath || ""
     static getMountFolder = () => File.getMountFolder() || ""
     static getCurrentDirPath = () => PATH.dirname(this.getFilePath())
     static joinPath = (...paths) => PATH.join(this.getDirname(), ...paths)
@@ -890,8 +871,8 @@ class utils {
             signal = null,
         }
     ) => {
-        if (signal && signal.aborted) {
-            const reason = signal.reason || new DOMException("Signal Aborted", "AbortError")
+        if (signal?.aborted) {
+            const reason = signal.reason ?? new DOMException("Signal Aborted", "AbortError")
             return Promise.reject(reason)
         }
 
@@ -913,7 +894,7 @@ class utils {
         const { promise: drainPromise, resolve: resolveDrain, reject: rejectDrain } = Promise.withResolvers()
 
         if (signal) {
-            const onAbort = () => rejectAndStop(signal.reason || new DOMException("Signal Aborted", "AbortError"))
+            const onAbort = () => rejectAndStop(signal.reason ?? new DOMException("Signal Aborted", "AbortError"))
             signal.addEventListener("abort", onAbort, { once: true })
             drainPromise.finally(() => signal.removeEventListener("abort", onAbort))
         }
@@ -1000,9 +981,9 @@ class utils {
         setTimeout(this.exitTypora, 50)
     }
     static showInFinder = filepath => JSBridge.showInFinder(filepath || this.getFilePath())
-    static isDiscardableUntitled = () => File && File.changeCounter && File.changeCounter.isDiscardableUntitled();
+    static isDiscardableUntitled = () => File?.changeCounter?.isDiscardableUntitled()
 
-    static openUrl = url => (File.editor.tryOpenUrl_ || File.editor.tryOpenUrl)(url, 1);
+    static openUrl = url => (File.editor.tryOpenUrl_ ?? File.editor.tryOpenUrl)(url, 1)
 
     static showMessageBox = async (
         {
@@ -1076,9 +1057,7 @@ class utils {
     static getFenceContentByCid = cid => {
         if (!cid) return
         const fence = File.editor.fences.queue[cid]
-        if (fence) {
-            return fence.getValue()
-        }
+        return fence?.getValue()
     }
 
     /** Backup before `File.editor.stylize.toggleFences()` as it uses `File.option` to set block code language. Restore after. */
@@ -1108,8 +1087,8 @@ class utils {
         const toc = useBuiltin
             ? File.editor.library.outline.getHeaderMatrix(true)
                 .map(([depth, text, cid]) => ({ depth, text, cid, children: [] }))
-            : (File.editor.nodeMap.toc.headers || [])
-                .filter(node => Boolean(node && node.attributes))
+            : (File.editor.nodeMap.toc.headers ?? [])
+                .filter(node => Boolean(node?.attributes))
                 .map(({ attributes: { depth, text }, cid }) => {
                     text = text.replace(/\[\^([^\]]+)\]/g, "")
                     text = this.escape(text)
@@ -1128,7 +1107,7 @@ class utils {
     }
 
     ////////////////////////////// DOM Operations //////////////////////////////
-    static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
+    static removeElement = ele => ele?.parentElement?.removeChild(ele)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
 
     static isShow = ele => !ele.classList.contains("plugin-common-hidden");
@@ -1255,7 +1234,7 @@ class utils {
     }
 
     static findActiveNode = range => {
-        range = range || File.editor.selection.getRangy()
+        range = range ?? File.editor.selection.getRangy()
         if (range) {
             const selection = window.getSelection()
             const markElem = File.editor.getMarkElem(selection.anchorNode)
@@ -1312,7 +1291,7 @@ class utils {
                 let deltaX = e.clientX - startX
                 let deltaY = e.clientY - startY
                 if (onMouseMove) {
-                    const { deltaX: newDeltaX, deltaY: newDeltaY } = onMouseMove(deltaX, deltaY) || {}
+                    const { deltaX: newDeltaX, deltaY: newDeltaY } = onMouseMove(deltaX, deltaY) ?? {}
                     deltaX = newDeltaX || deltaX
                     deltaY = newDeltaY || deltaY
                 }
@@ -1388,8 +1367,8 @@ class utils {
         if (list.childElementCount === 0) return;
         const origin = list.querySelector(activeSelector);
         const active = isNext
-            ? (origin && origin.nextElementSibling) || list.firstElementChild
-            : (origin && origin.previousElementSibling) || list.lastElementChild
+            ? origin?.nextElementSibling || list.firstElementChild
+            : origin?.previousElementSibling || list.lastElementChild
         if (origin) {
             origin.classList.toggle("active")
         }
@@ -1397,7 +1376,7 @@ class utils {
         active.scrollIntoView({ block: "nearest" });
     }
 
-    static stopCallError = Symbol("StopCalling") // For the decorate method; return this to stop executing the native function.
+    static stopCallError = Symbol("stop_calling") // For the decorate method; return this to stop executing the native function.
     static decorate = (objGetter, attr, beforeFn, afterFn, modifyResult = false, modifyArgs = false) => {
         const createDecorator = (originalFn, before, after) => {
             const decoratedFn = function (...args) {
@@ -1435,7 +1414,7 @@ class utils {
         }, 50)
     }
 
-    static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
+    static pollUntil = (until, after, interval = 50, timeout = 10000, runWhenTimeout = true) => {
         let run = false
         const endTime = timeout + Date.now()
         const timer = setInterval(() => {
@@ -1452,7 +1431,7 @@ class utils {
                     after()
                 }
             }
-        }, detectInterval)
+        }, interval)
     }
 }
 

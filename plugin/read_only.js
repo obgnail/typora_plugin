@@ -1,115 +1,110 @@
-class readOnlyPlugin extends BasePlugin {
+class ReadOnlyPlugin extends BasePlugin {
     styleTemplate = () => true
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     process = () => {
-        this.inReadOnlyMode = false;
-        this.forbiddenKeys = ["Enter", "Backspace", "Delete", " "];
+        this.inReadOnlyMode = false
+        this.eventHandlers = this._buildEventHandlers()
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            this.utils.decorate(() => File, "freshLock", null, this.afterFreshLock);
+            this.utils.decorate(() => File, "freshLock", null, this._afterFreshLock)
             if (this.config.READ_ONLY_DEFAULT) {
-                this.utils.loopDetector(() => File && File.lock, this.toggleLock);
+                this.utils.pollUntil(() => File?.lock, this.toggleLock)
             }
         })
     }
 
-    afterFreshLock = () => {
-        const setCheckbox = disabled => this.utils.entities.querySelectorAllInWrite('input[type="checkbox"]').forEach(box => box.toggleAttribute("disabled", disabled))
-        const setInput = disabled => {
-            if (!disabled) return;
-            [
-                "#plugin-search-multi-form input",
-                "#plugin-commander-form input",
-                "#plugin-toolbar-form input",
-                "#plugin-ripgrep-form input",
-                "#typora-quick-open-input input",
-            ].forEach(selector => {
-                const input = document.querySelector(selector)
-                if (input) input.removeAttribute("readonly")
-            })
+    _afterFreshLock = () => {
+        const updateCheckbox = wantToLock => {
+            const elements = this.utils.entities.querySelectorAllInWrite('input[type="checkbox"]')
+            elements.forEach(box => box.toggleAttribute("disabled", wantToLock))
         }
-        const setReplaceButton = disabled => {
-            const elements = ["#search-panel-replace-btn", "#search-panel-replaceall-btn", "#search-panel-replace-input"];
-            elements.forEach(selector => document.querySelector(selector).toggleAttribute("disabled", disabled));
+        const updateInput = wantToLock => {
+            if (!wantToLock) return
+            const selectors = ["#typora-quick-open-input input", "#plugin-search-multi-form input", "#plugin-commander-form input", "#plugin-toolbar-form input", "#plugin-ripgrep-form input"]
+            selectors.forEach(s => document.querySelector(s)?.removeAttribute("readonly"))
+        }
+        const updateReplaceButton = wantToLock => {
+            const selectors = ["#search-panel-replace-btn", "#search-panel-replaceall-btn", "#search-panel-replace-input"]
+            selectors.forEach(s => document.querySelector(s).toggleAttribute("disabled", wantToLock))
         }
 
-        const disabled = File.isLocked;
-        setCheckbox(disabled);
-        setInput(disabled);
-        setReplaceButton(disabled);
+        const wantToLock = File.isLocked
+        updateCheckbox(wantToLock)
+        updateInput(wantToLock)
+        updateReplaceButton(wantToLock)
     }
 
-    stop = ev => {
-        File.lock();
-        document.activeElement.blur();
-        ev.preventDefault();
-        ev.stopPropagation();
-    }
-    _isInline = ele => ele.closest('#write span[md-inline="image"], #write span[md-inline="inline_math"]')
-    _isLink = ele => ele.closest('#write span[md-inline="link"], #write .md-link')
-    _stopEvent = ev => File.isLocked && this.stop(ev)
-    _stopKeydown = ev => File.isLocked && this.forbiddenKeys.includes(ev.key) && this.stop(ev)
-    _recoverExpand = ev => {
-        if (!this._isInline(ev.target)) {
-            $(".md-expand").removeClass("md-expand");
+    _buildEventHandlers = () => {
+        const forbiddenKeys = ["Enter", "Backspace", "Delete", " "]
+        const isInline = el => el.closest('#write span[md-inline="image"], #write span[md-inline="inline_math"]')
+        const isLink = el => el.closest('#write span[md-inline="link"], #write .md-link')
+        const stopEvent = ev => {
+            if (File.isLocked) {
+                File.lock()
+                document.activeElement.blur()
+                ev.preventDefault()
+                ev.stopPropagation()
+            }
         }
-    }
-    _openHyperlink = ev => {
-        if (this.config.NO_EXPAND_WHEN_READ_ONLY && this._isInline(ev.target)) {
-            ev.stopPropagation();
-            ev.preventDefault();
-            return;
+        const stopForbiddenKey = ev => {
+            if (File.isLocked && forbiddenKeys.includes(ev.key)) stopEvent(ev)
         }
-        if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY && this._isLink(ev.target) && !this.utils.metaKeyPressed(ev)) {
-            ev.stopPropagation();
-            ev.preventDefault();
-            const dict = { ctrlKey: true, metaKey: true, bubbles: true, cancelable: true };
-            ev.target.dispatchEvent(new MouseEvent("click", dict));
+        const recoverExpand = ev => {
+            if (!isInline(ev.target)) $(".md-expand").removeClass("md-expand")
         }
-    }
+        const openHyperlink = ev => {
+            if (this.config.NO_EXPAND_WHEN_READ_ONLY && isInline(ev.target)) {
+                ev.stopPropagation()
+                ev.preventDefault()
+                return
+            }
+            if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY && isLink(ev.target) && !this.utils.metaKeyPressed(ev)) {
+                ev.stopPropagation()
+                ev.preventDefault()
+                const dict = { ctrlKey: true, metaKey: true, bubbles: true, cancelable: true }
+                ev.target.dispatchEvent(new MouseEvent("click", dict))
+            }
+        }
 
-    extraOperation = lock => {
-        const write = this.utils.entities.eWrite;
-        const func = lock ? "addEventListener" : "removeEventListener";
-        const map = { keydown: this._stopKeydown, compositionstart: this._stopEvent, paste: this._stopEvent };
+        const handlers = { keydown: stopForbiddenKey, compositionstart: stopEvent, paste: stopEvent }
         if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY || this.config.NO_EXPAND_WHEN_READ_ONLY) {
-            map.click = this._openHyperlink;
+            handlers.click = openHyperlink
         }
         if (this.config.REMOVE_EXPAND_WHEN_READ_ONLY) {
-            map.mousedown = this._recoverExpand;
+            handlers.mousedown = recoverExpand
         }
-        for (const [ev, callback] of Object.entries(map)) {
-            write[func](ev, callback, true);
-        }
-    }
-    setLabel = value => document.getElementById("footer-word-count-label").setAttribute("data-value", value);
-    toggleMenu = () => {
-        if (this.config.DISABLE_CONTEXT_MENU_WHEN_READ_ONLY) {
-            const exclude = "li" + this.config.REMAIN_AVAILABLE_MENU_KEY.map(key => `:not([data-key="${key}"])`).join("");
-            const selector = `#context-menu > ${exclude}`;
-            document.querySelectorAll(selector).forEach(ele => ele.classList.toggle("plu-disable-menu"));
-        }
+        return handlers
     }
 
-    lock = () => {
-        this.inReadOnlyMode = true;
-        File.lock();
-        document.activeElement.blur();
-        this.extraOperation(true);
-        this.setLabel(this.config.SHOW_TEXT + String.fromCharCode(160).repeat(3));
-        this.toggleMenu();
+    _toggleLock = (wantToLock) => {
+        const handleEvents = wantToLock => {
+            File[wantToLock ? "lock" : "unlock"]()
+            if (wantToLock) document.activeElement.blur()
+            const fn = wantToLock ? "addEventListener" : "removeEventListener"
+            for (const [ev, handler] of Object.entries(this.eventHandlers)) {
+                this.utils.entities.eWrite[fn](ev, handler, true)
+            }
+        }
+        const setLabel = wantToLock => {
+            document.getElementById("footer-word-count-label").dataset.value = wantToLock ? this.config.SHOW_TEXT + String.fromCharCode(160).repeat(3) : ""
+        }
+        const toggleMenu = (wantToLock) => {
+            if (this.config.DISABLE_CONTEXT_MENU_WHEN_READ_ONLY) {
+                const exclude = "li" + this.config.REMAIN_AVAILABLE_MENU_KEY.map(key => `:not([data-key="${key}"])`).join("")
+                document.querySelectorAll(`#context-menu > ${exclude}`).forEach(el => el.classList.toggle("plu-disable-menu", wantToLock))
+            }
+        }
+
+        this.inReadOnlyMode = wantToLock
+        handleEvents(wantToLock)
+        setLabel(wantToLock)
+        toggleMenu(wantToLock)
     }
 
-    unlock = () => {
-        this.inReadOnlyMode = false;
-        File.unlock();
-        this.extraOperation(false);
-        this.setLabel("");
-        this.toggleMenu();
-    }
-
-    toggleLock = () => (File.isLocked ? this.unlock : this.lock)()
+    toggleLock = () => this._toggleLock(!File.isLocked)
+    lock = () => this._toggleLock(true)
+    unlock = () => this._toggleLock(false)
 
     call = () => {
         this.toggleLock()
@@ -119,5 +114,5 @@ class readOnlyPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: readOnlyPlugin,
+    plugin: ReadOnlyPlugin
 }

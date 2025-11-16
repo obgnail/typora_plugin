@@ -1,4 +1,4 @@
-class darkModePlugin extends BasePlugin {
+class DarkModePlugin extends BasePlugin {
     styleTemplate = () => true
 
     init = () => {
@@ -29,5 +29,5 @@ class darkModePlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: darkModePlugin,
+    plugin: DarkModePlugin
 }

@@ -1,4 +1,4 @@
-class tocPlugin extends BaseCustomPlugin {
+class TOCPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
     html = () => `
@@ -36,12 +36,7 @@ class tocPlugin extends BaseCustomPlugin {
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.refresh());
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
             eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.refresh, 300));
-            this.utils.decorate(
-                () => File && File.editor && File.editor.library && File.editor.library.outline,
-                "highlightVisibleHeader",
-                null,
-                this.highlightVisibleHeader,
-            )
+            this.utils.decorate(() => File?.editor?.library?.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader)
             const resetPosition = () => {
                 const { right } = this.entities.content.getBoundingClientRect();
                 const { right: modalRight } = this.entities.modal.getBoundingClientRect();
@@ -142,7 +137,7 @@ class tocPlugin extends BaseCustomPlugin {
                 const depth = header.attributes.depth
                 while (end < headers.length) {
                     const { attributes } = headers[end].node
-                    const _depth = attributes && attributes.depth
+                    const _depth = attributes?.depth
                     if (_depth && _depth <= depth) {
                         break
                     }
@@ -170,7 +165,9 @@ class tocPlugin extends BaseCustomPlugin {
 
                     const headers = []
                     const blocks = File.editor.nodeMap.blocks.toArray()
-                    blocks.forEach((node, idx) => node.attributes.type === Node.TYPE.heading && headers.push({ idx: idx, node: node }))
+                    blocks.forEach((node, idx) => {
+                        if (node.attributes.type === Node.TYPE.heading) headers.push({ idx: idx, node: node })
+                    })
 
                     const drag = getHeader(dragItem.dataset.ref, headers, blocks)
                     const drop = getHeader(this.dataset.ref, headers, blocks)
@@ -220,7 +217,7 @@ class tocPlugin extends BaseCustomPlugin {
         this.entities.modal.style.width = modalWidth + "px";
         this.entities.content.style.width = `${width - modalWidth}px`;
         this.utils.entities.eWrite.style.width = "initial";
-        refresh && this.refresh();
+        if (refresh) this.refresh()
     }
 
     toggle = () => {
@@ -371,5 +368,5 @@ class tocPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: tocPlugin
+    plugin: TOCPlugin
 }

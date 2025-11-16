@@ -1,7 +1,7 @@
 /**
  * Dynamically register context menu.
  */
-class contextMenu {
+class ContextMenu {
     constructor(utils) {
         this.utils = utils
         this.menuSet = new WeakSet()
@@ -91,6 +91,4 @@ class contextMenu {
     }
 }
 
-module.exports = {
-    contextMenu
-}
+module.exports = ContextMenu

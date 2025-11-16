@@ -1,4 +1,4 @@
-class quickButtonPlugin extends BaseCustomPlugin {
+class QuickButtonPlugin extends BaseCustomPlugin {
     html = () => '<div id="plugin-quick-button"></div>'
 
     hotkey = () => [this.config.hotkey]
@@ -98,5 +98,5 @@ class quickButtonPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: quickButtonPlugin
+    plugin: QuickButtonPlugin
 }

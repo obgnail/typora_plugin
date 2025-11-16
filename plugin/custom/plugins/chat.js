@@ -1,4 +1,4 @@
-class chatPlugin extends BaseCustomPlugin {
+class ChatPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
@@ -86,5 +86,5 @@ class chatPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: chatPlugin,
+    plugin: ChatPlugin
 }

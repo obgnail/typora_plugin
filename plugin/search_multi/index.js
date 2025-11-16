@@ -1,7 +1,7 @@
-const { Searcher } = require("./searcher")
-const { Highlighter } = require("./highlighter")
+const Searcher = require("./searcher")
+const Highlighter = require("./highlighter")
 
-class searchMultiPlugin extends BasePlugin {
+class SearchMultiPlugin extends BasePlugin {
     styleTemplate = () => {
         const colors_style = this.config.HIGHLIGHT_COLORS
             .map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color} !important; }`)
@@ -270,5 +270,5 @@ class searchMultiPlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: searchMultiPlugin
+    plugin: SearchMultiPlugin
 }

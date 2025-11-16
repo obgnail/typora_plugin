@@ -1,4 +1,4 @@
-class plantUMLPlugin extends BaseCustomPlugin {
+class PlantUMLPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
@@ -68,5 +68,5 @@ class plantUMLPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: plantUMLPlugin,
+    plugin: PlantUMLPlugin
 }

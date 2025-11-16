@@ -1,8 +1,8 @@
-class exportEnhancePlugin extends BasePlugin {
+class ExportEnhancePlugin extends BasePlugin {
     beforeProcess = () => new Promise(resolve => {
         const until = () => this.utils.exportHelper.isAsync !== undefined
         const after = () => resolve(this.utils.exportHelper.isAsync ? undefined : this.utils.stopLoadPluginError)
-        this.utils.loopDetector(until, after)
+        this.utils.pollUntil(until, after)
     })
 
     process = () => {
@@ -19,7 +19,7 @@ class exportEnhancePlugin extends BasePlugin {
 
         const dirname = this.utils.getCurrentDirPath()
         const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? (await this.downloadAllImage(html)) : {}
-        const replaceFunc = async (origin, src) => {
+        return this.utils.asyncReplaceAll(html, this.regexp, async (origin, src) => {
             try {
                 if (this.utils.isSpecialImage(src)) {
                     return origin
@@ -40,8 +40,7 @@ class exportEnhancePlugin extends BasePlugin {
                 console.error(`[${this.fixedName}] toBase64 error:`, e)
             }
             return origin
-        }
-        return this.utils.asyncReplaceAll(html, this.regexp, replaceFunc)
+        })
     }
 
     downloadAllImage = async html => {
@@ -59,7 +58,7 @@ class exportEnhancePlugin extends BasePlugin {
                         imageMap[src] = filepath
                     }
                 } catch (e) {
-                    console.error("download image error:", e)
+                    console.error("Download image error:", e)
                 }
             })
             await Promise.all(promises)
@@ -83,5 +82,5 @@ class exportEnhancePlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: exportEnhancePlugin
+    plugin: ExportEnhancePlugin
 }

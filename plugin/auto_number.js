@@ -1,4 +1,4 @@
-class autoNumberPlugin extends BasePlugin {
+class AutoNumberPlugin extends BasePlugin {
     beforeProcess = () => {
         this.separator = "@"
         this.css_id = this.utils.styleTemplater.getID(this.fixedName)
@@ -312,15 +312,10 @@ class exportHelper {
 
     process = () => {
         this.utils.exportHelper.register(this.plugin.fixedName, this.beforeExport)
-        this.utils.decorate(
-            () => File && File.editor && File.editor.library && File.editor.library.outline,
-            "getHeaderMatrix",
-            null,
-            this.afterGetHeaderMatrix,
-        )
+        this.utils.decorate(() => File?.editor?.library?.outline, "getHeaderMatrix", null, this.afterGetHeaderMatrix)
     }
 }
 
 module.exports = {
-    plugin: autoNumberPlugin
+    plugin: AutoNumberPlugin
 }

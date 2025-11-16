@@ -1,4 +1,4 @@
-class collapseTablePlugin extends BasePlugin {
+class CollapseTablePlugin extends BasePlugin {
     styleTemplate = () => true
 
     init = () => {
@@ -9,7 +9,7 @@ class collapseTablePlugin extends BasePlugin {
         this.utils.settings.autoSaveSettings(this)
         this.recordCollapseState(false);
 
-        this.utils.decorate(() => File && File.editor && File.editor.tableEdit, "showTableEdit", null, (result, ...args) => {
+        this.utils.decorate(() => File?.editor?.tableEdit, "showTableEdit", null, (result, ...args) => {
             const $figure = args[0]
             if (!$figure || $figure.length === 0 || !$figure.find) return
             const $edit = $figure.find(".md-table-edit")
@@ -90,5 +90,5 @@ class collapseTablePlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: collapseTablePlugin
+    plugin: CollapseTablePlugin
 }

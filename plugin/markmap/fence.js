@@ -1,4 +1,4 @@
-class fenceMarkmap {
+class FenceMarkmap {
     constructor(plugin) {
         this.plugin = plugin
         this.utils = plugin.utils
@@ -77,6 +77,4 @@ class fenceMarkmap {
     getVersion = () => this.Lib.transformerVersions["markmap-lib"]
 }
 
-module.exports = {
-    fenceMarkmap
-}
+module.exports = FenceMarkmap
