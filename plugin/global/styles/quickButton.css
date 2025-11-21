@@ -8,6 +8,7 @@
     z-index: 9991;
     font-size: 17px;
     text-align: center;
+    pointer-events: none;
     grid-template-columns: repeat(${colCount}, 1fr);
     grid-template-rows: repeat(${rowCount}, 1fr);
     gap: ${this.config.button_gap};
@@ -19,6 +20,7 @@
 #plugin-quick-button .action-item {
     cursor: pointer;
     transition: all 50ms ease-in 0s;
+    pointer-events: auto;
     width: ${this.config.button_size};
     height: ${this.config.button_size};
     line-height: ${this.config.button_size};
