@@ -6,6 +6,7 @@ const array = "array"
 const notEqualZero = { name: "notEqual", args: [0] }
 const hotkey = { name: "pattern", args: [/^((ctrl|shift|alt)\+)*\w+$/i] }
 const fileExt = { name: "pattern", args: [/^([a-zA-Z0-9]+)?$/] }
+const codingLang = { name: "pattern", args: [/^[a-zA-Z0-9#+.\-]+$/] }
 const hexColor = { name: "pattern", args: [/^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i] }
 
 const chartStyles = {
@@ -60,9 +61,10 @@ module.exports = {
     fence_enhance: {
         BUTTON_SIZE: required,
         BUTTON_COLOR: required,
-        BUTTON_MARGIN: required,
+        BUTTON_PADDING: required,
         BUTTON_TOP: required,
         BUTTON_RIGHT: required,
+        EXCLUDE_LANGUAGE_ON_INDENT: codingLang,
         HIGHLIGHT_PATTERN: [required, regex],
         HIGHLIGHT_LINE_COLOR: required,
     },

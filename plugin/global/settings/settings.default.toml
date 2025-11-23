@@ -785,6 +785,16 @@ TOC_HOTKEY = ""
 #   false: 不使用右键菜单
 USE_CONTEXT_MENU = true
 
+# 标题栏按钮
+#   download: 导出
+#   settings: 设置
+#   pinRight: 固定到右侧
+#   pinTop:   固定到顶部
+#   fit:      图形适配窗口
+#   expand:   全屏
+#   close:    关闭
+TITLE_BAR_BUTTONS = ["close", "expand", "pinTop", "pinRight", "fit", "settings", "download"]
+
 # 点击思维导图节点是否跳转到文档对应章节
 #   true:  点击节点后，页面会滚动到文档中对应的标题位置
 #   false: 点击节点不会跳转到文档
@@ -1101,9 +1111,9 @@ APPLY_EXPORT_HEADER_NUMBERING = """
         const [level, text, ...rest] = header
         counters[level]++
         counters.fill(0, level + 1)
-        const numbering = counters.slice(2, level + 1).join('.')
-        const prefix = numbering ? `${numbering}. ` : ""
-        header[1] = prefix + text
+        const counter = counters.slice(2, level + 1).join('.')
+        const numbering = counter ? `${counter}. ` : ""
+        header[1] = numbering + text
     })
 }
 """
@@ -1335,9 +1345,9 @@ BUTTON_SIZE = "1.2em"
 #   currentColor 表示使用当前元素的文本颜色
 BUTTON_COLOR = "currentColor"
 
-# 按钮的间距：设置按钮之间的间距
+# 按钮的内边距：设置按钮的左右内边距
 #   可以使用 CSS 单位，例如 "0.4em", "5px"
-BUTTON_MARGIN = "0.4em"
+BUTTON_PADDING = "0.2em"
 
 # 按钮距离代码块顶部的距离：设置按钮距离代码块顶部的距离
 #   可以使用 CSS 单位，例如 "0.3em", "2px"
@@ -1367,15 +1377,36 @@ REMOVE_BUTTON_HINT = false
 AUTO_HIDE = false
 
 # 启用复制代码功能：是否启用代码块的复制功能
+# 若置为 false，则选项 TRIM_WHITESPACE_ON_COPY、LINE_BREAKS_ON_COPY、COPY_AS_MARKDOWN 失效
 #   true:  启用复制功能，显示复制按钮
 #   false: 禁用复制功能，不显示复制按钮
 ENABLE_COPY = true
 
+# 是否在复制时移除首尾空白
+#   true:  复制时移除首尾空白
+#   false: 复制时不移除首尾空白
+TRIM_WHITESPACE_ON_COPY = false
+
+# 复制时的换行符操作
+#   lf:       转为 LF
+#   crlf:     转为 CRLF
+#   preserve: 保持原状
+LINE_BREAKS_ON_COPY = "preserve"
+
+# 是否复制为 Markdown
+#   true:  复制为 Markdown
+#   false: 复制为纯文本
+COPY_AS_MARKDOWN = false
+
 # 启用代码调整缩进功能：是否启用代码块的调整缩进功能
+# 若置为 false，则选项 EXCLUDE_LANGUAGE_ON_INDENT 失效
 #   true:  启用缩进功能，显示缩进按钮
 #   false: 禁用缩进功能，不显示缩进按钮
 #   注意：低版本 Typora 可能不支持此功能
 ENABLE_INDENT = true
+
+# 调整缩进时忽略处理的语言
+EXCLUDE_LANGUAGE_ON_INDENT = ["python", "yaml", "yml"]
 
 # 启用折叠代码功能：是否启用代码块的折叠功能
 #   true:  启用折叠功能，显示折叠按钮

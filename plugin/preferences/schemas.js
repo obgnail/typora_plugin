@@ -177,11 +177,15 @@ const OPTIONS = {
     resize_image: {
         IMAGE_ALIGN: ["center", "left", "right"],
     },
+    markmap: {
+        TITLE_BAR_BUTTONS: ["download", "settings", "fit", "pinRight", "pinTop", "expand", "close"],
+    },
     auto_number: {
         ALIGN: ["left", "right", "center"],
         POSITION_TABLE: ["before", "after"],
     },
     fence_enhance: {
+        LINE_BREAKS_ON_COPY: ["lf", "crlf", "preserve"],
         FOLD_OVERFLOW: ["hidden", "scroll"],
         NUMBERING_BASE: ["0-based", "1-based"],
     },
@@ -218,6 +222,7 @@ const OPTIONS = {
         thumbnail_object_fit: ["fill", "contain", "cover", "scale-down"],
     },
     markdownLint: {
+        title_bar_buttons: ["settings", "detailAll", "fixAll", "toggleSourceMode", "refresh", "close"],
         columns: ["idx", "line", "rule", "desc", "ops"],
         tools: ["info", "locate", "fix"],
         result_order_by: ["index", "lineNumber", "ruleName", "ruleDesc"],
@@ -286,9 +291,9 @@ const SETTING_SCHEMAS = {
         TitledBox(
             Title("mouseInteraction"),
             Switch("CTRL_CLICK_TO_NEW_WINDOW"),
-            Switch("WHEEL_TO_SCROLL_TAB_BAR"),
-            Switch("CTRL_WHEEL_TO_SWITCH"),
             Switch("MIDDLE_CLICK_TO_CLOSE"),
+            Switch("CTRL_WHEEL_TO_SWITCH"),
+            Switch("WHEEL_TO_SCROLL_TAB_BAR"),
             Switch("SHOW_FULL_PATH_WHEN_HOVER"),
         ),
         UntitledBox(
@@ -505,6 +510,7 @@ const SETTING_SCHEMAS = {
             Range("HEIGHT_PERCENT_WHEN_PIN_TOP", { min: 20, max: 95, step: 1, ...markmapTocDep }),
             Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", { min: 20, max: 95, step: 1, ...markmapTocDep }),
             Text("NODE_BORDER_WHEN_HOVER", markmapTocDep),
+            Select("TITLE_BAR_BUTTONS", OPTIONS.markmap.TITLE_BAR_BUTTONS, { minItems: 1, ...markmapTocDep }),
         ),
         TitledBox(
             Title("mindmapDiagramDefaultOptions"),
@@ -579,8 +585,8 @@ const SETTING_SCHEMAS = {
             Switch("ENABLE_OUTLINE"),
             Switch("ENABLE_CONTENT"),
             Switch("ENABLE_TOC"),
-            Switch("ENABLE_TABLE"),
             Switch("ENABLE_IMAGE"),
+            Switch("ENABLE_TABLE"),
             Switch("ENABLE_FENCE"),
         ),
         TitledBox(
@@ -664,7 +670,7 @@ const SETTING_SCHEMAS = {
     fence_enhance: [
         pluginLiteBasePropBox,
         TitledBox(
-            Title("buttonStyle"),
+            Title("buttonGeneral"),
             Switch("ENABLE_BUTTON"),
             Switch("AUTO_HIDE", fenceEnhanceButtonDep),
             Switch("REMOVE_BUTTON_HINT", fenceEnhanceButtonDep),
@@ -672,17 +678,21 @@ const SETTING_SCHEMAS = {
             Range("BUTTON_OPACITY_HOVER", { min: 0, max: 1, step: 0.05, ...fenceEnhanceButtonDep }),
             Text("BUTTON_SIZE", fenceEnhanceButtonDep),
             Text("BUTTON_COLOR", fenceEnhanceButtonDep),
-            Text("BUTTON_MARGIN", fenceEnhanceButtonDep),
+            Text("BUTTON_PADDING", fenceEnhanceButtonDep),
             Text("BUTTON_TOP", fenceEnhanceButtonDep),
             Text("BUTTON_RIGHT", fenceEnhanceButtonDep),
             Number("WAIT_RECOVER_INTERVAL", { unit: UNITS.millisecond, min: 500, step: 100, ...fenceEnhanceButtonDep }),
         ),
         TitledBox(
-            Title("buttons"),
+            Title("functionButtons"),
             Switch("ENABLE_COPY", fenceEnhanceButtonDep),
+            Switch("TRIM_WHITESPACE_ON_COPY", { dependencies: { ENABLE_BUTTON: true, ENABLE_COPY: true } }),
+            Switch("COPY_AS_MARKDOWN", { dependencies: { $follow: "TRIM_WHITESPACE_ON_COPY" } }),
+            Select("LINE_BREAKS_ON_COPY", OPTIONS.fence_enhance.LINE_BREAKS_ON_COPY, { dependencies: { $follow: "TRIM_WHITESPACE_ON_COPY" } }),
         ),
         UntitledBox(
             Switch("ENABLE_INDENT", fenceEnhanceButtonDep),
+            Array_Inline("EXCLUDE_LANGUAGE_ON_INDENT", { dependencies: { ENABLE_BUTTON: true, ENABLE_INDENT: true } }),
         ),
         UntitledBox(
             Switch("ENABLE_FOLD", fenceEnhanceButtonDep),
@@ -762,7 +772,10 @@ const SETTING_SCHEMAS = {
         handleSettingsBox,
     ],
     collapse_paragraph: [
-        pluginLiteBasePropBox,
+        UntitledBox(
+            Switch("ENABLE", { tooltip: "ConflictWithOptionExpandSimpleBlock" }),
+            prop_NAME,
+        ),
         TitledBox(
             Title("mode"),
             Switch("RECORD_COLLAPSE"),
@@ -1561,6 +1574,7 @@ const SETTING_SCHEMAS = {
             Title("detectAndFix"),
             Switch("translate"),
             Switch("right_click_table_to_toggle_source_mode"),
+            Select("title_bar_buttons", OPTIONS.markdownLint.title_bar_buttons),
             Select("columns", OPTIONS.markdownLint.columns, { minItems: 1 }),
             Select("result_order_by", OPTIONS.markdownLint.result_order_by),
             Select("tools", OPTIONS.markdownLint.tools, { minItems: 1 }),

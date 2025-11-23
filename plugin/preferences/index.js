@@ -20,8 +20,7 @@ class PreferencesPlugin extends BasePlugin {
                     </div>
                 </div>
             </div>
-        </div>
-    `
+        </div>`
 
     init = () => {
         this.fallbackMenu = "global"
@@ -81,10 +80,7 @@ class PreferencesPlugin extends BasePlugin {
                     this.utils[fn](el)
                 })
                 if (!query) {
-                    const active = this.entities.menu.querySelector(".plugin-preferences-menu-item.active")
-                    if (active) {
-                        active.scrollIntoView({ block: "center" })
-                    }
+                    this.entities.menu.querySelector(".plugin-preferences-menu-item.active")?.scrollIntoView({ block: "center" })
                 }
             }
             this.entities.searchInput.addEventListener("input", search)
@@ -99,8 +95,7 @@ class PreferencesPlugin extends BasePlugin {
             this.entities.menu.addEventListener("click", async ev => {
                 const target = ev.target.closest(".plugin-preferences-menu-item")
                 if (target) {
-                    const fixedName = target.dataset.plugin
-                    await this.switchMenu(fixedName)
+                    await this.switchMenu(target.dataset.plugin)
                 }
             })
             this.entities.form.addEventListener("form-crud", async ev => {
@@ -155,10 +150,7 @@ class PreferencesPlugin extends BasePlugin {
 
         const menu = plugins.hasOwnProperty(fixedName) ? fixedName : this.fallbackMenu
         await this.switchMenu(menu)
-        setTimeout(() => {
-            const active = this.entities.menu.querySelector(".plugin-preferences-menu-item.active")
-            active.scrollIntoView({ block: "center" })
-        }, 50)
+        requestAnimationFrame(() => this.entities.menu.querySelector(".plugin-preferences-menu-item.active").scrollIntoView({ block: "center" }))
     }
 
     switchMenu = async (fixedName) => {
@@ -185,7 +177,7 @@ class PreferencesPlugin extends BasePlugin {
         if (!schema) return
 
         const data = await this._preprocess(fixedName)
-        return this.editOptions({
+        return this.applyOptions({
             schema,
             data,
             actions: this.ACTION_HANDLERS,
@@ -193,7 +185,7 @@ class PreferencesPlugin extends BasePlugin {
             watchers: this.WATCHERS[fixedName] || {},
             controlOptions: { object: { format: this.config.OBJECT_SETTINGS_FORMAT } },
             disableEffect: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
-        })
+        }, fixedName)
     }
 
     _getAllPlugins = () => {
@@ -236,7 +228,7 @@ class PreferencesPlugin extends BasePlugin {
 
     _initHook = () => {
         const fn = this.utils.safeEval(this.config.FORM_RENDERING_HOOK)
-        this.editOptions = (typeof fn === "function") ? fn : this.utils.identity
+        this.applyOptions = (typeof fn === "function") ? fn : this.utils.identity
     }
 
     /** Callback functions for type="action" fields in schema */

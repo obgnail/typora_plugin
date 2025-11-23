@@ -2,7 +2,7 @@ class FenceEnhancePlugin extends BasePlugin {
     styleTemplate = () => ({ bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial" })
 
     init = () => {
-        this.supportIndent = this.config.ENABLE_INDENT && File?.editor?.fences?.formatContent
+        this.supportIndent = this.config.ENABLE_INDENT && File.editor.fences?.formatContent
         this.enableIndent = this.supportIndent
         this.buttons = []
     }
@@ -62,26 +62,38 @@ class FenceEnhancePlugin extends BasePlugin {
         }
 
         const registerBuiltinButtons = () => {
-            const _changeIcon = (btn, classToChange, originClass) => {
-                const icon = btn.firstElementChild
-                originClass = originClass || icon.className
-                icon.className = classToChange
-                setTimeout(() => icon.className = originClass, this.config.WAIT_RECOVER_INTERVAL)
+            const _showIconFeedback = (btnEl, feedbackClass, originalClass) => {
+                const icon = btnEl.firstElementChild
+                icon.className = feedbackClass
+                setTimeout(() => icon.className = originalClass, this.config.WAIT_RECOVER_INTERVAL)
             }
             const _getFenceHeight = (cm) => {
                 const textHeight = cm.display.cachedTextHeight || cm.defaultTextHeight()
                 const height = Math.min(cm.lineCount(), this.config.FOLD_LINES) * textHeight
                 return height + "px"
             }
-            const copyCode = async ({ btn, cid }) => {
-                const content = this.utils.getFenceContentByCid(cid)
+            const copyCode = async ({ btn, fence, cid }) => {
+                let content = this.utils.getFenceContentByCid(cid)
+                if (this.config.TRIM_WHITESPACE_ON_COPY) {
+                    content = content.trim()
+                }
+                if (this.config.COPY_AS_MARKDOWN) {
+                    const lang = fence.getAttribute("lang")
+                    content = `\`\`\`${lang}\n${content}\n\`\`\``
+                }
+                if (this.config.LINE_BREAKS_ON_COPY !== "preserve") {
+                    const [regex, replacer] = this.config.LINE_BREAKS_ON_COPY === "lf" ? [/\r\n/g, "\n"] : [/\r?\n/g, "\r\n"]
+                    content = content.replace(regex, replacer)
+                }
                 await navigator.clipboard.writeText(content)
-                _changeIcon(btn, "fa fa-check", "fa fa-clipboard")
+                _showIconFeedback(btn, "fa fa-check", "fa fa-clipboard")
             }
-            const indentCode = ({ btn, cid }) => {
+            const indentCode = ({ btn, fence, cid }) => {
+                const lang = fence.getAttribute("lang")
+                if (this.config.EXCLUDE_LANGUAGE_ON_INDENT.includes(lang)) return
                 File.editor.refocus(cid)
                 File.editor.fences.formatContent()
-                _changeIcon(btn, "fa fa-check", "fa fa-indent")
+                _showIconFeedback(btn, "fa fa-check", "fa fa-indent")
             }
             const foldCode = ({ btn, fence, cm }) => {
                 const scroller = cm.display.scroller

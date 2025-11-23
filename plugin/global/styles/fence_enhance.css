@@ -18,13 +18,9 @@
 }
 
 .fence-enhance .enhance-btn {
-    opacity: ${this.config.BUTTON_OPACITY};
     cursor: pointer;
-    padding-left: ${this.config.BUTTON_MARGIN};
-}
-
-.fence-enhance .enhance-btn:last-child {
-    padding-left: 0;
+    opacity: ${this.config.BUTTON_OPACITY};
+    padding: 0 ${this.config.BUTTON_PADDING};
 }
 
 .fence-enhance .enhance-btn:hover {

@@ -20,23 +20,16 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
         { hotkey: this.config.hotkey_fix_lint_error, callback: this.linter.fix },
     ]
 
-    html = () => `
-        <fast-window 
-            id="plugin-markdownlint"
-            hidden
-            window-title="${this.pluginName}"
-            window-buttons="settings|fa-gear|${this.i18n.t("func.settings")};
-                            detailAll|fa-info-circle|${this.i18n.t("func.detailAll")};
-                            fixAll|fa-wrench|${this.i18n.t("func.fixAll")};
-                            toggleSourceMode|fa-code|${this.i18n.t("func.toggleSourceMode")};
-                            refresh|fa-refresh|${this.i18n.t("func.refresh")};
-                            close|fa-times|${this.i18n.t("func.close")}">
-            <div class="plugin-markdownlint-table-wrap">
-                <fast-table class="plugin-markdownlint-table"></fast-table>
-            </div>
-        </fast-window>
-        ${this.config.use_button ? `<div id="plugin-markdownlint-button"></div>` : ""}
-    `
+    html = () => {
+        const icons = { settings: "fa-gear", detailAll: "fa-info-circle", fixAll: "fa-wrench", toggleSourceMode: "fa-code", refresh: "fa-refresh", close: "fa-times" }
+        const buttons = this.config.title_bar_buttons.map(name => `${name}|${icons[name]}|${this.i18n.t(`$option.title_bar_buttons.${name}`)}`).join(";")
+        return `
+            <fast-window id="plugin-markdownlint" window-title="${this.pluginName}" window-buttons="${buttons}" hidden>
+                <div class="plugin-markdownlint-table-wrap"><fast-table class="plugin-markdownlint-table"></fast-table></div>
+            </fast-window>
+            ${this.config.use_button ? `<div id="plugin-markdownlint-button"></div>` : ""}
+        `
+    }
 
     init = () => {
         this.linter = this._createLinter(this._onCheck, this._onFix)
@@ -73,7 +66,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             const value = infoList.length === 1 ? infoList[0] : infoList
             const content = JSON.stringify(value, null, "\t")
             const op = {
-                title: this.i18n.t("func.detailAll"),
+                title: this.i18n.t("$option.title_bar_buttons.detailAll"),
                 schema: [{ fields: [{ type: "textarea", key: "detail", rows: 14, readonly: true }] }],
                 data: { detail: content }
             }
@@ -216,7 +209,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
         })
 
         const op = {
-            title: this.i18n.t("func.settings"),
+            title: this.i18n.t("$option.title_bar_buttons.settings"),
             schema: require("./config-schema.js"),
             data: getData(),
             actions: getActions(),
@@ -320,7 +313,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
 
     _onFix = async fileContent => {
         await this.utils.editCurrentFile(fileContent)
-        this.utils.notification.show(this.i18n.t("func.fixAll.ok"))
+        this.utils.notification.show(this.i18n.t("success.fixAll"))
         this.linter.check()
     }
 }

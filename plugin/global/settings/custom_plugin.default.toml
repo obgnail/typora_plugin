@@ -1462,11 +1462,20 @@ custom_rules_files = [
 #   参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
 rule_config = { default = true, MD010 = { code_blocks = false }, MD012 = { maximum = 3 }, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false, MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "Python", "Rust", "SQL", "TypeScript"] }, MD060 = false }
 
-# ------------------- 展示规则 -------------------
+# ------------------- 展示样式 -------------------
 # 是否翻译检测规则案文
 #   true:  翻译
 #   false: 不翻译，显示英文原文
 translate = true
+
+# 标题栏按钮
+#   settings:         设置
+#   detailAll:        详细信息
+#   fixAll:           修复
+#   toggleSourceMode: 源码模式
+#   refresh:          刷新
+#   close:            关闭
+title_bar_buttons = ["settings", "detailAll", "fixAll", "toggleSourceMode", "refresh", "close"]
 
 # 展示列
 #   idx:  序号

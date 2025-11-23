@@ -1,8 +1,8 @@
 const sharedSheets = []
 
-const push = (style) => {
+const addSharedSheet = (style) => {
     const sheet = new CSSStyleSheet()
-    const targetSheet = [...document.styleSheets].find(s => s.href && s.href.includes(style))
+    const targetSheet = [...document.styleSheets].find(s => s.href?.includes(style))
     if (!targetSheet) return
     for (const cssRule of targetSheet.cssRules) {
         sheet.insertRule(cssRule.cssText)
@@ -10,8 +10,8 @@ const push = (style) => {
     sharedSheets.push(sheet)
 }
 
-push("font-awesome")
-// push("ionicons")
+addSharedSheet("font-awesome")
+// addSharedSheet("ionicons")
 
 module.exports = {
     sharedSheets
