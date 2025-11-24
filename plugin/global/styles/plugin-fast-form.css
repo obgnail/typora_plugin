@@ -7,9 +7,9 @@
     opacity: 0.5;
 }
 
-.plugin-common-readonly .control-left {
-    text-decoration: line-through;
-}
+/*.plugin-common-readonly .control-left {*/
+/*    text-decoration: line-through;*/
+/*}*/
 
 #form {
     box-sizing: border-box;
@@ -473,6 +473,10 @@ textarea::placeholder {
 
 .control[data-type="action"]:hover .action {
     margin-right: 0;
+}
+
+.control[data-type="action"].active .action {
+    color: #007bff;
 }
 
 .ripple {

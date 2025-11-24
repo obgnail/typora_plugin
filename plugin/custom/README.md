@@ -153,7 +153,7 @@ class insertMindmap extends BaseCustomPlugin {
             return list
         }
         const tokens = getTokens(tree, ["graph LR", "\n"])
-        return ["``` mermaid ", "\n ", ...tokens, "```"].join("")
+        return ["```mermaid", "\n ", ...tokens, "```"].join("")
     }
 }
 
@@ -196,11 +196,6 @@ T5-->T8("复制标题路径")
 
 此示例展示了如何在右键菜单中添加选项，当光标位于标题时，将当前标题的完整路径复制到剪切板。
 
-需求如下：
-
-1. 插件仅在光标位于标题元素 (`[mdtype = "heading"]`) 时可用。
-2. 通过快捷键 `ctrl+shift+u` 触发。
-
 实现：
 
 1. 步骤一：在 `./plugin/global/settings/custom_plugin.user.toml` 添加配置。
@@ -219,9 +214,7 @@ order = 1            # 在右键菜单中的出现顺序
 # 快捷键
 hotkey = "ctrl+shift+u"
 # 如果在空白页调用此插件，使用的文件名（文件还不存在，需要一个默认文件名）
-untitled_file_name = "untitled"
-# 是否跳过空白的标题
-ignore_empty_header = false
+untitled_file_name = "Untitled"
 # 是否在标题和提示之间添加空格
 add_space = true
 ```
@@ -232,7 +225,7 @@ add_space = true
 // 1
 class myFullPathCopy extends BaseCustomPlugin {
     // 2
-    selector = () => '#write [mdtype = "heading"]'
+    selector = () => '#write > [cid]'
     // 3
     hint = () => "将当前标题的路径复制到剪切板"
     // 4
@@ -251,56 +244,38 @@ class myFullPathCopy extends BaseCustomPlugin {
     process = () => {}
     // 11
     callback = anchorNode => {
-        const text = this.getFullPath()
+        const text = this.getFullPath(anchorNode)
         navigator.clipboard.writeText(text)
     }
 
-    getFullPath = () => {
-        const headers = []
-        const paragraphs = ["H1", "H2", "H3", "H4", "H5", "H6"]
-        const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"]
-
-        let ele = anchorNode
-        while (ele) {
-            const idx = paragraphs.indexOf(ele.tagName)
-            if (idx ! == -1 && (headers.length == = 0 || (headers [headers.length - 1].idx > idx))) {
-                headers.push({ ele, idx })
-                if (idx === 0) {
-                    break
+    getFullPath = (anchorNode) => {
+        const getHeaders = (startNode) => {
+            const HEADING_TAGS = ["H1", "H2", "H3", "H4", "H5", "H6"]
+            const i18nSuffixes = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"]
+            const i18nNoHeader = "无"
+            const headerMap = new Map()
+            let minLevel = Infinity
+            let curNode = startNode
+            while (curNode && minLevel > 0) {
+                const level = HEADING_TAGS.indexOf(curNode.tagName)
+                if (level !== -1 && level < minLevel) {
+                    headerMap.set(level, curNode.textContent)
+                    minLevel = level
                 }
+                curNode = curNode.previousElementSibling
             }
-            ele = ele.previousElementSibling
+            const maxDepth = (headerMap.size === 0) ? 0 : Math.max(...headerMap.keys()) + 1
+            return Array.from({ length: maxDepth }, (_, level) => {
+                const title = headerMap.get(level) || i18nNoHeader
+                const suffix = i18nSuffixes[level]
+                const space = this.config.add_space ? " " : ""
+                return title + space + suffix
+            })
         }
-
-        headers.reverse()
 
         const filePath = this.utils.getFilePath() || this.config.untitled_file_name
-        const result = [filePath]
-        
-        let idx = 0
-        for (const h of headers) {
-            while (idx < 6 && h.ele.tagName !== paragraphs [idx]) {
-                if (! this.config.ignore_empty_header) {
-                    const name = this.getHeaderName("无", nameList [idx])
-                    result.push(name)
-                }
-                idx++
-            }
-
-            if (h.ele.tagName === paragraphs [idx]) {
-                const name = this.getHeaderName(h.ele.textContent, nameList [idx])
-                result.push(name)
-                idx++
-            }
-        }
-
-        const text = this.utils.Package.Path.join(...result)
-        return text
-    }
-
-    getHeaderName = (title, name) => {
-        const space = this.config.add_space ? " " : ""
-        return title + space + name
+        const pathSegments = getHeaders(anchorNode)
+        return this.utils.Package.Path.join(filePath, ...pathSegments)
     }
 }
 
@@ -323,5 +298,4 @@ module.exports = { plugin: myFullPathCopy }
 // 12. export: 将插件类导出为 plugin
 ```
 
-​	
 

@@ -25,7 +25,6 @@ class WindowTabPlugin extends BasePlugin {
     init = () => {
         this.manualSaveStorage = this.utils.getStorage(`${this.fixedName}.manual`)
         this.autoSaveStorage = this.utils.getStorage(`${this.fixedName}.auto`)
-
         this.staticActions = this.i18n.fillActions([
             { act_value: "sort_tabs", act_hotkey: this.config.SORT_TABS_HOTKEY },
             { act_value: "save_tabs" },
@@ -294,10 +293,8 @@ class WindowTabPlugin extends BasePlugin {
                         renameTab.path = newPath;
                     }
                 }
-                const current = this.tabUtil.currentTab;
-                if (current?.path) {
-                    this.openTab(current.path);
-                }
+                const path = this.tabUtil.currentTab?.path
+                if (path) this.openTab(path)
             })
         }
         const handleFocusChange = () => {
@@ -313,7 +310,6 @@ class WindowTabPlugin extends BasePlugin {
             this.entities.tabBar.addEventListener("wheel", ev => {
                 const target = ev.target.closest("#plugin-window-tab .tab-bar")
                 if (!target) return
-
                 if (this.config.CTRL_WHEEL_TO_SWITCH && this.utils.metaKeyPressed(ev)) {
                     const fn = (ev.deltaY < 0) ? "previousTab" : "nextTab"
                     this[fn]()
@@ -324,32 +320,22 @@ class WindowTabPlugin extends BasePlugin {
         }
         const handleMiddleClick = () => {
             this.entities.tabBar.addEventListener("mousedown", ev => {
-                if (ev.button === 1) {
-                    const tabContainer = ev.target.closest(".tab-container");
-                    if (tabContainer) tabContainer.querySelector(".close-button").click()
-                }
+                const isMiddleClicked = ev.button === 1
+                if (isMiddleClicked) ev.target.closest(".tab-container")?.querySelector(".close-button").click()
             })
         }
         const handleContextMenu = () => {
             let tabIdx = -1
-            this.utils.contextMenu.register(
-                this.entities.tabBar,
-                (ev) => {
-                    const target = ev.target.closest(".tab-container")
-                    if (target) {
-                        tabIdx = parseInt(target.dataset.idx)
-                        const all = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"]
-                        const menuItems = this.i18n.entries(all, "func.")
-                        return this.utils.pick(menuItems, this.config.CONTEXT_MENU)
-                    }
-                },
-                (ev, key) => {
-                    const fn = this[key]
-                    if (fn) {
-                        fn(tabIdx)
-                    }
-                },
-            )
+            const getMenuItems = (ev) => {
+                const target = ev.target.closest(".tab-container")
+                if (!target) return
+                tabIdx = parseInt(target.dataset.idx)
+                const all = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"]
+                const menuItems = this.i18n.entries(all, "func.")
+                return this.utils.pick(menuItems, this.config.CONTEXT_MENU)
+            }
+            const onClickMenuItem = (ev, key) => this[key]?.(tabIdx)
+            this.utils.contextMenu.register(this.entities.tabBar, getMenuItems, onClickMenuItem)
         }
         const adjustQuickOpen = () => {
             const openTab = (item, ev) => {
@@ -373,7 +359,6 @@ class WindowTabPlugin extends BasePlugin {
                 if (this.utils.metaKeyPressed(ev)) return;
                 openTab(target, ev)
             }, true)
-
             document.querySelector("#typora-quick-open-input > input").addEventListener("keydown", ev => {
                 if (ev.key === "Enter") {
                     const ele = document.querySelector(".typora-quick-open-item.active");
@@ -495,8 +480,7 @@ class WindowTabPlugin extends BasePlugin {
             this._resetContentTop();
         } else {
             const { height: headerHeight, top: headerTop } = document.querySelector("header").getBoundingClientRect();
-            const _top = Math.max(top + height, headerHeight + headerTop)
-            const t = _top + "px";
+            const t = Math.max(top + height, headerHeight + headerTop) + "px"
             this.entities.content.style.top = t;
             this.entities.source.style.top = t;
         }
@@ -555,8 +539,7 @@ class WindowTabPlugin extends BasePlugin {
 
             await this.utils.reload();
             document.getElementById("title-text").innerHTML = "Typora";
-            const activeElement = document.querySelector(".file-library-node.active");
-            if (activeElement) activeElement.classList.remove("active")
+            document.querySelector(".file-library-node.active")?.classList.remove("active")
         }
         this._hideTabBar();
         this._stopCheckTabsInterval();
@@ -634,7 +617,7 @@ class WindowTabPlugin extends BasePlugin {
         const tabDiv = `
             <div class="tab-container" data-idx="${idx}" draggable="true" ${title}>
                 <div class="active-indicator"></div>
-                <span class="name">${showName}</span>
+                <span class="window-tab-name">${showName}</span>
                 ${btn}
             </div>`
         this.entities.tabBar.insertAdjacentHTML("beforeend", tabDiv)
@@ -642,7 +625,7 @@ class WindowTabPlugin extends BasePlugin {
 
     _updateTabDiv = (tabDiv, filePath, showName, idx) => {
         tabDiv.dataset.idx = idx
-        tabDiv.querySelector(".name").innerText = showName
+        tabDiv.querySelector(".window-tab-name").innerText = showName
         if (this.config.SHOW_FULL_PATH_WHEN_HOVER) {
             tabDiv.setAttribute("title", filePath)
         } else {
@@ -654,35 +637,33 @@ class WindowTabPlugin extends BasePlugin {
     // The problem is that I have no idea when the content is fully loaded
     // Solution: Poll to set scrollTop, and if scrollTop does not change for 5 consecutive times, it is judged that the content is loaded
     // This method is not environmentally friendly and very ugly. However, I can't think of any other way to do it without modifying frame.js.
-    _scrollContent = filepath => {
-        requestAnimationFrame((startTime) => {
-            const activeTab = this.tabUtil.tabs.find(e => e.path === filepath)
-            if (!activeTab) return
+    _scrollContent = filepath => requestAnimationFrame((startTime) => {
+        const activeTab = this.tabUtil.tabs.find(e => e.path === filepath)
+        if (!activeTab) return
 
-            let lastScrollHeight = -1
-            let count = 0
-            const stopCount = 5
-            const stopTime = startTime + 2000
-            const scrollTop = activeTab.scrollTop
-            const contentEl = this.entities.content
-            const pollAndScroll = (timestamp) => {
-                if (this.utils.getFilePath() === activeTab.path && contentEl.scrollHeight !== lastScrollHeight) {
-                    lastScrollHeight = contentEl.scrollHeight
-                    count = 0
-                } else {
-                    count++
+        let lastScrollHeight = -1
+        let count = 0
+        const stopCount = 5
+        const stopTime = startTime + 2000
+        const scrollTop = activeTab.scrollTop
+        const contentEl = this.entities.content
+        const pollAndScroll = (timestamp) => {
+            if (this.utils.getFilePath() === activeTab.path && contentEl.scrollHeight !== lastScrollHeight) {
+                lastScrollHeight = contentEl.scrollHeight
+                count = 0
+            } else {
+                count++
+            }
+            if (count >= stopCount || timestamp > stopTime) {
+                if (this.utils.getFilePath() === activeTab.path) {
+                    requestAnimationFrame(() => contentEl.scrollTop = scrollTop)
                 }
-                if (count >= stopCount || timestamp > stopTime) {
-                    if (this.utils.getFilePath() === activeTab.path) {
-                        requestAnimationFrame(() => contentEl.scrollTop = scrollTop)
-                    }
-                    return
-                }
-                requestAnimationFrame(pollAndScroll)
+                return
             }
             requestAnimationFrame(pollAndScroll)
-        })
-    }
+        }
+        requestAnimationFrame(pollAndScroll)
+    })
 
     _renderDOM = wantOpenPath => {
         this._setShowName();
@@ -731,33 +712,31 @@ class WindowTabPlugin extends BasePlugin {
         this.localOpen = false;  // Auto restore
     }
 
-    openTab = wantOpenPath => {
-        requestAnimationFrame(() => {
-            const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config
-            const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath)
-            if (!include) {
-                // Modify the file path of the current tab when opening in place and no tab exists.
-                if (this.localOpen) {
-                    this.tabUtil.currentTab.path = wantOpenPath
-                } else {
-                    const newTab = { path: wantOpenPath, scrollTop: 0 }
-                    if (NEW_TAB_POSITION === "end") {
-                        this.tabUtil.tabs.push(newTab)
-                    } else if (NEW_TAB_POSITION === "right") {
-                        this.tabUtil.spliceTabs(this.tabUtil.activeIdx + 1, 0, newTab)
-                    }
+    openTab = wantOpenPath => requestAnimationFrame(() => {
+        const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config
+        const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath)
+        if (!include) {
+            // Modify the file path of the current tab when opening in place and no tab exists.
+            if (this.localOpen) {
+                this.tabUtil.currentTab.path = wantOpenPath
+            } else {
+                const newTab = { path: wantOpenPath, scrollTop: 0 }
+                if (NEW_TAB_POSITION === "end") {
+                    this.tabUtil.tabs.push(newTab)
+                } else if (NEW_TAB_POSITION === "right") {
+                    this.tabUtil.spliceTabs(this.tabUtil.activeIdx + 1, 0, newTab)
                 }
             }
-            if (0 < MAX_TAB_NUM && MAX_TAB_NUM < this.tabUtil.tabCount) {
-                this.tabUtil.spliceTabs(0, this.tabUtil.tabCount - MAX_TAB_NUM)
-            }
-            this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath)
-            this.tabUtil.currentTab.timestamp = Date.now()
-            this._showTabBar()
-            this._startCheckTabsInterval()
-            this._renderDOM(wantOpenPath)
-        })
-    }
+        }
+        if (0 < MAX_TAB_NUM && MAX_TAB_NUM < this.tabUtil.tabCount) {
+            this.tabUtil.spliceTabs(0, this.tabUtil.tabCount - MAX_TAB_NUM)
+        }
+        this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath)
+        this.tabUtil.currentTab.timestamp = Date.now()
+        this._showTabBar()
+        this._startCheckTabsInterval()
+        this._renderDOM(wantOpenPath)
+    })
 
     rerenderTabBar = () => {
         this.entities.tabBar.innerHTML = ""
@@ -765,10 +744,8 @@ class WindowTabPlugin extends BasePlugin {
     }
 
     switchTab = idx => {
-        idx = Math.max(0, idx);
-        idx = Math.min(idx, this.tabUtil.maxTabIdx);
-        this.tabUtil.activeIdx = idx;
-        this.utils.openFile(this.tabUtil.currentTab.path);
+        this.tabUtil.activeIdx = Math.min(Math.max(0, idx), this.tabUtil.maxTabIdx)
+        this.utils.openFile(this.tabUtil.currentTab.path)
     }
 
     switchTabByPath = path => {
@@ -808,15 +785,12 @@ class WindowTabPlugin extends BasePlugin {
                     break;
                 case "reconfirm":
                 default:
-                    this.utils.showMessageBox({
+                    const op = {
                         type: "info",
                         title: this.i18n.t("modal.exit"),
                         message: this.i18n.t("modal.reconfirmExit"),
-                    }).then(ret => {
-                        if (ret.response === 0) {
-                            exit()
-                        }
-                    })
+                    }
+                    this.utils.showMessageBox(op).then(ret => ret.response === 0 && exit())
             }
         }
 
@@ -839,9 +813,8 @@ class WindowTabPlugin extends BasePlugin {
     }
 
     closeActiveTab = () => {
-        if (this.tabUtil.tabCount !== 0) {
-            this.closeTab(this.tabUtil.activeIdx)
-        }
+        const hasTab = this.tabUtil.tabCount !== 0
+        if (hasTab) this.closeTab(this.tabUtil.activeIdx)
     }
 
     closeOtherTabs = idx => {
@@ -877,11 +850,9 @@ class WindowTabPlugin extends BasePlugin {
     }
 
     copyPath = idx => navigator.clipboard.writeText(this.tabUtil.getTabPathByIdx(idx))
-
     copyActiveTabPath = () => this.copyPath(this.tabUtil.activeIdx)
 
     showInFinder = idx => this.utils.showInFinder(this.tabUtil.getTabPathByIdx(idx))
-
     openInNewWindow = idx => this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false)
 
     saveTabs = (storage) => {

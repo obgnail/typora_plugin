@@ -61,18 +61,14 @@ class DiagramParser {
         document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
             const cid = fence.getAttribute("cid")
             const cm = File.editor.fences.queue[cid]
-            if (!cm) {
-                File.editor.fences.addCodeBlock(cid)
-            }
+            if (!cm) File.editor.fences.addCodeBlock(cid)
         })
     }
 
     refreshAllLangFence = lang => {
         document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(fence => {
             const cid = fence.getAttribute("cid")
-            if (cid) {
-                File.editor.diagrams.updateDiagram(cid)
-            }
+            if (cid) File.editor.diagrams.updateDiagram(cid)
         })
     }
 
@@ -101,7 +97,7 @@ class DiagramParser {
         }
     }
 
-    registerLangTooltip = () => File.editor.fences.ALL && File.editor.fences.ALL.push(...this.parsers.keys())
+    registerLangTooltip = () => File.editor.fences.ALL?.push(...this.parsers.keys())
 
     registerLangModeMapping = () => {
         const after = mode => {
@@ -180,8 +176,8 @@ class DiagramParser {
 
     destroyIfNeed = (parser, cid, lang, $pre) => {
         if (parser.destroyWhenUpdate) {
-            parser.cancelFunc && parser.cancelFunc(cid, lang);
-            $pre.find(".md-diagram-panel-preview").html("");
+            parser.cancelFunc?.(cid, lang)
+            $pre.find(".md-diagram-panel-preview").html("")
         }
     }
 
@@ -255,11 +251,9 @@ class DiagramParser {
 
     onAddCodeBlock = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.renderDiagram)
 
-    onTryAddLangUndo = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, args => args && args[0] && this.renderDiagram(args[0].cid))
+    onTryAddLangUndo = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, args => args?.[0] && this.renderDiagram(args[0].cid))
 
-    onUpdateDiagram = () => {
-        this.utils.decorate(() => File?.editor?.diagrams, "updateDiagram", null, (result, ...args) => this.renderDiagram(args[0]))
-    }
+    onUpdateDiagram = () => this.utils.decorate(() => File?.editor?.diagrams, "updateDiagram", null, (_, ...args) => this.renderDiagram(args[0]))
 
     onExport = () => {
         const afterExport = () => {
@@ -323,8 +317,7 @@ class DiagramParser {
             if (cid) {
                 const lang = (File.editor.findElemById(cid).attr("lang") || "").trim().toLowerCase();
                 if (!cid || !lang) return;
-                const parser = this.parsers.get(lang);
-                if (parser && parser.interactiveMode) return this.utils.stopCallError
+                if (this.parsers.get(lang)?.interactiveMode) return this.utils.stopCallError
             }
         }
 
@@ -356,9 +349,10 @@ class DiagramParser {
             enhance.style.display = "none";
         }
 
-        const registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
-            const btn = { className, action, hint, iconClassName, enable, listener, extraFunc }
-            return this.utils.callPluginFunction("fence_enhance", "registerButton", btn)
+        const registerButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
+            const fn = this.utils.getPluginFunction("fence_enhance", "registerButton")
+            fn?.({ className, action, hint, iconClassName, enable, listener, extraFunc })
+            return !!fn
         }
 
         const handleCtrlClick = () => {
@@ -382,7 +376,7 @@ class DiagramParser {
                 btn.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "")
                 enableFocus()
             }
-            const ok = registerFenceEnhanceButton("edit-diagram", "editDiagram", editText, "fa fa-pencil", false, listener);
+            const ok = registerButton("edit-diagram", "editDiagram", editText, "fa fa-pencil", false, listener)
             if (!ok) return;
 
             this.utils.entities.$eWrite.on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {

@@ -53,10 +53,10 @@ const Range = (key, { tooltip, min, max, step, dependencies, ...args } = {}) => 
     tooltip = Tooltip(tooltip)
     return { type: "range", key, min, max, step, label, tooltip, dependencies, ...args }
 }
-const Select = (key, options, { tooltip, minItems, maxItems, dependencies, ...args } = {}) => {
+const Select = (key, options, { tooltip, minItems, maxItems, disabledOptions, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
-    return { type: "select", key, label, tooltip, options, minItems, maxItems, dependencies, ...args }
+    return { type: "select", key, label, tooltip, options, minItems, maxItems, disabledOptions, dependencies, ...args }
 }
 const Array_Inline = (key, { tooltip, dependencies, ...args } = {}) => {
     const label = Label(key)
@@ -83,15 +83,20 @@ const Title = (title) => `$title.${title}`
 const UntitledBox = (...fields) => ({ title: undefined, fields })
 const TitledBox = (title, ...fields) => ({ title, fields })
 
+const WithDependencies = (source, dependencies) => ({ ...source, dependencies })
+
 const ObjectBox = (key, { rows = 10, dependencies, ...args } = {}) => {
-    return TitledBox(Title(key), { type: "object", key, rows, dependencies, ...args })
+    const box = TitledBox(Title(key), { type: "object", key, rows, ...args })
+    return WithDependencies(box, dependencies)
 }
 const TextareaBox = (key, { rows = 10, placeholder, dependencies, ...args } = {}) => {
     placeholder = Placeholder(placeholder)
-    return TitledBox(Title(key), { type: "textarea", key, rows, placeholder, dependencies, ...args })
+    const box = TitledBox(Title(key), { type: "textarea", key, rows, placeholder, ...args })
+    return WithDependencies(box, dependencies)
 }
 const ArrayBox = (key, { dependencies, ...args } = {}) => {
-    return TitledBox(Title(key), { type: "array", key, dependencies, ...args })
+    const box = TitledBox(Title(key), { type: "array", key, ...args })
+    return WithDependencies(box, dependencies)
 }
 const TableBox = (key, ths, nestedBoxes, defaultValues, { dependencies, ...args } = {}) => {
     const setNamespace = (item, namespace) => item.replace(/^([^.]+)\.(.*)$/, `$1.${namespace}.$2`)
@@ -102,13 +107,16 @@ const TableBox = (key, ths, nestedBoxes, defaultValues, { dependencies, ...args 
         })
     })
     const thMap = Object.fromEntries(ths.map(th => [th, `$label.${key}.${th}`]))
-    return TitledBox(Title(key), { type: "table", key, nestedBoxes, defaultValues, thMap, dependencies, ...args })
+    const box = TitledBox(Title(key), { type: "table", key, nestedBoxes, defaultValues, thMap, ...args })
+    return WithDependencies(box, dependencies)
 }
 const RadioBox = (key, options, { dependencies, ...args } = {}) => {
-    return TitledBox(Title(key), { type: "radio", key, options, dependencies, ...args })
+    const box = TitledBox(Title(key), { type: "radio", key, options, ...args })
+    return WithDependencies(box, dependencies)
 }
 const CheckboxBox = (key, options, { minItems, maxItems, dependencies, ...args } = {}) => {
-    return TitledBox(Title(key), { type: "checkbox", options, key, minItems, maxItems, dependencies, ...args })
+    const box = TitledBox(Title(key), { type: "checkbox", options, key, minItems, maxItems, ...args })
+    return WithDependencies(box, dependencies)
 }
 
 const prop_ENABLE = Switch("ENABLE")
@@ -589,14 +597,11 @@ const SETTING_SCHEMAS = {
             Switch("ENABLE_TABLE"),
             Switch("ENABLE_FENCE"),
         ),
-        TitledBox(
-            Title("style"),
-            Select("ALIGN", OPTIONS.auto_number.ALIGN),
-            Text("FONT_FAMILY"),
-        ),
         UntitledBox(
+            Text("FONT_FAMILY"),
             Switch("SHOW_IMAGE_NAME", { dependencies: { ENABLE_IMAGE: true } }),
             Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, { dependencies: { ENABLE_TABLE: true } }),
+            Select("ALIGN", OPTIONS.auto_number.ALIGN, { dependencies: { $or: [{ ENABLE_IMAGE: true }, { ENABLE_TABLE: true }, { ENABLE_FENCE: true }] } }),
         ),
         TableBox(
             "LAYOUTS",
@@ -750,7 +755,7 @@ const SETTING_SCHEMAS = {
             {
                 DISABLE: false,
                 HOTKEY: "",
-                CALLBACK: "({ pre, cid, fence, cursor, lineNum, lastNum, separator }) => console.log('callback')",
+                CALLBACK: "({ pre, cid, cm, cursor, lineNum, lastNum, separator }) => console.log('callback')",
             },
             fenceEnhanceHotkeyDep,
         ),
@@ -819,8 +824,7 @@ const SETTING_SCHEMAS = {
     ],
     export_enhance: [
         pluginLiteBasePropBox,
-        TitledBox(
-            Title("networkImage"),
+        UntitledBox(
             Switch("DOWNLOAD_NETWORK_IMAGE"),
             Number("DOWNLOAD_THREADS", { min: 1, dependencies: { DOWNLOAD_NETWORK_IMAGE: true } }),
         ),
@@ -1025,13 +1029,13 @@ const SETTING_SCHEMAS = {
         ),
         UntitledBox(
             Switch("SEARCH_PLUGIN_FIXEDNAME"),
-            Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
             Select("DEFAULT_MENU"),
             Select("HIDE_MENUS"),
         ),
         UntitledBox(
-            Switch("VALIDATE_CONFIG_OPTIONS"),
+            Switch("VALIDATE_CONFIG_OPTIONS", protectedAttrs),
             Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR),
+            Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
         ),
         TextareaBox("FORM_RENDERING_HOOK", { rows: 3, readonly: true }),
         handleSettingsBox,
@@ -1581,12 +1585,14 @@ const SETTING_SCHEMAS = {
             Hotkey("hotkey_fix_lint_error"),
         ),
         TitledBox(
-            Title("square"),
+            Title("indicator"),
             Switch("use_button"),
             Switch("right_click_button_to_fix", { dependencies: { use_button: true } }),
             Text("button_width", { dependencies: { use_button: true } }),
             Text("button_height", { dependencies: { use_button: true } }),
+            Text("button_right", { dependencies: { use_button: true } }),
             Text("button_border_radius", { dependencies: { use_button: true } }),
+            Range("button_opacity", { min: 0, max: 1, step: 0.05, dependencies: { use_button: true } }),
             Color("pass_color", { dependencies: { use_button: true } }),
             Color("error_color", { dependencies: { use_button: true } }),
         ),

@@ -847,7 +847,7 @@ font_family = "FontAwesome"
 # 是否使用网络图标字体
 use_network_icon_when_exporting = true
 
-# 网络图标字体的 CDN 地址（强制 woff 格式）
+# 网络图标字体的 CDN 地址
 network_icon_url = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/fonts/fontawesome-webfont.woff"
 
 # callout 的类型
@@ -1504,19 +1504,25 @@ result_order_by = "lineNumber"
 use_button = true
 
 # 方块的宽度
-button_width = "15px"
+button_width = "16px"
 
 # 方块的高度
-button_height = "15px"
+button_height = "16px"
 
-# 方块的边框圆角
-button_border_radius = "4px"
+# 方块的圆角
+button_border_radius = "50%"
+
+# 方块到右边框的距离
+button_right = "11px"
+
+# 方块的不透明度
+button_opacity = 1
 
 # 格式检测通过时方块的颜色
-pass_color = "#499C54"
+pass_color = "#92C498"
 
 # 格式检测未通过时方块的颜色
-error_color = "#BE9117"
+error_color = "#d8bd74"
 
 # ------------------- 操作 -------------------
 # 右击表格以切换源码模式

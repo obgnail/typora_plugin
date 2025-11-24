@@ -7,7 +7,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
         this.config.rule_config = Object.fromEntries(
             Object.entries(this.config.rule_config).map(([key, val]) => {
                 key = /^md\d{3}$/i.test(key) ? key.toUpperCase() : key.toLowerCase()
-                key = mapAliasToName[key] || key
+                key = mapAliasToName[key] ?? key
                 return [key, val]
             })
         )
@@ -95,15 +95,13 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
         }
 
         const onElementEvent = () => {
-            if (this.entities.button) {
-                this.entities.button.addEventListener("mousedown", ev => {
-                    if (ev.button === 0) {
-                        this.callback()
-                    } else if (this.config.right_click_button_to_fix && ev.button === 2) {
-                        this.linter.fix()
-                    }
-                })
-            }
+            this.entities.button?.addEventListener("mousedown", ev => {
+                if (ev.button === 0) {
+                    this.callback()
+                } else if (this.config.right_click_button_to_fix && ev.button === 2) {
+                    this.linter.fix()
+                }
+            })
             if (this.config.right_click_table_to_toggle_source_mode) {
                 this.entities.wrap.addEventListener("mousedown", ev => {
                     ev.preventDefault()
@@ -113,11 +111,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
                     }
                 })
             }
-            this.entities.window.addEventListener("btn-click", ev => {
-                const { action } = ev.detail
-                const fn = funcMap[action]
-                if (fn) fn()
-            })
+            this.entities.window.addEventListener("btn-click", ev => funcMap[ev.detail.action]?.())
             this.entities.table.addEventListener("row-action", ev => {
                 const { action, rowData } = ev.detail
                 const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
@@ -168,11 +162,13 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             }
             return {
                 "extends": ["path", readJSON],
+                "MD001.front_matter_title": ["required", "regex"],
                 "MD022.lines_above": numberOrNumberArray,
                 "MD022.lines_below": numberOrNumberArray,
                 "MD025.front_matter_title": ["required", "regex"],
                 "MD041.front_matter_title": ["required", "regex"],
                 "MD043.headings": { name: "pattern", args: [/^(\*|\+|\?|#{1,6}\s+\S.*)$/] },
+                "MD051.ignored_pattern": "regex",
             }
         }
         const getParsers = () => {
@@ -256,7 +252,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
                     rules: rule_config,
                     lib: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
                     polyfillLib: this.utils.joinPath("plugin/global/core/polyfill.js"),
-                    customRulesFiles: custom_rules_files.map(f => this.utils.joinPath(f)),
+                    customRulesFiles: custom_rules_files.map(file => this.utils.resolvePath(file)),
                 })
             },
             close: () => send(ACTION.CLOSE),
@@ -294,18 +290,16 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
         const data = fixInfos.map((item, idx) => {
             const rule = item.ruleNames[0]
             const line = item.lineNumber
-            const fixable = Boolean(item.fixInfo)
+            const fixable = !!item.fixInfo
             const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
-            return { rule, line, desc, idx, fixable }
+            return { idx, rule, line, fixable, desc }
         })
         this.entities.table.setData(data)
     }
 
     _onCheck = fixInfos => {
         this.fixInfos = fixInfos
-        if (this.entities.button) {
-            this.entities.button.toggleAttribute("lint-check-failed", fixInfos.length)
-        }
+        this.entities.button?.toggleAttribute("lint-check-failed", !!fixInfos.length)
         if (!this.entities.window.hidden) {
             this._setTableData(fixInfos)
         }

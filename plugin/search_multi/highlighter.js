@@ -9,17 +9,14 @@ class Highlighter {
     process = () => {
         this._polyfill()
 
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, fence) => {
-            if (this.searchStatus.futureCM.has(cid)) {
-                this._searchOnCM(fence)
-            }
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+            const rendered = this.searchStatus.futureCM.has(cid)
+            if (rendered) this._searchOnCM(cm)
         }, 999)
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.utils.debounce(() => {
-            const isShow = !this.plugin.entities.window.hidden
-            if (isShow) {
-                this.plugin.highlightByAST()
-            }
+            const isShown = !this.plugin.entities.window.hidden
+            if (isShown) this.plugin.highlightByAST()
         }, 1000))
 
         document.querySelector(".plugin-search-highlights").addEventListener("mousedown", ev => {

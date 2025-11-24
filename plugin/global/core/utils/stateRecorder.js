@@ -56,27 +56,7 @@ class StateRecorder {
         }
     }
 
-    getState = (name, filepath) => {
-        const recorder = this.recorders.get(name);
-        if (!recorder) return new Map();
-        const collections = recorder.collections;
-        if (!collections) return new Map();
-        if (!filepath || !collections.size) return collections;
-        const map = collections.get(filepath);
-        if (map) return map
-    }
-
-    deleteState = (name, filepath, idx) => {
-        const map = this.getState(name, filepath);
-        if (map) map.delete(idx)
-    }
-
-    setState = (name, collections) => {
-        const recorder = this.recorders.get(name);
-        if (recorder) {
-            recorder.collections = collections;
-        }
-    }
+    getState = (name) => this.recorders.get(name)?.collections || new Map()
 
     process = () => {
         const { eventHub } = this.utils
@@ -85,11 +65,10 @@ class StateRecorder {
     }
 
     afterProcess = () => {
-        if (this.recorders.size === 0) {
-            const { eventHub } = this.utils
-            eventHub.removeEventListener(eventHub.eventType.beforeFileOpen, this.collect)
-            eventHub.removeEventListener(eventHub.eventType.fileContentLoaded, this.restore)
-        }
+        if (this.recorders.size !== 0) return
+        const { eventHub } = this.utils
+        eventHub.removeEventListener(eventHub.eventType.beforeFileOpen, this.collect)
+        eventHub.removeEventListener(eventHub.eventType.fileContentLoaded, this.restore)
     }
 }
 

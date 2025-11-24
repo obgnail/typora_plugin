@@ -10,9 +10,7 @@ class ToolbarPlugin extends BasePlugin {
     styleTemplate = () => ({ topPercent: parseInt(this.config.TOOLBAR_TOP_PERCENT) + "%" })
 
     html = () => {
-        const title = [...this.toolController.tools.values()]
-            .map(t => `${t.name()}：${t.translate()}`)
-            .join("\n")
+        const title = [...this.toolController.tools.values()].map(t => `${t.name()}：${t.translate()}`).join("\n")
         return `
             <div id="plugin-toolbar" class="plugin-common-modal plugin-common-hidden">
                 <form id="plugin-toolbar-form"><input placeholder="plu image" title="${title}"></form>
@@ -40,9 +38,7 @@ class ToolbarPlugin extends BasePlugin {
         this.entities.form.addEventListener("submit", ev => {
             ev.preventDefault()
             const item = this.entities.result.querySelector(".plugin-toolbar-item.active") || (this.entities.result.childElementCount === 1 && this.entities.result.firstChild)
-            if (item) {
-                this._callTool(item)
-            }
+            if (item) this._callTool(item)
         })
         this.entities.input.addEventListener("keydown", ev => {
             if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
@@ -62,9 +58,7 @@ class ToolbarPlugin extends BasePlugin {
 
         this.entities.result.addEventListener("click", ev => {
             const target = ev.target.closest(".plugin-toolbar-item")
-            if (target) {
-                this._callTool(target)
-            }
+            if (target) this._callTool(target)
         })
     }
 
@@ -172,10 +166,7 @@ class ToolController {
 
     unregister = name => this.tools.delete(name);
 
-    callback = (toolName, fixedName, meta) => {
-        const tool = this.tools.get(toolName);
-        if (tool) tool.callback(fixedName, meta)
-    }
+    callback = (toolName, fixedName, meta) => this.tools.get(toolName)?.callback(fixedName, meta)
 
     setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
 
@@ -403,12 +394,7 @@ class OperationTool extends BaseToolInterface {
         })
     }
     search = async input => this.baseSearch(input, this.ops, ["showName"])
-    callback = (fixedName, meta) => {
-        const op = this.ops.find(ele => ele.fixedName === fixedName)
-        if (op) {
-            op.callback(meta)
-        }
-    }
+    callback = (fixedName, meta) => this.ops.find(ele => ele.fixedName === fixedName)?.callback(meta)
 }
 
 class ModeTool extends BaseToolInterface {
@@ -447,12 +433,7 @@ class ModeTool extends BaseToolInterface {
         })
     }
     search = async input => this.baseSearch(input, this.modes, ["showName"])
-    callback = (fixedName, meta) => {
-        const mode = this.modes.find(ele => ele.fixedName === fixedName);
-        if (mode) {
-            mode.callback(meta)
-        }
-    }
+    callback = (fixedName, meta) => this.modes.find(ele => ele.fixedName === fixedName)?.callback(meta)
 }
 
 class ThemeTool extends BaseToolInterface {
@@ -533,10 +514,7 @@ class MixTool extends BaseToolInterface {
         const at = meta.indexOf("@")
         const tool = meta.slice(0, at)
         const realMeta = meta.slice(at + 1)
-        const t = this.controller.tools.get(tool)
-        if (t) {
-            t.callback(fixedName, realMeta)
-        }
+        this.controller.tools.get(tool)?.callback(fixedName, realMeta)
     }
 }
 

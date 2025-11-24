@@ -55,17 +55,15 @@ class TimelinePlugin extends BaseCustomPlugin {
                 timeline.title = line.replace("# ", "");
                 return;
             } else if (line.startsWith("## ")) {
-                const time = line.replace("## ", "");
-                const newContent = { time: time, itemList: [] };
-                timeline.bucket.push(newContent);
+                timeline.bucket.push({ time: line.replace("## ", ""), itemList: [] })
                 return;
             }
 
             if (timeline.bucket.length === 0) {
-                throwParseError(idx,  this.i18n.t("error.bodyComeBeforeTime"))
+                throwParseError(idx, this.i18n.t("error.bodyComeBeforeTime"))
             }
 
-            const lastBucket = timeline.bucket[timeline.bucket.length - 1].itemList;
+            const lastBucket = timeline.bucket.at(-1).itemList
 
             // is hr
             if (line === "---" || line === "***") {
@@ -74,30 +72,31 @@ class TimelinePlugin extends BaseCustomPlugin {
             }
             // is heading
             const matchHead = line.match(/^(?<heading>#{3,6})\s(?<lineContent>.+?)$/);
-            if (matchHead && matchHead["groups"] && matchHead["groups"]["heading"]) {
+            if (matchHead?.groups?.heading) {
                 lastBucket.push({ type: "h" + matchHead.groups.heading.length, value: matchHead.groups.lineContent });
                 return
             }
+            // is taskList
             const matchTaskLIst = line.match(/^(\s*)(([-+*])\s*)\[(?<checked>(x|X)| )\]\s+(?<lineContent>.*)/);
-            if (matchTaskLIst && matchTaskLIst["groups"]) {
+            if (matchTaskLIst?.groups) {
                 lastBucket.push({ type: "taskList", checked: matchTaskLIst.groups.checked, value: matchTaskLIst.groups.lineContent });
                 return
             }
             // is ul
             const matchUl = line.match(/^[\-*]\s(?<lineContent>.*?)$/);
-            if (matchUl && matchUl["groups"]) {
+            if (matchUl?.groups) {
                 lastBucket.push({ type: "ul", value: matchUl.groups.lineContent });
                 return
             }
             // is ol
             const matchOl = line.match(/^\d\.\s(?<lineContent>.*?)$/);
-            if (matchOl && matchOl["groups"]) {
+            if (matchOl?.groups) {
                 lastBucket.push({ type: "ol", value: matchOl.groups.lineContent });
                 return
             }
             // is blockquote
             const matchQuote = line.match(/^>\s(?<lineContent>.+?)$/);
-            if (matchQuote && matchQuote["groups"]) {
+            if (matchQuote?.groups) {
                 lastBucket.push({ type: "blockquote", value: matchQuote.groups.lineContent });
                 return
             }
@@ -125,8 +124,8 @@ class TimelinePlugin extends BaseCustomPlugin {
                     case "ul":
                     case "ol":
                         const value = `<li>${this.utils.markdownInlineStyleToHTML(item.value, dir)}</li>`;
-                        const isListStart = idx === 0 || bucket.itemList[idx - 1].type !== item.type;
-                        const isListEnd = idx === bucket.itemList.length - 1 || bucket.itemList[idx + 1].type !== item.type;
+                        const isListStart = bucket.itemList[idx - 1]?.type !== item.type
+                        const isListEnd = bucket.itemList[idx + 1]?.type !== item.type
                         if (isListStart && isListEnd) {
                             return `<${item.type}>${value}</${item.type}>`
                         } else if (isListStart) {

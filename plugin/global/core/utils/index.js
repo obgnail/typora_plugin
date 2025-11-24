@@ -63,12 +63,10 @@ class utils {
     static tryGetPlugin = fixedName => this.container.tryGetPlugin(fixedName)
     static tryGetPluginSetting = fixedName => this.container.tryGetPluginSetting(fixedName)
 
-    static getPluginFunction = (fixedName, func) => this.tryGetPlugin(fixedName)?.[func]
-    static callPluginFunction = (fixedName, func, ...args) => {
+    static getPluginFunction = (fixedName, funcName) => this.tryGetPlugin(fixedName)?.[funcName]
+    static callPluginFunction = (fixedName, funcName, ...args) => {
         const plugin = this.tryGetPlugin(fixedName)
-        const fn = plugin?.[func]
-        if (fn) fn.apply(plugin, args)
-        return fn
+        return plugin?.[funcName]?.apply(plugin, args)
     }
 
     static hasOverrideBasePluginFn = (plugin, fn) => plugin[fn] !== global.BasePlugin.prototype[fn]
@@ -88,7 +86,7 @@ class utils {
             File.editor.library.openFileInNewWindow(filepath, false);
         }
     }
-    static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true);
+    static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true)
     static reload = async () => {
         const content = await File.getContent()
         const arg = { fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true }
@@ -101,14 +99,11 @@ class utils {
         plugins.forEach(plu => this.callPluginFunction(plu, "rollback", target));
     }
 
-    static getAnchorNode = () => File.editor.getJQueryElem(window.getSelection().anchorNode);
-    static withAnchorNode = (selector, func) => () => {
-        const anchorNode = this.getAnchorNode()
-        const target = anchorNode.closest(selector)
-        if (target && target[0]) {
-            func(target[0])
-        }
+    static getAnchorNode = (closest) => {
+        const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode)
+        return closest ? anchorNode.closest(closest) : anchorNode
     }
+
     static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
         const plugin = this.getBasePlugin(fixedName)
         if (plugin && plugin.getDynamicActions instanceof Function) {
@@ -122,7 +117,7 @@ class utils {
     }
     static callPluginDynamicAction = (fixedName, action) => {
         const plugin = this.getBasePlugin(fixedName)
-        if (plugin && plugin.call instanceof Function) {
+        if (plugin?.hasOwnProperty("call") && plugin.call instanceof Function) {
             plugin.call(action, this._meta)
         }
     }
@@ -132,8 +127,8 @@ class utils {
     }
 
     // Repo: https://github.com/jimp-dev/jimp
-    // after loadJimp(), you can use globalThis.Jimp
-    // static loadJimp = async () => await $.getScript((File.isNode ? "./lib.asar" : "./lib") + "/jimp/browser/lib/jimp.min.js")
+    // after loadJimp(), you can use `globalThis.Jimp`
+    static loadJimp = async () => await $.getScript((File.isNode ? "./lib.asar" : "./lib") + "/jimp/browser/lib/jimp.min.js")
 
     static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
 
@@ -394,7 +389,6 @@ class utils {
         return zipped
     }
 
-    /** @description try not to use it */
     static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
     /**
@@ -588,7 +582,7 @@ class utils {
     }
 
     /** @description NOT a foolproof solution. */
-    static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str);
+    static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str)
     /** @description NOT a foolproof solution. In fact, the Promises/A+ specification is not a part of Node.js, so there is no foolproof solution at all */
     static isPromise = obj => this.isObject(obj) && typeof obj.then === "function"
     /** @description NOT a foolproof solution. Can only be used to determine the "true" asynchronous functions */
@@ -596,12 +590,12 @@ class utils {
     /** @description NOT a foolproof solution. */
     static isObject = value => {
         const type = typeof value
-        return value !== null && (type === "object" || type === "function")
+        return value != null && (type === "object" || type === "function")
     }
 
     static escape = html => {
-        const replacements = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }
-        return html.replace(/[&<>"']/g, c => replacements[c])
+        const replacements = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "/": "&#x2F;", "`": "&#x60;", "=": "&#x3D;" }
+        return html.replace(/[&<>"'`=\/]/g, c => replacements[c])
     }
 
     static compareVersion = (ver1, ver2) => {
@@ -748,7 +742,7 @@ class utils {
     static removeStyle = id => this.removeElementByID(id)
 
     static newFilePath = async filename => {
-        filename = filename || File.getFileName() || (new Date()).getTime().toString() + ".md";
+        filename = filename || File.getFileName() || Date.now() + ".md"
         const dirPath = this.getFilePath() ? this.getCurrentDirPath() : this.getMountFolder();
         if (!dirPath) {
             alert(i18n.t("global", "error.onBlankPage"))
@@ -789,47 +783,27 @@ class utils {
     static getMountFolder = () => File.getMountFolder() || ""
     static getCurrentDirPath = () => PATH.dirname(this.getFilePath())
     static joinPath = (...paths) => PATH.join(this.getDirname(), ...paths)
+    static resolvePath = (...paths) => PATH.resolve(this.getDirname(), ...paths)
     static require = (...paths) => require(this.joinPath(...paths))
     static getUserSpaceFile = (file = "") => this.joinPath("./plugin/global/user_space", file)
 
-    static readFiles = async files => Promise.all(
-        files.map(async file => {
-            try {
-                return await FS.promises.readFile(file, "utf-8")
-            } catch (err) {
-            }
-        })
-    )
-
-    static existPath = async filepath => {
-        try {
-            await FS.promises.access(filepath);
-            return true
-        } catch (err) {
-        }
-    }
-
+    static readFiles = async files => Promise.all(files.map(file => FS.promises.readFile(file, "utf-8").catch(() => undefined)))
+    static existPath = async path => FS.promises.access(path).then(() => true).catch(() => false)
     static writeFile = async (filepath, content) => {
         try {
-            await FS.promises.writeFile(filepath, content);
+            await FS.promises.writeFile(filepath, content)
             return true
         } catch (e) {
             const detail = e.toString()
             const confirm = i18n.t("global", "confirm")
-            const message = i18n.t("global", "error.writingFileFailed")
+            const message = i18n.t("global", "error.writeFileFailed")
             const op = { type: "error", title: "Typora Plugin", buttons: [confirm], message, detail }
             await this.showMessageBox(op)
         }
     }
 
-    static readYaml = content => {
-        const yaml = require("../lib/js-yaml")
-        return yaml.safeLoad(content)
-    }
-    static stringifyYaml = (obj, args) => {
-        const yaml = require("../lib/js-yaml")
-        return yaml.safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
-    }
+    static readYaml = content => require("../lib/js-yaml").safeLoad(content)
+    static stringifyYaml = (obj, args) => require("../lib/js-yaml").safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
     static readToml = content => require("../lib/smol-toml").parse(content)
     static stringifyToml = obj => require("../lib/smol-toml").stringify(obj)
     static readTomlFile = async filepath => this.readToml(await FS.promises.readFile(filepath, "utf-8"))
@@ -914,7 +888,6 @@ class utils {
         }
         const runNextTask = () => {
             if (aborted) return
-
             while (taskQueue.length > 0 && runningTasks < semaphore) {
                 const task = taskQueue[dequeueFn]()
                 runningTasks++
@@ -943,8 +916,7 @@ class utils {
                         return
                     }
                 }
-                if (onStat) onStat(stats)
-
+                onStat?.(stats)
                 if (stats.isDirectory()) {
                     if (dirFilter(fileName, currentPath, stats) && (noNeedCheckDepth || depth < maxDepth)) {
                         const files = await readdir(currentPath)
@@ -975,13 +947,13 @@ class utils {
     }
 
     ////////////////////////////// Business Operations //////////////////////////////
-    static exitTypora = () => JSBridge.invoke("window.close");
+    static exitTypora = () => JSBridge.invoke("window.close")
     static restartTypora = () => {
         this.openFolder(this.getMountFolder())
         setTimeout(this.exitTypora, 50)
     }
     static showInFinder = filepath => JSBridge.showInFinder(filepath || this.getFilePath())
-    static isDiscardableUntitled = () => File?.changeCounter?.isDiscardableUntitled()
+    static isDiscardableUntitled = () => File.changeCounter?.isDiscardableUntitled()
 
     static openUrl = url => (File.editor.tryOpenUrl_ ?? File.editor.tryOpenUrl)(url, 1)
 
@@ -997,7 +969,7 @@ class utils {
             checkboxLabel,
         }
     ) => {
-        const op = { type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel };
+        const op = { type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel }
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
 
@@ -1009,7 +981,7 @@ class utils {
     static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
     static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
 
-    static fetch = async (url, { proxy = "", timeout = 3 * 60 * 1000, ...args }) => {
+    static fetch = async (url, { proxy = "", timeout = 3 * 60 * 1000, ...args } = {}) => {
         let signal, agent
         if (timeout) {
             signal = AbortSignal.timeout(timeout)
@@ -1140,7 +1112,7 @@ class utils {
     static markdownInlineStyleToHTML = (content, dir) => {
         const imageReplacement = (_, alt, src) => {
             if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
-                src = PATH.resolve(dir || this.getCurrentDirPath(), src);
+                src = PATH.resolve(dir || this.getCurrentDirPath(), src)
             }
             return `<img alt="${alt}" src="${src}">`
         }
@@ -1163,7 +1135,7 @@ class utils {
         return `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`
     }
 
-    static moveCursor = $target => File.editor.selection.jumpIntoElemEnd($target);
+    static moveCursor = $target => File.editor.selection.jumpIntoElemEnd($target)
 
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
         if ($target instanceof Element) {
@@ -1277,9 +1249,7 @@ class utils {
             startY = ev.clientY
             startWidth = parseFloat(width)
             startHeight = parseFloat(height)
-            if (onMouseDown) {
-                onMouseDown(startX, startY, startWidth, startHeight)
-            }
+            onMouseDown?.(startX, startY, startWidth, startHeight)
             document.addEventListener("mousemove", mousemove)
             document.addEventListener("mouseup", mouseup)
             ev.stopPropagation()
@@ -1307,9 +1277,7 @@ class utils {
         function mouseup() {
             document.removeEventListener("mousemove", mousemove)
             document.removeEventListener("mouseup", mouseup)
-            if (onMouseUp) {
-                onMouseUp()
-            }
+            onMouseUp?.()
         }
     }
 
@@ -1330,26 +1298,20 @@ class utils {
             const { left, top } = moveEle.getBoundingClientRect()
             const shiftX = ev.clientX - left
             const shiftY = ev.clientY - top
-            if (onMouseDown) {
-                onMouseDown()
-            }
+            onMouseDown?.()
 
             const _onMouseMove = ev => {
                 ev.stopPropagation()
                 ev.preventDefault()
                 requestAnimationFrame(() => {
-                    if (onMouseMove) {
-                        onMouseMove()
-                    }
+                    onMouseMove?.()
                     moveEle.style.left = ev.clientX - shiftX + "px"
                     moveEle.style.top = ev.clientY - shiftY + "px"
                 })
             }
 
             const _onMouseUp = ev => {
-                if (onMouseUp) {
-                    onMouseUp()
-                }
+                onMouseUp?.()
                 ev.stopPropagation()
                 ev.preventDefault()
                 document.removeEventListener("mousemove", _onMouseMove)
@@ -1364,16 +1326,14 @@ class utils {
     }
 
     static scrollActiveItem = (list, activeSelector, isNext) => {
-        if (list.childElementCount === 0) return;
-        const origin = list.querySelector(activeSelector);
+        if (list.childElementCount === 0) return
+        const origin = list.querySelector(activeSelector)
         const active = isNext
-            ? origin?.nextElementSibling || list.firstElementChild
-            : origin?.previousElementSibling || list.lastElementChild
-        if (origin) {
-            origin.classList.toggle("active")
-        }
-        active.classList.toggle("active");
-        active.scrollIntoView({ block: "nearest" });
+            ? origin?.nextElementSibling ?? list.firstElementChild
+            : origin?.previousElementSibling ?? list.lastElementChild
+        origin?.classList.toggle("active")
+        active.classList.toggle("active")
+        active.scrollIntoView({ block: "nearest" })
     }
 
     static stopCallError = Symbol("stop_calling") // For the decorate method; return this to stop executing the native function.
@@ -1407,7 +1367,7 @@ class utils {
                 return
             }
             const obj = objGetter()
-            if (obj && obj[attr]) {
+            if (obj?.[attr]) {
                 clearInterval(timer)
                 obj[attr] = createDecorator(obj[attr], beforeFn, afterFn)
             }
@@ -1427,9 +1387,7 @@ class utils {
             }
             if (until() || run) {
                 clearInterval(timer)
-                if (after) {
-                    after()
-                }
+                after?.()
             }
         }, interval)
     }

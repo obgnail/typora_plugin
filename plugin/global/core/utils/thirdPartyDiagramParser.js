@@ -100,7 +100,7 @@ class ThirdPartyDiagramParser {
             const settings = {
                 language: parser.lang,
                 mappingLanguage: parser.mappingLang,
-                diagramVersion: (parser.versionGetter && parser.versionGetter()) || "Unknown",
+                diagramVersion: parser.versionGetter?.() || "Unknown",
                 interactiveMode: parser.interactiveMode,
                 destroyWhenUpdate: parser.destroyWhenUpdate,
                 containerElement: parser.wrapElement,
@@ -136,11 +136,9 @@ class ThirdPartyDiagramParser {
     destroyAll = () => {
         for (const parser of this.parsers.values()) {
             for (const instance of parser.instanceMap.values()) {
-                if (parser.destroyFunc) {
-                    parser.destroyFunc(instance)
-                }
+                parser.destroyFunc?.(instance)
             }
-            parser.instanceMap.clear();
+            parser.instanceMap.clear()
         }
     }
 

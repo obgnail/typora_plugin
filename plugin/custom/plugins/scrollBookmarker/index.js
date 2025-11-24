@@ -4,23 +4,38 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
     html = () => `
         <fast-window id="plugin-scroll-bookmarker" window-title="${this.pluginName}" window-buttons="close|fa-times" hidden>
             <div class="plugin-scroll-bookmarker-list"></div>
-        </fast-window>
-    `
+        </fast-window>`
 
     hotkey = () => [this.config.hotkey]
 
     init = () => {
-        this.recordName = this.fixedName
         this.recordSelector = "#write [cid]"
         this.className = "plu-bookmark"
         this.locateUtils = {
             file: "",
             idx: -1,
             time: Date.now(),
+            getEl: (idx) => [...document.querySelectorAll(this.recordSelector)][idx],
             scroll: (idx) => {
-                const ele = [...document.querySelectorAll(this.recordSelector)][idx]
-                if (ele) this.utils.scroll(ele, 20, true)
+                const el = this.locateUtils.getEl(idx)
+                if (el) this.utils.scroll(el, 20, true)
             }
+        }
+        this.recorder = {
+            register: () => {
+                const stateGetter = el => el.classList.contains(this.className)
+                const stateRestorer = el => el.classList.add(this.className)
+                const finalFunc = () => {
+                    if (this.locateUtils.file && this.locateUtils.idx !== -1) {
+                        this.locateUtils.scroll(this.locateUtils.idx)
+                        this.locateUtils.file = ""
+                        this.locateUtils.idx = -1
+                    }
+                }
+                this.utils.stateRecorder.register(this.fixedName, this.recordSelector, stateGetter, stateRestorer, finalFunc)
+            },
+            collect: () => this.utils.stateRecorder.collect(this.fixedName),
+            getState: () => this.utils.stateRecorder.getState(this.fixedName),
         }
         this.entities = {
             write: this.utils.entities.eWrite,
@@ -30,23 +45,14 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        const stateGetter = ele => ele.classList.contains(this.className)
-        const stateRestorer = ele => ele.classList.add(this.className)
-        const finalFunc = () => {
-            if (this.locateUtils.file && this.locateUtils.idx !== -1) {
-                this.locateUtils.scroll(this.locateUtils.idx)
-                this.locateUtils.file = ""
-                this.locateUtils.idx = -1
-            }
-        }
-        this.utils.stateRecorder.register(this.recordName, this.recordSelector, stateGetter, stateRestorer, finalFunc)
+        this.recorder.register()
 
-        const modifierKeyPressed = this.utils.modifierKey(this.config.modifier_key)
+        const isModifierKeyPressed = this.utils.modifierKey(this.config.modifier_key)
         this.entities.write.addEventListener("click", ev => {
-            if (!modifierKeyPressed(ev)) return
-            const paragraph = ev.target.closest(this.recordSelector)
-            if (!paragraph) return
-            paragraph.classList.add(this.className)
+            if (!isModifierKeyPressed(ev)) return
+            const node = ev.target.closest(this.recordSelector)
+            if (!node) return
+            node.classList.add(this.className)
             if (this.config.auto_popup_modal) {
                 this.entities.window.show()
             }
@@ -56,21 +62,20 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
         this.entities.list.addEventListener("click", ev => {
             const item = ev.target.closest(".bookmark-item")
             if (!item) return
-            const { file: targetFilepath, idx } = item.querySelector(".bookmark-item-content").dataset
-            const curFilepath = this.utils.getFilePath()
+            const curFile = this.utils.getFilePath()
+            const { file: targetFile, idx } = item.querySelector(".bookmark-item-content").dataset
             const isDelete = ev.target.closest(".bookmark-btn")
             if (isDelete) {
-                if (curFilepath === targetFilepath) {
-                    const ele = [...document.querySelectorAll(this.recordSelector)][idx]
-                    if (ele) ele.classList.remove(this.className)
+                if (curFile === targetFile) {
+                    this.locateUtils.getEl(idx)?.classList.remove(this.className)
                 } else {
-                    this.utils.stateRecorder.deleteState(this.recordName, targetFilepath, parseInt(idx))
+                    this.recorder.getState()?.get(targetFile)?.delete(parseInt(idx))
                 }
                 this.refresh()
             } else {
-                if (targetFilepath && curFilepath !== targetFilepath) {
-                    Object.assign(this.locateUtils, { file: targetFilepath, idx, time: Date.now() })
-                    this.utils.openFile(targetFilepath)
+                if (targetFile && curFile !== targetFile) {
+                    Object.assign(this.locateUtils, { file: targetFile, idx, time: Date.now() })
+                    this.utils.openFile(targetFile)
                 } else {
                     this.locateUtils.scroll(idx)
                 }
@@ -85,10 +90,8 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
             if (Date.now() > this.locateUtils.time + 2000) {
-                const map = this.utils.stateRecorder.getState(this.recordName, this.utils.getFilePath())
-                if (map && map.size) {
-                    this.refresh()
-                }
+                const needRefresh = !!this.recorder.getState()?.get(this.utils.getFilePath())?.size
+                if (needRefresh) this.refresh()
             }
         })
     }
@@ -99,7 +102,7 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
     }
 
     refresh = () => {
-        this.utils.stateRecorder.collect(this.recordName)
+        this.recorder.collect()
         if (!this.entities.window.hidden) {
             this._updateModal()
         }
@@ -107,7 +110,7 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
 
     _updateModal = () => {
         let item = this.entities.list.firstElementChild
-        const map = this.utils.stateRecorder.getState(this.recordName)
+        const map = this.recorder.getState()
         for (const [filepath, idxList] of map.entries()) {
             for (const idx of idxList.keys()) {
                 const fileName = this.utils.getFileName(filepath)

@@ -102,7 +102,7 @@ Verification:
 
 1. Restart Typora.
 2. Open Chrome devtools and check if "I am in process", the plugin object, and the corresponding Element are output to the console.
-3. Right-click the editor area to open the right-click menu. Hover the mouse over `常用插件 -> 二级插件 -> 你好世界`. The hint message "this is hello world hint" should be displayed. Click the `你好世界` menu item. A pop-up box should appear, displaying "this is hello world plugin".
+3. Right-click the editor area to open the right-click menu. Hover the mouse over `Often Used Plugins -> Secondary Plugins -> hellworld`. The hint message "this is hello world hint" should be displayed. Click the `hellworld` menu item. A pop-up box should appear, displaying "this is hello world plugin".
 4. Press the shortcut key `ctrl+alt+u` you defined. The same pop-up box should appear.
 
 
@@ -153,7 +153,7 @@ class insertMindmap extends BaseCustomPlugin {
             return list
         }
         const tokens = getTokens(tree, ["graph LR", "\n"])
-        return ["``` mermaid ", "\n ", ...tokens, "```"].join("")
+        return ["```mermaid", "\n ", ...tokens, "```"].join("")
     }
 }
 
@@ -163,7 +163,7 @@ module.exports = { plugin: insertMindmap }
 
 Verification:
 
-Open Typora and right-click the editor area to open the right-click menu. Select `常用插件 -> 二级插件 -> 插入思维导图` and click. Based on the outline structure of the current document, a corresponding Mermaid diagram will be inserted into the document.
+Open Typora and right-click the editor area to open the right-click menu. Select `Often Used Plugins -> Secondary Plugins -> InsertMindMap` and click. Based on the outline structure of the current document, a corresponding Mermaid diagram will be inserted into the document.
 
 For example, for a document `README-en.md` with the following structure:
 
@@ -194,11 +194,6 @@ T5-->T8("Copy Title Path")
 
 This example demonstrates how to add an option to the right-click menu that copies the full path of the current title to the clipboard when the cursor is on a title.
 
-Requirements:
-
-1. The plugin is only available when the cursor is on a title element (`[mdtype = "heading"]`).
-2. Triggered by the shortcut key `ctrl+shift+u`.
-
 Implementation:
 
 1. Step 1: Add the configuration in `./plugin/global/settings/custom_plugin.user.toml`.
@@ -217,9 +212,7 @@ order = 1             # Order of appearance in the right-click menu
 # Shortcut key
 hotkey = "ctrl+shift+u"
 # File name used if this plugin is called on a blank page (file does not exist yet, requires a default name)
-untitled_file_name = "untitled"
-# Whether to skip empty titles
-ignore_empty_header = false
+untitled_file_name = "Untitled"
 # Whether to add a space between the title and the hint
 add_space = true
 ```
@@ -230,7 +223,7 @@ add_space = true
 // 1
 class myFullPathCopy extends BaseCustomPlugin {
     // 2
-    selector = () => '#write [mdtype = "heading"]'
+    selector = () => '#write > [cid]'
     // 3
     hint = () => "Copy the path of the current title to the clipboard"
     // 4
@@ -249,56 +242,38 @@ class myFullPathCopy extends BaseCustomPlugin {
     process = () => {}
     // 11
     callback = anchorNode => {
-        const text = this.getFullPath()
+        const text = this.getFullPath(anchorNode)
         navigator.clipboard.writeText(text)
     }
 
-    getFullPath = () => {
-        const headers = []
-        const paragraphs = ["H1", "H2", "H3", "H4", "H5", "H6"]
-        const nameList = ["Level 1 Title", "Level 2 Title", "Level 3 Title", "Level 4 Title", "Level 5 Title", "Level 6 Title"]
-
-        let ele = anchorNode
-        while (ele) {
-            const idx = paragraphs.indexOf(ele.tagName)
-            if (idx ! == -1 && (headers.length == = 0 || (headers [headers.length - 1].idx > idx))) {
-                headers.push({ ele, idx })
-                if (idx === 0) {
-                    break
+    getFullPath = (anchorNode) => {
+        const getHeaders = (startNode) => {
+            const HEADING_TAGS = ["H1", "H2", "H3", "H4", "H5", "H6"]
+            const i18nSuffixes = ["Level1", "Level2", "Level3", "Level4", "Level5", "Level6"]
+            const i18nNoHeader = "NoHeader"
+            const headerMap = new Map()
+            let minLevel = Infinity
+            let curNode = startNode
+            while (curNode && minLevel > 0) {
+                const level = HEADING_TAGS.indexOf(curNode.tagName)
+                if (level !== -1 && level < minLevel) {
+                    headerMap.set(level, curNode.textContent)
+                    minLevel = level
                 }
+                curNode = curNode.previousElementSibling
             }
-            ele = ele.previousElementSibling
+            const maxDepth = (headerMap.size === 0) ? 0 : Math.max(...headerMap.keys()) + 1
+            return Array.from({ length: maxDepth }, (_, level) => {
+                const title = headerMap.get(level) || i18nNoHeader
+                const suffix = i18nSuffixes[level]
+                const space = this.config.add_space ? " " : ""
+                return title + space + suffix
+            })
         }
-
-        headers.reverse()
 
         const filePath = this.utils.getFilePath() || this.config.untitled_file_name
-        const result = [filePath]
-
-        let idx = 0
-        for (const h of headers) {
-            while (idx < 6 && h.ele.tagName !== paragraphs [idx]) {
-                if (! this.config.ignore_empty_header) {
-                    const name = this.getHeaderName("Untitled", nameList [idx])
-                    result.push(name)
-                }
-                idx++
-            }
-
-            if (h.ele.tagName === paragraphs [idx]) {
-                const name = this.getHeaderName(h.ele.textContent, nameList [idx])
-                result.push(name)
-                idx++
-            }
-        }
-
-        const text = this.utils.Package.Path.join(...result)
-        return text
-    }
-
-    getHeaderName = (title, name) => {
-        const space = this.config.add_space ? " " : ""
-        return title + space + name
+        const pathSegments = getHeaders(anchorNode)
+        return this.utils.Package.Path.join(filePath, ...pathSegments)
     }
 }
 
@@ -321,5 +296,4 @@ module.exports = { plugin: myFullPathCopy }
 // 12. export: Export the plugin class as `plugin`.
 ```
 
-​	
 

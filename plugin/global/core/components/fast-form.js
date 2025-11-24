@@ -79,6 +79,7 @@ class FastForm extends HTMLElement {
         this.clear()
 
         this.options = this._initOptions(options)
+        this._normalizeSchema(this.options.schema)
         this._configureFeatures(this.options)  // register feature APIs and hooks
         this._normalizeControls(this.options)  // init control and expand options
         this._compileFeatures(this.options)    // compile features base on the final options
@@ -184,8 +185,7 @@ class FastForm extends HTMLElement {
 
     getControlOptions = (field) => {
         if (!field) return {}
-        const controlDef = this.constructor.controls[field.type]
-        const defaults = (controlDef && controlDef.controlOptions) || {}
+        const defaults = this.constructor.controls[field.type]?.controlOptions || {}
         const formLevel = this.options.controlOptions[field.type] || {}
         const instanceLevel = defaults ? utils.pick(field, Object.keys(defaults)) : {}
         return { ...defaults, ...formLevel, ...instanceLevel }
@@ -361,6 +361,12 @@ class FastForm extends HTMLElement {
                 control.setup(setupContext)
             }
         })
+    }
+
+    _normalizeSchema = (schema) => {
+        this.traverseBoxes(box => {
+            if (!box.id) box.id = `box_${utils.randomString()}`
+        }, schema)
     }
 
     _configureFeatures = (options) => {
@@ -580,12 +586,11 @@ const Layout_Default = {
             const controlHTML = controlDef.create(controlContext)
             return this.createControlContainer(field, controlHTML, controlOptions.className)
         }
-        const createBox = (box, idx) => {
+        const createBox = (box) => {
             const titleHTML = this.createTitle(box)
             const controlHTMLs = (box.fields || []).map(createControl)
             const boxHTML = this.createBoxContent(controlHTMLs)
-            const containerId = this.genBoxContainerId(box, idx)
-            return this.createBoxContainer(containerId, titleHTML, boxHTML)
+            return this.createBoxContainer(box.id, titleHTML, boxHTML)
         }
         container.innerHTML = schema.map(createBox).join("")
     },
@@ -622,9 +627,6 @@ const Layout_Default = {
     },
     createBoxContent(controlHTMLs) {
         return `<div class="box">${controlHTMLs.join("")}</div>`
-    },
-    genBoxContainerId(box, idx) {
-        return box.id || `box_${idx}`
     },
     createBoxContainer(id, titleHTML, boxHTML) {
         return `<div class="box-container" data-box="${id}">${titleHTML}${boxHTML}</div>`
@@ -707,30 +709,6 @@ const Feature_DefaultKeybindings = {
     }
 }
 
-class EventBus {
-    constructor() {
-        this.listeners = {}
-    }
-
-    on = (eventName, callback) => {
-        if (!this.listeners[eventName]) {
-            this.listeners[eventName] = new Set()
-        }
-        this.listeners[eventName].add(callback)
-    }
-    off = (eventName, callback) => {
-        if (this.listeners[eventName]) {
-            this.listeners[eventName].delete(callback)
-        }
-    }
-    emit = (eventName, detail) => {
-        if (this.listeners[eventName]) {
-            this.listeners[eventName].forEach(callback => callback(detail))
-        }
-    }
-    clear = () => this.listeners = {}
-}
-
 const Feature_Watchers = (() => {
     const ApiKey = "watchers"
     const StateKey = {
@@ -739,83 +717,40 @@ const Feature_Watchers = (() => {
         WatcherToTriggers: "WatcherToTriggers",
         IsExecuting: "IsExecuting",
         PendingQueue: "PendingQueue",
-        EventBus: "EventBus",
+    }
+    const InternalToken = {
+        Phase: Symbol("meta:phase"),
+    }
+    const Phase = {
+        Mount: "mount",
+        Update: "update",
+        Api: "api",
+        Unknown: "unknown",
+    }
+
+    const normalizeWatchers = (userWatchers) => {
+        if (!userWatchers) return {}
+        if (!Array.isArray(userWatchers)) return userWatchers || {}
+        const normalized = {}
+        userWatchers.forEach((watcher, index) => {
+            if (!watcher) return
+            const key = watcher.key || watcher.name || `anonymous_watcher_${index}`
+            if (normalized.hasOwnProperty(key)) {
+                console.warn(`FastForm Warning: Duplicate watcher key detected: '${key}'.`)
+            }
+            normalized[key] = watcher
+        })
+        return normalized
     }
 
     const Registries = (() => {
-        const genWrapperActivator = (name, decorator) => {
-            const install = (definition, ctx) => {
-                const { delay, source, decoratorOptions = {} } = definition || {}
-                if (!definition || typeof delay !== "number" || typeof source !== "object") {
-                    console.warn(`FastForm Warning: The value for ${name} in watcher "${ctx.watcherKey}" must be an object with 'delay'(number) and 'source'(object).`)
-                    return
-                }
-                const modifiedTrigger = decorator(ctx.triggerReEvaluation, delay, decoratorOptions)
-                const modifiedCtx = { ...ctx, triggerReEvaluation: modifiedTrigger }
-                const activatorName = Object.keys(source)[0]
-                const activatorDef = source[activatorName]
-                return ctx.installActivatorByName(activatorName, activatorDef, modifiedCtx)
-            }
-            return { install }
-        }
-
-        const activators = {
-            $event: {
-                install: (eventName, ctx) => {
-                    if (typeof eventName !== "string") {
-                        console.warn(`FastForm Warning: The value for $event in watcher "${ctx.watcherKey}" must be a string (event name).`)
-                        return
-                    }
-                    const listener = (payload) => ctx.triggerReEvaluation(payload)
-                    const eventBus = ctx.state.get(StateKey.EventBus)
-                    eventBus.on(eventName, listener)
-                    return () => eventBus.off(eventName, listener)
-                },
-            },
-            $interval: {
-                install: (duration, ctx) => {
-                    if (typeof duration !== "number" || duration <= 0) {
-                        console.warn(`FastForm Warning: The value for $interval in watcher "${ctx.watcherKey}" must be a positive number (milliseconds). Got: ${duration}`)
-                        return
-                    }
-                    const timerId = setInterval(() => ctx.triggerReEvaluation(), duration)
-                    return () => clearInterval(timerId)
-                }
-            },
-            $timeout: {
-                install: (duration, ctx) => {
-                    if (typeof duration !== "number" || duration < 0) {
-                        console.warn(`FastForm Warning: The value for $timeout in watcher "${ctx.watcherKey}" must be a positive number (milliseconds). Got: ${duration}`)
-                        return
-                    }
-                    const timerId = setTimeout(() => ctx.triggerReEvaluation(), duration)
-                    return () => clearTimeout(timerId)
-                }
-            },
-            $promise: {
-                install: (promise, ctx) => {
-                    if (!promise || typeof promise.then !== "function") {
-                        console.warn(`FastForm Warning: The value for $promise in watcher "${ctx.watcherKey}" must be a Promise.`)
-                        return
-                    }
-                    promise
-                        .then(value => ctx.triggerReEvaluation({ status: "resolved", value }))
-                        .catch(reason => ctx.triggerReEvaluation({ status: "rejected", reason }))
-                }
-            },
-            $signal: {
-                install: (signal, ctx) => {
-                    if (!(signal instanceof AbortSignal)) {
-                        console.warn(`FastForm Warning: The value for $signal in watcher "${ctx.watcherKey}" must be an AbortSignal instance.`)
-                        return
-                    }
-                    const listener = (payload) => ctx.triggerReEvaluation(payload)
-                    signal.addEventListener("abort", listener, { once: true })
-                    return () => signal.removeEventListener("abort", listener)
-                }
-            },
-            $debounce: genWrapperActivator("$debounce", utils.debounce),
-            $throttle: genWrapperActivator("$throttle", utils.throttle),
+        const meta = {
+            $dev: (ctx) => process.env.NODE_ENV === "development",
+            $phase: (ctx) => ctx.payload[InternalToken.Phase] || Phase.Unknown,
+            $isMounting: (ctx) => ctx.payload[InternalToken.Phase] === Phase.Mount,
+            $isUpdating: (ctx) => ctx.payload[InternalToken.Phase] === Phase.Update,
+            $isApi: (ctx) => ctx.payload[InternalToken.Phase] === Phase.Api,
+            $trigger: (ctx) => ctx.payload.trigger || null,  // Used to distinguish specific manual invocations (via API) from automatic dependency updates.
         }
 
         const conditionEvaluators = {
@@ -838,6 +773,20 @@ const Feature_Watchers = (() => {
             $always: {
                 collectTriggers: () => void 0,
                 evaluate: () => true,
+            },
+            $meta: {
+                collectTriggers: () => void 0,
+                evaluate: (condition, ctx) => {
+                    return Object.entries(condition).every(([varName, expected]) => {
+                        const getter = ctx.meta[varName]
+                        if (typeof getter !== "function") {
+                            console.warn(`FastForm Warning: Unknown meta '${varName}' used in $meta condition.`)
+                            return false
+                        }
+                        const actual = getter(ctx)
+                        return ctx.compare(actual, expected)
+                    })
+                }
             },
             /**
              * A condition that queries the state of a UI element (e.g., visibility, class)
@@ -935,26 +884,6 @@ const Feature_Watchers = (() => {
                     } else if (isMet) {
                         DependencyAnalyzer.applyUiEffects(declaration, ctx)
                     }
-                }
-            },
-            $dispatch: {
-                collectAffects: () => [],
-                execute: (isMet, value, ctx) => {
-                    if (!isMet) return
-                    Object.entries(value).forEach(([eventName, detail]) => {
-                        const resolved = (typeof detail === "function") ? detail(ctx) : detail
-                        ctx.dispatchEvent(eventName, resolved)
-                    })
-                }
-            },
-            $dispatchDomEvent: {
-                collectAffects: () => [],
-                execute: (isMet, value, ctx) => {
-                    if (!isMet) return
-                    Object.entries(value).forEach(([eventName, detail]) => {
-                        const resolved = (typeof detail === "function") ? detail(ctx) : detail
-                        ctx.dispatchDomEvent(new CustomEvent(eventName, { detail: resolved }))
-                    })
                 }
             },
         }
@@ -1056,15 +985,7 @@ const Feature_Watchers = (() => {
             uiEffectToHandlerMap.set(`$${property}`, handler)
         })
 
-        return {
-            uiBehaviors,
-            uiAssertionToPropertyMap,
-            uiEffectToHandlerMap,
-            activators,
-            conditionEvaluators,
-            comparisonEvaluators,
-            effectHandlers
-        }
+        return { uiBehaviors, uiAssertionToPropertyMap, uiEffectToHandlerMap, meta, conditionEvaluators, comparisonEvaluators, effectHandlers }
     })()
 
     const DependencyAnalyzer = (() => {
@@ -1236,11 +1157,10 @@ const Feature_Watchers = (() => {
                         console.warn(`FastForm Warning: Unknown comparison operator "${operator}".`)
                         return false
                     }
-                    let processedActual = actualValue, processedExpected = expectedValue
-                    if (typeof handler.beforeEvaluate === "function") {
-                        [processedActual, processedExpected] = handler.beforeEvaluate(actualValue, expectedValue, context)
-                    }
-                    return handler.evaluate(processedActual, processedExpected)
+                    const [finalActual, finalExpected] = typeof handler.beforeEvaluate === "function"
+                        ? handler.beforeEvaluate(actualValue, expectedValue, context)
+                        : [actualValue, expectedValue]
+                    return handler.evaluate(finalActual, finalExpected)
                 })
             })
         }
@@ -1251,8 +1171,7 @@ const Feature_Watchers = (() => {
                 effect(isConditionMet, context)
             } else if (typeof effect === "object" && effect !== null) {
                 for (const [name, value] of Object.entries(effect)) {
-                    const handler = form.options.effectHandlers[name]
-                    if (handler) handler.execute(isConditionMet, value, context)
+                    form.options.effectHandlers[name]?.execute(isConditionMet, value, context)
                 }
             }
         }
@@ -1319,7 +1238,8 @@ const Feature_Watchers = (() => {
                 // Step 4: Execute watchers.
                 const run = (watchers) => {
                     const evaluateContext = {
-                        getPayload: () => payload,
+                        payload: payload ?? {},
+                        meta: form.options.meta,
                         conditionEvaluators: form.options.conditionEvaluators,
                         comparisonEvaluators: form.options.comparisonEvaluators,
                         getBox: (boxId) => form.options.layout.findBox(boxId, form.form),
@@ -1354,11 +1274,9 @@ const Feature_Watchers = (() => {
                             if (!form.options.reactiveUiEffects) return
                             const affectedUiKeys = new Set(DependencyAnalyzer.collectUIAffects(declaration))
                             if (affectedUiKeys.size > 0) {
-                                ExecutionEngine.executeForKeys(state, form, [...affectedUiKeys])
+                                ExecutionEngine.executeForKeys(state, form, [...affectedUiKeys], evaluateContext.payload)
                             }
                         },
-                        dispatchEvent: (eventName, detail) => form.getApi(ApiKey).dispatchEvent(eventName, detail),
-                        dispatchDomEvent: (event) => form.getApi(ApiKey).dispatchDomEvent(event),
                     }
 
                     for (const watcher of watchers) {
@@ -1405,55 +1323,18 @@ const Feature_Watchers = (() => {
             }
         }
 
-        const executeForKeys = (state, form, keys) => execute(state, form, getWatchersForKeys(state, keys))
+        const executeForKeys = (state, form, keys, payload) => execute(state, form, getWatchersForKeys(state, keys), payload)
 
-        const executeAll = (state, form) => execute(state, form, getAllWatchers(state))
+        const executeAll = (state, form, payload) => execute(state, form, getAllWatchers(state), payload)
 
         return { getWatchersForKeys, getAllWatchers, execute, executeForKeys, executeAll }
     })()
 
     const Lifecycle = (() => {
-        const installActivators = (state, form, watcherKey, watcher) => {
-            if (!watcher.on) return
-
-            const installContext = {
-                watcher,
-                watcherKey,
-                state,
-                triggerReEvaluation: (payload) => ExecutionEngine.execute(state, form, new Set([watcher]), payload),
-                installActivator: (installFn, definition, customContext) => form.registerCleanup(installFn(definition, customContext || installContext)),
-                installActivatorByName: (name, definition, customContext) => {
-                    const activator = form.options.activators[name]
-                    if (activator && typeof activator.install !== "function") {
-                        console.warn(`FastForm Warning: No such an activator ${name}, it will be ignored.`)
-                        return
-                    }
-                    return installContext.installActivator(activator.install, definition, customContext)
-                },
-            }
-            const setupContext = {
-                ...installContext,
-                getValue: (key) => form.getData(key),
-                getControl: (key) => form.options.layout.findControl(key, form.form),
-                getBox: (boxId) => form.options.layout.findBox(boxId, form.form),
-            }
-
-            if (typeof watcher.on === "function") {
-                form.registerCleanup(watcher.on(setupContext))
-            } else if (typeof watcher.on === "object") {
-                for (const [name, installDef] of Object.entries(watcher.on)) {
-                    installContext.installActivatorByName(name, installDef)
-                }
-            } else {
-                console.warn(`FastForm Warning: The 'on' property for watcher "${watcherKey}" must be an object or a function.`)
-            }
-        }
-
         const registerWatcher = (state, form, watcherKey, watcher) => {
             const watchers = state.get(StateKey.Watchers)
             if (watchers.has(watcherKey)) console.warn(`FastForm Warning: Watcher "${watcherKey}" already exists and will be overwritten.`)
             watchers.set(watcherKey, watcher)
-            installActivators(state, form, watcherKey, watcher)
         }
 
         const initWatcher = (state, form, registerApi) => {
@@ -1464,12 +1345,10 @@ const Feature_Watchers = (() => {
                     triggerToWatchers: new Map(state.get(StateKey.TriggerToWatchers)),
                     watcherToTriggers: new Map(state.get(StateKey.WatcherToTriggers)),
                 }),
-                dispatchEvent: (eventName, detail) => state.get(StateKey.EventBus).emit(eventName, { detail }),
-                dispatchDomEvent: (event) => form.form.dispatchEvent(event),
-                trigger: (watcherName, payload) => {
+                trigger: (watcherName, payload = {}) => {
                     const watcher = state.get(StateKey.Watchers).get(watcherName)
                     if (watcher) {
-                        ExecutionEngine.execute(state, form, new Set([watcher]), payload)
+                        ExecutionEngine.execute(state, form, new Set([watcher]), { ...payload, [InternalToken.Phase]: Phase.Api })
                     }
                 },
             })
@@ -1480,7 +1359,7 @@ const Feature_Watchers = (() => {
     return {
         featureOptions: {
             watchers: {},
-            activators: {},
+            meta: {},
             conditionEvaluators: {},
             comparisonEvaluators: {},
             effectHandlers: {},
@@ -1490,7 +1369,8 @@ const Feature_Watchers = (() => {
             reactiveUiEffects: false, // Violating the principle of the Single Source of Truth. Do NOT edit this option unless you know what you are doing.
         },
         configure: ({ form, options, registerApi, initState, hooks }) => {
-            options.activators = { ...Registries.activators, ...options.activators }
+            options.watchers = normalizeWatchers(options.watchers)
+            options.meta = { ...Registries.meta, ...options.meta }
             options.conditionEvaluators = { ...Registries.conditionEvaluators, ...options.conditionEvaluators }
             options.comparisonEvaluators = { ...Registries.comparisonEvaluators, ...options.comparisonEvaluators }
             options.effectHandlers = { ...Registries.effectHandlers, ...options.effectHandlers }
@@ -1501,24 +1381,23 @@ const Feature_Watchers = (() => {
                 [StateKey.WatcherToTriggers, new Map()],  // watcher -> Set<triggerKey>
                 [StateKey.PendingQueue, new Set()],
                 [StateKey.IsExecuting, false],
-                [StateKey.EventBus, new EventBus()],
             ]))
 
             Lifecycle.initWatcher(state, form, registerApi)
-            hooks.on("onAfterCommit", (changeContext, form) => ExecutionEngine.executeForKeys(state, form, [changeContext.key]))
+            hooks.on("onAfterCommit", (changeContext, form) => ExecutionEngine.executeForKeys(state, form, [changeContext.key], { [InternalToken.Phase]: Phase.Update }))
             hooks.on("onRender", () => {
                 Object.entries(options.watchers || {}).forEach(([key, watcher]) => Lifecycle.registerWatcher(state, form, key, watcher))
                 DependencyAnalyzer.buildTriggerMap(state, form)
-                ExecutionEngine.executeAll(state, form)
+                ExecutionEngine.executeAll(state, form, { [InternalToken.Phase]: Phase.Mount })
             })
         },
         install: (FastFormClass) => {
             const validationOptions = { prefix: "$" }
-            FastFormClass.registerActivator = (name, definition) => {
-                const checks = { install: { required: true, type: "function" } }
-                validateDefinition(name, definition, checks, validationOptions)
-                if (Registries.activators.hasOwnProperty(name)) console.warn(`FastForm Warning: Overwriting Activator for '${name}'.`)
-                Registries.activators[name] = definition
+            FastFormClass.registerMeta = (name, getterFn) => {
+                if (typeof name !== "string" || !name) throw new TypeError("Meta name must be a non-empty string.")
+                if (typeof getterFn !== "function") throw new TypeError("Meta getter must be a function.")
+                if (Registries.meta.hasOwnProperty(name)) console.warn(`FastForm Warning: Overwriting meta '${name}'.`)
+                Registries.meta[name] = getterFn
             }
             FastFormClass.registerConditionEvaluator = (name, definition) => {
                 const checks = { evaluate: { required: true, type: "function" }, collectTriggers: { required: true, type: "function" }, beforeEvaluate: { type: "function" } }
@@ -1754,42 +1633,43 @@ const Feature_Validation = {
     }
 }
 
-function getWatcherAttrs(rule) {
-    let when, on, triggers
-    if (["when", "on", "triggers"].some(key => rule.hasOwnProperty(key))) {
+function normalizeWatcherOptions(rule) {
+    const isFullDefinition = ["when", "triggers"].some(key => rule.hasOwnProperty(key))
+    let when, triggers
+    if (isFullDefinition) {
         when = rule.when
-        on = rule.on
         triggers = rule.triggers
     } else {
         when = rule
     }
-    return { when, on, triggers }
+    return { when, triggers }
 }
 
-const Feature_Dependencies = {
+const Feature_FieldDependencies = {
     featureOptions: {
-        dependencies: {},
-        disableEffect: "readonly", // "hide" or "readonly"
+        fieldDependencies: {},
+        fieldDependencyUnmetAction: "readonly", // hide | readonly
     },
     compile: ({ form, options }) => {
-        const allDependencies = { ...options.dependencies }
+        const allActions = {}
+        const allDependencies = { ...options.fieldDependencies }
         form.traverseFields(field => {
             if (!field.dependencies) return
             if (allDependencies.hasOwnProperty(field.key)) {
                 console.warn(`FastForm Warning: Dependency for '${field.key}' is defined both inline and in top-level options. The inline definition will be used.`)
             }
             allDependencies[field.key] = field.dependencies
+            allActions[field.key] = field.dependencyUnmetAction || options.fieldDependencyUnmetAction || "readonly"
         })
         const { register } = form.getApi("watchers")
         Object.entries(allDependencies).forEach(([fieldKey, rule]) => {
             if (!rule) return
 
-            const watcherKey = `_dependency_${fieldKey}`
-            const { when, on, triggers } = getWatcherAttrs(rule)
-            const className = options.disableEffect === "hide" ? "plugin-common-hidden" : "plugin-common-readonly"
+            const watcherKey = `_field_dependency_${fieldKey}`
+            const { when, triggers } = normalizeWatcherOptions(rule)
+            const className = (allActions[fieldKey] === "hide") ? "plugin-common-hidden" : "plugin-common-readonly"
             register(watcherKey, {
                 when: when,
-                on: on,
                 triggers: triggers,
                 effect: {
                     $updateUI: {
@@ -1797,7 +1677,7 @@ const Feature_Dependencies = {
                         $else: { [fieldKey]: { $classes: { $add: className } } },
                     },
                 },
-                isDependency: true, // Special property to identify it as an auto-generated watcher
+                isFieldDependency: true, // Special property to identify it as an auto-generated watcher
             })
         })
     },
@@ -1809,10 +1689,8 @@ const Feature_Dependencies = {
             collectTriggers: (fieldKeyOrKeys, ctx) => {
                 const keys = Array.isArray(fieldKeyOrKeys) ? fieldKeyOrKeys : [fieldKeyOrKeys]
                 keys.filter(key => typeof key === "string").forEach(key => {
-                    const targetField = ctx.getField(key)
-                    if (targetField && targetField.dependencies) {
-                        ctx.collectTriggers(targetField.dependencies)
-                    }
+                    const dep = ctx.getField(key)?.dependencies
+                    if (dep) ctx.collectTriggers(dep)
                 })
             },
             evaluate: (fieldKeyOrKeys, ctx) => {
@@ -1832,60 +1710,69 @@ const Feature_Dependencies = {
     }
 }
 
-const Feature_ConditionalBoxes = {
+const Feature_BoxDependencies = {
     featureOptions: {
-        conditionalBoxes: {},
+        boxDependencies: {},
+        boxDependencyUnmetAction: "hide", // hide | readonly
         destroyStateOnHide: false,
     },
     configure: ({ initState }) => initState(new Map()),
     compile: ({ form, options, state }) => {
-        const conditionalBoxes = options.conditionalBoxes
-        if (!conditionalBoxes || typeof conditionalBoxes !== "object" || Object.keys(conditionalBoxes).length === 0) return
+        const allBoxes = {}
+        const allActions = {}
+        const allRules = { ...options.boxDependencies }
+        form.traverseBoxes((box) => {
+            allBoxes[box.id] = box
+            if (box.dependencies) {
+                if (allRules.hasOwnProperty(box.id)) {
+                    console.warn(`FastForm Warning: Box for '${box.id}' is defined both inline and in top-level options. The inline definition will be used.`)
+                }
+                allRules[box.id] = box.dependencies
+                allActions[box.id] = box.dependencyUnmetAction || options.boxDependencyUnmetAction || "hide"
+            }
+        }, options.schema)
 
-        const boxSchemaMap = {}
-        form.traverseBoxes(box => box.id && (boxSchemaMap[box.id] = box), options.schema)
-        Object.entries(conditionalBoxes).forEach(([boxId, rule]) => {
+        if (Object.keys(allRules).length === 0) return
+
+        const { register } = form.getApi("watchers")
+        Object.entries(allRules).forEach(([boxId, rule]) => {
             if (!rule) return
-
-            if (!boxSchemaMap[boxId]) {
-                console.warn(`FastForm Warning: Conditional box with id '${boxId}' is defined, but not found in any schema level.`)
+            if (!allBoxes[boxId]) {
+                console.warn(`FastForm Warning: Box with id '${boxId}' rule is defined, but box is not found in schema.`)
                 return
             }
 
-            const watcherKey = `_conditional_box_${boxId}`
-            const { when, on, triggers } = getWatcherAttrs(rule)
-            const uiStateKey = FastForm.createUiStateKey({ target: boxId, property: "visibility" })
-            const { register } = form.getApi("watchers")
+            const watcherKey = `_box_dependency_${boxId}`
+            const { when, triggers } = normalizeWatcherOptions(rule)
+            const affects = [form.constructor.createUiStateKey({ target: boxId, property: "classes" })]
             register(watcherKey, {
                 when: when,
-                on: on,
                 triggers: triggers,
-                affects: [uiStateKey],
+                affects: affects,
                 effect: (isConditionMet, context) => {
                     const box = context.getBox(boxId)
                     if (!box) return
 
-                    const wantToHide = !isConditionMet
-                    const wasHidden = utils.isHidden(box)
-                    if (wantToHide === wasHidden) return
-
-                    utils.toggleInvisible(box, wantToHide)
+                    const wantHide = !isConditionMet && allActions[boxId] === "hide"
+                    const wantReadonly = !isConditionMet && allActions[boxId] === "readonly"
+                    const wasHidden = box.classList.contains("plugin-common-hidden")
+                    box.classList.toggle("plugin-common-hidden", wantHide)
+                    box.classList.toggle("plugin-common-readonly", wantReadonly)
 
                     if (!options.destroyStateOnHide) return
-
-                    if (wantToHide) {
-                        const boxSchema = boxSchemaMap[boxId]
+                    if (wantHide && !wasHidden) {
+                        const boxSchema = allBoxes[boxId]
                         if (boxSchema) {
                             const cache = {}
                             form.traverseFields(field => {
                                 if (field.key) {
                                     cache[field.key] = form.getData(field.key)
-                                    form.setData(field.key, undefined)
+                                    context.setValue(field.key, undefined)
                                 }
                             }, [boxSchema])
                             state.set(boxId, cache)
                         }
-                    } else {
+                    } else if (!wantHide && wasHidden) {
                         const dataToRestore = state.get(boxId)
                         if (dataToRestore) {
                             Object.entries(dataToRestore).forEach(([fieldKey, value]) => context.setValue(fieldKey, value))
@@ -1893,7 +1780,7 @@ const Feature_ConditionalBoxes = {
                         }
                     }
                 },
-                isConditionalBox: true, // Special property to identify it as an auto-generated watcher
+                isBoxDependency: true, // Special property to identify it as an auto-generated watcher
             })
         })
     }
@@ -1915,7 +1802,6 @@ const Feature_Cascades = {
             }
             register(watcherKey, {
                 when: rule.when,
-                on: rule.on,
                 triggers: rule.triggers,
                 affects: [rule.target],
                 effect: (isConditionMet, context) => {
@@ -1937,8 +1823,8 @@ FastForm.registerFeature("defaultKeybindings", Feature_DefaultKeybindings)
 FastForm.registerFeature("watchers", Feature_Watchers)
 FastForm.registerFeature("parsing", Feature_Parsing)
 FastForm.registerFeature("validation", Feature_Validation)
-FastForm.registerFeature("dependencies", Feature_Dependencies)
-FastForm.registerFeature("conditionalBoxes", Feature_ConditionalBoxes)
+FastForm.registerFeature("fieldDependencies", Feature_FieldDependencies)
+FastForm.registerFeature("boxDependencies", Feature_BoxDependencies)
 FastForm.registerFeature("cascades", Feature_Cascades)
 
 // usage:
@@ -2022,25 +1908,6 @@ const Comparison_Regex = {
 }
 
 // usage:
-//   $store: { store: myStore, selector: (state) => state.auth.isLoggedIn }
-const Activator_Store = {
-    install: (definition, ctx) => {
-        if (typeof definition !== "object" || typeof definition.selector !== "function" || !definition.store || typeof definition.store.subscribe !== "function") {
-            console.warn(`FastForm Warning: The value for $store in watcher "${ctx.watcherKey}" must be an object with 'store' and 'selector' function.`)
-            return
-        }
-        const { store, selector } = definition
-        return store.subscribe((curState, prevState) => {
-            const curSelection = selector(curState)
-            const preSelection = selector(prevState)
-            if (!utils.deepEqual(curSelection, preSelection)) {
-                ctx.triggerReEvaluation(curSelection)
-            }
-        })
-    }
-}
-
-// usage:
 //   $map: { to: "fullName", with: (context) => context.getValue("lastName").trim() }
 //   $map: { from: "firstName", to: "fullName", with: (firstName, context) => `${firstName} ${context.getValue("lastName").trim()}` }
 const Effect_Map = {
@@ -2073,7 +1940,6 @@ const Effect_Map = {
 FastForm.registerConditionEvaluator("$compareFields", Condition_CompareFields)
 FastForm.registerConditionEvaluator("$length", Condition_Length)
 FastForm.registerComparisonEvaluator("$regex", Comparison_Regex)
-FastForm.registerActivator("$store", Activator_Store)
 FastForm.registerEffectHandler("$map", Effect_Map)
 
 function Try(fn, buildErr = utils.identity) {
@@ -2095,7 +1961,8 @@ const Validator_Regex = ({ value }) => {
 }
 
 const Validator_Path = ({ value }) => {
-    return Try(() => value && utils.Package.Fs.accessSync(utils.Package.Path.resolve(value)), () => `No such path: ${utils.Package.Path.resolve(value)}`)
+    const base = utils.resolvePath(value)
+    return Try(() => value && utils.Package.Fs.accessSync(base), () => `No such path: ${base}`)
 }
 
 FastForm.validator.register("url", Validator_Url)
@@ -2130,7 +1997,7 @@ function updateInputState(input, field, value) {
 }
 
 function normalizeOptionsAttr(field) {
-    if (field.options && Array.isArray(field.options) && field.options.every(op => typeof op === "string")) {
+    if (Array.isArray(field.options) && field.options.every(op => typeof op === "string")) {
         field.options = Object.fromEntries(field.options.map(op => [op, op]))
     }
 }
@@ -2142,10 +2009,7 @@ function defaultBlockLayout(field) {
 }
 
 function registerRules({ form, field }, rules) {
-    const validationApi = form.getApi("validation")
-    if (validationApi) {
-        validationApi.addRule(field.key, rules)
-    }
+    form.getApi("validation")?.addRule(field.key, rules)
 }
 
 function registerNumericalDefaultRules({ field, form }) {
@@ -2319,13 +2183,16 @@ const Control_Range = {
 }
 
 const Control_Action = {
-    setup: ({ field, options }) => {
-        const handler = options.actions[field.key]
-        if (typeof handler !== "function") {
-            options.actions[field.key] = () => console.warn(`No such action: ${field.key}`)
-        }
+    controlOptions: {
+        actionType: "function", // function | toggle | trigger
+        activeClass: "active",  // Style class name activated in toggle mode
     },
     create: ({ field }) => `<div class="action fa fa-angle-right" data-action="${field.key}"></div>`,
+    update: ({ element, value, controlOptions }) => {
+        if (controlOptions.actionType === "toggle") {
+            element.classList.toggle(controlOptions.activeClass, !!value)
+        }
+    },
     bindEvents: ({ form }) => {
         form.onEvent("mousedown", '.control[data-type="action"]', function (ev) {
             const ripple = document.createElement("span")
@@ -2342,10 +2209,14 @@ const Control_Action = {
             this.appendChild(ripple)
             ripple.addEventListener("animationend", () => ripple.remove(), { once: true })
         }).onEvent("click", '.control[data-type="action"]', function () {
-            const actKey = this.querySelector(".action").dataset.action
-            const fn = form.options.actions[actKey]
-            if (typeof fn === "function") {
-                return fn(form)
+            const key = this.querySelector(".action").dataset.action
+            const actionType = form.getControlOptionsFromKey(key).actionType || "function"
+            if (actionType === "toggle") {
+                form.reactiveCommit(key, !form.getData(key))  // Toggle mode: reverse the current value, submit data
+            } else if (actionType === "trigger") {
+                form.reactiveCommit(key, Date.now())  // Trigger mode: Update to timestamp to signal watchers
+            } else {
+                form.options.actions[key]?.(form)  // Function mode: Execute callbacks
             }
         })
     },
@@ -2353,10 +2224,10 @@ const Control_Action = {
 
 const Control_Static = {
     create: () => `<div class="static"></div>`,
-    update: ({ element, value }) => {
-        const staticEl = element.querySelector(".static")
-        if (staticEl) {
-            staticEl.textContent = value
+    update: ({ element, value, field }) => {
+        const wrap = element.querySelector(".static")
+        if (wrap) {
+            wrap.textContent = value ?? field.content ?? ""
         }
     },
 }
@@ -2367,10 +2238,11 @@ const Control_Custom = {
         setRandomKey(field)
     },
     create: () => `<div class="custom-wrap"></div>`,
-    update: ({ element, field }) => {
+    update: ({ element, value, field }) => {
         const wrap = element.querySelector(".custom-wrap")
         if (wrap) {
-            wrap.innerHTML = (field.unsafe === true) ? (field.content || "") : utils.escape(field.content || "")
+            const val = value ?? field.content ?? ""
+            wrap.innerHTML = (field.unsafe === true) ? val : utils.escape(val)
         }
     },
 }
@@ -2381,12 +2253,17 @@ const Control_Hint = {
         setRandomKey(field)
     },
     create: () => `<div class="hint-wrap"></div>`,
-    update: ({ element, field }) => {
+    update: ({ element, value, field }) => {
         const wrap = element.querySelector(".hint-wrap")
         if (wrap) {
-            const getUnsafeAttr = (attr) => (field.unsafe === true) ? (field[attr] || "") : utils.escape(field[attr] || "")
-            const headerHTML = field.hintHeader ? `<div class="hint-header">${getUnsafeAttr("hintHeader")}</div>` : ""
-            const detailHTML = field.hintDetail ? `<div class="hint-detail">${getUnsafeAttr("hintDetail").replace(/\n/g, "<br>")}</div>` : ""
+            const getData = (prop) => {
+                const val = value?.[prop] ?? field[prop] ?? ""
+                return (field.unsafe === true) ? val : utils.escape(val)
+            }
+            const hintHeader = getData("hintHeader")
+            const hintDetail = getData("hintDetail").replace(/\n/g, "<br>")
+            const headerHTML = hintHeader ? `<div class="hint-header">${hintHeader}</div>` : ""
+            const detailHTML = hintDetail ? `<div class="hint-detail">${hintDetail}</div>` : ""
             wrap.innerHTML = headerHTML + detailHTML
         }
     },
@@ -2633,7 +2510,9 @@ const Control_Select = {
     },
     create: ({ field }) => {
         const toOptionItem = ([optionKey, optionShowName]) => {
-            return `<div class="option-item" data-option-key="${optionKey}">${utils.escape(optionShowName)}</div>`
+            const readonlyCls = field.disabledOptions?.includes(optionKey) ? "plugin-common-readonly" : ""
+            const cls = `option-item${readonlyCls ? ' ' + readonlyCls : ''}`
+            return `<div class="${cls}" data-option-key="${optionKey}">${utils.escape(optionShowName)}</div>`
         }
         const selectOptions = Object.entries(field.options).map(toOptionItem).join("")
         const { key } = getCommonHTMLAttrs(field)

@@ -98,11 +98,8 @@ class TOCMarkmap {
 
             modal.addEventListener("transitionend", () => this.fit())
             header.addEventListener("click", ev => {
-                const button = ev.target.closest(".plugin-markmap-icon")
-                if (button) {
-                    const action = button.getAttribute("action")
-                    this.doAction(action)
-                }
+                const action = ev.target.closest(".plugin-markmap-icon")?.getAttribute("action")
+                if (action) this.doAction(action)
             })
 
             this.toggleContextMenu()
@@ -231,8 +228,7 @@ class TOCMarkmap {
                 if (this.mm.state.data.content === "" && headers[0].getText() !== "") {
                     tocIdx-- // If the first(root) node of the markmap is an empty node, subtract 1 again.
                 }
-                const header = headers[tocIdx]
-                return header && header.attributes.id
+                return headers[tocIdx]?.attributes.id
             }
             this.entities.svg.addEventListener("click", ev => {
                 const node = ev.target.closest(".markmap-node")
@@ -385,8 +381,8 @@ class TOCMarkmap {
                 ),
                 untitledBox(
                     field("DOWNLOAD_OPTIONS.IMAGE_SCALE", "number", { min: 0.1, step: 0.1 }),
-                    field("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", "number", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
-                    field("DOWNLOAD_OPTIONS.PADDING_VERTICAL", "number", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
+                    field("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", "unit", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
+                    field("DOWNLOAD_OPTIONS.PADDING_VERTICAL", "unit", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
                     field("DOWNLOAD_OPTIONS.TEXT_COLOR", "color"),
                     field("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", "color"),
                     field("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", "color", { tooltip: "jpgFormatOnly" }),
@@ -443,6 +439,7 @@ class TOCMarkmap {
             },
             rules: {
                 "DOWNLOAD_OPTIONS.FOLDER": "path",
+                "DOWNLOAD_OPTIONS.FILENAME": "required",
             },
             hooks: {
                 onCommit: () => _edited = true,
@@ -467,6 +464,9 @@ class TOCMarkmap {
             FILENAME: file = "{{filename}}.svg",
         } = this.config.DOWNLOAD_OPTIONS
         const getDownloadPath = async () => {
+            if (folder) {
+                folder = this.utils.resolvePath(folder)
+            }
             if (!folder || !(await this.utils.existPath(folder))) {
                 folder = this.utils.tempFolder
             }
@@ -543,9 +543,7 @@ class TOCMarkmap {
         this._setModalRect(modalRect)
         this._setPinStyles(true)
         this.entities.content.style.top = contentTop + "px"
-        if (fit) {
-            this.fit()
-        }
+        if (fit) this.fit()
     }
 
     pinRight = (fit = true) => {
@@ -578,9 +576,7 @@ class TOCMarkmap {
         this.entities.content.style.right = contentRight
         this.entities.content.style.width = contentWidth
         this.utils.entities.eWrite.style.width = writeWidth
-        if (fit) {
-            this.fit()
-        }
+        if (fit) this.fit()
     }
 
     showToolbar = () => this._toggleToolbar(true)

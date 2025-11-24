@@ -28,11 +28,12 @@
 
 #plugin-markdownlint-button {
     position: fixed;
-    right: 10px;
+    right: ${this.config.button_right};
     width: ${this.config.button_width};
     height: ${this.config.button_height};
     border-radius: ${this.config.button_border_radius};
     background-color: ${this.config.pass_color};
+    opacity: ${this.config.button_opacity};
     cursor: pointer;
     transition: background-color 0.1s ease 0s;
     z-index: 9992;

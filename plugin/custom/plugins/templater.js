@@ -17,18 +17,19 @@ class TemplaterPlugin extends BaseCustomPlugin {
             const fileFilter = (name) => extname(name).toLowerCase() === ".md"
             const fileParamsGetter = async (path, file) => ({ file, content: (await readFile(path)).toString() })
             const onFile = ({ file, content }) => template.push({ name: file.replace(/\.md$/i, ""), text: content })
-            template_folders.forEach(dir => this.utils.walkDir({ dir, fileFilter, fileParamsGetter, onFile, maxDepth, signal }))
+            template_folders.forEach(folder => this.utils.walkDir({ dir: this.utils.resolvePath(folder), fileFilter, fileParamsGetter, onFile, maxDepth, signal }))
         })
     }
 
     callback = async anchorNode => {
-        const defaultTpl = this.config.template[0]
-        const templates = Object.fromEntries(this.config.template.map(tpl => [tpl.name, tpl.name]))
+        const templates = this.config.template.map(tpl => tpl.name)
         const settingFields = [
             { key: "template", type: "select", label: this.i18n.t("$label.template.text"), options: templates },
             { key: "filename", type: "text", label: this.i18n.t("filename"), placeholder: this.i18n.t("createCopyIfEmpty") },
             { key: "autoOpen", type: "switch", label: this.i18n.t("$label.auto_open") },
         ]
+        const defaultTpl = this.config.template[0]
+        const getTplCnt = (name) => this.config.template.find(tpl => tpl.name === name)?.text ?? ""
         const op = {
             title: this.pluginName,
             schema: [
@@ -41,15 +42,10 @@ class TemplaterPlugin extends BaseCustomPlugin {
                 template: defaultTpl.name,
                 preview: defaultTpl.text,
             },
-            hooks: {
-                onCommit: ({ key, value }) => {
-                    if (key !== "template") return
-                    const tpl = this.config.template.find(tpl => tpl.name === value)
-                    if (tpl) {
-                        this.utils.formDialog.updateModal(op => op.data = { ...op.data, template: tpl.name, preview: tpl.text })
-                    }
-                }
-            },
+            watchers: [{
+                triggers: ["template"],
+                effect: { $update: { preview: (ctx) => getTplCnt(ctx.getValue("template")) } }
+            }],
         }
         const { response, data } = await this.utils.formDialog.modal(op)
         if (response === 1) {

@@ -35,7 +35,7 @@ class SlashCommandsPlugin extends BasePlugin {
 
     _getTextAround = () => {
         const range = File.editor.selection.getRangy()
-        if (range && range.collapsed) {
+        if (range?.collapsed) {
             const container = $(range.startContainer).closest(`[md-inline="plain"], [type="math/tex"]`)[0]
             if (container) {
                 const scope = this._getScope(container)
@@ -60,7 +60,7 @@ class SlashCommandsPlugin extends BasePlugin {
         const [textBefore, textAfter, bookmark, scope] = this._getTextAround()
         if (!textBefore) return
         const match = textBefore.match(this.regexp)
-        const kw = match && match.groups && match.groups.kw
+        const kw = match?.groups?.kw
         if (kw == null) return
 
         const [command, ...params] = kw.split(this.config.FUNC_PARAM_SEPARATOR)

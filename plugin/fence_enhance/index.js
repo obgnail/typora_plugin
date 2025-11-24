@@ -14,7 +14,7 @@ class FenceEnhancePlugin extends BasePlugin {
             new EditorHotkeyHelper(this).process()
         }
         if (this.config.INDENTED_WRAPPED_LINE) {
-            new IndentedWrappedLineHelper(this).process()
+            indentWrappedLine(this)
         }
         if (this.config.ENABLE_BUTTON) {
             this.processButton()
@@ -26,7 +26,7 @@ class FenceEnhancePlugin extends BasePlugin {
             new HighlightHelper(this).process()
         }
         if (this.config.ENABLE_LANGUAGE_FOLD) {
-            await new LanguageFoldHelper(this).process()
+            await foldLanguage(this)
         }
     }
 
@@ -191,13 +191,11 @@ class FenceEnhancePlugin extends BasePlugin {
             })
             const eventHub = this.utils.eventHub
             eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => {
-                this.buttons.forEach(btn => {
-                    if (btn.enable && typeof btn.initFunc === "function") btn.initFunc(this)
-                })
+                this.buttons.filter(btn => btn.enable && typeof btn.initFunc === "function").forEach(btn => btn.initFunc(this))
             })
-            eventHub.addEventListener(eventHub.eventType.afterAddCodeBlock, cid => {
+            eventHub.addEventListener(eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
                 if (this.buttons.length === 0) return
-                const fence = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}]`)
+                const fence = cm.display.wrapper.parentElement
                 if (!fence) return
                 let enhance = fence.querySelector(".fence-enhance")
                 if (enhance) return
@@ -419,7 +417,7 @@ class EditorHotkeyHelper {
 
     process = () => {
         const hotkeys = this.getHotkeys()
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, fence) => fence?.addKeyMap(hotkeys))
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => cm?.addKeyMap(hotkeys))
     }
 
     getHotkeys = () => {
@@ -444,96 +442,84 @@ class EditorHotkeyHelper {
             if (!(fn instanceof Function)) {
                 throw Error(`CALLBACK param is not function: ${CALLBACK}`)
             }
-            hotkeys[HOTKEY] = () => fn(this.getFence())
+            hotkeys[HOTKEY] = () => fn(this.getFocusedFence())
         })
         return hotkeys
     }
 
-    getFence = () => {
-        const anchor = this.utils.getAnchorNode();
-        if (anchor.length === 0) return;
-        const pre = anchor.closest(".md-fences[cid]")[0];
-        if (!pre) return;
-        const activeLine = pre.querySelector(".CodeMirror-activeline");
-        if (!activeLine) return;
-        const cid = pre.getAttribute("cid");
-        const fence = File.editor.fences.queue[cid];
-        if (!fence) return;
+    getFocusedFence = () => {
+        const pre = this.utils.getAnchorNode(".md-fences[cid]")?.[0]
+        if (!pre) return
+        const activeLine = pre.querySelector(".CodeMirror-activeline")
+        if (!activeLine) return
+        const cid = pre.getAttribute("cid")
+        const cm = File.editor.fences.queue[cid]
+        if (!cm) return
 
-        const separator = fence.lineSeparator() || "\\n";
-        const cursor = fence.getCursor();
-        const lineNum = cursor.line + 1;
-        const lastNum = fence.lastLine() + 1;
-        return { pre, cid, fence, cursor, lineNum, lastNum, separator }
+        const separator = cm.lineSeparator() || "\\n"
+        const cursor = cm.getCursor()
+        const lineNum = cursor.line + 1
+        const lastNum = cm.lastLine() + 1
+        return { pre, cid, cm, cursor, lineNum, lastNum, separator }
     }
 
     keydown = keyObj => {
         const dict = { shiftKey: false, ctrlKey: false, altKey: false, ...keyObj };
         document.activeElement.dispatchEvent(new KeyboardEvent('keydown', dict));
     }
-    // Do not use fence.execCommand("goLineUp"): it checks if the Shift key is pressed.
+    // Do not use `cm.execCommand("goLineUp")`: it checks if the Shift key is pressed.
     goLineUp = () => this.keydown({ key: 'ArrowUp', keyCode: 38, code: 'ArrowUp', which: 38 });
     goLineDown = () => this.keydown({ key: 'ArrowDown', keyCode: 40, code: 'ArrowDown', which: 40 });
 
     swapLine = (previous = true) => {
-        const { fence, separator, lineNum, lastNum } = this.getFence();
-        if (!fence || (previous && lineNum === 1) || (!previous && lineNum === lastNum)) return
+        const { cm, separator, lineNum, lastNum } = this.getFocusedFence()
+        if (!cm || (previous && lineNum === 1) || (!previous && lineNum === lastNum)) return
 
         const lines = previous
             ? [{ line: lineNum - 2, ch: 0 }, { line: lineNum - 1, ch: null }]
-            : [{ line: lineNum - 1, ch: 0 }, { line: lineNum, ch: null }];
-        const lineCount = fence.getRange(...lines);
-        const lineList = lineCount.split(separator);
+            : [{ line: lineNum - 1, ch: 0 }, { line: lineNum, ch: null }]
+        const lineCount = cm.getRange(...lines)
+        const lineList = lineCount.split(separator)
         if (lines.length !== 2) return
 
-        const newContent = [lineList[1], separator, lineList[0]].join("");
-        fence.replaceRange(newContent, ...lines);
-        if (previous) {
-            this.goLineUp()
-        }
+        const newContent = [lineList[1], separator, lineList[0]].join("")
+        cm.replaceRange(newContent, ...lines)
+        if (previous) this.goLineUp()
     }
 
     copyLine = (previous = true) => {
-        const { fence, separator, lineNum } = this.getFence();
-        if (!fence) return
-        const lineContent = fence.getLine(lineNum - 1);
-        const newContent = separator + lineContent;
-        fence.replaceRange(newContent, { line: lineNum - 1, ch: null });
+        const { cm, separator, lineNum } = this.getFocusedFence()
+        if (!cm) return
+        const lineContent = cm.getLine(lineNum - 1)
+        const newContent = separator + lineContent
+        cm.replaceRange(newContent, { line: lineNum - 1, ch: null })
     }
 
     newlineAndIndent = (previous = true) => {
-        const { fence } = this.getFence();
-        if (!fence) return
-        if (previous) {
-            this.goLineUp()
-        }
-        fence.execCommand("goLineEnd");
-        fence.execCommand("newlineAndIndent");
+        const { cm } = this.getFocusedFence()
+        if (!cm) return
+        if (previous) this.goLineUp()
+        cm.execCommand("goLineEnd")
+        cm.execCommand("newlineAndIndent")
     }
 }
 
 // doc: https://codemirror.net/5/demo/indentwrap.html
-class IndentedWrappedLineHelper {
-    constructor(controller) {
-        this.utils = controller.utils;
+const indentWrappedLine = ({ utils }) => {
+    let charWidth = 0
+    const codeIndentSize = File.option.codeIndentSize
+    const callback = (cm, line, elt) => {
+        const off = CodeMirror.countColumn(line.text, null, cm.getOption("tabSize")) * charWidth
+        elt.style.textIndent = "-" + off + "px"
+        elt.style.paddingLeft = (codeIndentSize + off) + "px"
     }
-
-    process = () => {
-        let charWidth = 0;
-        const codeIndentSize = File.option.codeIndentSize;
-        const callback = (cm, line, elt) => {
-            const off = CodeMirror.countColumn(line.text, null, cm.getOption("tabSize")) * charWidth;
-            elt.style.textIndent = "-" + off + "px";
-            elt.style.paddingLeft = (codeIndentSize + off) + "px";
+    utils.eventHub.addEventListener(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+        if (cm) {
+            charWidth = charWidth || cm.defaultCharWidth()
+            cm.on("renderLine", callback)
+            setTimeout(() => cm?.refresh(), 100)
         }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, fence) => {
-            if (fence) {
-                charWidth = charWidth || fence.defaultCharWidth();
-                fence.on("renderLine", callback);
-                setTimeout(() => fence?.refresh(), 100)
-            }
-        })
-    }
+    })
 }
 
 class HighlightHelper {
@@ -544,46 +530,58 @@ class HighlightHelper {
         this.className = "plugin-fence-enhance-highlight"
     }
 
-    extract = langStr => {
-        const match = langStr.match(this.pattern)
-        return match ? { origin: langStr, ...match.groups } : { origin: langStr }
-    }
+    _setHighlight = (cm) => {
+        const line = cm?.options?.mode?.__highlight?.line
+        if (!line) return
 
-    parse = line => {
-        return line
+        const lastLine = cm.lastLine()
+        const lineNumbers = line
             .split(",")
             .filter(Boolean)
             .flatMap(part => {
-                if (!part.includes("-")) {
-                    return [Number(part)]
-                }
+                if (!part.includes("-")) return [Number(part)]
                 const [start, end] = part.split("-").map(Number)
                 return Array.from({ length: end - start + 1 }, (_, i) => start + i)
             })
-            .map(i => Math.max(i - this.numberingBase, 0))
+            .map(n => n - this.numberingBase)
+            .filter(n => n >= 0 && n <= lastLine)
+
+        cm.__highlight_handles = [...new Set(lineNumbers)].map(lineNo => {
+            const handle = cm.getLineHandle(lineNo)
+            cm.addLineClass(handle, "background", this.className)
+            return handle
+        })
     }
 
-    _setHighlightLines = (fence) => {
-        const line = fence?.options?.mode?._highlightInfo?.line
-        if (line) {
-            const needHighlightLines = this.parse(line)
-            needHighlightLines.forEach(i => fence.addLineClass(i, "background", this.className))
+    _clearHighlight = cm => {
+        const handles = cm.__highlight_handles
+        if (Array.isArray(handles) && handles.length > 0) {
+            handles.filter(handle => handle?.parent).forEach(handle => cm.removeLineClass(handle, "background", this.className))
         }
+        cm.__highlight_handles = null
     }
 
-    _clearHighlightLines = fence => {
-        const last = fence.lastLine()
-        for (let i = 0; i <= last; i++) {
-            fence.removeLineClass(i, "background", this.className)
-        }
+    _rerender = (cm) => {
+        cm?.operation(() => {
+            this._clearHighlight(cm)
+            this._setHighlight(cm)
+        })
     }
 
     process = () => {
-        let _highlightInfo
+        let context
+        const handleLineChange = (cm, changeObj) => {
+            const isLineCountChanged = changeObj.text.length !== changeObj.removed.length
+            if (isLineCountChanged) this._rerender(cm)
+        }
+        const extract = mode => {
+            const match = mode.match(this.pattern)
+            return match ? { origin: mode, ...match.groups } : { origin: mode }
+        }
         const before = (mode, ...rest) => {
             if (mode == null) return [mode, ...rest]
-            _highlightInfo = this.extract(mode)
-            const newMode = _highlightInfo.lang || mode
+            context = extract(mode)
+            const newMode = context.lang || mode
             return [newMode, ...rest]
         }
         const after = (mode) => {
@@ -591,58 +589,51 @@ class HighlightHelper {
             if (typeof mode !== "object") {
                 mode = { name: mode }
             }
-            mode._highlightInfo = _highlightInfo
+            mode.__highlight = context
+            context = null
             return mode
         }
         this.utils.decorate(() => window, "getCodeMirrorMode", before, after, true, true)
-
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (_, fence) => fence.operation(() => this._setHighlightLines(fence)))
-
-        this.utils.decorate(() => File?.editor?.fences, "tryAddLangUndo", null, (result, cm) => {
-            const cid = cm?.cid
-            if (cid) {
-                const fence = File.editor.fences.queue[cid]
-                fence.operation(() => {
-                    this._clearHighlightLines(fence)
-                    this._setHighlightLines(fence)
-                })
-            }
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+            this._rerender(cm)
+            cm.off("change", handleLineChange)
+            cm.on("change", handleLineChange)
+        })
+        this.utils.decorate(() => File?.editor?.fences, "tryAddLangUndo", null, (_, node) => {
+            const cid = node?.cid
+            if (cid) this._rerender(File.editor.fences.queue[cid])
         })
     }
 }
 
 // doc: https://codemirror.net/5/demo/folding.html
-class LanguageFoldHelper {
-    constructor(controller) {
-        this.utils = controller.utils;
-        this.gutter = "CodeMirror-foldgutter";
+const foldLanguage = async ({ utils }) => {
+    const requireModules = async () => {
+        const resourcePath = "./plugin/fence_enhance/resource/"
+        utils.insertStyleFile("plugin-fence-enhance-fold-style", resourcePath + "foldgutter.css")
+        require("./resource/foldcode")
+        require("./resource/foldgutter")
+        const files = await utils.Package.FsExtra.readdir(utils.joinPath(resourcePath))
+        const modules = files.filter(f => f.endsWith("-fold.js"))
+        modules.forEach(f => require(utils.joinPath(resourcePath, f)))
+        console.debug(`[ CodeMirror folding module ] [ ${modules.length} ]:`, modules)
     }
 
-    requireModules = async () => {
-        const resourcePath = "./plugin/fence_enhance/resource/";
-        this.utils.insertStyleFile("plugin-fence-enhance-fold-style", resourcePath + "foldgutter.css");
-        require("./resource/foldcode");
-        require("./resource/foldgutter");
-        const files = await this.utils.Package.FsExtra.readdir(this.utils.joinPath(resourcePath));
-        const modules = files.filter(f => f.endsWith("-fold.js"));
-        modules.forEach(f => require(this.utils.joinPath(resourcePath, f)));
-        console.debug(`[ CodeMirror folding module ] [ ${modules.length} ]:`, modules);
+    const handle = () => {
+        const gutter = "CodeMirror-foldgutter"
+        utils.eventHub.addEventListener(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+            if (!cm) return
+            if (!cm.options.gutters.includes(gutter)) {
+                cm.setOption("gutters", [...cm.options.gutters, gutter])
+            }
+            if (!cm.options.foldGutter) {
+                cm.setOption("foldGutter", true)
+            }
+        })
     }
 
-    addFold = (cid, fence) => {
-        if (!fence) return;
-        if (!fence.options.gutters.includes(this.gutter)) {
-            fence.setOption("gutters", [...fence.options.gutters, this.gutter]);
-        }
-        if (!fence.options.foldGutter) {
-            fence.setOption("foldGutter", true);
-        }
-    }
-
-    process = async () => {
-        await this.requireModules();
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.addFold);
-    }
+    await requireModules()
+    handle()
 }
 
 module.exports = {

@@ -3,31 +3,30 @@ class HotkeysPlugin extends BasePlugin {
 
     process = () => {
         const toHotkey = setting => {
-            const { hotkey, enable, closestSelector, evil, plugin: fixedName, function: func } = setting;
-            if (!hotkey || !enable) return;
+            const { hotkey, enable, closestSelector, evil, plugin: fixedName, function: funcName } = setting
+            if (!hotkey || !enable) return
 
-            let callback = null;
-            if (evil) {
-                callback = eval(evil);
-            } else {
-                if (!fixedName || !func) return;
+            let callback = evil
+                ? eval(evil)
+                : (fixedName && funcName)
+                    ? this.utils.getPluginFunction(fixedName, funcName)
+                    : null
+            if (typeof callback !== "function") return
 
-                callback = this.utils.getPluginFunction(fixedName, func);
-                if (!callback || !(callback instanceof Function)) return;
-
-                if (closestSelector) {
-                    callback = this.utils.withAnchorNode(closestSelector, callback);
+            const finalCallback = (closestSelector && callback)
+                ? () => {
+                    const target = this.utils.getAnchorNode(closestSelector)?.[0]
+                    if (target) callback(target)
                 }
-            }
+                : callback
             if (hotkey !== "-") {
-                return { hotkey, callback }
+                return { hotkey, callback: finalCallback }
             }
         }
 
-        const { CUSTOM_HOTKEYS } = this.config
-        if (CUSTOM_HOTKEYS.length) {
+        if (this.config.CUSTOM_HOTKEYS.length) {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-                const hotkeys = CUSTOM_HOTKEYS.map(toHotkey).filter(Boolean)
+                const hotkeys = this.config.CUSTOM_HOTKEYS.map(toHotkey).filter(Boolean)
                 this.utils.hotkeyHub.register(hotkeys)
             })
         }

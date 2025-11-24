@@ -16,10 +16,10 @@ class FileCounterPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => queueMicrotask(() => {
             File.editor.library.refreshPanelCommand()
             this.countAllDirs()
-        })
+        }))
 
         if (this.config.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU) {
             document.querySelector("#file-library").addEventListener("wheel", ev => {
@@ -34,22 +34,17 @@ class FileCounterPlugin extends BasePlugin {
 
         this.observer = new MutationObserver(mutationList => {
             if (mutationList.length === 1) {
-                const add = mutationList[0].addedNodes[0]
-                if (add && add.classList && add.classList.contains("file-library-node")) {
-                    this.countDir(add)
+                const added = mutationList[0].addedNodes[0]
+                if (added?.classList?.contains("file-library-node")) {
+                    this.countDir(added)
                     return
                 }
             }
-            const needCountAllDirs = mutationList.some(mutation => {
-                const { target } = mutation
-                const add = mutation.addedNodes[0]
-                const t = target && target.classList && target.classList.contains(this.className)
-                const a = add && add.classList && add.classList.contains(this.className)
-                return !(t || a)
-            })
-            if (needCountAllDirs) {
-                this.countAllDirs()
-            }
+            const needCountAllDirs = mutationList.some(mutation => (
+                !mutation.target?.classList?.contains(this.className)
+                && !mutation.addedNodes[0]?.classList?.contains(this.className)
+            ))
+            if (needCountAllDirs) this.countAllDirs()
         })
         this.observer.observe(this.libraryTreeEl, { subtree: true, childList: true })
     }
@@ -110,9 +105,7 @@ class FileCounterPlugin extends BasePlugin {
 
     countAllDirs = () => {
         const root = this.libraryTreeEl.querySelector(":scope > .file-library-node")
-        if (root) {
-            this.countDir(root)
-        }
+        if (root) this.countDir(root)
     }
 
     stopPlugin = () => {

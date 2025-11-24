@@ -1514,8 +1514,8 @@ INSERT_LINE_NEXT = "Ctrl-Enter"
 #   HOTKEY: 快捷键
 #       示例: Shift-Ctrl-K
 #   CALLBACK: 快捷键对应的回调函数
-#       参数: { pre, cid, fence, cursor, lineNum, lastNum, separator }
-#       示例: ({ pre, cid, fence, cursor, lineNum, lastNum, separator }) => console.log('callback')。此项不可为空
+#       参数: { pre, cid, cm, cursor, lineNum, lastNum, separator }
+#       示例: ({ pre, cid, cm, cursor, lineNum, lastNum, separator }) => console.log('callback')。此项不可为空
 CUSTOM_HOTKEYS = []
 
 # ------------------- 折叠功能 -------------------
@@ -2013,7 +2013,6 @@ COMMANDS = [
     { enable = true, type = "command", icon = "🧰", keyword = "JumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
     { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineStart", callback = "() => File.editor.selection.jumpToLineStart()" },
     { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineEnd", callback = "() => File.editor.selection.jumpToLineEnd()" },
-    { enable = true, type = "command", icon = "🧰", keyword = "Help", callback = "() => this.call()" },
     # 文本片段
     { enable = true, type = "snippet", icon = "🧩", keyword = "BR", callback = "<br>" },
     { enable = true, type = "snippet", icon = "🧩", keyword = "IMG", cursorOffset = [-14, -14], callback = '<img src="" alt="alt" />' },

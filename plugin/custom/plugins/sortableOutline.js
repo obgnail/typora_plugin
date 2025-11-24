@@ -73,17 +73,13 @@ class SortableOutlinePlugin extends BaseCustomPlugin {
         const start = headers.findIndex(h => h.node.cid === cid)
         if (start === -1) return
 
-        const header = headers[start].node
-        if (!header.attributes) return
+        const targetDepth = headers[start].node.attributes?.depth
+        if (targetDepth == null) return
 
         let end = start + 1
-        const depth = header.attributes.depth
         while (end < headers.length) {
-            const { attributes } = headers[end].node
-            const _depth = attributes && attributes.depth
-            if (_depth && _depth <= depth) {
-                break
-            }
+            const nextDepth = headers[end].node.attributes?.depth
+            if (nextDepth != null && nextDepth <= targetDepth) break
             end++
         }
 

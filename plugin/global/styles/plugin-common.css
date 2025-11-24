@@ -20,3 +20,8 @@
 #md-searchpanel.searchpanel-replace-mode {
     z-index: 99999 !important;
 }
+
+.md-notification-container {
+    z-index: 99999 !important;
+    background: var(--bg-color);
+}

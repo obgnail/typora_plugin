@@ -124,46 +124,36 @@ class EasyModifyPlugin extends BasePlugin {
         _getTargetHeaders().forEach(_changeHeaderLevel)
     }
 
-    copyFullPath = async anchorNode => {
-        let ele = anchorNode || this.utils.getAnchorNode().closest("#write > [cid]")[0]
-        if (!ele) return
+    copyFullPath = async (anchorNode) => {
+        const root = anchorNode ?? this.utils.getAnchorNode("#write > [cid]")?.[0]
+        if (!root) return
 
-        const paragraphs = ["H1", "H2", "H3", "H4", "H5", "H6"]
-        const headers = []
-        while (ele) {
-            const idx = paragraphs.indexOf(ele.tagName)
-            if (idx !== -1 && (headers.length === 0 || (headers[headers.length - 1].idx > idx))) {
-                headers.push({ idx, tagName: ele.tagName, textContent: ele.textContent })
-                if (idx === 0) {
-                    break
+        const getHeaders = (startNode) => {
+            const HEADING_TAGS = ["H1", "H2", "H3", "H4", "H5", "H6"]
+            const i18nSuffixes = this.i18n.array(HEADING_TAGS, "act.copy_full_path.")
+            const i18nNoHeader = this.i18n.t("act.copy_full_path.NoHeader")
+            const headerMap = new Map()
+            let minLevel = Infinity
+            let curNode = startNode
+            while (curNode && minLevel > 0) {
+                const level = HEADING_TAGS.indexOf(curNode.tagName)
+                if (level !== -1 && level < minLevel) {
+                    headerMap.set(level, curNode.textContent)
+                    minLevel = level
                 }
+                curNode = curNode.previousElementSibling
             }
-            ele = ele.previousElementSibling
+            const maxDepth = (headerMap.size === 0) ? 0 : Math.max(...headerMap.keys()) + 1
+            return Array.from({ length: maxDepth }, (_, level) => {
+                const title = headerMap.get(level) || i18nNoHeader
+                const suffix = i18nSuffixes[level]
+                return `${title} ${suffix}`
+            })
         }
-
-        headers.reverse()
-
-        const names = this.i18n.array(paragraphs, "act.copy_full_path.")
-        const noHeader = this.i18n.t("act.copy_full_path.NoHeader")
-
-        const getHeaderName = (title, idx) => `${title} ${names[idx]}`
 
         const filePath = this.utils.getFilePath() || "Untitled"
-        const result = [filePath]
-
-        let idx = 0
-        for (const { tagName, textContent } of headers) {
-            while (idx < 6 && tagName !== paragraphs[idx]) {
-                result.push(getHeaderName(noHeader, idx))
-                idx++
-            }
-            if (tagName === paragraphs[idx]) {
-                result.push(getHeaderName(textContent, idx))
-                idx++
-            }
-        }
-
-        const fullPath = this.utils.Package.Path.join(...result)
+        const pathSegments = getHeaders(root)
+        const fullPath = this.utils.Package.Path.join(filePath, ...pathSegments)
         await navigator.clipboard.writeText(fullPath)
     }
 

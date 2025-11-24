@@ -41,7 +41,6 @@ class PreferencesPlugin extends BasePlugin {
         this._initHook()
         this._initActionHandlers()
         this._initPreProcessors()
-        this._initPostProcessors()
     }
 
     process = () => {
@@ -109,11 +108,6 @@ class PreferencesPlugin extends BasePlugin {
                 await this.utils.settings.saveSettings(fixedName, settings)
 
                 this._setDialogState(true)
-
-                const postFn = this.POSTPROCESSORS[`${fixedName}.${key}`]
-                if (postFn) {
-                    await postFn(value, settings)
-                }
             })
         }
 
@@ -184,7 +178,8 @@ class PreferencesPlugin extends BasePlugin {
             rules: this.RULES[fixedName] || {},
             watchers: this.WATCHERS[fixedName] || {},
             controlOptions: { object: { format: this.config.OBJECT_SETTINGS_FORMAT } },
-            disableEffect: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
+            fieldDependencyUnmetAction: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
+            boxDependencyUnmetAction: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
         }, fixedName)
     }
 
@@ -353,42 +348,37 @@ class PreferencesPlugin extends BasePlugin {
                 }
             },
             donate: async () => {
-                const WeChatPay = "8-RWSVREYNE9TCVADDKEGVPNJ1KGAYNZ31KENF2LWDEA3KFHHDRWYEPA4F00KSZT3454M24RD5PVVM21AAJ5DAGMQ3H62CHEQOOT226D49LZR6G1FKOG0G7NUV5GR2HD2B6V3V8DHR2S8027S36ESCU3GJ0IAE7IY9S25URTMZQCZBY8ZTHFTQ45VVGFX3VD1SE9K4Y9K7I1Y7U4FIKZSS2Y87BH4OSASYLS48A6SR2T5YZJNMJ2WCQE0ZBK9OVLGWGWGL1ED400U1BYMZRW7UAS7VECNVL98WKG4PNIF0KFNIVS45KHQXJFH9E9SYRCWYRUX45Q37"
-                const AliPay = "9-CF07WK7ZZ6CKLVC5KX92LZGUL3X93E51RYAL92NHYVQSD6CAH4D1DTCENAJ8HHB0062DU7LS29Q8Y0NT50M8XPFP9N1QE1JPFW39U0CDP2UX9H2WLEYD712FI3C5657LIWMT7K5CCVL509G04FT4N0IJD3KRAVBDM76CWI81XY77LLSI2AZ668748L62IC4E8CYYVNBG4Z525HZ4BXQVV6S81JC0CVABEACU597FNP9OHNC959X4D29MMYXS1V5MWEU8XC4BD5WSLL29VSAQOGLBWAVVTMX75DOSRF78P9LARIJ7J50IK1MM2QT5UXU5Q1YA7J2AVVHMG00E06Q80RCDXVGOFO76D1HCGYKW93MXR5X4H932TYXAXL93BYWV9UH6CTDUDFWACE5G0OM9N"
-                const qrCodeList = [{ label: "WeChat Pay", color: "#1AAD19", compressed: WeChatPay }, { label: "AliPay", color: "#027AFF", compressed: AliPay }]
-                const qrCodeSize = 140
+                const WeChatPay = "8|RWSVREYNE9TCVADDKEGVPNJ1KGAYNZ31KENF2LWDEA3KFHHDRWYEPA4F00KSZT3454M24RD5PVVM21AAJ5DAGMQ3H62CHEQOOT226D49LZR6G1FKOG0G7NUV5GR2HD2B6V3V8DHR2S8027S36ESCU3GJ0IAE7IY9S25URTMZQCZBY8ZTHFTQ45VVGFX3VD1SE9K4Y9K7I1Y7U4FIKZSS2Y87BH4OSASYLS48A6SR2T5YZJNMJ2WCQE0ZBK9OVLGWGWGL1ED400U1BYMZRW7UAS7VECNVL98WKG4PNIF0KFNIVS45KHQXJFH9E9SYRCWYRUX45Q37"
+                const AliPay = "9|CF07WK7ZZ6CKLVC5KX92LZGUL3X93E51RYAL92NHYVQSD6CAH4D1DTCENAJ8HHB0062DU7LS29Q8Y0NT50M8XPFP9N1QE1JPFW39U0CDP2UX9H2WLEYD712FI3C5657LIWMT7K5CCVL509G04FT4N0IJD3KRAVBDM76CWI81XY77LLSI2AZ668748L62IC4E8CYYVNBG4Z525HZ4BXQVV6S81JC0CVABEACU597FNP9OHNC959X4D29MMYXS1V5MWEU8XC4BD5WSLL29VSAQOGLBWAVVTMX75DOSRF78P9LARIJ7J50IK1MM2QT5UXU5Q1YA7J2AVVHMG00E06Q80RCDXVGOFO76D1HCGYKW93MXR5X4H932TYXAXL93BYWV9UH6CTDUDFWACE5G0OM9N"
+                const QR_CONFIG = [{ label: "WeChat Pay", color: "#1AAD19", data: WeChatPay }, { label: "AliPay", color: "#027AFF", data: AliPay }]
 
                 const _decompress = (compressed) => {
-                    const [chunk, raw] = compressed.split("-", 2)
+                    const [chunk, raw] = compressed.split("|", 2)
                     const rows = raw.match(new RegExp(`\\w{${chunk}}`, "g"))
                     return rows.map(r => parseInt(r, 36).toString(2).padStart(rows.length, "0"))
                 }
-                const _toSVG = (compressed, fillColor, size) => {
-                    const table = _decompress(compressed)
-                    const numModules = table.length
-                    const moduleSize = (size / numModules).toFixed(2)
-                    const paths = []
-                    for (let rIdx = 0; rIdx < numModules; rIdx++) {
-                        for (let cIdx = 0; cIdx < numModules; cIdx++) {
-                            if (table[rIdx][cIdx] === "1") {
-                                const x = (cIdx * moduleSize).toFixed(2)
-                                const y = (rIdx * moduleSize).toFixed(2)
-                                paths.push(`M${x},${y}h${moduleSize}v${moduleSize}h${-moduleSize}Z`)
+                const _toSVG = (matrix, color, displaySize = 140) => {
+                    let path = ""
+                    const size = matrix.length
+                    for (let r = 0; r < size; r++) {
+                        for (let c = 0; c < size; c++) {
+                            if (matrix[r][c] === "1") {
+                                path += `M${c},${r}h1v1h-1z`
                             }
                         }
                     }
-                    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><path d="${paths.join("")}" fill="${fillColor}" /></svg>`
+                    return `<svg width="${displaySize}" height="${displaySize}" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><path d="${path}" fill="${color}" /></svg>`
                 }
-
-                const qrs = qrCodeList.map(qr => {
-                    const svg = _toSVG(qr.compressed, qr.color, qrCodeSize)
-                    return `<div style="display: flex; flex-direction: column; align-items: center">${svg}<div style="font-weight: bold">${qr.label}</div></div>`
+                const qrEls = QR_CONFIG.map(qr => {
+                    const svg = _toSVG(_decompress(qr.data), qr.color)
+                    const label = `<div style="font-weight: bold">${qr.label}</div>`
+                    return `<div style="display: flex; flex-direction: column; align-items: center">${svg}${label}</div>`
                 })
-                const content = `<div style="display: flex; justify-content: space-evenly; padding-top: 8px">${qrs.join("")}</div>`
+                const content = `<div style="display: flex; justify-content: space-evenly; margin-top: 8px">${qrEls.join("")}</div>`
                 const op = {
                     title: this.i18n._t("global", "$label.donate"),
                     schema: [
-                        { fields: [{ type: "action", key: "starMe", label: "<b>Star this project on GitHub</b>" }] },
+                        { fields: [{ type: "action", key: "starMe", label: "<b>Star This Project on GitHub</b>" }] },
                         { fields: [{ type: "custom", content: content, unsafe: true }] },
                     ],
                     actions: {
@@ -402,11 +392,11 @@ class PreferencesPlugin extends BasePlugin {
 
     /** PreProcessors for specific settings in schema */
     _initPreProcessors = () => {
-        const _disableOption = (options, targetOption) => Object.defineProperty(options, targetOption, { enumerable: false })
-        const _incompatibleSwitch = (field, settings, tooltip = this.i18n._t("settings", "$tooltip.lowVersion")) => {
+        const _disableOptions = (field, ...options) => field.disabledOptions = options
+        const _incompatibleSwitch = (field, data, tooltip = this.i18n._t("settings", "$tooltip.lowVersion")) => {
             field.disabled = true
             field.tooltip = tooltip
-            settings[field.key] = false
+            data[field.key] = false
         }
         this.PREPROCESSORS = {
             "global.pluginVersion": async (field, data) => {
@@ -415,7 +405,7 @@ class PreferencesPlugin extends BasePlugin {
                     try {
                         const file = this.utils.joinPath("./plugin/bin/version.json")
                         const json = await this.utils.Package.FsExtra.readJson(file)
-                        version = json.tag_name
+                        version = json.tag_name + this.utils.dateTimeFormat(new Date(json.published_at), "+yyyyMMdd")
                     } catch (e) {
                         console.error(e)
                     }
@@ -425,7 +415,7 @@ class PreferencesPlugin extends BasePlugin {
             "window_tab.LAST_TAB_CLOSE_ACTION": (field, data) => {
                 if (this.utils.isBetaVersion) {
                     const invalidOption = "blankPage"
-                    _disableOption(field.options, invalidOption)
+                    _disableOptions(field, invalidOption)
                     if (data[field.key] === invalidOption) {
                         data[field.key] = "reconfirm"
                     }
@@ -433,18 +423,13 @@ class PreferencesPlugin extends BasePlugin {
             },
             "read_only.REMAIN_AVAILABLE_MENU_KEY": (field) => {
                 if (!field.options) {
-                    const all = [...document.querySelectorAll(".context-menu:not(.ext-context-menu) [data-key]")]
-                    const entries = all.map(op => {
+                    const entries = [...document.querySelectorAll(".context-menu:not(.ext-context-menu) [data-key]")].map(op => {
                         const key = op.dataset.key
                         if (!key) return
-                        let hint
-                        if (op.classList.contains("menu-style-btn")) {
-                            hint = (op.getAttribute("ty-hint") || "").split("\t")[0] || key
-                        } else {
-                            const menu = op.querySelector('[data-lg="Menu"]')
-                            hint = menu ? menu.textContent.trim() : key
-                        }
-                        return [key, hint]
+                        const hint = op.classList.contains("menu-style-btn")
+                            ? op.getAttribute("ty-hint")?.split("\t")[0]
+                            : op.querySelector('[data-lg="Menu"]')?.textContent.trim()
+                        return [key, hint || key]
                     }).filter(Boolean)
                     field.options = Object.fromEntries(entries)
                 }
@@ -482,25 +467,12 @@ class PreferencesPlugin extends BasePlugin {
             "preferences.HIDE_MENUS": (field) => {
                 if (!field.options) {
                     field.options = this._getAllPlugins()
-                    _disableOption(field.options, "preferences")
-                    _disableOption(field.options, "global")
+                    _disableOptions(field, "global", "preferences")
                 }
             },
             "markdownLint.rule_config": (field, data, box) => {
-                const plu = this.utils.getCustomPlugin("markdownLint")
-                if (plu) {
+                if (this.utils.getCustomPlugin("markdownLint")) {
                     box.fields[0] = { type: "action", key: "invokeMarkdownLintSettings", label: this.i18n._t("markdownLint", "$label.invokeMarkdownLintSettings") }
-                }
-            },
-        }
-    }
-
-    /** PostProcessors for specific settings in schema */
-    _initPostProcessors = () => {
-        this.POSTPROCESSORS = {
-            "plantUML.enable": (value, settings) => {
-                if (value === true) {
-                    this.utils.notification.show(`Plugin Enabled!\nPlease ensure server ${settings.SERVER_URL} is available.`)
                 }
             },
         }

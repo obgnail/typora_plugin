@@ -24,19 +24,15 @@ class CalloutsPlugin extends BaseCustomPlugin {
     }
 
     range = () => {
-        const pList = this.utils.entities.querySelectorAllInWrite("blockquote > p:first-child");
-        pList.forEach(p => {
+        this.utils.entities.querySelectorAllInWrite("blockquote > p:first-child").forEach(p => {
             const blockquote = p.parentElement;
             const result = p.textContent.match(/^\[!(?<type>\w+)\](?<fold>[+-]?)/);
-            const ok = result && result.groups;
+            const ok = !!(result?.groups)
             blockquote.classList.toggle("plugin-callout", ok);
             if (ok) {
                 const { type, fold } = result.groups;
                 // Add data-type attribute to spans containing [!type]
-                const firstSpan = p.querySelector('span:first-child');
-                if (firstSpan) {
-                    firstSpan.setAttribute('data-type', type);
-                }
+                p.querySelector("span:first-child")?.setAttribute("data-type", type)
                 blockquote.setAttribute("callout-type", type.toLowerCase());
                 blockquote.classList.toggle("callout-folded", fold === "-");
             }
@@ -46,8 +42,8 @@ class CalloutsPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.template)
 
     check = args => {
-        const isIgnoreType = args && args[0] && args[0].type === "html-plain";
-        const hasCallout = this.utils.entities.querySelectorInWrite(".plugin-callout");
+        const isIgnoreType = args?.[0]?.type === "html-plain"
+        const hasCallout = this.utils.entities.querySelectorInWrite(".plugin-callout")
         return !isIgnoreType && hasCallout
     }
 
@@ -56,8 +52,8 @@ class CalloutsPlugin extends BaseCustomPlugin {
 
         const extra = `
             @font-face {
-                font-family: '${this.config.font_family}';
-                src: url(${this.config.network_icon_url}) format('woff');
+                font-family: "${this.config.font_family}";
+                src: url("${this.config.network_icon_url}");
                 font-weight: normal;
                 font-style: normal;
             }`
@@ -86,9 +82,7 @@ class CalloutsPlugin extends BaseCustomPlugin {
                 quoteInHTML.setAttribute("callout-type", calloutType)
 
                 const span = quoteInHTML.querySelector(":scope > p:first-child > span:first-child")
-                if (span) {
-                    span.setAttribute("data-type", calloutType.toUpperCase())
-                }
+                span?.setAttribute("data-type", calloutType.toUpperCase())
             }
         }
         return `<!DOCTYPE HTML>\n${doc.documentElement.outerHTML}`

@@ -63,21 +63,17 @@ class SearchMultiPlugin extends BasePlugin {
         this.searcher.process()
         this.highlighter.process()
         this.entities.files.addEventListener("click", ev => {
-            const target = ev.target.closest(".plugin-search-item")
-            if (target) {
-                const filepath = target.dataset.path
-                this.utils.openFile(filepath)
-            }
+            const path = ev.target.closest(".plugin-search-item")?.dataset.path
+            if (path) this.utils.openFile(path)
         })
         this.entities.btn.addEventListener("click", () => {
             this.entities.btn.classList.toggle("select")
             this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
         })
         this.entities.window.addEventListener("btn-click", ev => {
-            const { action } = ev.detail
-            if (action === "showGrammar") {
+            if (ev.detail.action === "showGrammar") {
                 this.searcher.showGrammar()
-            } else if (action === "close") {
+            } else if (ev.detail.action === "close") {
                 this.hide()
             }
         })
@@ -250,14 +246,12 @@ class SearchMultiPlugin extends BasePlugin {
         this.entities.window.hide()
         this.utils.hide(this.entities.searching)
         this.highlighter.clearSearch()
-        if (this.cancelController) {
-            this.cancelController.abort(new DOMException("User Cancellation", "AbortError"))
-        }
+        this.cancelController?.abort(new DOMException("User Cancellation", "AbortError"))
     }
 
     show = () => {
         this.entities.window.show()
-        setTimeout(() => this.entities.input.select())
+        requestAnimationFrame(() => this.entities.input.select())
     }
 
     call = () => {

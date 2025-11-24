@@ -2,14 +2,11 @@ class UpdaterPlugin extends BasePlugin {
     hotkey = () => [this.config.HOTKEY]
 
     process = () => {
-        const { AUTO_UPDATE, START_UPDATE_INTERVAL, UPDATE_LOOP_INTERVAL } = this.config
-        if (!AUTO_UPDATE) return
-        if (START_UPDATE_INTERVAL > 0) {
-            setTimeout(this.silentUpdate, Math.min(START_UPDATE_INTERVAL, 1000 * 60))
-        }
-        if (UPDATE_LOOP_INTERVAL > 0) {
-            setInterval(this.silentUpdate, Math.min(UPDATE_LOOP_INTERVAL, 1000 * 60 * 60))
-        }
+        if (!this.config.AUTO_UPDATE) return
+        const start = Math.min(this.config.START_UPDATE_INTERVAL, 1000 * 60)
+        const loop = Math.min(this.config.UPDATE_LOOP_INTERVAL, 1000 * 60 * 60)
+        if (start > 0) setTimeout(this.silentUpdate, start)
+        if (loop > 0) setInterval(this.silentUpdate, loop)
     }
 
     call = async (action, meta) => {
@@ -17,7 +14,7 @@ class UpdaterPlugin extends BasePlugin {
             await this.manualUpdate()
             return
         }
-        const proxy = await this.getDefaultProxy()
+        const proxy = await this.getProxy()
         const label = this.i18n.t("$label.PROXY")
         const hintHeader = this.i18n.t("hintHeader.PROXY")
         const hintDetail = this.i18n.t("hintDetail.PROXY")
@@ -84,19 +81,16 @@ class UpdaterPlugin extends BasePlugin {
         await this.utils.formDialog.modal(op)
     }
 
-    getDefaultProxy = async () => {
-        const p = this.config.PROXY || await new ProxyGetter(this).getProxy() || ""
-        return p.trim()
-    }
-
-    getUpdater = async (proxy, timeout) => {
-        if (proxy == null) {
-            proxy = await this.getDefaultProxy()
-        }
-        proxy = proxy.trim()
+    getProxy = async (userProxy) => {
+        let proxy = (userProxy || this.config.PROXY || await getSysProxy() || "").trim()
         if (proxy && !/^https?:\/\//.test(proxy)) {
             proxy = "http://" + proxy
         }
+        return proxy
+    }
+
+    getUpdater = async (userProxy, timeout) => {
+        const proxy = await this.getProxy(userProxy)
         const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest"
         return new Updater(this, url, proxy, timeout)
     }
@@ -180,28 +174,18 @@ class Updater {
             return resp.json()
         }
         const _getCurrentVersion = async () => {
-            try {
-                const exist = await this.utils.existPath(this.versionFile)
-                if (exist) {
-                    return this.pkgFsExtra.readJson(this.versionFile);
-                }
-            } catch (e) {
-                console.debug("not exist version.json");
-            }
+            const exist = await this.utils.existPath(this.versionFile)
+            return exist ? this.pkgFsExtra.readJson(this.versionFile) : null
         }
 
-        this.latestVersionInfo = await _getLatestVersion();
-        this.currentVersionInfo = await _getCurrentVersion();
-        if (!this.currentVersionInfo) return true;
+        this.currentVersionInfo = await _getCurrentVersion()
+        if (!this.currentVersionInfo) return true
 
-        const result = this.utils.compareVersion(this.latestVersionInfo.tag_name, this.currentVersionInfo.tag_name);
-        return result !== 0
+        this.latestVersionInfo = await _getLatestVersion()
+        return this.utils.compareVersion(this.latestVersionInfo.tag_name, this.currentVersionInfo.tag_name) !== 0
     }
 
-    getDownloadURL = () => {
-        const { assets = [] } = this.latestVersionInfo
-        return assets[0] ? assets[0].browser_download_url : this.latestVersionInfo.zipball_url
-    }
+    getDownloadURL = () => this.latestVersionInfo.assets?.[0].browser_download_url || this.latestVersionInfo.zipball_url
 
     downloadLatestVersion = async (url = this.getDownloadURL()) => {
         console.log("[3/6] download latest version plugin");
@@ -220,27 +204,30 @@ class Updater {
         console.log("[5/6] exclude files");
         const oldDir = this.utils.joinPath(this.customPluginDir);
         const newDir = this.pkgPath.join(this.unzipDir, this.customPluginDir);
-
-        const oldFds = await this.pkgFsExtra.readdir(oldDir);
-        const newFds = await this.pkgFsExtra.readdir(newDir);
+        const [oldFds, newFds] = await Promise.all([
+            this.pkgFsExtra.readdir(oldDir),
+            this.pkgFsExtra.readdir(newDir),
+        ])
 
         const excludeFds = new Set([...newFds])
         oldFds.forEach(name => {
-            const exclude = excludeFds.has(name) || (this.pkgPath.extname(name) === ".js") && excludeFds.has(name.substring(0, name.lastIndexOf(".")))
+            const isJs = this.pkgPath.extname(name) === ".js"
+            const baseName = isJs ? this.pkgPath.basename(name, ".js") : null
+            const exclude = excludeFds.has(name) || (isJs && excludeFds.has(baseName))
             if (!exclude) {
                 const path = this.pkgPath.join(this.customPluginDir, name)
                 this.exclude.push(path)
             }
         })
 
-        for (const file of this.exclude) {
+        await Promise.all(this.exclude.map(async file => {
             const oldPath = this.utils.joinPath(file);
             const newPath = this.pkgPath.join(this.unzipDir, file);
             const exists = await this.utils.existPath(oldPath);
             if (exists) {
                 await this.pkgFsExtra.copy(oldPath, newPath);
             }
-        }
+        }))
     }
 
     syncDir = async () => {
@@ -256,58 +243,39 @@ class Updater {
     }
 }
 
-class ProxyGetter {
-    constructor(controller) {
-        this.utils = controller.utils
+const getSysProxy = () => {
+    const envProxy = process.env.http_proxy || process.env.HTTP_PROXY || process.env.https_proxy || process.env.HTTPS_PROXY
+    if (envProxy) return envProxy
+    if (File.isLinux) {
+        return new Promise(resolve => {
+            require("fs").readFile("/etc/environment", "utf8", (err, data) => {
+                const result = err ? null : data.match(/http_proxy=(.+)/i)?.[1]
+                resolve(result || null)
+            })
+        })
     }
-
-    getProxy = () => {
-        if (File.isLinux) {
-            return this.getLinuxProxy()
-        } else if (File.isWin) {
-            return this.getWindowsProxy()
-        } else if (File.isMac) {
-            return this.getMacProxy()
-        } else {
-            return ""
-        }
-    }
-
-    _getProxy = (cmd, func) => new Promise(resolve => {
+    const _get = (cmd, func) => new Promise(resolve => {
         require("child_process").exec(cmd, (err, stdout, stderr) => {
-            const result = (err || stderr) ? null : func(stdout);
-            resolve(result);
+            const result = (err || stderr) ? null : func(stdout)
+            resolve(result)
         })
     })
-
-    getWindowsProxy = () => this._getProxy(
-        `reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" | findstr /i "ProxyEnable proxyserver"`,
-        stdout => {
-            const match = stdout.match(/ProxyEnable.+?0x(?<enable>\d)\r\n.+?ProxyServer\s+REG_SZ\s+(?<proxy>.*)/i)
-            return (match && match.groups && match.groups.enable === "1")
-                ? match.groups.proxy
-                : null
-        }
-    )
-
-    getMacProxy = () => this._getProxy('networksetup -getwebproxy "Wi-Fi"', stdout => {
-        const match = stdout.match(/Enabled: (.+)\nServer: (.+)\nPort: (.+)\n/i);
-        return (match && match[1] === 'Yes' && match[2] && match[3])
-            ? `${match[2]}:${match[3]}`
-            : null
-    })
-
-    getLinuxProxy = () => new Promise(resolve => {
-        this.utils.Package.Fs.readFile('/etc/environment', 'utf8', (err, data) => {
-            if (err) {
-                resolve(null);
-            } else {
-                const match = data.match(/http_proxy=(.+)/i);
-                const result = (match && match[1]) ? match[1] : null;
-                resolve(result);
+    if (File.isWin) {
+        return _get(
+            `reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" | findstr /i "ProxyEnable proxyserver"`,
+            stdout => {
+                const groups = stdout.match(/ProxyEnable.+?0x(?<enable>\d)\r\n.+?ProxyServer\s+REG_SZ\s+(?<proxy>.*)/i)?.groups
+                return (groups?.enable === "1") ? groups.proxy : null
             }
-        });
-    });
+        )
+    }
+    if (File.isMac) {
+        return _get('networksetup -getwebproxy "Wi-Fi"', stdout => {
+            const [_, enable, server, port] = stdout.match(/Enabled: (.+)\nServer: (.+)\nPort: (.+)\n/i) || []
+            return (enable === "Yes" && server && port) ? `${server}:${port}` : null
+        })
+    }
+    return null
 }
 
 module.exports = {

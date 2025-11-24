@@ -109,9 +109,8 @@ class Parser {
 
         // check follow
         tokens.slice(0, -1).forEach((token, i) => {
-            const set = this.INVALID_POSITION.FOLLOW[token.type]
             const follow = tokens[i + 1]
-            if (set && set.has(follow.type)) {
+            if (this.INVALID_POSITION.FOLLOW[token.type]?.has(follow.type)) {
                 throw new Error(`Invalid Token Sequence:「${token.type}」followed by「${follow.type}」`)
             }
         })

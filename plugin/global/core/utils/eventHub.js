@@ -105,9 +105,9 @@ class EventHub {
                 const cid = args[0]
                 if (cid) this.publishEvent(this.eventType.beforeAddCodeBlock, cid)
             },
-            (fence, ...args) => {
+            (cm, ...args) => {
                 const cid = args[0]
-                if (cid) this.publishEvent(this.eventType.afterAddCodeBlock, cid, fence)
+                if (cid) this.publishEvent(this.eventType.afterAddCodeBlock, cid, cm)
             },
         )
 

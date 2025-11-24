@@ -9,14 +9,11 @@ class DataTablesPlugin extends BasePlugin {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeToggleSourceMode, this.destroyAllDataTable);
 
         this.utils.decorate(() => File?.editor?.tableEdit, "showTableEdit", (...args) => {
-            if (!args[0] || !args[0].find) return;
-
-            const table = args[0].find("table");
-            if (table.length === 0) return
-
-            const uuid = table.attr("table-uuid");
-            const idx = this.tableList.findIndex(table => table.uuid === uuid);
-            if (idx !== -1) {
+            const table = args[0]?.find?.("table")
+            if (!table || table.length === 0) return
+            const uuid = table.attr("table-uuid")
+            const exists = this.tableList.some(t => t.uuid === uuid)
+            if (exists) {
                 return this.utils.stopCallError
             }
         })
@@ -49,12 +46,11 @@ class DataTablesPlugin extends BasePlugin {
     }
 
     lazyLoad = async () => {
-        if (!$?.fn?.dataTable) {
-            this.initDataTablesConfig();
-            await this.utils.insertScript("./plugin/datatables/resource/datatables.min.js");
-            this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/datatables.min.css");
-            await this.utils.styleTemplater.register(this.fixedName);
-        }
+        if ($?.fn?.dataTable) return
+        this.initDataTablesConfig()
+        await this.utils.insertScript("./plugin/datatables/resource/datatables.min.js")
+        this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/datatables.min.css")
+        await this.utils.styleTemplater.register(this.fixedName)
     }
 
     initDataTablesConfig = () => {
@@ -100,13 +96,13 @@ class DataTablesPlugin extends BasePlugin {
         const table = $table.dataTable(this.dataTablesConfig);
         this.appendFilter(table.api());
         this.tableList.push({ uuid, table });
-        if (edit) edit.parentNode.removeChild(edit)
+        edit?.parentNode.removeChild(edit)
         return uuid
     }
 
     removeDataTable = uuid => {
         if (!uuid || !this.tableList.length) return;
-        const idx = this.tableList.findIndex(table => table.uuid === uuid);
+        const idx = this.tableList.findIndex(t => t.uuid === uuid)
         if (idx === -1) return;
 
         const table = this.tableList[idx].table;
@@ -123,7 +119,7 @@ class DataTablesPlugin extends BasePlugin {
 
     getDynamicActions = (anchorNode, meta) => {
         const table = anchorNode.closest("#write table.md-table");
-        const uuid = table && table.getAttribute("table-uuid");
+        const uuid = table?.getAttribute("table-uuid")
         meta.uuid = uuid;
         meta.target = table;
 

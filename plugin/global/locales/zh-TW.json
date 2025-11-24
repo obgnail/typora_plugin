@@ -84,7 +84,7 @@
     "error.maxItems": "至多選擇 {{maxItems}} 項",
     "error.atLine": "第 {{errorLine}} 行發生錯誤",
     "error.drawingFailed": "發生異常，繪圖失敗",
-    "error.writingFileFailed": "檔案寫入失敗",
+    "error.writeFileFailed": "檔案寫入失敗",
     "error.onBlankPage": "空白頁不可用",
     "error.duplicateValue": "存在重複值",
     "error.unknown": "未知錯誤！請向開發者回報",
@@ -96,7 +96,7 @@
     "$label.openSettingsFolder": "設定目錄",
     "$label.backupSettings": "備份設定",
     "$label.restoreAllSettings": "恢復所有預設值",
-    "$label.visitRepo": "THIS IS FOR EVERYONE",
+    "$label.visitRepo": "原始碼",
     "$label.viewDeepWiki": "AI 文檔",
     "$label.githubImageBed": "Github 圖床",
     "$label.editStyles": "修改樣式",
@@ -620,7 +620,7 @@
     "$label.ENABLE_IMAGE": "圖片",
     "$label.ENABLE_FENCE": "程式碼區塊",
     "$label.SHOW_IMAGE_NAME": "顯示圖片文件別名",
-    "$label.ALIGN": "編號位置",
+    "$label.ALIGN": "圖片、表格、程式碼區塊的編號對齊方式",
     "$label.POSITION_TABLE": "表格編號位置",
     "$label.FONT_FAMILY": "編號字體",
     "$label.LAYOUTS.name": "編號名稱",
@@ -649,7 +649,7 @@
     "$label.ENABLE_WHEN_EXPORT": "匯出為 HTML、PDF 時保留編號",
     "$title.LAYOUTS": "編號格式",
     "$title.autoNumbering": "自動編號",
-    "$title.APPLY_EXPORT_HEADER_NUMBERING": "套用匯出標題編號",
+    "$title.APPLY_EXPORT_HEADER_NUMBERING": "匯出為 HTML、PDF 時的編號",
     "$hintHeader.layoutSyntax": "編號規則",
     "$hintDetail.layoutSyntax": "使用結構 “前綴{計數器名稱:計數樣式}後綴” 來自訂編號格式。其中，前綴和後綴是任意文字，{} 內是計數器佔位符。計數器名稱指定編號對象，計數樣式指定編號的顯示方式。您可以自由組合文字和多個計數器。例如，“圖{i:cjk}” 將產生 “圖一”, “圖二”。",
     "$hintHeader.counterNames": "計數器名稱",
@@ -797,9 +797,8 @@
     "pluginName": "匯出增強",
     "act.toggle_enable": "圖片轉為 Base64",
     "act.toggle_download": "自動下載網路圖片",
-    "$label.DOWNLOAD_NETWORK_IMAGE": "下載並轉換為 Base64 編碼",
-    "$label.DOWNLOAD_THREADS": "下載執行緒數",
-    "$title.networkImage": "網路圖片"
+    "$label.DOWNLOAD_NETWORK_IMAGE": "下載網路圖片並轉換為 Base64 編碼",
+    "$label.DOWNLOAD_THREADS": "下載執行緒數"
   },
   "text_stylize": {
     "pluginName": "文字風格化",
@@ -960,7 +959,7 @@
     "$title.trigger": "命令觸發",
     "$placeholder.LettersAndNumbersOnly": "僅限英文字母和數字",
     "$placeholder.emojiOnly": "僅限單個 Emoji 符號",
-    "$placeholder.callbackType": "若類型爲 “插入文字片段”，則值爲待插入的字符串；\n若類型爲 “插入動態文字片段”，則值爲返回字符串的函式；\n若類型爲 “執行邏輯指令”，則值爲執行邏輯指令的函式。"
+    "$placeholder.callbackType": "若類型爲 “插入文字片段”，填入待插入的字符串；\n若類型爲 “插入動態文字片段”，填入返回字符串的函式；\n若類型爲 “執行邏輯指令”，填入執行邏輯指令的函式。"
   },
   "right_click_menu": {
     "pluginName": "右鍵選單",
@@ -995,7 +994,7 @@
     "$label.OBJECT_SETTINGS_FORMAT": "對象類型的數據格式",
     "$label.DEFAULT_MENU": "預設的配置頁",
     "$label.HIDE_MENUS": "隱藏的配置頁",
-    "$label.VALIDATE_CONFIG_OPTIONS": "校驗配置選項",
+    "$label.VALIDATE_CONFIG_OPTIONS": "校驗配置",
     "$label.DEPENDENCIES_FAILURE_BEHAVIOR": "依賴失效行為",
     "$title.FORM_RENDERING_HOOK": "表單渲染鉤子",
     "$option.OBJECT_SETTINGS_FORMAT.JSON": "JSON",
@@ -1595,10 +1594,12 @@
     "option.MD060.style.tight": "緊密",
     "tooltip.numberOrArray": "數字或數字數組\n例如 1 或 [ 2, 2, 2, 1, 1, 1 ]",
     "$label.use_button": "啟用",
-    "$label.right_click_button_to_fix": "右擊方塊以修複錯誤",
+    "$label.right_click_button_to_fix": "右擊以修複",
     "$label.button_width": "寬度",
     "$label.button_height": "高度",
+    "$label.button_right": "到右邊框距離",
     "$label.button_border_radius": "圓角半徑",
+    "$label.button_opacity": "不透明度",
     "$label.pass_color": "檢測通過顏色",
     "$label.error_color": "檢測未通過顏色",
     "$label.title_bar_buttons": "標題列按鈕",
@@ -1631,7 +1632,7 @@
     "$option.result_order_by.ruleDesc": "按規則描述排序",
     "$title.rule_config": "檢測規則",
     "$title.custom_rules_files": "自訂檢測規則檔案",
-    "$title.square": "狀態指示方塊",
+    "$title.indicator": "狀態指示器",
     "$title.detectAndFix": "檢測與修復"
   },
   "quickButton": {

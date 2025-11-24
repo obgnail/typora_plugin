@@ -44,6 +44,7 @@ module.exports = {
         NODE_BORDER_WHEN_HOVER: required,
         "DEFAULT_TOC_OPTIONS.color": [required, hexColor],
         CANDIDATE_COLOR_SCHEMES: [required, array],
+        "DOWNLOAD_OPTIONS.FOLDER": path,
         "DOWNLOAD_OPTIONS.FILENAME": required,
         "DOWNLOAD_OPTIONS.BACKGROUND_COLOR": [required, hexColor],
         "DOWNLOAD_OPTIONS.TEXT_COLOR": [required, hexColor],
@@ -146,7 +147,7 @@ module.exports = {
     marp: chartStyles,
     callouts: {
         font_family: required,
-        network_icon_url: url,
+        network_icon_url: [required, url],
         default_background_color: required,
         default_left_line_color: required,
         default_icon: required,
@@ -164,6 +165,8 @@ module.exports = {
     markdownLint: {
         button_width: required,
         button_height: required,
+        button_right: required,
+        button_border_radius: required,
         pass_color: required,
         error_color: required,
         custom_rules_files: [required, path],
