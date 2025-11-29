@@ -90,155 +90,217 @@ class UpdaterPlugin extends BasePlugin {
     }
 
     getUpdater = async (userProxy, timeout) => {
-        const proxy = await this.getProxy(userProxy)
         const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest"
+        const proxy = await this.getProxy(userProxy)
         return new Updater(this, url, proxy, timeout)
     }
 }
 
 class Updater {
     constructor(plugin, latestReleaseUrl, proxy, timeout) {
-        this.utils = plugin.utils;
-        this.latestReleaseUrl = latestReleaseUrl;
-        this.requestOption = { proxy, timeout };
+        this.utils = plugin.utils
+        this.latestReleaseUrl = latestReleaseUrl
+        this.requestOption = { proxy, timeout }
 
-        this.pkgFsExtra = this.utils.Package.FsExtra;
-        this.pkgPath = this.utils.Package.Path;
+        this.fs = this.utils.Package.FsExtra
+        this.path = this.utils.Package.Path
 
-        this.unzipDir = "";
-        this.pluginDir = "./plugin";
-        this.customPluginDir = "./plugin/custom/plugins";
-        this.versionFile = this.utils.joinPath("./plugin/bin/version.json");
-        this.workDir = this.pkgPath.join(this.utils.tempFolder, "typora-plugin-updater");
-        this.exclude = [
+        this.paths = {
+            unzip: "",
+            root: "./plugin",
+            customPlugin: "./plugin/custom/plugins",
+            versionFile: this.utils.joinPath("./plugin/bin/version.json"),
+            workDir: this.path.join(this.utils.tempFolder, "typora-plugin-updater"),
+            backupDir: this.path.join(this.utils.tempFolder, "typora-plugin-updater-backup"),
+        }
+        this.userFiles = [
             "./plugin/global/user_space",
             "./plugin/global/user_styles",
             "./plugin/global/settings/settings.user.toml",
             "./plugin/global/settings/custom_plugin.user.toml",
         ]
 
-        this.latestVersionInfo = null;
-        this.currentVersionInfo = null;
+        this.latestVersionInfo = null
+        this.currentVersionInfo = null
     }
 
-    run = async () => {
-        await this.prepare();
-        const need = await this.checkNeedUpdate();
-        if (!need) return "NO_NEED";
-        const buffer = await this.downloadLatestVersion();
-        await this.unzip(buffer);
-        await this.excludeFiles();
-        await this.syncDir();
-        await this.utils.migrate.run();
-        console.log(`updated! current plugin version: ${this.latestVersionInfo.tag_name}`);
-        return "UPDATED";
+    async run() {
+        try {
+            await this.prepare()
+            const need = await this.checkNeedUpdate()
+            if (!need) return "NO_NEED"
+            const buffer = await this.downloadLatestVersion()
+            await this.unzip(buffer)
+            await this.migrateUserFiles()
+            await this.atomicSync()
+            await this.utils.migrate.run()
+            console.log(`[Updater] Updated successfully! Version: ${this.latestVersionInfo.tag_name}`)
+            return "UPDATED"
+        } catch (error) {
+            console.error("[Updater] Update failed:", error)
+            return error
+        } finally {
+            await this.cleanup()
+        }
     }
 
-    /** Force update: skip the check and directly update using the URL. */
-    force = async url => {
-        await this.prepare();
-        const buffer = await this.downloadLatestVersion(url);
-        await this.unzip(buffer);
-        await this.excludeFiles();
-        await this.syncDir();
-        await this.utils.migrate.run();
-        console.log(`force updated!`);
-        return "UPDATED";
+    async force(url) {
+        try {
+            await this.prepare()
+            const buffer = await this.downloadLatestVersion(url)
+            await this.unzip(buffer)
+            await this.migrateUserFiles()
+            await this.atomicSync()
+            await this.utils.migrate.run()
+            console.log(`[Updater] Force updated successfully!`)
+            return "UPDATED"
+        } catch (error) {
+            console.error("[Updater] Force update failed:", error)
+            throw error
+        } finally {
+            await this.cleanup()
+        }
     }
 
-    runWithProgressBar = async (timeout) => {
-        const op = { task: this.run, timeout }
+    async runWithProgressBar(timeout) {
+        const op = { task: this.run.bind(this), timeout }
         const result = await this.utils.progressBar.fake(op)
         return { state: result, info: this.latestVersionInfo }
     }
 
-    prepare = async () => {
-        console.log("[1/6] prepare: ensure work dir");
-        this.pkgFsExtra.ensureDir(this.workDir);
-        await this.chmod();
+    async prepare() {
+        console.log("[1/6] Prepare: cleaning workspace")
+        await this.fs.emptyDir(this.paths.workDir)
+        await this.chmod(this.utils.joinPath(this.paths.root))
     }
 
-    chmod = async () => {
-        const dir = this.utils.joinPath(this.pluginDir);
+    async cleanup() {
         try {
-            await this.pkgFsExtra.chmod(dir, 0o777);
+            await this.fs.remove(this.paths.workDir)
+            await this.fs.remove(this.paths.backupDir)
         } catch (e) {
-            console.debug(`cant chmod ${dir}`);
+            console.warn("[Updater] Cleanup warning:", e.message)
         }
     }
 
-    checkNeedUpdate = async (url = this.latestReleaseUrl) => {
-        console.log("[2/6] check if update is needed");
-        const _getLatestVersion = async () => {
-            const resp = await this.utils.fetch(url, this.requestOption);
+    async chmod(dir) {
+        try {
+            await this.fs.chmod(dir, 0o777)
+        } catch (e) {
+            console.debug(`[Updater] Cannot chmod ${dir}:`, e.message)
+        }
+    }
+
+    async checkNeedUpdate(url = this.latestReleaseUrl) {
+        console.log("[2/6] Checking for updates...")
+        const [latest, current] = await Promise.all([this._fetchJson(url), this._readLocalVersion()])
+        this.latestVersionInfo = latest
+        this.currentVersionInfo = current
+        if (!latest) throw new Error("Failed to fetch latest version info")
+        if (!current) return true
+        return this.utils.compareVersion(latest.tag_name, current.tag_name) !== 0
+    }
+
+    async _fetchJson(url) {
+        try {
+            const resp = await this.utils.fetch(url, this.requestOption)
             return resp.json()
+        } catch (e) {
+            console.error("[Updater] Fetch version failed:", e)
+            return null
         }
-        const _getCurrentVersion = async () => {
-            const exist = await this.utils.existPath(this.versionFile)
-            return exist ? this.pkgFsExtra.readJson(this.versionFile) : null
-        }
-
-        this.currentVersionInfo = await _getCurrentVersion()
-        if (!this.currentVersionInfo) return true
-
-        this.latestVersionInfo = await _getLatestVersion()
-        return this.utils.compareVersion(this.latestVersionInfo.tag_name, this.currentVersionInfo.tag_name) !== 0
     }
 
-    getDownloadURL = () => this.latestVersionInfo.assets?.[0].browser_download_url || this.latestVersionInfo.zipball_url
+    async _readLocalVersion() {
+        return this.fs.readJson(this.paths.versionFile).catch(() => null)
+    }
 
-    downloadLatestVersion = async (url = this.getDownloadURL()) => {
-        console.log("[3/6] download latest version plugin");
-        const resp = await this.utils.fetch(url, this.requestOption);
+    getDownloadURL() {
+        if (!this.latestVersionInfo) return null
+        return this.latestVersionInfo.assets?.[0]?.browser_download_url || this.latestVersionInfo.zipball_url
+    }
+
+    async downloadLatestVersion(url) {
+        const downloadUrl = url || this.getDownloadURL()
+        if (!downloadUrl) throw new Error("No download URL found")
+        console.log(`[3/6] Downloading: ${downloadUrl}`)
+        const resp = await this.utils.fetch(downloadUrl, this.requestOption)
+        if (!resp.ok) throw new Error(`Download failed: HTTP ${resp.status}`)
         return resp.buffer()
     }
 
-    unzip = async buffer => {
-        console.log("[4/6] unzip files")
-        const zipFiles = await this.utils.unzip(buffer, this.workDir)
-        const pluginDir = zipFiles.find(f => this.pkgPath.basename(f) === "plugin")
-        this.unzipDir = this.pkgPath.dirname(pluginDir)
+    async unzip(buffer) {
+        console.log("[4/6] Unzipping...")
+        const zipFiles = await this.utils.unzip(buffer, this.paths.workDir)
+        const pluginRoot = zipFiles.find(f => this.path.basename(f) === "plugin")
+        if (!pluginRoot) throw new Error("Invalid zip structure: 'plugin' folder not found")
+        this.paths.unzip = this.path.dirname(pluginRoot)
     }
 
-    excludeFiles = async () => {
-        console.log("[5/6] exclude files");
-        const oldDir = this.utils.joinPath(this.customPluginDir);
-        const newDir = this.pkgPath.join(this.unzipDir, this.customPluginDir);
-        const [oldFds, newFds] = await Promise.all([
-            this.pkgFsExtra.readdir(oldDir),
-            this.pkgFsExtra.readdir(newDir),
-        ])
-
-        const excludeFds = new Set([...newFds])
-        oldFds.forEach(name => {
-            const isJs = this.pkgPath.extname(name) === ".js"
-            const baseName = isJs ? this.pkgPath.basename(name, ".js") : null
-            const exclude = excludeFds.has(name) || (isJs && excludeFds.has(baseName))
-            if (!exclude) {
-                const path = this.pkgPath.join(this.customPluginDir, name)
-                this.exclude.push(path)
+    async migrateUserFiles() {
+        console.log("[5/6] Migrating user settings...")
+        const oldCustomDir = this.utils.joinPath(this.paths.customPlugin)
+        const newCustomDir = this.path.join(this.paths.unzip, this.paths.customPlugin)
+        const normalizeName = (dirent) => {
+            const name = dirent.name
+            return (dirent.isFile() && this.path.extname(name) === ".js")
+                ? this.path.basename(name, ".js")
+                : name
+        }
+        if (await this.utils.existPath(oldCustomDir) && await this.utils.existPath(newCustomDir)) {
+            const [oldDirents, newDirents] = await Promise.all([
+                this.fs.readdir(oldCustomDir, { withFileTypes: true }),
+                this.fs.readdir(newCustomDir, { withFileTypes: true }),
+            ])
+            const newVersionKeys = new Set(newDirents.map(normalizeName))
+            for (const oldEnt of oldDirents) {
+                const oldKey = normalizeName(oldEnt)
+                if (!newVersionKeys.has(oldKey)) {
+                    const relativePath = this.path.join(this.paths.customPlugin, oldEnt.name)
+                    this.userFiles.push(relativePath)
+                }
             }
-        })
-
-        await Promise.all(this.exclude.map(async file => {
-            const oldPath = this.utils.joinPath(file);
-            const newPath = this.pkgPath.join(this.unzipDir, file);
-            const exists = await this.utils.existPath(oldPath);
-            if (exists) {
-                await this.pkgFsExtra.copy(oldPath, newPath);
+        }
+        await Promise.all(this.userFiles.map(async filePath => {
+            const oldPath = this.utils.joinPath(filePath)
+            const newPath = this.path.join(this.paths.unzip, filePath)
+            if (await this.utils.existPath(oldPath)) {
+                await this.fs.copy(oldPath, newPath, { overwrite: true })
             }
         }))
     }
 
-    syncDir = async () => {
-        console.log("[6/6] sync dir");
-        const src = this.pkgPath.join(this.unzipDir, this.pluginDir);
-        const dst = this.utils.joinPath(this.pluginDir);
-        await this.pkgFsExtra.emptyDir(dst);
-        await this.pkgFsExtra.copy(src, dst);
-        await this.pkgFsExtra.emptyDir(this.workDir);
+    async atomicSync() {
+        console.log("[6/6] Syncing directories (Atomic Mode)...")
+
+        const src = this.path.join(this.paths.unzip, this.paths.root)
+        const dst = this.utils.joinPath(this.paths.root)
+        const backup = this.paths.backupDir
         if (this.latestVersionInfo) {
-            await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
+            await this.fs.writeJson(this.path.join(src, "bin/version.json"), this.latestVersionInfo)
+        }
+        await this.fs.ensureDir(this.path.dirname(dst))
+
+        let backedUp = false
+        try {
+            if (await this.utils.existPath(dst)) {
+                await this.fs.move(dst, backup, { overwrite: true })
+                backedUp = true
+            }
+            await this.fs.move(src, dst, { overwrite: true })
+        } catch (error) {
+            console.error("Critical Error during sync! Rolling back...", error)
+            if (backedUp) {
+                try {
+                    await this.fs.remove(dst)
+                    await this.fs.move(backup, dst)
+                    console.log("Rollback successful.")
+                } catch (rollbackError) {
+                    console.error("FATAL: Rollback failed! Please restore manually.", rollbackError)
+                    throw rollbackError
+                }
+            }
+            throw error
         }
     }
 }
