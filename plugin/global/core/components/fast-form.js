@@ -2084,6 +2084,24 @@ const Control_Text = {
     },
 }
 
+const Control_Password = {
+    create: ({ field }) => {
+        const { key, placeholder } = getCommonHTMLAttrs(field)
+        return `<input class="password-input" type="password" ${key} ${placeholder}>`
+    },
+    update: ({ element, value, field }) => {
+        const input = element.querySelector(".password-input")
+        if (input) {
+            updateInputState(input, field, value || "")
+        }
+    },
+    bindEvents: ({ form }) => {
+        form.onEvent("change", ".password-input", function () {
+            form.validateAndCommit(this.dataset.key, this.value)
+        })
+    },
+}
+
 const Control_Color = {
     create: ({ field }) => {
         const { key, placeholder } = getCommonHTMLAttrs(field)
@@ -2833,6 +2851,7 @@ const Control_Composite = {
 
 FastForm.registerControl("switch", Control_Switch)
 FastForm.registerControl("text", Control_Text)
+FastForm.registerControl("password", Control_Password)
 FastForm.registerControl("color", Control_Color)
 FastForm.registerControl("number", Control_Number)
 FastForm.registerControl("unit", Control_Unit)

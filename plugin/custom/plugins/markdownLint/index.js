@@ -49,7 +49,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
         const onLifecycle = () => {
             const { eventHub } = this.utils
             eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.linter.check, 500))
-            eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => setTimeout(this.linter.configure, 1000))
+            eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => this.linter.configure())
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, force => {
                 if (force) {
                     this.entities.window.toggle(force)

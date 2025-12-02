@@ -31,6 +31,12 @@ const Text = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {
     placeholder = Placeholder(placeholder)
     return { type: "text", key, label, tooltip, placeholder, disabled, dependencies, ...args }
 }
+const Password = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
+    const label = Label(key)
+    tooltip = Tooltip(tooltip)
+    placeholder = Placeholder(placeholder)
+    return { type: "password", key, label, tooltip, placeholder, disabled, dependencies, ...args }
+}
 const Color = (key, { tooltip, disabled, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
@@ -106,8 +112,9 @@ const TableBox = (key, ths, nestedBoxes, defaultValues, { dependencies, ...args 
             if (field.label) field.label = setNamespace(field.label, key)
         })
     })
+    const boxDependencyUnmetAction = "readonly"
     const thMap = Object.fromEntries(ths.map(th => [th, `$label.${key}.${th}`]))
-    const box = TitledBox(Title(key), { type: "table", key, nestedBoxes, defaultValues, thMap, ...args })
+    const box = TitledBox(Title(key), { type: "table", key, nestedBoxes, defaultValues, thMap, boxDependencyUnmetAction, ...args })
     return WithDependencies(box, dependencies)
 }
 const RadioBox = (key, options, { dependencies, ...args } = {}) => {
@@ -669,7 +676,7 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Switch("ENABLE_WHEN_EXPORT"),
         ),
-        TextareaBox("APPLY_EXPORT_HEADER_NUMBERING", { rows: 12, readonly: true, dependencies: { ENABLE_WHEN_EXPORT: true } }),
+        TextareaBox("APPLY_EXPORT_HEADER_NUMBERING", { rows: 12, dependencies: { ENABLE_WHEN_EXPORT: true } }),
         handleSettingsBox,
     ],
     fence_enhance: [
@@ -867,11 +874,14 @@ const SETTING_SCHEMAS = {
     ],
     cipher: [
         pluginLiteBasePropBox,
+        UntitledBox(
+            Switch("SHOW_HINT_MODAL"),
+            Password("SECRET_KEY", protectedAttrs),
+        ),
         TitledBox(
             Title("hotkey"),
             Hotkey("ENCRYPT_HOTKEY"),
             Hotkey("DECRYPT_HOTKEY"),
-            Switch("SHOW_HINT_MODAL"),
         ),
         handleSettingsBox,
     ],
@@ -1123,13 +1133,13 @@ const SETTING_SCHEMAS = {
             Text("upload.wordpress.hostname", { dependencies: { "upload.wordpress.enabled": true } }),
             Text("upload.wordpress.loginUrl", { dependencies: { "upload.wordpress.enabled": true } }),
             Text("upload.wordpress.username", { dependencies: { "upload.wordpress.enabled": true } }),
-            Text("upload.wordpress.password", { dependencies: { "upload.wordpress.enabled": true } }),
+            Password("upload.wordpress.password", { dependencies: { "upload.wordpress.enabled": true } }),
         ),
         TitledBox(
             Title("cnblog"),
             Switch("upload.cnblog.enabled"),
             Text("upload.cnblog.username", { dependencies: { "upload.cnblog.enabled": true } }),
-            Text("upload.cnblog.password", { dependencies: { "upload.cnblog.enabled": true } }),
+            Password("upload.cnblog.password", { dependencies: { "upload.cnblog.enabled": true } }),
         ),
         TitledBox(
             Title("csdn"),
@@ -1156,6 +1166,11 @@ const SETTING_SCHEMAS = {
     ],
     static_markers: [
         pluginFullBasePropBox,
+        handleSettingsBox,
+    ],
+    file_tree_plus: [
+        pluginLiteBasePropBox,
+        ArrayBox("SUPPORTED_FILE_EXT"),
         handleSettingsBox,
     ],
     cursor_history: [

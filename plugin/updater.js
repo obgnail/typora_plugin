@@ -33,9 +33,9 @@ class UpdaterPlugin extends BasePlugin {
     }
 
     silentUpdate = async proxy => {
-        console.log("start silent update...");
-        const updater = await this.getUpdater(proxy);
-        await updater.run();
+        console.log("Start silent update...")
+        const updater = await this.getUpdater(proxy)
+        await updater.run()
     }
 
     manualUpdate = async proxy => {
@@ -50,7 +50,7 @@ class UpdaterPlugin extends BasePlugin {
 
         const close = this.utils.notification.show(I18N.pleaseWait)
         const updater = await this.getUpdater(proxy, timeout)
-        const { state, info } = await updater.runWithProgressBar(timeout)
+        const { state, info } = await updater.runWithProgressBar()
         close()
 
         let msg, msgType, detail
@@ -83,7 +83,7 @@ class UpdaterPlugin extends BasePlugin {
 
     getProxy = async (userProxy) => {
         let proxy = (userProxy || this.config.PROXY || await getSysProxy() || "").trim()
-        if (proxy && !/^https?:\/\//.test(proxy)) {
+        if (proxy && !/^https?:\/\//i.test(proxy)) {
             proxy = "http://" + proxy
         }
         return proxy
@@ -106,12 +106,14 @@ class Updater {
         this.path = this.utils.Package.Path
 
         this.paths = {
-            unzip: "",
-            root: "./plugin",
-            customPlugin: "./plugin/custom/plugins",
+            stagingDir: "",
             versionFile: this.utils.joinPath("./plugin/bin/version.json"),
             workDir: this.path.join(this.utils.tempFolder, "typora-plugin-updater"),
             backupDir: this.path.join(this.utils.tempFolder, "typora-plugin-updater-backup"),
+        }
+        this.relpaths = {
+            rootDir: "./plugin",
+            customPluginDir: "./plugin/custom/plugins",
         }
         this.userFiles = [
             "./plugin/global/user_space",
@@ -134,10 +136,10 @@ class Updater {
             await this.migrateUserFiles()
             await this.atomicSync()
             await this.utils.migrate.run()
-            console.log(`[Updater] Updated successfully! Version: ${this.latestVersionInfo.tag_name}`)
+            console.log(`Updated successfully! Version: ${this.latestVersionInfo.tag_name}`)
             return "UPDATED"
         } catch (error) {
-            console.error("[Updater] Update failed:", error)
+            console.error("Update failed:", error)
             return error
         } finally {
             await this.cleanup()
@@ -152,26 +154,26 @@ class Updater {
             await this.migrateUserFiles()
             await this.atomicSync()
             await this.utils.migrate.run()
-            console.log(`[Updater] Force updated successfully!`)
+            console.log(`Force updated successfully!`)
             return "UPDATED"
         } catch (error) {
-            console.error("[Updater] Force update failed:", error)
+            console.error("Force update failed:", error)
             throw error
         } finally {
             await this.cleanup()
         }
     }
 
-    async runWithProgressBar(timeout) {
-        const op = { task: this.run.bind(this), timeout }
+    async runWithProgressBar() {
+        const op = { task: this.run.bind(this), timeout: this.requestOption.timeout }
         const result = await this.utils.progressBar.fake(op)
         return { state: result, info: this.latestVersionInfo }
     }
 
     async prepare() {
         console.log("[1/6] Prepare: cleaning workspace")
-        await this.fs.emptyDir(this.paths.workDir)
-        await this.chmod(this.utils.joinPath(this.paths.root))
+        await Promise.all([this.fs.emptyDir(this.paths.workDir), this.fs.remove(this.paths.backupDir)])
+        await this.chmod(this.utils.joinPath(this.relpaths.rootDir))
     }
 
     async cleanup() {
@@ -179,7 +181,7 @@ class Updater {
             await this.fs.remove(this.paths.workDir)
             await this.fs.remove(this.paths.backupDir)
         } catch (e) {
-            console.warn("[Updater] Cleanup warning:", e.message)
+            console.warn("Cleanup warning:", e.message)
         }
     }
 
@@ -187,7 +189,7 @@ class Updater {
         try {
             await this.fs.chmod(dir, 0o777)
         } catch (e) {
-            console.debug(`[Updater] Cannot chmod ${dir}:`, e.message)
+            console.debug(`Cannot chmod ${dir}:`, e.message)
         }
     }
 
@@ -196,7 +198,7 @@ class Updater {
         const [latest, current] = await Promise.all([this._fetchJson(url), this._readLocalVersion()])
         this.latestVersionInfo = latest
         this.currentVersionInfo = current
-        if (!latest) throw new Error("Failed to fetch latest version info")
+        if (!latest) throw new Error("Fetch latest version failed")
         if (!current) return true
         return this.utils.compareVersion(latest.tag_name, current.tag_name) !== 0
     }
@@ -206,7 +208,7 @@ class Updater {
             const resp = await this.utils.fetch(url, this.requestOption)
             return resp.json()
         } catch (e) {
-            console.error("[Updater] Fetch version failed:", e)
+            console.error("Fetch version failed:", e)
             return null
         }
     }
@@ -231,16 +233,18 @@ class Updater {
 
     async unzip(buffer) {
         console.log("[4/6] Unzipping...")
+        const targetDirName = this.path.basename(this.relpaths.rootDir)
         const zipFiles = await this.utils.unzip(buffer, this.paths.workDir)
-        const pluginRoot = zipFiles.find(f => this.path.basename(f) === "plugin")
-        if (!pluginRoot) throw new Error("Invalid zip structure: 'plugin' folder not found")
-        this.paths.unzip = this.path.dirname(pluginRoot)
+        const pluginDir = zipFiles.find(f => this.path.basename(f) === targetDirName)
+        if (!pluginDir) throw new Error(`Invalid zip structure: '${targetDirName}' folder not found`)
+        this.paths.stagingDir = this.path.dirname(pluginDir)
     }
 
     async migrateUserFiles() {
         console.log("[5/6] Migrating user settings...")
-        const oldCustomDir = this.utils.joinPath(this.paths.customPlugin)
-        const newCustomDir = this.path.join(this.paths.unzip, this.paths.customPlugin)
+        const filesToMigrate = [...this.userFiles]
+        const oldCustomDir = this.utils.joinPath(this.relpaths.customPluginDir)
+        const newCustomDir = this.path.join(this.paths.stagingDir, this.relpaths.customPluginDir)
         const normalizeName = (dirent) => {
             const name = dirent.name
             return (dirent.isFile() && this.path.extname(name) === ".js")
@@ -256,14 +260,14 @@ class Updater {
             for (const oldEnt of oldDirents) {
                 const oldKey = normalizeName(oldEnt)
                 if (!newVersionKeys.has(oldKey)) {
-                    const relativePath = this.path.join(this.paths.customPlugin, oldEnt.name)
-                    this.userFiles.push(relativePath)
+                    const fileRelPath = this.path.join(this.relpaths.customPluginDir, oldEnt.name)
+                    filesToMigrate.push(fileRelPath)
                 }
             }
         }
-        await Promise.all(this.userFiles.map(async filePath => {
-            const oldPath = this.utils.joinPath(filePath)
-            const newPath = this.path.join(this.paths.unzip, filePath)
+        await Promise.all(filesToMigrate.map(async fileRelPath => {
+            const oldPath = this.utils.joinPath(fileRelPath)
+            const newPath = this.path.join(this.paths.stagingDir, fileRelPath)
             if (await this.utils.existPath(oldPath)) {
                 await this.fs.copy(oldPath, newPath, { overwrite: true })
             }
@@ -272,9 +276,8 @@ class Updater {
 
     async atomicSync() {
         console.log("[6/6] Syncing directories (Atomic Mode)...")
-
-        const src = this.path.join(this.paths.unzip, this.paths.root)
-        const dst = this.utils.joinPath(this.paths.root)
+        const src = this.path.join(this.paths.stagingDir, this.relpaths.rootDir)
+        const dst = this.utils.joinPath(this.relpaths.rootDir)
         const backup = this.paths.backupDir
         if (this.latestVersionInfo) {
             await this.fs.writeJson(this.path.join(src, "bin/version.json"), this.latestVersionInfo)

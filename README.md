@@ -74,10 +74,11 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 55   | sortableOutline         | Drag & drop outline to rearrange                          | ×                  |
 | 56   | cursor_history          | Cursor History                                            | ×                  |
 | 57   | static_markers          | Static Markers                                            | ×                  |
-| 58   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
-| 59   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
-| 60   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
-| 61   | json_rpc                | External control of Typora (advanced)                     | ×                  |
+| 58   | file_tree_plus          | Display non-Markdown files in the sidebar                 | ×                  |
+| 59   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
+| 60   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
+| 61   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
+| 62   | json_rpc                | External control of Typora (advanced)                     | ×                  |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
@@ -637,6 +638,12 @@ Typora comes with ripgrep. This plugin supports using the built-in ripgrep to se
 Say goodbye to distracting format refreshes. This plugin keeps your Markdown syntax markers always visible and static.
 
 This plugin disables the auto-hiding feature for syntax markers in WYSIWYG mode. It ensures that all Markdown characters—like **, ##, and _—remain persistently visible around your text, just as they would in a source code editor.
+
+> This plugin is disabled by default and needs to be manually enabled.
+
+### file_tree_plus：Display non-Markdown files in the sidebar×
+
+Break the limitation that Typora only displays Markdown files. This plugin allows you to customize which "external file" formats (e.g., `.pdf`, `.docx`) appear in the file tree. Clicking these files will launch them directly using your system's default application, providing a seamless file management experience.
 
 > This plugin is disabled by default and needs to be manually enabled.
 

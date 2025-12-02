@@ -74,10 +74,11 @@
 | 55   | sortableOutline         | 拖动大纲标题，调整文章结构           | ×        |
 | 56   | cursor_history          | 光标跳转                             | ×        |
 | 57   | static_markers          | Markdown 标记常显                    | ×        |
-| 58   | custom                  | 开放平台，用户自定义插件（高级）     |          |
-| 59   | hotkeys                 | 快捷键注册中心（高级）               |          |
-| 60   | quickButton             | 于右下角添加功能按钮（高级）         |          |
-| 61   | json_rpc                | 外部操纵 Typora（高级）              | ×        |
+| 58   | file_tree_plus          | 侧边栏文件列表显示任意拓展名文件     | ×        |
+| 59   | custom                  | 开放平台，用户自定义插件（高级）     |          |
+| 60   | hotkeys                 | 快捷键注册中心（高级）               |          |
+| 61   | quickButton             | 于右下角添加功能按钮（高级）         |          |
+| 62   | json_rpc                | 外部操纵 Typora（高级）              | ×        |
 
 > 如果有需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果觉得本项目对您有帮助，请不吝点亮一个 Star ⭐！
 
@@ -729,6 +730,14 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 告别格式刷新的干扰，让您的 Markdown 语法标记 **始终可见、保持静态**。
 
 禁用所见即所得模式下的语法标记自动隐藏功能，让 **、##、_ 等所有 Markdown 标记像在源码模式中一样，永远清晰地展示在您的文本周围。
+
+> 此插件默认关闭，需手动开启。
+
+
+
+### file_tree_plus：侧边栏文件列表显示任意拓展名文件
+
+打破 Typora 仅显示 Markdown 文件的限制。本插件允许用户自定义需要在侧边栏显示的“外部文件”格式（如 `.pdf`, `.docx` 等）。点击这些文件时，将自动调用系统默认工具打开，实现更完整的文件管理体验。
 
 > 此插件默认关闭，需手动开启。
 

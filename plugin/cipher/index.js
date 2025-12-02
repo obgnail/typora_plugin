@@ -6,8 +6,7 @@ class CipherPlugin extends BasePlugin {
 
     init = () => {
         this.AES_ECB = null
-        // To prevent decryption failures, users are restricted from modifying the hard-coded secret key
-        this.key = "n0hLis5FjgQxa3f31sSa2wm37J81g3upTlq9it9WlfK"
+        this.key = this.config.SECRET_KEY
         this.showMessageBox = this.config.SHOW_HINT_MODAL
         this.staticActions = this.i18n.fillActions([
             { act_value: "encrypt", act_hotkey: this.config.ENCRYPT_HOTKEY },

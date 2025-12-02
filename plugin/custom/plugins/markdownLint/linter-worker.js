@@ -1,6 +1,6 @@
 let LIB
-let CUSTOM_RULES
 let RULES
+let CUSTOM_RULES
 
 const linter = {
     configure: ({ polyfillLib, lib, customRulesFiles, rules, content }) => {
@@ -17,7 +17,7 @@ const linter = {
             RULES = rules
         }
         if (LIB) {
-            console.debug(`markdownlint@${LIB.getVersion()} worker is initialized with rules`, RULES)
+            console.debug(`[Markdownlint] markdownlint@${LIB.getVersion()} worker is configured with rules`, RULES)
         }
         if (content) {
             return linter.check({ content })
@@ -30,8 +30,7 @@ const linter = {
         return result.content
     },
     fix: async ({ content, fixInfo }) => {
-        if (!LIB) return
-        if (fixInfo && fixInfo.length) {
+        if (LIB && fixInfo?.length) {
             return LIB.applyFixes(content, fixInfo)
         }
     },

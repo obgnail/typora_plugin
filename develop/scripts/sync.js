@@ -1,7 +1,14 @@
 const path = require("path")
 const fs = require("fs-extra")
 const chokidar = require("chokidar")
-const utils = require("./utils")
+
+const debounce = (fn, delay = 500) => {
+    let timer
+    return function (...args) {
+        clearTimeout(timer)
+        timer = setTimeout(() => fn(...args), delay)
+    }
+}
 
 const getDirs = () => {
     let rootDir = path.resolve(process.env.TYPORA_PATH, "../resources")
@@ -26,7 +33,7 @@ const getDirs = () => {
 
 const sync = (callback) => {
     const { sourceDir, destDir } = getDirs()
-    const callback_ = callback ? utils.debounce(callback) : () => undefined
+    const callback_ = callback ? debounce(callback) : () => undefined
 
     console.log(`Starting sync from ${sourceDir} to ${destDir}`)
 

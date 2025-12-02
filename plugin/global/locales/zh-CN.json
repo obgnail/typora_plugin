@@ -99,7 +99,7 @@
     "$label.visitRepo": "源代码",
     "$label.viewDeepWiki": "AI 文档",
     "$label.githubImageBed": "Github 图床",
-    "$label.editStyles": "修改样式",
+    "$label.editStyles": "我要改样式",
     "$label.developPlugins": "我要写插件",
     "$label.updatePlugin": "检查更新",
     "$label.uninstallPlugin": "卸载插件",
@@ -305,7 +305,7 @@
     "modal.playground.direction": "流程图布局方向",
     "$label.RELATIVE_PATH": "使用相对路径",
     "$label.SHOW_EXT": "显示文件扩展名",
-    "$label.SHOW_MTIME": "显示文件最后修改时间",
+    "$label.SHOW_MTIME": "显示文件修改时间",
     "$label.REMOVE_BUTTON_HINT": "隐藏按钮提示",
     "$label.MAX_HITS": "高亮最大数量",
     "$label.CASE_SENSITIVE": "区分大小写",
@@ -848,6 +848,7 @@
     "msgBox.decrypt.onPlain": "文件为非加密格式",
     "$label.ENCRYPT_HOTKEY": "加密",
     "$label.DECRYPT_HOTKEY": "解密",
+    "$label.SECRET_KEY": "密钥",
     "$label.SHOW_HINT_MODAL": "加解密后弹出提示窗口"
   },
   "resource_manager": {
@@ -1078,6 +1079,10 @@
     "pluginName": "标记常显",
     "act.toggle_state": "启用标记常显"
   },
+  "file_tree_plus": {
+    "pluginName": "全格式侧边栏",
+    "$title.SUPPORTED_FILE_EXT": "支持的扩展名"
+  },
   "cursor_history": {
     "pluginName": "光标跳转",
     "$label.HOTKEY_GO_FORWARD": "光标前进",
@@ -1096,7 +1101,7 @@
   "updater": {
     "pluginName": "升级插件",
     "hintHeader.PROXY": "网络代理",
-    "hintDetail.PROXY": "某些地区可能无法直接访问 GitHub，使用该选项可以指定一个代理服务器，从而绕过网络限制。请确保指向一个可用的 HTTP 或 HTTPS 代理服务器。 如果不需要代理，请将此选项留空。",
+    "hintDetail.PROXY": "某些地区可能无法直接访问 GitHub，使用该选项可以指定一个代理服务器，从而绕过网络限制。请确保指向一个可用的 HTTP 或 HTTPS 代理服务器。 如果不需要代理，请将此选项置空。",
     "update.pleaseWait": "升级中，请稍等",
     "update.success": "更新成功，请重启 Typora",
     "update.noNeed": "已是最新版，无需更新",

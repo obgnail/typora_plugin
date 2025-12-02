@@ -305,7 +305,7 @@
     "modal.playground.direction": "Flowchart Layout Direction",
     "$label.RELATIVE_PATH": "Use Relative Path",
     "$label.SHOW_EXT": "Show File Extension",
-    "$label.SHOW_MTIME": "Show Last Modified Time",
+    "$label.SHOW_MTIME": "Show Modified Time",
     "$label.REMOVE_BUTTON_HINT": "Hide Button Hint",
     "$label.MAX_HITS": "Max Highlights",
     "$label.CASE_SENSITIVE": "Case Sensitive",
@@ -848,6 +848,7 @@
     "msgBox.decrypt.onPlain": "The file is not encrypted",
     "$label.ENCRYPT_HOTKEY": "Encrypt",
     "$label.DECRYPT_HOTKEY": "Decrypt",
+    "$label.SECRET_KEY": "Secret Key",
     "$label.SHOW_HINT_MODAL": "Show Hint Modal After Encryption/Decryption"
   },
   "resource_manager": {
@@ -1078,6 +1079,10 @@
     "pluginName": "Static Markers",
     "act.toggle_state": "Enable Static Markers"
   },
+  "file_tree_plus": {
+    "pluginName": "File Tree Plus",
+    "$title.SUPPORTED_FILE_EXT": "Supported Extensions"
+  },
   "cursor_history": {
     "pluginName": "Cursor History",
     "$label.HOTKEY_GO_FORWARD": "Cursor Go Forward",
@@ -1096,7 +1101,7 @@
   "updater": {
     "pluginName": "Updater",
     "hintHeader.PROXY": "Network Agent",
-    "hintDetail.PROXY": "In some regions, direct access to GitHub might be blocked. This option allows you to specify a proxy server to bypass network restrictions. Ensure that proxy URL points to a valid HTTP or HTTPS proxy server. If no proxy is needed, leave this option blank.",
+    "hintDetail.PROXY": "Some regions may not have direct access to GitHub. This option allows you to specify a proxy server to bypass network restrictions. Ensure your URL points to a valid HTTP or HTTPS proxy server. If no proxy is needed, leave this option blank.",
     "update.pleaseWait": "Updating. One moment please...",
     "update.success": "Update successful. Please restart Typora",
     "update.noNeed": "Already the latest version, no update needed",

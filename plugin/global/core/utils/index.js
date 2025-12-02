@@ -131,6 +131,7 @@ class utils {
     static loadJimp = async () => await $.getScript((File.isNode ? "./lib.asar" : "./lib") + "/jimp/browser/lib/jimp.min.js")
 
     static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
+    static openPath = (path) => reqnode("electron").shell.openPath(path)
 
     static downloadImage = async (src, folder, filename) => {
         folder = folder || this.tempFolder;

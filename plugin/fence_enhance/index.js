@@ -195,7 +195,7 @@ class FenceEnhancePlugin extends BasePlugin {
             })
             eventHub.addEventListener(eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
                 if (this.buttons.length === 0) return
-                const fence = cm.display.wrapper.parentElement
+                const fence = cm?.display.wrapper.parentElement ?? this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}]`)
                 if (!fence) return
                 let enhance = fence.querySelector(".fence-enhance")
                 if (enhance) return

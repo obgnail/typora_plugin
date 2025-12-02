@@ -72,9 +72,9 @@ class EventHub {
     process = () => {
         let _filepath = ""
         this.utils.decorate(() => File?.editor?.library, "openFile",
-            () => {
+            (toOpenFile) => {
                 _filepath = this.utils.getFilePath()
-                this.publishEvent(this.eventType.beforeFileOpen)
+                this.publishEvent(this.eventType.beforeFileOpen, toOpenFile)
             },
             (result, ...args) => {
                 const filepath = args[0]

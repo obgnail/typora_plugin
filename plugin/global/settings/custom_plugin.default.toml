@@ -1475,7 +1475,7 @@ translate = true
 #   toggleSourceMode: 源码模式
 #   refresh:          刷新
 #   close:            关闭
-title_bar_buttons = ["settings", "detailAll", "fixAll", "toggleSourceMode", "refresh", "close"]
+title_bar_buttons = ["settings", "fixAll", "toggleSourceMode", "refresh", "close"]
 
 # 展示列
 #   idx:  序号

@@ -142,6 +142,7 @@
 }
 
 .control[data-type="text"] > .control-right,
+.control[data-type="password"] > .control-right,
 .control[data-type="number"] > .control-right,
 .control[data-type="hotkey"] > .control-right,
 .control[data-type="color"] > .control-right,
@@ -152,6 +153,7 @@
 
 input[type="text"],
 input[type="number"],
+input[type="password"],
 textarea {
     box-sizing: border-box;
     margin: 0;
@@ -184,6 +186,7 @@ textarea::placeholder {
 }
 
 .text-input:disabled,
+.password-input:disabled,
 .number-input:disabled,
 .hotkey-input:disabled,
 .unit-input:disabled,
@@ -475,9 +478,9 @@ textarea::placeholder {
     margin-right: 0;
 }
 
-.control[data-type="action"].active .action {
-    color: #007bff;
-}
+/*.control[data-type="action"].active .action {*/
+/*    color: #007bff;*/
+/*}*/
 
 .ripple {
     position: absolute;
