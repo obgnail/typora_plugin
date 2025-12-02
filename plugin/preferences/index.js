@@ -468,6 +468,11 @@ class PreferencesPlugin extends BasePlugin {
                     _disableOptions(field, "global", "preferences")
                 }
             },
+            "file_tree_plus.ENABLE": (field, data) => {
+                if (!File.SupportedFiles) {
+                    _incompatibleSwitch(field, data)
+                }
+            },
             "markdownLint.rule_config": (field, data, box) => {
                 if (this.utils.getCustomPlugin("markdownLint")) {
                     box.fields[0] = { type: "action", key: "invokeMarkdownLintSettings", label: this.i18n._t("markdownLint", "$label.invokeMarkdownLintSettings") }
