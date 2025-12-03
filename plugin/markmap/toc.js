@@ -9,7 +9,7 @@ class TOCMarkmap {
 
     html = () => {
         const icons = {
-            download: "ion-archive", settings: "ion-android-settings", fit: "ion-cube",
+            download: "ion-archive", settings: "ion-android-settings", unfold: "ion-refresh", fit: "ion-cube",
             pinRight: "ion-chevron-right", pinTop: "ion-chevron-up", expand: "ion-qr-scanner", close: "ion-close",
         }
         const buttons = this.config.TITLE_BAR_BUTTONS.map(name => `<div class="plugin-markmap-icon ${icons[name]}" action="${name}" ty-hint="${this.i18n.t(`$option.TITLE_BAR_BUTTONS.${name}`)}"></div>`).join("")
@@ -294,6 +294,16 @@ class TOCMarkmap {
         if (notify) this.utils.notification.show(this.i18n.t("success.fit"))
     }
 
+    unfold = () => {
+        const { root } = this.transformContext
+        this._preorder(root, node => {
+            if (node.payload) node.payload.fold = 0
+        })
+        this.mm.setData(root)
+        this.fit()
+        this.utils.notification.show(this.i18n.t("success.unfold"))
+    }
+
     settings = async () => {
         const attrsToSave = [
             "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
@@ -507,11 +517,11 @@ class TOCMarkmap {
             this.utils.contextMenu.register(
                 this.entities.svg,
                 () => {
-                    const all = ["expand", "shrink", "hideToolbar", "showToolbar", "fit", "pinTop", "pinRight", "settings", "download", "close"]
+                    const all = ["expand", "shrink", "hideToolbar", "showToolbar", "fit", "unfold", "pinTop", "pinRight", "settings", "download", "close"]
                     const menuItems = this.i18n.entries(all, "$option.TITLE_BAR_BUTTONS.")
                     const fullScreen = this.entities.fullScreen.getAttribute("action")
                     const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar"
-                    const attrs = [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "settings", "download", "close"]
+                    const attrs = [toolbarVisibility, fullScreen, "fit", "unfold", "pinTop", "pinRight", "settings", "download", "close"]
                     return this.utils.pick(menuItems, attrs)
                 },
                 (ev, key) => this.doAction(key),
@@ -611,27 +621,27 @@ class TOCMarkmap {
     _setFoldNode = newRoot => {
         if (!this.config.KEEP_FOLD_STATE_WHEN_UPDATE) return
 
-        const preorder = (node, fn, parent) => {
-            const parentPath = parent?.__path || ""
-            node.__path = `${parentPath}\n${node.content}`
-            fn(node)
-            for (const child of node.children) {
-                preorder(child, fn, node)
-            }
-        }
-
         const needFold = new Set()
         const { data: oldRoot } = this.mm.state || {}
-        preorder(oldRoot, node => {
+        this._preorder(oldRoot, node => {
             if (node.payload?.fold) {
                 needFold.add(node.__path)
             }
         })
-        preorder(newRoot, node => {
+        this._preorder(newRoot, node => {
             if (node.payload && needFold.has(node.__path)) {
                 node.payload.fold = 1
             }
         })
+    }
+
+    _preorder = (node, fn, parent) => {
+        const parentPath = parent?.__path || ""
+        node.__path = `${parentPath}\n${node.content}`
+        fn(node)
+        for (const child of node.children) {
+            this._preorder(child, fn, node)
+        }
     }
 
     _fixConfig = () => {

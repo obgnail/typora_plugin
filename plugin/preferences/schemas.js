@@ -193,7 +193,7 @@ const OPTIONS = {
         IMAGE_ALIGN: ["center", "left", "right"],
     },
     markmap: {
-        TITLE_BAR_BUTTONS: ["download", "settings", "fit", "pinRight", "pinTop", "expand", "close"],
+        TITLE_BAR_BUTTONS: ["download", "settings", "fit", "pinRight", "pinTop", "unfold", "expand", "close"],
     },
     auto_number: {
         ALIGN: ["left", "right", "center"],

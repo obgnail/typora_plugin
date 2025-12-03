@@ -791,9 +791,10 @@ USE_CONTEXT_MENU = true
 #   pinRight: 固定到右侧
 #   pinTop:   固定到顶部
 #   fit:      图形适配窗口
+#   unfold:   展开图形
 #   expand:   全屏
 #   close:    关闭
-TITLE_BAR_BUTTONS = ["close", "expand", "pinTop", "pinRight", "fit", "settings", "download"]
+TITLE_BAR_BUTTONS = ["close", "expand", "pinTop", "pinRight", "fit", "unfold", "settings", "download"]
 
 # 点击思维导图节点是否跳转到文档对应章节
 #   true:  点击节点后，页面会滚动到文档中对应的标题位置
