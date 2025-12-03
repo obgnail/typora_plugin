@@ -51,7 +51,7 @@ class Migrate {
                 .map(fixedName => {
                     const pluginUser = configUser[fixedName]
                     const pluginDefault = configDefault[fixedName]
-                    const toDeleteKeys = Object.keys(pluginUser).filter(key => !pluginDefault.hasOwnProperty(key) || pluginDefault[key] === pluginUser[key])
+                    const toDeleteKeys = Object.keys(pluginUser).filter(key => !pluginDefault.hasOwnProperty(key) || this.utils.deepEqual(pluginDefault[key], pluginUser[key]))
                     return [pluginUser, toDeleteKeys]
                 })
                 .forEach(([plugin, toDeleteKeys]) => toDeleteKeys.forEach(key => delete plugin[key]))
@@ -85,6 +85,7 @@ class Migrate {
         await this.cleanInvalidPlugins(files)
         await this.cleanPluginsAndKeys(files)
         await this.saveFiles(files)
+        console.log("[Migrate] Migrated Typora Plugin settings file")
     }
 
     // Run migrate after Typora starts and check the permission to write to the settings files

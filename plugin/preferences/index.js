@@ -246,8 +246,27 @@ class PreferencesPlugin extends BasePlugin {
             editStyles: () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/user_styles/README.md")),
             developPlugins: () => this.utils.showInFinder(this.utils.joinPath("./plugin/custom/README.md")),
             openPluginFolder: () => this.utils.showInFinder(this.utils.joinPath("./plugin")),
-            backupSettings: async () => this.utils.settings.backupSettingFile(),
-            openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
+            exportSettings: async () => {
+                const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
+                    title: this.i18n._t("global", "$label.exportSettings"),
+                    defaultPath: this.utils.Package.Path.join(this.utils.tempFolder, "typora-plugin-settings.json"),
+                    properties: ["saveFile", "showOverwriteConfirmation"],
+                    filters: [{ name: "JSON", extensions: ["json"] }],
+                })
+                if (canceled || !filePath) return
+                await this.utils.settings.exportSettings(filePath)
+                this.utils.notification.show(this.i18n._t("global", "success"))
+            },
+            importSettings: async () => {
+                const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
+                    title: this.i18n._t("global", "$label.importSettings"),
+                    properties: ["openFile", "dontAddToRecent"],
+                    filters: [{ name: "JSON", extensions: ["json"] }],
+                })
+                if (canceled || filePaths.length === 0) return
+                await this.utils.settings.importSettings(filePaths[0])
+                this.utils.notification.show(this.i18n._t("global", "success"))
+            },
             invokeMarkdownLintSettings: async () => this.utils.callPluginFunction("markdownLint", "settings"),
             installPlantUMLServer: async () => {
                 const dockerFields = [{ key: "dockerCommand", type: "textarea", readonly: true, rows: 3 }]

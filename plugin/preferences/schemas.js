@@ -262,10 +262,10 @@ const SETTING_SCHEMAS = {
         ),
         UntitledBox(
             Action("runtimeSettings"),
-            Action("openSettingsFolder"),
-            Action("backupSettings"),
             Action("restoreSettings"),
             Action("restoreAllSettings"),
+            Action("exportSettings"),
+            Action("importSettings"),
         ),
         UntitledBox(
             Action("visitRepo"),
