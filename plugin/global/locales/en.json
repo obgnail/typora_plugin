@@ -1278,16 +1278,11 @@
   },
   "toc": {
     "pluginName": "TOC",
-    "header": "Header",
-    "image": "Image",
-    "table": "Table",
-    "fence": "BlockCode",
-    "link": "Link",
-    "math": "Math",
     "$label.default_show_toc": "Default On",
     "$label.remove_header_styles": "Remove Header Styles",
     "$label.sortable": "Drag & Drop outline to rearrange",
     "$label.right_click_outline_button_to_toggle": "Shortcut: Right-click Outline Button",
+    "$label.title_bar_buttons": "Title Bar Buttons",
     "$label.width_percent_when_pin_right": "Width When Pinned Right",
     "$label.toc_font_size": "Font Size",
     "$label.show_name.fence": "Code Block",
@@ -1302,7 +1297,13 @@
     "$label.include_headings.math": "Math Block",
     "$title.tocStyle": "TOC Style",
     "$title.name": "Name",
-    "$title.displayHeader": "Display Header in TOC"
+    "$title.displayHeader": "Display Header in TOC",
+    "$option.title_bar_buttons.header": "Header",
+    "$option.title_bar_buttons.image": "Image",
+    "$option.title_bar_buttons.table": "Table",
+    "$option.title_bar_buttons.fence": "BlockCode",
+    "$option.title_bar_buttons.link": "Link",
+    "$option.title_bar_buttons.math": "Math"
   },
   "scrollBookmarker": {
     "pluginName": "Bookmarker",

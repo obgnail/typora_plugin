@@ -846,10 +846,10 @@ const Feature_Watchers = (() => {
             $gte: { evaluate: (actual, expected) => actual >= expected },
             $lt: { evaluate: (actual, expected) => actual < expected },
             $lte: { evaluate: (actual, expected) => actual <= expected },
-            $in: { evaluate: (actual, expected) => Array.isArray(expected) && expected.includes(actual) },
+            $includes: { evaluate: (actual, expected) => expected.includes(actual) },
+            $contains: { evaluate: (actual, expected) => actual.includes(expected) },
             $bool: { evaluate: (actual, expected) => Boolean(actual) === expected },
             $deepEqual: { evaluate: (actual, expected) => utils.deepEqual(actual, expected) },
-            $contains: { evaluate: (actual, expected) => typeof actual === "string" && typeof expected === "string" && actual.includes(expected) },
             $startsWith: { evaluate: (actual, expected) => typeof actual === "string" && typeof expected === "string" && actual.startsWith(expected) },
             $endsWith: { evaluate: (actual, expected) => typeof actual === "string" && typeof expected === "string" && actual.endsWith(expected) },
             $typeof: { evaluate: (actual, expected) => (expected === "object") ? (typeof actual === "object" && actual != null) : (typeof actual === expected) }

@@ -1278,16 +1278,11 @@
   },
   "toc": {
     "pluginName": "大綱目錄",
-    "header": "標題",
-    "image": "圖片",
-    "table": "表格",
-    "fence": "程式碼區塊",
-    "link": "連結",
-    "math": "公式",
     "$label.default_show_toc": "預設啟用",
     "$label.remove_header_styles": "移除標題樣式",
     "$label.sortable": "拖動大綱標題，調整文章結構",
     "$label.right_click_outline_button_to_toggle": "快捷方式：右鍵點擊側邊欄大綱按鈕",
+    "$label.title_bar_buttons": "標題列按鈕",
     "$label.width_percent_when_pin_right": "固定到右側的寬度",
     "$label.toc_font_size": "字體大小",
     "$label.show_name.fence": "程式碼區塊",
@@ -1302,7 +1297,13 @@
     "$label.include_headings.math": "公式區塊",
     "$title.tocStyle": "大綱目錄樣式",
     "$title.name": "名稱",
-    "$title.displayHeader": "目錄中顯示標題"
+    "$title.displayHeader": "目錄中顯示標題",
+    "$option.title_bar_buttons.header": "標題",
+    "$option.title_bar_buttons.image": "圖片",
+    "$option.title_bar_buttons.table": "表格",
+    "$option.title_bar_buttons.fence": "程式碼區塊",
+    "$option.title_bar_buttons.link": "連結",
+    "$option.title_bar_buttons.math": "公式"
   },
   "scrollBookmarker": {
     "pluginName": "書籤管理",

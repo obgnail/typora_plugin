@@ -1142,6 +1142,15 @@ default_show_toc = false
 toc_font_size = "1em"
 
 # ------------------- 展示 -------------------
+# 标题栏按钮
+#   header: 标题
+#   image:  图片
+#   table:  表格
+#   fence:  代码块
+#   link:   链接
+#   math:   公式
+title_bar_buttons = ["header", "image", "table", "fence", "link", "math"]
+
 # 用于配置在大纲中显示的特殊元素对应的名称
 show_name = { fence = "Fence", image = "Image", table = "Table", link = "Link", math = "Math" }
 

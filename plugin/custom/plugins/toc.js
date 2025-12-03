@@ -1,22 +1,23 @@
 class TOCPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
-    html = () => `
-        <div id="plugin-toc" class="plugin-common-modal plugin-common-hidden">
-            <div class="grip-right"></div>
-            <div class="plugin-toc-wrap">
-                <div class="plugin-toc-header">
-                    <div class="plugin-toc-icon" data-type="header" ty-hint="${this.i18n.t("header")}"><div class="fa fa-header"></div></div>
-                    <div class="plugin-toc-icon" data-type="image" ty-hint="${this.i18n.t("image")}"><div class="fa fa-image"></div></div>
-                    <div class="plugin-toc-icon" data-type="table" ty-hint="${this.i18n.t("table")}"><div class="fa fa-table"></div></div>
-                    <div class="plugin-toc-icon" data-type="fence" ty-hint="${this.i18n.t("fence")}"><div class="fa fa-code"></div></div>
-                    <div class="plugin-toc-icon" data-type="link" ty-hint="${this.i18n.t("link")}"><div class="fa fa-link"></div></div>
-                    <div class="plugin-toc-icon" data-type="math" ty-hint="${this.i18n.t("math")}"><div class="fa fa-dollar"></div></div>
+    html = () => {
+        const ICONS = { header: "fa-header", image: "fa-image", table: "fa-table", fence: "fa-code", link: "fa-link", math: "fa-dollar" }
+        const buttons = this.config.title_bar_buttons.map(btn => {
+            const icon = ICONS[btn]
+            const hint = this.i18n.t(`$option.title_bar_buttons.${btn}`)
+            return `<div class="plugin-toc-icon" data-type="${btn}" ty-hint="${hint}"><div class="fa ${icon}"></div></div>`
+        })
+        const cls = buttons.length > 1 ? "plugin-toc-header" : "plugin-toc-header plugin-common-hidden"
+        return `
+            <div id="plugin-toc" class="plugin-common-modal plugin-common-hidden">
+                <div class="grip-right"></div>
+                <div class="plugin-toc-wrap">
+                    <div class="${cls}">${buttons.join("")}</div>
+                    <div class="plugin-toc-list"></div>
                 </div>
-                <div class="plugin-toc-list"></div>
-            </div>
-        </div>
-    `
+            </div>`
+    }
 
     hotkey = () => [this.config.hotkey]
 
@@ -38,9 +39,9 @@ class TOCPlugin extends BaseCustomPlugin {
             eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.refresh, 300));
             this.utils.decorate(() => File?.editor?.library?.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader)
             const resetPosition = () => {
-                const { right } = this.entities.content.getBoundingClientRect();
-                const { right: modalRight } = this.entities.modal.getBoundingClientRect();
-                Object.assign(this.entities.modal.style, { left: `${right}px`, width: `${modalRight - right}px` });
+                const { right: contentRight } = this.entities.content.getBoundingClientRect()
+                const { right: modalRight } = this.entities.modal.getBoundingClientRect()
+                Object.assign(this.entities.modal.style, { left: `${contentRight}px`, width: `${modalRight - contentRight}px` })
             }
             eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition);
             eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition);
@@ -66,9 +67,7 @@ class TOCPlugin extends BaseCustomPlugin {
 
             if (this.config.right_click_outline_button_to_toggle) {
                 const panelTitle = document.querySelector("#info-panel-tab-outline .info-panel-tab-title")
-                if (panelTitle) {
-                    panelTitle.addEventListener("mousedown", ev => ev.button === 2 && this.toggle())
-                }
+                panelTitle?.addEventListener("mousedown", ev => ev.button === 2 && this.toggle())
             }
         }
         const onResize = () => {
@@ -78,10 +77,9 @@ class TOCPlugin extends BaseCustomPlugin {
             let contentMaxRight = 0;
             const onMouseDown = () => {
                 const contentRect = this.entities.content.getBoundingClientRect();
+                const modalRect = this.entities.modal.getBoundingClientRect()
                 contentStartRight = contentRect.right;
                 contentStartWidth = contentRect.width;
-
-                const modalRect = this.entities.modal.getBoundingClientRect();
                 modalStartLeft = modalRect.left;
                 contentMaxRight = modalRect.right - 100;
             }
@@ -225,8 +223,8 @@ class TOCPlugin extends BaseCustomPlugin {
     }
 
     getCurrentType = () => {
-        const select = this.entities.header.querySelector(".select");
-        return select ? select.dataset.type : "header";
+        const btn = this.entities.header.querySelector(".select") || this.entities.header.firstElementChild
+        return btn?.dataset.type ?? "header"
     }
 
     refresh = type => {
