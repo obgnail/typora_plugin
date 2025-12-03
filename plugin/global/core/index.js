@@ -54,9 +54,13 @@ async function loadPlugins(container, settings) {
     eventHub.publishEvent(eventHub.eventType.allPluginsHadInjected)
     await _postprocessMixins(...Object.values(utils.mixins))
 
-    // Due to being an asynchronous function, some events (such as afterAddCodeBlock) may have been missed. Reload it
+    // Re-emit events (e.g., afterAddCodeBlock) that may have been missed due to async execution.
     if (File.getMountFolder() != null) {
-        setTimeout(utils.reload, 50)
+        setTimeout(() => {
+            const filePath = utils.getFilePath()
+            Object.keys(File.editor.fences.queue).forEach(cid => File.editor.fences.addCodeBlock(cid))
+            if (filePath) File.editor.library.openFile(filePath)
+        }, 50)
     }
 }
 

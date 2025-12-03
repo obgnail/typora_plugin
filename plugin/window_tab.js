@@ -67,7 +67,6 @@ class WindowTabPlugin extends BasePlugin {
         const handleLifeCycle = () => {
             this._hideTabBar();
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, this.openTab);
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.firstFileInit, this.openTab);
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this._scrollContent);
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial");
             const isHeaderReady = () => this.utils.isBetaVersion ? this.entities.header.getBoundingClientRect().height : true

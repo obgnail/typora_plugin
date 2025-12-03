@@ -9,7 +9,6 @@ class EventHub {
         this.eventType = Object.freeze({
             allCustomPluginsHadInjected: "allCustomPluginsHadInjected", // Custom plugins loaded
             allPluginsHadInjected: "allPluginsHadInjected",             // All plugins loaded
-            firstFileInit: "firstFileInit",                             // File loaded after opening Typora
             beforeFileOpen: "beforeFileOpen",                           // Before opening a file
             fileOpened: "fileOpened",                                   // After opening a file
             otherFileOpened: "otherFileOpened",                         // Different from fileOpened: reopening the current tab won't trigger otherFileOpened, but fileOpened will
@@ -45,6 +44,14 @@ class EventHub {
         for (const [order, funcList] of Object.entries(this.eventMap[type])) {
             this.eventMap[type][order] = funcList.filter(lis => lis !== listener);
         }
+    }
+
+    once = (type, listener, order = 0) => {
+        const finalListener = (...payload) => {
+            listener.apply(this, payload)
+            this.removeEventListener(type, finalListener)
+        }
+        this.addEventListener(type, finalListener, order)
     }
 
     publishEvent = (type, ...payload) => {
@@ -94,11 +101,6 @@ class EventHub {
                 }
             })
         })
-
-        this.utils.pollUntil(() => File && this.utils.getFilePath(), () => {
-            const filePath = this.utils.getFilePath();
-            if (filePath) this.publishEvent(this.eventType.firstFileInit, filePath)
-        });
 
         this.utils.decorate(() => File?.editor?.fences, "addCodeBlock",
             (...args) => {
@@ -164,8 +166,6 @@ class EventHub {
     afterProcess = () => {
         delete this.eventMap[this.eventType.allCustomPluginsHadInjected];
         delete this.eventMap[this.eventType.allPluginsHadInjected];
-        setTimeout(() => delete this.eventMap[this.eventType.firstFileInit], 1000);
-
         const funcList = this.eventMap[this.eventType.fileEdited];
         if (!funcList) {
             delete this.eventMap[this.eventType.fileEdited];

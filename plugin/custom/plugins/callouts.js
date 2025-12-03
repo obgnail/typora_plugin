@@ -17,13 +17,11 @@ class CalloutsPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        const { eventHub, exportHelper } = this.utils;
-        eventHub.addEventListener(eventHub.eventType.firstFileInit, this.range);
-        eventHub.addEventListener(eventHub.eventType.fileEdited, this.range);
-        exportHelper.register("callouts", this.beforeExport, this.afterExport);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.setCallouts)
+        this.utils.exportHelper.register("callouts", this.beforeExport, this.afterExport)
     }
 
-    range = () => {
+    setCallouts = () => {
         this.utils.entities.querySelectorAllInWrite("blockquote > p:first-child").forEach(p => {
             const blockquote = p.parentElement;
             const result = p.textContent.match(/^\[!(?<type>\w+)\](?<fold>[+-]?)/);
