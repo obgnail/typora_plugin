@@ -47,7 +47,7 @@ class CollapseTablePlugin extends BasePlugin {
         meta.target = figure
         return this.i18n.fillActions([
             { act_value: "convert_current", act_hint, act_disabled: !figure },
-            { act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE }
+            { act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE, act_name: this.i18n.t("$label.RECORD_COLLAPSE") }
         ])
     }
 

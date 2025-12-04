@@ -25,15 +25,15 @@ class AutoNumberPlugin extends BasePlugin {
             act_value: "set_layout" + this.separator + lo.name,
             act_state: lo.selected,
         }))
-        return this.i18n.fillActions([
-            { act_value: "toggle_outline", act_state: this.config.ENABLE_OUTLINE },
-            { act_value: "toggle_content", act_state: this.config.ENABLE_CONTENT },
-            { act_value: "toggle_toc", act_state: this.config.ENABLE_TOC },
-            { act_value: "toggle_table", act_state: this.config.ENABLE_TABLE },
-            { act_value: "toggle_image", act_state: this.config.ENABLE_IMAGE },
-            { act_value: "toggle_fence", act_state: this.config.ENABLE_FENCE },
+        return [
+            { act_value: "toggle_outline", act_state: this.config.ENABLE_OUTLINE, act_name: this.i18n.t("$label.ENABLE_OUTLINE") },
+            { act_value: "toggle_content", act_state: this.config.ENABLE_CONTENT, act_name: this.i18n.t("$label.ENABLE_CONTENT") },
+            { act_value: "toggle_toc", act_state: this.config.ENABLE_TOC, act_name: this.i18n.t("$label.ENABLE_TOC") },
+            { act_value: "toggle_table", act_state: this.config.ENABLE_TABLE, act_name: this.i18n.t("$label.ENABLE_TABLE") },
+            { act_value: "toggle_image", act_state: this.config.ENABLE_IMAGE, act_name: this.i18n.t("$label.ENABLE_IMAGE") },
+            { act_value: "toggle_fence", act_state: this.config.ENABLE_FENCE, act_name: this.i18n.t("$label.ENABLE_FENCE") },
             ...layouts,
-        ])
+        ]
     }
 
     call = action => {

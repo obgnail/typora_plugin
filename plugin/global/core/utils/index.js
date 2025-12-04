@@ -706,6 +706,7 @@ class utils {
     }
 
     static insertStyle = (id, css) => {
+        if (!css) return
         const style = document.createElement("style");
         style.id = id;
         style.appendChild(document.createTextNode(css));

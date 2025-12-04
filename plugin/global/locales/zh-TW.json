@@ -464,7 +464,6 @@
   },
   "resize_table": {
     "pluginName": "表格調整",
-    "act.record_resize_state": "記住表格縮放狀態",
     "$label.RECORD_RESIZE": "記憶放縮狀態",
     "$label.REMOVE_MIN_CELL_WIDTH": "移除單元格最小寬度限制",
     "$label.DRAG_THRESHOLD": "可拖曳識別範圍"
@@ -604,12 +603,6 @@
   },
   "auto_number": {
     "pluginName": "自動編號",
-    "act.toggle_outline": "大綱",
-    "act.toggle_content": "正文",
-    "act.toggle_toc": "TOC",
-    "act.toggle_table": "表格",
-    "act.toggle_image": "圖片",
-    "act.toggle_fence": "程式碼區塊",
     "$option.ALIGN.left": "靠左",
     "$option.ALIGN.right": "靠右",
     "$option.ALIGN.center": "居中",
@@ -774,14 +767,12 @@
   },
   "collapse_list": {
     "pluginName": "清單摺疊",
-    "act.record_collapse_state": "記住清單摺疊狀態",
     "$label.RECORD_COLLAPSE": "記憶摺疊狀態",
     "$label.TRIANGLE_COLOR": "縮放標誌顏色"
   },
   "collapse_table": {
     "pluginName": "表格摺疊",
     "act.convert_current": "摺疊 / 展開表格",
-    "act.record_collapse_state": "記住表格摺疊狀態",
     "actHint.convert_current": "請將游標定位到表格後點擊滑鼠右鍵",
     "$label.RECORD_COLLAPSE": "記憶摺疊狀態"
   },
@@ -843,8 +834,6 @@
   },
   "cipher": {
     "pluginName": "加密檔案",
-    "act.encrypt": "加密",
-    "act.decrypt": "解密",
     "msgBox.encrypt.onCiphered": "檔案已是加密格式",
     "msgBox.encrypt.onPlain": "加密後嚴禁修改檔案",
     "msgBox.decrypt.onPlain": "檔案為非加密格式",
@@ -878,19 +867,6 @@
   },
   "easy_modify": {
     "pluginName": "編輯工具",
-    "act.copy_full_path": "複製完整路徑",
-    "act.increase_headers_level": "提升選取段落的標題等級",
-    "act.decrease_headers_level": "降低選取段落的標題等級",
-    "act.convert_image_to_base64": "圖片轉 Base64 編碼",
-    "act.convert_all_images_to_base64": "全部圖片轉 Base64 編碼",
-    "act.unwrap_outermost_block": "移除外層區塊",
-    "act.convert_crlf_to_lf": "換行符號 CRLF 轉為 LF",
-    "act.convert_lf_to_crlf": "換行符號 LF 轉為 CRLF",
-    "act.filter_invisible_characters": "移除不可見字元",
-    "act.trailing_white_space": "添加結尾空格",
-    "act.insert_mermaid_mindmap": "插入心智圖：mindmap",
-    "act.insert_mermaid_graph": "插入心智圖：graph",
-    "act.extract_rang_to_new_file": "提取選取範圍文字到新檔案",
     "act.extract_rang_to_new_file.noSelection": "請選取待提取的文字段落",
     "act.extract_rang_to_new_file.positionEmptyLine": "請將游標定位到空白行",
     "act.extract_rang_to_new_file.filename": "檔案名稱",
@@ -915,7 +891,7 @@
     "$label.HOTKEY_UNWRAP_OUTERMOST_BLOCK": "移除外層區塊",
     "$label.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE": "提取選取文字到新檔案",
     "$label.HOTKEY_INSERT_MERMAID_MINDMAP": "插入心智圖 (mindmap)",
-    "$label.HOTKEY_INSERT_MERMAID_GRAPH": "插入流程圖 (graph)",
+    "$label.HOTKEY_INSERT_MERMAID_GRAPH": "插入心智圖 (graph)",
     "$label.HOTKEY_CONVERT_CRLF_TO_LF": "換行符 CRLF 替換為 LF",
     "$label.HOTKEY_CONVERT_LF_TO_CRLF": "換行符 LF 替換為 CRLF",
     "$label.HOTKEY_FILTER_INVISIBLE_CHARACTERS": "移除不可見字元",
@@ -1042,12 +1018,8 @@
   },
   "article_uploader": {
     "pluginName": "文章上傳",
-    "act.upload_to_csdn": "CSDN",
-    "act.upload_to_wordpress": "WordPress",
-    "act.upload_to_cn_blog": "博客园",
-    "act.upload_to_all_site": "上傳到所有平台",
     "$label.HIDE": "隱藏右鍵選單上傳選項",
-    "$label.UPLOAD_ALL_HOTKEY": "全部",
+    "$label.UPLOAD_ALL_HOTKEY": "所有平台",
     "$label.UPLOAD_CNBLOG_HOTKEY": "部落格園",
     "$label.UPLOAD_WORDPRESS_HOTKEY": "WordPress",
     "$label.UPLOAD_CSDN_HOTKEY": "CSDN",
@@ -1079,7 +1051,22 @@
   },
   "static_markers": {
     "pluginName": "標記常顯",
-    "act.toggle_state": "启用標記常顯"
+    "act.toggle_state": "启用標記常顯",
+    "$title.STATIC_MARKERS": "常顯標記",
+    "$option.STATIC_MARKERS.strong": "粗體",
+    "$option.STATIC_MARKERS.em": "斜體",
+    "$option.STATIC_MARKERS.del": "刪除線",
+    "$option.STATIC_MARKERS.underline": "底線",
+    "$option.STATIC_MARKERS.highlight": "高亮",
+    "$option.STATIC_MARKERS.superscript": "上標",
+    "$option.STATIC_MARKERS.subscript": "下標",
+    "$option.STATIC_MARKERS.code": "代碼",
+    "$option.STATIC_MARKERS.inlineMath": "行內公式",
+    "$option.STATIC_MARKERS.image": "圖片",
+    "$option.STATIC_MARKERS.link": "連結",
+    "$option.STATIC_MARKERS.emoji": "表情",
+    "$option.STATIC_MARKERS.footnote": "註腳",
+    "$option.STATIC_MARKERS.inlineHTML": "行內 HTML"
   },
   "file_tree_plus": {
     "pluginName": "全格式側邊欄",

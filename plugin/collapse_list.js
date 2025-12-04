@@ -68,9 +68,7 @@ class CollapseListPlugin extends BasePlugin {
         }
     }
 
-    getDynamicActions = () => this.i18n.fillActions([
-        { act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE }
-    ])
+    getDynamicActions = () => [{ act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE, act_name: this.i18n.t("$label.RECORD_COLLAPSE") }]
 
     call = action => {
         if (action === "record_collapse_state") {

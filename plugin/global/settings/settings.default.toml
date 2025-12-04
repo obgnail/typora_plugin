@@ -2578,6 +2578,24 @@ NAME = ""
 #   留空则不设置快捷键
 HOTKEY = ""
 
+# ------------------- 行为 -------------------
+# 静态标记
+#   strong:      粗体
+#   em:          斜体
+#   del:         删除线
+#   underline:   下划线
+#   highlight:   高亮
+#   superscript: 上标
+#   subscript:   下标
+#   code:        代码
+#   inlineMath:  行内公式
+#   image:       图片
+#   link:        链接
+#   emoji:       表情
+#   footnote:    脚注
+#   inlineHTML:  行内 HTML
+STATIC_MARKERS = ["strong", "em", "del", "underline", "highlight", "superscript", "subscript", "code", "inlineMath", "image", "errorImage", "link", "footnote"]
+
 
 ################### file_tree_plus ###################
 [file_tree_plus]

@@ -464,7 +464,6 @@
   },
   "resize_table": {
     "pluginName": "Table Resizer",
-    "act.record_resize_state": "Remember Table Resize State",
     "$label.RECORD_RESIZE": "Remember Resize State",
     "$label.REMOVE_MIN_CELL_WIDTH": "Remove Minimum Cell Width Limit",
     "$label.DRAG_THRESHOLD": "Drag Threshold"
@@ -604,12 +603,6 @@
   },
   "auto_number": {
     "pluginName": "Auto Numbering",
-    "act.toggle_outline": "Outline",
-    "act.toggle_content": "Content",
-    "act.toggle_toc": "TOC",
-    "act.toggle_table": "Table",
-    "act.toggle_image": "Image",
-    "act.toggle_fence": "BlockCode",
     "$option.ALIGN.left": "Left",
     "$option.ALIGN.right": "Right",
     "$option.ALIGN.center": "Center",
@@ -774,14 +767,12 @@
   },
   "collapse_list": {
     "pluginName": "List Folding",
-    "act.record_collapse_state": "Remember List Collapse State",
     "$label.RECORD_COLLAPSE": "Remember Collapse State",
     "$label.TRIANGLE_COLOR": "Expand Icon Color"
   },
   "collapse_table": {
     "pluginName": "Table Folding",
     "act.convert_current": "Collapse / Expand Table",
-    "act.record_collapse_state": "Remember Table Collapse State",
     "actHint.convert_current": "Please position the cursor on the table and right-click",
     "$label.RECORD_COLLAPSE": "Remember Collapse State"
   },
@@ -843,8 +834,6 @@
   },
   "cipher": {
     "pluginName": "Cipher",
-    "act.encrypt": "Encrypt",
-    "act.decrypt": "Decrypt",
     "msgBox.encrypt.onCiphered": "The file is already encrypted",
     "msgBox.encrypt.onPlain": "Do not modify the file after encryption",
     "msgBox.decrypt.onPlain": "The file is not encrypted",
@@ -878,19 +867,6 @@
   },
   "easy_modify": {
     "pluginName": "Easy Modify",
-    "act.copy_full_path": "Copy Full Path of Header",
-    "act.increase_headers_level": "Increase Header Level of Selected Section",
-    "act.decrease_headers_level": "Decrease Header Level of Selected Section",
-    "act.convert_image_to_base64": "Convert Image to Base64 Encoding",
-    "act.convert_all_images_to_base64": "Convert All Images to Base64 Encoding",
-    "act.unwrap_outermost_block": "Un-nest Content",
-    "act.convert_crlf_to_lf": "Convert CRLF to LF",
-    "act.convert_lf_to_crlf": "Convert LF to CRLF",
-    "act.filter_invisible_characters": "Remove Invisible Characters",
-    "act.trailing_white_space": "Add Trailing Whitespace",
-    "act.insert_mermaid_mindmap": "Insert MindMap: mindmap",
-    "act.insert_mermaid_graph": "Insert MindMap: graph",
-    "act.extract_rang_to_new_file": "Extract Selected Text to New File",
     "act.extract_rang_to_new_file.noSelection": "Please select the text to be extracted",
     "act.extract_rang_to_new_file.positionEmptyLine": "Please place the cursor on an empty line",
     "act.extract_rang_to_new_file.filename": "Filename",
@@ -1042,12 +1018,8 @@
   },
   "article_uploader": {
     "pluginName": "Article Uploader",
-    "act.upload_to_csdn": "CSDN",
-    "act.upload_to_wordpress": "WordPress",
-    "act.upload_to_cn_blog": "CN Blog",
-    "act.upload_to_all_site": "Upload to All Platforms",
     "$label.HIDE": "Hide Upload Option in Right-Click Menu",
-    "$label.UPLOAD_ALL_HOTKEY": "All",
+    "$label.UPLOAD_ALL_HOTKEY": "All Site",
     "$label.UPLOAD_CNBLOG_HOTKEY": "CNBlog",
     "$label.UPLOAD_WORDPRESS_HOTKEY": "WordPress",
     "$label.UPLOAD_CSDN_HOTKEY": "CSDN",
@@ -1079,7 +1051,22 @@
   },
   "static_markers": {
     "pluginName": "Static Markers",
-    "act.toggle_state": "Enable Static Markers"
+    "act.toggle_state": "Enable Static Markers",
+    "$title.STATIC_MARKERS": "Static Markers",
+    "$option.STATIC_MARKERS.strong": "Strong",
+    "$option.STATIC_MARKERS.em": "Emphasis",
+    "$option.STATIC_MARKERS.del": "Strike",
+    "$option.STATIC_MARKERS.underline": "Underline",
+    "$option.STATIC_MARKERS.highlight": "Highlight",
+    "$option.STATIC_MARKERS.superscript": "Superscript",
+    "$option.STATIC_MARKERS.subscript": "Subscript",
+    "$option.STATIC_MARKERS.code": "Code",
+    "$option.STATIC_MARKERS.inlineMath": "Inline Math",
+    "$option.STATIC_MARKERS.image": "Image",
+    "$option.STATIC_MARKERS.link": "Link",
+    "$option.STATIC_MARKERS.emoji": "Emoji",
+    "$option.STATIC_MARKERS.footnote": "Footnote",
+    "$option.STATIC_MARKERS.inlineHTML": "Inline HTML"
   },
   "file_tree_plus": {
     "pluginName": "File Tree Plus",

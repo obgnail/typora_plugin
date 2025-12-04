@@ -464,7 +464,6 @@
   },
   "resize_table": {
     "pluginName": "表格调整",
-    "act.record_resize_state": "记住表格缩放状态",
     "$label.RECORD_RESIZE": "记忆放缩状态",
     "$label.REMOVE_MIN_CELL_WIDTH": "移除单元格最小宽度限制",
     "$label.DRAG_THRESHOLD": "可拖拽识别范围"
@@ -604,12 +603,6 @@
   },
   "auto_number": {
     "pluginName": "自动编号",
-    "act.toggle_outline": "大纲",
-    "act.toggle_content": "正文",
-    "act.toggle_toc": "TOC",
-    "act.toggle_table": "表格",
-    "act.toggle_image": "图片",
-    "act.toggle_fence": "代码块",
     "$option.ALIGN.left": "靠左",
     "$option.ALIGN.right": "靠右",
     "$option.ALIGN.center": "居中",
@@ -774,14 +767,12 @@
   },
   "collapse_list": {
     "pluginName": "列表折叠",
-    "act.record_collapse_state": "记住列表折叠状态",
     "$label.RECORD_COLLAPSE": "记忆折叠状态",
     "$label.TRIANGLE_COLOR": "缩放标志颜色"
   },
   "collapse_table": {
     "pluginName": "表格折叠",
     "act.convert_current": "折叠 / 展开表格",
-    "act.record_collapse_state": "记住表格折叠状态",
     "actHint.convert_current": "请将光标定位到表格后点击鼠标右键",
     "$label.RECORD_COLLAPSE": "记忆折叠状态"
   },
@@ -843,8 +834,6 @@
   },
   "cipher": {
     "pluginName": "加密文件",
-    "act.encrypt": "加密",
-    "act.decrypt": "解密",
     "msgBox.encrypt.onCiphered": "文件已是加密格式",
     "msgBox.encrypt.onPlain": "加密后严禁修改文件",
     "msgBox.decrypt.onPlain": "文件为非加密格式",
@@ -878,19 +867,6 @@
   },
   "easy_modify": {
     "pluginName": "编辑工具",
-    "act.copy_full_path": "复制标题路径",
-    "act.increase_headers_level": "提升选中文段的标题等级",
-    "act.decrease_headers_level": "降低选中文段的标题等级",
-    "act.convert_image_to_base64": "图片转 Base64 编码",
-    "act.convert_all_images_to_base64": "全部图片转 Base64 编码",
-    "act.unwrap_outermost_block": "移除外层区块",
-    "act.convert_crlf_to_lf": "换行符 CRLF 转为 LF",
-    "act.convert_lf_to_crlf": "换行符 LF 转为 CRLF",
-    "act.filter_invisible_characters": "移除不可见字符",
-    "act.trailing_white_space": "添加结尾空格",
-    "act.insert_mermaid_mindmap": "插入思维导图：mindmap",
-    "act.insert_mermaid_graph": "插入思维导图：graph",
-    "act.extract_rang_to_new_file": "提取选区文字到新文件",
     "act.extract_rang_to_new_file.noSelection": "请框选待提取的文段",
     "act.extract_rang_to_new_file.positionEmptyLine": "请将光标定位到空白行",
     "act.extract_rang_to_new_file.filename": "文件名",
@@ -1042,12 +1018,8 @@
   },
   "article_uploader": {
     "pluginName": "文章上传",
-    "act.upload_to_csdn": "CSDN",
-    "act.upload_to_wordpress": "WordPress",
-    "act.upload_to_cn_blog": "博客园",
-    "act.upload_to_all_site": "上传到所有平台",
     "$label.HIDE": "隐藏右键菜单上传选项",
-    "$label.UPLOAD_ALL_HOTKEY": "全部",
+    "$label.UPLOAD_ALL_HOTKEY": "所有平台",
     "$label.UPLOAD_CNBLOG_HOTKEY": "博客园",
     "$label.UPLOAD_WORDPRESS_HOTKEY": "WordPress",
     "$label.UPLOAD_CSDN_HOTKEY": "CSDN",
@@ -1079,7 +1051,22 @@
   },
   "static_markers": {
     "pluginName": "标记常显",
-    "act.toggle_state": "启用标记常显"
+    "act.toggle_state": "启用标记常显",
+    "$title.STATIC_MARKERS": "常显标记",
+    "$option.STATIC_MARKERS.strong": "粗体",
+    "$option.STATIC_MARKERS.em": "斜体",
+    "$option.STATIC_MARKERS.del": "删除线",
+    "$option.STATIC_MARKERS.underline": "下划线",
+    "$option.STATIC_MARKERS.highlight": "高亮",
+    "$option.STATIC_MARKERS.superscript": "上标",
+    "$option.STATIC_MARKERS.subscript": "下标",
+    "$option.STATIC_MARKERS.code": "代码",
+    "$option.STATIC_MARKERS.inlineMath": "行内公式",
+    "$option.STATIC_MARKERS.image": "图片",
+    "$option.STATIC_MARKERS.link": "链接",
+    "$option.STATIC_MARKERS.emoji": "表情",
+    "$option.STATIC_MARKERS.footnote": "脚注",
+    "$option.STATIC_MARKERS.inlineHTML": "行内 HTML"
   },
   "file_tree_plus": {
     "pluginName": "全格式侧边栏",

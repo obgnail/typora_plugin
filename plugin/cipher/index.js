@@ -8,10 +8,10 @@ class CipherPlugin extends BasePlugin {
         this.AES_ECB = null
         this.key = this.config.SECRET_KEY
         this.showMessageBox = this.config.SHOW_HINT_MODAL
-        this.staticActions = this.i18n.fillActions([
-            { act_value: "encrypt", act_hotkey: this.config.ENCRYPT_HOTKEY },
-            { act_value: "decrypt", act_hotkey: this.config.DECRYPT_HOTKEY },
-        ])
+        this.staticActions = [
+            { act_value: "encrypt", act_hotkey: this.config.ENCRYPT_HOTKEY, act_name: this.i18n.t("$label.ENCRYPT_HOTKEY") },
+            { act_value: "decrypt", act_hotkey: this.config.DECRYPT_HOTKEY, act_name: this.i18n.t("$label.DECRYPT_HOTKEY") },
+        ]
     }
 
     call = async action => {

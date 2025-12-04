@@ -1,11 +1,11 @@
 class ArticleUploaderPlugin extends BasePlugin {
     init = () => {
-        this.staticActions = this.i18n.fillActions([
-            { act_value: "upload_to_csdn" },
-            { act_value: "upload_to_wordpress" },
-            { act_value: "upload_to_cn_blog" },
-            { act_value: "upload_to_all_site" },
-        ])
+        this.staticActions = [
+            { act_value: "upload_to_csdn", act_name: this.i18n.t("$label.UPLOAD_CSDN_HOTKEY") },
+            { act_value: "upload_to_wordpress", act_name: this.i18n.t("$label.UPLOAD_WORDPRESS_HOTKEY") },
+            { act_value: "upload_to_cn_blog", act_name: this.i18n.t("$label.UPLOAD_CNBLOG_HOTKEY") },
+            { act_value: "upload_to_all_site", act_name: this.i18n.t("$label.UPLOAD_ALL_HOTKEY") },
+        ]
     }
 
     hotkey = () => [

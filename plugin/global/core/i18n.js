@@ -64,10 +64,10 @@ const i18n = {
         t: (key, variables) => i18n.t(field, key, variables),
         array: (keys, prefix) => i18n.array(field, keys, prefix),
         entries: (keys, prefix) => i18n.entries(field, keys, prefix),
-        fillActions: (actions) => {
+        fillActions: (actions, prefix = "act.") => {
             for (const act of actions) {
                 if (!act.act_name && act.act_value) {
-                    act.act_name = i18n.t(field, `act.${act.act_value}`)
+                    act.act_name = i18n.t(field, prefix + act.act_value)
                 }
             }
             return actions

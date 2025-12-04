@@ -20,17 +20,19 @@ class EasyModifyPlugin extends BasePlugin {
         const defaultDoc = this.i18n.t("actHint.defaultDoc")
 
         this._showWarnDialog = true
-        this.staticActions = this.i18n.fillActions([
-            { act_value: "copy_full_path", act_hotkey: this.config.HOTKEY_COPY_FULL_PATH },
-            { act_value: "increase_headers_level", act_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, act_hint: defaultDoc },
-            { act_value: "decrease_headers_level", act_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, act_hint: defaultDoc },
-            { act_value: "unwrap_outermost_block", act_hotkey: this.config.HOTKEY_UNWRAP_OUTERMOST_BLOCK },
-            { act_value: "convert_crlf_to_lf", act_hotkey: this.config.HOTKEY_CONVERT_CRLF_TO_LF, act_hint: notRecommended },
-            { act_value: "convert_lf_to_crlf", act_hotkey: this.config.HOTKEY_CONVERT_LF_TO_CRLF, act_hint: notRecommended },
-            { act_value: "filter_invisible_characters", act_hotkey: this.config.HOTKEY_FILTER_INVISIBLE_CHARACTERS, act_hint: notRecommended },
-            { act_value: "trailing_white_space", act_hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, act_hint: notRecommended },
-        ])
+        this.staticActions = [
+            { act_value: "copy_full_path", ...this._getActionParts("HOTKEY_COPY_FULL_PATH") },
+            { act_value: "increase_headers_level", ...this._getActionParts("HOTKEY_INCREASE_HEADERS_LEVEL"), act_hint: defaultDoc },
+            { act_value: "decrease_headers_level", ...this._getActionParts("HOTKEY_DECREASE_HEADERS_LEVEL"), act_hint: defaultDoc },
+            { act_value: "unwrap_outermost_block", ...this._getActionParts("HOTKEY_UNWRAP_OUTERMOST_BLOCK") },
+            { act_value: "convert_crlf_to_lf", ...this._getActionParts("HOTKEY_CONVERT_CRLF_TO_LF"), act_hint: notRecommended },
+            { act_value: "convert_lf_to_crlf", ...this._getActionParts("HOTKEY_CONVERT_LF_TO_CRLF"), act_hint: notRecommended },
+            { act_value: "filter_invisible_characters", ...this._getActionParts("HOTKEY_FILTER_INVISIBLE_CHARACTERS"), act_hint: notRecommended },
+            { act_value: "trailing_white_space", ...this._getActionParts("HOTKEY_TRAILING_WHITE_SPACE"), act_hint: notRecommended },
+        ]
     }
+
+    _getActionParts = (label) => ({ act_hotkey: this.config[label], act_name: this.i18n.t(`$label.${label}`) })
 
     getDynamicActions = (anchorNode, meta) => {
         const I18N = {
@@ -42,7 +44,7 @@ class EasyModifyPlugin extends BasePlugin {
         const extract = {
             act_value: "extract_rang_to_new_file",
             act_disabled: meta.range.collapsed,
-            act_hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE
+            ...this._getActionParts("HOTKEY_EXTRACT_RANGE_TO_NEW_FILE"),
         }
         if (extract.act_disabled) {
             extract.act_hint = I18N.noSelection
@@ -55,14 +57,14 @@ class EasyModifyPlugin extends BasePlugin {
         const act_disabled = !meta.insertAnchor || meta.insertAnchor.querySelector("p > span")
         const act_hint = act_disabled ? I18N.positionEmptyLine : ""
         const insert = [
-            { act_value: "insert_mermaid_mindmap", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, act_disabled, act_hint },
-            { act_value: "insert_mermaid_graph", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, act_disabled, act_hint },
+            { act_value: "insert_mermaid_mindmap", ...this._getActionParts("HOTKEY_INSERT_MERMAID_MINDMAP"), act_disabled, act_hint },
+            { act_value: "insert_mermaid_graph", ...this._getActionParts("HOTKEY_INSERT_MERMAID_GRAPH"), act_disabled, act_hint },
         ]
         const convert = [
-            { act_value: "convert_image_to_base64", act_hotkey: this.config.HOTKEY_CONVERT_IMAGE_TO_BASE64, act_disabled: !meta.imageAnchor },
-            { act_value: "convert_all_images_to_base64", act_hotkey: this.config.HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64 },
+            { act_value: "convert_image_to_base64", ...this._getActionParts("HOTKEY_CONVERT_IMAGE_TO_BASE64"), act_disabled: !meta.imageAnchor },
+            { act_value: "convert_all_images_to_base64", ...this._getActionParts("HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64") },
         ]
-        return this.i18n.fillActions([...insert, ...convert, extract])
+        return [...insert, ...convert, extract]
     }
 
     dynamicCall = action => this.utils.updateAndCallPluginDynamicAction(this.fixedName, action)

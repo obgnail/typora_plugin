@@ -222,6 +222,9 @@ const OPTIONS = {
         OBJECT_SETTINGS_FORMAT: ["JSON", "TOML", "YAML"],
         DEPENDENCIES_FAILURE_BEHAVIOR: ["readonly", "hide"],
     },
+    static_markers: {
+        STATIC_MARKERS: ["strong", "em", "del", "underline", "highlight", "superscript", "subscript", "code", "inlineMath", "image", "link", "emoji", "footnote", "inlineHTML"],
+    },
     echarts: {
         RENDERER: ["svg", "canvas"],
         EXPORT_TYPE: ["svg", "png", "jpg"],
@@ -1169,6 +1172,7 @@ const SETTING_SCHEMAS = {
     ],
     static_markers: [
         pluginFullBasePropBox,
+        CheckboxBox("STATIC_MARKERS", OPTIONS.static_markers.STATIC_MARKERS),
         handleSettingsBox,
     ],
     file_tree_plus: [
