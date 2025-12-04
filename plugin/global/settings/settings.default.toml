@@ -1414,9 +1414,11 @@ EXCLUDE_LANGUAGE_ON_INDENT = ["python", "yaml", "yml"]
 #   false: 禁用折叠功能，不显示折叠按钮
 ENABLE_FOLD = true
 
-# 折叠行数：折叠代码块成 x 行
-#   必须大于等于 5
-FOLD_LINES = 5
+# 手动折叠保留行数
+MANUAL_FOLD_LINES = 5
+
+# 自动折叠保留行数
+AUTO_FOLD_LINES = 5
 
 # 折叠形式：
 #   hidden: 隐藏
@@ -1431,7 +1433,7 @@ DEFAULT_FOLD = false
 
 # 代码块折叠阈值：开启默认折叠后，仅当代码块行数大于此值时才会被默认折叠
 #   设置为 0 则所有代码块都会被折叠
-DEFAULT_FOLD_THRESHOLD = 5
+DEFAULT_FOLD_THRESHOLD = 10
 
 # 聚焦代码块时展开已折叠的代码块
 # 注意：此选项受 DEFAULT_FOLD_THRESHOLD 影响，若未达到折叠阈值，则不折叠

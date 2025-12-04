@@ -67,9 +67,9 @@ class FenceEnhancePlugin extends BasePlugin {
                 icon.className = feedbackClass
                 setTimeout(() => icon.className = originalClass, this.config.WAIT_RECOVER_INTERVAL)
             }
-            const _getFenceHeight = (cm) => {
+            const _getFenceHeight = (cm, retainedLines) => {
                 const textHeight = cm.display.cachedTextHeight || cm.defaultTextHeight()
-                const height = Math.min(cm.lineCount(), this.config.FOLD_LINES) * textHeight
+                const height = Math.min(cm.lineCount(), retainedLines) * textHeight
                 return height + "px"
             }
             const copyCode = async ({ btn, fence, cid }) => {
@@ -95,19 +95,19 @@ class FenceEnhancePlugin extends BasePlugin {
                 File.editor.fences.formatContent()
                 _showIconFeedback(btn, "fa fa-check", "fa fa-indent")
             }
-            const foldCode = ({ btn, fence, cm }) => {
+            const foldCode = ({ ev, btn, fence, cm }) => {
                 const scroller = cm.display.scroller
                 if (!scroller) return
                 const isDiagram = fence.classList.contains("md-fences-advanced")
                 if (isDiagram) return  // diagram cannot be folded
                 const folded = btn.classList.contains("folded")
-                cm.setSize(null, folded ? "100%" : _getFenceHeight(cm))
+                const retainedLines = ev.isTrusted ? this.config.MANUAL_FOLD_LINES : this.config.AUTO_FOLD_LINES
+                cm.setSize(null, folded ? "100%" : _getFenceHeight(cm, retainedLines))
                 scroller.style.overflowY = folded ? "" : this.config.FOLD_OVERFLOW
                 btn.classList.toggle("folded", !folded)
                 btn.firstElementChild.className = folded ? "fa fa-minus" : "fa fa-plus"
                 if (this.config.AUTO_HIDE) {
-                    const enhance = btn.closest(".fence-enhance")
-                    enhance.style.visibility = folded ? "hidden" : ""
+                    btn.closest(".fence-enhance").style.visibility = folded ? "hidden" : ""
                 }
             }
             const defaultFold = ({ btn, cid }) => {

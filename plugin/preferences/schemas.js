@@ -715,11 +715,12 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Switch("ENABLE_FOLD", fenceEnhanceButtonDep),
             Select("FOLD_OVERFLOW", OPTIONS.fence_enhance.FOLD_OVERFLOW, { dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true } }),
-            Number("FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "FOLD_OVERFLOW" } }),
+            Number("MANUAL_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "FOLD_OVERFLOW" } }),
             Switch("DEFAULT_FOLD", { dependencies: { $follow: "FOLD_OVERFLOW" } }),
             Switch("EXPAND_ON_FOCUS", { dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
             Switch("FOLD_ON_BLUR", { dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
             Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { $and: [{ $follow: "FOLD_OVERFLOW" }, { DEFAULT_FOLD: true }] } }),
+            Number("AUTO_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
         ),
         TableBox(
             "CUSTOM_BUTTONS",
