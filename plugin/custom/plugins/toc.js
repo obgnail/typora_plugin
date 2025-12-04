@@ -51,18 +51,16 @@ class TOCPlugin extends BaseCustomPlugin {
         }
         const onClick = () => {
             this.entities.modal.addEventListener("click", ev => {
-                const node = ev.target.closest(".toc-node")
-                if (node) {
+                const ref = ev.target.closest(".toc-node")?.dataset.ref
+                if (ref) {
                     if (File.editor.sourceView.inSourceMode) {
                         File.toggleSourceMode()
                     }
-                    this.utils.scrollByCid(node.dataset.ref, -1, true)
+                    this.utils.scrollByCid(ref, -1, true)
                     return
                 }
-                const icon = ev.target.closest(".plugin-toc-icon")
-                if (icon) {
-                    this.refresh(icon.dataset.type)
-                }
+                const type = ev.target.closest(".plugin-toc-icon")?.dataset.type
+                if (type) this.refresh(type)
             })
 
             if (this.config.right_click_outline_button_to_toggle) {

@@ -41,10 +41,10 @@ class ReadOnlyPlugin extends BasePlugin {
         const isLink = el => el.closest('#write span[md-inline="link"], #write .md-link')
         const stopEvent = ev => {
             if (File.isLocked) {
-                File.lock()
                 document.activeElement.blur()
                 ev.preventDefault()
                 ev.stopPropagation()
+                File.lock()
             }
         }
         const stopForbiddenKey = ev => {
@@ -59,7 +59,7 @@ class ReadOnlyPlugin extends BasePlugin {
                 ev.preventDefault()
                 return
             }
-            if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY && isLink(ev.target) && !this.utils.metaKeyPressed(ev)) {
+            if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY && !this.utils.metaKeyPressed(ev) && isLink(ev.target)) {
                 ev.stopPropagation()
                 ev.preventDefault()
                 const dict = { ctrlKey: true, metaKey: true, bubbles: true, cancelable: true }
@@ -67,7 +67,7 @@ class ReadOnlyPlugin extends BasePlugin {
             }
         }
 
-        const handlers = { keydown: stopForbiddenKey, compositionstart: stopEvent, paste: stopEvent }
+        const handlers = { keydown: stopForbiddenKey, compositionstart: stopEvent, compositionend: stopEvent, paste: stopEvent }
         if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY || this.config.NO_EXPAND_WHEN_READ_ONLY) {
             handlers.click = openHyperlink
         }

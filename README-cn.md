@@ -731,6 +731,8 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 禁用所见即所得模式下的语法标记自动隐藏功能，让 **、##、_ 等所有 Markdown 标记像在源码模式中一样，永远清晰地展示在您的文本周围。
 
+![static_markers](./assets/static_markers.png)
+
 > 此插件默认关闭，需手动开启。
 
 

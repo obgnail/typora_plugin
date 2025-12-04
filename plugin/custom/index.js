@@ -4,28 +4,26 @@ class CustomPlugin extends BasePlugin {
     beforeProcess = async () => {
         const settings = await this.utils.settings.readCustomPluginSettings()
         const { enable } = await LoadPlugins(settings)
-
-        this.settings = settings // enabled plugins
-        this.plugins = enable    // all plugin configurations
-
+        this.settings = settings  // all plugin settings
+        this.plugins = enable     // all enabled plugins
         await this.fixCallback()
-        this.utils.eventHub.publishEvent(this.utils.eventHub.eventType.allCustomPluginsHadInjected)
     }
 
     hotkey = () => {
-        const isString = s => typeof s === "string"
-        const hotkeys = [];
+        const isStr = s => typeof s === "string"
+        const hotkeys = []
         for (const [fixedName, plugin] of Object.entries(this.plugins)) {
             if (!plugin || !this.utils.hasOverrideCustomPluginFn(plugin, "hotkey")) continue
             try {
-                const hotkey = plugin.hotkey();
-                if (isString(hotkey) || (Array.isArray(hotkey) && hotkey.every(isString))) {
-                    hotkeys.push({ hotkey, callback: plugin.callback });
-                } else if (Array.isArray(hotkey) && hotkey.every(this.utils.isObject)) {
-                    hotkeys.push(...hotkey);
+                const hotkey = plugin.hotkey()
+                const isArr = Array.isArray(hotkey)
+                if (isStr(hotkey) || (isArr && hotkey.every(isStr))) {
+                    hotkeys.push({ hotkey, callback: plugin.callback })
+                } else if (isArr && hotkey.every(this.utils.isObject)) {
+                    hotkeys.push(...hotkey)
                 }
             } catch (e) {
-                console.error("register hotkey error:", fixedName, e);
+                console.error(`Register ${fixedName} hotkey error: ${e}`)
             }
         }
         return hotkeys
@@ -67,7 +65,7 @@ class CustomPlugin extends BasePlugin {
                     }
                 }
             } catch (e) {
-                console.error("plugin selector error:", fixedName, e)
+                console.error(`Plugin ${fixedName} selector error: ${e}`)
             }
 
             if (this.config.HIDE_DISABLE_PLUGINS && act.act_disabled) continue
@@ -78,14 +76,14 @@ class CustomPlugin extends BasePlugin {
     }
 
     call = (fixedName, meta) => {
-        const plugin = this.plugins[fixedName];
-        if (!plugin) return;
+        const plugin = this.plugins[fixedName]
+        if (!plugin) return
         try {
-            const selector = plugin.selector(true);
-            const target = selector ? meta.target.closest(selector) : meta.target;
-            plugin.callback(target);
+            const selector = plugin.selector(true)
+            const target = selector ? meta.target.closest(selector) : meta.target
+            plugin.callback(target)
         } catch (e) {
-            console.error("plugin callback error", plugin.fixedName, e);
+            console.error(`Plugin ${plugin.fixedName} callback error: ${e}`)
         }
     }
 

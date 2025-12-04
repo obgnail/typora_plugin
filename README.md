@@ -639,6 +639,8 @@ Say goodbye to distracting format refreshes. This plugin keeps your Markdown syn
 
 This plugin disables the auto-hiding feature for syntax markers in WYSIWYG mode. It ensures that all Markdown characters—like **, ##, and _—remain persistently visible around your text, just as they would in a source code editor.
 
+![static_markers](./assets/static_markers.png)
+
 > This plugin is disabled by default and needs to be manually enabled.
 
 ### file_tree_plus：Display non-Markdown files in the sidebar×

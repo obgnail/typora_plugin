@@ -5,9 +5,8 @@ class EventHub {
     constructor(utils) {
         this.utils = utils
         this.observer = null
-        this.eventMap = Object.create(null)  // { eventType: {order: [listener]} }
+        this.eventMap = Object.create(null)  // { eventType: { order: [listener] } }
         this.eventType = Object.freeze({
-            allCustomPluginsHadInjected: "allCustomPluginsHadInjected", // Custom plugins loaded
             allPluginsHadInjected: "allPluginsHadInjected",             // All plugins loaded
             beforeFileOpen: "beforeFileOpen",                           // Before opening a file
             fileOpened: "fileOpened",                                   // After opening a file
@@ -164,7 +163,6 @@ class EventHub {
     }
 
     afterProcess = () => {
-        delete this.eventMap[this.eventType.allCustomPluginsHadInjected];
         delete this.eventMap[this.eventType.allPluginsHadInjected];
         const funcList = this.eventMap[this.eventType.fileEdited];
         if (!funcList) {
