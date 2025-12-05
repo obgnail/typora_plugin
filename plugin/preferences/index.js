@@ -487,9 +487,14 @@ class PreferencesPlugin extends BasePlugin {
                     _disableOptions(field, "global", "preferences")
                 }
             },
-            "file_tree_plus.ENABLE": (field, data) => {
+            "file_tree_plus.SHOW_ANY_EXT_FILE": (field, data) => {
                 if (!File.SupportedFiles) {
                     _incompatibleSwitch(field, data)
+                }
+            },
+            "file_tree_plus.KEEP_FOLD_STATE": (field, data) => {
+                if (!File.option.canCollapseOutlinePanel) {
+                    _incompatibleSwitch(field, data,this.i18n._t("file_tree_plus", "$tooltip.canCollapseOutlinePanel"))
                 }
             },
             "markdownLint.rule_config": (field, data, box) => {

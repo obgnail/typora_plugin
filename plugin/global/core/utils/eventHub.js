@@ -90,7 +90,7 @@ class EventHub {
         )
 
         this.utils.pollUntil(() => File, () => {
-            const attr = File.loadInitData ? "loadInitData" : "loadFile";
+            const attr = File.loadInitData ? "loadInitData" : "loadFile"  // `loadFile` for new version; `loadInitData` for old version
             const onContentLoaded = () => this.publishEvent(this.eventType.fileContentLoaded, this.utils.getFilePath());
             this.utils.decorate(() => File, attr, null, result => {
                 if (attr === "loadFile") {

@@ -16,11 +16,12 @@ class StateRecorder {
      * @param {function(Element): Object} stateGetter: Record the state of the target element. Element is the element found by the selector.
      *                                                 Return the state of the tag you want to record. The return value can be of any type.
      * @param {function(Element, state): Object} stateRestorer: Restore the state for the element. State is the return value of stateGetter.
-     * @param {function(): Object} finalFunc: The function to execute last.
+     * @param {function} finalFunc: The function to execute last.
+     * @param {function(Function)} delayWrapper: The function to delay execute.
      */
-    register = (name, selector, stateGetter, stateRestorer, finalFunc) => {
-        const obj = { selector, stateGetter, stateRestorer, finalFunc, collections: new Map() };
-        this.recorders.set(name, obj);
+    register = (name, selector, stateGetter, stateRestorer, finalFunc, delayWrapper) => {
+        const obj = { selector, stateGetter, stateRestorer, finalFunc, delayWrapper, collections: new Map() }
+        this.recorders.set(name, obj)
     }
     unregister = recorderName => this.recorders.delete(recorderName);
 
@@ -46,11 +47,14 @@ class StateRecorder {
         for (const recorder of this.recorders.values()) {
             const collection = recorder.collections.get(filepath)
             if (collection?.size) {
-                document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
-                    const state = collection.get(idx)
-                    if (state) recorder.stateRestorer(ele, state)
-                })
-                recorder.finalFunc?.()
+                const task = () => {
+                    document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
+                        const state = collection.get(idx)
+                        if (state) recorder.stateRestorer(ele, state)
+                    })
+                    recorder.finalFunc?.()
+                }
+                recorder.delayWrapper ? recorder.delayWrapper(task) : task()
             }
         }
     }

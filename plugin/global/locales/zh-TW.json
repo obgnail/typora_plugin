@@ -1071,7 +1071,10 @@
   },
   "file_tree_plus": {
     "pluginName": "全格式側邊欄",
-    "$title.SUPPORTED_FILE_EXT": "支援的副檔名"
+    "$label.SHOW_ANY_EXT_FILE": "顯示其他副檔名文件",
+    "$label.SUPPORTED_FILE_EXT": "支援副檔名",
+    "$label.KEEP_FOLD_STATE": "记忆折疊狀態",
+    "$tooltip.canCollapseOutlinePanel": "需開啟 Typora 設定選項【允許展開/折疊側邊欄大綱】"
   },
   "cursor_history": {
     "pluginName": "光標跳轉",

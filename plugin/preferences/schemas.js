@@ -1176,7 +1176,13 @@ const conf_static_markers = [
 
 const conf_file_tree_plus = [
     box_basePluginLite,
-    ArrayBox("SUPPORTED_FILE_EXT"),
+    UntitledBox(
+        Switch("SHOW_ANY_EXT_FILE"),
+        Array_Inline("SUPPORTED_FILE_EXT", { dependencies: { SHOW_ANY_EXT_FILE: true } }),
+    ),
+    UntitledBox(
+        Switch("KEEP_FOLD_STATE"),
+    ),
     box_settingHandler,
 ]
 

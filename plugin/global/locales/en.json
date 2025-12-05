@@ -1071,7 +1071,10 @@
   },
   "file_tree_plus": {
     "pluginName": "File Tree Plus",
-    "$title.SUPPORTED_FILE_EXT": "Supported Extensions"
+    "$label.SHOW_ANY_EXT_FILE": "Display Files With Other Extensions",
+    "$label.SUPPORTED_FILE_EXT": "Supported Extensions",
+    "$label.KEEP_FOLD_STATE": "Keep Fold State",
+    "$tooltip.canCollapseOutlinePanel": "Typora config option [Collapsible Outline on Left Panel] needs to be enabled"
   },
   "cursor_history": {
     "pluginName": "Cursor History",

@@ -1071,7 +1071,10 @@
   },
   "file_tree_plus": {
     "pluginName": "全格式侧边栏",
-    "$title.SUPPORTED_FILE_EXT": "支持的扩展名"
+    "$label.SHOW_ANY_EXT_FILE": "显示其他扩展名文件",
+    "$label.SUPPORTED_FILE_EXT": "支持扩展名",
+    "$label.KEEP_FOLD_STATE": "记忆折叠状态",
+    "$tooltip.canCollapseOutlinePanel": "需开启 Typora 配置选项【允许折叠和展开侧边栏的大纲视图】"
   },
   "cursor_history": {
     "pluginName": "光标跳转",
