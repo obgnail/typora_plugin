@@ -89,16 +89,14 @@ class EventHub {
             }
         )
 
-        this.utils.pollUntil(() => File, () => {
-            const attr = File.loadInitData ? "loadInitData" : "loadFile"  // `loadFile` for new version; `loadInitData` for old version
-            const onContentLoaded = () => this.publishEvent(this.eventType.fileContentLoaded, this.utils.getFilePath());
-            this.utils.decorate(() => File, attr, null, result => {
-                if (attr === "loadFile") {
-                    result.then(onContentLoaded);
-                } else {
-                    onContentLoaded();
-                }
-            })
+        const attr = File.onSwitchDocumentTarget ? "onSwitchDocumentTarget" : "loadFile"
+        const onContentLoaded = () => this.publishEvent(this.eventType.fileContentLoaded, this.utils.getFilePath())
+        this.utils.decorate(() => File, attr, null, result => {
+            if (attr === "loadFile") {
+                result.then(onContentLoaded)
+            } else {
+                onContentLoaded()
+            }
         })
 
         this.utils.decorate(() => File?.editor?.fences, "addCodeBlock",
