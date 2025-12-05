@@ -2601,11 +2601,14 @@ const Control_Select = {
 }
 
 const Control_Radio = {
+    controlOptions: {
+        columns: 1,
+    },
     setup: ({ field }) => {
         normalizeOptionsAttr(field)
         defaultBlockLayout(field)
     },
-    create: ({ field }) => {
+    create: ({ field, controlOptions }) => {
         const prefix = utils.randomString()
         const toItem = ([k, v], idx) => {
             const id = `${prefix}_${idx}`
@@ -2616,12 +2619,12 @@ const Control_Radio = {
                         <div class="radio-disc"></div>
                     </div>
                     <label class="radio-label" for="${id}">${v}</label>
-                </div>
-            `
+                </div>`
         }
         const options = Object.entries(field.options).map(toItem).join("")
         const { key } = getCommonHTMLAttrs(field)
-        return `<div class="radio" ${key}>${options}</div>`
+        const style = controlOptions.columns > 1 ? `style="display: grid; grid-template-columns: repeat(${controlOptions.columns}, 1fr);"` : ""
+        return `<div class="radio" ${key} ${style}>${options}</div>`
     },
     update: ({ element, value }) => {
         const radioInputs = element.querySelectorAll(".radio-input")
@@ -2638,12 +2641,15 @@ const Control_Radio = {
 }
 
 const Control_Checkbox = {
+    controlOptions: {
+        columns: 1,
+    },
     setup: (context) => {
         normalizeOptionsAttr(context.field)
         defaultBlockLayout(context.field)
         registerItemLengthLimitRule(context)
     },
-    create: ({ field }) => {
+    create: ({ field, controlOptions }) => {
         const prefix = utils.randomString()
         const toItem = ([key, label], idx) => {
             const id = `${prefix}_${idx}`
@@ -2654,12 +2660,12 @@ const Control_Checkbox = {
                         <div class="checkbox-square"></div>
                     </div>
                     <label class="checkbox-label" for="${id}">${label}</label>
-                </div>
-            `
+                </div>`
         }
         const options = Object.entries(field.options).map(toItem).join("")
         const { key } = getCommonHTMLAttrs(field)
-        return `<div class="checkbox" ${key}>${options}</div>`
+        const style = controlOptions.columns > 1 ? `style="display: grid; grid-template-columns: repeat(${controlOptions.columns}, 1fr);"` : ""
+        return `<div class="checkbox" ${key} ${style}>${options}</div>`
     },
     update: ({ element, value }) => {
         const inputs = element.querySelectorAll(".checkbox-input")

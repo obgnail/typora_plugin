@@ -600,14 +600,14 @@ class utils {
     }
 
     static compareVersion = (ver1, ver2) => {
-        const arr1 = ver1.split(".");
-        const arr2 = ver2.split(".");
-        const maxLength = Math.max(arr1.length, arr2.length);
+        const arr1 = ver1.split(".")
+        const arr2 = ver2.split(".")
+        const maxLength = Math.max(arr1.length, arr2.length)
         for (let i = 0; i < maxLength; i++) {
-            const num1 = parseInt(arr1[i] || 0);
-            const num2 = parseInt(arr2[i] || 0);
+            const num1 = parseInt(arr1[i] || 0, 10)
+            const num2 = parseInt(arr2[i] || 0, 10)
             if (num1 !== num2) {
-                return num1 - num2;
+                return Math.sign(num1 - num2)
             }
         }
         return 0
@@ -712,14 +712,13 @@ class utils {
         style.appendChild(document.createTextNode(css));
         document.head.appendChild(style);
     }
-    static insertStyleFile = (id, filepath) => {
-        const cssFilePath = this.joinPath(filepath);
-        const link = document.createElement('link');
-        link.id = id;
-        link.type = 'text/css'
-        link.rel = 'stylesheet'
-        link.href = cssFilePath;
-        document.head.appendChild(link);
+    static insertStyleFile = (id, href) => {
+        const link = document.createElement("link")
+        link.id = id
+        link.type = "text/css"
+        link.rel = "stylesheet"
+        link.href = this.joinPath(href)
+        document.head.appendChild(link)
     }
     static registerStyle = (fixedName, style) => {
         if (!style) return;
@@ -811,20 +810,23 @@ class utils {
     static readTomlFile = async filepath => this.readToml(await FS.promises.readFile(filepath, "utf-8"))
 
     static unzip = async (buffer, workDir) => {
-        const output = [];
         const jsZip = require("../lib/jszip")
-        const zipData = await jsZip.loadAsync(buffer);
-        for (const [name, file] of Object.entries(zipData.files)) {
-            const dest = PATH.join(workDir, name);
+        const files = []
+        const zipData = await jsZip.loadAsync(buffer)
+        const promises = Object.values(zipData.files).map(async file => {
+            const dest = PATH.join(workDir, file.name)
+            if (!dest.startsWith(PATH.resolve(workDir))) return  // Zip Slip Attack
+            files.push(dest)
             if (file.dir) {
-                await FS_EXTRA.ensureDir(dest);
+                await FS_EXTRA.ensureDir(dest)
             } else {
-                const content = await file.async("nodebuffer");
-                await FS.promises.writeFile(dest, content);
+                await FS_EXTRA.ensureDir(PATH.dirname(dest))
+                const content = await file.async("nodebuffer")
+                await FS.promises.writeFile(dest, content)
             }
-            output.push(dest);
-        }
-        return output
+        })
+        await Promise.all(promises)
+        return files
     }
 
     // TODO: Uses dual counters to prevent from terminating prematurely while tasks are paused for asynchronous IO. Too complicated.
@@ -954,7 +956,9 @@ class utils {
         this.openFolder(this.getMountFolder())
         setTimeout(this.exitTypora, 50)
     }
-    static showInFinder = filepath => JSBridge.showInFinder(filepath || this.getFilePath())
+
+    static showInFinder = file => JSBridge.showInFinder(file)
+
     static isDiscardableUntitled = () => File.changeCounter?.isDiscardableUntitled()
 
     static openUrl = url => (File.editor.tryOpenUrl_ ?? File.editor.tryOpenUrl)(url, 1)
@@ -975,11 +979,7 @@ class utils {
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
 
-    static getMarkdownIt = this.once(() => {
-        const { markdownit } = require("../lib/markdown-it")
-        const defaultOptions = { html: true, linkify: true, typographer: true }
-        return markdownit(defaultOptions)
-    })
+    static getMarkdownIt = this.once(() => require("../lib/markdown-it").markdownit({ html: true, linkify: true, typographer: true }))
     static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
     static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
 
@@ -989,8 +989,8 @@ class utils {
             signal = AbortSignal.timeout(timeout)
         }
         if (proxy) {
-            const proxyAgent = require("../lib/https-proxy-agent")
-            agent = new proxyAgent.HttpsProxyAgent(proxy)
+            const { HttpsProxyAgent } = require("../lib/https-proxy-agent")
+            agent = new HttpsProxyAgent(proxy)
         }
         const nodeFetch = require("../lib/node-fetch")
         return nodeFetch.fetch(url, { agent, signal, ...args })

@@ -24,7 +24,6 @@ class StateRecorder {
     }
     unregister = recorderName => this.recorders.delete(recorderName);
 
-    // Manually triggered
     collect = name => {
         const filepath = this.utils.getFilePath();
         for (const [recorderName, recorder] of this.recorders.entries()) {
@@ -46,10 +45,10 @@ class StateRecorder {
     restore = filepath => {
         for (const recorder of this.recorders.values()) {
             const collection = recorder.collections.get(filepath)
-            if (collection && collection.size) {
+            if (collection?.size) {
                 document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
-                    const state = collection.get(idx);
-                    if (state) recorder.stateRestorer(ele, state);
+                    const state = collection.get(idx)
+                    if (state) recorder.stateRestorer(ele, state)
                 })
                 recorder.finalFunc?.()
             }
@@ -60,14 +59,14 @@ class StateRecorder {
 
     process = () => {
         const { eventHub } = this.utils
-        eventHub.addEventListener(eventHub.eventType.beforeFileOpen, this.collect)
+        eventHub.addEventListener(eventHub.eventType.beforeFileOpen, () => this.collect())
         eventHub.addEventListener(eventHub.eventType.fileContentLoaded, this.restore)
     }
 
     afterProcess = () => {
         if (this.recorders.size !== 0) return
         const { eventHub } = this.utils
-        eventHub.removeEventListener(eventHub.eventType.beforeFileOpen, this.collect)
+        eventHub.removeEventListener(eventHub.eventType.beforeFileOpen, () => this.collect())
         eventHub.removeEventListener(eventHub.eventType.fileContentLoaded, this.restore)
     }
 }

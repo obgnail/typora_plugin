@@ -31,7 +31,7 @@ const allBuildTasks = {
         outfile: "plugin/global/core/lib/minimatch.js",
     },
     "https-proxy-agent": {
-        entryPoints: ["https-proxy-agent.cjs"],
+        entryPoints: ["https-proxy-agent.mjs"],
         outfile: "plugin/global/core/lib/https-proxy-agent.js",
     },
     "node-json-rpc": {
