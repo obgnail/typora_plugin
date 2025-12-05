@@ -15,70 +15,69 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 </div>
 
 
-| #    | Plugin                  | Function                                                  | Enabled by Default |
-| ---- | ----------------------- | --------------------------------------------------------- | ------------------ |
-| 1    | window_tab              | Window Tab Bar                                            |                    |
-| 2    | search_multi            | Multi-Fields File Searcher                                |                    |
-| 3    | collapse_paragraph      | Chapter Folding                                           | ×                  |
-| 4    | collapse_list           | List Folding                                              | ×                  |
-| 5    | collapse_table          | Table Folding                                             | ×                  |
-| 6    | md_padding              | Chinese-English Text Spacer                               |                    |
-| 7    | slash_commands          | Slash Commands                                            |                    |
-| 8    | templater               | File Templater                                            |                    |
-| 9    | resource_manager        | Resource Management                                       |                    |
-| 10   | fence_enhance           | Enhance Fence                                             |                    |
-| 11   | toc                     | TOC                                                       |                    |
-| 12   | commander               | Commander                                                 |                    |
-| 13   | toolbar                 | Multi-Purpose Searcher                                    |                    |
-| 14   | right_click_menu        | Right-Click Menu                                          |                    |
-| 15   | pie_menu                | Pie menu                                                  | ×                  |
-| 16   | datatables              | Enhance Table                                             | ×                  |
-| 17   | preferences             | Preferences                                               |                    |
-| 18   | markmap                 | Provides Markmap support                                  |                    |
-| 19   | echarts                 | Provides Echarts support                                  |                    |
-| 20   | chart                   | Provides Chartjs support                                  |                    |
-| 21   | drawIO                  | Provides DrawIO support                                   |                    |
-| 22   | abc                     | Provides abcjs support                                    |                    |
-| 23   | calendar                | Provides tui.calendar support                             |                    |
-| 24   | wavedrom                | Provides WaveDrom support                                 |                    |
-| 25   | marp                    | Provides Marp support                                     |                    |
-| 26   | plantUML                | Provides plantUML support                                 | ×                  |
-| 27   | callouts                | Provides Callouts support                                 |                    |
-| 28   | text_stylize            | Text stylization                                          |                    |
-| 29   | read_only               | Read-only mode                                            |                    |
-| 30   | blur                    | Blur mode                                                 |                    |
-| 31   | kanban                  | Kanban                                                    |                    |
-| 32   | timeline                | Timeline                                                  |                    |
-| 33   | chat                    | Chat                                                      |                    |
-| 34   | file_counter            | Show file count in directory                              |                    |
-| 35   | auto_number             | Auto Numbering                                            |                    |
-| 36   | imageReviewer           | Image reviewer                                            |                    |
-| 37   | chineseSymbolAutoPairer | Automatic completion of Chinese symbols                   |                    |
-| 38   | resize_table            | Adjust table row height and column width                  |                    |
-| 39   | resize_image            | Adjust image display size                                 |                    |
-| 40   | export_enhance          | Avoid image loss when exporting to HTML                   |                    |
-| 41   | markdownLint            | Markdown Lint Check                                       |                    |
-| 42   | go_top                  | One-click to top of the article                           |                    |
-| 43   | truncate_text           | Hide content to improve performance for large files       | ×                  |
-| 44   | dark                    | Dark mode                                                 |                    |
-| 45   | no_image                | No image mode                                             |                    |
-| 46   | updater                 | One-click plugin update                                   |                    |
-| 47   | easy_modify             | Editing tools                                             |                    |
-| 48   | editor_width_slider     | Adjust writing area width                                 |                    |
-| 49   | redirectLocalRootUrl    | Redirect local resource root directory                    | ×                  |
-| 50   | blockSideBySide         | Display active blocks side by side                        | ×                  |
-| 51   | scrollBookmarker        | Bookmark manager                                          | ×                  |
-| 52   | cipher                  | Encrypt files                                             | ×                  |
-| 53   | ripgrep                 | Search files using ripgrep                                | ×                  |
-| 54   | article_uploader        | One-click upload blog to supported platforms              | ×                  |
-| 55   | sortableOutline         | Drag & drop outline to rearrange                          | ×                  |
-| 56   | cursor_history          | Cursor History                                            | ×                  |
-| 57   | static_markers          | Static Markers                                            | ×                  |
-| 58   | file_tree_plus          | Display non-Markdown files in the sidebar                 | ×                  |
-| 59   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
-| 60   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
-| 61   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
-| 62   | json_rpc                | External control of Typora (advanced)                     | ×                  |
+| #    | Plugin                  | Function                                                     | Enabled by Default |
+| ---- | ----------------------- | ------------------------------------------------------------ | ------------------ |
+| 1    | window_tab              | Window Tab Bar                                               |                    |
+| 2    | search_multi            | Multi-Fields File Searcher                                   |                    |
+| 3    | collapse_paragraph      | Chapter Folding                                              | ×                  |
+| 4    | collapse_list           | List Folding                                                 | ×                  |
+| 5    | collapse_table          | Table Folding                                                | ×                  |
+| 6    | md_padding              | Chinese-English Text Spacer                                  |                    |
+| 7    | slash_commands          | Slash Commands                                               |                    |
+| 8    | templater               | File Templater                                               |                    |
+| 9    | resource_manager        | Resource Management                                          |                    |
+| 10   | fence_enhance           | Enhance Fence                                                |                    |
+| 11   | toc                     | TOC                                                          |                    |
+| 12   | commander               | Commander                                                    |                    |
+| 13   | toolbar                 | Multi-Purpose Searcher                                       |                    |
+| 14   | right_click_menu        | Right-Click Menu                                             |                    |
+| 15   | pie_menu                | Pie menu                                                     | ×                  |
+| 16   | datatables              | Enhance Table                                                | ×                  |
+| 17   | preferences             | Preferences                                                  |                    |
+| 18   | markmap                 | Provides Markmap support                                     |                    |
+| 19   | echarts                 | Provides Echarts support                                     |                    |
+| 20   | chart                   | Provides Chartjs support                                     |                    |
+| 21   | drawIO                  | Provides DrawIO support                                      |                    |
+| 22   | abc                     | Provides abcjs support                                       |                    |
+| 23   | calendar                | Provides tui.calendar support                                |                    |
+| 24   | wavedrom                | Provides WaveDrom support                                    |                    |
+| 25   | marp                    | Provides Marp support                                        |                    |
+| 26   | plantUML                | Provides plantUML support                                    | ×                  |
+| 27   | callouts                | Provides Callouts support                                    |                    |
+| 28   | text_stylize            | Text stylization                                             |                    |
+| 29   | read_only               | Read-only mode                                               |                    |
+| 30   | blur                    | Blur mode                                                    |                    |
+| 31   | kanban                  | Kanban                                                       |                    |
+| 32   | timeline                | Timeline                                                     |                    |
+| 33   | chat                    | Chat                                                         |                    |
+| 34   | file_counter            | Show file count in directory                                 |                    |
+| 35   | auto_number             | Auto Numbering                                               |                    |
+| 36   | imageReviewer           | Image reviewer                                               |                    |
+| 37   | chineseSymbolAutoPairer | Automatic completion of Chinese symbols                      |                    |
+| 38   | resize_table            | Adjust table row height and column width                     |                    |
+| 39   | resize_image            | Adjust image display size                                    |                    |
+| 40   | export_enhance          | Avoid image loss when exporting to HTML                      |                    |
+| 41   | sidebar_enhance         | Drag & drop to rearrange、Display non-Markdown files、Keep Fold State |                    |
+| 42   | markdownLint            | Markdown Lint Check                                          |                    |
+| 43   | go_top                  | One-click to top of the article                              |                    |
+| 44   | truncate_text           | Hide content to improve performance for large files          | ×                  |
+| 45   | dark                    | Dark mode                                                    |                    |
+| 46   | no_image                | No image mode                                                |                    |
+| 47   | updater                 | One-click plugin update                                      |                    |
+| 48   | easy_modify             | Editing tools                                                |                    |
+| 49   | editor_width_slider     | Adjust writing area width                                    |                    |
+| 50   | redirectLocalRootUrl    | Redirect local resource root directory                       | ×                  |
+| 51   | blockSideBySide         | Display active blocks side by side                           | ×                  |
+| 52   | scrollBookmarker        | Bookmark manager                                             | ×                  |
+| 53   | cipher                  | Encrypt files                                                | ×                  |
+| 54   | ripgrep                 | Search files using ripgrep                                   | ×                  |
+| 55   | article_uploader        | One-click upload blog to supported platforms                 | ×                  |
+| 56   | cursor_history          | Cursor History                                               | ×                  |
+| 57   | static_markers          | Static Markers                                               | ×                  |
+| 59   | custom                  | Open platform for user-defined plugins (advanced)            |                    |
+| 60   | hotkeys                 | Hotkey registration center (advanced)                        |                    |
+| 61   | quickButton             | Add function buttons in the lower right corner (advanced)    |                    |
+| 62   | json_rpc                | External control of Typora (advanced)                        | ×                  |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
@@ -523,6 +522,14 @@ Function: `alt + mouse scroll`: Adjust the image size.
 
 Function: When exporting HTML, convert images to base64 to avoid image loss.
 
+## sidebar_enhance
+
+Function: 
+
+- Drag & drop outline to rearrange
+- Display non-Markdown files in the sidebar
+- Keep Fold Outline State
+
 ### go_top
 
 Function: Add a "Go to Top" button at the bottom right corner.
@@ -622,10 +629,6 @@ Typora comes with ripgrep. This plugin supports using the built-in ripgrep to se
 
 > To use this plugin, you need to be familiar with the ripgrep tool. This plugin is disabled by default and needs to be manually enabled.
 
-### sortableOutline：Drag & drop outline to rearrange
-
-> This plugin is disabled by default and needs to be manually enabled.
-
 ### cursor_history：Cursor History
 
 - hotkey for the previous cursor: alt+←
@@ -640,12 +643,6 @@ Say goodbye to distracting format refreshes. This plugin keeps your Markdown syn
 This plugin disables the auto-hiding feature for syntax markers in WYSIWYG mode. It ensures that all Markdown characters—like **, ##, and _—remain persistently visible around your text, just as they would in a source code editor.
 
 ![static_markers](./assets/static_markers.png)
-
-> This plugin is disabled by default and needs to be manually enabled.
-
-### file_tree_plus：Display non-Markdown files in the sidebar×
-
-Break the limitation that Typora only displays Markdown files. This plugin allows you to customize which "external file" formats (e.g., `.pdf`, `.docx`) appear in the file tree. Clicking these files will launch them directly using your system's default application, providing a seamless file management experience.
 
 > This plugin is disabled by default and needs to be manually enabled.
 

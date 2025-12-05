@@ -1174,14 +1174,15 @@ const conf_static_markers = [
     box_settingHandler,
 ]
 
-const conf_file_tree_plus = [
+const conf_sidebar_enhance = [
     box_basePluginLite,
     UntitledBox(
-        Switch("SHOW_ANY_EXT_FILE"),
-        Array_Inline("SUPPORTED_FILE_EXT", { dependencies: { SHOW_ANY_EXT_FILE: true } }),
+        Switch("KEEP_OUTLINE_FOLD_STATE", { tooltip: "canCollapseOutlinePanel" }),
+        Switch("SORTABLE_OUTLINE"),
     ),
     UntitledBox(
-        Switch("KEEP_FOLD_STATE"),
+        Switch("DISPLAY_NON_MARKDOWN_FILES"),
+        Array_Inline("SUPPORTED_FILE_EXT", { dependencies: { DISPLAY_NON_MARKDOWN_FILES: true } }),
     ),
     box_settingHandler,
 ]
@@ -1707,14 +1708,6 @@ const conf_blockSideBySide = [
     box_settingHandler,
 ]
 
-const conf_sortableOutline = [
-    box_customPluginLite,
-    UntitledBox(
-        Switch("auto_save_file"),
-    ),
-    box_settingHandler,
-]
-
 const conf_redirectLocalRootUrl = [
     box_customPluginLite,
     UntitledBox(
@@ -1762,7 +1755,7 @@ const SETTING_SCHEMAS = {
     article_uploader: conf_article_uploader,
     ripgrep: conf_ripgrep,
     static_markers: conf_static_markers,
-    file_tree_plus: conf_file_tree_plus,
+    sidebar_enhance: conf_sidebar_enhance,
     cursor_history: conf_cursor_history,
     json_rpc: conf_json_rpc,
     updater: conf_updater,
@@ -1787,7 +1780,6 @@ const SETTING_SCHEMAS = {
     markdownLint: conf_markdownLint,
     quickButton: conf_quickButton,
     blockSideBySide: conf_blockSideBySide,
-    sortableOutline: conf_sortableOutline,
     redirectLocalRootUrl: conf_redirectLocalRootUrl,
 }
 

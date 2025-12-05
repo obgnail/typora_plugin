@@ -1699,6 +1699,40 @@ DOWNLOAD_NETWORK_IMAGE = false
 DOWNLOAD_THREADS = 10
 
 
+################### sidebar_enhance ###################
+[sidebar_enhance]
+# ------------------- 基础 -------------------
+# 启用或禁用插件
+#   true:  启用插件
+#   false: 禁用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 记忆折叠状态 -------------------
+# 保持侧边栏大纲折叠/展开状态
+#   true:  保持
+#   false: 不保持
+KEEP_OUTLINE_FOLD_STATE = true
+
+# ------------------- 大纲拖拽排序 -------------------
+# 支持通过拖拽排序大纲内容
+#   true:  保持
+#   false: 不保持
+SORTABLE_OUTLINE = true
+
+# ------------------- 显示其他扩展名文件 -------------------
+# 支持在侧边栏显示侧边栏列表显示其他扩展名文件
+#   true:  支持
+#   false: 不支持
+# 若置为 false，则选项 SUPPORTED_FILE_EXT 失效
+DISPLAY_NON_MARKDOWN_FILES = false
+
+# 额外展示在侧边栏的文件的扩展名列表
+SUPPORTED_FILE_EXT = ["pdf", "html", "htm", "csv", "docx", "pptx", "xlsx", "doc", "ppt", "xls"]
+
+
 ################### text_stylize ###################
 [text_stylize]
 # ------------------- 基础 -------------------
@@ -2129,7 +2163,7 @@ LIST = [
     "slash_commands",
     "file_counter",
     "cursor_history",
-    "file_tree_plus",
+    "sidebar_enhance",
     "json_rpc",
     "test",
 ]
@@ -2597,34 +2631,6 @@ HOTKEY = ""
 #   footnote:    脚注
 #   inlineHTML:  行内 HTML
 STATIC_MARKERS = ["strong", "em", "del", "underline", "highlight", "superscript", "subscript", "code", "inlineMath", "image", "errorImage", "link", "footnote"]
-
-
-################### file_tree_plus ###################
-[file_tree_plus]
-# ------------------- 基础 -------------------
-# 启用或禁用插件
-#   true:  启用插件
-#   false: 禁用插件
-ENABLE = false
-
-# 插件名称（为空则使用默认名）
-NAME = ""
-
-# ------------------- 显示其他扩展名文件 -------------------
-# 支持在侧边栏显示侧边栏列表显示其他扩展名文件
-#   true:  支持
-#   false: 不支持
-# 若置为 false，则选项 SUPPORTED_FILE_EXT 失效
-SHOW_ANY_EXT_FILE = true
-
-# 额外展示在侧边栏的文件的扩展名列表
-SUPPORTED_FILE_EXT = ["pdf", "htm", "html", "csv", "ppt", "pptx", "doc", "docx", "xls", "xlsx"]
-
-# ------------------- 记忆折叠状态 -------------------
-# 保持侧边栏大纲折叠/展开状态
-#   true:  保持
-#   false: 不保持
-KEEP_FOLD_STATE = true
 
 
 ################### cursor_history ###################

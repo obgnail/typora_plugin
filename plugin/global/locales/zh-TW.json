@@ -1069,12 +1069,13 @@
     "$option.STATIC_MARKERS.footnote": "註腳",
     "$option.STATIC_MARKERS.inlineHTML": "行內 HTML"
   },
-  "file_tree_plus": {
-    "pluginName": "全格式側邊欄",
-    "$label.SHOW_ANY_EXT_FILE": "顯示其他副檔名文件",
+  "sidebar_enhance": {
+    "pluginName": "側邊欄增強",
+    "$label.DISPLAY_NON_MARKDOWN_FILES": "文件樹顯示非 Markdown 文件",
     "$label.SUPPORTED_FILE_EXT": "支援副檔名",
-    "$label.KEEP_FOLD_STATE": "记忆折疊狀態",
-    "$tooltip.canCollapseOutlinePanel": "需開啟 Typora 設定選項【允許展開/折疊側邊欄大綱】"
+    "$label.KEEP_OUTLINE_FOLD_STATE": "记忆大綱折疊狀態",
+    "$label.SORTABLE_OUTLINE": "大綱拖拽排序",
+    "$tooltip.canCollapseOutlinePanel": "需啟用 Typora 設定【允許展開/折疊側邊欄大綱】"
   },
   "cursor_history": {
     "pluginName": "光標跳轉",
@@ -1665,10 +1666,6 @@
   },
   "blockSideBySide": {
     "pluginName": "並排顯示活動區塊"
-  },
-  "sortableOutline": {
-    "pluginName": "大綱拖拽排序",
-    "$label.auto_save_file": "自動保存文檔"
   },
   "redirectLocalRootUrl": {
     "pluginName": "重新導向本地資源根目錄",

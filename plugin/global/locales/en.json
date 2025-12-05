@@ -1069,12 +1069,13 @@
     "$option.STATIC_MARKERS.footnote": "Footnote",
     "$option.STATIC_MARKERS.inlineHTML": "Inline HTML"
   },
-  "file_tree_plus": {
-    "pluginName": "File Tree Plus",
-    "$label.SHOW_ANY_EXT_FILE": "Display Files With Other Extensions",
+  "sidebar_enhance": {
+    "pluginName": "Enhance Sidebar",
+    "$label.DISPLAY_NON_MARKDOWN_FILES": "Display non-Markdown Files",
     "$label.SUPPORTED_FILE_EXT": "Supported Extensions",
-    "$label.KEEP_FOLD_STATE": "Keep Fold State",
-    "$tooltip.canCollapseOutlinePanel": "Typora config option [Collapsible Outline on Left Panel] needs to be enabled"
+    "$label.KEEP_OUTLINE_FOLD_STATE": "Keep Outline Fold State",
+    "$label.SORTABLE_OUTLINE": "Sortable Outline",
+    "$tooltip.canCollapseOutlinePanel": "Need to enable Typora config [Collapsible Outline on Left Panel]"
   },
   "cursor_history": {
     "pluginName": "Cursor History",
@@ -1665,10 +1666,6 @@
   },
   "blockSideBySide": {
     "pluginName": "Block Side By Side"
-  },
-  "sortableOutline": {
-    "pluginName": "Sortable Outline",
-    "$label.auto_save_file": "Auto Save File"
   },
   "redirectLocalRootUrl": {
     "pluginName": "Redirect Local Root Url",

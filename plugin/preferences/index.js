@@ -471,6 +471,16 @@ class PreferencesPlugin extends BasePlugin {
                     _incompatibleSwitch(field, data)
                 }
             },
+            "sidebar_enhance.DISPLAY_NON_MARKDOWN_FILES": (field, data) => {
+                if (!File.SupportedFiles) {
+                    _incompatibleSwitch(field, data)
+                }
+            },
+            "sidebar_enhance.KEEP_OUTLINE_FOLD_STATE": (field, data) => {
+                if (!File.option.canCollapseOutlinePanel) {
+                    _incompatibleSwitch(field, data)
+                }
+            },
             "markmap.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD": (field, data) => {
                 if (!this.utils.getBasePlugin("collapse_paragraph")) {
                     _incompatibleSwitch(field, data, this.i18n._t("markmap", "$tooltip.experimental"))
@@ -485,16 +495,6 @@ class PreferencesPlugin extends BasePlugin {
                 if (!field.options) {
                     field.options = this._getAllPlugins()
                     _disableOptions(field, "global", "preferences")
-                }
-            },
-            "file_tree_plus.SHOW_ANY_EXT_FILE": (field, data) => {
-                if (!File.SupportedFiles) {
-                    _incompatibleSwitch(field, data)
-                }
-            },
-            "file_tree_plus.KEEP_FOLD_STATE": (field, data) => {
-                if (!File.option.canCollapseOutlinePanel) {
-                    _incompatibleSwitch(field, data,this.i18n._t("file_tree_plus", "$tooltip.canCollapseOutlinePanel"))
                 }
             },
             "markdownLint.rule_config": (field, data, box) => {

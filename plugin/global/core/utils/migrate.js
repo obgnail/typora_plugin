@@ -10,7 +10,7 @@ class Migrate {
         const custom = [
             "fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode",
             "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander", "resourceOperation",
-            "reopenClosedFiles", "__modal_example",
+            "reopenClosedFiles", "sortableOutline", "__modal_example",
         ]
         const promises = custom
             .flatMap(plugin => [
