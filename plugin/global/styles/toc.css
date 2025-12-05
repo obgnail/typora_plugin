@@ -90,6 +90,25 @@
     font-weight: 700;
 }
 
+#plugin-toc .toc-toggle {
+    cursor: pointer;
+    width: 16px;
+    text-align: center;
+    transition: transform 0.2s;
+    color: #666;
+}
+
+#plugin-toc .toc-root li.collapsed > ul {
+    display: none;
+}
+
+#plugin-toc .toc-root li.collapsed > .toc-node > .toc-toggle {
+    transform: rotate(-90deg);
+}
+
+#plugin-toc .toc-text {
+    margin-left: 6px;
+}
 #plugin-toc .toc-text:hover {
     text-decoration: underline;
 }

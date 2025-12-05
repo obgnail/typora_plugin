@@ -37,7 +37,7 @@ class TOCPlugin extends BaseCustomPlugin {
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.refresh());
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
             eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.refresh, 300));
-            this.utils.decorate(() => File?.editor?.library?.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader)
+            this.utils.decorate(() => File?.editor?.library?.outline, "highlightVisibleHeader", null, this._highlightVisibleHeader)
             const resetPosition = () => {
                 const { right: contentRight } = this.entities.content.getBoundingClientRect()
                 const { right: modalRight } = this.entities.modal.getBoundingClientRect()
@@ -51,6 +51,12 @@ class TOCPlugin extends BaseCustomPlugin {
         }
         const onClick = () => {
             this.entities.modal.addEventListener("click", ev => {
+                const toggleEl = ev.target.closest(".toc-toggle")
+                if (toggleEl) {
+                    toggleEl.closest("li").classList.toggle("collapsed")
+                    return
+                }
+
                 const ref = ev.target.closest(".toc-node")?.dataset.ref
                 if (ref) {
                     if (File.editor.sourceView.inSourceMode) {
@@ -59,6 +65,7 @@ class TOCPlugin extends BaseCustomPlugin {
                     this.utils.scrollByCid(ref, -1, true)
                     return
                 }
+
                 const type = ev.target.closest(".plugin-toc-icon")?.dataset.type
                 if (type) this.refresh(type)
             })
@@ -220,26 +227,26 @@ class TOCPlugin extends BaseCustomPlugin {
         }
     }
 
-    getCurrentType = () => {
-        const btn = this.entities.header.querySelector(".select") || this.entities.header.firstElementChild
-        return btn?.dataset.type ?? "header"
-    }
-
     refresh = type => {
         if (this.isModalShow()) {
-            type = type || this.getCurrentType()
+            type = type || this._getCurrentType()
             this._setIconActive(type)
             const root = this._getRoot(type)
             const sortable = this.config.sortable && type === "header"
             this.entities.list.innerHTML = this._getRootHTML(root, sortable)
-            this.highlightVisibleHeader()
+            this._highlightVisibleHeader()
         }
+    }
+
+    _getCurrentType = () => {
+        const btn = this.entities.header.querySelector(".select") || this.entities.header.firstElementChild
+        return btn?.dataset.type ?? "header"
     }
 
     _setIconActive = type => this.entities.header.children.forEach(ele => ele.classList.toggle("select", ele.dataset.type === type))
 
-    highlightVisibleHeader = (_, $header, targetIdx) => {
-        if (!this.isModalShow() || this.getCurrentType() !== "header") return;
+    _highlightVisibleHeader = (_, $header, targetIdx) => {
+        if (!this.isModalShow() || this._getCurrentType() !== "header") return
 
         const headers = $header || $(File.editor.writingArea).children(File.editor.library.outline.headerStr);
         if (!headers.length) return;
@@ -289,8 +296,9 @@ class TOCPlugin extends BaseCustomPlugin {
         if (includeHeadings) {
             types.push("h1", "h2")
         }
+        const imageHasAlt = document.querySelector(".md-image[data-alt]")
 
-        const idxMap = { table: 0, fence: 0, image: 0, link: 0, math: 0 };
+        const idxMap = { table: 0, fence: 0, image: 0, link: 0, math: 0 }
         const typeMap = {
             h1: ":scope > h1",
             h2: ":scope > h2",
@@ -300,45 +308,45 @@ class TOCPlugin extends BaseCustomPlugin {
             link: ".md-link",
             math: ".md-math-block, .md-inline-math-container",
         }
-        const root = { depth: 0, cid: "n0", text: "root", children: [] };
-        const current = { C: root, H1: root };
-        const selector = types.map(t => typeMap[t]).join(" , ")
-        const imageHasAlt = document.querySelector(".md-image[data-alt]");
-        this.utils.entities.eWrite.querySelectorAll(selector).forEach(ele => {
-            if (ele.style.display === "none") return;
+        const root = { depth: 0, cid: "n0", text: "root", children: [], parent: null }
+        const helper = { current: root, H1: root }
 
-            const children = [];
-            const tagName = ele.tagName;
+        const selector = types.map(t => typeMap[t]).join(" , ")
+        this.utils.entities.eWrite.querySelectorAll(selector).forEach(el => {
+            if (el.style.display === "none") return
+
+            const children = []
+            const tagName = el.tagName
             if (tagName === "H1" || tagName === "H2") {
-                const header = { cid: ele.getAttribute("cid"), text: ele.textContent, class_: "toc-header-node", children };
+                const header = { cid: el.getAttribute("cid"), text: el.textContent, class_: "toc-header-node", children }
                 if (tagName === "H1") {
-                    root.children.push(header);
-                    current.H1 = header;
+                    root.children.push({ ...header, parent: root })
+                    helper.H1 = header
                 } else {
-                    current.H1.children.push(header);
+                    helper.H1.children.push({ ...header, parent: helper.H1 })
                 }
-                current.C = header;
-                return;
+                helper.current = header
+                return
             }
 
-            const classList = ele.classList;
+            const classList = el.classList
             const type = classList.contains("md-table") ? "table"
                 : classList.contains("md-fences") ? "fence"
                     : classList.contains("md-image") ? "image"
                         : classList.contains("md-link") ? "link"
                             : (classList.contains("md-math-block") || classList.contains("md-inline-math-container")) ? "math"
-                                : null;
+                                : null
 
             if (type) {
-                idxMap[type]++;
-                const cid = ele.closest("[cid]").getAttribute("cid");
+                idxMap[type]++
+                const cid = el.closest("[cid]").getAttribute("cid")
                 const prefix = this.config.show_name[type]
                 const idx = idxMap[type] + ""
-                const extra = (imageHasAlt && type === "image") ? ele.dataset.alt : ""
+                const extra = (imageHasAlt && type === "image") ? el.dataset.alt : ""
                 const text = [prefix, idx, extra].filter(Boolean).join(" ")
-                current.C.children.push({ cid, children, text })
+                helper.current.children.push({ cid, children, text, parent: helper.current })
             }
-        });
+        })
         return root
     }
 
@@ -346,13 +354,14 @@ class TOCPlugin extends BaseCustomPlugin {
         const drag = sortable ? 'draggable="true"' : ""
         const genLi = node => {
             const { text, cid, depth, class_ = "", children = [] } = node
-            const t = this.utils.escape(text)
-            let content = `<div class="toc-node ${class_}" data-ref="${cid}" ${drag}><span class="toc-text">${t}</span></div>`
+            const toggleEl = children.length === 0 ? "" : '<span class="toc-toggle fa fa-caret-down"></span>'
+            const textEl = `<span class="toc-text">${this.utils.escape(text)}</span>`
+            let nodeEl = `<div class="toc-node ${class_}" data-ref="${cid}" ${drag}>${toggleEl}${textEl}</div>`
             if (children.length !== 0) {
                 const li = children.map(genLi).join("")
-                content += `<ul>${li}</ul>`
+                nodeEl += `<ul>${li}</ul>`
             }
-            return `<li data-depth="${depth}">${content}</li>`
+            return `<li data-depth="${depth}">${nodeEl}</li>`
         }
         const li = rootNode.children.map(genLi).join("")
         return `<ul class="toc-root">${li}</ul>`
