@@ -257,6 +257,17 @@ class utils {
         }
     }
 
+    static oneShot = () => {
+        let shot
+        const arm = fn => shot = fn
+        const fire = (...args) => {
+            const fn = shot
+            shot = null
+            return fn?.(...args)
+        }
+        return [arm, fire]
+    }
+
     /**
      * @description Creates a function that confirms an action only after it has been
      * triggered `threshold` times consecutively within `timeWindow` milliseconds.

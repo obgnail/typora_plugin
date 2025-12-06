@@ -76,15 +76,18 @@ class CollapseTablePlugin extends BasePlugin {
     checkCollapse = figure => figure.classList.contains(this.className);
 
     recordCollapseState = (needChange = true) => {
-        const name = "recordCollapseTable";
-        const selector = "#write .table-figure";
         if (needChange) {
-            this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE;
+            this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE
         }
         if (this.config.RECORD_COLLAPSE) {
-            this.utils.stateRecorder.register(name, selector, this.checkCollapse, this.toggleTable);
+            this.utils.stateRecorder.register({
+                name: this.fixedName,
+                selector: "#write .table-figure",
+                stateGetter: this.checkCollapse,
+                stateRestorer: this.toggleTable,
+            })
         } else {
-            this.utils.stateRecorder.unregister(name);
+            this.utils.stateRecorder.unregister(this.fixedName)
         }
     }
 }

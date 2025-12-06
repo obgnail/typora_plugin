@@ -34,30 +34,18 @@ class SidebarEnhancePlugin extends BasePlugin {
         })
     }
 
-    /**
-     * Preserves the fold/expand state of sidebar outline nodes across file switches.
-     *
-     * Since the outline DOM renders asynchronously, this method utilizes a `MutationObserver` to monitor the sidebar.
-     * It intercepts the restoration task via a `delayWrapper` and defers execution until DOM mutations stabilize,
-     * ensuring target elements exist before re-applying the state.
-     */
     _keepOutlineFoldState = () => {
-        let todo
-
-        const callback = this.utils.debounce(() => {
-            if (typeof todo === "function") {
-                todo()
-                todo = null
-            }
-        }, 100)
-        new MutationObserver(callback).observe(this.entities.outline, { childList: true, subtree: true })
-
+        const [arm, fire] = this.utils.oneShot()
         const hasOpenClass = "outline-item-open"
-        const recordSelector = "#outline-content .outline-item-wrapper:not(.outline-item-signle)"  // `signle` is Typora's typo
-        const stateGetter = el => el.classList.contains(hasOpenClass)
-        const stateRestorer = (el, isOpen) => isOpen && el.classList.add(hasOpenClass)
-        const delayWrapper = (task) => todo = task
-        this.utils.stateRecorder.register(this.fixedName, recordSelector, stateGetter, stateRestorer, null, delayWrapper)
+        const singleItemClass = this.utils.isBetaVersion ? "outline-item-signle" : "outline-item-single"  // `signle` is Typora's typo
+        this.utils.stateRecorder.register({
+            name: this.fixedName,
+            selector: `#outline-content .outline-item-wrapper:not(.${singleItemClass})`,
+            stateGetter: el => el.classList.contains(hasOpenClass),
+            stateRestorer: (el, isOpen) => isOpen && el.classList.add(hasOpenClass),
+            delayFn: (task) => arm(task),
+        })
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, fire)
     }
 
     _sortableOutline = () => {

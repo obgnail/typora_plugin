@@ -47,24 +47,26 @@ class CollapseListPlugin extends BasePlugin {
     toggleCollapse = ele => ele.classList.toggle(this.className);
 
     recordCollapseState = (needChange = true) => {
-        const name = "recordCollapseList";
         if (needChange) {
-            this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE;
+            this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE
         }
         if (this.config.RECORD_COLLAPSE) {
-            this.utils.stateRecorder.register(name, this.selector, this.checkCollapse, this.setCollapse)
+            this.utils.stateRecorder.register({
+                name: this.fixedName,
+                selector: this.selector,
+                stateGetter: this.checkCollapse,
+                stateRestorer: this.setCollapse,
+            })
         } else {
-            this.utils.stateRecorder.unregister(name);
+            this.utils.stateRecorder.unregister(this.fixedName)
         }
     }
 
     rollback = start => {
-        let cur = start;
-        while (true) {
-            cur = cur.closest(`.${this.className}`);
-            if (!cur) return;
-            this.cancelCollapse(cur);
-            cur = cur.parentElement;
+        let cur = start
+        while (cur && (cur = cur.closest(`.${this.className}`))) {
+            this.cancelCollapse(cur)
+            cur = cur.parentElement
         }
     }
 

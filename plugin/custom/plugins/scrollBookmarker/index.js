@@ -23,16 +23,19 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
         }
         this.recorder = {
             register: () => {
-                const stateGetter = el => el.classList.contains(this.className)
-                const stateRestorer = el => el.classList.add(this.className)
-                const finalFunc = () => {
-                    if (this.locateUtils.file && this.locateUtils.idx !== -1) {
-                        this.locateUtils.scroll(this.locateUtils.idx)
-                        this.locateUtils.file = ""
-                        this.locateUtils.idx = -1
+                this.utils.stateRecorder.register({
+                    name: this.fixedName,
+                    selector: this.recordSelector,
+                    stateGetter: el => el.classList.contains(this.className),
+                    stateRestorer: el => el.classList.add(this.className),
+                    finalFn: () => {
+                        if (this.locateUtils.file && this.locateUtils.idx !== -1) {
+                            this.locateUtils.scroll(this.locateUtils.idx)
+                            this.locateUtils.file = ""
+                            this.locateUtils.idx = -1
+                        }
                     }
-                }
-                this.utils.stateRecorder.register(this.fixedName, this.recordSelector, stateGetter, stateRestorer, finalFunc)
+                })
             },
             collect: () => this.utils.stateRecorder.collect(this.fixedName),
             getState: () => this.utils.stateRecorder.getState(this.fixedName),

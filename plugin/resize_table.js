@@ -63,16 +63,17 @@ class ResizeTablePlugin extends BasePlugin {
 
     toggleRecorder = (needChange = true) => {
         if (needChange) {
-            this.config.RECORD_RESIZE = !this.config.RECORD_RESIZE;
+            this.config.RECORD_RESIZE = !this.config.RECORD_RESIZE
         }
-        const name = "recordResizeTable";
-        const selector = "#write th, #write td";
-        const stateGetter = ele => ele.style.cssText
-        const stateRestorer = (ele, state) => ele.style = state
         if (this.config.RECORD_RESIZE) {
-            this.utils.stateRecorder.register(name, selector, stateGetter, stateRestorer);
+            this.utils.stateRecorder.register({
+                name: this.fixedName,
+                selector: "#write th, #write td",
+                stateGetter: el => el.style.cssText,
+                stateRestorer: (el, state) => el.style = state,
+            })
         } else {
-            this.utils.stateRecorder.unregister(name);
+            this.utils.stateRecorder.unregister(this.fixedName)
         }
     }
 

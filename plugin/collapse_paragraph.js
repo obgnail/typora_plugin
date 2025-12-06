@@ -182,10 +182,13 @@ class CollapseParagraphPlugin extends BasePlugin {
         if (needChange) {
             this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE
         }
-        const stateGetter = el => el.classList.contains(this.className)
-        const stateRestorer = el => this.trigger(el, false)
         if (this.config.RECORD_COLLAPSE) {
-            this.utils.stateRecorder.register(this.fixedName, this.selector, stateGetter, stateRestorer)
+            this.utils.stateRecorder.register({
+                name: this.fixedName,
+                selector: this.selector,
+                stateGetter: el => el.classList.contains(this.className),
+                stateRestorer: el => this.trigger(el, false),
+            })
         } else {
             this.utils.stateRecorder.unregister(this.fixedName)
         }

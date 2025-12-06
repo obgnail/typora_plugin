@@ -89,15 +89,12 @@ class EventHub {
             }
         )
 
-        const attr = File.onSwitchDocumentTarget ? "onSwitchDocumentTarget" : "loadFile"
         const onContentLoaded = () => this.publishEvent(this.eventType.fileContentLoaded, this.utils.getFilePath())
-        this.utils.decorate(() => File, attr, null, result => {
-            if (attr === "loadFile") {
-                result.then(onContentLoaded)
-            } else {
-                onContentLoaded()
-            }
-        })
+        if (File.onSwitchDocumentTarget) {
+            this.utils.decorate(() => File, "onSwitchDocumentTarget", null, onContentLoaded)
+        } else if (File.editor.library.doSwitchByNode) {
+            this.utils.decorate(() => File.editor.library, "doSwitchByNode", null, ret => ret.then(onContentLoaded))
+        }
 
         this.utils.decorate(() => File?.editor?.fences, "addCodeBlock",
             (...args) => {

@@ -23,13 +23,17 @@ class ResizeImagePlugin extends BasePlugin {
 
     recordResizeState = (needChange = true) => {
         if (needChange) {
-            this.config.RECORD_RESIZE = !this.config.RECORD_RESIZE;
+            this.config.RECORD_RESIZE = !this.config.RECORD_RESIZE
         }
-        const name = "recordResizeImage";
         if (this.config.RECORD_RESIZE) {
-            this.utils.stateRecorder.register(name, "#write img", ele => ele.style.cssText, (ele, state) => ele.style = state);
+            this.utils.stateRecorder.register({
+                name: this.fixedName,
+                selector: "#write img",
+                stateGetter: el => el.style.cssText,
+                stateRestorer: (el, state) => el.style = state
+            })
         } else {
-            this.utils.stateRecorder.unregister(name);
+            this.utils.stateRecorder.unregister(this.fixedName)
         }
     }
 
