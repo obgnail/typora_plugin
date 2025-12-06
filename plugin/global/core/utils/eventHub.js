@@ -26,22 +26,22 @@ class EventHub {
     }
 
     addEventListener = (type, listener, order = 0) => {
-        this._checkType(type);
-        this._checkListener(listener);
+        this._checkType(type)
+        this._checkListener(listener)
         if (!this.eventMap[type]) {
-            this.eventMap[type] = { [order]: [listener] };
+            this.eventMap[type] = { [order]: [listener] }
         } else if (!this.eventMap[type][order]) {
-            this.eventMap[type][order] = [listener];
+            this.eventMap[type][order] = [listener]
         } else {
-            this.eventMap[type][order].push(listener);
+            this.eventMap[type][order].push(listener)
         }
     }
 
     removeEventListener = (type, listener) => {
-        this._checkType(type);
-        this._checkListener(listener);
-        for (const [order, funcList] of Object.entries(this.eventMap[type])) {
-            this.eventMap[type][order] = funcList.filter(lis => lis !== listener);
+        this._checkType(type)
+        this._checkListener(listener)
+        for (const [order, listeners] of Object.entries(this.eventMap[type])) {
+            this.eventMap[type][order] = listeners.filter(lis => lis !== listener)
         }
     }
 
@@ -54,10 +54,10 @@ class EventHub {
     }
 
     publishEvent = (type, ...payload) => {
-        this._checkType(type);
-        if (!this.eventMap[type]) return;
-        for (const funcList of Object.values(this.eventMap[type])) {
-            for (const listener of funcList) {
+        this._checkType(type)
+        if (!this.eventMap[type]) return
+        for (const listeners of Object.values(this.eventMap[type])) {
+            for (const listener of listeners) {
                 listener.apply(this, payload)
             }
         }
@@ -65,13 +65,13 @@ class EventHub {
 
     _checkType = type => {
         if (!this.eventType.hasOwnProperty(type)) {
-            throw new Error(`do not support event type: ${type}`);
+            throw new Error(`do not support event type: ${type}`)
         }
     }
 
     _checkListener = listener => {
         if (typeof listener !== "function") {
-            throw new Error(`listener is not function: ${listener}`);
+            throw new Error(`listener is not function: ${listener}`)
         }
     }
 
@@ -90,27 +90,21 @@ class EventHub {
         )
 
         const onContentLoaded = () => this.publishEvent(this.eventType.fileContentLoaded, this.utils.getFilePath())
-        if (File.onSwitchDocumentTarget) {
+        if (this.utils.isBetaVersion || File.onSwitchDocumentTarget) {
             this.utils.decorate(() => File, "onSwitchDocumentTarget", null, onContentLoaded)
-        } else if (File.editor.library.doSwitchByNode) {
+        } else {
             this.utils.decorate(() => File.editor.library, "doSwitchByNode", null, ret => ret.then(onContentLoaded))
         }
 
         this.utils.decorate(() => File?.editor?.fences, "addCodeBlock",
-            (...args) => {
-                const cid = args[0]
-                if (cid) this.publishEvent(this.eventType.beforeAddCodeBlock, cid)
-            },
-            (cm, ...args) => {
-                const cid = args[0]
-                if (cid) this.publishEvent(this.eventType.afterAddCodeBlock, cid, cm)
-            },
+            (cid) => cid && this.publishEvent(this.eventType.beforeAddCodeBlock, cid),
+            (cm, cid) => cid && this.publishEvent(this.eventType.afterAddCodeBlock, cid, cm),
         )
 
         this.utils.decorate(
             () => File?.editor?.fences, "tryAddLangUndo", null,
             (result, ...args) => this.publishEvent(this.eventType.afterUpdateCodeBlockLang, args)
-        );
+        )
 
         this.utils.decorate(() => File, "toggleSourceMode", () => this.publishEvent(this.eventType.beforeToggleSourceMode))
 
@@ -120,17 +114,17 @@ class EventHub {
         )
 
         const _afterToggleSidebar = () => {
-            const sidebar = document.querySelector("#typora-sidebar");
+            const sidebar = document.querySelector("#typora-sidebar")
             if (sidebar) this.publishEvent(this.eventType.afterToggleSidebar, sidebar.classList.contains("open"))
         }
-        const content = this.utils.entities.eContent;
-        const hasTransition = window.getComputedStyle(content).transition !== "all 0s ease 0s";
+        const content = this.utils.entities.eContent
+        const hasTransition = window.getComputedStyle(content).transition !== "all 0s ease 0s"
         const afterToggleSidebar = hasTransition
             ? () => content.addEventListener("transitionend", _afterToggleSidebar, { once: true })
-            : this.utils.debounce(_afterToggleSidebar, 400);
+            : this.utils.debounce(_afterToggleSidebar, 400)
         this.utils.decorate(() => File?.editor?.library, "toggleSidebar", null, afterToggleSidebar)
 
-        const afterSetSidebarWidth = this.utils.debounce(() => this.publishEvent(this.eventType.afterSetSidebarWidth), 400);
+        const afterSetSidebarWidth = this.utils.debounce(() => this.publishEvent(this.eventType.afterSetSidebarWidth), 400)
         this.utils.decorate(() => File?.editor?.library, "setSidebarWidth", null, afterSetSidebarWidth)
 
         // const resizeObserver = new ResizeObserver(entries => {
@@ -147,23 +141,20 @@ class EventHub {
         this.utils.decorate(() => File?.megaMenu, "show", () => this.publishEvent(this.eventType.toggleSettingPage, true))
         this.utils.decorate(() => File?.megaMenu, "hide", () => this.publishEvent(this.eventType.toggleSettingPage, false))
 
-        const debouncePublish = this.utils.debounce(() => this.publishEvent(this.eventType.fileEdited), 400);
-        this.observer = new MutationObserver(mutationList => {
-            if (mutationList.some(m => m.type === "characterData")
-                || mutationList.length && mutationList.some(m => m.addedNodes.length) && mutationList.some(m => m.removedNodes.length)) {
-                debouncePublish();
-            }
-        });
+        const debouncePublish = this.utils.debounce(() => this.publishEvent(this.eventType.fileEdited), 400)
+        this.observer = new MutationObserver(mutations => {
+            const ok = mutations.some(m => m.type === "characterData") || mutations.length && mutations.some(m => m.addedNodes.length) && mutations.some(m => m.removedNodes.length)
+            if (ok) debouncePublish()
+        })
         this.observer.observe(this.utils.entities.eWrite, { characterData: true, childList: true, subtree: true })
     }
 
     afterProcess = () => {
-        delete this.eventMap[this.eventType.allPluginsHadInjected];
-        const funcList = this.eventMap[this.eventType.fileEdited];
-        if (!funcList) {
-            delete this.eventMap[this.eventType.fileEdited];
-            this.observer.disconnect();
-            this.observer = null;
+        delete this.eventMap[this.eventType.allPluginsHadInjected]
+        if (!this.eventMap[this.eventType.fileEdited]) {
+            delete this.eventMap[this.eventType.fileEdited]
+            this.observer.disconnect()
+            this.observer = null
         }
     }
 }

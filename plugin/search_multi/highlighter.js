@@ -14,10 +14,10 @@ class Highlighter {
             if (rendered) this._searchOnCM(cm)
         }, 999)
 
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.utils.debounce(() => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
             const isShown = !this.plugin.entities.window.hidden
             if (isShown) this.plugin.highlightByAST()
-        }, 1000))
+        })
 
         document.querySelector(".plugin-search-highlights").addEventListener("mousedown", ev => {
             const target = ev.target.closest(".plugin-highlight-item")

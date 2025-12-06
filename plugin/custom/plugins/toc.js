@@ -4,9 +4,9 @@ class TOCPlugin extends BaseCustomPlugin {
     html = () => {
         const ICONS = { header: "fa-header", image: "fa-image", table: "fa-table", fence: "fa-code", link: "fa-link", math: "fa-dollar" }
         const buttons = this.config.title_bar_buttons.map(btn => {
-            const icon = ICONS[btn]
+            const icon = `<div class="fa ${ICONS[btn]}"></div>`
             const hint = this.i18n.t(`$option.title_bar_buttons.${btn}`)
-            return `<div class="plugin-toc-icon" data-type="${btn}" ty-hint="${hint}"><div class="fa ${icon}"></div></div>`
+            return `<div class="plugin-toc-icon" data-type="${btn}" ty-hint="${hint}">${icon}</div>`
         })
         const cls = buttons.length > 1 ? "plugin-toc-header" : "plugin-toc-header plugin-common-hidden"
         return `
@@ -22,21 +22,22 @@ class TOCPlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     init = () => {
+        this.diaplayNameFn = this._getDisplayNameFn()
         this.entities = {
             content: this.utils.entities.eContent,
             modal: document.querySelector("#plugin-toc"),
             grip: document.querySelector("#plugin-toc .grip-right"),
             list: document.querySelector("#plugin-toc .plugin-toc-list"),
             header: document.querySelector("#plugin-toc .plugin-toc-header"),
-        };
+        }
     }
 
     process = () => {
         const onEvent = () => {
-            const { eventHub } = this.utils;
-            eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.refresh());
-            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
-            eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.refresh, 300));
+            const { eventHub } = this.utils
+            eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.refreshModal())
+            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.hideModal())
+            eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.refreshModal, 300))
             this.utils.decorate(() => File?.editor?.library?.outline, "highlightVisibleHeader", null, this._highlightVisibleHeader)
             const resetPosition = () => {
                 const { right: contentRight } = this.entities.content.getBoundingClientRect()
@@ -46,7 +47,7 @@ class TOCPlugin extends BaseCustomPlugin {
             eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition);
             eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition);
             if (this.config.default_show_toc) {
-                eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, this.toggle);
+                eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, this.toggleModal)
             }
         }
         const onClick = () => {
@@ -67,12 +68,12 @@ class TOCPlugin extends BaseCustomPlugin {
                 }
 
                 const type = ev.target.closest(".plugin-toc-icon")?.dataset.type
-                if (type) this.refresh(type)
+                if (type) this.refreshModal(type)
             })
 
             if (this.config.right_click_outline_button_to_toggle) {
                 const panelTitle = document.querySelector("#info-panel-tab-outline .info-panel-tab-title")
-                panelTitle?.addEventListener("mousedown", ev => ev.button === 2 && this.toggle())
+                panelTitle?.addEventListener("mousedown", ev => ev.button === 2 && this.toggleModal())
             }
         }
         const onResize = () => {
@@ -196,7 +197,7 @@ class TOCPlugin extends BaseCustomPlugin {
         onDrag()
     }
 
-    callback = anchorNode => this.toggle()
+    callback = anchorNode => this.toggleModal()
 
     isModalShow = () => this.utils.isShow(this.entities.modal)
 
@@ -209,33 +210,26 @@ class TOCPlugin extends BaseCustomPlugin {
         content.style.removeProperty("width");
     }
 
-    showModal = (refresh = true) => {
+    showModal = (forceRefresh = true) => {
         this.utils.show(this.entities.modal);
         const { width } = this.entities.content.getBoundingClientRect();
         const modalWidth = width * this.config.width_percent_when_pin_right / 100;
         this.entities.modal.style.width = modalWidth + "px";
         this.entities.content.style.width = `${width - modalWidth}px`;
         this.utils.entities.eWrite.style.width = "initial";
-        if (refresh) this.refresh()
+        if (forceRefresh) this.refreshModal()
     }
 
-    toggle = () => {
-        if (this.isModalShow()) {
-            this.hideModal();
-        } else {
-            this.showModal();
-        }
-    }
+    toggleModal = () => this.isModalShow() ? this.hideModal() : this.showModal()
 
-    refresh = type => {
-        if (this.isModalShow()) {
-            type = type || this._getCurrentType()
-            this._setIconActive(type)
-            const root = this._getRoot(type)
-            const sortable = this.config.sortable && type === "header"
-            this.entities.list.innerHTML = this._getRootHTML(root, sortable)
-            this._highlightVisibleHeader()
-        }
+    refreshModal = type => this.isModalShow() && this._refreshModal(type)
+
+    _refreshModal = (type = this._getCurrentType()) => {
+        this._activeIcon(type)
+        const root = this._getRoot(type)
+        const sortable = this.config.sortable && type === "header"
+        this.entities.list.innerHTML = this._getRootHTML(root, sortable)
+        this._highlightVisibleHeader()
     }
 
     _getCurrentType = () => {
@@ -243,12 +237,12 @@ class TOCPlugin extends BaseCustomPlugin {
         return btn?.dataset.type ?? "header"
     }
 
-    _setIconActive = type => this.entities.header.children.forEach(ele => ele.classList.toggle("select", ele.dataset.type === type))
+    _activeIcon = type => this.entities.header.children.forEach(el => el.classList.toggle("select", el.dataset.type === type))
 
     _highlightVisibleHeader = (_, $header, targetIdx) => {
         if (!this.isModalShow() || this._getCurrentType() !== "header") return
 
-        const headers = $header || $(File.editor.writingArea).children(File.editor.library.outline.headerStr);
+        const headers = $header || this.utils.entities.$eWrite.children(File.editor.library.outline.headerStr)
         if (!headers.length) return;
 
         const contentScrollTop = this.utils.entities.$eContent.scrollTop();
@@ -296,10 +290,9 @@ class TOCPlugin extends BaseCustomPlugin {
         if (includeHeadings) {
             types.push("h1", "h2")
         }
-        const imageHasAlt = document.querySelector(".md-image[data-alt]")
 
-        const idxMap = { table: 0, fence: 0, image: 0, link: 0, math: 0 }
-        const typeMap = {
+        const TYPE_COUNTERS = { table: 0, fence: 0, image: 0, link: 0, math: 0 }
+        const TYPE_SELECTORS = {
             h1: ":scope > h1",
             h2: ":scope > h2",
             table: ".md-table",
@@ -308,17 +301,24 @@ class TOCPlugin extends BaseCustomPlugin {
             link: ".md-link",
             math: ".md-math-block, .md-inline-math-container",
         }
+        const TYPE_MAPPINGS = {
+            "md-table": "table",
+            "md-fences": "fence",
+            "md-image": "image",
+            "md-link": "link",
+            "md-math-block": "math",
+            "md-inline-math-container": "math",
+        }
         const root = { depth: 0, cid: "n0", text: "root", children: [], parent: null }
         const helper = { current: root, H1: root }
 
-        const selector = types.map(t => typeMap[t]).join(" , ")
+        const selector = types.map(t => TYPE_SELECTORS[t]).join(", ")
         this.utils.entities.eWrite.querySelectorAll(selector).forEach(el => {
             if (el.style.display === "none") return
 
-            const children = []
-            const tagName = el.tagName
+            const { tagName, classList } = el
             if (tagName === "H1" || tagName === "H2") {
-                const header = { cid: el.getAttribute("cid"), text: el.textContent, class_: "toc-header-node", children }
+                const header = { cid: el.getAttribute("cid"), text: el.textContent, class_: "toc-header-node", children: [] }
                 if (tagName === "H1") {
                     root.children.push({ ...header, parent: root })
                     helper.H1 = header
@@ -329,22 +329,14 @@ class TOCPlugin extends BaseCustomPlugin {
                 return
             }
 
-            const classList = el.classList
-            const type = classList.contains("md-table") ? "table"
-                : classList.contains("md-fences") ? "fence"
-                    : classList.contains("md-image") ? "image"
-                        : classList.contains("md-link") ? "link"
-                            : (classList.contains("md-math-block") || classList.contains("md-inline-math-container")) ? "math"
-                                : null
-
+            const matchedClass = Object.keys(TYPE_MAPPINGS).find(cls => classList.contains(cls))
+            const type = matchedClass ? TYPE_MAPPINGS[matchedClass] : null
             if (type) {
-                idxMap[type]++
+                const idx = ++TYPE_COUNTERS[type]
+                const parent = helper.current
                 const cid = el.closest("[cid]").getAttribute("cid")
-                const prefix = this.config.show_name[type]
-                const idx = idxMap[type] + ""
-                const extra = (imageHasAlt && type === "image") ? el.dataset.alt : ""
-                const text = [prefix, idx, extra].filter(Boolean).join(" ")
-                helper.current.children.push({ cid, children, text, parent: helper.current })
+                const text = this.diaplayNameFn[type]({ idx, cid, el, parent })
+                helper.current.children.push({ cid, text, parent, children: [] })
             }
         })
         return root
@@ -366,6 +358,14 @@ class TOCPlugin extends BaseCustomPlugin {
         const li = rootNode.children.map(genLi).join("")
         return `<ul class="toc-root">${li}</ul>`
     }
+
+    _getDisplayNameFn = () => ({
+        fence: ({ idx, cid }) => this.utils.getFenceContentByCid(cid)?.slice(0, 20) || `Code ${idx}`,
+        table: ({ idx, el }) => el.querySelector(".td-span")?.textContent || `Table ${idx}`,
+        link: ({ idx, el }) => el.querySelector("a")?.textContent || `Link ${idx}`,
+        image: ({ idx, el }) => el.querySelector("img")?.getAttribute("alt") || `Image ${idx}`,
+        math: ({ idx, el }) => el.querySelector("mjx-assistive-mml")?.textContent?.slice(0, 30) || `Math ${idx}`,
+    })
 }
 
 module.exports = {

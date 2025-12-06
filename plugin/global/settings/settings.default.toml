@@ -2630,7 +2630,7 @@ HOTKEY = ""
 #   emoji:       表情
 #   footnote:    脚注
 #   inlineHTML:  行内 HTML
-STATIC_MARKERS = ["strong", "em", "del", "underline", "highlight", "superscript", "subscript", "code", "inlineMath", "image", "errorImage", "link", "footnote"]
+STATIC_MARKERS = ["strong", "em", "del", "underline", "highlight", "superscript", "subscript", "code", "inlineMath", "image", "link", "footnote"]
 
 
 ################### cursor_history ###################

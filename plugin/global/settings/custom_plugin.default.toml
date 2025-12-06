@@ -1151,9 +1151,6 @@ toc_font_size = "1em"
 #   math:   公式
 title_bar_buttons = ["header", "image", "table", "fence", "link", "math"]
 
-# 用于配置在大纲中显示的特殊元素对应的名称
-show_name = { fence = "Fence", image = "Image", table = "Table", link = "Link", math = "Math" }
-
 # 生成特殊元素的大纲，是否同时显示标题的内容
 include_headings = { fence = true, image = true, table = true, link = true, math = true }
 

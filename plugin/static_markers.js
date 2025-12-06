@@ -47,7 +47,7 @@ class StaticMarkersPlugin extends BasePlugin {
 
     _getCSS = (staticMarkers = this.config.STATIC_MARKERS) => {
         if (!this.enabled) return ""
-        const selector = staticMarkers.map(marker => this.SELECTORS[marker]).join(", ")
+        const selector = staticMarkers.map(marker => this.SELECTORS[marker]).filter(Boolean).join(", ")
         return selector ? `${selector} { display: inline !important; opacity: inherit !important; }` : ""
     }
 

@@ -1525,14 +1525,6 @@ const conf_toc = [
         Text("toc_font_size"),
     ),
     TitledBox(
-        "name",
-        Text("show_name.fence", { dependencies: { title_bar_buttons: { $contains: "fence" } } }),
-        Text("show_name.image", { dependencies: { title_bar_buttons: { $contains: "image" } } }),
-        Text("show_name.table", { dependencies: { title_bar_buttons: { $contains: "table" } } }),
-        Text("show_name.link", { dependencies: { title_bar_buttons: { $contains: "link" } } }),
-        Text("show_name.math", { dependencies: { title_bar_buttons: { $contains: "math" } } }),
-    ),
-    TitledBox(
         "displayHeader",
         Switch("include_headings.fence", { dependencies: { title_bar_buttons: { $contains: "fence" } } }),
         Switch("include_headings.image", { dependencies: { title_bar_buttons: { $contains: "image" } } }),
