@@ -9,27 +9,20 @@ class CollapseTablePlugin extends BasePlugin {
         this.utils.settings.autoSaveSettings(this)
         this.recordCollapseState(false);
 
-        this.utils.decorate(() => File?.editor?.tableEdit, "showTableEdit", null, (result, ...args) => {
-            const $figure = args[0]
-            if (!$figure || $figure.length === 0 || !$figure.find) return
-            const $edit = $figure.find(".md-table-edit")
+        this.utils.decorate(() => File?.editor?.tableEdit, "showTableEdit", null, (result, $figure) => {
+            if (!$figure || $figure.length === 0) return
+            const $edit = $figure.find?.(".md-table-edit")
             if (!$edit || $edit.length === 0) return
 
-            const icon = $figure.hasClass(this.className) ? "fa fa-plus" : "fa fa-minus"
-            const span = `<span class="md-th-button right-th-button">
-                            <button type="button" class="btn btn-default plugin-collapse-table-btn" ty-hint="${this.pluginName}">
-                                <span class="${icon}"></span>
-                            </button>
-                         </span>`
-            $edit.append($(span))
+            const iconClass = $figure.hasClass(this.className) ? "fa fa-plus" : "fa fa-minus"
+            const btn = `<button type="button" class="btn btn-default plugin-collapse-table-btn" ty-hint="${this.pluginName}"><span class="${iconClass}"></span></button>`
+            const $span = $(`<span class="md-th-button right-th-button">${btn}</span>`)
+            $edit.append($span)
         })
 
         this.utils.entities.eWrite.addEventListener("click", ev => {
-            const btn = ev.target.closest(".plugin-collapse-table-btn");
-            if (!btn) return;
-            const figure = btn.closest("figure");
-            if (!figure) return;
-            this.toggleTable(figure);
+            const figure = ev.target.closest(".plugin-collapse-table-btn")?.closest("figure")
+            if (figure) this.toggleTable(figure)
         })
     }
 
@@ -55,19 +48,16 @@ class CollapseTablePlugin extends BasePlugin {
         const table = figure.querySelector("table");
         if (!table) return;
         figure.classList.toggle(this.className);
-        const btn = figure.querySelector(".plugin-collapse-table-btn");
+        const btn = figure.querySelector(".plugin-collapse-table-btn span")
         if (btn) {
-            const span = btn.querySelector("span");
-            span.classList.toggle("fa-plus");
-            span.classList.toggle("fa-minus");
+            btn.classList.toggle("fa-plus")
+            btn.classList.toggle("fa-minus")
         }
     }
 
     rollback = start => {
         let cur = start;
-        while (true) {
-            cur = cur.closest(`.${this.className}`);
-            if (!cur) return;
+        while (cur && (cur = cur.closest(`.${this.className}`))) {
             this.toggleTable(cur);
             cur = cur.parentElement;
         }

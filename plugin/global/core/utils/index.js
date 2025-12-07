@@ -1151,6 +1151,7 @@ class utils {
     static moveCursor = $target => File.editor.selection.jumpIntoElemEnd($target)
 
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
+        if (!$target) return
         if ($target instanceof Element) {
             $target = $($target);
         }

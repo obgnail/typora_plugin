@@ -215,7 +215,7 @@ class WindowTabPlugin extends BasePlugin {
                         } else {
                             const x = Math.abs(ev.clientX - startX);
                             const y = Math.abs(ev.clientY - startY);
-                            _axis = ((x > y && 'X') || (x < y && 'Y') || '');
+                            _axis = (x > y && 'X') || (x < y && 'Y') || ''
                         }
                     } else {
                         _axis = '';
@@ -281,19 +281,20 @@ class WindowTabPlugin extends BasePlugin {
         }
         const handleRename = () => {
             reqnode("electron").ipcRenderer.on("didRename", (sender, { oldPath, newPath }) => {
-                const isDir = this.utils.Package.Fs.statSync(newPath).isDirectory();
+                const isDir = this.utils.Package.Fs.statSync(newPath).isDirectory()
                 if (isDir) {
                     this.tabUtil.tabs
                         .filter(tab => tab.path.startsWith(oldPath))
                         .forEach(tab => tab.path = newPath + tab.path.slice(oldPath.length))
                 } else {
-                    const renameTab = this.tabUtil.tabs.find(tab => tab.path === oldPath);
-                    if (renameTab) {
-                        renameTab.path = newPath;
-                    }
+                    const renamedTab = this.tabUtil.tabs.find(tab => tab.path === oldPath)
+                    if (renamedTab) renamedTab.path = newPath
                 }
-                const path = this.tabUtil.currentTab?.path
-                if (path) this.openTab(path)
+                const currentPath = this.tabUtil.currentTab?.path
+                if (currentPath) {
+                    this.openTab(currentPath)
+                    queueMicrotask(() => File.editor.library.refreshPanelCommand())
+                }
             })
         }
         const handleFocusChange = () => {
@@ -375,37 +376,35 @@ class WindowTabPlugin extends BasePlugin {
                     2000,
                     false
                 )
-
-                setTimeout(() => {
-                    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage))
-                }, 2000)
+                const autoSave = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage))
+                setTimeout(autoSave, 2000)
             })
         }
 
         // Typora version 1.1 and later supports using anchor links to jump to local files
         // Intercept internal and local file links, and change the jump behavior to open in a new tab
         const interceptLink = () => {
-            const _linkUtils = { file: "", anchor: "" };
+            const cache = { file: "", anchor: "" }
+            const setCache = (file, anchor) => Object.assign(cache, { file, anchor })
+            const scrollByAnchor = (anchor, height = -1) => {
+                const $target = File.editor.EditHelper.findAnchorElem(anchor)
+                this.utils.scroll($target, height)
+            }
+
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
-                const { file, anchor } = _linkUtils;
-                if (!file) return;
-
-                _linkUtils.file = "";
-                _linkUtils.anchor = "";
-                const ele = File.editor.EditHelper.findAnchorElem(anchor);
-                if (ele) this.utils.scroll(ele, 10)
-            });
-            this.utils.decorate(() => JSBridge, "invoke", (...args) => {
-                if (args.length < 3 || args[0] !== "app.openFileOrFolder") return;
-
-                const anchor = args[2]["anchor"];
-                if (!anchor || typeof anchor !== "string" || !anchor.match(/^#/)) return;
-
-                const filePath = args[1];
-                _linkUtils.file = filePath;
-                _linkUtils.anchor = anchor;
-                this.utils.openFile(filePath);
-                return this.utils.stopCallError
+                if (cache.file) {
+                    scrollByAnchor(cache.anchor, 10)
+                    setCache("", "")
+                }
+            })
+            this.utils.decorate(() => JSBridge, "invoke", (cmd, file, options) => {
+                if (cmd !== "app.openFileOrFolder") return
+                const { anchor } = options ?? {}
+                if (file && anchor && typeof anchor === "string" && anchor.startsWith("#")) {
+                    setCache(file, anchor)
+                    this.utils.openFile(file)
+                    return this.utils.stopCallError
+                }
             })
         }
 
