@@ -11,7 +11,7 @@ class RightClickMenuPlugin extends BasePlugin {
         this.unavailableActValue = "__not_available__"
         this.unavailableActName = this.i18n.t("act.disabled")
         this.defaultDisableHint = this.i18n.t("achHint.disabled")
-        this.supportShortcut = Boolean(document.querySelector(".ty-menu-shortcut"))
+        this.supportShortcut = !!document.querySelector(".ty-menu-shortcut")
     }
 
     process = () => {
@@ -34,7 +34,7 @@ class RightClickMenuPlugin extends BasePlugin {
             const name = this.i18n._t("settings", NAME)
             const noExtraMenu = LIST.length === 1
             const caret = noExtraMenu ? "" : '<i class="fa fa-caret-right"></i>'
-            const a = `<a role="menuitem"><span data-lg="Menu">${name}</span>${caret}</a>`
+            const a = `<a role="menuitem"><span data-lg="Menu" data-localize="${name}">${name}</span>${caret}</a>`
             return noExtraMenu
                 ? `<li data-key="${this.noExtraMenuGroupName}" data-value="${LIST[0]}" data-idx="${idx}">${a}</li>`
                 : `<li class="has-extra-menu" data-key="${this.groupName}" data-idx="${idx}">${a}</li>`
@@ -55,7 +55,7 @@ class RightClickMenuPlugin extends BasePlugin {
         const LiWithAction = (plugin, action) => {
             const target = plugin.staticActions.find(act => act.act_value === action)
             const name = target ? target.act_name : plugin.pluginName
-            const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", text: name }]
+            const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", "data-localize": name, text: name }]
             return { ele: "li", className: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": action, children }
         }
         const Li = plugin => {
@@ -127,10 +127,10 @@ class RightClickMenuPlugin extends BasePlugin {
         shortcut = this._cleanShortcut(shortcut)
         const hasShortcut = this.supportShortcut && this.config.SHOW_PLUGIN_HOTKEY && shortcut
         const attr = hasExtraMenu
-            ? { children: [{ ele: "span", "data-lg": "Menu", text: showName, children: [{ ele: "i", className: "fa fa-caret-right" }] }] }
+            ? { children: [{ ele: "span", "data-lg": "Menu", "data-localize": showName, text: showName, children: [{ ele: "i", className: "fa fa-caret-right" }] }] }
             : hasShortcut
-                ? { children: [{ ele: "span", text: showName }, { ele: "span", className: "ty-menu-shortcut", text: shortcut }] }
-                : { text: showName }
+                ? { children: [{ ele: "span", "data-localize": showName, text: showName }, { ele: "span", className: "ty-menu-shortcut", text: shortcut }] }
+                : { text: showName, "data-localize": showName }
         const children = [{ ele: "a", role: "menuitem", className, "data-lg": "Menu", ...attr }]
         return { ele: "li", "data-key": key, children, ...extra }
     }
@@ -140,7 +140,8 @@ class RightClickMenuPlugin extends BasePlugin {
             shortcut = shortcut[0]
         }
         if (shortcut && typeof shortcut === "string") {
-            shortcut = shortcut.split("+").map(e => e[0].toUpperCase() + e.slice(1).toLowerCase()).join("+")
+            const capitalize = e => e[0].toUpperCase() + e.slice(1).toLowerCase()
+            shortcut = shortcut.split("+").map(capitalize).join("+")
         }
         return shortcut
     }
@@ -294,7 +295,7 @@ class RightClickMenuPlugin extends BasePlugin {
     ])
 
     call = async action => {
-        const callMap = {
+        const fns = {
             do_not_hide: () => this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE,
             hide_other_options: async () => {
                 this.config.HIDE_OTHER_OPTIONS = !this.config.HIDE_OTHER_OPTIONS
@@ -306,7 +307,7 @@ class RightClickMenuPlugin extends BasePlugin {
                 document.querySelectorAll(".plugin-menu-second .ty-menu-shortcut, .plugin-menu-third .ty-menu-shortcut").forEach(toggle)
             },
         }
-        const fn = callMap[action]
+        const fn = fns[action]
         if (fn) {
             await fn()
         }
