@@ -1181,7 +1181,9 @@
   },
   "wavedrom": {
     "pluginName": "WaveDrom",
-    "$label.SAFE_MODE": "Safe Mode"
+    "$label.SAFE_MODE": "Safe Mode",
+    "$label.downloadWaveDromSkins": "Download Skin Files",
+    "$title.SKIN_FILES": "Skin Files"
   },
   "calendar": {
     "pluginName": "Calendar"

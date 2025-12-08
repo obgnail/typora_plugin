@@ -1332,6 +1332,10 @@ const conf_wavedrom = [
     ),
     box_chartStyle,
     TextareaBox("TEMPLATE"),
+    ArrayBox("SKIN_FILES"),
+    UntitledBox(
+        Action("downloadWaveDromSkins"),
+    ),
     box_settingHandler,
 ]
 

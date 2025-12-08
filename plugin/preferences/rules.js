@@ -133,7 +133,10 @@ module.exports = {
     },
     echarts: chartStyles,
     chart: chartStyles,
-    wavedrom: chartStyles,
+    wavedrom: {
+        ...chartStyles,
+        SKIN_FILES: [required, path],
+    },
     calendar: chartStyles,
     abc: chartStyles,
     drawIO: {

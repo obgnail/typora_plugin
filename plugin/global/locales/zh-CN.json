@@ -1181,7 +1181,9 @@
   },
   "wavedrom": {
     "pluginName": "WaveDrom",
-    "$label.SAFE_MODE": "安全模式"
+    "$label.SAFE_MODE": "安全模式",
+    "$label.downloadWaveDromSkins": "下载皮肤文件",
+    "$title.SKIN_FILES": "皮肤文件"
   },
   "calendar": {
     "pluginName": "Calendar"
