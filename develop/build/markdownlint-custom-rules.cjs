@@ -2,8 +2,9 @@
  * Credit: https://github.com/obgnail/markdownlint-custom-rules
  * Issue: https://github.com/obgnail/typora_plugin/issues/957
  *        https://github.com/obgnail/typora_plugin/issues/1046
+ *        https://github.com/obgnail/typora_plugin/issues/1106
  */
-const { addErrorContext, isBlankLine } = require("markdownlint-rule-helpers")
+const { addErrorContext, addErrorDetailIf, isBlankLine } = require("markdownlint-rule-helpers")
 const { getParentOfType, filterByTypes } = require("markdownlint-rule-helpers/micromark")
 
 const mathBlockPrefixRe = /^(.*?)[$]/
@@ -110,4 +111,40 @@ const MD102 = {
     }
 }
 
-module.exports = [MD101, MD102]
+const MD103 = {
+    names: ["MD103", "inline-math-delimiter"],
+    description: "inline math delimiter style",
+    tags: ["math"],
+    parser: "micromark",
+    "function": (params, onError) => {
+        let style = String(params.config.style || "consistent").trim()
+        const mathTexts = filterByTypes(params.parsers.micromark.tokens, ["mathText"])
+        for (const token of mathTexts) {
+            const seqToken = token.children.find(c => c.type === "mathTextSequence")
+            if (!seqToken) continue
+
+            const styleForToken = (seqToken.text.length === 1) ? "single" : (seqToken.text.length === 2) ? "double" : String(seqToken.text.length)
+            if (style === "consistent") {
+                style = styleForToken
+            }
+            const text = token.children.find(c => c.type === "mathTextData")?.text ?? ""
+            const seq = "$".repeat(style === "double" ? 2 : 1)
+            addErrorDetailIf(
+                onError,
+                token.startLine,
+                style,
+                styleForToken,
+                undefined,
+                token.text.trim(),
+                undefined,
+                {
+                    editColumn: token.startColumn,
+                    deleteCount: token.endColumn - token.startColumn,
+                    insertText: seq + text + seq,
+                }
+            )
+        }
+    }
+}
+
+module.exports = [MD101, MD102, MD103]

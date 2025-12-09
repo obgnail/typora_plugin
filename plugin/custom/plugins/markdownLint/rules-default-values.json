@@ -168,6 +168,9 @@
     "list_items": true
   },
   "MD102": true,
+  "MD103": {
+    "style": "consistent"
+  },
   "headings": true,
   "bullet": true,
   "ul": true,

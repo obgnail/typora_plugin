@@ -55,5 +55,6 @@
   "descriptive-link-text": "MD059",
   "table-column-style": "MD060",
   "math-surrounded-by-blank-lines": "MD101",
-  "no-fully-emphasized-heading": "MD102"
+  "no-fully-emphasized-heading": "MD102",
+  "inline-math-delimiter": "MD103"
 }

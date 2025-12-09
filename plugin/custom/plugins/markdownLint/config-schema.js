@@ -12,6 +12,7 @@ const OPTIONS = {
     "MD050.style": ["consistent", "asterisk", "underscore"],
     "MD055.style": ["consistent", "leading_only", "trailing_only", "leading_and_trailing", "no_leading_or_trailing"],
     "MD060.style": ["any", "aligned", "compact", "tight"],
+    "MD103.style": ["consistent", "single", "double"],
 }
 
 const buildGeneralRuleDependencies = () => {
@@ -254,6 +255,10 @@ const MD101 = ConfigurableRule(
     Switch("MD101.list_items"),
 )
 const MD102 = SimpleRule("MD102")
+const MD103 = ConfigurableRule(
+    "MD103",
+    Select("MD103.style"),
+)
 
 const globalConfigs = [
     Switch("default", { disabled: true }),
@@ -266,7 +271,7 @@ const specificRules = [
     MD027, MD028, MD029, MD030, MD031, MD032, MD033, MD034, MD035, MD036,
     MD037, MD038, MD039, MD040, MD041, MD042, MD043, MD044, MD045, MD046,
     MD047, MD048, MD049, MD050, MD051, MD052, MD053, MD054, MD055, MD056,
-    MD058, MD059, MD060, MD101, MD102,
+    MD058, MD059, MD060, MD101, MD102, MD103,
 ]
 
 const generalRules = Object.entries(generalRulesMap).map(([name, rules]) => Switch(name, { explain: rules.join("、") }))
