@@ -241,7 +241,7 @@ class PreferencesPlugin extends BasePlugin {
             viewVitePressLineHighlighting: () => this.utils.openUrl("https://vitepress.dev/guide/markdown#line-highlighting-in-code-blocks"),
             viewAbcVisualOptionsHelp: () => this.utils.openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
             chooseEchartsRenderer: () => this.utils.openUrl("https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/"),
-            downloadWaveDromSkins: () => this.utils.openUrl("https://cdnjs.com/libraries/wavedrom"),
+            downloadWaveDromSkins: () => this.utils.openUrl("https://github.com/wavedrom/wavedrom/tree/trunk/skins"),
             viewArticleUploaderReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),
             viewJsonRPCReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/README.md")),
             editStyles: () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/user_styles/README.md")),

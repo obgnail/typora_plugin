@@ -454,7 +454,7 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#FFFFFF"
 
 # 皮肤文件
 #   下载皮肤文件：https://cdnjs.com/libraries/wavedrom
-SKIN_FILES = ["plugin/custom/plugins/wavedrom/narrow.min.js"]
+SKIN_FILES = ["plugin/custom/plugins/wavedrom/narrow.js"]
 
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
