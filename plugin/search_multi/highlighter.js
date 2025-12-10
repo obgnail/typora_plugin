@@ -10,8 +10,8 @@ class Highlighter {
         this._polyfill()
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
-            const rendered = this.searchStatus.futureCM.has(cid)
-            if (rendered) this._searchOnCM(cm)
+            const needSearch = this.searchStatus.futureCM.has(cid)
+            if (needSearch) this._searchOnCM(cm)
         }, 999)
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
@@ -35,7 +35,7 @@ class Highlighter {
             const beforePos = parseInt(target.dataset.pos)
             const currentPos = this.highlightNext(className, beforePos, ev.button === 0)
             target.dataset.pos = currentPos
-            target.innerText = `${name} (${currentPos + 1}/${hits.length})`
+            target.textContent = `${name} (${currentPos + 1}/${hits.length})`
         })
     }
 
@@ -55,11 +55,9 @@ class Highlighter {
             this._handleCodeBlock(File.editor.sourceView.cm)
         } else {
             let node = File.editor.nodeMap.getFirst()
-            while (node) {
+            while (node && this._checkHits()) {
                 this._handleNode(node)
                 node = node.get("after")
-                const ok = this._checkHits()
-                if (!ok) break
             }
         }
         this._registerAutoClearSearch()
@@ -160,6 +158,7 @@ class Highlighter {
     _pushHit = (hit, highlightCls) => {
         this.searchStatus.hits.push(hit)
         this.searchStatus.hitGroups[highlightCls].hits.push(hit)
+        return this._checkHits()
     }
 
     _handleNode = node => {
@@ -195,8 +194,7 @@ class Highlighter {
             if (start === end) continue
 
             const hit = { isCm: cm, cid: cm.cid, start, end, highlightCls }
-            this._pushHit(hit, highlightCls)
-            const ok = this._checkHits()
+            const ok = this._pushHit(hit, highlightCls)
             if (!ok) break
         }
 
@@ -207,55 +205,50 @@ class Highlighter {
 
     _handleOtherNode = (node, isFutureCm = false) => {
         this._resetRegexpLastIndex()
-        const nodeElement = File.editor.findElemById(node.cid)[0]
-        if (!nodeElement) return
+        const $node = File.editor.findElemById(node.cid)
+        if (!$node[0]) return
 
         let offsetAdjust = 0
-        let rawText = $(nodeElement).rawText()
+        let rawText = $node.rawText()
         const fullText = node.getText().replace(/\r?\n/g, File.useCRLF ? "\r\n" : "\n")
         if (NodeDef.isType(node, NodeDef.TYPE.heading)) {
-            const headingPrefix = "#".repeat(node.get("depth") || 1) + " "
+            const depth = node.get("depth") || 1
+            const headingPrefix = "#".repeat(depth) + " "
             rawText = headingPrefix + rawText
             offsetAdjust = headingPrefix.length
         }
 
-        const matches = [...(isFutureCm ? fullText : rawText).matchAll(this.searchStatus.regexp)]
+        const matches = (isFutureCm ? fullText : rawText).matchAll(this.searchStatus.regexp)
         for (const match of matches) {
             const hit = {
                 cid: node.cid,
-                containerNode: nodeElement,
+                containerNode: $node[0],
                 start: Math.max(0, match.index - offsetAdjust),
                 end: match.index + match[0].length - offsetAdjust,
                 highlightCls: this._getHighlightClass(match),
             }
-
             if (hit.start === hit.end) continue
 
+            let highlight = hit
             if (isFutureCm) {
-                this._pushHit(hit, hit.highlightCls)
                 this.searchStatus.futureCM.add(node.cid)
             } else {
                 const range = File.editor.selection.rangy.createRange()
                 range.moveToBookmark(hit)
-                const highlight = this._markRange(range, hit.highlightCls)
-                const $highlight = $(highlight)
-                const isMetaContent = $highlight.closest(".md-meta, .md-content, script").length
-                    || $highlight.hasClass("md-meta")
-                    || $highlight.hasClass("md-content")
-                    || ($highlight[0] && $highlight[0].tagName === "script")
+                highlight = this._markRange(range, hit.highlightCls)
+                const isMetaContent = highlight.closest(".md-meta, .md-content, script")
                 if (isMetaContent) {
-                    this._expandInlineElement($highlight)
+                    this._expandInlineEl(highlight)
                 } else {
-                    highlight.querySelectorAll(".md-meta, .md-content, script").forEach(e => this._expandInlineElement($(e)))
+                    highlight.querySelectorAll(".md-meta, .md-content, script").forEach(el => this._expandInlineEl(el))
                 }
-                this._pushHit(highlight, hit.highlightCls)
             }
-            const ok = this._checkHits()
+            const ok = this._pushHit(highlight, hit.highlightCls)
             if (!ok) break
         }
     }
 
-    _expandInlineElement = e => e.closest("[md-inline]").addClass("md-search-expand")
+    _expandInlineEl = el => el.closest("[md-inline]")?.classList.add("md-search-expand")
 
     _handleFences = node => {
         this._resetRegexpLastIndex()
@@ -309,8 +302,7 @@ class Highlighter {
             range.moveToBookmark(hit)
             if (range.commonAncestorContainer.nodeType === document.TEXT_NODE) {
                 const highlight = this._markRange(range, hit.highlightCls)
-                this._pushHit(highlight, hit.highlightCls)
-                const ok = this._checkHits()
+                const ok = this._pushHit(highlight, hit.highlightCls)
                 if (!ok) break
             }
         }
