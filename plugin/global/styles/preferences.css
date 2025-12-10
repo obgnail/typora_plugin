@@ -11,7 +11,6 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 800px;
     height: calc(100vh - 150px);
     border-radius: 8px;
     box-shadow: 2px 2px 4px #dbdbdb, -2px -2px 4px #dbdbdb;
@@ -47,6 +46,9 @@
     display: flex;
     overflow: hidden;
     border-radius: 8px;
+    width: 800px;
+    min-width: 500px;
+    resize: horizontal;
 }
 
 .plugin-preferences-left {
