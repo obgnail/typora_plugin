@@ -1,7 +1,8 @@
 {
   "scripts": {
     "build": "node build/index.cjs",
-    "build:selected": "npm run build md-padding markmap markdownlint-custom-rules",
+    "build:single": "npm run build markdownlint-rule-helpers",
+    "build:selected": "npm run build md-padding markmap markdownlint-rule-helpers",
     "test": "node --test",
     "dev": "node --env-file=.env scripts/index.js",
     "rpc": "npm run dev rpc",

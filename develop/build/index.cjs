@@ -62,9 +62,9 @@ const allBuildTasks = {
         entryPoints: ["markdownlint.mjs"],
         outfile: "plugin/custom/plugins/markdownLint/markdownlint.min.js",
     },
-    "markdownlint-custom-rules": {
-        entryPoints: ["markdownlint-custom-rules.cjs"],
-        outfile: "plugin/custom/plugins/markdownLint/custom-rules.js",
+    "markdownlint-rule-helpers": {
+        entryPoints: ["markdownlint-rule-helpers.cjs"],
+        outfile: "plugin/custom/plugins/markdownLint/markdownlint-rule-helpers.min.js",
     },
 }
 

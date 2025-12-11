@@ -1,11 +1,139 @@
-var C=(e,t)=>()=>(t||e((t={exports:{}}).exports,t),t.exports);var D=C((Ne,R)=>{"use strict";R.exports.flatTokensSymbol=Symbol("flat-tokens");R.exports.htmlFlowSymbol=Symbol("html-flow");R.exports.newLineRe=/\r\n?|\n/g;R.exports.nextLinesRe=/[\r\n][\s\S]*$/});var w=C((Be,B)=>{"use strict";var{flatTokensSymbol:X,htmlFlowSymbol:Z,newLineRe:J}=D();function M(e){return!!e[Z]}function K(e){let{text:t,type:n}=e;if(n==="htmlFlow"&&t.startsWith("<!--")&&t.endsWith("-->")){let i=t.slice(4,-3);return!i.startsWith(">")&&!i.startsWith("->")&&!i.endsWith("-")}return!1}function Y(e,t,n){for(let i=t;i<=n;i++)e.add(i)}function N(e,t,n){let i=[],r=[{array:e,index:0}];for(;r.length>0;){let o=r[r.length-1],{array:s,index:a}=o;if(a<s.length){let d=s[o.index++];t(d)&&i.push(d);let{children:u}=d;if(u.length>0){let m=n?n(d):u;r.push({array:m,index:0})}}else r.pop()}return i}function $(e,t,n){let i=o=>t.includes(o.type)&&(n||!M(o)),r=e[X];return r?r.filter(i):N(e,i)}function ee(e,t,n=1){return $(e,["blockQuotePrefix","linePrefix"]).filter(i=>i.startLine===t).map(i=>i.text).join("").trimEnd().concat(`
-`).repeat(n)}function E(e,t){let n=Array.isArray(e)?e:[e];for(let i of t){let r=o=>Array.isArray(i)?i.includes(o.type):i===o.type;n=n.flatMap(o=>o.children.filter(r))}return n}function te(e){let t=1,n=e.children.find(r=>["atxHeadingSequence","setextHeadingLine"].includes(r.type)),{text:i}=n;return i[0]==="#"?t=Math.min(i.length,6):i[0]==="-"&&(t=2),t}function ne(e){return e.type==="setextHeading"?"setext":e.children.filter(n=>n.type==="atxHeadingSequence").length===1?"atx":"atx_closed"}function re(e){return E(e,[["atxHeadingText","setextHeadingText"]]).flatMap(t=>t.children.filter(n=>n.type!=="htmlText")).map(t=>t.text).join("").replace(J," ")}function ie(e){let t=/^<([^!>][^/\s>]*)/;if(e.type==="htmlText"){let n=t.exec(e.text);if(n){let i=n[1],r=i.startsWith("/");return{close:r,name:r?i.slice(1):i}}}return null}function oe(e,t){let n=e;for(;(n=n.parent)&&!t.includes(n.type););return n}var se=/^#tab\//;function ce(e){if((e==null?void 0:e.type)==="atxHeading"){let t=E(e,["atxHeadingText"]);if(t.length===1&&t[0].children.length===1&&t[0].children[0].type==="link"){let n=$(t[0].children[0].children,["resourceDestinationString"]);return n.length===1&&se.test(n[0].text)}}return!1}var le=new Set(["blockQuoteMarker","blockQuotePrefix","blockQuotePrefixWhitespace","gfmFootnoteDefinitionIndent","lineEnding","lineEndingBlank","linePrefix","listItemIndent","undefinedReference","undefinedReferenceCollapsed","undefinedReferenceFull","undefinedReferenceShortcut"]);B.exports={addRangeToSet:Y,filterByPredicate:N,filterByTypes:$,getBlockQuotePrefixText:ee,getDescendantsByType:E,getHeadingLevel:te,getHeadingStyle:ne,getHeadingText:re,getHtmlTagInfo:ie,getParentOfType:oe,inHtmlFlow:M,isDocfxTab:ce,isHtmlFlowComment:K,nonContentTokens:le}});var Q=C((qe,l)=>{"use strict";var T=w(),{newLineRe:H,nextLinesRe:ae}=D();l.exports.newLineRe=H;l.exports.nextLinesRe=ae;l.exports.frontMatterRe=/((^---[^\S\r\n\u2028\u2029]*$[\s\S]+?^---\s*)|(^\+\+\+[^\S\r\n\u2028\u2029]*$[\s\S]+?^(\+\+\+|\.\.\.)\s*)|(^\{[^\S\r\n\u2028\u2029]*$[\s\S]+?^\}\s*))(\r\n|\r|\n|$)/m;var fe=/(<!--\s*markdownlint-(disable|enable|capture|restore|disable-file|enable-file|disable-line|disable-next-line|configure-file))(?:\s|-->)/gi;l.exports.inlineCommentStartRe=fe;l.exports.endOfLineHtmlEntityRe=/&(?:#\d+|#[xX][\da-fA-F]+|[a-zA-Z]{2,31}|blk\d{2}|emsp1[34]|frac\d{2}|sup\d|there4);$/;l.exports.endOfLineGemojiCodeRe=/:(?:[abmovx]|[-+]1|100|1234|(?:1st|2nd|3rd)_place_medal|8ball|clock\d{1,4}|e-mail|non-potable_water|o2|t-rex|u5272|u5408|u55b6|u6307|u6708|u6709|u6e80|u7121|u7533|u7981|u7a7a|[a-z]{2,15}2?|[a-z]{1,14}(?:_[a-z\d]{1,16})+):$/;var j=".,;:!?\u3002\uFF0C\uFF1B\uFF1A\uFF01\uFF1F";l.exports.allPunctuation=j;l.exports.allPunctuationNoQuestion=j.replace(/[?？]/gu,"");function ue(e){return typeof e=="number"}l.exports.isNumber=ue;function de(e){return typeof e=="string"}l.exports.isString=de;function me(e){return e.length===0}l.exports.isEmptyString=me;function pe(e){return!!e&&typeof e=="object"&&!Array.isArray(e)}l.exports.isObject=pe;function V(e){return!!e&&Object.getPrototypeOf(e)===URL.prototype}l.exports.isUrl=V;function ge(e){return Array.isArray(e)?[...e]:e}l.exports.cloneIfArray=ge;function he(e){return V(e)?new URL(e):e}l.exports.cloneIfUrl=he;l.exports.getHtmlAttributeRe=function(t){return new RegExp(`\\s${t}\\s*=\\s*['"]?([^'"\\s>]*)`,"iu")};function xe(e){let t="<!--",n="-->",i=r=>{for(;;){let o=r.indexOf(t),s=r.indexOf(n);if(s!==-1&&(o===-1||s<o))r=r.slice(s+n.length);else if(o!==-1&&s!==-1)r=r.slice(0,o)+r.slice(s+n.length);else if(o!==-1&&s===-1)r=r.slice(0,o);else return r}};return!e||!e.trim()||!i(e).replace(/>/g,"").trim()}l.exports.isBlankLine=xe;var S="<!--",q="-->",W=".",ye=/^ *\|/,be=/[^\r\n]/g,Te=/[^ \r\n]/g,Re=/ +[\r\n]/g,Le=e=>e.replace(be,W);l.exports.clearHtmlCommentText=function(t){let n=0;for(;(n=t.indexOf(S,n))!==-1;){let i=t.indexOf(q,n+2);if(i===-1)break;if(i>n+S.length){let r=t.slice(n+S.length,i),o=t.lastIndexOf(`
-`,n)+1,s=t.slice(o,n),a=s.trim().length===0,u=ye.test(s)&&r.includes(`
-`);if(a||!(u||r.startsWith(">")||r.startsWith("->")||r.endsWith("-")||r.includes("--"))){let c=r.replace(Te,W).replace(Re,Le);t=t.slice(0,n+S.length)+c+t.slice(i)}}n=i+q.length}return t};l.exports.escapeForRegExp=function(t){return t.replace(/[-/\\^$*+?.()|[\]{}]/g,"\\$&")};function z(e,t,n){return e.length<=30||(t&&n?e=e.slice(0,15)+"..."+e.slice(-15):n?e="..."+e.slice(-30):e=e.slice(0,30)+"..."),e}l.exports.ellipsify=z;function F(e,t,n,i,r,o){e({lineNumber:t,detail:n,context:i,range:r,fixInfo:o})}l.exports.addError=F;function Se(e,t,n,i,r,o,s,a){n!==i&&F(e,t,"Expected: "+n+"; Actual: "+i+(r?"; "+r:""),o,s,a)}l.exports.addErrorDetailIf=Se;function ke(e,t,n,i,r,o,s){n=z(n.replace(H,`
-`),i,r),F(e,t,void 0,n,o,s)}l.exports.addErrorContext=ke;var A=(e,t,n,i)=>e<n||e===n&&t<=i;l.exports.hasOverlap=function(t,n){let i=A(t.startLine,t.startColumn,n.startLine,n.startColumn),r=i?t:n,o=i?n:t;return A(o.startLine,o.startColumn,r.endLine,r.endColumn)};l.exports.frontMatterHasTitle=function(t,n){let i=n!==void 0&&!n,r=new RegExp(String(n||'^\\s*"?title"?\\s*[:=]'),"i");return!i&&t.some(o=>r.test(o))};function Ce(e){var m;let t=c=>c.toLowerCase().trim().replace(/\s+/g," "),n=c=>c==null?void 0:c.children.filter(p=>p.type!=="blockQuotePrefix").map(p=>p.text).join(""),i=new Map,r=new Map,o=(c,p,f)=>{let g=[c.startLine-1,c.startColumn-1,c.text.length],h=t(p),x=f?r:i,y=x.get(h)||[];y.push(g),x.set(h,y)},s=new Map,a=[],d=[],u=T.filterByTypes(e,["definition","gfmFootnoteDefinition","definitionLabelString","gfmFootnoteDefinitionLabelString","gfmFootnoteCall","image","link","undefinedReferenceCollapsed","undefinedReferenceFull","undefinedReferenceShortcut"]);for(let c of u){let p="";switch(c.type){case"definition":case"gfmFootnoteDefinition":for(let f=c.startLine;f<=c.endLine;f++)a.push(f-1);break;case"gfmFootnoteDefinitionLabelString":p="^";case"definitionLabelString":{let f=t(`${p}${c.text}`);if(s.has(f))d.push([f,c.startLine-1]);else{let g=T.getParentOfType(c,["definition"]),h=g&&((m=T.getDescendantsByType(g,["definitionDestination","definitionDestinationRaw","definitionDestinationString"])[0])==null?void 0:m.text);s.set(f,[c.startLine-1,h||""])}}break;case"gfmFootnoteCall":case"image":case"link":{let f=c.children.length===1,g=c.children.length===2&&!c.children.some(b=>b.type==="resource"),[h]=T.getDescendantsByType(c,["label","labelText"]),[x]=T.getDescendantsByType(c,["reference","referenceString"]),y=n(h);if(!f&&!g){let[b,L]=c.children.filter(k=>["gfmFootnoteCallMarker","gfmFootnoteCallString"].includes(k.type));b&&L&&(y=`${b.text}${L.text}`,f=!0)}(f||g)&&o(c,n(x)||y,f)}break;case"undefinedReferenceCollapsed":case"undefinedReferenceFull":case"undefinedReferenceShortcut":{let g=T.getDescendantsByType(c,["undefinedReference"])[0].children.map(x=>x.text).join(""),h=c.type==="undefinedReferenceShortcut";o(c,g,h)}break}}return{references:i,shortcuts:r,definitions:s,duplicateDefinitions:d,definitionLineIndices:a}}l.exports.getReferenceLinkImageData=Ce;function De(e,t){let n=0,i=0,r=0,o=e.match(H)||[];for(let a of o)switch(a){case"\r":n++;break;case`
-`:i++;break;case`\r
-`:r++;break}let s=null;return!n&&!i&&!r?s=t&&t.EOL||`
-`:i>=r&&i>=n?s=`
-`:r>=n?s=`\r
-`:s="\r",s}l.exports.getPreferredLineEnding=De;function $e(e,t){let n=t&&t.homedir&&t.homedir();return n?e.replace(/^~($|\/|\\)/,`${n}$1`):e}l.exports.expandTildePath=$e;function O(e){let t={ruleNames:[],lineNumber:-1};return e.filter((n,i,r)=>{delete n.fixInfo,delete n.severity;let o=r[i-1]||t;return n.ruleNames[0]!==o.ruleNames[0]||n.lineNumber!==o.lineNumber})}function Ee(e){for(let t of e)t.ruleName=t.ruleNames[0],t.ruleAlias=t.ruleNames[1]||t.ruleName,delete t.ruleNames;return e}function we(e){let t={};for(let n of e){let i=n.ruleNames[0],r=t[i]||[];r.push(n.lineNumber),t[i]=r}return t}function P(e,t){let n={};Object.defineProperty(n,"toString",{value:e.toString});for(let i of Object.keys(e)){let r=e[i].map(o=>({...o}));n[i]=t(r)}return n}l.exports.convertToResultVersion0=function(t){return P(t,n=>we(O(n)))};l.exports.convertToResultVersion1=function(t){return P(t,n=>Ee(O(n)))};l.exports.convertToResultVersion2=function(t){return P(t,O)};l.exports.formatLintResults=function(t){let n=[],i=Object.entries(t||{});i.sort((r,o)=>r[0].localeCompare(o[0]));for(let[r,o]of i)for(let s of o){let{lineNumber:a,ruleNames:d,ruleDescription:u,errorDetail:m,errorContext:c,errorRange:p,severity:f}=s,g=d.join("/"),h=`:${a}`,x=p&&p[0]||0,y=x?`:${x}`:"",b=u,L=m?` [${m}]`:"",k=c?` [Context: "${c}"]`:"";n.push(`${r}${h}${y} ${f} ${g} ${b}${L}${k}`)}return n}});var{addErrorContext:_,addErrorDetailIf:He,isBlankLine:v}=Q(),{getParentOfType:Fe,filterByTypes:I}=w(),Oe=/^(.*?)[$]/;function U(e,t,n,i){let r=t[n-1],[,o]=r.match(Oe)||[],s=o===void 0?void 0:{lineNumber:n+(i?0:1),insertText:`${o.replace(/[^>]/g," ").trim()}
-`};_(e,n,r.trim(),void 0,void 0,void 0,s)}var Pe={names:["MD101","math-surrounded-by-blank-lines"],description:"Math Blocks should be surrounded by blank lines",tags:["math","blank_lines"],parser:"micromark",function:(e,t)=>{let n=e.config.list_items,i=n===void 0?!0:!!n,{lines:r}=e;for(let o of I(e.parsers.micromark.tokens,["mathFlow"]))(i||!Fe(o,["listOrdered","listUnordered"]))&&(v(r[o.startLine-2])||U(t,r,o.startLine,!0),!v(r[o.endLine])&&!v(r[o.endLine-1])&&U(t,r,o.endLine,!1))}};function G(e,t,n){let i=e.type==="emphasis",r=e.type==="strong";if(i||r){let d=i?"emphasisText":"strongText",u=e.children.find(m=>m.type===d);if((u==null?void 0:u.children.length)===1){G(u.children[0],t,n);return}e=u}let o=t.startColumn,s=t.endColumn-o,a=e?{editColumn:o,deleteCount:s,insertText:e.text}:void 0;_(n,t.startLine,t.text.trim(),!0,!0,[o,s],a)}var ve={names:["MD102","no-fully-emphasized-heading"],description:"Headings should not be fully emphasized",tags:["headings","emphasis","strong"],parser:"micromark",function:(e,t)=>{let n=I(e.parsers.micromark.tokens,["atxHeading"]);for(let i of n){let r=i.children.find(s=>s.type==="atxHeadingText");if(!r||r.children.length!==1)continue;let o=r.children[0];(o.type==="emphasis"||o.type==="strong")&&G(o,o,t)}}},Ie={names:["MD103","inline-math-delimiter"],description:"inline math delimiter style",tags:["math"],parser:"micromark",function:(e,t)=>{var r,o;let n=String(e.config.style||"consistent").trim(),i=I(e.parsers.micromark.tokens,["mathText"]);for(let s of i){let a=s.children.find(c=>c.type==="mathTextSequence");if(!a)continue;let d=a.text.length===1?"single":a.text.length===2?"double":String(a.text.length);n==="consistent"&&(n=d);let u=(o=(r=s.children.find(c=>c.type==="mathTextData"))==null?void 0:r.text)!=null?o:"",m="$".repeat(n==="double"?2:1);He(t,s.startLine,n,d,void 0,s.text.trim(),void 0,{editColumn:s.startColumn,deleteCount:s.endColumn-s.startColumn,insertText:m+u+m})}}};module.exports=[Pe,ve,Ie];
+const MD101 = ({ helpers, micromark }) => {
+    const { addErrorContext, isBlankLine } = helpers
+    const { getParentOfType, filterByTypes } = micromark
+
+    const mathBlockPrefixRe = /^(.*?)[$]/
+
+    function addError(onError, lines, lineNumber, top) {
+        const line = lines[lineNumber - 1]
+        const [, prefix] = line.match(mathBlockPrefixRe) || []
+        const fixInfo = (prefix === undefined) ?
+            undefined :
+            {
+                "lineNumber": lineNumber + (top ? 0 : 1),
+                "insertText": `${prefix.replace(/[^>]/g, " ").trim()}\n`
+            }
+        addErrorContext(
+            onError,
+            lineNumber,
+            line.trim(),
+            undefined,
+            undefined,
+            undefined,
+            fixInfo
+        )
+    }
+
+    return {
+        names: ["MD101", "math-surrounded-by-blank-lines"],
+        description: "Math Blocks should be surrounded by blank lines",
+        tags: ["math", "blank_lines"],
+        parser: "micromark",
+        "function": (params, onError) => {
+            const { lines } = params
+            const listItems = params.config.list_items
+            const includeListItems = (listItems === undefined) ? true : !!listItems
+
+            const mathBlocks = filterByTypes(params.parsers.micromark.tokens, ["mathFlow"])
+            for (const mathBlock of mathBlocks) {
+                if (includeListItems || !(getParentOfType(mathBlock, ["listOrdered", "listUnordered"]))) {
+                    if (!isBlankLine(lines[mathBlock.startLine - 2])) {
+                        addError(onError, lines, mathBlock.startLine, true)
+                    }
+                    if (!isBlankLine(lines[mathBlock.endLine]) && !isBlankLine(lines[mathBlock.endLine - 1])) {
+                        addError(onError, lines, mathBlock.endLine, false)
+                    }
+                }
+            }
+        }
+    }
+}
+
+const MD102 = ({ helpers, micromark }) => {
+    function checkFullyEmphasize(token, headContentToken, onError) {
+        const isEmphasis = token.type === "emphasis"
+        const isStrong = token.type === "strong"
+
+        if (isEmphasis || isStrong) {
+            const type = isEmphasis ? "emphasisText" : "strongText"
+            const textToken = token.children.find(t => t.type === type)
+            if (textToken?.children.length === 1) {
+                checkFullyEmphasize(textToken.children[0], headContentToken, onError)
+                return
+            }
+            token = textToken
+        }
+
+        const column = headContentToken.startColumn
+        const length = headContentToken.endColumn - column
+        const fixInfo = token ? { editColumn: column, deleteCount: length, insertText: token.text } : undefined
+        helpers.addErrorContext(
+            onError,
+            headContentToken.startLine,
+            headContentToken.text.trim(),
+            true,
+            true,
+            [column, length],
+            fixInfo,
+        )
+    }
+
+    return {
+        names: ["MD102", "no-fully-emphasized-heading"],
+        description: "Headings should not be fully emphasized",
+        tags: ["headings", "emphasis", "strong"],
+        parser: "micromark",
+        "function": (params, onError) => {
+            const headings = micromark.filterByTypes(params.parsers.micromark.tokens, ["atxHeading"])
+            for (const heading of headings) {
+                const headingTextToken = heading.children.find(t => t.type === "atxHeadingText")
+                if (!headingTextToken || headingTextToken.children.length !== 1) continue
+
+                const headContentToken = headingTextToken.children[0]
+                if (headContentToken.type === "emphasis" || headContentToken.type === "strong") {
+                    checkFullyEmphasize(headContentToken, headContentToken, onError)
+                }
+            }
+        }
+    }
+}
+
+const MD103 = ({ helpers, micromark }) => ({
+    names: ["MD103", "inline-math-delimiter"],
+    description: "inline math delimiter style",
+    tags: ["math"],
+    parser: "micromark",
+    "function": (params, onError) => {
+        let style = String(params.config.style || "consistent").trim()
+        const mathTexts = micromark.filterByTypes(params.parsers.micromark.tokens, ["mathText"])
+        for (const token of mathTexts) {
+            const seqToken = token.children.find(c => c.type === "mathTextSequence")
+            if (!seqToken) continue
+
+            const styleForToken = (seqToken.text.length === 1) ? "single" : (seqToken.text.length === 2) ? "double" : String(seqToken.text.length)
+            if (style === "consistent") {
+                style = styleForToken
+            }
+            const text = token.children.find(c => c.type === "mathTextData")?.text ?? ""
+            const seq = "$".repeat(style === "double" ? 2 : 1)
+            helpers.addErrorDetailIf(
+                onError,
+                token.startLine,
+                style,
+                styleForToken,
+                undefined,
+                token.text.trim(),
+                undefined,
+                {
+                    editColumn: token.startColumn,
+                    deleteCount: token.endColumn - token.startColumn,
+                    insertText: seq + text + seq,
+                }
+            )
+        }
+    }
+})
+
+const allRules = [MD101, MD102, MD103]
+
+module.exports = (dependency) => allRules.map(fn => fn(dependency))

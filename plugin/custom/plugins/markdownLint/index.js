@@ -217,8 +217,8 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             if (data.extends === "") {
                 data.extends = null  // Convert an empty string back to null
             }
-            const minimizedRules = this.utils.minimize(data, defaultValues)
-            await this.linter.configure(minimizedRules, this.config.custom_rules_files, true)
+            const ruleConfig = this.utils.minimize(data, defaultValues)
+            await this.linter.configure({ ruleConfig, persistent: true })
             this.utils.notification.show(this.i18n._t("global", "success.edit"))
         }
     }
@@ -238,21 +238,18 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             worker.postMessage({ action, payload })
         }
         return {
-            configure: async (
-                rule_config = this.config.rule_config,
-                custom_rules_files = this.config.custom_rules_files,
-                persistent = false,
-            ) => {
+            configure: async ({ ruleConfig = this.config.rule_config, customRuleFiles = this.config.custom_rule_files, persistent = false } = {}) => {
                 if (persistent) {
-                    const cfg = { rule_config, custom_rules_files }
-                    await this.utils.settings.handleSettings(this.fixedName, pluginSettings => Object.assign(pluginSettings, cfg))
-                    Object.assign(this.config, cfg)
+                    const conf = { rule_config: ruleConfig, custom_rule_files: customRuleFiles }
+                    await this.utils.settings.handleSettings(this.fixedName, pluginSettings => Object.assign(pluginSettings, conf))
+                    Object.assign(this.config, conf)
                 }
                 send(ACTION.CONFIGURE, {
-                    rules: rule_config,
-                    lib: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
+                    ruleConfig,
+                    coreLib: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
+                    helpersLib: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint-rule-helpers.min.js"),
                     polyfillLib: this.utils.joinPath("plugin/global/core/polyfill.js"),
-                    customRulesFiles: custom_rules_files.map(file => this.utils.resolvePath(file)),
+                    customRuleFiles: customRuleFiles.map(file => this.utils.resolvePath(file)),
                 })
             },
             close: () => send(ACTION.CLOSE),

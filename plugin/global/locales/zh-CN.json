@@ -1632,7 +1632,7 @@
     "$option.result_order_by.ruleName": "按规则名排序",
     "$option.result_order_by.ruleDesc": "按规则描述排序",
     "$title.rule_config": "检测规则",
-    "$title.custom_rules_files": "自定义检测规则文件",
+    "$title.custom_rule_files": "自定义检测规则文件",
     "$title.indicator": "状态指示器",
     "$title.detectAndFix": "检测与修复"
   },

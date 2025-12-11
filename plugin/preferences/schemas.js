@@ -1644,7 +1644,7 @@ const conf_markdownLint = [
         Color("error_color", { dependencies: { use_button: true } }),
     ),
     ObjectBox("rule_config", { rows: 10 }),
-    ArrayBox("custom_rules_files"),
+    ArrayBox("custom_rule_files"),
     UntitledBox(
         Action("viewMarkdownlintRules"),
         Action("viewCustomMarkdownlintRules"),

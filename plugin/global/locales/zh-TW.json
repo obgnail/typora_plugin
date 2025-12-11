@@ -1632,7 +1632,7 @@
     "$option.result_order_by.ruleName": "按規則名排序",
     "$option.result_order_by.ruleDesc": "按規則描述排序",
     "$title.rule_config": "檢測規則",
-    "$title.custom_rules_files": "自訂檢測規則檔案",
+    "$title.custom_rule_files": "自訂檢測規則檔案",
     "$title.indicator": "狀態指示器",
     "$title.detectAndFix": "檢測與修復"
   },

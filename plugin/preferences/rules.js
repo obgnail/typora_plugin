@@ -172,7 +172,7 @@ module.exports = {
         button_border_radius: required,
         pass_color: required,
         error_color: required,
-        custom_rules_files: [required, path],
+        custom_rule_files: [required, path],
     },
     quickButton: {
         button_size: required,

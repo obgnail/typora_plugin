@@ -1461,10 +1461,8 @@ hotkey_fix_lint_error = ""
 # 自定义检测规则
 #   填入文件路径，必须在 plugin 目录下
 #   参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/CustomRules.md
-#   custom-rules.js 是我写的，包含检测规则 MD101 和 MD102
-#      MD101: 公式块前后需用空行隔开
-#      MD102: 标题不可整行强调
-custom_rules_files = [
+#   custom-rules.js 是我写的，包含检测规则 MD101、MD102、MD103
+custom_rule_files = [
     "plugin/custom/plugins/markdownLint/custom-rules.js",
 ]
 

@@ -1,23 +1,25 @@
 let LIB
-let RULES
+let RULE_CONFIG
 let CUSTOM_RULES
 
 const linter = {
-    configure: ({ polyfillLib, lib, customRulesFiles, rules, content }) => {
+    configure: ({ polyfillLib, coreLib, helpersLib, customRuleFiles, ruleConfig, content }) => {
         if (polyfillLib) {
             require(polyfillLib)
         }
-        if (lib) {
-            LIB = require(lib)
+        if (coreLib) {
+            LIB = require(coreLib)
         }
-        if (customRulesFiles) {
-            CUSTOM_RULES = customRulesFiles.flatMap(e => require(e))
+        if (helpersLib && customRuleFiles) {
+            const helpers = require(helpersLib)
+            const define = (defineRule) => defineRule(helpers)  // Dependency Injection
+            CUSTOM_RULES = customRuleFiles.map(require).flatMap(define)
         }
-        if (rules) {
-            RULES = rules
+        if (ruleConfig) {
+            RULE_CONFIG = ruleConfig
         }
         if (LIB) {
-            console.debug(`[Markdownlint] markdownlint@${LIB.getVersion()} worker is configured with rules`, RULES)
+            console.debug(`[Markdownlint] markdownlint@${LIB.getVersion()} worker is configured with rules`, RULE_CONFIG)
         }
         if (content) {
             return linter.check({ content })
@@ -25,7 +27,7 @@ const linter = {
     },
     check: async ({ content }) => {
         if (!LIB) return
-        const op = { strings: { content }, config: RULES, customRules: CUSTOM_RULES }
+        const op = { strings: { content }, config: RULE_CONFIG, customRules: CUSTOM_RULES }
         const result = await LIB.lint(op)
         return result.content
     },

@@ -1632,7 +1632,7 @@
     "$option.result_order_by.ruleName": "Sort by Rule Name",
     "$option.result_order_by.ruleDesc": "Sort by Rule Desc",
     "$title.rule_config": "Lint Rules",
-    "$title.custom_rules_files": "Custom Lint Rules File",
+    "$title.custom_rule_files": "Custom Lint Rule Files",
     "$title.indicator": "Indicator",
     "$title.detectAndFix": "Detect and Fix"
   },
