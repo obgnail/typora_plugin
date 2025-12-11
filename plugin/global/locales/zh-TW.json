@@ -1072,7 +1072,8 @@
   "sidebar_enhance": {
     "pluginName": "側邊欄增強",
     "$label.DISPLAY_NON_MARKDOWN_FILES": "文件樹顯示非 Markdown 文件",
-    "$label.SUPPORTED_FILE_EXT": "支援副檔名",
+    "$label.OPEN_BY_SYSTEM_EXT": "外部開啟的副檔名",
+    "$label.OPEN_BY_TYPORA_EXT": "內部開啟的副檔名",
     "$label.KEEP_OUTLINE_FOLD_STATE": "记忆大綱折疊狀態",
     "$label.SORTABLE_OUTLINE": "大綱拖拽排序",
     "$tooltip.canCollapseOutlinePanel": "需啟用 Typora 設定【允許展開/折疊側邊欄大綱】"

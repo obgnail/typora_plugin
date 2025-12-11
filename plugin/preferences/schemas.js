@@ -1182,7 +1182,8 @@ const conf_sidebar_enhance = [
     ),
     UntitledBox(
         Switch("DISPLAY_NON_MARKDOWN_FILES"),
-        Array_Inline("SUPPORTED_FILE_EXT", { dependencies: { DISPLAY_NON_MARKDOWN_FILES: true } }),
+        Array_Inline("OPEN_BY_TYPORA_EXT", { dependencies: { DISPLAY_NON_MARKDOWN_FILES: true } }),
+        Array_Inline("OPEN_BY_SYSTEM_EXT", { dependencies: { DISPLAY_NON_MARKDOWN_FILES: true } }),
     ),
     box_settingHandler,
 ]

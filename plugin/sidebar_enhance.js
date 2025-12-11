@@ -20,13 +20,16 @@ class SidebarEnhancePlugin extends BasePlugin {
     }
 
     _displayNonMarkdownFiles = () => {
-        File.SupportedFiles.push(...this.config.SUPPORTED_FILE_EXT)
-        const supportedExt = new Set(this.config.SUPPORTED_FILE_EXT.map(e => `.${e}`))
+        const displayExt = new Set([...this.config.OPEN_BY_SYSTEM_EXT, ...this.config.OPEN_BY_TYPORA_EXT])
+        const openBySystemExt = new Set(this.config.OPEN_BY_SYSTEM_EXT.filter(ext => !this.config.OPEN_BY_TYPORA_EXT.includes(ext)).map(ext => `.${ext}`))
+
+        File.SupportedFiles.push(...displayExt)
+
         // Delay decoration to ensure this beforeFn runs first, this beforeFn may return a stopCallError
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             this.utils.decorate(() => File?.editor?.library, "openFile", (toOpenFile) => {
                 const ext = this.utils.Package.Path.extname(toOpenFile)
-                if (supportedExt.has(ext)) {
+                if (openBySystemExt.has(ext)) {
                     this.utils.openPath(toOpenFile)
                     return this.utils.stopCallError
                 }

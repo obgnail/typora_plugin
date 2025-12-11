@@ -1726,11 +1726,14 @@ SORTABLE_OUTLINE = true
 # 支持在侧边栏显示侧边栏列表显示其他扩展名文件
 #   true:  支持
 #   false: 不支持
-# 若置为 false，则选项 SUPPORTED_FILE_EXT 失效
+# 若置为 false，则选项 OPEN_BY_SYSTEM_EXT、OPEN_BY_TYPORA_EXT 失效
 DISPLAY_NON_MARKDOWN_FILES = false
 
-# 额外展示在侧边栏的文件的扩展名列表
-SUPPORTED_FILE_EXT = ["pdf", "html", "htm", "csv", "docx", "pptx", "xlsx", "doc", "ppt", "xls"]
+# 额外展示在侧边栏，并且系统默认打开的扩展名列表
+OPEN_BY_SYSTEM_EXT = ["pdf", "html", "htm", "csv", "docx", "pptx", "xlsx", "doc", "ppt", "xls"]
+
+# 额外展示在侧边栏，并且 Typora 内打开的扩展名列表
+OPEN_BY_TYPORA_EXT = ["log"]
 
 
 ################### text_stylize ###################

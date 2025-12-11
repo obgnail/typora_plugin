@@ -1072,7 +1072,8 @@
   "sidebar_enhance": {
     "pluginName": "Enhance Sidebar",
     "$label.DISPLAY_NON_MARKDOWN_FILES": "Display non-Markdown Files",
-    "$label.SUPPORTED_FILE_EXT": "Supported Extensions",
+    "$label.OPEN_BY_SYSTEM_EXT": "External Open Extensions",
+    "$label.OPEN_BY_TYPORA_EXT": "Internal Open Extensions",
     "$label.KEEP_OUTLINE_FOLD_STATE": "Keep Outline Fold State",
     "$label.SORTABLE_OUTLINE": "Sortable Outline",
     "$tooltip.canCollapseOutlinePanel": "Need to enable Typora config [Collapsible Outline on Left Panel]"

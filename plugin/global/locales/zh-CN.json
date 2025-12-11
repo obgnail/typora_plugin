@@ -1072,7 +1072,8 @@
   "sidebar_enhance": {
     "pluginName": "侧边栏增强",
     "$label.DISPLAY_NON_MARKDOWN_FILES": "文件树显示非 Markdown 文件",
-    "$label.SUPPORTED_FILE_EXT": "支持扩展名",
+    "$label.OPEN_BY_SYSTEM_EXT": "外部打开的扩展名",
+    "$label.OPEN_BY_TYPORA_EXT": "内部打开的扩展名",
     "$label.KEEP_OUTLINE_FOLD_STATE": "记忆大纲折叠状态",
     "$label.SORTABLE_OUTLINE": "大纲拖拽排序",
     "$tooltip.canCollapseOutlinePanel": "需启用 Typora 配置【允许折叠和展开侧边栏的大纲视图】"
