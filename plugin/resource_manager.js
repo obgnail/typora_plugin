@@ -128,7 +128,7 @@ class ResourceManagerPlugin extends BasePlugin {
 
     _runWithProgressBar = async (dir) => {
         return this.utils.progressBar.fake({
-            task: () => new ResourceFinder(this).run(dir),
+            task: () => findResources(this, dir),
             timeout: this.config.TIMEOUT,
         })
     }
@@ -158,22 +158,20 @@ class ResourceManagerPlugin extends BasePlugin {
     }
 
     _getFileTableSchema = () => {
+        const resourceRender = (rowData) => `<img src="${rowData.src}" />`
         const operationsRender = () => `<i class="fa fa-external-link action-icon" action="locate"></i><i class="fa fa-trash-o action-icon" action="delete"></i>`
         const isInPreview = this.entities.window.getAttribute("window-buttons").includes("fa-eye-slash")
         const columns = [
-            { key: "idx", title: "No", width: "3em", sortable: true },
+            { key: "idx", title: "No.", width: "3em", sortable: true },
             { key: "src", title: "Resources", sortable: true },
-            { key: "image", title: "Preview", sortable: true, ignore: !isInPreview, render: (rowData) => `<img src="${rowData.src}" />` },
+            { key: "image", title: "Preview", sortable: true, ignore: !isInPreview, render: resourceRender },
             { key: "operations", title: "Operations", width: "5.2em", render: operationsRender }
         ]
         return { columns }
     }
 
     _getFolderTableSchema = () => {
-        const columns = [
-            { key: "idx", title: "No", width: "3em", sortable: true },
-            { key: "src", title: "Resources", sortable: true },
-        ]
+        const columns = [{ key: "idx", title: "No.", width: "3em", sortable: true }, { key: "src", title: "Resources", sortable: true }]
         return { columns }
     }
 
@@ -186,111 +184,92 @@ class ResourceManagerPlugin extends BasePlugin {
     })
 }
 
-class ResourceFinder {
-    constructor(plugin) {
-        this.plugin = plugin
-        this.utils = plugin.utils
-        this.config = plugin.config
-        this.redirectPlugin = null
+const findResources = async (plugin, searchDir) => {
+    const { utils, config } = plugin
+    const dir = searchDir || utils.getMountFolder()
 
-        // This regular expression is from `File.editor.brush.inline.rules.image`
-        // Typora simplifies the image syntax from a context-free grammar to a regular grammar
-        this.imgRegex = /(\!\[((?:\[[^\]]*\]|[^\[\]])*)\]\()(<?((?:\([^)]*\)|[^()])*?)>?[ \t]*((['"])((?:.|\n)*?)\6[ \t]*)?)(\)(?:\s*{([^{}\(\)]*)})?)/g
-        this.imgTagRegex = /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/gi
+    const _resourceExt = new Set(config.RESOURCE_EXT)
+    const _markdownExt = new Set(config.MARKDOWN_EXT)
+    const isResourceExt = (ext) => _resourceExt.has(ext)
+    const isMarkdownExt = (ext) => _markdownExt.has(ext)
 
-        this.resourceExts = new Set(this.config.RESOURCE_EXT)
-        this.markdownExts = new Set(this.config.MARKDOWN_EXT)
+    // This regular expression is from `File.editor.brush.inline.rules.image`
+    // Typora simplifies the image syntax from a context-free grammar to a regular grammar
+    const IMG_REGEX = /(\!\[((?:\[[^\]]*\]|[^\[\]])*)\]\()(<?((?:\([^)]*\)|[^()])*?)>?[ \t]*((['"])((?:.|\n)*?)\6[ \t]*)?)(\)(?:\s*{([^{}\(\)]*)})?)/g
+    const IMG_TAG_REGEX = /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/gi
+    const _findHTML = config.RESOURCE_GRAMMARS.includes("html")
+    const _findMD = config.RESOURCE_GRAMMARS.includes("markdown")
+    const findImagesInText = (text) => {
+        const md = _findMD ? [...text.matchAll(IMG_TAG_REGEX)].map(m => m[2]) : []
+        const html = _findHTML ? text.split("\n").flatMap(e => [...e.matchAll(IMG_REGEX)]).map(e => e[4]) : []
+        return [...md, ...html]
     }
 
-    run = async (dir = this.utils.getMountFolder()) => {
-        this.redirectPlugin = this.utils.getCustomPlugin("redirectLocalRootUrl")
-
-        const results = { resourcesInFolder: new Set(), resourcesInFile: new Set() }
-        const onFile = async ({ path, file, dir }) => {
-            const ext = this.utils.Package.Path.extname(file).toLowerCase()
-            if (this.resourceExts.has(ext)) {
-                results.resourcesInFolder.add(path)
-            } else if (this.markdownExts.has(ext)) {
-                await this._handleMarkdownFile(path, dir, results)
-            }
+    const _redirectPlugin = utils.getCustomPlugin("redirectLocalRootUrl")
+    const getCompatibleRootURI = (mdPath, mdDir, md) => {
+        // Typora supports redirecting resource paths using the `typora-root-url`
+        const { yamlObject } = utils.splitFrontMatter(md)
+        const redirectURL = yamlObject?.["typora-root-url"]
+        if (redirectURL) {
+            return redirectURL
         }
-        const onFinished = (err) => {
-            if (!err) return
-            console.error(err)
-            const msg = err.name === "TimeoutError" ? this.plugin.i18n._t("global", "error.timeout") : err.toString()
-            this.utils.notification.show(msg, "error")
-        }
-
-        await this.utils.walkDir({
-            dir,
-            dirFilter: name => !this.config.IGNORE_FOLDERS.includes(name),
-            onFile,
-            semaphore: this.config.CONCURRENCY_LIMIT,
-            maxStats: this.config.MAX_STATS,
-            maxDepth: this.config.MAX_DEPTH,
-            followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
-            strategy: this.config.TRAVERSE_STRATEGY,
-            signal: AbortSignal.timeout(this.config.TIMEOUT),
-            onFinished,
-        })
-
-        const notInFile = [...results.resourcesInFolder].filter(x => !results.resourcesInFile.has(x))
-        const notInFolder = [...results.resourcesInFile].filter(x => !results.resourcesInFolder.has(x))
-        return { notInFile, notInFolder }
+        // Compatibility for `redirectLocalRootUrl` plugin
+        return _redirectPlugin?.needRedirect(mdPath) ? _redirectPlugin.config.root : mdDir
     }
 
-    _handleMarkdownFile = async (path, dir, results) => {
-        const { Package, isNetworkImage, isSpecialImage } = this.utils
-
-        const data = await Package.Fs.promises.readFile(path)
-        const content = data.toString()
-        const images = this._findImages(content)
+    const { Package, isNetworkImage, isSpecialImage } = utils
+    const findImagesInFile = async (mdPath, mdDir) => {
+        const md = await Package.Fs.promises.readFile(mdPath, "utf-8")
+        const images = findImagesInText(md)
             .map(img => {
                 try {
                     img = img.replace(/^\s*<\s*/, "").replace(/\s*>\s*$/, "")
                     img = decodeURIComponent(img).split("?")[0]
                     return img.replace(/^\s*([\\/])/, "")
                 } catch (e) {
-                    console.warn("error path:", img)
+                    console.warn("error image path:", img)
                 }
             })
-            .filter(img =>
-                img
+            .filter(img => img
                 && !isNetworkImage(img)
                 && !isSpecialImage(img)
-                && this.resourceExts.has(Package.Path.extname(img).toLowerCase())
+                && isResourceExt(Package.Path.extname(img).toLowerCase())
             )
         if (images.length === 0) return
 
-        const root = this._getCompatibleRootURI(path, content) || dir
-        images.map(img => Package.Path.resolve(root, img))
-            .forEach(img => results.resourcesInFile.add(img))
+        const root = getCompatibleRootURI(mdPath, mdDir, md)
+        return images.map(img => Package.Path.resolve(root, img))
     }
 
-    // Typora supports redirecting resource paths using the `typora-root-url` in front matter
-    _getCompatibleRootURI = (filePath, content) => {
-        const { yamlObject } = this.utils.splitFrontMatter(content)
-        const redirectURL = yamlObject?.["typora-root-url"]
-        if (redirectURL) {
-            return redirectURL
-        }
-        // Compatibility for redirectLocalRootUrl plugin
-        if (!this.redirectPlugin) return
-        const ok = this.redirectPlugin.needRedirect(filePath)
-        if (ok) {
-            return this.redirectPlugin.config.root
-        }
-    }
-
-    _findImages = (text) => {
-        const types = this.config.RESOURCE_GRAMMARS
-        const md = types.includes("markdown") ? this._findMarkdownImages(text) : []
-        const html = types.includes("html") ? this._findHtmlImages(text) : []
-        return [...md, ...html]
-    }
-
-    _findHtmlImages = (text) => [...text.matchAll(this.imgTagRegex)].map(m => m[2])
-    _findMarkdownImages = (text) => text.split("\n").flatMap(e => [...e.matchAll(this.imgRegex)]).map(e => e[4])
+    const resources = { inFolder: new Set(), inFile: new Set() }
+    await utils.walkDir({
+        dir,
+        semaphore: config.CONCURRENCY_LIMIT,
+        maxStats: config.MAX_STATS,
+        maxDepth: config.MAX_DEPTH,
+        followSymlinks: config.FOLLOW_SYMBOLIC_LINKS,
+        strategy: config.TRAVERSE_STRATEGY,
+        signal: AbortSignal.timeout(config.TIMEOUT),
+        dirFilter: name => !config.IGNORE_FOLDERS.includes(name),
+        onFile: async ({ path, file, dir }) => {
+            const ext = utils.Package.Path.extname(file).toLowerCase()
+            if (isResourceExt(ext)) {
+                resources.inFolder.add(path)
+            } else if (isMarkdownExt(ext)) {
+                const images = await findImagesInFile(path, dir)
+                if (images) images.forEach(img => resources.inFile.add(img))
+            }
+        },
+        onFinished: (err) => {
+            if (!err) return
+            console.error(err)
+            const msg = err.name === "TimeoutError" ? plugin.i18n._t("global", "error.timeout") : err.toString()
+            utils.notification.show(msg, "error")
+        },
+    })
+    const notInFile = [...resources.inFolder].filter(x => !resources.inFile.has(x))
+    const notInFolder = [...resources.inFile].filter(x => !resources.inFolder.has(x))
+    return { notInFile, notInFolder }
 }
 
 module.exports = {
