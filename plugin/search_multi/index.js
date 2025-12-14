@@ -162,7 +162,7 @@ class SearchMultiPlugin extends BasePlugin {
         const getFileParamsCreator = () => {
             const readFileScopes = this.searcher.getReadFileScopes(ast)
             return readFileScopes.length !== 0
-                ? async (path, file, dir, stats) => ({ path, file, stats, content: (await readFile(path)).toString() })
+                ? async (path, file, dir, stats) => ({ path, file, stats, content: await readFile(path, "utf-8") })
                 : (path, file, dir, stats) => ({ path, file, stats })
         }
         const getOnFile = () => {
@@ -170,13 +170,16 @@ class SearchMultiPlugin extends BasePlugin {
             return this._showSearchResult(rootPath, matcher)
         }
         const getSignal = () => {
-            this.cancelController = new AbortController()
             const signals = []
-            if (TIMEOUT > 0) signals.push(AbortSignal.timeout(TIMEOUT))
-            if (STOP_SEARCHING_ON_HIDING) signals.push(this.cancelController.signal)
-            return signals.length === 0
-                ? undefined
-                : signals.length === 1 ? signals[0] : AbortSignal.any(signals)
+            if (TIMEOUT > 0) {
+                signals.push(AbortSignal.timeout(TIMEOUT))
+            }
+            if (STOP_SEARCHING_ON_HIDING) {
+                this.cancelController = new AbortController()
+                signals.push(this.cancelController.signal)
+            }
+            if (signals.length === 0) return undefined
+            return signals.length === 1 ? signals[0] : AbortSignal.any(signals)
         }
         const onFinished = (err) => {
             this.cancelController = null

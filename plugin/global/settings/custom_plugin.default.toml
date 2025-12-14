@@ -954,16 +954,16 @@ template_folders = []
 # ------------------- 内置的模板变量 -------------------
 #   {{ formatDate(format, locale) }}    当前格式化的日期时间
 #       format: 时间格式化字符串
-#       locale: 语言环境
-#   {{ datetime }}             当前日期时间。等同于 {{ formatDate('yyyy-MM-dd HH:mm:ss') }}
-#   {{ date }}                 当前日期。等同于 {{ formatDate('yyyy-MM-dd') }}
-#   {{ time }}                 当前时间。等同于 {{ formatDate('HH:mm:ss') }}
-#   {{ weekday }}              当前周几。等同于 {{ formatDate('ddd') }}
-#   {{ timestamp }}            当前时间戳 (毫秒)
+#       locale: 区域
 #   {{ dateOffset(offset, format, locale) }}  指定偏移量后的日期
 #       offset: 整数，表示天数的偏移量 (正数表示未来，负数表示过去)
 #       format: 时间格式化字符串
-#       locale: 语言环境
+#       locale: 区域
+#   {{ date }}                 当前日期。等同于 {{ formatDate('yyyy-MM-dd') }}
+#   {{ time }}                 当前时间。等同于 {{ formatDate('HH:mm:ss') }}
+#   {{ datetime }}             当前日期时间。等同于 {{ formatDate('yyyy-MM-dd HH:mm:ss') }}
+#   {{ weekday }}              当前周几。等同于 {{ formatDate('ddd') }}
+#   {{ timestamp }}            当前时间戳 (毫秒)
 #   {{ yesterday }}            昨天日期。等同于 {{ dateOffset(-1) }}
 #   {{ tomorrow }}             明天日期。等同于 {{ dateOffset(1) }}
 #   {{ randomInt(min, max) }}  范围为 min-max 的随机整数
@@ -998,7 +998,6 @@ date: {{date}} {{weekday}}
 [[templater.template]]
 name = "Article"
 text = """---
-author: {{username}}
 created: {{datetime}}
 aliases: {{title}}
 description:

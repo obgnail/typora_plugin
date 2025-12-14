@@ -2161,14 +2161,6 @@ LIST = [
     "ripgrep",
     "article_uploader",
     "preferences",
-    "updater",
-    "---",
-    "slash_commands",
-    "file_counter",
-    "cursor_history",
-    "sidebar_enhance",
-    "json_rpc",
-    "test",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__OFTEN_USED_PLUGINS__"

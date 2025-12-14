@@ -15,7 +15,7 @@ class TemplaterPlugin extends BaseCustomPlugin {
             const maxDepth = 3  // Only recursively search for 3 sub depths
             const signal = AbortSignal.timeout(30 * 1000)
             const fileFilter = (name) => extname(name).toLowerCase() === ".md"
-            const fileParamsGetter = async (path, file) => ({ file, content: (await readFile(path)).toString() })
+            const fileParamsGetter = async (path, file) => ({ file, content: await readFile(path, "utf-8") })
             const onFile = ({ file, content }) => template.push({ name: file.replace(/\.md$/i, ""), text: content })
             template_folders.forEach(folder => this.utils.walkDir({ dir: this.utils.resolvePath(folder), fileFilter, fileParamsGetter, onFile, maxDepth, signal }))
         })

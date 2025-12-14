@@ -57,10 +57,10 @@ async function loadPlugins(container, settings) {
     // Re-emit events (e.g., afterAddCodeBlock) that may have been missed due to async execution.
     if (File.getMountFolder() != null) {
         setTimeout(() => {
-            const filePath = utils.getFilePath()
             Object.keys(File.editor.fences.queue).forEach(cid => File.editor.fences.addCodeBlock(cid))
+            const filePath = utils.getFilePath()
             if (filePath) File.editor.library.openFile(filePath)
-        }, 50)
+        }, 80)
     }
 }
 

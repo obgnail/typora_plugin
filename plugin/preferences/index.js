@@ -392,12 +392,16 @@ class PreferencesPlugin extends BasePlugin {
                     const label = `<div style="font-weight: bold">${qr.label}</div>`
                     return `<div style="display: flex; flex-direction: column; align-items: center">${svg}${label}</div>`
                 })
-                const content = `<div style="display: flex; justify-content: space-evenly; margin-top: 8px">${qrEls.join("")}</div>`
+                const qrcodeCnt = `<div style="display: flex; justify-content: space-evenly; margin-top: 8px">${qrEls.join("")}</div>`
+                const backers = (await this.utils.Package.Fs.promises.readFile(this.utils.joinPath("./plugin/preferences/backers.txt"), "utf-8"))
+                    .split("\n").filter(Boolean).map(e => `<div>${this.utils.escape(e)}</div>`).join("")
+                const backersCnt = `<div style="text-align: center; font-weight: bold; margin-bottom: 5px;">THANK YOU TO ALL THE BACKERS</div><div style="display: grid; grid-template-columns: repeat(10, auto);">${backers}</div>`
                 const op = {
                     title: this.i18n._t("global", "$label.donate"),
                     schema: [
                         { fields: [{ type: "action", key: "starMe", label: "<b>Star This Project on GitHub</b>" }] },
-                        { fields: [{ type: "custom", content: content, unsafe: true }] },
+                        { fields: [{ type: "custom", content: qrcodeCnt, unsafe: true }] },
+                        { fields: [{ type: "custom", content: backersCnt, unsafe: true }] },
                     ],
                     actions: {
                         starMe: this.ACTION_HANDLERS.visitRepo,

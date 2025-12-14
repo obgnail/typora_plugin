@@ -287,13 +287,13 @@ class WindowTabPlugin extends BasePlugin {
                         .filter(tab => tab.path.startsWith(oldPath))
                         .forEach(tab => tab.path = newPath + tab.path.slice(oldPath.length))
                 } else {
-                    const renamedTab = this.tabUtil.tabs.find(tab => tab.path === oldPath)
-                    if (renamedTab) renamedTab.path = newPath
+                    const toRenameTab = this.tabUtil.tabs.find(tab => tab.path === oldPath)
+                    if (toRenameTab) toRenameTab.path = newPath
                 }
                 const currentPath = this.tabUtil.currentTab?.path
                 if (currentPath) {
                     this.openTab(currentPath)
-                    queueMicrotask(() => File.editor.library.refreshPanelCommand())
+                    // queueMicrotask(() => File.editor.library.refreshPanelCommand())
                 }
             })
         }

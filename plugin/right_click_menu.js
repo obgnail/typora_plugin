@@ -62,7 +62,7 @@ class RightClickMenuPlugin extends BasePlugin {
             const hasAction = plugin.staticActions || plugin.getDynamicActions
             const extraClass = hasAction ? "has-extra-menu" : ""
             const clickable = hasAction || this.utils.hasOverrideBasePluginFn(plugin, "call")
-            const style = clickable ? undefined : { color: "#C4C6CC", pointerEvents: "none" }
+            const style = clickable ? undefined : { opacity: 0.5, pointerEvents: "none" }
             const extra = { className: `plugin-menu-item ${extraClass}`, style }
             return this._liTemplate(plugin.fixedName, plugin.pluginName, plugin.config.HOTKEY, hasAction, null, extra)
         }

@@ -845,6 +845,7 @@ class utils {
         {
             dir,
             onFile,
+            onDir = null,
             fileFilter = (name, path, stats) => true,
             dirFilter = (name, path, stats) => true,
             fileParamsGetter = (path, file, dir, stats) => ({ path, file, dir, stats }),
@@ -934,11 +935,14 @@ class utils {
                 onStat?.(stats)
                 if (stats.isDirectory()) {
                     if (dirFilter(fileName, currentPath, stats) && (noNeedCheckDepth || depth < maxDepth)) {
-                        const files = await readdir(currentPath)
-                        pendingPaths += files.length
-                        for (const file of files) {
-                            const newPath = join(currentPath, file)
-                            scheduleTask(() => processPath(newPath, currentPath, file, depth + 1))
+                        const shouldProcessChildren = !(onDir && await onDir(fileName, currentPath, stats) === false)
+                        if (shouldProcessChildren) {
+                            const files = await readdir(currentPath)
+                            pendingPaths += files.length
+                            for (const file of files) {
+                                const newPath = join(currentPath, file)
+                                scheduleTask(() => processPath(newPath, currentPath, file, depth + 1))
+                            }
                         }
                     }
                 } else if (stats.isFile() || (!followSymlinks && stats.isSymbolicLink())) {
