@@ -1,15 +1,11 @@
-.plugin-file-counter {
-    float: right;
-    overflow-x: visible;
-    overflow-y: hidden;
+.file-node-content:after {
+    content: attr(data-count);
+    position: absolute;
+    right: 0;
     margin-right: 10px;
     padding: 0 3px;
     border-radius: 3px;
     background: ${background_color};
     color: ${color};
     font-weight: ${font_weight};
-}
-
-.plugin-file-counter + .file-node-content .file-node-title {
-    overflow-x: hidden !important;
 }
