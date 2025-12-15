@@ -155,9 +155,100 @@ test("all schemas keys should be translated", async t => {
             if (context.fieldKey) contextMsg.push(`field: "${context.fieldKey}"`)
             if (context.optionKey) contextMsg.push(`optionKey: "${context.optionKey}"`)
             if (context.boxTitle && !context.fieldKey) contextMsg.push(`(location: box title)`)
-
-            assert.ok(ok, `[Translation] Missing translation for [${contextMsg.join(", ")}]`)
+            assert.ok(
+                ok,
+                `[Translation] Missing translation for [${contextMsg.join(", ")}]`
+            )
         }
         boxes.forEach(box => checkTranslated(box, isTranslated))
+    })
+})
+
+test("all i18n keys starting with $ should be used in schemas", async t => {
+    const getAllI18NKeys = async () => {
+        const i18n = require("../../plugin/global/core/i18n.js")
+        await i18n.init("zh-CN")
+        return Object.fromEntries(
+            Object.entries(i18n.data).map(([fixedName, data]) => {
+                const keys = new Set(
+                    [...Object.keys(data)].filter(key => key.startsWith("$"))
+                )
+                return [fixedName, keys]
+            })
+        )
+    }
+
+    const filterUsedKeys = (allI18NKeys, schemas) => {
+        const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "unit"]
+        const specialProps = ["options", "thMap"]
+        const _filterUsedKeys = (fixedName, key) => {
+            if (allI18NKeys[fixedName].has(key)) {
+                allI18NKeys[fixedName].delete(key)
+            } else if (allI18NKeys.settings.has(key)) {
+                allI18NKeys.settings.delete(key)
+            }
+        }
+        for (const [fixedName, boxes] of Object.entries(schemas)) {
+            for (const box of boxes) {
+                if (box.title) {
+                    _filterUsedKeys(fixedName, box.title)
+                }
+                for (const field of box.fields || []) {
+                    for (const prop of baseProps) {
+                        if (field[prop] != null) {
+                            _filterUsedKeys(fixedName, field[prop])
+                        }
+                    }
+                    for (const prop of specialProps) {
+                        const propVal = field[prop]
+                        if (propVal && typeof propVal === "object") {
+                            for (const v of Object.values(propVal)) {
+                                _filterUsedKeys(fixedName, v)
+                            }
+                        }
+                    }
+                    if (field.nestedBoxes) {
+                        filterUsedKeys(allI18NKeys, { [fixedName]: field.nestedBoxes })
+                    }
+                }
+            }
+        }
+    }
+
+    const filterAllowedUnusedKeys = (allI18NKeys) => {
+        const allowedUnusedKeys = {
+            settings: ["$tooltip.lowVersion"],
+            markmap: [
+                "$option.TITLE_BAR_BUTTONS.shrink",
+                "$option.TITLE_BAR_BUTTONS.pinRecover",
+                "$option.TITLE_BAR_BUTTONS.hideToolbar",
+                "$option.TITLE_BAR_BUTTONS.showToolbar",
+            ],
+            fence_enhance: [
+                "$label.CUSTOM_BUTTONS.ON_INIT",
+                "$label.CUSTOM_BUTTONS.ON_RENDER",
+                "$label.CUSTOM_BUTTONS.ON_CLICK",
+                "$title.CUSTOM_HOTKEYS.DISABLE",
+                "$title.CUSTOM_HOTKEYS.HOTKEY",
+            ],
+            slash_commands: ["$label.COMMANDS.callback"],
+            hotkeys: ["$label.CUSTOM_HOTKEYS.evil"],
+            markdownLint: ["$label.invokeMarkdownLintSettings"],
+            quickButton: ["$label.buttons.evil"],
+        }
+        Object.entries(allowedUnusedKeys).forEach(([fixedName, keys]) => {
+            keys.forEach(key => allI18NKeys[fixedName].delete(key))
+        })
+    }
+
+    const allI18NKeys = await getAllI18NKeys()
+    filterUsedKeys(allI18NKeys, schemas)
+    filterAllowedUnusedKeys(allI18NKeys)
+
+    Object.entries(allI18NKeys).forEach(([fixedName, keys]) => {
+        assert.ok(
+            keys.size === 0,
+            `[Unused i18n Keys] Found ${fixedName} unused i18n key(s):\n  - ${[...keys].join("\n  - ")}\n`
+        )
     })
 })
