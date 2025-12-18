@@ -1,27 +1,20 @@
 class RedirectLocalRootUrlPlugin extends BaseCustomPlugin {
-    beforeProcess = () => {
-        if (!this.config.root) {
-            return this.utils.stopLoadPluginError
-        }
-    }
+    beforeProcess = () => this.config.root ? undefined : this.utils.stopLoadPluginError
 
     init = () => {
-        const { filter_regexp } = this.config
-        this.filter = filter_regexp ? new RegExp(filter_regexp) : undefined
+        this.filterRegex = this.config.filter_regexp ? new RegExp(this.config.filter_regexp) : undefined
     }
 
-    needRedirect = (filepath = this.utils.getFilePath()) => {
-        return this.filter ? this.filter.test(filepath) : true
-    }
+    needRedirect = (filePath = this.utils.getFilePath()) => this.filterRegex ? this.filterRegex.test(filePath) : true
 
     process = () => {
-        const redirect = typoraRootUrl => {
-            const dontRedirect = typoraRootUrl || !this.needRedirect()
-            return dontRedirect
-                ? typoraRootUrl
-                : this.utils.Package.Path.resolve(this.utils.getCurrentDirPath(), this.config.root)
+        const redirect = (rootUrl) => {
+            const dontRedirect = !!rootUrl || !this.needRedirect()
+            return dontRedirect ? rootUrl : this.utils.Package.Path.resolve(this.utils.getCurrentDirPath(), this.config.root)
         }
         this.utils.decorate(() => File?.editor?.docMenu, "getLocalRootUrl", null, redirect, true)
+
+        this.utils.eventHub.once(this.utils.eventHub.eventType.fileOpened, () => File.editor.imgEdit.refreshLocalImg(true))
     }
 }
 
