@@ -29,6 +29,7 @@ class utils {
     static isBetaVersion = this.typoraVersion[0] === "0"
 
     static separator = File.isWin ? "\\" : "/"
+    static fileProtocolUrlBase = this.isBetaVersion ? "typora://typemark" : "typora://app/typemark"
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static tempFolder = window._options.tempPath || require("os").tmpdir()
     static Package = Object.freeze({ Path: PATH, Fs: FS, FsExtra: FS_EXTRA })
@@ -412,8 +413,7 @@ class utils {
             return other === undefined ? source : other
         }
         return Object.keys({ ...source, ...other }).reduce((obj, key) => {
-            const isArray = Array.isArray(source[key]) && Array.isArray(other[key])
-            obj[key] = isArray ? other[key] : this.merge(source[key], other[key])
+            obj[key] = Array.isArray(other[key]) ? other[key] : this.merge(source[key], other[key])
             return obj
         }, Array.isArray(source) ? [] : {})
     }
@@ -428,14 +428,13 @@ class utils {
             return other === undefined ? source : other
         }
         return Object.keys(source).reduce((obj, key) => {
-            const isArray = Array.isArray(source[key]) && Array.isArray(other[key]);
             if (other[key]) {
-                obj[key] = isArray ? other[key] : this.update(source[key], other[key]);
+                obj[key] = Array.isArray(other[key]) ? other[key] : this.update(source[key], other[key])
             } else {
-                obj[key] = source[key];
+                obj[key] = source[key]
             }
-            return obj;
-        }, Array.isArray(source) ? [] : {});
+            return obj
+        }, Array.isArray(source) ? [] : {})
     }
 
     /**
@@ -533,14 +532,13 @@ class utils {
 
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
         if (!regexp.global) {
-            throw Error("regexp must be global");
+            throw Error("Called with a non-global RegExp argument")
         }
 
         let match;
         let lastIndex = 0;
         const reg = new RegExp(regexp);  // To avoid modifying the RegExp.lastIndex property, copy a new object
         const promises = [];
-
         while (match = reg.exec(content)) {
             const args = [...match, match.index, match.input];
             promises.push(content.slice(lastIndex, match.index), replaceFunc(...args));
@@ -667,6 +665,9 @@ class utils {
     }
 
     ////////////////////////////// business file operation //////////////////////////////
+    static getLocalRootUrl = () => File.editor.docMenu.getLocalRootUrl() || this.getCurrentDirPath()
+    static getFileProtocolUrl = (url) => new URL(url, this.fileProtocolUrlBase)
+
     /**
      * @param {boolean} shouldSave - Whether to save the content.
      * @param {string} contentType - The content type (e.g., 'markdown', 'html').

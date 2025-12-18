@@ -32,7 +32,7 @@ class DrawIOPlugin extends BaseCustomPlugin {
             beforeExportToNative: null,
             beforeExportToHTML: this.beforeExportToHTML,
             extraStyleGetter: null,
-            versionGetter: this.getVersion,
+            versionGetter: null,
         })
     }
 
@@ -56,7 +56,7 @@ class DrawIOPlugin extends BaseCustomPlugin {
             if (isNetwork) {
                 graphConfig.xml = await this._memorizedFetch(source)
             } else {
-                const dir = this.utils.getCurrentDirPath()
+                const dir = this.utils.getLocalRootUrl()
                 source = this.utils.Package.Path.resolve(dir, source)
                 graphConfig.xml = await this.utils.Package.Fs.promises.readFile(source, "utf-8")
             }
@@ -109,8 +109,6 @@ class DrawIOPlugin extends BaseCustomPlugin {
             graph.querySelectorAll(":scope > *:not(svg)").forEach(this.utils.removeElement)
         }
     }
-
-    getVersion = () => "24.8.9"
 }
 
 module.exports = {
