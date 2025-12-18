@@ -1196,11 +1196,12 @@
   },
   "drawIO": {
     "pluginName": "DrawIO",
-    "error.messingSource": "缺失必須的設定項: source",
-    "error.getFileFailedFromLocal": "從本地讀取 .drawio 來源檔案失敗",
-    "error.getFileFailedFromNetwork": "從網路讀取 .drawio 來源檔案失敗",
+    "error.messingSource": "缺失必填項: source",
+    "error.getFileFailedFromLocal": "讀取本地 .drawio 檔案失敗",
+    "error.getFileFailedFromNetwork": "讀取網路 .drawio 檔案失敗",
     "$label.RESOURCE_URI": "Viewer URL",
     "$label.SERVER_TIMEOUT": "服務超時時間",
+    "$label.PROXY": "代理 URL",
     "$label.MEMORIZED_URL_COUNT": "緩存數量"
   },
   "plantUML": {
@@ -1612,7 +1613,6 @@
     "$label.right_click_table_to_toggle_source_mode": "右擊表格以切換源碼模式",
     "$label.hotkey_fix_lint_error": "快捷鍵：修復",
     "$label.viewMarkdownlintRules": "規則文檔",
-    "$label.viewCustomMarkdownlintRules": "自訂規則原始碼",
     "$label.invokeMarkdownLintSettings": "設置檢測規則",
     "$option.title_bar_buttons.close": "關閉",
     "$option.title_bar_buttons.refresh": "刷新",

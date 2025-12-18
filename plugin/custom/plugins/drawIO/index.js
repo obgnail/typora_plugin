@@ -4,7 +4,7 @@ class DrawIOPlugin extends BaseCustomPlugin {
     init = () => {
         this.defaultConfig = this._getDefaultConfig()
         this._memorizedFetch = this.utils.memoizeLimited(async url => {
-            const resp = await this.utils.fetch(url, { timeout: this.config.SERVER_TIMEOUT })
+            const resp = await this.utils.fetch(url, { timeout: this.config.SERVER_TIMEOUT, proxy: this.config.PROXY })
             return resp.text()
         }, this.config.MEMORIZED_URL_COUNT)
     }

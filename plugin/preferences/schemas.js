@@ -1368,6 +1368,7 @@ const conf_drawIO = [
     TitledBox(
         "advanced",
         Text("RESOURCE_URI"),
+        Text("PROXY"),
         Number("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
         Number("MEMORIZED_URL_COUNT", { min: 1 }),
     ),
@@ -1648,7 +1649,6 @@ const conf_markdownLint = [
     ArrayBox("custom_rule_files"),
     UntitledBox(
         Action("viewMarkdownlintRules"),
-        Action("viewCustomMarkdownlintRules"),
     ),
     box_settingHandler,
 ]

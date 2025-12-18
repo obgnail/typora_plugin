@@ -633,6 +633,9 @@ RESOURCE_URI = "https://viewer.diagrams.net/js/viewer-static.min.js"
 # 超时时间（单位：毫秒）
 SERVER_TIMEOUT = 30000
 
+# 代理 URL
+PROXY = ""
+
 # 缓存的 URL 数量
 MEMORIZED_URL_COUNT = 20
 
@@ -660,22 +663,20 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """```drawio
 /**
- * Due to frequent changes in the .drawio file format, The official strongly recommends fetching dependencies via CDN.
+ * Official documentation recommends CDN dependencies due to frequent .drawio format updates.
+ * This plugin defaults to remote fetching. Modify configuration for local storage if preferred.
  *
- * This plugin defaults to pulling dependencies from the network. If you prefer to store dependencies locally, modify the configuration.
+ * Supported options: allow-zoom-in, allow-zoom-out, auto-crop, auto-fit, auto-origin, border, center, check-visible-state, dark-mode, edit, editable, forceCenter, highlight, layerIds, layers, lightbox, max-height, move, nav, page, pageId, resize, responsive, source, target, title, titleTooltip, toolbar, toolbar-buttons, toolbar-nohide, toolbar-position, tooltips, xml, zoom.
  *
- * Supported configuration options: allow-zoom-in, allow-zoom-out, auto-crop, auto-fit, auto-origin, border, center, check-visible-state, dark-mode, edit, editable, forceCenter, highlight, layerIds, layers, lightbox, max-height, move, nav, page, pageId, resize, responsive, source, target, title, titleTooltip, toolbar, toolbar-buttons, toolbar-nohide, toolbar-position, tooltips, xml, zoom.
- *
- * Configuration options refer to: https://github.com/jgraph/drawio/blob/f7158bfb0029a6456c215791b7fd005ccb5c3e76/src/main/webapp/js/diagramly/GraphViewer.js#L118C1-L118C71
+ * Refer to: https://github.com/jgraph/drawio/blob/f7158bfb/src/main/webapp/js/diagramly/GraphViewer.js#L118
  */
 graphConfig = {
-    // Required configuration. Specifies the path to the .drawio file, supporting both local and network paths.
-    // Local path example: "./assets/example.drawio" or "D:\\\\tmp\\\\example.drawio"
-    // Network path example: "http://localhost:8000/example.drawio"
-    "source": "https://cdn.jsdelivr.net/gh/obgnail/typora_images@master/image/example.drawio",
+    // Local or remote path to the .drawio file.
+    // Example: "./assets/example.drawio" or "D:\\\\tmp\\\\example.drawio" or "http://localhost:8000/example.drawio"
+    source: "https://cdn.jsdelivr.net/gh/obgnail/typora_images@master/image/example.drawio",
 
-    // If there are multiple pages, use 'page' to switch between them.
-    "page": 0,
+    // Zero-based index to switch between multiple pages.
+    page: 0,
 }
 ```
 """
