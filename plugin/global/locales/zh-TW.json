@@ -32,7 +32,7 @@
     "$label.FOLLOW_SYMBOLIC_LINKS": "跟隨符號連結",
     "$label.TIMEOUT": "最大執行時間",
     "$placeholder.defaultIfEmpty": "若為空則使用預設名稱",
-    "$tooltip.protected": "受保護選項，請修改配置文件",
+    "$tooltip.protected": "受保護選項，請修改配置檔案",
     "$tooltip.lowVersion": "Typora 版本過低，此功能不可用",
     "$tooltip.minusOneMeansUnlimited": "-1 表示無限制",
     "$tooltip.minusOneMeansDisable": "-1 表示不啟用",
@@ -403,7 +403,7 @@
     "tool.ops": "執行操作",
     "tool.mode": "切換模式",
     "tool.theme": "更換主題",
-    "tool.out": "文件大綱",
+    "tool.out": "檔案大綱",
     "tool.func": "功能列表",
     "tool.all": "混合搜尋",
     "tool.ops.explorer": "在資源管理器中開啟",
@@ -425,11 +425,11 @@
     "$option.DEFAULT_TOOL.": "無",
     "$option.DEFAULT_TOOL.plu": "插件",
     "$option.DEFAULT_TOOL.tab": "標籤",
-    "$option.DEFAULT_TOOL.his": "最近文件",
+    "$option.DEFAULT_TOOL.his": "最近檔案",
     "$option.DEFAULT_TOOL.ops": "常用操作",
-    "$option.DEFAULT_TOOL.mode": "文件模式",
+    "$option.DEFAULT_TOOL.mode": "檔案模式",
     "$option.DEFAULT_TOOL.theme": "主題",
-    "$option.DEFAULT_TOOL.out": "文件大綱",
+    "$option.DEFAULT_TOOL.out": "檔案大綱",
     "$option.DEFAULT_TOOL.func": "功能列表",
     "$option.DEFAULT_TOOL.all": "混合查找",
     "$label.TOOLBAR_TOP_PERCENT": "垂直定位",
@@ -614,7 +614,7 @@
     "$label.ENABLE_TABLE": "表格",
     "$label.ENABLE_IMAGE": "圖片",
     "$label.ENABLE_FENCE": "程式碼區塊",
-    "$label.SHOW_IMAGE_NAME": "顯示圖片文件別名",
+    "$label.SHOW_IMAGE_NAME": "顯示圖片檔案別名",
     "$label.ALIGN": "圖片、表格、程式碼區塊的編號對齊方式",
     "$label.POSITION_TABLE": "表格編號位置",
     "$label.FONT_FAMILY": "編號字體",
@@ -873,7 +873,7 @@
     "act.extract_rang_to_new_file.filename": "檔案名稱",
     "act.extract_rang_to_new_file.filenameHint": "空白則建立副本",
     "act.extract_rang_to_new_file.autoOpenFile": "檔案建立後自動開啟",
-    "act.trailing_white_space.hint": "為整份文件添加結尾空格",
+    "act.trailing_white_space.hint": "為整份檔案添加結尾空格",
     "act.copy_full_path.H1": "一級標題",
     "act.copy_full_path.H2": "二級標題",
     "act.copy_full_path.H3": "三級標題",
@@ -883,7 +883,7 @@
     "act.copy_full_path.NoHeader": "無",
     "act.insert_mermaid_mindmap.incompatible": "Mermaid 版本低，不支援 mindmap 元件，請前往 https://mermaid.live 查看",
     "actHint.notRecommended": "除非有特殊需求，不建議使用此功能",
-    "actHint.defaultDoc": "若無選取段落，則調整整份文件",
+    "actHint.defaultDoc": "若無選取段落，則調整整份檔案",
     "$label.HOTKEY_COPY_FULL_PATH": "複製目前游標所在標題路徑",
     "$label.HOTKEY_INCREASE_HEADERS_LEVEL": "提升選取段落的標題層級",
     "$label.HOTKEY_DECREASE_HEADERS_LEVEL": "降低選取段落的標題層級",
@@ -985,7 +985,7 @@
   },
   "file_counter": {
     "pluginName": "檔案計數",
-    "error.tooManyFiles": "文件過多，插件 「{{pluginName}} 」暫停運行",
+    "error.tooManyFiles": "檔案過多，插件 「{{pluginName}} 」暫停運行",
     "$label.FONT_WEIGHT": "字寬",
     "$label.COLOR": "顏色",
     "$label.BACKGROUND_COLOR": "背景顏色",
@@ -1052,7 +1052,7 @@
   },
   "static_markers": {
     "pluginName": "標記常顯",
-    "act.toggle_state": "启用標記常顯",
+    "act.toggle_state": "啟用標記常顯",
     "$title.STATIC_MARKERS": "常顯標記",
     "$option.STATIC_MARKERS.strong": "粗體",
     "$option.STATIC_MARKERS.em": "斜體",
@@ -1071,11 +1071,16 @@
   },
   "sidebar_enhance": {
     "pluginName": "側邊欄增強",
-    "$label.DISPLAY_NON_MARKDOWN_FILES": "文件樹顯示非 Markdown 文件",
+    "$label.DISPLAY_NON_MARKDOWN_FILES": "檔案樹顯示非 Markdown 檔案",
     "$label.OPEN_BY_SYSTEM_EXT": "外部開啟的副檔名",
     "$label.OPEN_BY_TYPORA_EXT": "內部開啟的副檔名",
     "$label.KEEP_OUTLINE_FOLD_STATE": "记忆大綱折疊狀態",
     "$label.SORTABLE_OUTLINE": "大綱拖拽排序",
+    "$label.CUSTOMIZE_SIDEBAR_ICONS": "定制側邊欄檔案圖示",
+    "$label.SIDEBAR_ICONS.enable": "啟用",
+    "$label.SIDEBAR_ICONS.extensions": "副檔名",
+    "$label.SIDEBAR_ICONS.icon": "圖示",
+    "$title.SIDEBAR_ICONS": "側邊欄檔案圖示",
     "$tooltip.canCollapseOutlinePanel": "需啟用 Typora 設定【允許展開/折疊側邊欄大綱】"
   },
   "cursor_history": {
@@ -1183,8 +1188,8 @@
   "wavedrom": {
     "pluginName": "WaveDrom",
     "$label.SAFE_MODE": "安全模式",
-    "$label.downloadWaveDromSkins": "下載皮膚文件",
-    "$title.SKIN_FILES": "皮膚文件"
+    "$label.downloadWaveDromSkins": "下載皮膚檔案",
+    "$title.SKIN_FILES": "皮膚檔案"
   },
   "calendar": {
     "pluginName": "Calendar"
@@ -1239,7 +1244,7 @@
     "$title.fontFamily": "字體圖示",
     "$title.defaultOptions": "預設值",
     "$title.template": "模板",
-    "$tooltip.messingFont": "若取消選中，則導出文件不顯示圖示"
+    "$tooltip.messingFont": "若取消選中，則導出檔案不顯示圖示"
   },
   "templater": {
     "pluginName": "檔案範本",
@@ -1353,7 +1358,7 @@
     "$label.translate_scale": "移動距離",
     "$option.operations.close": "關閉",
     "$option.operations.download": "下載",
-    "$option.operations.scroll": "定位到文件",
+    "$option.operations.scroll": "定位到檔案",
     "$option.operations.play": "輪播",
     "$option.operations.location": "打開圖片路徑",
     "$option.operations.nextImage": "下一張圖",
@@ -1389,7 +1394,7 @@
     "$option.show_message.size": "圖片大小",
     "$option.first_image_strategies.inViewBoxImage": "當前視圖中首張圖片",
     "$option.first_image_strategies.closestViewBoxImage": "離當前視圖中心最近的圖片",
-    "$option.first_image_strategies.firstImage": "文件中首張圖片",
+    "$option.first_image_strategies.firstImage": "檔案中首張圖片",
     "$option.thumbnail_object_fit.fill": "拉伸適配",
     "$option.thumbnail_object_fit.contain": "等比例縮放",
     "$option.thumbnail_object_fit.cover": "保持原有尺寸，裁剪超出部分",
@@ -1462,7 +1467,7 @@
     "title.specificRules": "具體規則",
     "title.generalRules": "規則分組",
     "label.default": "默認啟用所有規則",
-    "label.extends": "擴展配置的 JSON 文件",
+    "label.extends": "擴展配置的 JSON 檔案",
     "label.headings": "標題",
     "label.bullet": "列表項目符號",
     "label.ul": "無序列表",
@@ -1672,6 +1677,6 @@
   "redirectLocalRootUrl": {
     "pluginName": "重新導向本地資源根目錄",
     "$label.root": "資源根目錄",
-    "$label.filter_regexp": "過濾正則表達式"
+    "$label.filter_regexp": "適用檔案名（正規）"
   }
 }

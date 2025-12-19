@@ -4,6 +4,9 @@ class SidebarEnhancePlugin extends BasePlugin {
     process = () => {
         if (this.config.DISPLAY_NON_MARKDOWN_FILES && File.SupportedFiles) {
             this._displayNonMarkdownFiles()
+            if (this.config.CUSTOMIZE_SIDEBAR_ICONS) {
+                this._customizeSidebarIcons()
+            }
         }
         if (this.config.KEEP_OUTLINE_FOLD_STATE && File.option.canCollapseOutlinePanel) {
             this._keepOutlineFoldState()
@@ -35,6 +38,23 @@ class SidebarEnhancePlugin extends BasePlugin {
                 }
             })
         })
+    }
+
+    _customizeSidebarIcons = () => {
+        const ICONS = new Map(
+            this.config.SIDEBAR_ICONS
+                .filter(item => item.enable && item.extensions.length && item.extensions.every(ext => !!ext))
+                .flatMap(item => item.extensions.map(ext => [`.${ext.trim()}`, item.icon.trim()]))
+        )
+        this.utils.decorate(() => File?.editor?.library?.fileTree, "renderNode", null, ($node, info) => {
+            if (!info.isFile) return
+            const ext = this.utils.Package.Path.extname(info.name)
+            const icon = ICONS.get(ext)
+            if (icon) {
+                $node.find(".file-node-icon").removeClass("fa fa-file-text-o").addClass(icon)
+            }
+        })
+        this.utils.eventHub.once(this.utils.eventHub.eventType.fileOpened, () => File.editor.library.refreshPanelCommand())
     }
 
     _keepOutlineFoldState = () => {

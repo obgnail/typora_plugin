@@ -1184,6 +1184,24 @@ const conf_sidebar_enhance = [
         Switch("DISPLAY_NON_MARKDOWN_FILES"),
         Array_Inline("OPEN_BY_TYPORA_EXT", { dependencies: { DISPLAY_NON_MARKDOWN_FILES: true } }),
         Array_Inline("OPEN_BY_SYSTEM_EXT", { dependencies: { DISPLAY_NON_MARKDOWN_FILES: true } }),
+        Switch("CUSTOMIZE_SIDEBAR_ICONS", { dependencies: { DISPLAY_NON_MARKDOWN_FILES: true } }),
+    ),
+    TableBox(
+        "SIDEBAR_ICONS",
+        ["extensions", "icon"],
+        [
+            UntitledBox(
+                Switch("enable"),
+                Text("icon"),
+                Array_Inline("extensions"),
+            ),
+        ],
+        {
+            enable: true,
+            icon: "fa fa-file-text-o",
+            extensions: [],
+        },
+        { dependencies: { $and: [{ CUSTOMIZE_SIDEBAR_ICONS: true }, { $follow: "CUSTOMIZE_SIDEBAR_ICONS" }] } },
     ),
     box_settingHandler,
 ]

@@ -57,4 +57,11 @@ module.exports = {
             if (isConditionMet) utils.notification.show(`Plugin Enabled!\nPlease ensure server ${context.getValue("SERVER_URL")} is available.`)
         }
     }],
+    sidebar_enhance: [{
+        when: { $and: [{ CUSTOMIZE_SIDEBAR_ICONS: true }, { $meta: { $isMounting: false, $isBetaTypora: true } }] },
+        affects: [],
+        effect: (isMet) => {
+            if (isMet) utils.notification.show('The Beta version of Typora has NOT the "ty-file-icon" style.\nPlease switch to Font-Awesome or Ion-Icons')
+        },
+    }],
 }

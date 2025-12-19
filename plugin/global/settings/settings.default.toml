@@ -1726,7 +1726,7 @@ SORTABLE_OUTLINE = true
 # 支持在侧边栏显示侧边栏列表显示其他扩展名文件
 #   true:  支持
 #   false: 不支持
-# 若置为 false，则选项 OPEN_BY_SYSTEM_EXT、OPEN_BY_TYPORA_EXT 失效
+# 若置为 false，则选项 OPEN_BY_SYSTEM_EXT、OPEN_BY_TYPORA_EXT、CUSTOMIZE_SIDEBAR_ICONS 失效
 DISPLAY_NON_MARKDOWN_FILES = false
 
 # 额外展示在侧边栏，并且系统默认打开的扩展名列表
@@ -1734,6 +1734,24 @@ OPEN_BY_SYSTEM_EXT = ["pdf", "html", "htm", "csv", "docx", "pptx", "xlsx", "doc"
 
 # 额外展示在侧边栏，并且 Typora 内打开的扩展名列表
 OPEN_BY_TYPORA_EXT = ["log"]
+
+# 定制侧边栏文件的图标
+#   true:  定制
+#   false: 不定制
+# 若置为 false，则选项 CUSTOMIZE_SIDEBAR_ICONS 失效
+CUSTOMIZE_SIDEBAR_ICONS = false
+
+# 定制侧边栏文件的图标
+SIDEBAR_ICONS = [
+    { enable = true, extensions = ["jpg", "jpeg", "png", "svg", "gif", "webp", "bmp"], icon = "ty-file-icon ty-fi-image" },
+    { enable = true, extensions = ["pdf"], icon = "ty-file-icon ty-fi-pdf" },
+    { enable = true, extensions = ["md", "rmd", "mdtxt", "mdtext"], icon = "ty-file-icon ty-fi-markdown" },
+    { enable = true, extensions = ["html", "htm"], icon = "ty-file-icon ty-fi-html" },
+    { enable = true, extensions = ["pptx", "ppt"], icon = "ty-file-icon ty-fi-powerpoint" },
+    { enable = true, extensions = ["docx", "doc"], icon = "ty-file-icon ty-fi-word" },
+    { enable = true, extensions = ["zip", "7z", "rar"], icon = "ty-file-icon ty-fi-zip" },
+    { enable = true, extensions = ["css"], icon = "ty-file-icon ty-fi-css" },
+]
 
 
 ################### text_stylize ###################

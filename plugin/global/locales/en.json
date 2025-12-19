@@ -1076,6 +1076,11 @@
     "$label.OPEN_BY_TYPORA_EXT": "Internal Open Extensions",
     "$label.KEEP_OUTLINE_FOLD_STATE": "Keep Outline Fold State",
     "$label.SORTABLE_OUTLINE": "Sortable Outline",
+    "$label.CUSTOMIZE_SIDEBAR_ICONS": "Customize Sidebar File Icons",
+    "$label.SIDEBAR_ICONS.enable": "Enable",
+    "$label.SIDEBAR_ICONS.extensions": "Extensions",
+    "$label.SIDEBAR_ICONS.icon": "Icon",
+    "$title.SIDEBAR_ICONS": "Sidebar File Icons",
     "$tooltip.canCollapseOutlinePanel": "Need to enable Typora config [Collapsible Outline on Left Panel]"
   },
   "cursor_history": {
@@ -1672,6 +1677,6 @@
   "redirectLocalRootUrl": {
     "pluginName": "Redirect Local Root Url",
     "$label.root": "Resource Root Directory",
-    "$label.filter_regexp": "Filter Regex"
+    "$label.filter_regexp": "Apply File Names (Regex)"
   }
 }

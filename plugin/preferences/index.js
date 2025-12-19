@@ -37,10 +37,10 @@ class PreferencesPlugin extends BasePlugin {
         this.SCHEMAS = require("./schemas.js")
         this.WATCHERS = require("./watchers.js")
         this.RULES = this.config.VALIDATE_CONFIG_OPTIONS ? require("./rules.js") : {}
-
-        this._initHook()
-        this._initActionHandlers()
-        this._initPreProcessors()
+        this.META = this._getMeta()
+        this.ACTIONS = this._getActions()
+        this.PREPROCESSORS = this._getPreProcessors()
+        this.applyOptions = this._getHook()
     }
 
     process = () => {
@@ -174,7 +174,8 @@ class PreferencesPlugin extends BasePlugin {
         return this.applyOptions({
             schema,
             data,
-            actions: this.ACTION_HANDLERS,
+            actions: this.ACTIONS,
+            meta: this.META,
             rules: this.RULES[fixedName] || {},
             watchers: this.WATCHERS[fixedName] || {},
             controlOptions: { object: { format: this.config.OBJECT_SETTINGS_FORMAT } },
@@ -221,22 +222,25 @@ class PreferencesPlugin extends BasePlugin {
     _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
     _hasDialogChanged = () => this.entities.dialog.hasAttribute("has-changed")
 
-    _initHook = () => {
+    _getHook = () => {
         const fn = this.utils.safeEval(this.config.FORM_RENDERING_HOOK)
-        this.applyOptions = (typeof fn === "function") ? fn : this.utils.identity
+        return (typeof fn === "function") ? fn : this.utils.identity
+    }
+
+    _getMeta = () => {
+        return { $isBetaTypora: () => this.utils.isBetaVersion }
     }
 
     /** Callback functions for type="action" fields in schema */
-    _initActionHandlers = () => {
+    _getActions = () => {
         const consecutive = (onConfirmed) => this.utils.createConsecutiveAction({ threshold: 3, timeWindow: 3000, onConfirmed })
 
-        this.ACTION_HANDLERS = {
+        const actions = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
             viewDeepWiki: () => this.utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
             githubImageBed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
             sendEmail: () => this.utils.sendEmail("he1251698542@gmail.com", "Feedback"),
             viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
-            viewCustomMarkdownlintRules: () => this.utils.openUrl("https://github.com/obgnail/markdownlint-custom-rules"),
             viewCodeMirrorKeymapsManual: () => this.utils.openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
             viewVitePressLineHighlighting: () => this.utils.openUrl("https://vitepress.dev/guide/markdown#line-highlighting-in-code-blocks"),
             viewAbcVisualOptionsHelp: () => this.utils.openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
@@ -403,31 +407,30 @@ class PreferencesPlugin extends BasePlugin {
                         { fields: [{ type: "custom", content: qrcodeCnt, unsafe: true }] },
                         { fields: [{ type: "custom", content: backersCnt, unsafe: true }] },
                     ],
-                    actions: {
-                        starMe: this.ACTION_HANDLERS.visitRepo,
-                    }
+                    actions: { starMe: actions.visitRepo }
                 }
                 await this.utils.formDialog.modal(op)
             },
         }
+        return actions
     }
 
     /** PreProcessors for specific settings in schema */
-    _initPreProcessors = () => {
+    _getPreProcessors = () => {
         const _disableOptions = (field, ...options) => field.disabledOptions = options
         const _incompatibleSwitch = (field, data, tooltip = this.i18n._t("settings", "$tooltip.lowVersion")) => {
             field.disabled = true
             field.tooltip = tooltip
             data[field.key] = false
         }
-        this.PREPROCESSORS = {
+        return {
             "global.pluginVersion": async (field, data) => {
                 if (!data[field.key]) {
                     let version = "Unknown"
                     try {
                         const file = this.utils.joinPath("./plugin/bin/version.json")
                         const json = await this.utils.Package.FsExtra.readJson(file)
-                        version = json.tag_name + this.utils.dateTimeFormat(new Date(json.published_at), "+yyyyMMdd")
+                        version = json.tag_name
                     } catch (e) {
                         console.error(e)
                     }
@@ -504,6 +507,7 @@ class PreferencesPlugin extends BasePlugin {
             },
             "markdownLint.rule_config": (field, data, box) => {
                 if (this.utils.getCustomPlugin("markdownLint")) {
+                    box.title = undefined
                     box.fields[0] = { type: "action", key: "invokeMarkdownLintSettings", label: this.i18n._t("markdownLint", "$label.invokeMarkdownLintSettings") }
                 }
             },
