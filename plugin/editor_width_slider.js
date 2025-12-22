@@ -40,7 +40,7 @@ class EditorWidthSliderPlugin extends BasePlugin {
                 restore: async () => {
                     await this._setWidth(-1, false)
                     this.utils.formDialog.exit()
-                    this.utils.notification.show(this.i18n._t("global", "success.restore"))
+                    this.utils.notification.show(this.i18n.t("success.restore"))
                 }
             },
             hooks: {

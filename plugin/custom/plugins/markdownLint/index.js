@@ -77,7 +77,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             close: () => this.callback(),
             refresh: () => {
                 this.linter.check()
-                this.utils.notification.show(this.i18n._t("global", "success.refresh"))
+                this.utils.notification.show(this.i18n.t("success.refresh"))
             },
             detailAll: () => _getDetail(this.fixInfos),
             fixAll: () => this.linter.fix(this.fixInfos),
@@ -198,7 +198,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
                     await this.utils.settings.handleSettings(this.fixedName, pluginSettings => delete pluginSettings.rule_config)
                     const settings = await this.utils.settings.readCustomPluginSettings()
                     this.config = settings[this.fixedName]
-                    this.utils.notification.show(this.i18n._t("global", "success.restore"))
+                    this.utils.notification.show(this.i18n.t("success.restore"))
                     await this.utils.formDialog.updateModal(op => op.data = getData())
                 }
             }),
@@ -219,7 +219,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             }
             const ruleConfig = this.utils.minimize(data, defaultValues)
             await this.linter.configure({ ruleConfig, persistent: true })
-            this.utils.notification.show(this.i18n._t("global", "success.edit"))
+            this.utils.notification.show(this.i18n.t("success.edit"))
         }
     }
 

@@ -38,7 +38,7 @@ const i18n = {
         i18n.locale = normalized
     },
     t: (field, key, variables) => {
-        let text = i18n.data[field]?.[key]
+        let text = i18n.data[field]?.[key] ?? i18n.data.global?.[key]
         if (text === undefined) {
             return key
         }

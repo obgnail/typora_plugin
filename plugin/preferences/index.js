@@ -8,7 +8,7 @@ class PreferencesPlugin extends BasePlugin {
             <div class="plugin-preferences-content">
                 <div class="plugin-preferences-left">
                     <div class="plugin-preferences-search">
-                        <input type="text" placeholder="${this.i18n._t("global", "search")}">
+                        <input type="text" placeholder="${this.i18n.t("search")}">
                     </div>
                     <div class="plugin-preferences-menu"></div>
                 </div>
@@ -123,7 +123,7 @@ class PreferencesPlugin extends BasePlugin {
             this.utils.hide(this.entities.dialog)
             if (this._hasDialogChanged()) {
                 this._setDialogState(false)
-                this.utils.notification.show(this.i18n._t("global", "takesEffectAfterRestart"))
+                this.utils.notification.show(this.i18n.t("takesEffectAfterRestart"))
             }
         } else {
             const menu = (this.config.DEFAULT_MENU === "__LAST__") ? this.menuStorage.get() : this.config.DEFAULT_MENU
@@ -253,24 +253,24 @@ class PreferencesPlugin extends BasePlugin {
             openPluginFolder: () => this.utils.showInFinder(this.utils.joinPath("./plugin")),
             exportSettings: async () => {
                 const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
-                    title: this.i18n._t("global", "$label.exportSettings"),
+                    title: this.i18n.t("$label.exportSettings"),
                     defaultPath: this.utils.Package.Path.join(this.utils.tempFolder, "typora-plugin-settings.json"),
                     properties: ["saveFile", "showOverwriteConfirmation"],
                     filters: [{ name: "JSON", extensions: ["json"] }],
                 })
                 if (canceled || !filePath) return
                 await this.utils.settings.exportSettings(filePath)
-                this.utils.notification.show(this.i18n._t("global", "success"))
+                this.utils.notification.show(this.i18n.t("success"))
             },
             importSettings: async () => {
                 const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
-                    title: this.i18n._t("global", "$label.importSettings"),
+                    title: this.i18n.t("$label.importSettings"),
                     properties: ["openFile", "dontAddToRecent"],
                     filters: [{ name: "JSON", extensions: ["json"] }],
                 })
                 if (canceled || filePaths.length === 0) return
                 await this.utils.settings.importSettings(filePaths[0])
-                this.utils.notification.show(this.i18n._t("global", "success"))
+                this.utils.notification.show(this.i18n.t("success"))
             },
             invokeMarkdownLintSettings: async () => this.utils.callPluginFunction("markdownLint", "settings"),
             installPlantUMLServer: async () => {
@@ -297,20 +297,20 @@ class PreferencesPlugin extends BasePlugin {
                 await this.utils.settings.clearSettings(fixedName)
                 await this.switchMenu(fixedName)
                 this._setDialogState(true)
-                this.utils.notification.show(this.i18n._t("global", "success.restore"))
+                this.utils.notification.show(this.i18n.t("success.restore"))
             }),
             restoreAllSettings: consecutive(async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearAllSettings()
                 await this.switchMenu(fixedName)
                 this._setDialogState(true)
-                this.utils.notification.show(this.i18n._t("global", "success.restoreAll"))
+                this.utils.notification.show(this.i18n.t("success.restoreAll"))
             }),
             runtimeSettings: async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 const settings = await this._getSettings(fixedName)
                 const op = {
-                    title: this.i18n._t("settings", "$label.runtimeSettings") + `（${this.i18n._t("global", "readonly")}）`,
+                    title: this.i18n._t("settings", "$label.runtimeSettings") + `（${this.i18n.t("readonly")}）`,
                     schema: [{ fields: [{ key: "runtimeSettings", type: "textarea", readonly: true, rows: 14 }] }],
                     data: { runtimeSettings: JSON.stringify(settings, null, "\t") },
                 }
@@ -320,7 +320,7 @@ class PreferencesPlugin extends BasePlugin {
                 const updater = this.utils.getBasePlugin("updater")
                 if (!updater) {
                     const plugin = this.i18n._t("updater", "pluginName")
-                    const msg = this.i18n._t("global", "error.pluginDisabled", { plugin })
+                    const msg = this.i18n.t("error.pluginDisabled", { plugin })
                     this.utils.notification.show(msg, "error")
                 } else {
                     await updater.call()
@@ -341,17 +341,17 @@ class PreferencesPlugin extends BasePlugin {
                         alert(e.toString())
                         return
                     }
-                    const message = this.i18n._t("global", "success.uninstall")
-                    const confirm = this.i18n._t("global", "confirm")
+                    const message = this.i18n.t("success.uninstall")
+                    const confirm = this.i18n.t("confirm")
                     const op = { type: "info", title: "typora plugin", message, buttons: [confirm] }
                     await this.utils.showMessageBox(op)
                     this.utils.restartTypora(false)
                 }
 
-                const title = this.i18n._t("global", "$label.uninstallPlugin")
-                const hintHeader = this.i18n._t("global", "uninstallPluginWarning")
-                const hintDetail = this.i18n._t("global", "uninstallPluginDetail", { reconfirm: title })
-                const label = this.i18n._t("global", "uninstallPluginConfirmInput")
+                const title = this.i18n.t("$label.uninstallPlugin")
+                const hintHeader = this.i18n.t("uninstallPluginWarning")
+                const hintDetail = this.i18n.t("uninstallPluginDetail", { reconfirm: title })
+                const label = this.i18n.t("uninstallPluginConfirmInput")
                 const op = {
                     title,
                     schema: [
@@ -363,7 +363,7 @@ class PreferencesPlugin extends BasePlugin {
                 const { response, data } = await this.utils.formDialog.modal(op)
                 if (response === 0) return
                 if (data.confirmInput !== title) {
-                    const msg = this.i18n._t("global", "error.incorrectCommand")
+                    const msg = this.i18n.t("error.incorrectCommand")
                     this.utils.notification.show(msg, "error")
                 } else {
                     await uninstall()
@@ -401,7 +401,7 @@ class PreferencesPlugin extends BasePlugin {
                     .split("\n").filter(Boolean).map(e => `<div>${this.utils.escape(e)}</div>`).join("")
                 const backersCnt = `<div style="text-align: center; font-weight: bold; margin-bottom: 5px;">THANK YOU TO ALL THE BACKERS</div><div style="display: grid; grid-template-columns: repeat(10, auto);">${backers}</div>`
                 const op = {
-                    title: this.i18n._t("global", "$label.donate"),
+                    title: this.i18n.t("$label.donate"),
                     schema: [
                         { fields: [{ type: "action", key: "starMe", label: "<b>Star This Project on GitHub</b>" }] },
                         { fields: [{ type: "custom", content: qrcodeCnt, unsafe: true }] },
@@ -496,7 +496,7 @@ class PreferencesPlugin extends BasePlugin {
             },
             "preferences.DEFAULT_MENU": (field) => {
                 if (!field.options) {
-                    field.options = { __LAST__: this.i18n._t("global", "lastUsed"), ...this._getAllPlugins() }
+                    field.options = { __LAST__: this.i18n.t("lastUsed"), ...this._getAllPlugins() }
                 }
             },
             "preferences.HIDE_MENUS": (field) => {

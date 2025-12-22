@@ -90,7 +90,7 @@ class EasyModifyPlugin extends BasePlugin {
 
         const success = await func()
         if (success !== false) {
-            const msg = this.i18n._t("global", "success")
+            const msg = this.i18n.t("success")
             this.utils.notification.show(msg)
         }
     }
@@ -214,7 +214,7 @@ class EasyModifyPlugin extends BasePlugin {
     trailingWhiteSpace = async () => {
         if (this._showWarnDialog) {
             const message = this.i18n.t("act.trailing_white_space.hint")
-            const checkboxLabel = this.i18n._t("global", "disableReminder")
+            const checkboxLabel = this.i18n.t("disableReminder")
             const op = { type: "warning", message, checkboxLabel }
             const { response, checkboxChecked } = await this.utils.showMessageBox(op)
             if (response === 1) {
@@ -328,7 +328,7 @@ class EasyModifyPlugin extends BasePlugin {
             try {
                 const { ok, filepath } = await this.utils.downloadImage(src)
                 if (!ok) {
-                    this.utils.notification.show(this.i18n._t("global", "error.timeout"))
+                    this.utils.notification.show(this.i18n.t("error.timeout"))
                     return
                 }
                 src = filepath

@@ -45,7 +45,7 @@ class UpdaterPlugin extends BasePlugin {
             success: this.i18n.t("update.success"),
             noNeed: this.i18n.t("update.noNeed"),
             failed: this.i18n.t("update.failed"),
-            unknownError: this.i18n._t("global", "error.unknown"),
+            unknownError: this.i18n.t("error.unknown"),
         }
 
         const close = this.utils.notification.show(I18N.pleaseWait)

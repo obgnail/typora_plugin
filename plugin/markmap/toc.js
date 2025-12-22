@@ -438,7 +438,7 @@ class TOCMarkmap {
                         })
                         const settings = await this.utils.settings.readBasePluginSettings()
                         this.config = settings[fixedName]
-                        this.utils.notification.show(this.i18n._t("global", "success.restore"))
+                        this.utils.notification.show(this.i18n.t("success.restore"))
                         await this.utils.formDialog.updateModal(op => {
                             op.schema = getSchema()
                             op.data = getData()
@@ -460,7 +460,7 @@ class TOCMarkmap {
             await save(data)
             await this.draw()
             this.toggleContextMenu()
-            this.utils.notification.show(this.i18n._t("global", "success.edit"))
+            this.utils.notification.show(this.i18n.t("success.edit"))
         }
     }
 

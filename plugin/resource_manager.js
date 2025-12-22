@@ -43,7 +43,7 @@ class ResourceManagerPlugin extends BasePlugin {
                 this.utils.showInFinder(rowData.src)
             } else if (action === "delete") {
                 if (this.showWarnDialog) {
-                    const checkboxLabel = this.i18n._t("global", "disableReminder")
+                    const checkboxLabel = this.i18n.t("disableReminder")
                     const reconfirm = this.i18n.t("msgBox.reconfirmDeleteFile")
                     const filename = this.utils.getFileName(rowData.src, false)
                     const message = `${reconfirm} ${filename}`
@@ -56,7 +56,7 @@ class ResourceManagerPlugin extends BasePlugin {
                 }
                 await this.utils.Package.Fs.promises.unlink(rowData.src)
                 this.entities.fileTable.deleteRow("idx", rowData.idx)
-                this.utils.notification.show(this.i18n._t("global", "success.deleted"))
+                this.utils.notification.show(this.i18n.t("success.deleted"))
             }
         })
     }
@@ -65,7 +65,7 @@ class ResourceManagerPlugin extends BasePlugin {
         const dir = this.utils.getMountFolder()
         if (!dir) return
 
-        const hideProcessing = this.utils.notification.show(this.i18n._t("global", "processing"), "info")
+        const hideProcessing = this.utils.notification.show(this.i18n.t("processing"), "info")
         const result = await this._runWithProgressBar(dir)
         if (result instanceof Error) {
             this.utils.notification.show(result.toString(), "error")
@@ -263,7 +263,7 @@ const findResources = async (plugin, searchDir) => {
         onFinished: (err) => {
             if (!err) return
             console.error(err)
-            const msg = err.name === "TimeoutError" ? plugin.i18n._t("global", "error.timeout") : err.toString()
+            const msg = err.name === "TimeoutError" ? plugin.i18n.t("error.timeout") : err.toString()
             utils.notification.show(msg, "error")
         },
     })

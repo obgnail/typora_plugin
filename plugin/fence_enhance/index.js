@@ -312,7 +312,7 @@ class FenceEnhancePlugin extends BasePlugin {
             const joiner = content.includes("\r\n") ? "\r\n" : "\n"
             return lines.join(joiner)
         })
-        this.utils.notification.show(this.i18n._t("global", "success"))
+        this.utils.notification.show(this.i18n.t("success"))
     }
 
     getDynamicActions = (anchorNode, meta) => this.i18n.fillActions([

@@ -188,7 +188,7 @@ class SearchMultiPlugin extends BasePlugin {
             if (!err) return
             if (err.name === "AbortError") return  // user cancellation
             console.error(err)
-            const msg = err.name === "TimeoutError" ? this.i18n._t("global", "error.timeout") : err.toString()
+            const msg = err.name === "TimeoutError" ? this.i18n.t("error.timeout") : err.toString()
             this.utils.notification.show(msg, "error")
         }
 
