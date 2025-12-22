@@ -11,7 +11,7 @@ class TimelinePlugin extends BaseCustomPlugin {
             destroyAllFunc: null,
             extraStyleGetter: this.getStyleContent,
             interactiveMode: this.config.INTERACTIVE_MODE
-        });
+        })
     }
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
@@ -19,94 +19,94 @@ class TimelinePlugin extends BaseCustomPlugin {
     getStyleContent = () => this.utils.styleTemplater.getStyleContent(this.fixedName)
 
     render = (cid, content, $pre) => {
-        let timeline = $pre.find(".plugin-timeline");
-        if (timeline.length === 0) {
-            timeline = $(`<div class="plugin-timeline"><div class="timeline-title"></div><div class="timeline-content"></div></div>`);
-        }
-        const timeline_ = this.newTimelineElement($pre, cid, content);
-        if (timeline_) {
-            timeline.find(".timeline-title").text(timeline_.title);
-            timeline.find(".timeline-content").html(timeline_.bucket);
-            $pre.find(".md-diagram-panel-preview").html(timeline);
-        } else {
-            // accident occurred
-            this.utils.diagramParser.throwParseError(null, this.i18n._t("global", "error.unknown"))
-        }
+        const el = this._toElement($pre, cid, content)
+        if (el) $pre.find(".md-diagram-panel-preview").html(el)
     }
 
-    newTimelineElement = (pre, cid, content) => {
-        // timeline: {title, bucket: [{time, itemList: [{ type, value }]}]}
-        const timeline = { title: "", bucket: [] };
-        const lines = content.split("\n").map(line => line.trim());
-        const dir = this.utils.getCurrentDirPath();
-        const { throwParseError } = this.utils.diagramParser;
-        lines.forEach((line, idx) => {
-            if (!line) return;
-            idx += 1;
+    _assertOK = (must, errorLineNum, reason) => this.utils.diagramParser.assertOK(must, errorLineNum, this.i18n.t(reason))
 
+    _toElement = (pre, cid, content) => {
+        const dir = this.utils.getLocalRootUrl()
+        const REGEX = {
+            HEADING: /^(?<level>#{3,6})\s(?<text>.+?)$/,
+            TASK: /^(\s*)(([-+*])\s*)\[(?<checked>(x|X)| )\]\s+(?<text>.*)/,
+            UL: /^[\-*]\s(?<text>.*?)$/,
+            OL: /^\d\.\s(?<text>.*?)$/,
+            QUOTE: /^>\s(?<text>.+?)$/,
+            HR: /^(\*\*\*|---)$/
+        }
+
+        const data = { title: "", buckets: [] }
+        const lines = content.split("\n")
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim()
+            if (!line) continue
+
+            const lineNum = i + 1
             if (line.startsWith("# ")) {
-                if (!timeline.title) {
-                    if (timeline.bucket.length !== 0) {
-                        throwParseError(idx, this.i18n.t("error.bodyComeBeforeTitle"))
-                    }
-                } else {
-                    throwParseError(idx, this.i18n.t("error.multiTitles"))
+                this._assertOK(data.title === "", lineNum, "error.multiTitles")
+                this._assertOK(data.buckets.length === 0, lineNum, "error.bodyComeBeforeTitle")
+                data.title = line.slice(2).trim()
+                continue
+            }
+            if (line.startsWith("## ")) {
+                data.buckets.push({ time: line.slice(3).trim(), items: [] })
+                continue
+            }
+            this._assertOK(data.buckets.length > 0, "error.bodyComeBeforeTime")
+
+            const currentItems = data.buckets.at(-1).items
+            const lastItem = currentItems.at(-1)
+            switch (true) {
+                case REGEX.HR.test(line):
+                    currentItems.push({ type: "hr" })
+                    break
+                case REGEX.HEADING.test(line): {
+                    const { level, text } = line.match(REGEX.HEADING).groups
+                    currentItems.push({ type: "h" + level.length, value: text })
+                    break
                 }
-                timeline.title = line.replace("# ", "");
-                return;
-            } else if (line.startsWith("## ")) {
-                timeline.bucket.push({ time: line.replace("## ", ""), itemList: [] })
-                return;
+                case REGEX.TASK.test(line): {
+                    const { checked, text } = line.match(REGEX.TASK).groups
+                    currentItems.push({ type: "taskList", checked: !!checked.trim(), value: text })
+                    break
+                }
+                case REGEX.UL.test(line): {
+                    const { text } = line.match(REGEX.UL).groups
+                    if (lastItem && lastItem.type === "ul") {
+                        lastItem.list.push(text)
+                    } else {
+                        currentItems.push({ type: "ul", list: [text] })
+                    }
+                    break
+                }
+                case REGEX.OL.test(line): {
+                    const { text } = line.match(REGEX.OL).groups
+                    if (lastItem && lastItem.type === "ol") {
+                        lastItem.list.push(text)
+                    } else {
+                        currentItems.push({ type: "ol", list: [text] })
+                    }
+                    break
+                }
+                case REGEX.QUOTE.test(line): {
+                    const { text } = line.match(REGEX.QUOTE).groups
+                    currentItems.push({ type: "blockquote", value: text })
+                    break
+                }
+                default:
+                    currentItems.push({ type: "p", value: line })
             }
+        }
 
-            if (timeline.bucket.length === 0) {
-                throwParseError(idx, this.i18n.t("error.bodyComeBeforeTime"))
-            }
+        return this._renderTimelineHtml(data, dir)
+    }
 
-            const lastBucket = timeline.bucket.at(-1).itemList
-
-            // is hr
-            if (line === "---" || line === "***") {
-                lastBucket.push({ type: "hr" });
-                return
-            }
-            // is heading
-            const matchHead = line.match(/^(?<heading>#{3,6})\s(?<lineContent>.+?)$/);
-            if (matchHead?.groups?.heading) {
-                lastBucket.push({ type: "h" + matchHead.groups.heading.length, value: matchHead.groups.lineContent });
-                return
-            }
-            // is taskList
-            const matchTaskLIst = line.match(/^(\s*)(([-+*])\s*)\[(?<checked>(x|X)| )\]\s+(?<lineContent>.*)/);
-            if (matchTaskLIst?.groups) {
-                lastBucket.push({ type: "taskList", checked: matchTaskLIst.groups.checked, value: matchTaskLIst.groups.lineContent });
-                return
-            }
-            // is ul
-            const matchUl = line.match(/^[\-*]\s(?<lineContent>.*?)$/);
-            if (matchUl?.groups) {
-                lastBucket.push({ type: "ul", value: matchUl.groups.lineContent });
-                return
-            }
-            // is ol
-            const matchOl = line.match(/^\d\.\s(?<lineContent>.*?)$/);
-            if (matchOl?.groups) {
-                lastBucket.push({ type: "ol", value: matchOl.groups.lineContent });
-                return
-            }
-            // is blockquote
-            const matchQuote = line.match(/^>\s(?<lineContent>.+?)$/);
-            if (matchQuote?.groups) {
-                lastBucket.push({ type: "blockquote", value: matchQuote.groups.lineContent });
-                return
-            }
-
-            // is paragraph
-            lastBucket.push({ type: "p", value: line });
-        });
-
-        timeline.bucket = timeline.bucket.map(bucket => {
-            const items = bucket.itemList.map((item, idx) => {
+    _renderTimelineHtml = (data, dir) => {
+        const fmt = (str) => this.utils.markdownInlineStyleToHTML(str, dir)
+        const bucketsHtml = data.buckets.map(bucket => {
+            const itemsHtml = bucket.items.map(item => {
                 switch (item.type) {
                     case "h3":
                     case "h4":
@@ -114,39 +114,35 @@ class TimelinePlugin extends BaseCustomPlugin {
                     case "h6":
                     case "p":
                     case "blockquote":
-                        return `<${item.type}>${this.utils.markdownInlineStyleToHTML(item.value, dir)}</${item.type}>`
+                        return `<${item.type}>${fmt(item.value)}</${item.type}>`
                     case "hr":
                         return `<hr>`
                     case "taskList":
-                        const checked = item.checked.trim() ? "checked" : "";
-                        const content = this.utils.markdownInlineStyleToHTML(item.value, dir);
-                        return `<p class="timeline-task-list"><input type="checkbox" ${checked} disabled><span>${content}</span></p>`;
+                        const checkedAttr = item.checked ? "checked" : ""
+                        return `<p class="timeline-task-list">
+                                    <input type="checkbox" ${checkedAttr} disabled>
+                                    <span>${fmt(item.value)}</span>
+                                </p>`
                     case "ul":
                     case "ol":
-                        const value = `<li>${this.utils.markdownInlineStyleToHTML(item.value, dir)}</li>`;
-                        const isListStart = bucket.itemList[idx - 1]?.type !== item.type
-                        const isListEnd = bucket.itemList[idx + 1]?.type !== item.type
-                        if (isListStart && isListEnd) {
-                            return `<${item.type}>${value}</${item.type}>`
-                        } else if (isListStart) {
-                            return `<${item.type}>${value}`
-                        } else if (isListEnd) {
-                            return `${value}</${item.type}>`
-                        } else {
-                            return value
-                        }
+                        const listItems = item.list.map(li => `<li>${fmt(li)}</li>`).join("")
+                        return `<${item.type}>${listItems}</${item.type}>`
+                    default:
+                        return ""
                 }
-            });
+            }).join("")
 
-            return $(`
+            return `
                 <div class="timeline-line"><div class="timeline-circle"></div></div>
                 <div class="timeline-wrapper">
                     <div class="timeline-time">${bucket.time}</div>
-                    <div class="timeline-event">${items.join("")}</div>
-                </div>
-            `)
-        })
-        return timeline
+                    <div class="timeline-event">${itemsHtml}</div>
+                </div>`
+        }).join("")
+
+        const titleHtml = `<div class="timeline-title">${this.utils.escape(data.title)}</div>`
+        const contentHtml = `<div class="timeline-content">${bucketsHtml}</div>`
+        return `<div class="plugin-timeline">${titleHtml}${contentHtml}</div>`
     }
 }
 

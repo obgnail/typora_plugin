@@ -48,7 +48,7 @@ class MarpPlugin extends BaseCustomPlugin {
     _marpAbsoluteImagePath = () => {
         const toAbsPath = (url) => {
             const decodedURL = decodeURIComponent(url)
-            const dir = this.utils.getCurrentDirPath()
+            const dir = this.utils.getLocalRootUrl()
             const absPath = (this.utils.isNetworkImage(decodedURL) || this.utils.isSpecialImage(decodedURL))
                 ? decodedURL
                 : this.utils.Package.Path.resolve(dir, decodedURL)

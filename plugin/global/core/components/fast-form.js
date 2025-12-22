@@ -2352,7 +2352,12 @@ const Control_Textarea = {
         }
     },
     bindEvents: ({ form }) => {
-        form.onEvent("change", ".textarea", function () {
+        form.onEvent("keydown", ".textarea", function (ev) {
+            if (utils.metaKeyPressed(ev) && ev.key === "Enter") {
+                form.validateAndCommit(this.dataset.key, this.value)
+                ev.preventDefault()
+            }
+        }, true).onEvent("change", ".textarea", function () {
             form.validateAndCommit(this.dataset.key, this.value)
         })
     },

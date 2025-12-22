@@ -22,10 +22,10 @@ class FileCounterPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => setTimeout(() => {
+        this.utils.eventHub.once(this.utils.eventHub.eventType.fileOpened, () => {
             File.editor.library.refreshPanelCommand()
             this.countAllDirs()
-        }, 500))
+        })
 
         if (this.config.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU) {
             document.querySelector("#file-library").addEventListener("wheel", ev => {

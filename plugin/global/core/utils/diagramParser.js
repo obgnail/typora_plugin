@@ -125,6 +125,10 @@ class DiagramParser {
         throw { errorLine, reason }
     }
 
+    assertOK = (must, errorLine, reason) => {
+        if (!must) this.throwParseError(errorLine, reason)
+    }
+
     getErrorMessage = error => {
         if (error instanceof Error) {
             return this.utils.escape(error.stack)
@@ -251,9 +255,9 @@ class DiagramParser {
 
     onAddCodeBlock = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.renderDiagram)
 
-    onTryAddLangUndo = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, args => args?.[0] && this.renderDiagram(args[0].cid))
+    onTryAddLangUndo = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => node && this.renderDiagram(node.cid))
 
-    onUpdateDiagram = () => this.utils.decorate(() => File?.editor?.diagrams, "updateDiagram", null, (_, ...args) => this.renderDiagram(args[0]))
+    onUpdateDiagram = () => this.utils.decorate(() => File?.editor?.diagrams, "updateDiagram", null, (_, cid) => this.renderDiagram(cid))
 
     onExport = () => {
         const afterExport = () => {
@@ -281,8 +285,9 @@ class DiagramParser {
                     return base + extraCssList.join(" ")
                 }
             }
-            // Make `frame.js` happy. Avoid null pointer exceptions
-            // There is a line of code in the export source code: document.querySelector("[cid='" + t.cid + "'] svg").getBoundingClientRect()
+            // Make `frame.js` happy. To avoid null pointer exceptions
+            // There is a line of code in `frame.js` in exporting logic:
+            //    document.querySelector("[cid='" + t.cid + "'] svg").getBoundingClientRect()
             const beforeToNative = () => {
                 this.parsers.forEach((parser, lang) => {
                     this.renderAllLangFence(lang)
@@ -310,14 +315,14 @@ class DiagramParser {
             setTimeout(() => dontFocus = true, 200);
         }
 
-        const stopCall = (...args) => {
-            if (!dontFocus || !args || !args[0]) return;
-
-            const cid = ("string" == typeof args[0]) ? args[0] : args[0]["id"];
-            if (cid) {
-                const lang = (File.editor.findElemById(cid).attr("lang") || "").trim().toLowerCase();
-                if (!cid || !lang) return;
-                if (this.parsers.get(lang)?.interactiveMode) return this.utils.stopCallError
+        const stopCall = (node) => {
+            if (!dontFocus || !node) return
+            const cid = ("string" == typeof node) ? node : node.id
+            if (!cid) return
+            const lang = File.editor.findElemById(cid).attr("lang")?.trim().toLowerCase()
+            if (!lang) return
+            if (this.parsers.get(lang)?.interactiveMode) {
+                return this.utils.stopCallError
             }
         }
 
@@ -403,21 +408,19 @@ class DiagramParser {
     }
 
     onCheckIsDiagramType = () => {
-        const after = (result, ...args) => {
-            if (result === true) return true;
+        const after = (origin, lang) => {
+            if (origin === true) return true
+            if (!lang) return false
 
-            let lang = args[0];
-            if (!lang) return false;
-
-            const type = typeof lang;
-            if (type === "object" && lang.mappingType === this.diagramModeFlag) return true;
-            if (type === "object" && lang.name) {
-                lang = lang.name;
+            const t = typeof lang
+            if (t === "object" && lang.mappingType === this.diagramModeFlag) return true
+            if (t === "object" && lang.name) {
+                lang = lang.name
             }
-            if (type === "string") {
-                return this.parsers.get(lang.toLowerCase());
+            if (t === "string") {
+                return this.parsers.get(lang.toLowerCase())
             }
-            return result
+            return origin
         }
         this.utils.decorate(() => File?.editor?.diagrams?.constructor, "isDiagramType", null, after, true)
     }

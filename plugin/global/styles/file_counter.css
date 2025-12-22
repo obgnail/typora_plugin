@@ -1,8 +1,7 @@
 .file-node-content:after {
     content: attr(data-count);
     position: absolute;
-    right: 0;
-    margin-right: 10px;
+    right: 10px;
     padding: 0 3px;
     border-radius: 3px;
     background: ${background_color};

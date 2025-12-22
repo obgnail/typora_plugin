@@ -127,9 +127,7 @@ class ThirdPartyDiagramParser {
         if (!parser) return;
         const instance = parser.instanceMap.get(cid);
         if (!instance) return;
-        if (parser.destroyFunc) {
-            parser.destroyFunc(instance)
-        }
+        parser.destroyFunc?.(instance)
         parser.instanceMap.delete(cid);
     }
 

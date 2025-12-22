@@ -13,73 +13,67 @@ class ChatPlugin extends BaseCustomPlugin {
             destroyAllFunc: null,
             extraStyleGetter: this.getStyleContent,
             interactiveMode: this.config.INTERACTIVE_MODE
-        });
+        })
     }
 
     render = (cid, content, $pre) => {
-        let chat = $pre.find(".plugin-chat");
-        if (chat.length === 0) {
-            chat = $(`<div class="plugin-chat"></div>`);
-        }
-        const { yamlObject, remainContent, yamlLineCount } = this.utils.splitFrontMatter(content);
-        const contentElement = this.genChatContent(remainContent, yamlObject, yamlLineCount);
-        chat.html(`<div class="plugin-chat-content">${contentElement}</div>`);
-        $pre.find(".md-diagram-panel-preview").html(chat);
+        const { yamlObject, remainContent, yamlLineCount } = this.utils.splitFrontMatter(content)
+        const contentEl = this._toElement(remainContent, yamlObject, yamlLineCount)
+        $pre.find(".md-diagram-panel-preview").html(contentEl)
     }
 
-    genChatContent = (content, options, yamlLineCount) => {
-        options = Object.assign({}, this.config.DEFAULT_OPTIONS, options);
-        const { useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars, senderNickname = "me", timeNickname = "time" } = options;
+    _toElement = (content, options, yamlLineNum) => {
+        const mergedOptions = { ...this.config.DEFAULT_OPTIONS, ...options }
+        const { useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars = {}, senderNickname = "me", timeNickname = "time" } = mergedOptions
 
-        const avatarPaths = {};
-        const dir = this.utils.getCurrentDirPath();
-        Object.entries(avatars || {}).map(([name, src]) => {
-            if (!this.utils.isNetworkImage(src) && !this.utils.isSpecialImage(src)) {
-                src = this.utils.Package.Path.resolve(dir, src);
-            }
-            avatarPaths[name] = src;
-        });
+        const dir = this.utils.getLocalRootUrl()
+        const avatarPaths = Object.fromEntries(
+            Object.entries(avatars).map(([name, src]) => {
+                if (!this.utils.isNetworkImage(src) && !this.utils.isSpecialImage(src)) {
+                    src = this.utils.Package.Path.resolve(dir, src)
+                }
+                return [name, src]
+            })
+        )
 
-        const lines = content.split("\n").map(line => line.trim());
-        const throwErrorIfNeed = (errorLine, reason) => useStrict && this.utils.diagramParser.throwParseError(errorLine, reason)
-        const results = lines.map((line, idx) => {
-            if (!line) return;
-            idx += (1 + yamlLineCount);
+        const assertOK = (must, errorLine, reason) => {
+            if (useStrict) this.utils.diagramParser.assertOK(must, errorLine, this.i18n.t(reason))
+        }
 
-            const i = line.indexOf(":");
-            if (i === -1) {
-                throwErrorIfNeed(idx, this.i18n.t("error.noColon"))
-                return;
-            }
-            let [name, text] = [line.slice(0, i), line.slice(i + 1)].map(s => s.trim());
-            text = text.replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
-            if (!name || !text) {
-                throwErrorIfNeed(idx, this.i18n.t("error.emptyNicknameOrEmptyText"))
-                return;
-            }
+        const contentEl = content.split("\n").map(line => line.trim()).map((line, idx) => {
+            if (!line) return
+            idx += (1 + yamlLineNum)
+
+            const i = line.indexOf(":")
+            assertOK(i !== -1, idx, "error.noColon")
+
+            const name = line.slice(0, i).trim()
+            let text = line.slice(i + 1).trim().replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t")
+            assertOK(name && text, idx, "error.emptyNicknameOrEmptyText")
             if (allowMarkdown) {
-                text = this.utils.markdownInlineStyleToHTML(text, dir);
+                text = this.utils.markdownInlineStyleToHTML(text, dir)
             }
 
-            const lowerName = name.toLowerCase();
-            const isTime = lowerName === timeNickname;
-            const isSender = lowerName === senderNickname;
+            const lowerName = name.toLowerCase()
+            const isTime = lowerName === timeNickname
+            const isSender = lowerName === senderNickname
 
             if (isTime && !notAllowShowTime) {
-                return `<div class="plugin-chat-time">${text}</div>`;
+                return `<div class="plugin-chat-time">${text}</div>`
             }
 
-            const class_ = isSender ? "plugin-chat-send" : "plugin-chat-receive";
-            const nickname = (showNickname && !isSender) ? `<div class="plugin-chat-nickname">${name}</div>` : "";
-            let avatar = "";
+            const class_ = isSender ? "plugin-chat-send" : "plugin-chat-receive"
+            const nickname = (showNickname && !isSender) ? `<div class="plugin-chat-nickname">${name}</div>` : ""
+            let avatar = ""
             if (showAvatar) {
                 avatar = avatarPaths[name]
                     ? `<img class="plugin-chat-avatar" src="${avatarPaths[name]}" alt="${name}">`
                     : `<div class="plugin-chat-avatar"><div class="avatar-font">${name[0].toUpperCase()}</div></div>`
             }
             return `<div class="${class_}">${avatar}<div class="plugin-chat-quote">${nickname}<div class="plugin-chat-text">${text}</div></div></div>`
-        })
-        return results.join("")
+        }).join("")
+
+        return `<div class="plugin-chat"><div class="plugin-chat-content">${contentEl}</div></div>`
     }
 
     getStyleContent = () => this.utils.styleTemplater.getStyleContent(this.fixedName)

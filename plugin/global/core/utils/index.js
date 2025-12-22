@@ -1127,20 +1127,19 @@ class utils {
         }
     }
 
-    static markdownInlineStyleToHTML = (content, dir) => {
-        const imageReplacement = (_, alt, src) => {
-            if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
-                src = PATH.resolve(dir || this.getCurrentDirPath(), src)
-            }
-            return `<img alt="${alt}" src="${src}">`
-        }
+    static markdownInlineStyleToHTML = (content, dir = this.getLocalRootUrl()) => {
         return content
             .replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
             .replace(/(?<!\\)[*_]{2}(.+?)(?<!\\)[*_]{2}/gs, `<strong>$1</strong>`)
             .replace(/(?<![*\\])\*(?![\\*])(.+?)(?<![*\\])\*(?![\\*])/gs, `<em>$1</em>`)
             .replace(/(?<!\\)~~(.+?)(?<!\\)~~/gs, "<del>$1</del>")
             .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
-            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, imageReplacement)
+            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => {
+                if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
+                    src = PATH.resolve(dir, src)
+                }
+                return `<img alt="${alt}" src="${src}">`
+            })
     }
 
     static buildTable = rows => {
