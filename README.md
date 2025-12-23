@@ -336,28 +336,6 @@ Examples:
 
 All plugins support direct invocation through the right-click menu. Mouse enthusiasts can use the right-click menu as the main way to call all plugins.
 
-You can customize the right-click menu by modifying the configuration:
-
-```toml
-# Each MENUS corresponds to a primary menu, allowing unlimited additions of primary menus and repeated addition of the same plugin
-# NAME: The name of the primary menu
-# LIST: List of secondary menu plugins (use "---" to insert a divider on the page for separation)
-[[right_click_menu.MENUS]]
-NAME = "Less Used Plugins"
-LIST = [
-    "window_tab",
-    "fence_enhance",
-    ...
-]
-[[right_click_menu.MENUS]]
-NAME = "Often Used Plugins"
-LIST = [
-    "commander",
-    "markmap",
-    ...
-]
-```
-
 
 ### pie_menu
 
@@ -529,6 +507,7 @@ Function:
 - Drag & drop outline to rearrange
 - Display non-Markdown files in the sidebar
 - Keep Fold Outline State
+- Customize Sidebar File Icons
 
 ### go_top
 

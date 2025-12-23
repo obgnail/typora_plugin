@@ -989,13 +989,9 @@
     "$label.FONT_WEIGHT": "Font Weight",
     "$label.COLOR": "Color",
     "$label.BACKGROUND_COLOR": "Background Color",
-    "$label.BEFORE_TEXT": "Prefix",
-    "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU": "Ctrl+Wheel Scroll Sidebar Horizontally",
     "$label.IGNORE_MIN_NUM": "Min File Count in Directory",
     "$title.ALLOW_EXT": "Allowed File Extensions",
     "$title.IGNORE_FOLDERS": "Ignored Folders",
-    "$title.textStyle": "Text Style",
-    "$title.mouseInteraction": "Mouse Interaction",
     "$tooltip.ignoreMinNum": "Ignore directories containing less than X files"
   },
   "hotkeys": {
@@ -1074,6 +1070,7 @@
     "$label.DISPLAY_NON_MARKDOWN_FILES": "Display non-Markdown Files",
     "$label.OPEN_BY_SYSTEM_EXT": "External Open Extensions",
     "$label.OPEN_BY_TYPORA_EXT": "Internal Open Extensions",
+    "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR": "Ctrl+Wheel: Scroll Sidebar Horizontally",
     "$label.KEEP_OUTLINE_FOLD_STATE": "Keep Outline Fold State",
     "$label.SORTABLE_OUTLINE": "Sortable Outline",
     "$label.CUSTOMIZE_SIDEBAR_ICONS": "Customize Sidebar File Icons",

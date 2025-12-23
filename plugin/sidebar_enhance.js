@@ -1,6 +1,4 @@
 class SidebarEnhancePlugin extends BasePlugin {
-    styleTemplate = () => !!this.config.SORTABLE_OUTLINE
-
     process = () => {
         if (this.config.DISPLAY_NON_MARKDOWN_FILES && File.SupportedFiles) {
             this._displayNonMarkdownFiles()
@@ -14,11 +12,14 @@ class SidebarEnhancePlugin extends BasePlugin {
         if (this.config.SORTABLE_OUTLINE) {
             this._sortableOutline()
         }
+        if (this.config.CTRL_WHEEL_TO_SCROLL_SIDEBAR) {
+            this._ctrlWheelToScroll()
+        }
     }
 
     init = () => {
         this.entities = {
-            outline: document.getElementById("outline-content")
+            outline: document.getElementById("outline-content"),
         }
     }
 
@@ -72,21 +73,26 @@ class SidebarEnhancePlugin extends BasePlugin {
     }
 
     _sortableOutline = () => {
-        const outline = this.entities.outline
+        const classSource = "plugin-sortable-outline-source"
+        const classAbove = "plugin-sortable-outline-above"
+        const classBelow = "plugin-sortable-outline-below"
 
-        const fresh = this.utils.debounce(() => outline.querySelectorAll(".outline-item").forEach(e => e.draggable = true), 200)
+        this.utils.insertStyle("plugin-sortable-outline-style", `
+            .${classSource} { opacity: 0.4 }
+            .${classAbove} { outline: 1px dashed #000; box-shadow: 0 -3px 0 #8d8df0; }
+            .${classBelow} { outline: 1px dashed #000; box-shadow: 0 3px 0 #8d8df0; }`
+        )
+
+        const fresh = this.utils.debounce(() => this.entities.outline.querySelectorAll(".outline-item").forEach(e => e.draggable = true), 200)
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, fresh)
         this.utils.decorate(() => File, "freshMenu", null, fresh)
         this.utils.decorate(() => File?.editor?.library?.outline, "renderOutline", null, fresh)
 
         let dragItem
-        const classAbove = "plugin-sortable-outline-above"
-        const classBelow = "plugin-sortable-outline-below"
-        const classSource = "plugin-sortable-outline-source"
         const isAncestorOf = (ancestor, descendant) => ancestor.parentElement.contains(descendant)
         const isPreceding = (el, otherEl) => el.compareDocumentPosition(otherEl) === document.DOCUMENT_POSITION_PRECEDING
         const getCid = item => item.querySelector(":scope > .outline-label").dataset.ref
-        const clearStyle = () => outline.querySelectorAll(`.${classAbove}, .${classBelow}, .${classSource}`).forEach(e => {
+        const clearStyle = () => this.entities.outline.querySelectorAll(`.${classAbove}, .${classBelow}, .${classSource}`).forEach(e => {
             e.classList.remove(classAbove, classBelow, classSource)
         })
         const setStyle = function (ev) {
@@ -117,7 +123,8 @@ class SidebarEnhancePlugin extends BasePlugin {
             const endIdx = headers.length === end ? blocks.length : headers[end].idx
             return { startIdx, endIdx }
         }
-        $(outline)
+
+        $(this.entities.outline)
             .on("dragstart", ".outline-item", function (ev) {
                 dragItem = this
                 ev.originalEvent.dataTransfer.effectAllowed = "move"
@@ -154,6 +161,15 @@ class SidebarEnhancePlugin extends BasePlugin {
                 File.reloadContent(content, op)
             })
             .on("dragend", clearStyle)
+    }
+
+    _ctrlWheelToScroll = () => {
+        document.querySelector("#file-library").addEventListener("wheel", ev => {
+            if (!this.utils.metaKeyPressed(ev)) return
+            ev.currentTarget.scrollLeft += ev.deltaY * 0.2
+            ev.stopPropagation()
+            ev.preventDefault()
+        }, { passive: false, capture: true })
     }
 }
 

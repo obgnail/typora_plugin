@@ -270,19 +270,16 @@ class DiagramParser {
 
         const callback = () => {
             const beforeToHTML = () => {
-                const extraCssList = []
+                const extraCSSs = []
                 this.parsers.forEach((parser, lang) => {
                     this.renderAllLangFence(lang)
-                    const getter = parser.extraStyleGetter
-                    const exist = this.utils.entities.querySelectorInWrite(`.md-fences[lang="${lang}"]`)
-                    if (getter && exist) {
-                        const extraCss = getter()
-                        extraCssList.push(extraCss)
+                    if (typeof parser.extraStyleGetter === "function" && !!this.utils.entities.querySelectorInWrite(`.md-fences[lang="${lang}"]`)) {
+                        extraCSSs.push(parser.extraStyleGetter())
                     }
                 })
-                if (extraCssList.length) {
-                    const base = ` .md-diagram-panel, svg {page-break-inside: avoid;} `
-                    return base + extraCssList.join(" ")
+                if (extraCSSs.length) {
+                    const base = ` .md-diagram-panel, svg { page-break-inside: avoid } `
+                    return base + extraCSSs.join(" ")
                 }
             }
             // Make `frame.js` happy. To avoid null pointer exceptions

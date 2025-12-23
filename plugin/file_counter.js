@@ -6,7 +6,13 @@ class FileCounterPlugin extends BasePlugin {
     })
 
     init = () => {
-        this.abortController = new AbortController()
+        this.entities = {
+            fileTree: document.querySelector("#file-library-tree"),
+            get fileTreeRoot() {
+                return document.querySelector("#file-library-tree > .file-library-root")  // rootNode may be dynamic
+            },
+        }
+
         this.walkOptions = this._getWalkOptions()
         this.observer = new MutationObserver(mutations => {
             if (mutations.length === 1) {
@@ -18,7 +24,6 @@ class FileCounterPlugin extends BasePlugin {
             }
             this.countAllDirs()
         })
-        this.fileTreeEl = document.getElementById("file-library-tree")
     }
 
     process = () => {
@@ -27,21 +32,11 @@ class FileCounterPlugin extends BasePlugin {
             this.countAllDirs()
         })
 
-        if (this.config.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU) {
-            document.querySelector("#file-library").addEventListener("wheel", ev => {
-                const target = ev.target.closest("#file-library")
-                if (target && this.utils.metaKeyPressed(ev)) {
-                    target.scrollLeft += ev.deltaY * 0.2
-                    ev.stopPropagation()
-                    ev.preventDefault()
-                }
-            }, { passive: false, capture: true })
-        }
-
-        this.observer.observe(this.fileTreeEl, { subtree: true, childList: true })
+        this.observer.observe(this.entities.fileTree, { subtree: true, childList: true })
     }
 
     _getWalkOptions = () => {
+        const abortController = new AbortController()
         const allowedExt = new Set(this.config.ALLOW_EXT.map(ext => {
             const prefix = (ext !== "" && !ext.startsWith(".")) ? "." : ""
             return prefix + ext.toLowerCase()
@@ -55,13 +50,17 @@ class FileCounterPlugin extends BasePlugin {
             maxStats: this.config.MAX_STATS,
             semaphore: this.config.CONCURRENCY_LIMIT,
             followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
-            signal: this.abortController.signal,
+            signal: abortController.signal,
             onFinished: (err) => {
                 if (!err) return
-                if (err.name === "QuotaExceededError") {
-                    this.stop()
-                } else if (err.name === "AbortError") {
+                if (err.name === "AbortError") {
                     console.warn("File-Counter Aborted")
+                } else if (err.name === "QuotaExceededError") {
+                    this.observer.disconnect()
+                    abortController.abort(new DOMException("Stop File-Counter", "AbortError"))
+                    document.querySelectorAll(".file-node-content[data-count]").forEach(el => el.removeAttribute("data-count"))
+                    const msg = this.i18n.t("error.tooManyFiles", { pluginName: this.pluginName })
+                    this.utils.notification.show(msg, "warning", 7000)
                 }
             },
         }
@@ -71,34 +70,21 @@ class FileCounterPlugin extends BasePlugin {
         let fileCount = 0
         await this.utils.walkDir({ ...this.walkOptions, dir: node.dataset.path, onFile: () => fileCount++ })
 
-        const countEl = node.querySelector(":scope > .file-node-content")
+        const displayEl = node.querySelector(":scope > .file-node-content")
         if (fileCount <= this.config.IGNORE_MIN_NUM) {
-            countEl.removeAttribute("data-count")
+            displayEl.removeAttribute("data-count")
         } else {
-            countEl.setAttribute("data-count", fileCount)
+            displayEl.setAttribute("data-count", fileCount)
         }
     }
 
     countDir = (node) => {
         if (!node) return
         this._setCount(node)
-        const children = node.querySelectorAll(':scope > .file-node-children > .file-library-node[data-has-sub="true"]')
-        children.forEach(this.countDir)
+        node.querySelectorAll(':scope > .file-node-children > .file-library-node[data-has-sub="true"]').forEach(this.countDir)
     }
 
-    countAllDirs = () => {
-        const node = this.fileTreeEl.querySelector(":scope > .file-library-node")
-        this.countDir(node)
-    }
-
-    stop = () => {
-        this.observer.disconnect()
-        this.abortController?.abort(new DOMException("Stop File Counter", "AbortError"))
-
-        document.querySelectorAll(".file-node-content[data-count]").forEach(el => el.removeAttribute("data-count"))
-        const msg = this.i18n.t("error.tooManyFiles", { pluginName: this.pluginName })
-        this.utils.notification.show(msg, "warning", 7000)
-    }
+    countAllDirs = () => this.countDir(this.entities.fileTreeRoot)
 }
 
 module.exports = {

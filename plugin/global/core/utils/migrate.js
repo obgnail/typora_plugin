@@ -7,17 +7,15 @@ class Migrate {
     }
 
     deleteUselessPlugins = async () => {
-        const custom = [
+        const dirs = ["scrollBookmarker"]
+        const files = [
             "fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode",
             "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander", "resourceOperation",
             "reopenClosedFiles", "sortableOutline", "__modal_example",
         ]
-        const promises = custom
-            .flatMap(plugin => [
-                this.utils.joinPath("./plugin/custom/plugins", `${plugin}.js`),
-                this.utils.joinPath("./plugin/custom/plugins", plugin),
-            ])
-            .map(async path => this.utils.Package.FsExtra.remove(path))
+        const toDir = name => this.utils.joinPath("./plugin/custom/plugins", name)
+        const toFile = name => this.utils.joinPath("./plugin/custom/plugins", `${name}.js`)
+        const promises = [...files.map(toFile), ...dirs.map(toDir)].map(path => this.utils.Package.FsExtra.remove(path))
         await Promise.all(promises)
     }
 
@@ -88,7 +86,6 @@ class Migrate {
         console.log("[Migrate] Migrated Typora Plugin settings file")
     }
 
-    // Run migrate after Typora starts and check the permission to write to the settings files
     afterProcess = () => {
         setTimeout(this.run, 5 * 1000)
     }

@@ -351,28 +351,6 @@ yay -S typora-plugin
 
 所有插件都支持在右键菜单中直接调用。鼠标党可以将右键菜单作为所有插件的主要调用方式。
 
-可以通过修改配置自定义右键菜单：
-
-```toml
-#  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
-#  NAME: 一级菜单的名称
-#  LIST: 二级菜单的插件列表（使用"---"代表在页面上插入一个divider，以作分隔）
-[[right_click_menu.MENUS]]
-NAME = "少用插件"
-LIST = [
-    "window_tab",
-    "fence_enhance",
-    ...
-]
-[[right_click_menu.MENUS]]
-NAME = "常用插件"
-LIST = [
-    "commander",
-    "markmap",
-    ...
-]
-```
-
 
 
 ### pie_menu：圆盘菜单
@@ -593,6 +571,7 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 - 拖动大纲标题，调整文章结构
 - 目录树显示其他扩展名文件
 - 记忆大纲折叠状态
+- 定制侧边栏文件图标
 
 
 

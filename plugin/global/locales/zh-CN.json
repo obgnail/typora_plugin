@@ -989,13 +989,9 @@
     "$label.FONT_WEIGHT": "字宽",
     "$label.COLOR": "颜色",
     "$label.BACKGROUND_COLOR": "背景色",
-    "$label.BEFORE_TEXT": "前缀",
-    "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU": "Ctrl+Wheel 横向滚动侧边栏",
     "$label.IGNORE_MIN_NUM": "目录下最小文件数",
-    "$title.ALLOW_EXT": "允许文件扩展名",
-    "$title.IGNORE_FOLDERS": "忽略目录名",
-    "$title.textStyle": "文字样式",
-    "$title.mouseInteraction": "鼠标交互",
+    "$title.ALLOW_EXT": "列入计数的文件扩展名",
+    "$title.IGNORE_FOLDERS": "忽略的目录名",
     "$tooltip.ignoreMinNum": "忽略所含文件数少于 X 的目录"
   },
   "hotkeys": {
@@ -1074,6 +1070,7 @@
     "$label.DISPLAY_NON_MARKDOWN_FILES": "文件树显示非 Markdown 文件",
     "$label.OPEN_BY_SYSTEM_EXT": "外部打开的扩展名",
     "$label.OPEN_BY_TYPORA_EXT": "内部打开的扩展名",
+    "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR": "Ctrl+Wheel：横向滚动侧边栏",
     "$label.KEEP_OUTLINE_FOLD_STATE": "记忆大纲折叠状态",
     "$label.SORTABLE_OUTLINE": "大纲拖拽排序",
     "$label.CUSTOMIZE_SIDEBAR_ICONS": "定制侧边栏文件图标",
@@ -1081,7 +1078,7 @@
     "$label.SIDEBAR_ICONS.extensions": "扩展名",
     "$label.SIDEBAR_ICONS.icon": "图标",
     "$title.SIDEBAR_ICONS": "侧边栏文件图标",
-    "$tooltip.canCollapseOutlinePanel": "需启用 Typora 配置【允许折叠和展开侧边栏的大纲视图】"
+    "$tooltip.canCollapseOutlinePanel": "需启用 Typora 配置「允许折叠和展开侧边栏的大纲视图」"
   },
   "cursor_history": {
     "pluginName": "光标跳转",

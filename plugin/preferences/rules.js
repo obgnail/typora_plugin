@@ -3,7 +3,7 @@ const regex = "regex"
 const path = "path"
 const required = "required"
 const array = "array"
-const notEqualZero = { name: "notEqual", args: [0] }
+const notZero = { name: "notEqual", args: [0] }
 const hotkey = { name: "pattern", args: [/^((ctrl|shift|alt)\+)*\w+$/i] }
 const fileExt = { name: "pattern", args: [/^([a-zA-Z0-9]+)?$/] }
 const codingLang = { name: "pattern", args: [/^[a-zA-Z0-9#+.\-]+$/] }
@@ -19,8 +19,8 @@ module.exports = {
     window_tab: {
         TAB_MIN_WIDTH: required,
         TAB_MAX_WIDTH: required,
-        MAX_TAB_NUM: notEqualZero,
-        DRAG_NEW_WINDOW_THRESHOLD: notEqualZero,
+        MAX_TAB_NUM: notZero,
+        DRAG_NEW_WINDOW_THRESHOLD: notZero,
         CLOSE_HOTKEY: hotkey,
         SWITCH_PREVIOUS_TAB_HOTKEY: hotkey,
         SWITCH_NEXT_TAB_HOTKEY: hotkey,
@@ -32,9 +32,9 @@ module.exports = {
         ALLOW_EXT: fileExt,
         IGNORE_FOLDERS: required,
         HIGHLIGHT_COLORS: [required, hexColor],
-        TIMEOUT: notEqualZero,
-        MAX_STATS: notEqualZero,
-        MAX_DEPTH: notEqualZero,
+        TIMEOUT: notZero,
+        MAX_STATS: notZero,
+        MAX_DEPTH: notZero,
     },
     md_padding: {
         IGNORE_WORDS: required,
@@ -83,12 +83,12 @@ module.exports = {
         IGNORE_FOLDERS: required,
     },
     resource_manager: {
-        MAX_STATS: notEqualZero,
-        MAX_DEPTH: notEqualZero,
+        MAX_STATS: notZero,
+        MAX_DEPTH: notZero,
         IGNORE_FOLDERS: required,
     },
     editor_width_slider: {
-        WIDTH_RATIO: notEqualZero,
+        WIDTH_RATIO: notZero,
     },
     article_uploader: {
         "upload.wordpress.hostname": required,
@@ -104,11 +104,11 @@ module.exports = {
         "SERVER_OPTIONS.path": required,
     },
     updater: {
-        UPDATE_LOOP_INTERVAL: notEqualZero,
-        START_UPDATE_INTERVAL: notEqualZero,
+        UPDATE_LOOP_INTERVAL: notZero,
+        START_UPDATE_INTERVAL: notZero,
     },
     kanban: {
-        KANBAN_TASK_DESC_MAX_HEIGHT: notEqualZero,
+        KANBAN_TASK_DESC_MAX_HEIGHT: notZero,
         KANBAN_COLOR: required,
         TASK_COLOR: required,
         TEMPLATE: required,

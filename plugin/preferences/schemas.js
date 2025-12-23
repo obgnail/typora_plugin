@@ -48,7 +48,7 @@ const Composite = (key, subSchema, defaultValues, { tooltip, disabled, dependenc
     return { type: "composite", key, label: key, subSchema, defaultValues, tooltip, disabled, dependencies, ...args }
 }
 
-const UntitledBox = (...fields) => ({ title: undefined, fields })
+const UntitledBox = (...fields) => ({ fields })
 const TitledBox = (title, ...fields) => ({ title, fields })
 
 const WithDependencies = (source, dependencies) => ({ ...source, dependencies })
@@ -88,6 +88,7 @@ const CheckboxBox = (key, options, { minItems, maxItems, columns = 1, dependenci
 
 const prop_percent = { min: 0, max: 100, step: 1 }
 const prop_protected = { tooltip: "protected", disabled: true }
+const prop_minusOneAllowed = { tooltip: "minusOneMeansUnlimited", min: -1 }
 
 const dep_markmapToc = { dependencies: { ENABLE_TOC_MARKMAP: true } }
 const dep_markmapFence = { dependencies: { ENABLE_FENCE_MARKMAP: true } }
@@ -258,7 +259,7 @@ const conf_window_tab = [
         Switch("HIDE_WINDOW_TITLE_BAR"),
         Text("TAB_MIN_WIDTH"),
         Text("TAB_MAX_WIDTH"),
-        Number("MAX_TAB_NUM", { tooltip: "minusOneMeansUnlimited", min: -1 }),
+        Number("MAX_TAB_NUM", prop_minusOneAllowed),
     ),
     TitledBox(
         "behavior",
@@ -321,10 +322,10 @@ const conf_search_multi = [
         "advanced",
         Switch("FOLLOW_SYMBOLIC_LINKS"),
         Select("TRAVERSE_STRATEGY", OPTIONS.search_multi.TRAVERSE_STRATEGY),
-        Number("TIMEOUT", { tooltip: "minusOneMeansUnlimited", unit: UNITS.millisecond, min: -1 }),
+        Number("TIMEOUT", { ...prop_minusOneAllowed, unit: UNITS.millisecond }),
         Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
-        Number("MAX_STATS", { tooltip: "minusOneMeansUnlimited", min: -1 }),
-        Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
+        Number("MAX_STATS", prop_minusOneAllowed),
+        Number("MAX_DEPTH", prop_minusOneAllowed),
         Number("CONCURRENCY_LIMIT", { min: 1 }),
     ),
     box_settingHandler,
@@ -894,8 +895,8 @@ const conf_resource_manager = [
         Select("TRAVERSE_STRATEGY", OPTIONS.resource_manager.TRAVERSE_STRATEGY),
         Switch("FOLLOW_SYMBOLIC_LINKS"),
         Number("TIMEOUT", { unit: UNITS.millisecond, min: 1 }),
-        Number("MAX_STATS", { tooltip: "minusOneMeansUnlimited", min: -1 }),
-        Number("MAX_DEPTH", { tooltip: "minusOneMeansUnlimited", min: -1 }),
+        Number("MAX_STATS", prop_minusOneAllowed),
+        Number("MAX_DEPTH", prop_minusOneAllowed),
         Number("CONCURRENCY_LIMIT", { min: 1 }),
     ),
     box_settingHandler,
@@ -1052,15 +1053,10 @@ const conf_preferences = [
 const conf_file_counter = [
     box_basePluginLite,
     TitledBox(
-        "textStyle",
+        "style",
         Text("FONT_WEIGHT"),
         Text("COLOR"),
         Text("BACKGROUND_COLOR"),
-        Text("BEFORE_TEXT"),
-    ),
-    TitledBox(
-        "mouseInteraction",
-        Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU"),
     ),
     ArrayBox("ALLOW_EXT"),
     ArrayBox("IGNORE_FOLDERS"),
@@ -1176,6 +1172,9 @@ const conf_static_markers = [
 
 const conf_sidebar_enhance = [
     box_basePluginLite,
+    UntitledBox(
+        Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR"),
+    ),
     UntitledBox(
         Switch("KEEP_OUTLINE_FOLD_STATE", { tooltip: "canCollapseOutlinePanel" }),
         Switch("SORTABLE_OUTLINE"),
@@ -1732,7 +1731,7 @@ const conf_redirectLocalRootUrl = [
     box_settingHandler,
 ]
 
-const SETTING_SCHEMAS = {
+const SCHEMAS = {
     global: conf_global,
     window_tab: conf_window_tab,
     search_multi: conf_search_multi,
@@ -1798,43 +1797,32 @@ const SETTING_SCHEMAS = {
     redirectLocalRootUrl: conf_redirectLocalRootUrl,
 }
 
-const I18N = (schemas, i18n = require("../global/core/i18n").data) => {
-    const PREFIX_MAP = {
-        label: "$label",
-        tooltip: "$tooltip",
-        placeholder: "$placeholder",
-        hintHeader: "$hintHeader",
-        hintDetail: "$hintDetail",
-        unit: "$unit",
-        title: "$title",
-        option: "$option",
-    }
+const I18N = (schemas, i18nData = require("../global/locales/en.json")) => {
+    const BASE_PROPS = { label: "$label", tooltip: "$tooltip", placeholder: "$placeholder", hintHeader: "$hintHeader", hintDetail: "$hintDetail", unit: "$unit" }
+    const SPECIAL_PROPS = { options: "$option", thMap: "$label" }
 
-    const translateBox = (box, translate) => {
+    const translateBox = (box, t) => {
         const newBox = { ...box }
         if (newBox.title != null) {
-            newBox.title = translate(`${PREFIX_MAP.title}.${newBox.title}`)
+            newBox.title = t(`$title.${newBox.title}`)
         }
-        if (newBox.fields) {
+        if (Array.isArray(newBox.fields)) {
             newBox.fields = newBox.fields.map(field => {
                 const newField = { ...field }
-                Object.entries(PREFIX_MAP).forEach(([prop, prefix]) => {
-                    if (prop !== "title" && prop !== "option" && newField[prop] != null) {
-                        newField[prop] = translate(`${prefix}.${newField[prop]}`)
+                Object.entries(BASE_PROPS).forEach(([prop, prefix]) => {
+                    if (newField[prop] != null) {
+                        newField[prop] = t(`${prefix}.${newField[prop]}`)
                     }
                 })
-                if (newField.options && typeof newField.options === "object" && !Array.isArray(newField.options)) {
-                    newField.options = Object.fromEntries(
-                        Object.entries(newField.options).map(([k, v]) => [k, translate(`${PREFIX_MAP.option}.${v}`)])
-                    )
-                }
-                if (newField.thMap && typeof newField.thMap === "object") {
-                    newField.thMap = Object.fromEntries(
-                        Object.entries(newField.thMap).map(([k, v]) => [k, translate(`${PREFIX_MAP.label}.${v}`)])
-                    )
-                }
-                if (newField.nestedBoxes != null) {
-                    newField.nestedBoxes = newField.nestedBoxes.map(box => translateBox(box, translate))
+                Object.entries(SPECIAL_PROPS).forEach(([prop, prefix]) => {
+                    if (newField[prop] != null && typeof newField[prop] === "object" && !Array.isArray(newField[prop])) {
+                        newField[prop] = Object.fromEntries(
+                            Object.entries(newField[prop]).map(([k, v]) => [k, t(`${prefix}.${v}`)])
+                        )
+                    }
+                })
+                if (Array.isArray(newField.nestedBoxes)) {
+                    newField.nestedBoxes = newField.nestedBoxes.map(subBox => translateBox(subBox, t))
                 }
                 return newField
             })
@@ -1844,11 +1832,11 @@ const I18N = (schemas, i18n = require("../global/core/i18n").data) => {
 
     return Object.fromEntries(
         Object.entries(schemas).map(([fixedName, boxes]) => {
-            const translate = (key) => i18n[fixedName]?.[key] || i18n.settings?.[key] || key
-            const translatedBoxes = boxes.map(box => translateBox(box, translate))
+            const t = (i18nKey) => i18nData[fixedName]?.[i18nKey] ?? i18nData.settings?.[i18nKey] ?? i18nKey
+            const translatedBoxes = boxes.map(box => translateBox(box, t))
             return [fixedName, translatedBoxes]
         })
     )
 }
 
-module.exports = I18N(SETTING_SCHEMAS)
+module.exports = I18N(SCHEMAS, require("../global/core/i18n").data)

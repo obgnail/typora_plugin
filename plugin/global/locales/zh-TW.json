@@ -989,13 +989,9 @@
     "$label.FONT_WEIGHT": "字寬",
     "$label.COLOR": "顏色",
     "$label.BACKGROUND_COLOR": "背景顏色",
-    "$label.BEFORE_TEXT": "前綴",
-    "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU": "Ctrl+Wheel 橫向滾動側邊欄",
     "$label.IGNORE_MIN_NUM": "目錄下最小檔案數",
-    "$title.ALLOW_EXT": "允許檔案副檔名",
-    "$title.IGNORE_FOLDERS": "忽略目錄名",
-    "$title.textStyle": "文字樣式",
-    "$title.mouseInteraction": "滑鼠互動",
+    "$title.ALLOW_EXT": "列入計數的檔案副檔名",
+    "$title.IGNORE_FOLDERS": "忽略的目錄名",
     "$tooltip.ignoreMinNum": "忽略所含檔案數少於 X 的目錄"
   },
   "hotkeys": {
@@ -1074,6 +1070,7 @@
     "$label.DISPLAY_NON_MARKDOWN_FILES": "檔案樹顯示非 Markdown 檔案",
     "$label.OPEN_BY_SYSTEM_EXT": "外部開啟的副檔名",
     "$label.OPEN_BY_TYPORA_EXT": "內部開啟的副檔名",
+    "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR": "Ctrl+Wheel：橫向滾動側邊欄",
     "$label.KEEP_OUTLINE_FOLD_STATE": "记忆大綱折疊狀態",
     "$label.SORTABLE_OUTLINE": "大綱拖拽排序",
     "$label.CUSTOMIZE_SIDEBAR_ICONS": "定制側邊欄檔案圖示",
@@ -1081,7 +1078,7 @@
     "$label.SIDEBAR_ICONS.extensions": "副檔名",
     "$label.SIDEBAR_ICONS.icon": "圖示",
     "$title.SIDEBAR_ICONS": "側邊欄檔案圖示",
-    "$tooltip.canCollapseOutlinePanel": "需啟用 Typora 設定【允許展開/折疊側邊欄大綱】"
+    "$tooltip.canCollapseOutlinePanel": "需啟用 Typora 設定「允許展開/折疊側邊欄大綱」"
   },
   "cursor_history": {
     "pluginName": "光標跳轉",
