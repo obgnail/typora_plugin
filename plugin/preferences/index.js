@@ -105,7 +105,7 @@ class PreferencesPlugin extends BasePlugin {
                 const fixedName = this.entities.form.dataset.plugin
                 const settings = await this._getSettings(fixedName)
                 handleProperty(settings, key, value)
-                await this.utils.settings.saveSettings(fixedName, settings)
+                await this.utils.settings.handleSettings(fixedName, (_, allSettings) => allSettings[fixedName] = settings)
 
                 this._setDialogState(true)
             })

@@ -68,6 +68,10 @@ const ArrayBox = (key, { dependencies, ...args } = {}) => {
     const box = TitledBox(key, { type: "array", key, ...args })
     return WithDependencies(box, dependencies)
 }
+const DictBox = (key, options, { explain, dependencies, ...args } = {}) => {
+    const box = TitledBox(key, { type: "dict", key, explain, ...args })
+    return WithDependencies(box, dependencies)
+}
 const TableBox = (key, ths, nestedBoxes, defaultValues, { dependencies, ...args } = {}) => {
     nestedBoxes.forEach(box => {
         if (box.title) box.title = `${key}.${box.title}`
@@ -1378,7 +1382,7 @@ const conf_abc = [
     box_langMode,
     box_chartStyle,
     TextareaBox("TEMPLATE"),
-    ObjectBox("VISUAL_OPTIONS", { rows: 5 }),
+    DictBox("VISUAL_OPTIONS"),
     UntitledBox(
         Action("viewAbcVisualOptionsHelp"),
     ),
@@ -1418,7 +1422,7 @@ const conf_plantUML = [
 const conf_marp = [
     box_customPluginLite,
     box_langMode,
-    ObjectBox("MARP_CORE_OPTIONS", { rows: 5 }),
+    DictBox("MARP_CORE_OPTIONS"),
     TextareaBox("TEMPLATE"),
     box_settingHandler,
 ]
@@ -1670,7 +1674,7 @@ const conf_markdownLint = [
         Color("pass_color", { dependencies: { use_button: true } }),
         Color("error_color", { dependencies: { use_button: true } }),
     ),
-    ObjectBox("rule_config", { rows: 10 }),
+    DictBox("rule_config"),
     ArrayBox("custom_rule_files"),
     UntitledBox(
         Action("viewMarkdownlintRules"),

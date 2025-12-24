@@ -2719,6 +2719,150 @@ const Control_Checkbox = {
     },
 }
 
+const Control_Dict = {
+    controlOptions: {
+        keyPlaceholder: "Key",
+        valuePlaceholder: "Value",
+        allowAddItem: true,
+    },
+    setup: ({ field }) => defaultBlockLayout(field),
+    create: ({ field, controlOptions }) => {
+        const { key } = getCommonHTMLAttrs(field)
+        const list = '<div class="dict-list"></div>'
+        const add = controlOptions.allowAddItem ? `<div class="dict-btn-add"><i class="fa fa-plus"></i> ${i18n.t("global", "add")}</div>` : ""
+        return `<div class="dict-wrap" ${key}>${list}${add}</div>`
+    },
+    update: ({ element, value, controlOptions }) => {
+        const listEl = element.querySelector(".dict-list")
+        if (!listEl) return
+        listEl.innerHTML = Object.entries(value || {}).map(([k, v]) => Control_Dict._createRow(k, v, controlOptions)).join("")
+    },
+    bindEvents: ({ form }) => {
+        const closeAllMenus = () => form.getFormEl().querySelectorAll(".dict-type-menu.show").forEach(el => el.classList.remove("show"))
+        form.onEvent("click", function (ev) {
+            if (!ev.target.closest(".dict-type-wrap")) {
+                closeAllMenus()
+            }
+        }).onEvent("click", ".dict-type-badge", function (ev) {
+            ev.stopPropagation()
+            const menu = this.nextElementSibling
+            const isShown = menu.classList.contains("show")
+            closeAllMenus()
+            if (!isShown) menu.classList.add("show")
+        }).onEvent("click", ".dict-type-option", function (ev) {
+            ev.stopPropagation()
+            const targetType = this.dataset.type
+            const wrapEl = this.closest(".dict-type-wrap")
+            const badgeEl = wrapEl.querySelector(".dict-type-badge")
+            const valInput = wrapEl.closest(".dict-row").querySelector(".dict-val")
+            const typeHandler = Control_Dict._types[targetType]
+            if (!typeHandler.validate(valInput.value)) {
+                valInput.classList.add("input-error")
+                setTimeout(() => valInput.classList.remove("input-error"), 500)
+                closeAllMenus()
+                return
+            }
+            badgeEl.dataset.type = targetType
+            badgeEl.textContent = typeHandler.label
+            closeAllMenus()
+            Control_Dict._collectAndCommit(wrapEl, form)
+        }).onEvent("change", ".dict-input", function () {
+            Control_Dict._collectAndCommit(this, form)
+        }).onEvent("click", ".dict-btn-del", utils.createConsecutiveAction({
+            threshold: 2,
+            timeWindow: 3000,
+            getIdentifier: (ev) => ev.target,
+            onConfirmed: (ev) => {
+                const row = ev.target.closest(".dict-row")
+                const wrap = ev.target.closest(".dict-wrap")
+                row.remove()
+                Control_Dict._collectAndCommit(wrap, form)
+            }
+        })).onEvent("click", ".dict-btn-add", function () {
+            const wrap = this.parentElement
+            const listEl = wrap.querySelector(".dict-list")
+            const fieldKey = wrap.getAttribute("data-key")
+            const controlOptions = form.getControlOptionsFromKey(fieldKey)
+            const row = Control_Dict._createRow("", "", controlOptions)
+            listEl.insertAdjacentHTML("beforeend", row)
+            listEl.lastElementChild.querySelector(".dict-key")?.focus()
+        })
+    },
+    _createRow: (key, val, options) => {
+        let currentType = "string"
+        if (typeof val === "number") currentType = "number"
+        else if (typeof val === "boolean") currentType = "boolean"
+        else if (typeof val === "object" && val !== null) currentType = "json"
+
+        let displayVal
+        if (currentType === "json") displayVal = JSON.stringify(val)
+        else if (val == null) displayVal = ""
+        else displayVal = String(val)
+
+        const k = utils.escape(String(key || ""))
+        const v = utils.escape(displayVal)
+        const typeConfig = Control_Dict._types
+        const currentLabel = typeConfig[currentType].label
+        const toOption = ([key, def]) => `<div class="dict-type-option ${key === currentType ? "active" : ""}" data-type="${key}">${def.label}</div>`
+        const menuItems = Object.entries(typeConfig).map(toOption).join("")
+        return `
+            <div class="dict-row">
+                <input class="dict-input dict-key" type="text" value="${k}" placeholder="${options.keyPlaceholder}">
+                <div class="dict-val-wrapper">
+                    <input class="dict-input dict-val" type="text" value="${v}" placeholder="${options.valuePlaceholder}">
+                    <div class="dict-type-wrap">
+                        <div class="dict-type-badge" data-type="${currentType}">${currentLabel}</div>
+                        <div class="dict-type-menu">${menuItems}</div>
+                    </div>
+                </div>
+                <div class="dict-actions"><i class="dict-btn-del fa fa-trash-o"></i></div>
+            </div>`
+    },
+    _collectAndCommit: (targetEl, form) => {
+        const wrap = targetEl.closest(".dict-wrap")
+        if (!wrap) return
+        const result = {}
+        const typeConfig = Control_Dict._types
+        wrap.querySelectorAll(".dict-row").forEach(row => {
+            const k = row.querySelector(".dict-key").value.trim()
+            if (!k) return
+
+            const valInput = row.querySelector(".dict-val")
+            const badgeEl = row.querySelector(".dict-type-badge")
+
+            const rawVal = valInput.value
+            let handler = typeConfig[badgeEl.dataset.type || "string"]
+            if (!handler.validate(rawVal)) {
+                handler = typeConfig.string
+
+                badgeEl.dataset.type = "string"
+                badgeEl.textContent = handler.label
+                valInput.style.borderColor = "#FF9500"
+                setTimeout(() => valInput.style.borderColor = "", 1000)
+            }
+            result[k] = handler.parse(rawVal)
+        })
+        form.validateAndCommit(wrap.getAttribute("data-key"), result)
+    },
+    _types: {
+        string: { label: "STR", validate: () => true, parse: String },
+        number: { label: "NUM", validate: (v) => !isNaN(Number(v)) && v.trim() !== "", parse: Number },
+        boolean: { label: "BOOL", validate: (v) => v === "true" || v === "false", parse: (v) => v === "true" },
+        json: {
+            label: "JSON",
+            validate: (v) => {
+                try {
+                    JSON.parse(v)
+                    return true
+                } catch (e) {
+                    return false
+                }
+            },
+            parse: JSON.parse
+        },
+    },
+}
+
 const Control_Table = {
     setup: ({ field }) => defaultBlockLayout(field),
     create: ({ field }) => {
@@ -2910,6 +3054,7 @@ FastForm.registerControl("array", Control_Array)
 FastForm.registerControl("select", Control_Select)
 FastForm.registerControl("radio", Control_Radio)
 FastForm.registerControl("checkbox", Control_Checkbox)
+FastForm.registerControl("dict", Control_Dict)
 FastForm.registerControl("table", Control_Table)
 FastForm.registerControl("composite", Control_Composite)
 
