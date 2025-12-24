@@ -69,6 +69,9 @@ module.exports = {
         HIGHLIGHT_PATTERN: [required, regex],
         HIGHLIGHT_LINE_COLOR: required,
     },
+    sidebar_enhance: {
+        HIDDEN_NODE_PATTERNS: [required, regex],
+    },
     text_stylize: {
         "DEFAULT_COLORS.FOREGROUND": [required, hexColor],
         "DEFAULT_COLORS.BACKGROUND": [required, hexColor],

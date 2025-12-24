@@ -1073,6 +1073,7 @@
     "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR": "Ctrl+Wheel：横向滚动侧边栏",
     "$label.KEEP_OUTLINE_FOLD_STATE": "记忆大纲折叠状态",
     "$label.SORTABLE_OUTLINE": "大纲拖拽排序",
+    "$label.HIDDEN_NODE_PATTERNS": "文件树隐藏指定文件或目录（正则）",
     "$label.CUSTOMIZE_SIDEBAR_ICONS": "定制侧边栏文件图标",
     "$label.SIDEBAR_ICONS.enable": "启用",
     "$label.SIDEBAR_ICONS.extensions": "扩展名",

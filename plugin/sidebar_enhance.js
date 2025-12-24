@@ -1,10 +1,11 @@
 class SidebarEnhancePlugin extends BasePlugin {
     process = () => {
-        if (this.config.DISPLAY_NON_MARKDOWN_FILES && File.SupportedFiles) {
+        const displayNonMarkdownFiles = File.SupportedFiles && this.config.DISPLAY_NON_MARKDOWN_FILES
+        if (displayNonMarkdownFiles) {
             this._displayNonMarkdownFiles()
-            if (this.config.CUSTOMIZE_SIDEBAR_ICONS) {
-                this._customizeSidebarIcons()
-            }
+        }
+        if (this.config.HIDDEN_NODE_PATTERNS.length || (displayNonMarkdownFiles && this.config.CUSTOMIZE_SIDEBAR_ICONS)) {
+            this._rerenderOutlineNode()
         }
         if (this.config.KEEP_OUTLINE_FOLD_STATE && File.option.canCollapseOutlinePanel) {
             this._keepOutlineFoldState()
@@ -41,20 +42,45 @@ class SidebarEnhancePlugin extends BasePlugin {
         })
     }
 
-    _customizeSidebarIcons = () => {
-        const ICONS = new Map(
-            this.config.SIDEBAR_ICONS
-                .filter(item => item.enable && item.extensions.length && item.extensions.every(ext => !!ext))
-                .flatMap(item => item.extensions.map(ext => [`.${ext.trim()}`, item.icon.trim()]))
-        )
-        this.utils.decorate(() => File?.editor?.library?.fileTree, "renderNode", null, ($node, info) => {
-            if (!info.isFile) return
-            const ext = this.utils.Package.Path.extname(info.name)
-            const icon = ICONS.get(ext)
-            if (icon) {
-                $node.find(".file-node-icon").removeClass("fa fa-file-text-o").addClass(icon)
+    _rerenderOutlineNode = () => {
+        const getCustomFileIcons = () => {
+            const ICONS = new Map(
+                this.config.SIDEBAR_ICONS
+                    .filter(item => item.enable && item.extensions.length && item.extensions.every(ext => !!ext))
+                    .flatMap(item => item.extensions.map(ext => [`.${ext.trim()}`, item.icon.trim()]))
+            )
+            const fn = ($node, info) => {
+                if (!info.isFile) return
+                const ext = this.utils.Package.Path.extname(info.name)
+                const icon = ICONS.get(ext)
+                if (icon) $node.find(".file-node-icon").removeClass("fa fa-file-text-o").addClass(icon)
             }
+            return this.config.CUSTOMIZE_SIDEBAR_ICONS && ICONS.size ? fn : this.utils.identity
+        }
+
+        const getHideFolders = () => {
+            const newRegexp = p => {
+                try {
+                    return new RegExp(p)
+                } catch (e) {
+                }
+            }
+            const REGEXPS = this.config.HIDDEN_NODE_PATTERNS.map(newRegexp).filter(Boolean)
+            const fn = ($node, info) => {
+                if (REGEXPS.some(reg => reg.test(info.name))) {
+                    $node.addClass("plugin-common-hidden")
+                }
+            }
+            return REGEXPS.length ? fn : this.utils.identity
+        }
+
+        const customizeFileIcons = getCustomFileIcons()
+        const hideFolders = getHideFolders()
+        this.utils.decorate(() => File?.editor?.library?.fileTree, "renderNode", null, ($node, info) => {
+            customizeFileIcons($node, info)
+            hideFolders($node, info)
         })
+
         this.utils.eventHub.once(this.utils.eventHub.eventType.fileOpened, () => File.editor.library.refreshPanelCommand())
     }
 

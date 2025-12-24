@@ -1073,6 +1073,7 @@
     "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR": "Ctrl+Wheel: Scroll Sidebar Horizontally",
     "$label.KEEP_OUTLINE_FOLD_STATE": "Keep Outline Fold State",
     "$label.SORTABLE_OUTLINE": "Sortable Outline",
+    "$label.HIDDEN_NODE_PATTERNS": "Hide Specific Files/Folders (Regex)",
     "$label.CUSTOMIZE_SIDEBAR_ICONS": "Customize Sidebar File Icons",
     "$label.SIDEBAR_ICONS.enable": "Enable",
     "$label.SIDEBAR_ICONS.extensions": "Extensions",
