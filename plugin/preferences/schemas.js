@@ -29,6 +29,9 @@ const Number = (key, { tooltip, unit, min, max, step, dependencies, ...args } = 
     const type = unit ? "unit" : "number"
     return { type, key, unit, min, max, step, label: key, tooltip, dependencies, ...args }
 }
+const Icon = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
+    return { type: "icon", key, label: key, tooltip, placeholder, disabled, dependencies, ...args }
+}
 const Range = (key, { tooltip, min, max, step, dependencies, ...args } = {}) => {
     return { type: "range", key, min, max, step, label: key, tooltip, dependencies, ...args }
 }
@@ -132,7 +135,7 @@ const OPTIONS = {
     },
     window_tab: {
         CONTEXT_MENU: ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"],
-        NEW_TAB_POSITION: ["right", "end"],
+        NEW_TAB_POSITION: ["start", "end", "left", "right"],
         TAB_SWITCH_ON_CLOSE: ["left", "right", "latest"],
         LAST_TAB_CLOSE_ACTION: ["blankPage", "reconfirm", "exit"],
         DRAG_STYLE: ["JetBrains", "VSCode"],
@@ -286,12 +289,16 @@ const conf_window_tab = [
         Number("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { DRAG_STYLE: "JetBrains", TAB_DETACHMENT: "resistant" } }),
         Number("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1, dependencies: { TAB_DETACHMENT: { $ne: "lockVertical" } } }),
     ),
-    ArrayBox("CLOSE_HOTKEY"),
-    ArrayBox("SWITCH_PREVIOUS_TAB_HOTKEY"),
-    ArrayBox("SWITCH_NEXT_TAB_HOTKEY"),
-    ArrayBox("SORT_TABS_HOTKEY"),
-    ArrayBox("COPY_PATH_HOTKEY"),
-    ArrayBox("TOGGLE_TAB_BAR_HOTKEY"),
+    TitledBox(
+        "hotkey",
+        Array_Inline("CLOSE_HOTKEY"),
+        Array_Inline("SWITCH_PREVIOUS_TAB_HOTKEY"),
+        Array_Inline("SWITCH_NEXT_TAB_HOTKEY"),
+        Array_Inline("SWITCH_LAST_ACTIVE_TAB_HOTKEY"),
+        Array_Inline("SORT_TABS_HOTKEY"),
+        Array_Inline("COPY_PATH_HOTKEY"),
+        Array_Inline("TOGGLE_TAB_BAR_HOTKEY"),
+    ),
     box_settingHandler,
 ]
 
@@ -309,7 +316,7 @@ const conf_search_multi = [
         Switch("SHOW_EXT"),
         Switch("SHOW_MTIME"),
         Switch("REMOVE_BUTTON_HINT"),
-        Number("MAX_HITS", { min: 1 }),
+        Number("MAX_HITS", { min: 1, max: 5000 }),
     ),
     TitledBox(
         "windowInteraction",
@@ -706,7 +713,7 @@ const conf_fence_enhance = [
         [
             UntitledBox(
                 Switch("DISABLE"),
-                Text("ICON"),
+                Icon("ICON"),
                 Text("HINT"),
             ),
             TextareaBox("ON_INIT", { rows: 3 }),
@@ -965,7 +972,7 @@ const conf_slash_commands = [
             type: "snippet",
             scope: "plain",
             keyword: "",
-            icon: "",
+            icon: "🧰",
             hint: "",
             cursorOffset: [0, 0],
             callback: "",
@@ -1018,12 +1025,12 @@ const conf_pie_menu = [
         ["CALLBACK", "ICON"],
         [
             UntitledBox(
-                Text("ICON"),
+                Icon("ICON"),
                 Text("CALLBACK"),
             ),
         ],
         {
-            ICON: "",
+            ICON: "fa fa-bomb",
             CALLBACK: "",
         },
     ),
@@ -1174,8 +1181,6 @@ const conf_sidebar_enhance = [
     box_basePluginLite,
     UntitledBox(
         Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR"),
-    ),
-    UntitledBox(
         Switch("KEEP_OUTLINE_FOLD_STATE", { tooltip: "canCollapseOutlinePanel" }),
         Switch("SORTABLE_OUTLINE"),
     ),
@@ -1696,7 +1701,7 @@ const conf_quickButton = [
                 Switch("disable"),
                 Number("coordinate.0", { tooltip: "buttons.coordinate.0", min: 0 }),
                 Number("coordinate.1", { tooltip: "buttons.coordinate.1", min: 0 }),
-                Text("icon"),
+                Icon("icon"),
                 Text("size"),
                 Text("color"),
                 Text("bgColor"),

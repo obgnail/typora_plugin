@@ -59,15 +59,15 @@ class SidebarEnhancePlugin extends BasePlugin {
         }
 
         const getHideFolders = () => {
-            const newRegexp = p => {
+            const compile = p => {
                 try {
                     return new RegExp(p)
                 } catch (e) {
                 }
             }
-            const REGEXPS = this.config.HIDDEN_NODE_PATTERNS.map(newRegexp).filter(Boolean)
+            const REGEXPS = this.config.HIDDEN_NODE_PATTERNS.map(compile).filter(Boolean)
             const fn = ($node, info) => {
-                if (REGEXPS.some(reg => reg.test(info.name))) {
+                if (REGEXPS.some(reg => reg.test(info.name)) && !$node.hasClass("file-node-root")) {
                     $node.addClass("plugin-common-hidden")
                 }
             }

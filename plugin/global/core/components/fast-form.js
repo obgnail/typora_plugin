@@ -622,7 +622,7 @@ const Layout_Default = {
         const isBlockLayout = field.isBlockLayout || false
         const label = isBlockLayout ? "" : `<div class="control-left">${this.createLabel(field)}</div>`
         const control = isBlockLayout ? controlHTML : `<div class="control-right">${controlHTML}</div>`
-        const cls = "control" + (isBlockLayout ? " control-block" : "") + (className ? ` ${className}` : "")
+        const cls = "control" + (isBlockLayout ? " control-block" : "") + (className ? ` ${className}` : "") + (field.hidden ? " plugin-common-hidden" : "")
         return `<div class="${cls}" data-type="${field.type}" data-control="${field.key}">${label}${control}</div>`
     },
     createBoxContent(controlHTMLs) {
@@ -2169,6 +2169,37 @@ const Control_Unit = {
     },
 }
 
+const Control_Icon = {
+    controlOptions: {
+        placeholder: "fa fa-home",
+    },
+    create: ({ field, controlOptions }) => {
+        const { key } = getCommonHTMLAttrs(field)
+        const placeholderText = field.placeholder || controlOptions.placeholder
+        const input = `<input class="icon-input" type="text" ${key} placeholder="${placeholderText}">`
+        const preview = '<div class="icon-preview"><i class="icon-display"></i></div>'
+        return `<div class="icon-wrap">${input}${preview}</div>`
+    },
+    update: ({ element, value, field }) => {
+        const input = element.querySelector(".icon-input")
+        const display = element.querySelector(".icon-display")
+        if (input && display) {
+            value = value || ""
+            updateInputState(input, field, value)
+            Control_Icon._syncIcon(display, value)
+        }
+    },
+    bindEvents: ({ form }) => {
+        form.onEvent("input", ".icon-input", function () {
+            const display = this.nextElementSibling.querySelector(".icon-display")
+            Control_Icon._syncIcon(display, this.value)
+        }).onEvent("change", ".icon-input", function () {
+            form.validateAndCommit(this.dataset.key, this.value)
+        })
+    },
+    _syncIcon: (display, value) => display.className = `icon-display ${value}`,
+}
+
 const Control_Range = {
     setup: registerNumericalDefaultRules,
     create: ({ field }) => {
@@ -2485,7 +2516,7 @@ const Control_Array = {
                 ev.stopPropagation()
                 ev.preventDefault()
             }
-        }).onEvent("click", ".array-item-delete", function () {
+        }, true).onEvent("click", ".array-item-delete", function () {
             const itemEl = this.parentElement
             const arrayEl = this.closest(".array")
             const idx = [...arrayEl.querySelectorAll(".array-item")].indexOf(itemEl)
@@ -2866,6 +2897,7 @@ FastForm.registerControl("password", Control_Password)
 FastForm.registerControl("color", Control_Color)
 FastForm.registerControl("number", Control_Number)
 FastForm.registerControl("unit", Control_Unit)
+FastForm.registerControl("icon", Control_Icon)
 FastForm.registerControl("range", Control_Range)
 FastForm.registerControl("action", Control_Action)
 FastForm.registerControl("static", Control_Static)

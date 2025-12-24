@@ -11,7 +11,7 @@ const addSharedSheet = (style) => {
 }
 
 addSharedSheet("font-awesome")
-// addSharedSheet("ionicons")
+addSharedSheet("ionicons")
 
 module.exports = {
     sharedSheets

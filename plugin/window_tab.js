@@ -16,6 +16,7 @@ class WindowTabPlugin extends BasePlugin {
     hotkey = () => [
         { hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab },
         { hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: this.previousTab },
+        { hotkey: this.config.SWITCH_LAST_ACTIVE_TAB_HOTKEY, callback: this.switchToLastActiveTab },
         { hotkey: this.config.SORT_TABS_HOTKEY, callback: this.sortTabs },
         { hotkey: this.config.CLOSE_HOTKEY, callback: this.closeActiveTab },
         { hotkey: this.config.COPY_PATH_HOTKEY, callback: this.copyActiveTabPath },
@@ -331,7 +332,7 @@ class WindowTabPlugin extends BasePlugin {
                 if (!target) return
                 tabIdx = parseInt(target.dataset.idx)
                 const all = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"]
-                const menuItems = this.i18n.entries(all, "func.")
+                const menuItems = this.i18n.entries(all, "$option.CONTEXT_MENU.")
                 return this.utils.pick(menuItems, this.config.CONTEXT_MENU)
             }
             const onClickMenuItem = (ev, key) => this[key]?.(tabIdx)
@@ -721,8 +722,12 @@ class WindowTabPlugin extends BasePlugin {
                 const newTab = { path: wantOpenPath, scrollTop: 0 }
                 if (NEW_TAB_POSITION === "end") {
                     this.tabUtil.tabs.push(newTab)
+                } else if (NEW_TAB_POSITION === "start") {
+                    this.tabUtil.tabs.unshift(newTab)
                 } else if (NEW_TAB_POSITION === "right") {
                     this.tabUtil.spliceTabs(this.tabUtil.activeIdx + 1, 0, newTab)
+                } else if (NEW_TAB_POSITION === "left") {
+                    this.tabUtil.spliceTabs(this.tabUtil.activeIdx, 0, newTab)
                 }
             }
         }
@@ -751,6 +756,12 @@ class WindowTabPlugin extends BasePlugin {
         if (tabIndex !== -1) {
             this.switchTab(tabIndex);
         }
+    }
+
+    switchToLastActiveTab = () => {
+        if (this.tabUtil.tabCount <= 1) return
+        const tab = this.tabUtil.tabs.filter((_, idx) => idx !== this.tabUtil.activeIdx).reduce((prev, cur) => cur.timestamp > prev.timestamp ? cur : prev)
+        this.switchTabByPath(tab.path)
     }
 
     previousTab = () => {
