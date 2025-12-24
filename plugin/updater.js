@@ -282,26 +282,44 @@ class Updater {
         if (this.latestVersionInfo) {
             await this.fs.writeJson(this.path.join(src, "bin/version.json"), this.latestVersionInfo)
         }
-        await this.fs.ensureDir(this.path.dirname(dst))
+        if (!(await this.utils.existPath(dst))) {
+            throw new Error("Target plugin directory does not exist")
+        }
 
-        let backedUp = false
-        try {
-            if (await this.utils.existPath(dst)) {
-                await this.fs.move(dst, backup, { overwrite: true })
-                backedUp = true
+        const moveContent = async (fromDir, toDir) => {
+            await this.fs.ensureDir(toDir)
+            const items = await this.fs.readdir(fromDir)
+            for (const item of items) {
+                const srcPath = this.path.join(fromDir, item)
+                const destPath = this.path.join(toDir, item)
+                await this.fs.move(srcPath, destPath, { overwrite: true })
             }
-            await this.fs.move(src, dst, { overwrite: true })
+        }
+
+        await this.fs.emptyDir(backup)
+        try {
+            await moveContent(dst, backup)
+        } catch (err) {
+            console.error("Backup failed", err)
+            try {
+                await moveContent(backup, dst)
+            } catch (restoreErr) {
+                console.error("Failed to restore partial backup", restoreErr)
+            }
+            throw err
+        }
+
+        try {
+            await this.fs.copy(src, dst, { overwrite: true, preserveTimestamps: true })
         } catch (error) {
             console.error("Critical Error during sync! Rolling back...", error)
-            if (backedUp) {
-                try {
-                    await this.fs.remove(dst)
-                    await this.fs.move(backup, dst)
-                    console.log("Rollback successful.")
-                } catch (rollbackError) {
-                    console.error("FATAL: Rollback failed! Please restore manually.", rollbackError)
-                    throw rollbackError
-                }
+            try {
+                await this.fs.emptyDir(dst)
+                await moveContent(backup, dst)
+                console.log("Rollback successful.")
+            } catch (rollbackError) {
+                console.error("FATAL: Rollback failed!", rollbackError)
+                throw rollbackError
             }
             throw error
         }
