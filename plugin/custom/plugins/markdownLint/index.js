@@ -140,6 +140,12 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             }
         }
         const getRules = () => {
+            const path = "path"
+            const required = "required"
+            const regex = "regex"
+            const word = { name: "pattern", args: [/^\w+$/] }
+            const codingLang = { name: "pattern", args: [/^[a-zA-Z0-9#+.\-]+$/] }
+            const heading = { name: "pattern", args: [/^(\*|\+|\?|#{1,6}\s+\S.*)$/] }
             const readJSON = ({ value }) => {
                 if (!value) return
                 value = this.utils.Package.Path.resolve(value)
@@ -161,14 +167,23 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
                 }
             }
             return {
-                "extends": ["path", readJSON],
-                "MD001.front_matter_title": ["required", "regex"],
+                "extends": [path, readJSON],
+                "MD001.front_matter_title": [required, regex],
+                "MD010.ignore_code_languages": [required, codingLang],
                 "MD022.lines_above": numberOrNumberArray,
                 "MD022.lines_below": numberOrNumberArray,
-                "MD025.front_matter_title": ["required", "regex"],
-                "MD041.front_matter_title": ["required", "regex"],
-                "MD043.headings": { name: "pattern", args: [/^(\*|\+|\?|#{1,6}\s+\S.*)$/] },
-                "MD051.ignored_pattern": "regex",
+                "MD025.front_matter_title": [required, regex],
+                "MD033.allowed_elements": required,
+                "MD033.table_allowed_elements": required,
+                "MD035.style": required,
+                "MD040.allowed_languages": [required, codingLang],
+                "MD041.front_matter_title": [required, regex],
+                "MD043.headings": [required, heading],
+                "MD044.names": [required, word],
+                "MD051.ignored_pattern": regex,
+                "MD052.ignored_labels": required,
+                "MD053.ignored_definitions": required,
+                "MD059.prohibited_texts": required,
             }
         }
         const getParsers = () => {

@@ -685,13 +685,18 @@ const Feature_EventDelegation = {
                     if (data) {
                         ev.data = data
                     }
+                    let ret
                     if (!selector) {
-                        handler.call(ev.currentTarget, ev)
+                        ret = handler.call(ev.currentTarget, ev)
                     } else {
                         const target = ev.target.closest(selector)
                         if (target) {
-                            handler.call(target, ev)
+                            ret = handler.call(target, ev)
                         }
+                    }
+                    if (ret === false) {
+                        ev.preventDefault()
+                        ev.stopPropagation()
                     }
                 }
 
@@ -1598,6 +1603,13 @@ const Feature_Validation = {
                 || (Array.isArray(value) && value.length === 0)
             return !isEmpty ? true : i18n.t("global", "error.required")
         },
+        integer: ({ value }) => {
+            if (value == null || value === "") return true
+            if ((typeof value !== "string" && typeof value !== "number") || isNaN(value)) {
+                return i18n.t("global", "error.isNaN")
+            }
+            return Number.isInteger(Number(value)) ? true : (i18n.t("global", "error.integer"))
+        },
         pattern: (pattern) => ({ value }) => {
             if (!value) return true
             return pattern.test(value) ? true : i18n.t("global", "error.pattern")
@@ -1977,17 +1989,19 @@ function getCommonHTMLAttrs(field, allowEmpty) {
 }
 
 function getNumericalHTMLAttr(field) {
+    const step = (field.step === undefined && field.isInteger) ? 1 : field.step
     return [
         typeof field.min === "number" ? `min=${field.min}` : "",
         typeof field.max === "number" ? `max=${field.max}` : "",
-        typeof field.step === "number" ? `step=${field.step}` : "",
+        typeof step === "number" ? `step=${step}` : "",
     ].join(" ")
 }
 
 function updateInputNumericalAttr(input, field) {
+    const step = (field.step === undefined && field.isInteger) ? 1 : field.step
     input.min = typeof field.min === "number" ? field.min : ""
     input.max = typeof field.max === "number" ? field.max : ""
-    input.step = typeof field.step === "number" ? field.step : ""
+    input.step = typeof step === "number" ? step : ""
 }
 
 function updateInputState(input, field, value) {
@@ -2013,9 +2027,12 @@ function registerRules({ form, field }, rules) {
 }
 
 function registerNumericalDefaultRules({ field, form }) {
-    const { min, max } = field
-    const [required, minFactory, maxFactory] = form.constructor.validator.get("required", "min", "max")
+    const { min, max, isInteger } = field
+    const [required, integer, minFactory, maxFactory] = form.constructor.validator.get("required", "integer", "min", "max")
     const rules = [required]
+    if (isInteger === true) {
+        rules.push(integer)
+    }
     if (typeof min === "number") {
         rules.push(minFactory(min))
     }
@@ -2324,7 +2341,7 @@ const Control_Hotkey = {
         return `<div class="hotkey-wrap">
                     <input type="text" class="hotkey-input" ${key} ${placeholder}>
                       <div class="hotkey-btn">
-                        <div class="hotkey-reset">×</div>
+                        <div class="hotkey-reset plugin-common-close"></div>
                       </div>
                 </div>`
     },
@@ -2547,7 +2564,7 @@ const Control_Array = {
     _createItem: (value) => `
         <div class="array-item">
             <div class="array-item-value">${utils.escape(value.toString())}</div>
-            <div class="array-item-delete">×</div>
+            <div class="array-item-delete plugin-common-close"></div>
         </div>
     `,
     _createItems: (items) => (Array.isArray(items) ? items : []).map(Control_Array._createItem).join(""),
@@ -2729,7 +2746,7 @@ const Control_Dict = {
     create: ({ field, controlOptions }) => {
         const { key } = getCommonHTMLAttrs(field)
         const list = '<div class="dict-list"></div>'
-        const add = controlOptions.allowAddItem ? `<div class="dict-btn-add"><i class="fa fa-plus"></i> ${i18n.t("global", "add")}</div>` : ""
+        const add = controlOptions.allowAddItem ? `<div class="dict-btn-add">+ ${i18n.t("global", "add")}</div>` : ""
         return `<div class="dict-wrap" ${key}>${list}${add}</div>`
     },
     update: ({ element, value, controlOptions }) => {
@@ -2837,8 +2854,9 @@ const Control_Dict = {
 
                 badgeEl.dataset.type = "string"
                 badgeEl.textContent = handler.label
-                valInput.style.borderColor = "#FF9500"
-                setTimeout(() => valInput.style.borderColor = "", 1000)
+
+                valInput.classList.add("input-warn")
+                setTimeout(() => valInput.classList.remove("input-warn"), 500)
             }
             result[k] = handler.parse(rawVal)
         })

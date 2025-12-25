@@ -25,9 +25,15 @@ const Color = (key, { tooltip, disabled, dependencies, ...args } = {}) => {
 const Hotkey = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
     return { type: "hotkey", key, label: key, tooltip, placeholder, disabled, dependencies, ...args }
 }
-const Number = (key, { tooltip, unit, min, max, step, dependencies, ...args } = {}) => {
+const Number = (key, { tooltip, unit, min, max, step, isInteger, dependencies, ...args } = {}) => {
     const type = unit ? "unit" : "number"
-    return { type, key, unit, min, max, step, label: key, tooltip, dependencies, ...args }
+    return { type, key, unit, min, max, step, isInteger, label: key, tooltip, dependencies, ...args }
+}
+const Integer = (key, { ...args } = {}) => {
+    return Number(key, { ...args, isInteger: true })
+}
+const Float = (key, { ...args } = {}) => {
+    return Number(key, { ...args, isInteger: false })
 }
 const Icon = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
     return { type: "icon", key, label: key, tooltip, placeholder, disabled, dependencies, ...args }
@@ -108,7 +114,7 @@ const field_HOTKEY = Hotkey("HOTKEY")
 const field_enable = Switch("enable")
 const field_hide = Switch("hide")
 const field_name = Text("name", { placeholder: "defaultIfEmpty" })
-const field_order = Number("order")
+const field_order = Integer("order")
 const field_hotkey = Hotkey("hotkey")
 
 const box_basePluginLite = UntitledBox(field_ENABLE, field_NAME)
@@ -266,7 +272,7 @@ const conf_window_tab = [
         Switch("HIDE_WINDOW_TITLE_BAR"),
         Text("TAB_MIN_WIDTH"),
         Text("TAB_MAX_WIDTH"),
-        Number("MAX_TAB_NUM", prop_minusOneAllowed),
+        Integer("MAX_TAB_NUM", prop_minusOneAllowed),
     ),
     TitledBox(
         "behavior",
@@ -290,8 +296,8 @@ const conf_window_tab = [
     UntitledBox(
         Select("DRAG_STYLE", OPTIONS.window_tab.DRAG_STYLE),
         Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: { DRAG_STYLE: "JetBrains" } }),
-        Number("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { DRAG_STYLE: "JetBrains", TAB_DETACHMENT: "resistant" } }),
-        Number("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1, dependencies: { TAB_DETACHMENT: { $ne: "lockVertical" } } }),
+        Float("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { DRAG_STYLE: "JetBrains", TAB_DETACHMENT: "resistant" } }),
+        Float("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1, step: 0.5, dependencies: { TAB_DETACHMENT: { $ne: "lockVertical" } } }),
     ),
     TitledBox(
         "hotkey",
@@ -320,7 +326,7 @@ const conf_search_multi = [
         Switch("SHOW_EXT"),
         Switch("SHOW_MTIME"),
         Switch("REMOVE_BUTTON_HINT"),
-        Number("MAX_HITS", { min: 1, max: 5000 }),
+        Integer("MAX_HITS", { min: 1, max: 5000 }),
     ),
     TitledBox(
         "windowInteraction",
@@ -333,11 +339,11 @@ const conf_search_multi = [
         "advanced",
         Switch("FOLLOW_SYMBOLIC_LINKS"),
         Select("TRAVERSE_STRATEGY", OPTIONS.search_multi.TRAVERSE_STRATEGY),
-        Number("TIMEOUT", { ...prop_minusOneAllowed, unit: UNITS.millisecond }),
-        Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
-        Number("MAX_STATS", prop_minusOneAllowed),
-        Number("MAX_DEPTH", prop_minusOneAllowed),
-        Number("CONCURRENCY_LIMIT", { min: 1 }),
+        Integer("TIMEOUT", { ...prop_minusOneAllowed, unit: UNITS.millisecond }),
+        Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
+        Integer("MAX_STATS", prop_minusOneAllowed),
+        Integer("MAX_DEPTH", prop_minusOneAllowed),
+        Integer("CONCURRENCY_LIMIT", { min: 1 }),
     ),
     box_settingHandler,
 ]
@@ -406,7 +412,7 @@ const conf_blur = [
         Switch("BLUR_DEFAULT"),
         Switch("RESTORE_WHEN_HOVER"),
         Select("BLUR_TYPE", OPTIONS.blur.BLUR_TYPE),
-        Number("BLUR_LEVEL", { unit: UNITS.pixel, min: 1, dependencies: { BLUR_TYPE: "blur" } }),
+        Integer("BLUR_LEVEL", { unit: UNITS.pixel, min: 1, dependencies: { BLUR_TYPE: "blur" } }),
     ),
     box_settingHandler,
 ]
@@ -424,8 +430,8 @@ const conf_no_image = [
     UntitledBox(
         Switch("DEFAULT_NO_IMAGE_MODE"),
         Switch("RESHOW_WHEN_HOVER"),
-        Number("TRANSITION_DURATION", { unit: UNITS.millisecond, min: 0 }),
-        Number("TRANSITION_DELAY", { unit: UNITS.millisecond, min: 0 }),
+        Integer("TRANSITION_DURATION", { unit: UNITS.millisecond, min: 0 }),
+        Integer("TRANSITION_DELAY", { unit: UNITS.millisecond, min: 0 }),
     ),
     box_settingHandler,
 ]
@@ -442,7 +448,7 @@ const conf_toolbar = [
         Select("DEFAULT_TOOL", OPTIONS.toolbar.DEFAULT_TOOL),
         Switch("USE_NEGATIVE_SEARCH"),
         Switch("BACKSPACE_TO_HIDE"),
-        Number("DEBOUNCE_INTERVAL", { unit: UNITS.millisecond, min: 10 }),
+        Integer("DEBOUNCE_INTERVAL", { unit: UNITS.millisecond, min: 10 }),
     ),
     box_settingHandler,
 ]
@@ -468,7 +474,7 @@ const conf_resize_table = [
     UntitledBox(
         Switch("RECORD_RESIZE"),
         Switch("REMOVE_MIN_CELL_WIDTH"),
-        Number("DRAG_THRESHOLD", { unit: UNITS.pixel, min: 1 }),
+        Integer("DRAG_THRESHOLD", { unit: UNITS.pixel, min: 1 }),
     ),
     box_settingHandler,
 ]
@@ -483,7 +489,7 @@ const conf_datatables = [
         Switch("CASE_INSENSITIVE"),
         Switch("SCROLL_COLLAPSE"),
         Switch("PAGING"),
-        Number("PAGE_LENGTH", { unit: UNITS.item, min: 1 }),
+        Integer("PAGE_LENGTH", { unit: UNITS.item, min: 1 }),
     ),
     box_settingHandler,
 ]
@@ -529,12 +535,12 @@ const conf_markmap = [
         Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel", { min: 1, max: 7, step: 1, ...dep_markmapToc }),
         Range("DEFAULT_TOC_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01, ...dep_markmapToc }),
         Range("DEFAULT_TOC_OPTIONS.maxInitialScale", { min: 0.5, max: 5, step: 0.25, ...dep_markmapToc }),
-        Number("DEFAULT_TOC_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
-        Number("DEFAULT_TOC_OPTIONS.nodeMinHeight", { unit: UNITS.pixel, min: 5, max: 50, step: 1, ...dep_markmapToc }),
-        Number("DEFAULT_TOC_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
-        Number("DEFAULT_TOC_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
-        Number("DEFAULT_TOC_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
-        Number("DEFAULT_TOC_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...dep_markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.nodeMinHeight", { unit: UNITS.pixel, min: 5, max: 50, step: 1, ...dep_markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...dep_markmapToc }),
     ),
     ArrayBox("DEFAULT_TOC_OPTIONS.color", dep_markmapToc),
     ObjectBox("CANDIDATE_COLOR_SCHEMES", dep_markmapToc),
@@ -546,9 +552,9 @@ const conf_markmap = [
         Switch("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG", dep_markmapToc),
         Switch("DOWNLOAD_OPTIONS.SHOW_IN_FINDER", dep_markmapToc),
         Range("DOWNLOAD_OPTIONS.IMAGE_QUALITY", { tooltip: "pixelImagesOnly", min: 0.01, max: 1, step: 0.01, ...dep_markmapToc }),
-        Number("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", { unit: UNITS.pixel, min: 1, step: 1, ...dep_markmapToc }),
-        Number("DOWNLOAD_OPTIONS.PADDING_VERTICAL", { unit: UNITS.pixel, min: 1, step: 1, ...dep_markmapToc }),
-        Number("DOWNLOAD_OPTIONS.IMAGE_SCALE", { min: 0.1, step: 0.1, ...dep_markmapToc }),
+        Integer("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", { unit: UNITS.pixel, min: 1, step: 1, ...dep_markmapToc }),
+        Integer("DOWNLOAD_OPTIONS.PADDING_VERTICAL", { unit: UNITS.pixel, min: 1, step: 1, ...dep_markmapToc }),
+        Float("DOWNLOAD_OPTIONS.IMAGE_SCALE", { min: 0.1, step: 0.1, ...dep_markmapToc }),
         Text("DOWNLOAD_OPTIONS.FILENAME", dep_markmapToc),
         Text("DOWNLOAD_OPTIONS.FOLDER", { tooltip: "tempDir", ...dep_markmapToc }),
         Text("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", { tooltip: "jpgFormatOnly", ...dep_markmapToc }),
@@ -573,12 +579,12 @@ const conf_markmap = [
         Range("DEFAULT_FENCE_OPTIONS.colorFreezeLevel", { min: 1, max: 7, step: 1, ...dep_markmapFence }),
         Range("DEFAULT_FENCE_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01, ...dep_markmapFence }),
         Range("DEFAULT_FENCE_OPTIONS.maxInitialScale", { min: 0.5, max: 5, step: 0.25, ...dep_markmapFence }),
-        Number("DEFAULT_FENCE_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 1000, step: 10, ...dep_markmapFence }),
-        Number("DEFAULT_FENCE_OPTIONS.nodeMinHeight", { unit: UNITS.pixel, min: 5, max: 50, step: 1, ...dep_markmapFence }),
-        Number("DEFAULT_FENCE_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 200, step: 1, ...dep_markmapFence }),
-        Number("DEFAULT_FENCE_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 200, step: 1, ...dep_markmapFence }),
-        Number("DEFAULT_FENCE_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 1, ...dep_markmapFence }),
-        Number("DEFAULT_FENCE_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...dep_markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 1000, step: 10, ...dep_markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.nodeMinHeight", { unit: UNITS.pixel, min: 5, max: 50, step: 1, ...dep_markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 200, step: 1, ...dep_markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 200, step: 1, ...dep_markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 1, ...dep_markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...dep_markmapFence }),
         Text("DEFAULT_FENCE_OPTIONS.height", dep_markmapFence),
         Text("DEFAULT_FENCE_OPTIONS.backgroundColor", dep_markmapFence),
     ),
@@ -688,7 +694,7 @@ const conf_fence_enhance = [
         Text("BUTTON_PADDING", dep_fenceEnhanceButton),
         Text("BUTTON_TOP", dep_fenceEnhanceButton),
         Text("BUTTON_RIGHT", dep_fenceEnhanceButton),
-        Number("WAIT_RECOVER_INTERVAL", { unit: UNITS.millisecond, min: 500, step: 100, ...dep_fenceEnhanceButton }),
+        Integer("WAIT_RECOVER_INTERVAL", { unit: UNITS.millisecond, min: 500, step: 100, ...dep_fenceEnhanceButton }),
     ),
     TitledBox(
         "functionButtons",
@@ -704,12 +710,12 @@ const conf_fence_enhance = [
     UntitledBox(
         Switch("ENABLE_FOLD", dep_fenceEnhanceButton),
         Select("FOLD_OVERFLOW", OPTIONS.fence_enhance.FOLD_OVERFLOW, { dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true } }),
-        Number("MANUAL_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "FOLD_OVERFLOW" } }),
+        Integer("MANUAL_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "FOLD_OVERFLOW" } }),
         Switch("DEFAULT_FOLD", { dependencies: { $follow: "FOLD_OVERFLOW" } }),
         Switch("EXPAND_ON_FOCUS", { dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
         Switch("FOLD_ON_BLUR", { dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
-        Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { $and: [{ $follow: "FOLD_OVERFLOW" }, { DEFAULT_FOLD: true }] } }),
-        Number("AUTO_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
+        Integer("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { $and: [{ $follow: "FOLD_OVERFLOW" }, { DEFAULT_FOLD: true }] } }),
+        Integer("AUTO_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
     ),
     TableBox(
         "CUSTOM_BUTTONS",
@@ -825,7 +831,7 @@ const conf_truncate_text = [
         Hotkey("HIDE_FRONT_HOTKEY"),
         Hotkey("HIDE_BASE_VIEW_HOTKEY"),
         Hotkey("SHOW_ALL_HOTKEY"),
-        Number("REMAIN_LENGTH", { min: 1, dependencies: { $or: [{ HIDE_FRONT_HOTKEY: { $bool: true } }, { HIDE_BASE_VIEW_HOTKEY: { $bool: true } }] } }),
+        Integer("REMAIN_LENGTH", { min: 1, dependencies: { $or: [{ HIDE_FRONT_HOTKEY: { $bool: true } }, { HIDE_BASE_VIEW_HOTKEY: { $bool: true } }] } }),
     ),
     box_settingHandler,
 ]
@@ -834,7 +840,7 @@ const conf_export_enhance = [
     box_basePluginLite,
     UntitledBox(
         Switch("DOWNLOAD_NETWORK_IMAGE"),
-        Number("DOWNLOAD_THREADS", { min: 1, dependencies: { DOWNLOAD_NETWORK_IMAGE: true } }),
+        Integer("DOWNLOAD_THREADS", { min: 1, dependencies: { DOWNLOAD_NETWORK_IMAGE: true } }),
     ),
     box_settingHandler,
 ]
@@ -905,10 +911,10 @@ const conf_resource_manager = [
         Select("RESOURCE_GRAMMARS", OPTIONS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
         Select("TRAVERSE_STRATEGY", OPTIONS.resource_manager.TRAVERSE_STRATEGY),
         Switch("FOLLOW_SYMBOLIC_LINKS"),
-        Number("TIMEOUT", { unit: UNITS.millisecond, min: 1 }),
-        Number("MAX_STATS", prop_minusOneAllowed),
-        Number("MAX_DEPTH", prop_minusOneAllowed),
-        Number("CONCURRENCY_LIMIT", { min: 1 }),
+        Integer("TIMEOUT", { unit: UNITS.millisecond, min: 1 }),
+        Integer("MAX_STATS", prop_minusOneAllowed),
+        Integer("MAX_DEPTH", prop_minusOneAllowed),
+        Integer("CONCURRENCY_LIMIT", { min: 1 }),
     ),
     box_settingHandler,
 ]
@@ -966,8 +972,8 @@ const conf_slash_commands = [
                 Text("keyword", { placeholder: "LettersAndNumbersOnly" }),
                 Text("icon", { placeholder: "emojiOnly" }),
                 Text("hint"),
-                Number("cursorOffset.0"),
-                Number("cursorOffset.1"),
+                Integer("cursorOffset.0"),
+                Integer("cursorOffset.1"),
             ),
             TextareaBox("callback", { rows: 5, placeholder: "callbackType" }),
         ],
@@ -1074,10 +1080,10 @@ const conf_file_counter = [
     TitledBox(
         "advanced",
         Switch("FOLLOW_SYMBOLIC_LINKS"),
-        Number("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1 }),
-        Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
-        Number("MAX_STATS", { min: 100 }),
-        Number("CONCURRENCY_LIMIT", { min: 1 }),
+        Integer("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1 }),
+        Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
+        Integer("MAX_STATS", { min: 100 }),
+        Integer("CONCURRENCY_LIMIT", { min: 1 }),
     ),
     box_settingHandler,
 ]
@@ -1114,7 +1120,7 @@ const conf_hotkeys = [
 const conf_editor_width_slider = [
     box_basePluginLite,
     UntitledBox(
-        Number("WIDTH_RATIO", { tooltip: "minusOneMeansDisable", unit: UNITS.percent, min: -1, max: 100, step: 1 }),
+        Integer("WIDTH_RATIO", { tooltip: "minusOneMeansDisable", unit: UNITS.percent, min: -1, max: 100, step: 1 }),
     ),
     box_settingHandler,
 ]
@@ -1225,7 +1231,7 @@ const conf_cursor_history = [
         Hotkey("HOTKEY_GO_BACK"),
     ),
     UntitledBox(
-        Number("MAX_HISTORY_ENTRIES", { min: 1, step: 1 }),
+        Integer("MAX_HISTORY_ENTRIES", { min: 1, step: 1 }),
     ),
     box_settingHandler,
 ]
@@ -1236,7 +1242,7 @@ const conf_json_rpc = [
         "rpcServer",
         Switch("SERVER_OPTIONS.strict"),
         Text("SERVER_OPTIONS.host"),
-        Number("SERVER_OPTIONS.port", { min: 0, max: 65535, step: 1 }),
+        Integer("SERVER_OPTIONS.port", { min: 0, max: 65535, step: 1 }),
         Text("SERVER_OPTIONS.path"),
     ),
     UntitledBox(
@@ -1248,14 +1254,14 @@ const conf_json_rpc = [
 const conf_updater = [
     box_basePluginFull,
     UntitledBox(
-        Number("NETWORK_REQUEST_TIMEOUT", { unit: UNITS.millisecond, min: 30000 }),
+        Integer("NETWORK_REQUEST_TIMEOUT", { unit: UNITS.millisecond, min: 30000 }),
         Text("PROXY"),
     ),
     TitledBox(
         "autoUpdate",
         Switch("AUTO_UPDATE"),
-        Number("UPDATE_LOOP_INTERVAL", { tooltip: "loopInterval", unit: UNITS.millisecond, min: -1, dependencies: { AUTO_UPDATE: true } }),
-        Number("START_UPDATE_INTERVAL", { tooltip: "waitInterval", unit: UNITS.millisecond, min: -1, dependencies: { AUTO_UPDATE: true } }),
+        Integer("UPDATE_LOOP_INTERVAL", { tooltip: "loopInterval", unit: UNITS.millisecond, min: -1, dependencies: { AUTO_UPDATE: true } }),
+        Integer("START_UPDATE_INTERVAL", { tooltip: "waitInterval", unit: UNITS.millisecond, min: -1, dependencies: { AUTO_UPDATE: true } }),
     ),
     box_settingHandler,
 ]
@@ -1275,9 +1281,9 @@ const conf_kanban = [
     ),
     TitledBox(
         "kanbanStyle",
-        Number("KANBAN_WIDTH", { unit: UNITS.pixel, min: 1 }),
-        Number("KANBAN_MAX_HEIGHT", { unit: UNITS.pixel, min: 1 }),
-        Number("KANBAN_TASK_DESC_MAX_HEIGHT", { tooltip: "minusOneMeansShowAll", unit: UNITS.em, min: -1 }),
+        Integer("KANBAN_WIDTH", { unit: UNITS.pixel, min: 1 }),
+        Integer("KANBAN_MAX_HEIGHT", { unit: UNITS.pixel, min: 1 }),
+        Float("KANBAN_TASK_DESC_MAX_HEIGHT", { tooltip: "minusOneMeansShowAll", unit: UNITS.em, min: -1 }),
         Switch("HIDE_DESC_WHEN_EMPTY"),
         Switch("WRAP"),
         Switch("CTRL_WHEEL_TO_SWITCH"),
@@ -1398,8 +1404,8 @@ const conf_drawIO = [
         "advanced",
         Text("RESOURCE_URI"),
         Text("PROXY"),
-        Number("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
-        Number("MEMORIZED_URL_COUNT", { min: 1 }),
+        Integer("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
+        Integer("MEMORIZED_URL_COUNT", { min: 1 }),
     ),
     box_settingHandler,
 ]
@@ -1409,8 +1415,8 @@ const conf_plantUML = [
     UntitledBox(
         Text("SERVER_URL"),
         Select("OUTPUT_FORMAT", OPTIONS.plantUML.OUTPUT_FORMAT),
-        Number("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
-        Number("MEMORIZED_URL_COUNT", { min: 1 }),
+        Integer("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
+        Integer("MEMORIZED_URL_COUNT", { min: 1 }),
         Action("installPlantUMLServer"),
     ),
     box_langMode,
@@ -1587,9 +1593,9 @@ const conf_imageReviewer = [
         Range("image_max_width", prop_percent),
         Range("image_max_height", prop_percent),
         Text("thumbnail_height"),
-        Number("blur_level", { unit: UNITS.pixel, min: 1 }),
-        Number("thumbnail_scroll_padding_count", { min: 0 }),
-        Number("water_fall_columns", { min: 0 }),
+        Integer("blur_level", { unit: UNITS.pixel, min: 1 }),
+        Integer("thumbnail_scroll_padding_count", { min: 0 }),
+        Integer("water_fall_columns", { min: 0 }),
     ),
     TitledBox(
         "component",
@@ -1603,7 +1609,7 @@ const conf_imageReviewer = [
         Switch("filter_error_image"),
         Select("first_image_strategies", OPTIONS.imageReviewer.first_image_strategies, { minItems: 1 }),
         Select("thumbnail_object_fit", OPTIONS.imageReviewer.thumbnail_object_fit),
-        Number("play_second", { unit: UNITS.second, min: 1 }),
+        Integer("play_second", { unit: UNITS.second, min: 1 }),
     ),
     TitledBox(
         "mouseEvent",
@@ -1642,10 +1648,10 @@ const conf_imageReviewer = [
     ),
     TitledBox(
         "adjustScale",
-        Number("zoom_scale", { min: 0.01 }),
-        Number("rotate_scale", { unit: UNITS.degree, min: 1 }),
-        Number("skew_scale", { unit: UNITS.degree, min: 1 }),
-        Number("translate_scale", { unit: UNITS.pixel, min: 1 }),
+        Float("zoom_scale", { min: 0.01 }),
+        Integer("rotate_scale", { unit: UNITS.degree, min: 1 }),
+        Integer("skew_scale", { unit: UNITS.degree, min: 1 }),
+        Integer("translate_scale", { unit: UNITS.pixel, min: 1 }),
     ),
     box_settingHandler,
 ]
@@ -1703,8 +1709,8 @@ const conf_quickButton = [
         [
             UntitledBox(
                 Switch("disable"),
-                Number("coordinate.0", { tooltip: "buttons.coordinate.0", min: 0 }),
-                Number("coordinate.1", { tooltip: "buttons.coordinate.1", min: 0 }),
+                Integer("coordinate.0", { tooltip: "buttons.coordinate.0", min: 0 }),
+                Integer("coordinate.1", { tooltip: "buttons.coordinate.1", min: 0 }),
                 Icon("icon"),
                 Text("size"),
                 Text("color"),

@@ -76,6 +76,7 @@
     "error.required": "此欄位不可爲空",
     "error.pattern": "格式不符合要求",
     "error.isNaN": "非數值",
+    "error.integer": "僅限整數",
     "error.invalidURL": "非法 URL",
     "error.invalid": "非法值：{{value}}",
     "error.min": "數值不能小於 {{min}}",

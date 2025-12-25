@@ -76,6 +76,7 @@
     "error.required": "This field is required",
     "error.pattern": "The format is invalid",
     "error.isNaN": "Not a Number",
+    "error.integer": "Integers Only",
     "error.invalidURL": "Invalid URL",
     "error.invalid": "Invalid Value: {{value}}",
     "error.min": "The value cannot be less than {{min}}",
