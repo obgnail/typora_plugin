@@ -2736,6 +2736,249 @@ const Control_Checkbox = {
     },
 }
 
+const Control_Transfer = {
+    controlOptions: {
+        titles: ["Available", "Selected"],
+        defaultHeight: "300px",
+    },
+    setup: (context) => {
+        normalizeOptionsAttr(context.field)
+        defaultBlockLayout(context.field)
+        registerItemLengthLimitRule(context)
+    },
+    create: ({ field, controlOptions }) => {
+        const { key } = getCommonHTMLAttrs(field)
+        const [srcTitle, dstTitle] = controlOptions.titles
+        return `
+            <div class="transfer-wrap" ${key}>
+                <div class="transfer-container" style="height: ${controlOptions.defaultHeight}">
+                    <div class="transfer-column source-column">
+                        <div class="transfer-header">${srcTitle}</div>
+                        <div class="transfer-list-wrapper source-list"></div>
+                    </div>
+                    <div class="transfer-exchange-icon"><i class="fa fa-angle-right"></i></div>
+                    <div class="transfer-column target-column">
+                        <div class="transfer-header">${dstTitle}</div>
+                        <div class="transfer-list-wrapper target-list"></div>
+                    </div>
+                </div>
+                <div class="transfer-resize-handle"><i class="fa fa-ellipsis-h"></i></div>
+            </div>`
+    },
+    update: ({ element, value, field }) => {
+        if (element.querySelector(".transfer-card-placeholder")) return
+
+        const selectedKeys = Array.isArray(value) ? value.map(String) : []
+        const toSelectKeys = Object.keys(field.options).filter(key => !selectedKeys.includes(key))
+        const disabledOptions = Array.isArray(field.disabledOptions) ? field.disabledOptions.map(String) : []
+        element.querySelector(".target-list").innerHTML = Control_Transfer._createItems(selectedKeys, field.options, disabledOptions)
+        element.querySelector(".source-list").innerHTML = Control_Transfer._createItems(toSelectKeys, field.options, disabledOptions)
+    },
+    bindEvents: ({ form }) => {
+        let activeDraggable = null
+        let dragGhost = null
+        let grabOffsetX = 0
+        let grabOffsetY = 0
+        let ghostX = 0
+        let ghostY = 0
+
+        let _transparentImg = null
+        const getTransparentImg = () => {
+            if (!_transparentImg) {
+                _transparentImg = new Image()
+                _transparentImg.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+            }
+            return _transparentImg
+        }
+
+        form.onEvent("dragstart", ".transfer-card", function (ev) {
+            activeDraggable = this
+            const rect = activeDraggable.getBoundingClientRect()
+
+            ev.dataTransfer.setDragImage(getTransparentImg(), 0, 0)
+            ev.dataTransfer.effectAllowed = "move"
+            ev.dataTransfer.dropEffect = "move"
+            ev.dataTransfer.setData("text/plain", this.dataset.val)
+
+            grabOffsetX = ev.clientX - rect.left
+            grabOffsetY = ev.clientY - rect.top
+            ghostX = rect.left
+            ghostY = rect.top
+
+            dragGhost = Control_Transfer._createGhost(activeDraggable, ghostX, ghostY)
+            document.body.appendChild(dragGhost)
+
+            // Delay styling to keep ghost visible during drag initiation
+            requestAnimationFrame(() => activeDraggable?.classList.add("transfer-card-placeholder"))
+        })
+
+        form.onEvent("dragend", ".transfer-card", function () {
+            if (!activeDraggable || !dragGhost) return
+
+            const destRect = activeDraggable.getBoundingClientRect()
+            const animation = dragGhost.animate([
+                { transform: `translate3d(${ghostX}px, ${ghostY}px, 0)` },
+                { transform: `translate3d(${destRect.left}px, ${destRect.top}px, 0)` }
+            ], { duration: 200, easing: "cubic-bezier(0.2, 0, 0, 1)" })
+
+            animation.onfinish = () => {
+                dragGhost?.remove()
+                dragGhost = null
+                if (activeDraggable) {
+                    activeDraggable.classList.remove("transfer-card-placeholder")
+                    const root = activeDraggable.closest(".transfer-wrap")
+                    const targetList = root.querySelector(".target-list")
+                    const newOrder = [...targetList.querySelectorAll(".transfer-card")].map(item => item.dataset.val)
+                    form.validateAndCommit(root.dataset.key, newOrder, "set")
+                    activeDraggable = null
+                }
+            }
+        })
+
+        form.onEvent("dragenter", ".transfer-container", (ev) => ev.preventDefault())
+
+        form.onEvent("dragover", ".transfer-container", function (ev) {
+            ev.preventDefault()
+            ev.stopPropagation()
+            ev.dataTransfer.dropEffect = "move"
+
+            if (!dragGhost || !activeDraggable) return
+
+            ghostX = ev.clientX - grabOffsetX
+            ghostY = ev.clientY - grabOffsetY
+            dragGhost.style.transform = `translate3d(${ghostX}px, ${ghostY}px, 0)`
+
+            const hoverList = ev.target.closest(".transfer-list-wrapper")
+            if (!hoverList) return
+
+            const siblings = [...hoverList.querySelectorAll(".transfer-card")].filter(i => i !== activeDraggable)
+            const insertBeforeEl = Control_Transfer._findInsertionPoint(siblings, ev.clientY)
+            if (insertBeforeEl === activeDraggable.nextElementSibling) return
+
+            const allCards = [...form.getFormEl().querySelectorAll(".transfer-card")]
+            const prevRects = new Map(allCards.map(el => [el, el.getBoundingClientRect()]))
+            const hasMoved = Control_Transfer._applyDOMMove(hoverList, activeDraggable, insertBeforeEl)
+            if (hasMoved) {
+                Control_Transfer._animateFLIP(allCards, prevRects, activeDraggable, dragGhost)
+            }
+        })
+
+        form.onEvent("drop", ".transfer-container", (ev) => {
+            ev.preventDefault()
+            ev.stopPropagation()
+        })
+
+        form.onEvent("mousedown", ".transfer-resize-handle", function (ev) {
+            ev.preventDefault()
+            const handle = this
+            const container = handle.previousElementSibling
+            const startY = ev.clientY
+            const startHeight = container.getBoundingClientRect().height
+            handle.classList.add("active")
+
+            const onMouseMove = (moveEv) => {
+                const dy = moveEv.clientY - startY
+                const newHeight = Math.max(150, startHeight + dy)
+                container.style.height = `${newHeight}px`
+            }
+            const onMouseUp = () => {
+                handle.classList.remove("active")
+                document.removeEventListener("mousemove", onMouseMove)
+                document.removeEventListener("mouseup", onMouseUp)
+            }
+            document.addEventListener("mousemove", onMouseMove)
+            document.addEventListener("mouseup", onMouseUp)
+        })
+    },
+    _createItems: (keys, options, disabledOptions) => {
+        return keys.map(key => {
+            if (!key || !options[key]) return ""
+            const isDisabled = disabledOptions.includes(key)
+            const cls = `transfer-card${isDisabled ? " plugin-common-readonly" : ""}`
+            return `<div class="${cls}" draggable="${!isDisabled}" data-val="${key}"><i class="fa fa-bars handle"></i><span>${utils.escape(options[key])}</span></div>`
+        }).join("")
+    },
+    _createGhost: (sourceEl, x, y) => {
+        const ghost = sourceEl.cloneNode(true)
+        Control_Transfer._deepCopyStyles(sourceEl, ghost)
+        Object.assign(ghost.style, {
+            position: "fixed",
+            zIndex: "999999",
+            margin: "0",
+            pointerEvents: "none",
+            transition: "none",
+            transform: `translate3d(${x}px, ${y}px, 0)`,
+            opacity: "0.95",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+            border: "1px solid var(--ff-primary, #007AFF)",
+            width: `${sourceEl.offsetWidth}px`,
+            height: `${sourceEl.offsetHeight}px`
+        })
+        return ghost
+    },
+    _findInsertionPoint: (siblings, mouseY) => {
+        return siblings.reduce((closest, child) => {
+            const box = child.getBoundingClientRect()
+            const offset = mouseY - box.top - box.height / 2
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child }
+            } else {
+                return closest
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element
+    },
+    _applyDOMMove: (container, draggable, insertBeforeEl) => {
+        if (insertBeforeEl) {
+            if (insertBeforeEl.previousElementSibling !== draggable) {
+                container.insertBefore(draggable, insertBeforeEl)
+                return true
+            }
+        } else {
+            if (container.lastElementChild !== draggable) {
+                container.appendChild(draggable)
+                return true
+            }
+        }
+        return false
+    },
+    _animateFLIP: (allElements, prevRects, activeDraggable, dragGhost) => {
+        allElements.forEach(item => {
+            if (item === activeDraggable || item === dragGhost) return
+
+            const prev = prevRects.get(item)
+            if (!prev) return
+
+            const curr = item.getBoundingClientRect()
+            const dx = prev.left - curr.left
+            const dy = prev.top - curr.top
+            if (dx !== 0 || dy !== 0) {
+                item.animate([
+                    { transform: `translate(${dx}px, ${dy}px)` },
+                    { transform: "translate(0, 0)" }
+                ], {
+                    duration: 200,
+                    easing: "cubic-bezier(0.2, 0, 0, 1)",
+                    fill: "both"
+                })
+            }
+        })
+    },
+    _deepCopyStyles: (source, target) => {
+        const computed = window.getComputedStyle(source)
+        const properties = [
+            "width", "height", "padding", "margin", "display", "opacity",
+            "border", "borderRadius", "backgroundColor", "boxShadow",
+            "font", "fontFamily", "fontSize", "fontWeight", "lineHeight", "color", "textAlign",
+            "gap", "alignItems", "justifyContent", "flexDirection", "flex",
+            "boxSizing", "verticalAlign","whiteSpace", "overflow", "textOverflow",
+        ]
+        properties.forEach(prop => target.style[prop] = computed[prop])
+        for (let i = 0; i < source.children.length; i++) {
+            if (target.children[i]) Control_Transfer._deepCopyStyles(source.children[i], target.children[i])
+        }
+    }
+}
+
 const Control_Dict = {
     controlOptions: {
         keyPlaceholder: "Key",
@@ -3072,6 +3315,7 @@ FastForm.registerControl("array", Control_Array)
 FastForm.registerControl("select", Control_Select)
 FastForm.registerControl("radio", Control_Radio)
 FastForm.registerControl("checkbox", Control_Checkbox)
+FastForm.registerControl("transfer", Control_Transfer)
 FastForm.registerControl("dict", Control_Dict)
 FastForm.registerControl("table", Control_Table)
 FastForm.registerControl("composite", Control_Composite)
