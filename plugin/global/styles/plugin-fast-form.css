@@ -789,6 +789,184 @@ textarea:disabled {
     margin-left: 4px;
 }
 
+/* Palette */
+.palette-wrapper {
+    --pl-size: 36px;
+    --pl-gap: 4px;
+    --pl-radius: 6px;
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    flex-direction: column;
+}
+
+.palette-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--pl-gap);
+    align-items: center;
+}
+
+.palette-item {
+    position: relative;
+    width: var(--pl-size);
+    height: var(--pl-size);
+    border-radius: var(--pl-radius);
+}
+
+.palette-swatch {
+    width: 100%;
+    height: 100%;
+    border-radius: var(--pl-radius);
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+    background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 0 5px, 5px -5px, -5px 0;
+}
+
+.palette-ghost-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    display: block;
+    padding: 0;
+    border: none;
+    width: 100%;
+    height: 100%;
+}
+
+.palette-del {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 18px;
+    height: 18px;
+    background: var(--ff-bg-white);
+    border: 1px solid var(--ff-border);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 10;
+}
+
+.palette-item:hover .palette-del {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.palette-btn-add {
+    width: var(--pl-size);
+    height: var(--pl-size);
+    border-radius: var(--pl-radius);
+    border: 1px dashed var(--ff-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ff-text-sub);
+    background: transparent;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.palette-btn-add:hover {
+    border-color: var(--ff-primary);
+    color: var(--ff-primary);
+    background-color: var(--ff-primary-alpha);
+}
+
+.palette-btn-add.row,
+.palette-btn-add.col {
+    border-style: solid;
+    background: var(--ff-bg-white);
+}
+
+.palette-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.palette-row-group {
+    display: flex;
+    align-items: flex-start;
+    padding: 6px;
+    background-color: var(--ff-bg-block);
+    border-radius: var(--pl-radius);
+    gap: 10px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.palette-row-group:hover {
+    border-color: var(--ff-border);
+}
+
+.palette-row-group .palette-grid {
+    flex: 1;
+}
+
+.palette-row-actions {
+    display: flex;
+    align-items: center;
+    height: var(--pl-size); /* Align with first row */
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.palette-row-group:hover .palette-row-actions {
+    opacity: 1;
+}
+
+.palette-btn-del-row {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: var(--ff-text-sub);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+}
+
+.palette-btn-del-row:hover {
+    color: var(--ff-danger);
+    background-color: var(--ff-danger-bg);
+}
+
+.palette-footer {
+    display: flex;
+    gap: 16px;
+    padding: 4px;
+}
+
+.palette-footer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.palette-footer-item:hover {
+    opacity: 1;
+}
+
+.palette-footer-item span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ff-text-sub);
+    user-select: none;
+}
+
 /* Table */
 .control[data-type="table"] {
     padding-top: 0;
@@ -1264,7 +1442,7 @@ textarea:disabled {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    border-radius: 50%;
+    border-radius: 4px;
     padding: 4px;
     width: 16px;
     height: 16px;

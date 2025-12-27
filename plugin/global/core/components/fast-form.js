@@ -2970,7 +2970,7 @@ const Control_Transfer = {
             "border", "borderRadius", "backgroundColor", "boxShadow",
             "font", "fontFamily", "fontSize", "fontWeight", "lineHeight", "color", "textAlign",
             "gap", "alignItems", "justifyContent", "flexDirection", "flex",
-            "boxSizing", "verticalAlign","whiteSpace", "overflow", "textOverflow",
+            "boxSizing", "verticalAlign", "whiteSpace", "overflow", "textOverflow",
         ]
         properties.forEach(prop => target.style[prop] = computed[prop])
         for (let i = 0; i < source.children.length; i++) {
@@ -3121,6 +3121,143 @@ const Control_Dict = {
             },
             parse: JSON.parse
         },
+    },
+}
+
+const Control_Palette = {
+    controlOptions: {
+        defaultColor: "#FFFFFF",
+        dimensions: 1,
+        allowJagged: true,
+    },
+    setup: ({ field }) => defaultBlockLayout(field),
+    create: ({ field }) => {
+        const { key } = getCommonHTMLAttrs(field)
+        return `<div class="palette-wrapper" ${key}></div>`
+    },
+    update: ({ element, value, controlOptions }) => {
+        const wrapper = element.querySelector(".palette-wrapper")
+        if (!wrapper) return
+
+        let data = value || []
+        let mode = controlOptions.dimensions
+        if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0])) {
+            mode = 2
+        } else if (Array.isArray(data) && data.length > 0 && !Array.isArray(data[0])) {
+            mode = 1
+        }
+        const isJagged = (mode === 1) ? true : (controlOptions.allowJagged !== false)
+
+        wrapper.dataset.mode = mode
+        wrapper.dataset.jagged = isJagged
+
+        let html = ""
+        if (mode === 1) {
+            const items = data.map(color => Control_Palette._createItem(color)).join("")
+            const addBtn = Control_Palette._createAddBtn("item")
+            html = `<div class="palette-grid">${items}${addBtn}</div>`
+        } else {
+            const rows = data.map((row, rIdx) => {
+                const rowData = Array.isArray(row) ? row : []
+                const items = rowData.map((color, cIdx) => Control_Palette._createItem(color, rIdx, cIdx)).join("")
+                const rowAddBtn = isJagged ? Control_Palette._createAddBtn("item", rIdx) : ""
+                return `
+                    <div class="palette-row-group">
+                        <div class="palette-grid">${items}${rowAddBtn}</div>
+                        <div class="palette-row-actions"><div class="palette-btn-del-row"><i class="fa fa-trash-o"></i></div></div>
+                    </div>`
+            }).join("")
+
+            let footer = `<div class="palette-footer-item">${Control_Palette._createAddBtn("row")} <span>Add Row</span></div>`
+            if (!isJagged) {
+                footer += `<div class="palette-footer-item">${Control_Palette._createAddBtn("col")} <span>Add Column</span></div>`
+            }
+            html = `<div class="palette-stack">${rows}<div class="palette-footer">${footer}</div></div>`
+        }
+        wrapper.innerHTML = html
+    },
+    bindEvents: ({ form }) => {
+        form.onEvent("input", ".palette-ghost-input", function () {
+            this.previousElementSibling.style.backgroundColor = this.value
+        }).onEvent("change", ".palette-ghost-input", function () {
+            Control_Palette._collectAndCommit(this.closest(".palette-wrapper"), form)
+        }).onEvent("click", ".palette-del", function () {
+            const item = this.closest(".palette-item")
+            const wrapper = this.closest(".palette-wrapper")
+            const mode = parseInt(wrapper.dataset.mode)
+            const isJagged = wrapper.dataset.jagged === "true"
+            if (mode === 2 && !isJagged) {
+                const colIdx = parseInt(item.dataset.col)
+                const currentData = utils.naiveCloneDeep(form.getData(wrapper.dataset.key))
+                currentData.forEach(row => row.splice(colIdx, 1))
+                form.reactiveCommit(wrapper.dataset.key, currentData)
+            } else {
+                item.remove()
+                Control_Palette._collectAndCommit(wrapper, form)
+            }
+        }).onEvent("click", ".palette-btn-del-row", utils.createConsecutiveAction({
+            threshold: 2,
+            timeWindow: 3000,
+            getIdentifier: (ev) => ev.target,
+            onConfirmed: (ev) => {
+                const wrapper = ev.target.closest(".palette-wrapper")
+                ev.target.closest(".palette-row-group").remove()
+                Control_Palette._collectAndCommit(wrapper, form)
+            }
+        })).onEvent("click", ".palette-btn-add", function () {
+            const type = this.dataset.type
+            const wrapper = this.closest(".palette-wrapper")
+            const { defaultColor } = form.getControlOptionsFromKey(wrapper.dataset.key)
+            const isJagged = wrapper.dataset.jagged === "true"
+            const currentData = utils.naiveCloneDeep(form.getData(wrapper.dataset.key) || [])
+            if (type === "item") {
+                const mode = parseInt(wrapper.dataset.mode)
+                if (mode === 1) {
+                    currentData.push(defaultColor)
+                } else {
+                    const rowIdx = parseInt(this.dataset.row)
+                    if (!currentData[rowIdx]) {
+                        currentData[rowIdx] = []
+                    }
+                    currentData[rowIdx].push(defaultColor)
+                }
+            } else if (type === "row") {
+                if (isJagged) {
+                    currentData.push([defaultColor])
+                } else {
+                    const colCount = currentData.length > 0 ? currentData[0].length : 1
+                    currentData.push(new Array(colCount).fill(defaultColor))
+                }
+            } else if (type === "col") {
+                if (currentData.length === 0) {
+                    currentData.push([])
+                }
+                currentData.forEach(row => row.push(defaultColor))
+            }
+            form.reactiveCommit(wrapper.dataset.key, currentData)
+        })
+    },
+    _createItem: (color, rIdx, cIdx) => {
+        const coords = (rIdx !== undefined) ? `data-row="${rIdx}" data-col="${cIdx}"` : ""
+        return `
+            <div class="palette-item" ${coords}>
+                <div class="palette-swatch" style="background-color: ${color || "transparent"}"></div>
+                <input type="color" class="palette-ghost-input" value="${color}">
+                <div class="palette-del plugin-common-close"></div>
+            </div>`
+    },
+    _createAddBtn: (type, rowIdx) => {
+        const rowAttr = (rowIdx !== undefined) ? `data-row="${rowIdx}"` : ""
+        return `<div class="palette-btn-add ${type}" data-type="${type}" ${rowAttr}><i class="fa fa-plus"></i></div>`
+    },
+    _collectAndCommit: (wrapper, form) => {
+        const key = wrapper.dataset.key
+        const mode = parseInt(wrapper.dataset.mode)
+        const getVal = i => i.value
+        const newData = (mode === 1)
+            ? Array.from(wrapper.querySelectorAll(".palette-grid .palette-ghost-input"), getVal)
+            : Array.from(wrapper.querySelectorAll(".palette-row-group"), row => Array.from(row.querySelectorAll(".palette-ghost-input"), getVal))
+        form.reactiveCommit(key, newData)
     },
 }
 
@@ -3317,6 +3454,7 @@ FastForm.registerControl("radio", Control_Radio)
 FastForm.registerControl("checkbox", Control_Checkbox)
 FastForm.registerControl("transfer", Control_Transfer)
 FastForm.registerControl("dict", Control_Dict)
+FastForm.registerControl("palette", Control_Palette)
 FastForm.registerControl("table", Control_Table)
 FastForm.registerControl("composite", Control_Composite)
 
