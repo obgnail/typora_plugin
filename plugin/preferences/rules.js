@@ -32,7 +32,6 @@ module.exports = {
     search_multi: {
         ALLOW_EXT: fileExt,
         IGNORE_FOLDERS: required,
-        HIGHLIGHT_COLORS: [required, hexColor],
         TIMEOUT: notZero,
         MAX_STATS: notZero,
         MAX_DEPTH: notZero,
@@ -43,7 +42,6 @@ module.exports = {
     },
     markmap: {
         NODE_BORDER_WHEN_HOVER: required,
-        "DEFAULT_TOC_OPTIONS.color": [required, hexColor],
         CANDIDATE_COLOR_SCHEMES: [required, array],
         "DOWNLOAD_OPTIONS.FOLDER": path,
         "DOWNLOAD_OPTIONS.FILENAME": required,
@@ -54,7 +52,6 @@ module.exports = {
         DEFAULT_FENCE_BACKGROUND_COLOR: [required, hexColor],
         "DEFAULT_FENCE_OPTIONS.height": required,
         "DEFAULT_FENCE_OPTIONS.backgroundColor": [required, hexColor],
-        "DEFAULT_FENCE_OPTIONS.color": [required, hexColor],
         FENCE_TEMPLATE: required,
     },
     auto_number: {
@@ -113,8 +110,6 @@ module.exports = {
     },
     kanban: {
         KANBAN_TASK_DESC_MAX_HEIGHT: notZero,
-        KANBAN_COLOR: required,
-        TASK_COLOR: required,
         TEMPLATE: required,
     },
     chat: {

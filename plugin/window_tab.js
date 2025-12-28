@@ -426,7 +426,7 @@ class WindowTabPlugin extends BasePlugin {
         if (this.config.REOPEN_CLOSED_TABS_WHEN_INIT) {
             reopenTabsWhenInit()
         }
-        if (this.config.USE_CONTEXT_MENU && this.config.CONTEXT_MENU.length) {
+        if (this.config.CONTEXT_MENU.length) {
             handleContextMenu();
         }
     }

@@ -98,9 +98,8 @@ test("Schema and Settings Key Synchronization", async t => {
                 boxes
                     .flatMap(box => {
                         return box.fields.flatMap(field => {
-                            return field.type === "table"
-                                ? field.nestedBoxes.flatMap(b => b.fields.map(f => `${field.key}.${f.key}`))
-                                : field.key
+                            const nested = field.nestedBoxes ?? field.subSchema
+                            return nested?.flatMap(b => b.fields.map(f => `${field.key}.${f.key}`)) ?? field.key
                         })
                     })
                     .map(e => e.replace(/\.\d+/g, ""))
@@ -121,6 +120,7 @@ test("all schemas keys should be translated", async t => {
 
     const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "unit"]
     const specialProps = ["options", "thMap"]
+    const nestedFieldProps = ["nestedBoxes", "subSchema"]
     const checkTranslated = (newBox, isTranslated) => {
         if (newBox.title) {
             isTranslated(newBox.title, { property: "title", boxTitle: newBox.title })
@@ -139,9 +139,9 @@ test("all schemas keys should be translated", async t => {
                     })
                 }
             })
-            if (newField.nestedBoxes != null) {
-                newField.nestedBoxes.forEach(box => checkTranslated(box, isTranslated))
-            }
+            nestedFieldProps.forEach(prop => {
+                newField[prop]?.forEach(box => checkTranslated(box, isTranslated))
+            })
         })
     }
 
@@ -179,9 +179,12 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
     }
 
     const filterUsedKeys = (allI18NKeys, schemas) => {
-        const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "unit"]
-        const specialProps = ["options", "thMap"]
+        const boxProps = ["title", "tooltip"]
+        const baseFieldProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "unit"]
+        const specialFieldProps = ["options", "thMap"]
+        const nestedFieldProps = ["nestedBoxes", "subSchema"]
         const _filterUsedKeys = (fixedName, key) => {
+            if (key == null) return
             if (allI18NKeys[fixedName].has(key)) {
                 allI18NKeys[fixedName].delete(key)
             } else if (allI18NKeys.settings.has(key)) {
@@ -190,16 +193,14 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
         }
         for (const [fixedName, boxes] of Object.entries(schemas)) {
             for (const box of boxes) {
-                if (box.title) {
-                    _filterUsedKeys(fixedName, box.title)
+                for (const prop of boxProps) {
+                    _filterUsedKeys(fixedName, box[prop])
                 }
                 for (const field of box.fields || []) {
-                    for (const prop of baseProps) {
-                        if (field[prop] != null) {
-                            _filterUsedKeys(fixedName, field[prop])
-                        }
+                    for (const prop of baseFieldProps) {
+                        _filterUsedKeys(fixedName, field[prop])
                     }
-                    for (const prop of specialProps) {
+                    for (const prop of specialFieldProps) {
                         const propVal = field[prop]
                         if (propVal && typeof propVal === "object") {
                             for (const v of Object.values(propVal)) {
@@ -207,8 +208,10 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
                             }
                         }
                     }
-                    if (field.nestedBoxes) {
-                        filterUsedKeys(allI18NKeys, { [fixedName]: field.nestedBoxes })
+                    for (const prop of nestedFieldProps) {
+                        if (field[prop]) {
+                            filterUsedKeys(allI18NKeys, { [fixedName]: field[prop] })
+                        }
                     }
                 }
             }

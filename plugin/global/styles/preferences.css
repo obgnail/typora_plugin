@@ -128,7 +128,7 @@
     cursor: grab;
 }
 
-.plugin-preferences-title.dragging {
+.plugin-preferences-title:active {
     cursor: grabbing;
 }
 

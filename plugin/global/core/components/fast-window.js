@@ -191,7 +191,6 @@ customElements.define("fast-window", class extends HTMLElement {
 
         this._isDragging = true
         this.style.transition = "none"
-        this.entities.titleBar.classList.add("dragging")
 
         const rect = this.getBoundingClientRect()
         this._offsetX = ev.clientX - rect.left
@@ -221,8 +220,6 @@ customElements.define("fast-window", class extends HTMLElement {
     _endDrag = () => {
         this._isDragging = false
         this.style.removeProperty("transition")
-        this.entities.titleBar.classList.remove("dragging")
-
         document.removeEventListener("mousemove", this._dragging)
         document.removeEventListener("mouseup", this._endDrag)
     }

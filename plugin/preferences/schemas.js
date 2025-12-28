@@ -1,113 +1,313 @@
-const Action = (key, { ...args } = {}) => {
-    return { type: "action", key, label: key, ...args }
-}
-const Static = (key, { ...args } = {}) => {
-    return { type: "static", key, label: key, ...args }
-}
-const Hint = (header, detail, { unsafe = false, ...args } = {}) => {
-    return { type: "hint", hintHeader: header, hintDetail: detail, unsafe, ...args }
-}
-const Custom = (content, { unsafe = false, ...args } = {}) => {
-    return { type: "custom", content, unsafe, ...args }
-}
-const Switch = (key, { tooltip, disabled, dependencies, ...args } = {}) => {
-    return { type: "switch", key, label: key, tooltip, disabled, dependencies, ...args }
-}
-const Text = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
-    return { type: "text", key, label: key, tooltip, placeholder, disabled, dependencies, ...args }
-}
-const Password = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
-    return { type: "password", key, label: key, tooltip, placeholder, disabled, dependencies, ...args }
-}
-const Color = (key, { tooltip, disabled, dependencies, ...args } = {}) => {
-    return { type: "color", key, label: key, tooltip, disabled, dependencies, ...args }
-}
-const Hotkey = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
-    return { type: "hotkey", key, label: key, tooltip, placeholder, disabled, dependencies, ...args }
-}
-const Number = (key, { tooltip, unit, min, max, step, isInteger, dependencies, ...args } = {}) => {
-    const type = unit ? "unit" : "number"
-    return { type, key, unit, min, max, step, isInteger, label: key, tooltip, dependencies, ...args }
-}
-const Integer = (key, { ...args } = {}) => {
-    return Number(key, { ...args, isInteger: true })
-}
-const Float = (key, { ...args } = {}) => {
-    return Number(key, { ...args, isInteger: false })
-}
-const Icon = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
-    return { type: "icon", key, label: key, tooltip, placeholder, disabled, dependencies, ...args }
-}
-const Range = (key, { tooltip, min, max, step, dependencies, ...args } = {}) => {
-    return { type: "range", key, min, max, step, label: key, tooltip, dependencies, ...args }
-}
-const Select = (key, options, { tooltip, minItems, maxItems, disabledOptions, dependencies, ...args } = {}) => {
-    return { type: "select", key, label: key, tooltip, options, minItems, maxItems, disabledOptions, dependencies, ...args }
-}
-const Array_Inline = (key, { tooltip, dependencies, ...args } = {}) => {
-    return { type: "array", isBlockLayout: false, key, label: key, tooltip, dependencies, ...args }
-}
-const Radio_Inline = (key, options, { tooltip, columns = 1, dependencies, ...args } = {}) => {
-    return { type: "radio", isBlockLayout: false, key, label: key, tooltip, options, columns, dependencies, ...args }
-}
-const Checkbox_Inline = (key, options, { tooltip, minItems, maxItems, columns = 1, dependencies, ...args } = {}) => {
-    return { type: "checkbox", isBlockLayout: false, key, label: key, tooltip, options, minItems, maxItems, columns, dependencies, ...args }
-}
-const Composite = (key, subSchema, defaultValues, { tooltip, disabled, dependencies, ...args } = {}) => {
-    return { type: "composite", key, label: key, subSchema, defaultValues, tooltip, disabled, dependencies, ...args }
+/**
+ * @typedef {Object} BaseProps
+ * @property {string} [label]
+ * @property {string} [tooltip]
+ * @property {string} [explain]
+ * @property {boolean} [hidden]
+ * @property {boolean} [disabled]
+ * @property {Object} [dependencies]
+ * @property {"hide"|"readonly"} [dependencyUnmetAction="readonly"]
+ * @property {string} [className]
+ */
+
+/** @typedef {BaseProps & { placeholder?: string, readonly?: boolean }} InputProps */
+/** @typedef {InputProps & { min?: number, max?: number, step?: number, isInteger?: boolean }} NumberProps */
+/** @typedef {BaseProps & { minItems?: number, maxItems?: number, disabledOptions?: string[] }} OptionsProps */
+
+/**
+ * @param {string} key
+ * @param {string} type
+ * @param {Object} [props]
+ */
+const Field = (key, type, props = {}) => ({ type, key, label: key, ...props })
+
+/**
+ * @param {string} key
+ * @param {BaseProps & { actionType?: "function"|"toggle"|"trigger", activeClass?: string }} [props]
+ */
+const Action = (key, props = {}) => Field(key, "action", props)
+
+/**
+ * @param {string} key
+ * @param {BaseProps & { content?: string }} [props]
+ */
+const Static = (key, props = {}) => Field(key, "static", props)
+
+/**
+ * @param {string} key
+ * @param {BaseProps & { readonly?: boolean }} [props]
+ */
+const Switch = (key, props = {}) => Field(key, "switch", props)
+
+/**
+ * @param {string} key
+ * @param {InputProps} [props]
+ */
+const Text = (key, props = {}) => Field(key, "text", props)
+
+/**
+ * @param {string} key
+ * @param {InputProps} [props]
+ */
+const Password = (key, props = {}) => Field(key, "password", props)
+
+/**
+ * @param {string} key
+ * @param {InputProps} [props]
+ */
+const Color = (key, props = {}) => Field(key, "color", props)
+
+/**
+ * @param {string} key
+ * @param {InputProps} [props]
+ */
+const Hotkey = (key, props = {}) => Field(key, "hotkey", props)
+
+/**
+ * @param {string} key
+ * @param {NumberProps & { unit?: string }} [props]
+ */
+const Number_ = (key, props = {}) => Field(key, props.unit ? "unit" : "number", props)
+
+/**
+ * @param {string} key
+ * @param {NumberProps} [props]
+ */
+const Integer = (key, props = {}) => Number_(key, { isInteger: true, ...props })
+
+/**
+ * @param {string} key
+ * @param {NumberProps} [props]
+ */
+const Float = (key, props = {}) => Number_(key, { isInteger: false, ...props })
+
+/**
+ * @param {string} key
+ * @param {InputProps} [props]
+ */
+const Icon = (key, props = {}) => Field(key, "icon", props)
+
+/**
+ * @param {string} key
+ * @param {NumberProps} [props]
+ */
+const Range = (key, props = {}) => Field(key, "range", props)
+
+/**
+ * @param {string} key
+ * @param {string[] | Record<string, string>} options
+ * @param {OptionsProps & { labelJoiner?: string }} [props]
+ */
+const Select = (key, options, props = {}) => Field(key, "select", { options, ...props })
+
+/**
+ * @param {string} key
+ * @param {Object[]} subSchema
+ * @param {Object} defaultValues
+ * @param {BaseProps & { readonly?: boolean }} [props]
+ */
+const Composite = (key, subSchema, defaultValues, props = {}) => Field(key, "composite", { subSchema, defaultValues, ...props })
+
+/**
+ * @param {string} key
+ * @param {BaseProps & { rows?: number, noResize?: boolean, format?: "JSON"|"TOML"|"YAML" }} [props]
+ */
+const Object_ = (key, props = {}) => Field(key, "object", { isBlockLayout: false, rows: 10, ...props })
+
+/**
+ * @param {string} key
+ * @param {BaseProps & { rows?: number, noResize?: boolean, placeholder?: string }} [props]
+ */
+const Textarea = (key, props = {}) => Field(key, "textarea", { isBlockLayout: false, rows: 10, ...props })
+
+/**
+ * @param {string} key
+ * @param {string[] | Record<string, string>} options
+ * @param {BaseProps & { columns?: number }} [props]
+ */
+const Radio = (key, options, props = {}) => Field(key, "radio", { isBlockLayout: false, options, columns: 1, ...props })
+
+/**
+ * @param {string} key
+ * @param {string[] | Record<string, string>} options
+ * @param {OptionsProps & { columns?: number }} [props]
+ */
+const Checkbox = (key, options, props = {}) => Field(key, "checkbox", { isBlockLayout: false, options, columns: 1, ...props })
+
+/**
+ * @param {string} key
+ * @param {BaseProps & { allowDuplicates?: boolean, dataType?: "string"|"number" }} [props]
+ */
+const Array_ = (key, props = {}) => Field(key, "array", { isBlockLayout: false, allowDuplicates: false, ...props })
+
+/**
+ * @param {string} key
+ * @param {string[] | Record<string, string>} options
+ * @param {OptionsProps & { titles?: [string, string], defaultHeight?: string }} [props]
+ */
+const Transfer = (key, options, props = {}) => Field(key, "transfer", { isBlockLayout: false, options, ...props })
+
+/**
+ * @param {string} key
+ * @param {BaseProps & { dimensions?: 1|2, allowJagged?: boolean, defaultColor?: string }} [props]
+ */
+const Palette = (key, props = {}) => Field(key, "palette", { isBlockLayout: false, dimensions: 1, allowJagged: true, defaultColor: "#FFFFFF", ...props })
+
+/**
+ * @param {string} key
+ * @param {Object} options
+ * @param {BaseProps & { keyPlaceholder?: string, valuePlaceholder?: string, allowAddItem?: boolean }} [props]
+ */
+const Dict = (key, options, props = {}) => Field(key, "dict", { isBlockLayout: false, options, ...props })
+
+/**
+ * @param {string} key
+ * @param {string[]} ths
+ * @param {Object[]} nestedBoxes
+ * @param {Object} defaultValues
+ * @param {BaseProps} [props]
+ */
+const Table = (key, ths, nestedBoxes, defaultValues, props = {}) => {
+    const thMap = Object.fromEntries(ths.map(th => [th, `${key}.${th}`]))
+    return Field(key, "table", { isBlockLayout: false, nestedBoxes, defaultValues, thMap, ...props })
 }
 
+/**
+ * @param {string} hintHeader
+ * @param {string} hintDetail
+ * @param {BaseProps & { hintHeader?: string, hintDetail?: string, unsafe?: boolean }} [props]
+ */
+const Hint = (hintHeader, hintDetail, props = {}) => ({ type: "hint", hintHeader, hintDetail, unsafe: false, ...props })
+
+/**
+ * @param {string} content
+ * @param {BaseProps & { content?: string, unsafe?: boolean }} [props]
+ */
+const Custom = (content, props = {}) => ({ type: "custom", content, unsafe: false, ...props })
+
+/**
+ * @typedef {Object} BoxProps
+ * @property {string} [label]
+ * @property {string} [tooltip]
+ * @property {Object} [dependencies]
+ * @property {"hide"|"readonly"} [dependencyUnmetAction="hide"]
+ */
+
+/**
+ * @param {string} key
+ * @param {string} type
+ * @param {BoxProps & Object} [props]
+ * @returns {Object}
+ */
+const SingleFieldBox = (key, type, props = {}) => {
+    const { tooltip, dependencies, ...fieldProps } = props
+    const base = { label: key, fields: [{ type, key, ...fieldProps }] }
+    return Object.assign(base, tooltip && { tooltip }, dependencies && { dependencies })
+}
+
+/**
+ * @param {string} key
+ * @param {BoxProps & { rows?: number, noResize?: boolean, format?: string }} [props]
+ */
+const ObjectBox = (key, props = {}) => SingleFieldBox(key, "object", { rows: 10, ...props })
+
+/**
+ * @param {string} key
+ * @param {BoxProps & { rows?: number, placeholder?: string }} [props]
+ */
+const TextareaBox = (key, props = {}) => SingleFieldBox(key, "textarea", { rows: 10, ...props })
+
+/**
+ * @param {string} key
+ * @param {Object} options
+ * @param {BoxProps & { columns?: number }} [props]
+ */
+const RadioBox = (key, options, props = {}) => SingleFieldBox(key, "radio", { options, columns: 1, ...props })
+
+/**
+ * @param {string} key
+ * @param {Object} options
+ * @param {BoxProps & OptionsProps & { columns?: number }} [props]
+ */
+const CheckboxBox = (key, options, props = {}) => SingleFieldBox(key, "checkbox", { options, columns: 1, ...props })
+
+/**
+ * @param {string} key
+ * @param {BoxProps & { allowDuplicates?: boolean, dataType?: "string"|"number" }} [props]
+ */
+const ArrayBox = (key, props = {}) => SingleFieldBox(key, "array", { allowDuplicates: false, ...props })
+
+/**
+ * @param {string} key
+ * @param {Object} options
+ * @param {BoxProps & OptionsProps} [props]
+ */
+const TransferBox = (key, options, props = {}) => SingleFieldBox(key, "transfer", { options, ...props })
+
+/**
+ * @param {string} key
+ * @param {BoxProps & { dimensions?: 1|2, allowJagged?: boolean, defaultColor?: string }} [props]
+ */
+const PaletteBox = (key, props = {}) => SingleFieldBox(key, "palette", { dimensions: 1, allowJagged: true, defaultColor: "#FFFFFF", ...props })
+
+/**
+ * @param {string} key
+ * @param {Object} options
+ * @param {BoxProps & { keyPlaceholder?: string, valuePlaceholder?: string }} [props]
+ */
+const DictBox = (key, options, props = {}) => SingleFieldBox(key, "dict", { options, ...props })
+
+/**
+ * @param {string} key
+ * @param {string[]} ths
+ * @param {Object[]} nestedBoxes
+ * @param {Object} defaultValues
+ * @param {BoxProps} [props]
+ */
+const TableBox = (key, ths, nestedBoxes, defaultValues, props = {}) => {
+    const thMap = Object.fromEntries(ths.map(th => [th, `${key}.${th}`]))
+    return SingleFieldBox(key, "table", { nestedBoxes, defaultValues, thMap, boxDependencyUnmetAction: "readonly", ...props })
+}
+
+/**
+ * @param {...Object} fields
+ */
 const UntitledBox = (...fields) => ({ fields })
+
+/**
+ * @param {string} title
+ * @param {...Object} fields
+ */
 const TitledBox = (title, ...fields) => ({ title, fields })
 
-const WithDependencies = (source, dependencies) => ({ ...source, dependencies })
 
-const ObjectBox = (key, { rows = 10, dependencies, ...args } = {}) => {
-    const box = TitledBox(key, { type: "object", key, rows, ...args })
-    return WithDependencies(box, dependencies)
-}
-const TextareaBox = (key, { rows = 10, placeholder, dependencies, ...args } = {}) => {
-    const box = TitledBox(key, { type: "textarea", key, rows, placeholder, ...args })
-    return WithDependencies(box, dependencies)
-}
-const ArrayBox = (key, { dependencies, ...args } = {}) => {
-    const box = TitledBox(key, { type: "array", key, ...args })
-    return WithDependencies(box, dependencies)
-}
-const DictBox = (key, options, { explain, dependencies, ...args } = {}) => {
-    const box = TitledBox(key, { type: "dict", key, explain, ...args })
-    return WithDependencies(box, dependencies)
-}
-const TableBox = (key, ths, nestedBoxes, defaultValues, { dependencies, ...args } = {}) => {
-    nestedBoxes.forEach(box => {
-        if (box.title) box.title = `${key}.${box.title}`
-        box.fields.forEach(field => {
-            if (field.label) field.label = `${key}.${field.label}`
-        })
-    })
-    const boxDependencyUnmetAction = "readonly"
-    const thMap = Object.fromEntries(ths.map(th => [th, `${key}.${th}`]))
-    const box = TitledBox(key, { type: "table", key, nestedBoxes, defaultValues, thMap, boxDependencyUnmetAction, ...args })
-    return WithDependencies(box, dependencies)
-}
-const RadioBox = (key, options, { columns = 1, dependencies, ...args } = {}) => {
-    const box = TitledBox(key, { type: "radio", key, options, columns, ...args })
-    return WithDependencies(box, dependencies)
-}
-const CheckboxBox = (key, options, { minItems, maxItems, columns = 1, dependencies, ...args } = {}) => {
-    const box = TitledBox(key, { type: "checkbox", options, key, minItems, maxItems, columns, ...args })
-    return WithDependencies(box, dependencies)
+/******** Dependency Helper ********/
+// MORE: See `comparisonEvaluators` in fast-form.js
+const Dep = {
+    true: (key) => ({ [key]: true }),
+    false: (key) => ({ [key]: false }),
+    follow: (key) => ({ $follow: key }),
+    eq: (key, expected) => ({ [key]: expected }),
+    ne: (key, expected) => ({ [key]: { $ne: expected } }),
+    gt: (key, expected) => ({ [key]: { $gt: expected } }),
+    lt: (key, expected) => ({ [key]: { $lt: expected } }),
+    bool: (key, expected) => ({ [key]: { $bool: expected } }),
+    contains: (key, expected) => ({ [key]: { $contains: expected } }),
+    or: (...conditions) => ({ $or: conditions }),
+    and: (...conditions) => ({ $and: conditions }),
 }
 
+/******** Common Props ********/
 const prop_percent = { min: 0, max: 100, step: 1 }
 const prop_protected = { tooltip: "protected", disabled: true }
-const prop_minusOneAllowed = { tooltip: "minusOneMeansUnlimited", min: -1 }
+const prop_minusOne = { tooltip: "minusOneMeansUnlimited", min: -1 }
 
-const dep_markmapToc = { dependencies: { ENABLE_TOC_MARKMAP: true } }
-const dep_markmapFence = { dependencies: { ENABLE_FENCE_MARKMAP: true } }
-const dep_fenceEnhanceButton = { dependencies: { ENABLE_BUTTON: true } }
-const dep_fenceEnhanceHotkey = { dependencies: { ENABLE_HOTKEY: true } }
+const dep_markmapToc = { dependencies: Dep.true("ENABLE_TOC_MARKMAP") }
+const dep_markmapFence = { dependencies: Dep.true("ENABLE_FENCE_MARKMAP") }
+const dep_fenceEnhanceButton = { dependencies: Dep.true("ENABLE_BUTTON") }
+const dep_fenceEnhanceHotkey = { dependencies: Dep.true("ENABLE_HOTKEY") }
 
+/******** Common Fields ********/
 const field_ENABLE = Switch("ENABLE")
 const field_NAME = Text("NAME", { placeholder: "defaultIfEmpty" })
 const field_HOTKEY = Hotkey("HOTKEY")
@@ -117,15 +317,16 @@ const field_name = Text("name", { placeholder: "defaultIfEmpty" })
 const field_order = Integer("order")
 const field_hotkey = Hotkey("hotkey")
 
+/******** Common Boxes ********/
 const box_basePluginLite = UntitledBox(field_ENABLE, field_NAME)
 const box_basePluginFull = UntitledBox(field_ENABLE, field_NAME, field_HOTKEY)
 const box_customPluginLite = UntitledBox(field_enable, field_hide, field_name, field_order)
 const box_customPluginFull = UntitledBox(field_enable, field_hide, field_name, field_order, field_hotkey)
 const box_settingHandler = UntitledBox(Action("runtimeSettings"), Action("restoreSettings"))
-
 const box_langMode = TitledBox("fenceLanguageMode", Text("LANGUAGE", prop_protected), Switch("INTERACTIVE_MODE"))
 const box_chartStyle = TitledBox("diagramStyle", Text("DEFAULT_FENCE_HEIGHT"), Text("DEFAULT_FENCE_BACKGROUND_COLOR"))
 
+/******** Prop Unit (for Number_/Integer/Float only) ********/
 const UNITS = {
     byte: "byte",
     pixel: "pixel",
@@ -138,6 +339,7 @@ const UNITS = {
     em: "em",
 }
 
+/******** Prop Options (for Select/Transfer only) ********/
 const OPTIONS = {
     global: {
         LOCALE: ["auto", "en", "zh-CN", "zh-TW"],
@@ -232,7 +434,8 @@ Object.values(OPTIONS).forEach(field => {
     })
 })
 
-const conf_global = [
+/******** Schemas ********/
+const schema_global = [
     UntitledBox(
         Switch("ENABLE", prop_protected),
         Select("LOCALE", OPTIONS.global.LOCALE),
@@ -262,7 +465,7 @@ const conf_global = [
     ),
 ]
 
-const conf_window_tab = [
+const schema_window_tab = [
     box_basePluginLite,
     TitledBox(
         "appearance",
@@ -272,7 +475,7 @@ const conf_window_tab = [
         Switch("HIDE_WINDOW_TITLE_BAR"),
         Text("TAB_MIN_WIDTH"),
         Text("TAB_MAX_WIDTH"),
-        Integer("MAX_TAB_NUM", prop_minusOneAllowed),
+        Integer("MAX_TAB_NUM", prop_minusOne),
     ),
     TitledBox(
         "behavior",
@@ -280,10 +483,6 @@ const conf_window_tab = [
         Select("NEW_TAB_POSITION", OPTIONS.window_tab.NEW_TAB_POSITION),
         Select("TAB_SWITCH_ON_CLOSE", OPTIONS.window_tab.TAB_SWITCH_ON_CLOSE),
         Select("LAST_TAB_CLOSE_ACTION", OPTIONS.window_tab.LAST_TAB_CLOSE_ACTION),
-    ),
-    UntitledBox(
-        Switch("USE_CONTEXT_MENU"),
-        Select("CONTEXT_MENU", OPTIONS.window_tab.CONTEXT_MENU, { dependencies: { USE_CONTEXT_MENU: true } }),
     ),
     TitledBox(
         "mouseInteraction",
@@ -295,24 +494,28 @@ const conf_window_tab = [
     ),
     UntitledBox(
         Select("DRAG_STYLE", OPTIONS.window_tab.DRAG_STYLE),
-        Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: { DRAG_STYLE: "JetBrains" } }),
-        Float("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { DRAG_STYLE: "JetBrains", TAB_DETACHMENT: "resistant" } }),
-        Float("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1, step: 0.5, dependencies: { TAB_DETACHMENT: { $ne: "lockVertical" } } }),
+        Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: Dep.eq("DRAG_STYLE", "JetBrains") }),
+        Float("DETACHMENT_THRESHOLD", {
+            tooltip: "detachThreshold", min: 0.1, step: 0.1,
+            dependencies: Dep.and(Dep.eq("DRAG_STYLE", "JetBrains"), Dep.eq("TAB_DETACHMENT", "resistant"))
+        }),
+        Float("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1, step: 0.5, dependencies: Dep.ne("TAB_DETACHMENT", "lockVertical") }),
     ),
+    TransferBox("CONTEXT_MENU", OPTIONS.window_tab.CONTEXT_MENU),
     TitledBox(
         "hotkey",
-        Array_Inline("CLOSE_HOTKEY"),
-        Array_Inline("SWITCH_PREVIOUS_TAB_HOTKEY"),
-        Array_Inline("SWITCH_NEXT_TAB_HOTKEY"),
-        Array_Inline("SWITCH_LAST_ACTIVE_TAB_HOTKEY"),
-        Array_Inline("SORT_TABS_HOTKEY"),
-        Array_Inline("COPY_PATH_HOTKEY"),
-        Array_Inline("TOGGLE_TAB_BAR_HOTKEY"),
+        Array_("CLOSE_HOTKEY"),
+        Array_("SWITCH_PREVIOUS_TAB_HOTKEY"),
+        Array_("SWITCH_NEXT_TAB_HOTKEY"),
+        Array_("SWITCH_LAST_ACTIVE_TAB_HOTKEY"),
+        Array_("SORT_TABS_HOTKEY"),
+        Array_("COPY_PATH_HOTKEY"),
+        Array_("TOGGLE_TAB_BAR_HOTKEY"),
     ),
     box_settingHandler,
 ]
 
-const conf_search_multi = [
+const schema_search_multi = [
     box_basePluginFull,
     TitledBox(
         "search",
@@ -327,6 +530,7 @@ const conf_search_multi = [
         Switch("SHOW_MTIME"),
         Switch("REMOVE_BUTTON_HINT"),
         Integer("MAX_HITS", { min: 1, max: 5000 }),
+        Palette("HIGHLIGHT_COLORS"),
     ),
     TitledBox(
         "windowInteraction",
@@ -334,21 +538,20 @@ const conf_search_multi = [
     ),
     ArrayBox("ALLOW_EXT"),
     ArrayBox("IGNORE_FOLDERS"),
-    ArrayBox("HIGHLIGHT_COLORS"),
     TitledBox(
         "advanced",
         Switch("FOLLOW_SYMBOLIC_LINKS"),
         Select("TRAVERSE_STRATEGY", OPTIONS.search_multi.TRAVERSE_STRATEGY),
-        Integer("TIMEOUT", { ...prop_minusOneAllowed, unit: UNITS.millisecond }),
+        Integer("TIMEOUT", { ...prop_minusOne, unit: UNITS.millisecond }),
         Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
-        Integer("MAX_STATS", prop_minusOneAllowed),
-        Integer("MAX_DEPTH", prop_minusOneAllowed),
+        Integer("MAX_STATS", prop_minusOne),
+        Integer("MAX_DEPTH", prop_minusOne),
         Integer("CONCURRENCY_LIMIT", { min: 1 }),
     ),
     box_settingHandler,
 ]
 
-const conf_commander = [
+const schema_commander = [
     box_basePluginFull,
     TitledBox(
         "cmdDisplay",
@@ -380,14 +583,14 @@ const conf_commander = [
     box_settingHandler,
 ]
 
-const conf_md_padding = [
+const schema_md_padding = [
     box_basePluginFull,
     ArrayBox("IGNORE_WORDS"),
     ArrayBox("IGNORE_PATTERNS"),
     box_settingHandler,
 ]
 
-const conf_read_only = [
+const schema_read_only = [
     box_basePluginFull,
     TitledBox(
         "underReadOnly",
@@ -396,28 +599,28 @@ const conf_read_only = [
     ),
     UntitledBox(
         Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
-        Select("REMAIN_AVAILABLE_MENU_KEY", undefined, { dependencies: { DISABLE_CONTEXT_MENU_WHEN_READ_ONLY: true } }),
+        Select("REMAIN_AVAILABLE_MENU_KEY", undefined, { dependencies: Dep.true("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY") }),
     ),
     UntitledBox(
         Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
         Switch("NO_EXPAND_WHEN_READ_ONLY"),
-        Switch("REMOVE_EXPAND_WHEN_READ_ONLY", { dependencies: { NO_EXPAND_WHEN_READ_ONLY: false } }),
+        Switch("REMOVE_EXPAND_WHEN_READ_ONLY", { dependencies: Dep.false("NO_EXPAND_WHEN_READ_ONLY") }),
     ),
     box_settingHandler,
 ]
 
-const conf_blur = [
+const schema_blur = [
     box_basePluginFull,
     UntitledBox(
         Switch("BLUR_DEFAULT"),
         Switch("RESTORE_WHEN_HOVER"),
         Select("BLUR_TYPE", OPTIONS.blur.BLUR_TYPE),
-        Integer("BLUR_LEVEL", { unit: UNITS.pixel, min: 1, dependencies: { BLUR_TYPE: "blur" } }),
+        Integer("BLUR_LEVEL", { unit: UNITS.pixel, min: 1, dependencies: Dep.eq("BLUR_TYPE", "blur") }),
     ),
     box_settingHandler,
 ]
 
-const conf_dark = [
+const schema_dark = [
     box_basePluginFull,
     UntitledBox(
         Switch("DARK_DEFAULT"),
@@ -425,7 +628,7 @@ const conf_dark = [
     box_settingHandler,
 ]
 
-const conf_no_image = [
+const schema_no_image = [
     box_basePluginFull,
     UntitledBox(
         Switch("DEFAULT_NO_IMAGE_MODE"),
@@ -436,7 +639,7 @@ const conf_no_image = [
     box_settingHandler,
 ]
 
-const conf_toolbar = [
+const schema_toolbar = [
     box_basePluginFull,
     TitledBox(
         "searchBarPosition",
@@ -453,7 +656,7 @@ const conf_toolbar = [
     box_settingHandler,
 ]
 
-const conf_resize_image = [
+const schema_resize_image = [
     box_basePluginLite,
     TitledBox(
         "image",
@@ -469,7 +672,7 @@ const conf_resize_image = [
     box_settingHandler,
 ]
 
-const conf_resize_table = [
+const schema_resize_table = [
     box_basePluginLite,
     UntitledBox(
         Switch("RECORD_RESIZE"),
@@ -479,7 +682,7 @@ const conf_resize_table = [
     box_settingHandler,
 ]
 
-const conf_datatables = [
+const schema_datatables = [
     box_basePluginLite,
     UntitledBox(
         Switch("ORDERING"),
@@ -494,7 +697,7 @@ const conf_datatables = [
     box_settingHandler,
 ]
 
-const conf_go_top = [
+const schema_go_top = [
     box_basePluginLite,
     TitledBox(
         "hotkey",
@@ -504,7 +707,7 @@ const conf_go_top = [
     box_settingHandler,
 ]
 
-const conf_markmap = [
+const schema_markmap = [
     box_basePluginLite,
     TitledBox(
         "mindmapDiagram",
@@ -524,8 +727,8 @@ const conf_markmap = [
         Range("HEIGHT_PERCENT_WHEN_PIN_TOP", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
         Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
         Text("NODE_BORDER_WHEN_HOVER", dep_markmapToc),
-        Select("TITLE_BAR_BUTTONS", OPTIONS.markmap.TITLE_BAR_BUTTONS, { minItems: 1, ...dep_markmapToc }),
     ),
+    TransferBox("TITLE_BAR_BUTTONS", OPTIONS.markmap.TITLE_BAR_BUTTONS, { minItems: 1, ...dep_markmapToc }),
     TitledBox(
         "mindmapDiagramDefaultOptions",
         Switch("DEFAULT_TOC_OPTIONS.zoom", dep_markmapToc),
@@ -541,9 +744,9 @@ const conf_markmap = [
         Integer("DEFAULT_TOC_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
         Integer("DEFAULT_TOC_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
         Integer("DEFAULT_TOC_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...dep_markmapToc }),
+        Palette("DEFAULT_TOC_OPTIONS.color", dep_markmapToc),
     ),
-    ArrayBox("DEFAULT_TOC_OPTIONS.color", dep_markmapToc),
-    ObjectBox("CANDIDATE_COLOR_SCHEMES", dep_markmapToc),
+    PaletteBox("CANDIDATE_COLOR_SCHEMES", { dimensions: 2, ...dep_markmapToc }),
     TitledBox(
         "mindmapDiagramExport",
         Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL", dep_markmapToc),
@@ -587,13 +790,13 @@ const conf_markmap = [
         Integer("DEFAULT_FENCE_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...dep_markmapFence }),
         Text("DEFAULT_FENCE_OPTIONS.height", dep_markmapFence),
         Text("DEFAULT_FENCE_OPTIONS.backgroundColor", dep_markmapFence),
+        Palette("DEFAULT_FENCE_OPTIONS.color", dep_markmapFence),
     ),
-    ArrayBox("DEFAULT_FENCE_OPTIONS.color", dep_markmapFence),
     TextareaBox("FENCE_TEMPLATE", dep_markmapFence),
     box_settingHandler,
 ]
 
-const conf_auto_number = [
+const schema_auto_number = [
     box_basePluginLite,
     TitledBox(
         "autoNumbering",
@@ -606,9 +809,9 @@ const conf_auto_number = [
     ),
     UntitledBox(
         Text("FONT_FAMILY"),
-        Switch("SHOW_IMAGE_NAME", { dependencies: { ENABLE_IMAGE: true } }),
-        Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, { dependencies: { ENABLE_TABLE: true } }),
-        Select("ALIGN", OPTIONS.auto_number.ALIGN, { dependencies: { $or: [{ ENABLE_IMAGE: true }, { ENABLE_TABLE: true }, { ENABLE_FENCE: true }] } }),
+        Switch("SHOW_IMAGE_NAME", { dependencies: Dep.true("ENABLE_IMAGE") }),
+        Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, { dependencies: Dep.true("ENABLE_TABLE") }),
+        Select("ALIGN", OPTIONS.auto_number.ALIGN, { dependencies: Dep.or(Dep.true("ENABLE_IMAGE"), Dep.true("ENABLE_TABLE"), Dep.true("ENABLE_FENCE")) }),
     ),
     TableBox(
         "LAYOUTS",
@@ -676,11 +879,11 @@ const conf_auto_number = [
     UntitledBox(
         Switch("ENABLE_WHEN_EXPORT"),
     ),
-    TextareaBox("APPLY_EXPORT_HEADER_NUMBERING", { rows: 12, dependencies: { ENABLE_WHEN_EXPORT: true } }),
+    TextareaBox("APPLY_EXPORT_HEADER_NUMBERING", { tooltip: "expertsOnly", rows: 12, dependencies: Dep.true("ENABLE_WHEN_EXPORT") }),
     box_settingHandler,
 ]
 
-const conf_fence_enhance = [
+const schema_fence_enhance = [
     box_basePluginLite,
     TitledBox(
         "buttonGeneral",
@@ -699,23 +902,23 @@ const conf_fence_enhance = [
     TitledBox(
         "functionButtons",
         Switch("ENABLE_COPY", dep_fenceEnhanceButton),
-        Switch("TRIM_WHITESPACE_ON_COPY", { dependencies: { ENABLE_BUTTON: true, ENABLE_COPY: true } }),
-        Switch("COPY_AS_MARKDOWN", { dependencies: { $follow: "TRIM_WHITESPACE_ON_COPY" } }),
-        Select("LINE_BREAKS_ON_COPY", OPTIONS.fence_enhance.LINE_BREAKS_ON_COPY, { dependencies: { $follow: "TRIM_WHITESPACE_ON_COPY" } }),
+        Switch("TRIM_WHITESPACE_ON_COPY", { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_COPY")) }),
+        Switch("COPY_AS_MARKDOWN", { dependencies: Dep.follow("TRIM_WHITESPACE_ON_COPY") }),
+        Select("LINE_BREAKS_ON_COPY", OPTIONS.fence_enhance.LINE_BREAKS_ON_COPY, { dependencies: Dep.follow("TRIM_WHITESPACE_ON_COPY") }),
     ),
     UntitledBox(
         Switch("ENABLE_INDENT", dep_fenceEnhanceButton),
-        Array_Inline("EXCLUDE_LANGUAGE_ON_INDENT", { dependencies: { ENABLE_BUTTON: true, ENABLE_INDENT: true } }),
+        Array_("EXCLUDE_LANGUAGE_ON_INDENT", { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_INDENT")) }),
     ),
     UntitledBox(
         Switch("ENABLE_FOLD", dep_fenceEnhanceButton),
-        Select("FOLD_OVERFLOW", OPTIONS.fence_enhance.FOLD_OVERFLOW, { dependencies: { ENABLE_BUTTON: true, ENABLE_FOLD: true } }),
-        Integer("MANUAL_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "FOLD_OVERFLOW" } }),
-        Switch("DEFAULT_FOLD", { dependencies: { $follow: "FOLD_OVERFLOW" } }),
-        Switch("EXPAND_ON_FOCUS", { dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
-        Switch("FOLD_ON_BLUR", { dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
-        Integer("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { $and: [{ $follow: "FOLD_OVERFLOW" }, { DEFAULT_FOLD: true }] } }),
-        Integer("AUTO_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: { $follow: "DEFAULT_FOLD_THRESHOLD" } }),
+        Select("FOLD_OVERFLOW", OPTIONS.fence_enhance.FOLD_OVERFLOW, { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_FOLD")) }),
+        Integer("MANUAL_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: Dep.follow("FOLD_OVERFLOW") }),
+        Switch("DEFAULT_FOLD", { dependencies: Dep.follow("FOLD_OVERFLOW") }),
+        Switch("EXPAND_ON_FOCUS", { dependencies: Dep.follow("DEFAULT_FOLD_THRESHOLD") }),
+        Switch("FOLD_ON_BLUR", { dependencies: Dep.follow("DEFAULT_FOLD_THRESHOLD") }),
+        Integer("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: Dep.and(Dep.follow("FOLD_OVERFLOW"), Dep.true("DEFAULT_FOLD")) }),
+        Integer("AUTO_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: Dep.follow("DEFAULT_FOLD_THRESHOLD") }),
     ),
     TableBox(
         "CUSTOM_BUTTONS",
@@ -772,9 +975,9 @@ const conf_fence_enhance = [
         "lineHighlighting",
         Switch("HIGHLIGHT_BY_LANGUAGE"),
         Switch("HIGHLIGHT_WHEN_HOVER"),
-        Select("NUMBERING_BASE", OPTIONS.fence_enhance.NUMBERING_BASE, { dependencies: { HIGHLIGHT_BY_LANGUAGE: true } }),
-        Text("HIGHLIGHT_PATTERN", { dependencies: { $follow: "NUMBERING_BASE" } }),
-        Text("HIGHLIGHT_LINE_COLOR", { dependencies: { $or: [{ $follow: "NUMBERING_BASE" }, { HIGHLIGHT_WHEN_HOVER: true }] } }),
+        Select("NUMBERING_BASE", OPTIONS.fence_enhance.NUMBERING_BASE, { dependencies: Dep.true("HIGHLIGHT_BY_LANGUAGE") }),
+        Text("HIGHLIGHT_PATTERN", { dependencies: Dep.follow("NUMBERING_BASE") }),
+        Text("HIGHLIGHT_LINE_COLOR", { dependencies: Dep.or(Dep.follow("NUMBERING_BASE"), Dep.true("HIGHLIGHT_WHEN_HOVER")) }),
         Action("viewVitePressLineHighlighting"),
     ),
     TitledBox(
@@ -786,7 +989,7 @@ const conf_fence_enhance = [
     box_settingHandler,
 ]
 
-const conf_collapse_paragraph = [
+const schema_collapse_paragraph = [
     UntitledBox(
         Switch("ENABLE", { tooltip: "ConflictWithOptionExpandSimpleBlock" }),
         field_NAME,
@@ -807,7 +1010,7 @@ const conf_collapse_paragraph = [
     box_settingHandler,
 ]
 
-const conf_collapse_list = [
+const schema_collapse_list = [
     box_basePluginLite,
     UntitledBox(
         Switch("RECORD_COLLAPSE"),
@@ -816,7 +1019,7 @@ const conf_collapse_list = [
     box_settingHandler,
 ]
 
-const conf_collapse_table = [
+const schema_collapse_table = [
     box_basePluginLite,
     UntitledBox(
         Switch("RECORD_COLLAPSE"),
@@ -824,28 +1027,28 @@ const conf_collapse_table = [
     box_settingHandler,
 ]
 
-const conf_truncate_text = [
+const schema_truncate_text = [
     box_basePluginLite,
     TitledBox(
         "hotkey",
         Hotkey("HIDE_FRONT_HOTKEY"),
         Hotkey("HIDE_BASE_VIEW_HOTKEY"),
         Hotkey("SHOW_ALL_HOTKEY"),
-        Integer("REMAIN_LENGTH", { min: 1, dependencies: { $or: [{ HIDE_FRONT_HOTKEY: { $bool: true } }, { HIDE_BASE_VIEW_HOTKEY: { $bool: true } }] } }),
+        Integer("REMAIN_LENGTH", { min: 1, dependencies: Dep.or(Dep.bool("HIDE_FRONT_HOTKEY", true), Dep.bool("HIDE_BASE_VIEW_HOTKEY", true)) }),
     ),
     box_settingHandler,
 ]
 
-const conf_export_enhance = [
+const schema_export_enhance = [
     box_basePluginLite,
     UntitledBox(
         Switch("DOWNLOAD_NETWORK_IMAGE"),
-        Integer("DOWNLOAD_THREADS", { min: 1, dependencies: { DOWNLOAD_NETWORK_IMAGE: true } }),
+        Integer("DOWNLOAD_THREADS", { min: 1, dependencies: Dep.true("DOWNLOAD_NETWORK_IMAGE") }),
     ),
     box_settingHandler,
 ]
 
-const conf_text_stylize = [
+const schema_text_stylize = [
     UntitledBox(
         field_ENABLE,
         field_NAME,
@@ -854,8 +1057,8 @@ const conf_text_stylize = [
     TitledBox(
         "toolBar",
         Text("MODAL_BACKGROUND_COLOR"),
-        Select("TOOLS", OPTIONS.text_stylize.TOOLS, { minItems: 1 }),
     ),
+    TransferBox("TOOLS", OPTIONS.text_stylize.TOOLS, { minItems: 1 }),
     TableBox(
         "ACTION_HOTKEYS",
         ["hotkey", "action"],
@@ -877,11 +1080,11 @@ const conf_text_stylize = [
         Color("DEFAULT_COLORS.BORDER"),
         Text("DEFAULT_FORMAT_BRUSH", { tooltip: "brushExample" }),
     ),
-    ObjectBox("COLOR_TABLE"),
+    PaletteBox("COLOR_TABLE", { dimensions: 2, allowJagged: false }),
     box_settingHandler,
 ]
 
-const conf_cipher = [
+const schema_cipher = [
     box_basePluginLite,
     UntitledBox(
         Switch("SHOW_HINT_MODAL"),
@@ -895,7 +1098,7 @@ const conf_cipher = [
     box_settingHandler,
 ]
 
-const conf_resource_manager = [
+const schema_resource_manager = [
     box_basePluginFull,
     TitledBox(
         "windowPosition",
@@ -912,14 +1115,14 @@ const conf_resource_manager = [
         Select("TRAVERSE_STRATEGY", OPTIONS.resource_manager.TRAVERSE_STRATEGY),
         Switch("FOLLOW_SYMBOLIC_LINKS"),
         Integer("TIMEOUT", { unit: UNITS.millisecond, min: 1 }),
-        Integer("MAX_STATS", prop_minusOneAllowed),
-        Integer("MAX_DEPTH", prop_minusOneAllowed),
+        Integer("MAX_STATS", prop_minusOne),
+        Integer("MAX_DEPTH", prop_minusOne),
         Integer("CONCURRENCY_LIMIT", { min: 1 }),
     ),
     box_settingHandler,
 ]
 
-const conf_easy_modify = [
+const schema_easy_modify = [
     box_basePluginLite,
     TitledBox(
         "hotkey",
@@ -940,7 +1143,7 @@ const conf_easy_modify = [
     box_settingHandler,
 ]
 
-const conf_custom = [
+const schema_custom = [
     UntitledBox(
         Switch("ENABLE", prop_protected),
         field_NAME,
@@ -951,7 +1154,7 @@ const conf_custom = [
     box_settingHandler,
 ]
 
-const conf_slash_commands = [
+const schema_slash_commands = [
     box_basePluginLite,
     TitledBox(
         "trigger",
@@ -991,7 +1194,7 @@ const conf_slash_commands = [
     box_settingHandler,
 ]
 
-const conf_right_click_menu = [
+const schema_right_click_menu = [
     UntitledBox(
         Switch("ENABLE", prop_protected),
         field_NAME,
@@ -1011,7 +1214,7 @@ const conf_right_click_menu = [
             UntitledBox(
                 Text("NAME"),
             ),
-            ObjectBox("LIST", { rows: 10 }),
+            TransferBox("LIST"),
         ],
         {
             NAME: "",
@@ -1025,7 +1228,7 @@ const conf_right_click_menu = [
     box_settingHandler,
 ]
 
-const conf_pie_menu = [
+const schema_pie_menu = [
     box_basePluginFull,
     UntitledBox(
         Hotkey("MODIFIER_KEY", { tooltip: "example" }),
@@ -1047,7 +1250,7 @@ const conf_pie_menu = [
     box_settingHandler,
 ]
 
-const conf_preferences = [
+const schema_preferences = [
     UntitledBox(
         Switch("ENABLE", prop_protected),
         field_NAME,
@@ -1059,15 +1262,14 @@ const conf_preferences = [
         Select("HIDE_MENUS"),
     ),
     UntitledBox(
-        Switch("VALIDATE_CONFIG_OPTIONS", prop_protected),
         Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR),
         Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
     ),
-    TextareaBox("FORM_RENDERING_HOOK", { rows: 3, readonly: true }),
+    TextareaBox("FORM_RENDERING_HOOK", { tooltip: "expertsOnly", rows: 3 }),
     box_settingHandler,
 ]
 
-const conf_file_counter = [
+const schema_file_counter = [
     box_basePluginLite,
     TitledBox(
         "style",
@@ -1088,7 +1290,7 @@ const conf_file_counter = [
     box_settingHandler,
 ]
 
-const conf_hotkeys = [
+const schema_hotkeys = [
     box_basePluginFull,
     TableBox(
         "CUSTOM_HOTKEYS",
@@ -1117,7 +1319,7 @@ const conf_hotkeys = [
     box_settingHandler,
 ]
 
-const conf_editor_width_slider = [
+const schema_editor_width_slider = [
     box_basePluginLite,
     UntitledBox(
         Integer("WIDTH_RATIO", { tooltip: "minusOneMeansDisable", unit: UNITS.percent, min: -1, max: 100, step: 1 }),
@@ -1125,17 +1327,17 @@ const conf_editor_width_slider = [
     box_settingHandler,
 ]
 
-const conf_article_uploader = [
+const schema_article_uploader = [
     box_basePluginLite,
     UntitledBox(
         Switch("HIDE"),
     ),
     TitledBox(
         "hotkey",
-        Hotkey("UPLOAD_ALL_HOTKEY", { dependencies: { $or: [{ "upload.cnblog.enabled": true }, { "upload.wordpress.enabled": true }, { "upload.csdn.enabled": true }] } }),
-        Hotkey("UPLOAD_CNBLOG_HOTKEY", { dependencies: { "upload.cnblog.enabled": true } }),
-        Hotkey("UPLOAD_WORDPRESS_HOTKEY", { dependencies: { "upload.wordpress.enabled": true } }),
-        Hotkey("UPLOAD_CSDN_HOTKEY", { dependencies: { "upload.csdn.enabled": true } }),
+        Hotkey("UPLOAD_ALL_HOTKEY", { dependencies: Dep.or(Dep.true("upload.cnblog.enabled"), Dep.true("upload.wordpress.enabled"), Dep.true("upload.csdn.enabled")) }),
+        Hotkey("UPLOAD_CNBLOG_HOTKEY", { dependencies: Dep.true("upload.cnblog.enabled") }),
+        Hotkey("UPLOAD_WORDPRESS_HOTKEY", { dependencies: Dep.true("upload.wordpress.enabled") }),
+        Hotkey("UPLOAD_CSDN_HOTKEY", { dependencies: Dep.true("upload.csdn.enabled") }),
     ),
     TitledBox(
         "upload",
@@ -1145,21 +1347,21 @@ const conf_article_uploader = [
     TitledBox(
         "wordPress",
         Switch("upload.wordpress.enabled"),
-        Text("upload.wordpress.hostname", { dependencies: { "upload.wordpress.enabled": true } }),
-        Text("upload.wordpress.loginUrl", { dependencies: { "upload.wordpress.enabled": true } }),
-        Text("upload.wordpress.username", { dependencies: { "upload.wordpress.enabled": true } }),
-        Password("upload.wordpress.password", { dependencies: { "upload.wordpress.enabled": true } }),
+        Text("upload.wordpress.hostname", { dependencies: Dep.true("upload.wordpress.enabled") }),
+        Text("upload.wordpress.loginUrl", { dependencies: Dep.true("upload.wordpress.enabled") }),
+        Text("upload.wordpress.username", { dependencies: Dep.true("upload.wordpress.enabled") }),
+        Password("upload.wordpress.password", { dependencies: Dep.true("upload.wordpress.enabled") }),
     ),
     TitledBox(
         "cnblog",
         Switch("upload.cnblog.enabled"),
-        Text("upload.cnblog.username", { dependencies: { "upload.cnblog.enabled": true } }),
-        Password("upload.cnblog.password", { dependencies: { "upload.cnblog.enabled": true } }),
+        Text("upload.cnblog.username", { dependencies: Dep.true("upload.cnblog.enabled") }),
+        Password("upload.cnblog.password", { dependencies: Dep.true("upload.cnblog.enabled") }),
     ),
     TitledBox(
         "csdn",
         Switch("upload.csdn.enabled"),
-        Text("upload.csdn.cookie", { dependencies: { "upload.csdn.enabled": true } }),
+        Text("upload.csdn.cookie", { dependencies: Dep.true("upload.csdn.enabled") }),
     ),
     UntitledBox(
         Action("viewArticleUploaderReadme"),
@@ -1167,7 +1369,7 @@ const conf_article_uploader = [
     box_settingHandler,
 ]
 
-const conf_ripgrep = [
+const schema_ripgrep = [
     box_basePluginFull,
     TitledBox(
         "windowPosition",
@@ -1181,13 +1383,13 @@ const conf_ripgrep = [
     box_settingHandler,
 ]
 
-const conf_static_markers = [
+const schema_static_markers = [
     box_basePluginFull,
     CheckboxBox("STATIC_MARKERS", OPTIONS.static_markers.STATIC_MARKERS, { columns: 4 }),
     box_settingHandler,
 ]
 
-const conf_sidebar_enhance = [
+const schema_sidebar_enhance = [
     box_basePluginLite,
     UntitledBox(
         Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR"),
@@ -1195,13 +1397,13 @@ const conf_sidebar_enhance = [
         Switch("SORTABLE_OUTLINE"),
     ),
     UntitledBox(
-        Array_Inline("HIDDEN_NODE_PATTERNS"),
+        Array_("HIDDEN_NODE_PATTERNS"),
     ),
     UntitledBox(
         Switch("DISPLAY_NON_MARKDOWN_FILES"),
-        Array_Inline("OPEN_BY_TYPORA_EXT", { dependencies: { DISPLAY_NON_MARKDOWN_FILES: true } }),
-        Array_Inline("OPEN_BY_SYSTEM_EXT", { dependencies: { DISPLAY_NON_MARKDOWN_FILES: true } }),
-        Switch("CUSTOMIZE_SIDEBAR_ICONS", { dependencies: { DISPLAY_NON_MARKDOWN_FILES: true } }),
+        Array_("OPEN_BY_TYPORA_EXT", { dependencies: Dep.true("DISPLAY_NON_MARKDOWN_FILES") }),
+        Array_("OPEN_BY_SYSTEM_EXT", { dependencies: Dep.true("DISPLAY_NON_MARKDOWN_FILES") }),
+        Switch("CUSTOMIZE_SIDEBAR_ICONS", { dependencies: Dep.true("DISPLAY_NON_MARKDOWN_FILES") }),
     ),
     TableBox(
         "SIDEBAR_ICONS",
@@ -1210,7 +1412,7 @@ const conf_sidebar_enhance = [
             UntitledBox(
                 Switch("enable"),
                 Text("icon"),
-                Array_Inline("extensions"),
+                Array_("extensions"),
             ),
         ],
         {
@@ -1218,12 +1420,12 @@ const conf_sidebar_enhance = [
             icon: "fa fa-file-text-o",
             extensions: [],
         },
-        { dependencies: { $and: [{ CUSTOMIZE_SIDEBAR_ICONS: true }, { $follow: "CUSTOMIZE_SIDEBAR_ICONS" }] } },
+        { dependencies: Dep.and(Dep.true("CUSTOMIZE_SIDEBAR_ICONS"), Dep.follow("CUSTOMIZE_SIDEBAR_ICONS")) },
     ),
     box_settingHandler,
 ]
 
-const conf_cursor_history = [
+const schema_cursor_history = [
     box_basePluginLite,
     TitledBox(
         "hotkey",
@@ -1236,7 +1438,7 @@ const conf_cursor_history = [
     box_settingHandler,
 ]
 
-const conf_json_rpc = [
+const schema_json_rpc = [
     box_basePluginLite,
     TitledBox(
         "rpcServer",
@@ -1251,7 +1453,7 @@ const conf_json_rpc = [
     box_settingHandler,
 ]
 
-const conf_updater = [
+const schema_updater = [
     box_basePluginFull,
     UntitledBox(
         Integer("NETWORK_REQUEST_TIMEOUT", { unit: UNITS.millisecond, min: 30000 }),
@@ -1260,18 +1462,18 @@ const conf_updater = [
     TitledBox(
         "autoUpdate",
         Switch("AUTO_UPDATE"),
-        Integer("UPDATE_LOOP_INTERVAL", { tooltip: "loopInterval", unit: UNITS.millisecond, min: -1, dependencies: { AUTO_UPDATE: true } }),
-        Integer("START_UPDATE_INTERVAL", { tooltip: "waitInterval", unit: UNITS.millisecond, min: -1, dependencies: { AUTO_UPDATE: true } }),
+        Integer("UPDATE_LOOP_INTERVAL", { tooltip: "loopInterval", unit: UNITS.millisecond, min: -1, dependencies: Dep.true("AUTO_UPDATE") }),
+        Integer("START_UPDATE_INTERVAL", { tooltip: "waitInterval", unit: UNITS.millisecond, min: -1, dependencies: Dep.true("AUTO_UPDATE") }),
     ),
     box_settingHandler,
 ]
 
-const conf_test = [
+const schema_test = [
     box_basePluginLite,
     box_settingHandler,
 ]
 
-const conf_kanban = [
+const schema_kanban = [
     box_customPluginLite,
     TitledBox(
         "fence",
@@ -1288,14 +1490,14 @@ const conf_kanban = [
         Switch("WRAP"),
         Switch("CTRL_WHEEL_TO_SWITCH"),
         Switch("ALLOW_MARKDOWN_INLINE_STYLE"),
+        Palette("KANBAN_COLOR"),
+        Palette("TASK_COLOR"),
     ),
-    ArrayBox("KANBAN_COLOR"),
-    ArrayBox("TASK_COLOR"),
     TextareaBox("TEMPLATE"),
     box_settingHandler,
 ]
 
-const conf_chat = [
+const schema_chat = [
     box_customPluginLite,
     TitledBox(
         "fence",
@@ -1316,7 +1518,7 @@ const conf_chat = [
     box_settingHandler,
 ]
 
-const conf_timeline = [
+const schema_timeline = [
     box_customPluginLite,
     box_langMode,
     TitledBox(
@@ -1336,7 +1538,7 @@ const conf_timeline = [
     box_settingHandler,
 ]
 
-const conf_echarts = [
+const schema_echarts = [
     box_customPluginLite,
     box_langMode,
     box_chartStyle,
@@ -1350,7 +1552,7 @@ const conf_echarts = [
     box_settingHandler,
 ]
 
-const conf_chart = [
+const schema_chart = [
     box_customPluginLite,
     box_langMode,
     box_chartStyle,
@@ -1358,7 +1560,7 @@ const conf_chart = [
     box_settingHandler,
 ]
 
-const conf_wavedrom = [
+const schema_wavedrom = [
     box_customPluginLite,
     TitledBox(
         "fenceLanguageMode",
@@ -1375,7 +1577,7 @@ const conf_wavedrom = [
     box_settingHandler,
 ]
 
-const conf_calendar = [
+const schema_calendar = [
     box_customPluginLite,
     box_langMode,
     box_chartStyle,
@@ -1383,7 +1585,7 @@ const conf_calendar = [
     box_settingHandler,
 ]
 
-const conf_abc = [
+const schema_abc = [
     box_customPluginLite,
     box_langMode,
     box_chartStyle,
@@ -1395,7 +1597,7 @@ const conf_abc = [
     box_settingHandler,
 ]
 
-const conf_drawIO = [
+const schema_drawIO = [
     box_customPluginLite,
     box_langMode,
     box_chartStyle,
@@ -1410,7 +1612,7 @@ const conf_drawIO = [
     box_settingHandler,
 ]
 
-const conf_plantUML = [
+const schema_plantUML = [
     box_customPluginLite,
     UntitledBox(
         Text("SERVER_URL"),
@@ -1425,7 +1627,7 @@ const conf_plantUML = [
     box_settingHandler,
 ]
 
-const conf_marp = [
+const schema_marp = [
     box_customPluginLite,
     box_langMode,
     DictBox("MARP_CORE_OPTIONS"),
@@ -1433,7 +1635,7 @@ const conf_marp = [
     box_settingHandler,
 ]
 
-const conf_callouts = [
+const schema_callouts = [
     box_customPluginLite,
     TitledBox(
         "style",
@@ -1448,7 +1650,7 @@ const conf_callouts = [
         "fontFamily",
         Text("font_family"),
         Switch("use_network_icon_when_exporting", { tooltip: "messingFont" }),
-        Text("network_icon_url", { dependencies: { use_network_icon_when_exporting: true } }),
+        Text("network_icon_url", { dependencies: Dep.true("use_network_icon_when_exporting") }),
     ),
     TitledBox(
         "defaultOptions",
@@ -1478,7 +1680,7 @@ const conf_callouts = [
     box_settingHandler,
 ]
 
-const conf_templater = [
+const schema_templater = [
     box_customPluginFull,
     UntitledBox(
         Switch("auto_open"),
@@ -1517,7 +1719,7 @@ const conf_templater = [
     box_settingHandler,
 ]
 
-const conf_chineseSymbolAutoPairer = [
+const schema_chineseSymbolAutoPairer = [
     box_customPluginLite,
     UntitledBox(
         Switch("auto_skip"),
@@ -1551,7 +1753,7 @@ const conf_chineseSymbolAutoPairer = [
     box_settingHandler,
 ]
 
-const conf_toc = [
+const schema_toc = [
     box_customPluginFull,
     UntitledBox(
         Switch("default_show_toc"),
@@ -1561,22 +1763,22 @@ const conf_toc = [
     ),
     TitledBox(
         "tocStyle",
-        Select("title_bar_buttons", OPTIONS.toc.title_bar_buttons),
         Range("width_percent_when_pin_right", prop_percent),
         Text("toc_font_size"),
     ),
+    TransferBox("title_bar_buttons", OPTIONS.toc.title_bar_buttons),
     TitledBox(
         "displayHeader",
-        Switch("include_headings.fence", { dependencies: { title_bar_buttons: { $contains: "fence" } } }),
-        Switch("include_headings.image", { dependencies: { title_bar_buttons: { $contains: "image" } } }),
-        Switch("include_headings.table", { dependencies: { title_bar_buttons: { $contains: "table" } } }),
-        Switch("include_headings.link", { dependencies: { title_bar_buttons: { $contains: "link" } } }),
-        Switch("include_headings.math", { dependencies: { title_bar_buttons: { $contains: "math" } } }),
+        Switch("include_headings.fence", { dependencies: Dep.contains("title_bar_buttons", "fence") }),
+        Switch("include_headings.image", { dependencies: Dep.contains("title_bar_buttons", "image") }),
+        Switch("include_headings.table", { dependencies: Dep.contains("title_bar_buttons", "table") }),
+        Switch("include_headings.link", { dependencies: Dep.contains("title_bar_buttons", "link") }),
+        Switch("include_headings.math", { dependencies: Dep.contains("title_bar_buttons", "math") }),
     ),
     box_settingHandler,
 ]
 
-const conf_scrollBookmarker = [
+const schema_scrollBookmarker = [
     box_customPluginFull,
     UntitledBox(
         Hotkey("modifier_key", { tooltip: "modifierKeyExample" }),
@@ -1585,7 +1787,7 @@ const conf_scrollBookmarker = [
     box_settingHandler,
 ]
 
-const conf_imageReviewer = [
+const schema_imageReviewer = [
     box_customPluginFull,
     TitledBox(
         "style",
@@ -1601,9 +1803,9 @@ const conf_imageReviewer = [
         "component",
         Switch("show_thumbnail_nav"),
         Select("tool_position", OPTIONS.imageReviewer.tool_position),
-        Select("show_message", OPTIONS.imageReviewer.show_message),
-        Select("tool_function", OPTIONS.imageReviewer.operations, { minItems: 1 }),
     ),
+    TransferBox("show_message", OPTIONS.imageReviewer.show_message),
+    TransferBox("tool_function", OPTIONS.imageReviewer.operations, { minItems: 1 }),
     TitledBox(
         "behavior",
         Switch("filter_error_image"),
@@ -1656,7 +1858,7 @@ const conf_imageReviewer = [
     box_settingHandler,
 ]
 
-const conf_markdownLint = [
+const schema_markdownLint = [
     box_customPluginFull,
     TitledBox(
         "detectAndFix",
@@ -1671,14 +1873,14 @@ const conf_markdownLint = [
     TitledBox(
         "indicator",
         Switch("use_button"),
-        Switch("right_click_button_to_fix", { dependencies: { use_button: true } }),
-        Text("button_width", { dependencies: { use_button: true } }),
-        Text("button_height", { dependencies: { use_button: true } }),
-        Text("button_right", { dependencies: { use_button: true } }),
-        Text("button_border_radius", { dependencies: { use_button: true } }),
-        Range("button_opacity", { min: 0, max: 1, step: 0.05, dependencies: { use_button: true } }),
-        Color("pass_color", { dependencies: { use_button: true } }),
-        Color("error_color", { dependencies: { use_button: true } }),
+        Switch("right_click_button_to_fix", { dependencies: Dep.true("use_button") }),
+        Text("button_width", { dependencies: Dep.true("use_button") }),
+        Text("button_height", { dependencies: Dep.true("use_button") }),
+        Text("button_right", { dependencies: Dep.true("use_button") }),
+        Text("button_border_radius", { dependencies: Dep.true("use_button") }),
+        Range("button_opacity", { min: 0, max: 1, step: 0.05, dependencies: Dep.true("use_button") }),
+        Color("pass_color", { dependencies: Dep.true("use_button") }),
+        Color("error_color", { dependencies: Dep.true("use_button") }),
     ),
     DictBox("rule_config"),
     ArrayBox("custom_rule_files"),
@@ -1688,7 +1890,7 @@ const conf_markdownLint = [
     box_settingHandler,
 ]
 
-const conf_quickButton = [
+const schema_quickButton = [
     box_customPluginFull,
     TitledBox(
         "buttonStyle",
@@ -1716,9 +1918,9 @@ const conf_quickButton = [
                 Text("color"),
                 Text("bgColor"),
                 Text("hint"),
-                Text("callback", { tooltip: "exclusive", dependencies: { evil: { $bool: false } } }),
+                Text("callback", { tooltip: "exclusive", dependencies: Dep.bool("evil", false) }),
             ),
-            TextareaBox("evil", { placeholder: "customCallback", rows: 5, dependencies: { callback: { $bool: false } } }),
+            TextareaBox("evil", { placeholder: "customCallback", rows: 5, dependencies: Dep.bool("callback", false) }),
         ],
         {
             disable: true,
@@ -1735,12 +1937,12 @@ const conf_quickButton = [
     box_settingHandler,
 ]
 
-const conf_blockSideBySide = [
+const schema_blockSideBySide = [
     box_customPluginFull,
     box_settingHandler,
 ]
 
-const conf_redirectLocalRootUrl = [
+const schema_redirectLocalRootUrl = [
     box_customPluginLite,
     UntitledBox(
         Text("root"),
@@ -1750,98 +1952,116 @@ const conf_redirectLocalRootUrl = [
 ]
 
 const SCHEMAS = {
-    global: conf_global,
-    window_tab: conf_window_tab,
-    search_multi: conf_search_multi,
-    commander: conf_commander,
-    md_padding: conf_md_padding,
-    read_only: conf_read_only,
-    blur: conf_blur,
-    dark: conf_dark,
-    no_image: conf_no_image,
-    toolbar: conf_toolbar,
-    resize_image: conf_resize_image,
-    resize_table: conf_resize_table,
-    datatables: conf_datatables,
-    go_top: conf_go_top,
-    markmap: conf_markmap,
-    auto_number: conf_auto_number,
-    fence_enhance: conf_fence_enhance,
-    collapse_paragraph: conf_collapse_paragraph,
-    collapse_list: conf_collapse_list,
-    collapse_table: conf_collapse_table,
-    truncate_text: conf_truncate_text,
-    export_enhance: conf_export_enhance,
-    text_stylize: conf_text_stylize,
-    cipher: conf_cipher,
-    resource_manager: conf_resource_manager,
-    easy_modify: conf_easy_modify,
-    custom: conf_custom,
-    slash_commands: conf_slash_commands,
-    right_click_menu: conf_right_click_menu,
-    pie_menu: conf_pie_menu,
-    preferences: conf_preferences,
-    file_counter: conf_file_counter,
-    hotkeys: conf_hotkeys,
-    editor_width_slider: conf_editor_width_slider,
-    article_uploader: conf_article_uploader,
-    ripgrep: conf_ripgrep,
-    static_markers: conf_static_markers,
-    sidebar_enhance: conf_sidebar_enhance,
-    cursor_history: conf_cursor_history,
-    json_rpc: conf_json_rpc,
-    updater: conf_updater,
-    test: conf_test,
-    kanban: conf_kanban,
-    chat: conf_chat,
-    timeline: conf_timeline,
-    echarts: conf_echarts,
-    chart: conf_chart,
-    wavedrom: conf_wavedrom,
-    calendar: conf_calendar,
-    abc: conf_abc,
-    drawIO: conf_drawIO,
-    plantUML: conf_plantUML,
-    marp: conf_marp,
-    callouts: conf_callouts,
-    templater: conf_templater,
-    chineseSymbolAutoPairer: conf_chineseSymbolAutoPairer,
-    toc: conf_toc,
-    scrollBookmarker: conf_scrollBookmarker,
-    imageReviewer: conf_imageReviewer,
-    markdownLint: conf_markdownLint,
-    quickButton: conf_quickButton,
-    blockSideBySide: conf_blockSideBySide,
-    redirectLocalRootUrl: conf_redirectLocalRootUrl,
+    global: schema_global,
+    window_tab: schema_window_tab,
+    search_multi: schema_search_multi,
+    commander: schema_commander,
+    md_padding: schema_md_padding,
+    read_only: schema_read_only,
+    blur: schema_blur,
+    dark: schema_dark,
+    no_image: schema_no_image,
+    toolbar: schema_toolbar,
+    resize_image: schema_resize_image,
+    resize_table: schema_resize_table,
+    datatables: schema_datatables,
+    go_top: schema_go_top,
+    markmap: schema_markmap,
+    auto_number: schema_auto_number,
+    fence_enhance: schema_fence_enhance,
+    collapse_paragraph: schema_collapse_paragraph,
+    collapse_list: schema_collapse_list,
+    collapse_table: schema_collapse_table,
+    truncate_text: schema_truncate_text,
+    export_enhance: schema_export_enhance,
+    text_stylize: schema_text_stylize,
+    cipher: schema_cipher,
+    resource_manager: schema_resource_manager,
+    easy_modify: schema_easy_modify,
+    custom: schema_custom,
+    slash_commands: schema_slash_commands,
+    right_click_menu: schema_right_click_menu,
+    pie_menu: schema_pie_menu,
+    preferences: schema_preferences,
+    file_counter: schema_file_counter,
+    hotkeys: schema_hotkeys,
+    editor_width_slider: schema_editor_width_slider,
+    article_uploader: schema_article_uploader,
+    ripgrep: schema_ripgrep,
+    static_markers: schema_static_markers,
+    sidebar_enhance: schema_sidebar_enhance,
+    cursor_history: schema_cursor_history,
+    json_rpc: schema_json_rpc,
+    updater: schema_updater,
+    test: schema_test,
+    kanban: schema_kanban,
+    chat: schema_chat,
+    timeline: schema_timeline,
+    echarts: schema_echarts,
+    chart: schema_chart,
+    wavedrom: schema_wavedrom,
+    calendar: schema_calendar,
+    abc: schema_abc,
+    drawIO: schema_drawIO,
+    plantUML: schema_plantUML,
+    marp: schema_marp,
+    callouts: schema_callouts,
+    templater: schema_templater,
+    chineseSymbolAutoPairer: schema_chineseSymbolAutoPairer,
+    toc: schema_toc,
+    scrollBookmarker: schema_scrollBookmarker,
+    imageReviewer: schema_imageReviewer,
+    markdownLint: schema_markdownLint,
+    quickButton: schema_quickButton,
+    blockSideBySide: schema_blockSideBySide,
+    redirectLocalRootUrl: schema_redirectLocalRootUrl,
 }
 
 const I18N = (schemas, i18nData = require("../global/locales/en.json")) => {
-    const BASE_PROPS = { label: "$label", tooltip: "$tooltip", placeholder: "$placeholder", hintHeader: "$hintHeader", hintDetail: "$hintDetail", unit: "$unit" }
+    const PREFIX_DEPENDENT_PROPS = { label: "$label" }
     const SPECIAL_PROPS = { options: "$option", thMap: "$label" }
+    const GLOBAL_PROPS = { tooltip: "$tooltip", placeholder: "$placeholder", hintHeader: "$hintHeader", hintDetail: "$hintDetail", unit: "$unit" }
+    const NESTED_PROPS = ["nestedBoxes", "subSchema"]
 
-    const translateBox = (box, t) => {
-        const newBox = { ...box }
-        if (newBox.title != null) {
-            newBox.title = t(`$title.${newBox.title}`)
+    const translateBox = (box, t, prefix = "") => {
+        const { label, ...newBox } = { ...box }
+        if (label) {
+            const i18nKey = prefix ? `${prefix}.${label}` : label
+            newBox.title = t(`$label.${i18nKey}`)
+        } else if (newBox.title) {
+            const i18nKey = prefix ? `${prefix}.${newBox.title}` : newBox.title
+            newBox.title = t(`$title.${i18nKey}`)
+        }
+        if (newBox.tooltip) {
+            const i18nKey = prefix ? `${prefix}.${newBox.title}` : newBox.tooltip
+            newBox.tooltip = t(`$tooltip.${i18nKey}`)
         }
         if (Array.isArray(newBox.fields)) {
             newBox.fields = newBox.fields.map(field => {
                 const newField = { ...field }
-                Object.entries(BASE_PROPS).forEach(([prop, prefix]) => {
+                Object.entries(PREFIX_DEPENDENT_PROPS).forEach(([prop, i18nPrefix]) => {
                     if (newField[prop] != null) {
-                        newField[prop] = t(`${prefix}.${newField[prop]}`)
+                        const key = prefix ? `${prefix}.${newField[prop]}` : newField[prop]
+                        newField[prop] = t(`${i18nPrefix}.${key}`)
                     }
                 })
-                Object.entries(SPECIAL_PROPS).forEach(([prop, prefix]) => {
+                Object.entries(GLOBAL_PROPS).forEach(([prop, i18nPrefix]) => {
+                    if (newField[prop] != null) {
+                        newField[prop] = t(`${i18nPrefix}.${newField[prop]}`)
+                    }
+                })
+                Object.entries(SPECIAL_PROPS).forEach(([prop, i18nPrefix]) => {
                     if (newField[prop] != null && typeof newField[prop] === "object" && !Array.isArray(newField[prop])) {
                         newField[prop] = Object.fromEntries(
-                            Object.entries(newField[prop]).map(([k, v]) => [k, t(`${prefix}.${v}`)])
+                            Object.entries(newField[prop]).map(([k, v]) => [k, t(`${i18nPrefix}.${v}`)])
                         )
                     }
                 })
-                if (Array.isArray(newField.nestedBoxes)) {
-                    newField.nestedBoxes = newField.nestedBoxes.map(subBox => translateBox(subBox, t))
-                }
+                NESTED_PROPS.forEach(prop => {
+                    if (Array.isArray(newField[prop])) {
+                        newField[prop] = newField[prop].map(nested => translateBox(nested, t, newField.key))
+                    }
+                })
                 return newField
             })
         }

@@ -94,7 +94,7 @@
     cursor: grab;
 }
 
-.title-bar.dragging {
+.title-bar:active {
     cursor: grabbing;
 }
 

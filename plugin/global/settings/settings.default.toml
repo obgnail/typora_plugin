@@ -156,11 +156,6 @@ TOGGLE_TAB_BAR_HOTKEY = []
 COPY_PATH_HOTKEY = []
 
 # ------------------- 鼠标右键菜单 -------------------
-# 使用右键菜单
-#   true:  使用右键菜单
-#   false: 不使用右键菜单
-USE_CONTEXT_MENU = true
-
 # 鼠标右击标签页时显示的右键菜单项列表
 #   若置为 []，则不显示右键菜单
 #   支持以下菜单项
@@ -2140,7 +2135,6 @@ LIST = [
     "toolbar",
     "search_multi",
     "md_padding",
-    "---",
     "read_only",
     "blur",
     "dark",
@@ -2220,11 +2214,6 @@ DEFAULT_MENU = "global"
 # 设置页面里隐藏菜单的插件
 #   填入插件的 fixedName
 HIDE_MENUS = []
-
-# 不校验配置
-#   true:  不校验配置
-#   false: 校验配置
-VALIDATE_CONFIG_OPTIONS = true
 
 # 依赖失效行为
 #   readonly: 只读

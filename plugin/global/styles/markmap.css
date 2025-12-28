@@ -16,6 +16,15 @@
     min-width: 120px;
     min-height: 120px;
     border-radius: 8px;
+    padding: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+    #plugin-markmap {
+        background: rgba(30, 30, 30, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
 }
 
 #plugin-markmap.pinned-window {
@@ -23,7 +32,11 @@
 }
 
 #plugin-markmap:not(.pinned-window) .plugin-markmap-header {
-    cursor: move;
+    cursor: grab;
+}
+
+#plugin-markmap:not(.pinned-window) .plugin-markmap-header:active {
+    cursor: grabbing;
 }
 
 .plugin-markmap-grip-top {
@@ -58,6 +71,7 @@
     flex-wrap: wrap;
     align-items: center;
     max-width: 2em;
+    margin: 4px 0 0 4px;
 }
 
 .plugin-markmap-icon {
@@ -93,6 +107,7 @@
     flex: 1;
     user-select: none;
     color: currentColor;
+    padding: 4px;
 }
 
 #plugin-markmap-svg .markmap-foreign {
