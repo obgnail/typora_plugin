@@ -1678,7 +1678,7 @@ SORTABLE_OUTLINE = true
 HIDDEN_NODE_PATTERNS = []
 
 # ------------------- 显示其他扩展名文件 -------------------
-# 支持在侧边栏显示侧边栏列表显示其他扩展名文件
+# 支持在侧边栏列表显示其他扩展名文件
 #   true:  支持
 #   false: 不支持
 # 若置为 false，则选项 OPEN_BY_SYSTEM_EXT、OPEN_BY_TYPORA_EXT、CUSTOMIZE_SIDEBAR_ICONS 失效
@@ -1707,6 +1707,59 @@ SIDEBAR_ICONS = [
     { enable = true, extensions = ["zip", "7z", "rar"], icon = "ty-file-icon ty-fi-zip" },
     { enable = true, extensions = ["css"], icon = "ty-file-icon ty-fi-css" },
 ]
+
+# ------------------- 文件计数 -------------------
+# 支持在侧边栏列表显示文件数量
+#   true:  支持
+#   false: 不支持
+# 若置为 false，则以下选项全部失效
+ENABLE_FILE_COUNT = false
+
+# 文本字体粗细，填写 font-weight 的 CSS 值
+#   例如：设置为 "bold" 表示加粗文本
+#   若为 "initial"，则保持默认字体粗细
+FONT_WEIGHT = "bold"
+
+# 文本字体颜色，填写 color 的 CSS 值
+#   例如：设置为 "red" 表示文本颜色为红色
+#   若留空 ""，则保持默认字体颜色
+TEXT_COLOR = ""
+
+# 文本背景颜色，填写 background-color 的 CSS 值
+#   例如：设置为 "#F0F0F0" 表示文本背景颜色为浅灰色
+#   若留空 ""，则保持默认背景颜色
+BACKGROUND_COLOR = ""
+
+# 当目录下的文件数量少于等于 IGNORE_MIN_NUM 时，忽略此目录，不显示计数
+#   例如：设置为 1，则目录中文件数小于等于 1 时，不显示文件计数
+IGNORE_MIN_NUM = 0
+
+# Typora 允许的最大文件（单位：字节），大于此大小的文件将被忽略
+#   若 MAX_SIZE 小于 0，则不过滤文件大小
+#   例如：设置为 2000000 表示文件大小限制为 2 MB
+MAX_SIZE = 2000000
+
+# 最大文件数量
+#   若超出，则插件暂停运行
+#   若小于 0，则不限制
+MAX_STATS = 10000
+
+# 用于防止因打开过多文件句柄导致 EMFILE 错误，并控制內存与 CPU 的使用率
+#   必须为正整数
+CONCURRENCY_LIMIT = 20
+
+# 跟随符号链接
+#   true:  跟随符号链接，如果存在闭环目录会导致无限循环
+#   false: 不跟随符号链接，符号链接作为普通文件处理
+FOLLOW_SYMBOLIC_LINKS = false
+
+# Typora 允许打开的文件的扩展名列表，不在此列表中的文件在搜索时将被忽略
+#   例如：["md", "txt"] 表示只统计 .md 和 .txt 文件
+COUNT_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
+
+# 忽略的目录名列表，在此列表中的目录将被忽略，不进行文件计数
+#   例如：[".git", "node_modules"] 表示忽略 .git 和 node_modules 目录
+IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 
 
 ################### text_stylize ###################
@@ -2235,64 +2288,6 @@ OBJECT_SETTINGS_FORMAT = "JSON"
 # 表单渲染钩子
 #   此选项面向开发者，普通用户请勿修改
 FORM_RENDERING_HOOK = "(options, fixedName) => options"
-
-
-################### file_counter ###################
-[file_counter]
-# ------------------- 基础 -------------------
-# 启用或禁用文件计数插件
-ENABLE = true
-
-# 插件名称，用于在 Typora 侧边栏显示
-NAME = ""
-
-# ------------------- 文件计数过滤 -------------------
-# 当目录下的文件数量少于等于 IGNORE_MIN_NUM 时，忽略此目录，不显示计数
-#   例如：设置为 1，则目录中文件数小于等于 1 时，不显示文件计数
-IGNORE_MIN_NUM = 0
-
-# Typora 允许的最大文件（单位：字节），大于此大小的文件将被忽略
-#   若 MAX_SIZE 小于 0，则不过滤文件大小
-#   例如：设置为 2000000 表示文件大小限制为 2 MB
-MAX_SIZE = 2000000
-
-# 最大文件数量
-#   若超出，则插件暂停运行
-#   若小于 0，则不限制
-MAX_STATS = 10000
-
-# 用于防止因打开过多文件句柄导致 EMFILE 错误，并控制內存与 CPU 的使用率
-#   必须为正整数
-CONCURRENCY_LIMIT = 20
-
-# 跟随符号链接
-#   true:  跟随符号链接，如果存在闭环目录会导致无限循环
-#   false: 不跟随符号链接，符号链接作为普通文件处理
-FOLLOW_SYMBOLIC_LINKS = false
-
-# Typora 允许打开的文件的扩展名列表，不在此列表中的文件在搜索时将被忽略
-#   例如：["md", "txt"] 表示只统计 .md 和 .txt 文件
-ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
-
-# 忽略的目录名列表，在此列表中的目录将被忽略，不进行文件计数
-#   例如：[".git", "node_modules"] 表示忽略 .git 和 node_modules 目录
-IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
-
-# ------------------- 文本样式 -------------------
-# 文本字体粗细，填写 font-weight 的 CSS 值
-#   例如：设置为 "bold" 表示加粗文本
-#   若为 "initial"，则保持默认字体粗细
-FONT_WEIGHT = "bold"
-
-# 文本字体颜色，填写 color 的 CSS 值
-#   例如：设置为 "red" 表示文本颜色为红色
-#   若留空 ""，则保持默认字体颜色
-COLOR = ""
-
-# 文本背景颜色，填写 background-color 的 CSS 值
-#   例如：设置为 "#F0F0F0" 表示文本背景颜色为浅灰色
-#   若留空 ""，则保持默认背景颜色
-BACKGROUND_COLOR = ""
 
 
 ################### hotkeys ###################

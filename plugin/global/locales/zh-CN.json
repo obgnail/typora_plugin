@@ -361,8 +361,7 @@
     "$label.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY": "单击超链接即可跳转",
     "$label.DISABLE_CONTEXT_MENU_WHEN_READ_ONLY": "禁用部分右键菜单选项",
     "$label.SHOW_TEXT": "提示文字",
-    "$label.REMAIN_AVAILABLE_MENU_KEY": "保持可用的右键菜单选项",
-    "$title.underReadOnly": "只读状态"
+    "$label.REMAIN_AVAILABLE_MENU_KEY": "保持可用的右键菜单选项"
   },
   "blur": {
     "pluginName": "模糊模式",
@@ -969,17 +968,6 @@
     "$option.DEPENDENCIES_FAILURE_BEHAVIOR.readonly": "只读",
     "$option.DEPENDENCIES_FAILURE_BEHAVIOR.hide": "隐藏"
   },
-  "file_counter": {
-    "pluginName": "文件计数",
-    "error.tooManyFiles": "文件过多，插件「 {{pluginName}} 」暂停运行",
-    "$label.FONT_WEIGHT": "字宽",
-    "$label.COLOR": "颜色",
-    "$label.BACKGROUND_COLOR": "背景色",
-    "$label.IGNORE_MIN_NUM": "目录下最小文件数",
-    "$label.ALLOW_EXT": "列入计数的文件扩展名",
-    "$label.IGNORE_FOLDERS": "忽略的目录名",
-    "$tooltip.ignoreMinNum": "忽略所含文件数少于 X 的目录"
-  },
   "hotkeys": {
     "pluginName": "快捷键中心",
     "registeredHotkey": "已注册快捷键",
@@ -1052,6 +1040,7 @@
   },
   "sidebar_enhance": {
     "pluginName": "侧边栏增强",
+    "error.tooManyFiles": "文件过多，文件计数暂停运行",
     "$label.DISPLAY_NON_MARKDOWN_FILES": "文件树显示非 Markdown 文件",
     "$label.OPEN_BY_SYSTEM_EXT": "外部打开的扩展名",
     "$label.OPEN_BY_TYPORA_EXT": "内部打开的扩展名",
@@ -1064,6 +1053,14 @@
     "$label.SIDEBAR_ICONS.enable": "启用",
     "$label.SIDEBAR_ICONS.extensions": "扩展名",
     "$label.SIDEBAR_ICONS.icon": "图标",
+    "$label.ENABLE_FILE_COUNT": "文件计数",
+    "$label.FONT_WEIGHT": "字宽",
+    "$label.TEXT_COLOR": "颜色",
+    "$label.BACKGROUND_COLOR": "背景色",
+    "$label.IGNORE_MIN_NUM": "目录下最小文件数",
+    "$label.COUNT_EXT": "文件扩展名",
+    "$label.IGNORE_FOLDERS": "忽略的目录名",
+    "$tooltip.ignoreMinNum": "忽略所含文件数少于 X 的目录",
     "$tooltip.canCollapseOutlinePanel": "需启用 Typora 配置「允许折叠和展开侧边栏的大纲视图」"
   },
   "cursor_history": {
@@ -1264,16 +1261,14 @@
     "$label.remove_header_styles": "移除标题样式",
     "$label.sortable": "拖动大纲标题，调整文章结构",
     "$label.right_click_outline_button_to_toggle": "快捷方式：右击侧边栏大纲按钮",
-    "$label.width_percent_when_pin_right": "固定到右侧的宽度",
-    "$label.toc_font_size": "字体大小",
+    "$label.width_percent_when_pin_right": "默认宽度",
     "$label.title_bar_buttons": "标题栏按钮",
     "$label.include_headings.fence": "代码块",
     "$label.include_headings.image": "图片",
     "$label.include_headings.table": "表格",
     "$label.include_headings.link": "链接",
-    "$label.include_headings.math": "公式块",
-    "$title.tocStyle": "大纲目录样式",
-    "$title.displayHeader": "目录中显示标题",
+    "$label.include_headings.math": "公式",
+    "$title.displayHeader": "显示标题",
     "$option.title_bar_buttons.header": "标题",
     "$option.title_bar_buttons.image": "图片",
     "$option.title_bar_buttons.table": "表格",
@@ -1624,7 +1619,7 @@
     "$title.detectAndFix": "检测与修复"
   },
   "quickButton": {
-    "pluginName": "快速按钮",
+    "pluginName": "悬浮动作按钮",
     "$label.button_size": "大小",
     "$label.button_border_radius": "圆角半径",
     "$label.button_box_shadow": "阴影",
@@ -1643,11 +1638,11 @@
     "$label.buttons.color": "图标颜色",
     "$label.buttons.bgColor": "背景颜色",
     "$label.buttons.hint": "提示",
-    "$label.buttons.callback": "回调",
+    "$label.buttons.callback": "系统回调",
     "$label.buttons.evil": "自定义回调",
     "$title.buttonStyle": "按钮样式",
-    "$tooltip.buttons.coordinate.0": "向上方向递增",
-    "$tooltip.buttons.coordinate.1": "向左方向递增",
+    "$tooltip.buttons.coordinate.0": "向上递增",
+    "$tooltip.buttons.coordinate.1": "向左递增",
     "$tooltip.exclusive": "与「自定义回调」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
   },

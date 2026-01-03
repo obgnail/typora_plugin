@@ -66,29 +66,31 @@ class QuickButtonPlugin extends BaseCustomPlugin {
             for (let y = 0; y <= maxY; y++) {
                 const coordinate = `${maxX - x}-${maxY - y}`
                 const btn = btnMap.get(coordinate)
-                const div = document.createElement("div")
-                div.classList.add("action-item")
+                const item = document.createElement("div")
+                item.classList.add("action-item")
                 if (btn) {
-                    div.setAttribute("action", btn.action)
+                    item.setAttribute("action", btn.action)
                     if (btn.icon) {
-                        div.classList.add(...btn.icon.split(" "))
+                        const i = document.createElement("i")
+                        i.className = btn.icon
+                        item.appendChild(i)
                     }
                     if (!this.config.hide_button_hint && btn.hint) {
-                        div.setAttribute("ty-hint", btn.hint)
+                        item.setAttribute("ty-hint", btn.hint)
                     }
                     if (btn.size) {
-                        div.style.fontSize = btn.size
+                        item.style.fontSize = btn.size
                     }
                     if (btn.color) {
-                        div.style.color = btn.color
+                        item.style.color = btn.color
                     }
                     if (btn.bgColor) {
-                        div.style.backgroundColor = btn.bgColor
+                        item.style.backgroundColor = btn.bgColor
                     }
                 } else {
-                    div.classList.add("plu-unused")
+                    item.classList.add("plu-unused")
                 }
-                buttons.push(div)
+                buttons.push(item)
             }
         }
         return buttons

@@ -116,14 +116,14 @@ const Object_ = (key, props = {}) => Field(key, "object", { isBlockLayout: false
 
 /**
  * @param {string} key
- * @param {BaseProps & { rows?: number, noResize?: boolean, placeholder?: string }} [props]
+ * @param {BaseProps & { rows?: number, cols?: number, noResize?: boolean, placeholder?: string }} [props]
  */
 const Textarea = (key, props = {}) => Field(key, "textarea", { isBlockLayout: false, rows: 10, ...props })
 
 /**
  * @param {string} key
  * @param {string[] | Record<string, string>} options
- * @param {BaseProps & { columns?: number }} [props]
+ * @param {BaseProps & { columns?: number, disabledOptions?: string[] }} [props]
  */
 const Radio = (key, options, props = {}) => Field(key, "radio", { isBlockLayout: false, options, columns: 1, ...props })
 
@@ -213,14 +213,14 @@ const ObjectBox = (key, props = {}) => SingleFieldBox(key, "object", { rows: 10,
 
 /**
  * @param {string} key
- * @param {BoxProps & { rows?: number, placeholder?: string }} [props]
+ * @param {BoxProps & { rows?: number, cols?: number, placeholder?: string }} [props]
  */
 const TextareaBox = (key, props = {}) => SingleFieldBox(key, "textarea", { rows: 10, ...props })
 
 /**
  * @param {string} key
  * @param {Object} options
- * @param {BoxProps & { columns?: number }} [props]
+ * @param {BoxProps & { columns?: number, disabledOptions?: string[] }} [props]
  */
 const RadioBox = (key, options, props = {}) => SingleFieldBox(key, "radio", { options, columns: 1, ...props })
 
@@ -306,6 +306,7 @@ const dep_markmapToc = { dependencies: Dep.true("ENABLE_TOC_MARKMAP") }
 const dep_markmapFence = { dependencies: Dep.true("ENABLE_FENCE_MARKMAP") }
 const dep_fenceEnhanceButton = { dependencies: Dep.true("ENABLE_BUTTON") }
 const dep_fenceEnhanceHotkey = { dependencies: Dep.true("ENABLE_HOTKEY") }
+const dep_countFile = { dependencies: Dep.true("ENABLE_FILE_COUNT") }
 
 /******** Common Fields ********/
 const field_ENABLE = Switch("ENABLE")
@@ -592,19 +593,17 @@ const schema_md_padding = [
 
 const schema_read_only = [
     box_basePluginFull,
-    TitledBox(
-        "underReadOnly",
+    UntitledBox(
         Switch("READ_ONLY_DEFAULT"),
-        Text("SHOW_TEXT"),
-    ),
-    UntitledBox(
-        Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
-        Select("REMAIN_AVAILABLE_MENU_KEY", undefined, { dependencies: Dep.true("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY") }),
-    ),
-    UntitledBox(
         Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
         Switch("NO_EXPAND_WHEN_READ_ONLY"),
         Switch("REMOVE_EXPAND_WHEN_READ_ONLY", { dependencies: Dep.false("NO_EXPAND_WHEN_READ_ONLY") }),
+        Text("SHOW_TEXT"),
+    ),
+    TitledBox(
+        "advanced",
+        Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
+        Select("REMAIN_AVAILABLE_MENU_KEY", undefined, { dependencies: Dep.true("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY") }),
     ),
     box_settingHandler,
 ]
@@ -1054,24 +1053,24 @@ const schema_text_stylize = [
         field_NAME,
         Hotkey("SHOW_MODAL_HOTKEY"),
     ),
-    TitledBox(
-        "toolBar",
-        Text("MODAL_BACKGROUND_COLOR"),
-    ),
     TransferBox("TOOLS", OPTIONS.text_stylize.TOOLS, { minItems: 1 }),
     TableBox(
         "ACTION_HOTKEYS",
         ["hotkey", "action"],
         [
             UntitledBox(
-                Hotkey("hotkey"),
                 Select("action", OPTIONS.text_stylize.TOOLS),
+                Hotkey("hotkey"),
             ),
         ],
         {
             hotkey: "",
             action: "weight",
         },
+    ),
+    TitledBox(
+        "toolBar",
+        Text("MODAL_BACKGROUND_COLOR"),
     ),
     TitledBox(
         "buttonDefaultOptions",
@@ -1258,35 +1257,12 @@ const schema_preferences = [
     ),
     UntitledBox(
         Switch("SEARCH_PLUGIN_FIXEDNAME"),
+        Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR),
+        Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
         Select("DEFAULT_MENU"),
         Select("HIDE_MENUS"),
     ),
-    UntitledBox(
-        Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR),
-        Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
-    ),
     TextareaBox("FORM_RENDERING_HOOK", { tooltip: "expertsOnly", rows: 3 }),
-    box_settingHandler,
-]
-
-const schema_file_counter = [
-    box_basePluginLite,
-    TitledBox(
-        "style",
-        Text("FONT_WEIGHT"),
-        Text("COLOR"),
-        Text("BACKGROUND_COLOR"),
-    ),
-    ArrayBox("ALLOW_EXT"),
-    ArrayBox("IGNORE_FOLDERS"),
-    TitledBox(
-        "advanced",
-        Switch("FOLLOW_SYMBOLIC_LINKS"),
-        Integer("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1 }),
-        Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
-        Integer("MAX_STATS", { min: 100 }),
-        Integer("CONCURRENCY_LIMIT", { min: 1 }),
-    ),
     box_settingHandler,
 ]
 
@@ -1421,6 +1397,23 @@ const schema_sidebar_enhance = [
             extensions: [],
         },
         { dependencies: Dep.and(Dep.true("CUSTOMIZE_SIDEBAR_ICONS"), Dep.follow("CUSTOMIZE_SIDEBAR_ICONS")) },
+    ),
+    UntitledBox(
+        Switch("ENABLE_FILE_COUNT"),
+        Text("FONT_WEIGHT", dep_countFile),
+        Text("TEXT_COLOR", dep_countFile),
+        Text("BACKGROUND_COLOR", dep_countFile),
+    ),
+    UntitledBox(
+        Array_("COUNT_EXT", dep_countFile),
+        Array_("IGNORE_FOLDERS", dep_countFile),
+    ),
+    UntitledBox(
+        Switch("FOLLOW_SYMBOLIC_LINKS", dep_countFile),
+        Integer("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1, ...dep_countFile }),
+        Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000, ...dep_countFile }),
+        Integer("MAX_STATS", { min: 100, ...dep_countFile }),
+        Integer("CONCURRENCY_LIMIT", { min: 1, ...dep_countFile }),
     ),
     box_settingHandler,
 ]
@@ -1760,18 +1753,14 @@ const schema_toc = [
         Switch("remove_header_styles"),
         Switch("sortable"),
         Switch("right_click_outline_button_to_toggle"),
-    ),
-    TitledBox(
-        "tocStyle",
         Range("width_percent_when_pin_right", prop_percent),
-        Text("toc_font_size"),
     ),
     TransferBox("title_bar_buttons", OPTIONS.toc.title_bar_buttons),
     TitledBox(
         "displayHeader",
-        Switch("include_headings.fence", { dependencies: Dep.contains("title_bar_buttons", "fence") }),
         Switch("include_headings.image", { dependencies: Dep.contains("title_bar_buttons", "image") }),
         Switch("include_headings.table", { dependencies: Dep.contains("title_bar_buttons", "table") }),
+        Switch("include_headings.fence", { dependencies: Dep.contains("title_bar_buttons", "fence") }),
         Switch("include_headings.link", { dependencies: Dep.contains("title_bar_buttons", "link") }),
         Switch("include_headings.math", { dependencies: Dep.contains("title_bar_buttons", "math") }),
     ),
@@ -1814,6 +1803,13 @@ const schema_imageReviewer = [
         Integer("play_second", { unit: UNITS.second, min: 1 }),
     ),
     TitledBox(
+        "adjustScale",
+        Float("zoom_scale", { min: 0.01 }),
+        Integer("rotate_scale", { unit: UNITS.degree, min: 1 }),
+        Integer("skew_scale", { unit: UNITS.degree, min: 1 }),
+        Integer("translate_scale", { unit: UNITS.pixel, min: 1 }),
+    ),
+    TitledBox(
         "mouseEvent",
         Switch("click_mask_to_exit"),
         Select("mousedown_function.0", OPTIONS.imageReviewer.operations),
@@ -1842,18 +1838,11 @@ const schema_imageReviewer = [
         ["0", "1"],
         [
             UntitledBox(
-                Hotkey("0"),
                 Select("1", OPTIONS.imageReviewer.operations),
+                Hotkey("0"),
             ),
         ],
         ["", "nextImage"],
-    ),
-    TitledBox(
-        "adjustScale",
-        Float("zoom_scale", { min: 0.01 }),
-        Integer("rotate_scale", { unit: UNITS.degree, min: 1 }),
-        Integer("skew_scale", { unit: UNITS.degree, min: 1 }),
-        Integer("translate_scale", { unit: UNITS.pixel, min: 1 }),
     ),
     box_settingHandler,
 ]
@@ -1983,7 +1972,6 @@ const SCHEMAS = {
     right_click_menu: schema_right_click_menu,
     pie_menu: schema_pie_menu,
     preferences: schema_preferences,
-    file_counter: schema_file_counter,
     hotkeys: schema_hotkeys,
     editor_width_slider: schema_editor_width_slider,
     article_uploader: schema_article_uploader,

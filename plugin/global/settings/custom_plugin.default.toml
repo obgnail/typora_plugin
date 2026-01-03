@@ -1084,9 +1084,6 @@ width_percent_when_pin_right = 20
 #   false: 默认不显示
 default_show_toc = false
 
-# 大纲目录的字体大小
-toc_font_size = "1em"
-
 # ------------------- 展示 -------------------
 # 标题栏按钮
 #   header: 标题
@@ -1508,7 +1505,7 @@ button_size = "35px"
 button_border_radius = "4px"
 
 # 按钮的阴影效果，使用 CSS box-shadow 语法
-button_box_shadow = "0px 1px 20px 0px rgba(0,0,0,0.1), inset 0px -1px 0px 0px rgba(0,0,0,0.1)"
+button_box_shadow = "0 1px 20px 0 rgba(0,0,0,0.1), inset 0 -1px 0 0 rgba(0,0,0,0.1)"
 
 # 按钮之间的间隔，例如："10px"、"15px" 等
 button_gap = "10px"
@@ -1553,7 +1550,7 @@ buttons = [
     { disable = false, coordinate = [2, 0], size = "17px", icon = "fa fa-font", callback = "text_stylize.call" },
     { disable = false, coordinate = [3, 0], size = "17px", icon = "fa fa-indent", callback = "md_padding.call" },
     { disable = false, coordinate = [4, 0], size = "17px", icon = "fa fa-gear", callback = "preferences.call" },
-    { disable = false, coordinate = [0, 1], size = "18px", icon = "fa fa-sitemap", callback = "markmap.onButtonClick" },
+    { disable = false, coordinate = [0, 1], size = "17px", icon = "fa fa-sitemap fa-rotate-270", callback = "markmap.onButtonClick" },
     { disable = false, coordinate = [1, 1], size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
     { disable = false, coordinate = [2, 1], size = "17px", icon = "fa fa-th-list", callback = "toc.callback" },
     { disable = false, coordinate = [3, 1], size = "17px", icon = "fa fa-search", callback = "search_multi.call" },

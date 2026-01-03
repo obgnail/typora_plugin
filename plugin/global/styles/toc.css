@@ -1,4 +1,10 @@
 #plugin-toc {
+    --toc-font-size: 1em;
+    --toc-line-width: 0.05rem;
+    --toc-line-color: rgba(0, 0, 0, 0.1);
+    --toc-line-width-select: 0.1rem;
+    --toc-line-color-select: red;
+
     height: 95%;
     right: 0;
     box-shadow: initial;
@@ -47,7 +53,7 @@
 #plugin-toc .plugin-toc-list {
     height: 100%;
     overflow: scroll;
-    font-size: ${this.config.toc_font_size};
+    font-size: var(--toc-font-size);
 }
 
 #plugin-toc .toc-root {
@@ -131,30 +137,26 @@
 /* preview-threading */
 #plugin-toc .plugin-toc-list {
     padding-left: 0.8rem;
-    --line-width: 0.07rem;
-    --line-color: rgba(0, 0, 0, 0.1);
-    --line-width-select: 0.1rem;
-    --line-color-select: red;
 }
 
 .toc-root .toc-node:before {
     content: "";
     display: inline-block;
     width: .8rem;
-    height: var(--line-width);
+    height: var(--toc-line-width);
     position: absolute;
     z-index: 10;
     left: -0.72rem;
     margin-right: .2rem;
     top: 1rem;
-    background: var(--line-color);
+    background: var(--toc-line-color);
 }
 
 /*#plugin-toc ul:has(.toc-node.active):after,*/
 #plugin-toc ul:before {
     content: "";
     display: inline-block;
-    width: var(--line-width);
+    width: var(--toc-line-width);
     position: absolute;
     top: -0.1rem;
     left: -0.8rem;
@@ -164,16 +166,16 @@
 
 #plugin-toc ul:before {
     height: calc(100% - 0.5rem);
-    background: var(--line-color);
+    background: var(--toc-line-color);
 }
 
 /*#plugin-toc ul:has(.toc-node.active):after {*/
 /*    height: calc(100% - 0.5rem);*/
-/*    background: var(--line-color-select);*/
+/*    background: var(--toc-line-color-select);*/
 /*}*/
 
 .toc-root .toc-node.active:before,
 .toc-root .toc-node:has(+ ul .toc-node.active):before {
-    background: var(--line-color-select);
-    height: var(--line-width-select);
+    background: var(--toc-line-color-select);
+    height: var(--toc-line-width-select);
 }

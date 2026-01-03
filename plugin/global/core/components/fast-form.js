@@ -298,15 +298,32 @@ class FastForm extends HTMLElement {
         }
     }
 
-    _updateControl = (key, value) => {
-        if (!key) return
-        const field = this.getField(key)
-        if (!field) return
+    resolveFieldContext(key) {
+        if (!key) return null
+        if (this._runtime.fields[key]) {
+            return { field: this._runtime.fields[key], fullPath: key, relativePath: "" }
+        }
+        const parts = key.split(".")
+        while (parts.length > 0) {
+            parts.pop()
+            const currentKey = parts.join(".")
+            const field = this._runtime.fields[currentKey]
+            if (field) {
+                return { field, fullPath: key, relativePath: key.slice(currentKey.length + 1) }
+            }
+        }
+        return null
+    }
 
+    _updateControl = (key, value) => {
+        const context = this.resolveFieldContext(key)
+        if (!context) return
+
+        const { field, fullPath, relativePath } = context
         const controlDef = this.options.controls[field.type]
         if (!controlDef || typeof controlDef.update !== "function") return
 
-        const element = this.options.layout.findControl(key, this.form)
+        const element = this.options.layout.findControl(field.key, this.form)
         if (!element) return
 
         const updateContext = {
@@ -314,7 +331,12 @@ class FastForm extends HTMLElement {
             field,
             form: this,
             data: this.options.data,
-            value: (value === undefined) ? this.getData(key) : value,
+            value: this.getData(field.key),
+            trigger: {
+                fullPath,
+                relativePath,
+                value: (key !== field.key || value === undefined) ? this.getData(fullPath) : value,
+            },
             state: this.states.get(field.type),
             controlOptions: this.getControlOptions(field),
         }
@@ -1502,78 +1524,128 @@ const Feature_Validation = {
     featureOptions: {
         rules: {},
         validators: {},
-        ruleMatchStrategy: "exact", // "exact", "wildcard", "regex"
+    },
+    _normalizeRuleEntry: (ruleConfig) => {
+        const result = { $self: [], $each: [] }
+        if (!ruleConfig) return result
+
+        const normalize = (validators) => Array.isArray(validators) ? validators : [validators]
+        if (Array.isArray(ruleConfig) || typeof ruleConfig === "function" || typeof ruleConfig === "string") {
+            result.$self = normalize(ruleConfig)
+        } else if (typeof ruleConfig === "object") {
+            if (ruleConfig.name || ruleConfig.validator || typeof ruleConfig.validate === "function") {
+                result.$self = [ruleConfig]
+            } else {
+                if (ruleConfig.$self) {
+                    result.$self = normalize(ruleConfig.$self)
+                }
+                if (ruleConfig.$each) {
+                    result.$each = normalize(ruleConfig.$each)
+                }
+            }
+        }
+        return result
+    },
+    _compileRules: (rawRules, validators, errorContext) => {
+        if (!rawRules || rawRules.length === 0) return []
+
+        return rawRules.map(rule => {
+            if (typeof rule === "function") {
+                return rule
+            }
+            if (typeof rule === "string") {
+                const fn = validators[rule]
+                if (!fn) console.warn(`FastForm Warning: Validator '${rule}' not found in ${errorContext}.`)
+                return fn
+            }
+            if (typeof rule === "object" && rule !== null) {
+                if (typeof rule.validate === "function") {
+                    return rule.validate
+                }
+                const name = rule.name || rule.validator
+                const factory = validators[name]
+                if (typeof factory === "function") {
+                    const args = rule.args || []
+                    try {
+                        const instance = factory(...args)
+                        return typeof instance === "function" ? instance : factory
+                    } catch (e) {
+                        console.error(`FastForm Error: Failed to compile validator '${name}' with args`, args, e)
+                    }
+                } else {
+                    console.warn(`FastForm Warning: Validator Factory '${name}' not found.`)
+                }
+            }
+            return null
+        }).filter(Boolean)
     },
     configure: ({ initState, hooks, registerApi, form }) => {
         const state = initState(
-            { rawRules: new Map(), compiledRules: [] },
+            { rawRules: new Map(), compiledRules: new Map() },
             state => {
                 state.rawRules.clear()
-                state.compiledRules = []
+                state.compiledRules.clear()
             }
         )
         registerApi("validation", {
-            addRule: (key, rulesToAdd) => {
-                if (!key || !rulesToAdd) return
-                const existingRules = state.rawRules.get(key) || []
-                const newRules = existingRules.concat(rulesToAdd).flat()
-                state.rawRules.set(key, newRules)
-            }
+            addRule: (key, ruleConfig) => {
+                if (!key || !ruleConfig) return
+                const normalized = Feature_Validation._normalizeRuleEntry(ruleConfig)
+                if (!state.rawRules.has(key)) {
+                    state.rawRules.set(key, { $self: [], $each: [] })
+                }
+                const entry = state.rawRules.get(key)
+                entry.$self.push(...normalized.$self)
+                entry.$each.push(...normalized.$each)
+            },
+            getRules: (key) => state.compiledRules.get(key)
         })
         hooks.on("onValidate", (changeContext) => {
-            const matchedValidators = state.compiledRules
-                .filter(rule => rule.regex.test(changeContext.key))
-                .flatMap(rule => rule.validators)
-            if (matchedValidators.length === 0) return []
-            return matchedValidators
-                .map(validator => {
+            const { key, value, type } = changeContext
+
+            const context = form.resolveFieldContext(key)
+            if (!context) return []
+            const { field, relativePath } = context
+            const rules = state.compiledRules.get(field.key)
+            if (!rules) return []
+
+            const errors = []
+            const exec = (fnList, targetVal, ctx) => {
+                for (const fn of fnList) {
                     try {
-                        return validator(changeContext, form.options.data)
-                    } catch (err) {
-                        return new Error(err)
+                        const res = fn({ ...ctx, value: targetVal }, form.options.data)
+                        if (res !== true && res != null) {
+                            errors.push(res instanceof Error ? res : new Error(String(res)))
+                        }
+                    } catch (e) {
+                        errors.push(e)
                     }
-                })
-                .filter(ret => ret !== true && ret != null)
-                .map(err => (err instanceof Error) ? err : new Error(String(err)))
+                }
+            }
+
+            if (type === "push" || (type === "set" && relativePath)) {
+                if (rules.$each.length) exec(rules.$each, value, changeContext)
+            } else if (type === "removeIndex" || (type === "set" && !relativePath)) {
+                if (rules.$self.length) exec(rules.$self, value, changeContext)
+            }
+
+            return errors
         })
     },
-    compile: ({ state, form, options }) => {
-        const { rules, validators, ruleMatchStrategy } = options
-        const allValidators = { ...form.constructor.validator.getAll(), ...validators }
-
-        const validationApi = form.getApi("validation")
-        Object.entries(rules).forEach(([key, rule]) => validationApi.addRule(key, rule))
-
-        state.compiledRules = compileMatchers({
-            source: Object.fromEntries(state.rawRules),
-            strategy: ruleMatchStrategy,
-            errorContext: "rule",
-            processValue: (rawValidators, key) => {
-                rawValidators = Array.isArray(rawValidators) ? rawValidators : [rawValidators]
-                const validators = rawValidators.map(validator => {
-                    switch (typeof validator) {
-                        case "function":
-                            return validator
-                        case "string":
-                            const builtin = allValidators[validator]
-                            if (builtin) {
-                                return builtin
-                            }
-                            break
-                        case "object":
-                            if (validator && typeof validator.validate === "function") {
-                                return validator.validate
-                            }
-                            const factory = allValidators[validator.name]
-                            if (factory) {
-                                const args = validator.args || []
-                                return factory(...args)
-                            }
-                            break
-                    }
-                    throw new TypeError(`Invalid rule type for '${JSON.stringify(validator)}': '${key}'.`)
-                })
-                return { validators }
+    compile: ({ form, options, state }) => {
+        const { rules, validators } = options
+        const api = form.getApi("validation")
+        const instanceValidators = { ...form.constructor.validator.getAll(), ...validators }
+        if (rules && typeof rules === "object") {
+            Object.entries(rules).forEach(([key, ruleConfig]) => api.addRule(key, ruleConfig))
+        }
+        state.rawRules.forEach((rawEntry, key) => {
+            const compiledEntry = {
+                $self: Feature_Validation._compileRules(rawEntry.$self, instanceValidators, `Field ${key} ($self)`),
+                $each: Feature_Validation._compileRules(rawEntry.$each, instanceValidators, `Field ${key} ($each)`),
+            }
+            if (compiledEntry.$self.length > 0 || compiledEntry.$each.length > 0) {
+                state.compiledRules.set(key, compiledEntry)
             }
         })
     },
@@ -1629,6 +1701,14 @@ const Feature_Validation = {
             if (value == null || value === "") return true
             if (isNaN(value)) return i18n.t("global", "error.isNaN")
             return Number(value) <= max ? true : i18n.t("global", "error.max", { max })
+        },
+        minItems: (min) => ({ value }) => {
+            if (!Array.isArray(value)) return true
+            return value.length >= min ? true : i18n.t("global", "error.minItems", { minItems: min })
+        },
+        maxItems: (max) => ({ value }) => {
+            if (!Array.isArray(value)) return true
+            return value.length <= max ? true : i18n.t("global", "error.maxItems", { maxItems: max })
         },
         array: ({ value }) => {
             if (value == null) return true
@@ -1875,10 +1955,10 @@ const Condition_Length = {
             return false
         }
         return Object.entries(cond).every(([key, subCond]) => {
-            const fieldValue = ctx.getValue(key)
-            const actualLength = Array.isArray(fieldValue)
-                ? fieldValue.length
-                : (typeof fieldValue === "string" ? fieldValue.length : 0)
+            const val = ctx.getValue(key)
+            const actualLength = (Array.isArray(val) || typeof val === "string")
+                ? val.length
+                : (val != null && typeof val[Symbol.iterator] === "function") ? [...val].length : 0
             return ctx.compare(actualLength, subCond)
         })
     },
@@ -2039,20 +2119,33 @@ function registerNumericalDefaultRules({ field, form }) {
     if (typeof max === "number") {
         rules.push(maxFactory(max))
     }
-    registerRules({ field, form }, rules)
+    registerRules({ field, form }, { $self: rules })
 }
 
 function registerItemLengthLimitRule({ field, form }) {
-    registerRules({ field, form }, ({ key, value, type }) => {
-        const currentValue = form.getData(key)
-        if (!Array.isArray(currentValue)) return
+    const lengthRule = ({ key, value, type }) => {
+        const isSelf = (key === field.key)
+
+        let effectiveLength
+        if (isSelf && type === "set") {
+            effectiveLength = Array.isArray(value) ? value.length : 0
+        } else {
+            const containerData = form.getData(field.key)
+            const currentLen = Array.isArray(containerData) ? containerData.length : 0
+            const deltaMap = { push: 1, removeIndex: -1 }
+            const delta = isSelf ? (deltaMap[type] || 0) : 0
+            effectiveLength = Math.max(0, currentLen + delta)
+        }
 
         const { minItems, maxItems } = field
-        const tooLittle = typeof minItems === "number" && type === "set" && value.length < minItems
-        const tooMuch = typeof maxItems === "number" && type === "set" && value.length > maxItems
-        if (tooLittle) return new Error(i18n.t("global", "error.minItems", { minItems }))
-        if (tooMuch) return new Error(i18n.t("global", "error.maxItems", { maxItems }))
-    })
+        if (typeof minItems === "number" && effectiveLength < minItems) {
+            return new Error(i18n.t("global", "error.minItems", { minItems }))
+        }
+        if (typeof maxItems === "number" && effectiveLength > maxItems) {
+            return new Error(i18n.t("global", "error.maxItems", { maxItems }))
+        }
+    }
+    registerRules({ field, form }, { $self: [lengthRule] })
 }
 
 const setRandomKey = (() => {
@@ -2384,14 +2477,17 @@ const Control_Hotkey = {
 const Control_Textarea = {
     controlOptions: {
         rows: 3,
+        cols: -1,
         noResize: false,
     },
     setup: ({ field }) => defaultBlockLayout(field),
     create: ({ field, controlOptions }) => {
+        const { rows, cols, noResize } = controlOptions
         const { key, placeholder } = getCommonHTMLAttrs(field)
-        const rows = controlOptions.rows
-        const cls = "textarea" + (controlOptions.noResize ? " no-resize" : "")
-        return `<textarea class="${cls}" rows="${rows}" ${key} ${placeholder}></textarea>`
+        const rowsAttr = rows > 0 ? `rows="${rows}"` : ""
+        const colsAttr = cols > 0 ? `cols="${cols}"` : ""
+        const cls = "textarea" + (noResize ? " no-resize" : "")
+        return `<textarea class="${cls}" ${rowsAttr} ${colsAttr} ${key} ${placeholder}></textarea>`
     },
     update: ({ element, value, field }) => {
         const textarea = element.querySelector(".textarea")
@@ -2419,7 +2515,7 @@ const Control_Object = {
     },
     setup: (context) => {
         defaultBlockLayout(context.field)
-        registerRules(context, "arrayOrObject")
+        registerRules(context, { $self: ["arrayOrObject"] })
     },
     create: ({ field, controlOptions }) => {
         const { key, placeholder } = getCommonHTMLAttrs(field)
@@ -2477,97 +2573,137 @@ const Control_Object = {
 const Control_Array = {
     controlOptions: {
         allowDuplicates: false,
-        dataType: "string",  // number or string
+        dataType: "string",  // number | string
     },
     setup: ({ field, form }) => {
         defaultBlockLayout(field)
-        const correctType = ({ value, type }) => {
+        const correctType = ({ value }) => {
             const { dataType } = form.getControlOptions(field)
-            const arr = (type === "push") ? [value] : value
-            if (!Array.isArray(arr) || !arr.every(e => typeof e === dataType)) {
+            if (typeof value !== dataType) {
                 return i18n.t("global", "error.pattern")
             }
         }
         const repeatable = ({ key, value, type }) => {
             const { allowDuplicates } = form.getControlOptions(field)
             if (allowDuplicates) return
-            const duplication = (
-                type === "push" && form.getData(key).includes(value)
-                || type === "set" && new Set(value).size !== value.length
-            )
-            if (duplication) {
+
+            const currentArray = form.getData(field.key) || []
+            let previewArray = []
+            if (type === "push") {
+                previewArray = [...currentArray, value]
+            } else if (type === "set") {
+                if (key === field.key) {
+                    previewArray = Array.isArray(value) ? value : []
+                } else {
+                    const parts = key.split(".")
+                    const index = parseInt(parts.at(-1), 10)
+                    if (!isNaN(index)) {
+                        previewArray = [...currentArray]
+                        previewArray[index] = value
+                    } else {
+                        previewArray = currentArray
+                    }
+                }
+            } else {
+                return
+            }
+            const count = previewArray.filter(v => v === value).length
+            if (count > 1) {
                 return new Error(i18n.t("global", "error.duplicateValue"))
             }
         }
-        registerRules({ form, field }, [correctType, repeatable])
+        registerRules({ form, field }, { $each: [correctType, repeatable] })
     },
     create: ({ field }) => {
         const { key } = getCommonHTMLAttrs(field)
-        return `<div class="array" ${key}>
+        return `
+            <div class="array" ${key}>
+                <div class="array-list"></div>
+                <div class="array-footer">
                     <div class="array-item-input plugin-common-hidden" contenteditable="true"></div>
                     <div class="array-item-add">+ ${i18n.t("global", "add")}</div>
-                </div>`
+                </div>
+            </div>`
     },
     update: ({ element, value }) => {
-        const arrayEl = element.querySelector(".array")
-        if (arrayEl) {
-            const inputEl = arrayEl.querySelector(".array-item-input")
-            arrayEl.querySelectorAll(".array-item").forEach(item => item.remove())
-            const itemsHtml = Control_Array._createItems(value)
-            if (inputEl) {
-                inputEl.insertAdjacentHTML("beforebegin", itemsHtml)
-                inputEl.textContent = ""
-            }
+        const listContainer = element.querySelector(".array-list")
+        if (listContainer) {
+            listContainer.innerHTML = Control_Array._createItems(value)
+        }
+        const inputEl = element.querySelector(".array-item-input")
+        const addEl = element.querySelector(".array-item-add")
+        if (inputEl && addEl) {
+            inputEl.textContent = ""
+            utils.hide(inputEl)
+            utils.show(addEl)
         }
     },
     bindEvents: ({ form }) => {
-        form.onEvent("keydown", ".array-item-input", function (ev) {
-            if (ev.key === "Enter" || ev.key === "Escape") {
-                if (ev.key === "Enter") {
-                    this.blur()
-                } else {
-                    this.textContent = ""
-                    utils.hide(this)
-                    utils.show(this.nextElementSibling)
-                }
-                ev.stopPropagation()
+        const selector = ".array-item-val[contenteditable], .array-item-input[contenteditable]"
+        form.onEvent("click", ".array-item", function (ev) {
+            if (ev.target.closest(".array-item-del")) return
+            const valueEl = this.querySelector(".array-item-val")
+            if (valueEl.isContentEditable) return
+
+            this.classList.add("editing")
+            valueEl.contentEditable = "true"
+            valueEl.focus()
+        }).onEvent("keydown", selector, function (ev) {
+            if (ev.key === "Enter") {
                 ev.preventDefault()
+                ev.stopPropagation()
+                this.blur()
+            } else if (ev.key === "Escape") {
+                ev.preventDefault()
+                ev.stopPropagation()
+                form._updateControl(this.closest(".array").dataset.key)
             }
-        }, true).onEvent("click", ".array-item-delete", function () {
+        }, true).onEvent("focusout", selector, function () {
+            Control_Array._commitChange(this, form)
+        }).onEvent("click", ".array-item-del", function (ev) {
+            ev.stopPropagation()
             const itemEl = this.parentElement
             const arrayEl = this.closest(".array")
-            const idx = [...arrayEl.querySelectorAll(".array-item")].indexOf(itemEl)
+            const idx = Array.prototype.indexOf(this.closest(".array-list").children, itemEl)
             const ok = form.validateAndCommit(arrayEl.dataset.key, idx, "removeIndex")
-            if (ok) {
-                itemEl.remove()
-            }
+            if (ok) itemEl.remove()
         }).onEvent("click", ".array-item-add", function () {
             const addEl = this
             const inputEl = addEl.previousElementSibling
             utils.hide(addEl)
             utils.show(inputEl)
             inputEl.focus()
-        }).onEvent("focusout", ".array-item-input", function () {
-            const input = this
-            if (utils.isHidden(input)) return
-            const displayEl = input.parentElement
-            const addEl = input.nextElementSibling
-            const value = input.textContent
-            const key = displayEl.dataset.key
-            const controlOptions = form.getControlOptionsFromKey(key)
-            const resolvedValue = (controlOptions.dataType === "number") ? Number(value) : value
-            form.reactiveCommit(key, resolvedValue, "push")
-            utils.hide(input)
-            utils.show(addEl)
         })
     },
     _createItem: (value) => `
         <div class="array-item">
-            <div class="array-item-value">${utils.escape(value.toString())}</div>
-            <div class="array-item-delete plugin-common-close"></div>
-        </div>
-    `,
+            <div class="array-item-val">${utils.escape(String(value ?? ""))}</div>
+            <div class="array-item-del plugin-common-close"></div>
+        </div>`,
     _createItems: (items) => (Array.isArray(items) ? items : []).map(Control_Array._createItem).join(""),
+    _commitChange: (target, form) => {
+        const rawValue = target.textContent
+        const isNewItem = target.classList.contains("array-item-input")
+        const arrayEl = target.closest(".array")
+        const key = arrayEl.dataset.key
+        const controlOptions = form.getControlOptionsFromKey(key)
+        const val = controlOptions.dataType === "number" ? Number(rawValue) : rawValue
+        if (isNewItem) {
+            const ok = form.reactiveCommit(key, val, "push")
+            if (ok) {
+                target.textContent = ""
+                utils.hide(target)
+                utils.show(target.nextElementSibling || target.parentElement.querySelector(".array-item-add"))
+            }
+        } else {
+            const itemEl = target.closest(".array-item")
+            const listContainer = arrayEl.querySelector(".array-list")
+            const idx = Array.prototype.indexOf.call(listContainer.children, itemEl)
+            target.removeAttribute("contenteditable")
+            itemEl.classList.remove("editing")
+            form.validateAndCommit(`${key}.${idx}`, val, "set")
+        }
+    }
 }
 
 const Control_Select = {
@@ -2663,12 +2799,16 @@ const Control_Radio = {
     },
     create: ({ field, controlOptions }) => {
         const prefix = utils.randomString()
+        const disabledOpts = Array.isArray(field.disabledOptions) ? field.disabledOptions.map(String) : []
         const toItem = ([k, v], idx) => {
             const id = `${prefix}_${idx}`
+            const isDisabled = disabledOpts.includes(String(k))
+            const attr = isDisabled ? "disabled" : ""
+            const cls = "radio-option" + (isDisabled ? " plugin-common-readonly" : "")
             return `
-                <div class="radio-option">
+                <div class="${cls}">
                     <div class="radio-wrapper">
-                        <input class="radio-input" type="radio" id="${id}" name="${field.key}" value="${k}">
+                        <input class="radio-input" type="radio" id="${id}" name="${field.key}" value="${k}" ${attr}>
                         <div class="radio-disc"></div>
                     </div>
                     <label class="radio-label" for="${id}">${v}</label>
@@ -2704,12 +2844,16 @@ const Control_Checkbox = {
     },
     create: ({ field, controlOptions }) => {
         const prefix = utils.randomString()
+        const disabledOpts = Array.isArray(field.disabledOptions) ? field.disabledOptions.map(String) : []
         const toItem = ([key, label], idx) => {
             const id = `${prefix}_${idx}`
+            const isDisabled = disabledOpts.includes(String(key))
+            const attr = isDisabled ? "disabled" : ""
+            const cls = "checkbox-option" + (isDisabled ? " plugin-common-readonly" : "")
             return `
-                <div class="checkbox-option">
+                <div class="${cls}">
                     <div class="checkbox-wrapper">
-                        <input class="checkbox-input" type="checkbox" id="${id}" name="${field.key}" value="${key}">
+                        <input class="checkbox-input" type="checkbox" id="${id}" name="${field.key}" value="${key}" ${attr}>
                         <div class="checkbox-square"></div>
                     </div>
                     <label class="checkbox-label" for="${id}">${label}</label>
@@ -2791,6 +2935,10 @@ const Control_Transfer = {
             return _transparentImg
         }
 
+        let rafId = null
+        let lastSortTime = 0
+        const SORT_THROTTLE_MS = 50
+
         form.onEvent("dragstart", ".transfer-card", function (ev) {
             activeDraggable = this
             const rect = activeDraggable.getBoundingClientRect()
@@ -2813,6 +2961,10 @@ const Control_Transfer = {
         })
 
         form.onEvent("dragend", ".transfer-card", function () {
+            if (rafId) {
+                cancelAnimationFrame(rafId)
+                rafId = null
+            }
             if (!activeDraggable || !dragGhost) return
 
             const destRect = activeDraggable.getBoundingClientRect()
@@ -2844,9 +2996,16 @@ const Control_Transfer = {
 
             if (!dragGhost || !activeDraggable) return
 
-            ghostX = ev.clientX - grabOffsetX
-            ghostY = ev.clientY - grabOffsetY
-            dragGhost.style.transform = `translate3d(${ghostX}px, ${ghostY}px, 0)`
+            if (rafId) cancelAnimationFrame(rafId)
+            rafId = requestAnimationFrame(() => {
+                ghostX = ev.clientX - grabOffsetX
+                ghostY = ev.clientY - grabOffsetY
+                dragGhost.style.transform = `translate3d(${ghostX}px, ${ghostY}px, 0)`
+            })
+
+            const now = Date.now()
+            if (now < SORT_THROTTLE_MS + lastSortTime) return
+            lastSortTime = now
 
             const hoverList = ev.target.closest(".transfer-list-wrapper")
             if (!hoverList) return
@@ -2855,7 +3014,7 @@ const Control_Transfer = {
             const insertBeforeEl = Control_Transfer._findInsertionPoint(siblings, ev.clientY)
             if (insertBeforeEl === activeDraggable.nextElementSibling) return
 
-            const allCards = [...form.getFormEl().querySelectorAll(".transfer-card")]
+            const allCards = [...hoverList.closest(".transfer-wrap").querySelectorAll(".transfer-card")]
             const prevRects = new Map(allCards.map(el => [el, el.getBoundingClientRect()]))
             const hasMoved = Control_Transfer._applyDOMMove(hoverList, activeDraggable, insertBeforeEl)
             if (hasMoved) {
@@ -3133,33 +3292,33 @@ const Control_Palette = {
     setup: ({ field }) => defaultBlockLayout(field),
     create: ({ field }) => {
         const { key } = getCommonHTMLAttrs(field)
-        return `<div class="palette-wrapper" ${key}></div>`
+        return `<div class="palette-wrapper" ${key}><div class="palette-content-layer"></div><input type="color" class="palette-shared-input" tabindex="-1"></div>`
     },
     update: ({ element, value, controlOptions }) => {
         const wrapper = element.querySelector(".palette-wrapper")
         if (!wrapper) return
 
         let data = value || []
-        let mode = controlOptions.dimensions
+        let { dimensions, defaultColor, allowJagged } = controlOptions
         if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0])) {
-            mode = 2
+            dimensions = 2
         } else if (Array.isArray(data) && data.length > 0 && !Array.isArray(data[0])) {
-            mode = 1
+            dimensions = 1
         }
-        const isJagged = (mode === 1) ? true : (controlOptions.allowJagged !== false)
+        const isJagged = (dimensions === 1) ? true : (allowJagged !== false)
 
-        wrapper.dataset.mode = mode
+        wrapper.dataset.mode = dimensions
         wrapper.dataset.jagged = isJagged
 
         let html = ""
-        if (mode === 1) {
-            const items = data.map(color => Control_Palette._createItem(color)).join("")
+        if (dimensions === 1) {
+            const items = data.map(color => Control_Palette._createItem(color || defaultColor)).join("")
             const addBtn = Control_Palette._createAddBtn("item")
             html = `<div class="palette-grid">${items}${addBtn}</div>`
         } else {
             const rows = data.map((row, rIdx) => {
                 const rowData = Array.isArray(row) ? row : []
-                const items = rowData.map((color, cIdx) => Control_Palette._createItem(color, rIdx, cIdx)).join("")
+                const items = rowData.map((color, cIdx) => Control_Palette._createItem(color || defaultColor, rIdx, cIdx)).join("")
                 const rowAddBtn = isJagged ? Control_Palette._createAddBtn("item", rIdx) : ""
                 return `
                     <div class="palette-row-group">
@@ -3174,13 +3333,39 @@ const Control_Palette = {
             }
             html = `<div class="palette-stack">${rows}<div class="palette-footer">${footer}</div></div>`
         }
-        wrapper.innerHTML = html
+        wrapper.querySelector(".palette-content-layer").innerHTML = html
     },
     bindEvents: ({ form }) => {
-        form.onEvent("input", ".palette-ghost-input", function () {
-            this.previousElementSibling.style.backgroundColor = this.value
-        }).onEvent("change", ".palette-ghost-input", function () {
-            Control_Palette._collectAndCommit(this.closest(".palette-wrapper"), form)
+        let activeItem = null
+
+        form.onEvent("click", ".palette-swatch", function () {
+            const item = this.closest(".palette-item")
+            const wrapper = this.closest(".palette-wrapper")
+            const sharedInput = wrapper.querySelector(".palette-shared-input")
+            if (item && sharedInput) {
+                activeItem = item
+                const itemRect = item.getBoundingClientRect()
+                const wrapperRect = wrapper.getBoundingClientRect()
+                Object.assign(sharedInput.style, {
+                    top: `${itemRect.top - wrapperRect.top}px`,
+                    left: `${itemRect.left - wrapperRect.left}px`,
+                    width: `${itemRect.width}px`,
+                    height: `${itemRect.height}px`,
+                })
+                sharedInput.offsetHeight  // Force Reflow
+                sharedInput.value = item.dataset.val || "#FFFFFF"
+                sharedInput.click()
+            }
+        }).onEvent("input", ".palette-shared-input", function () {
+            activeItem?.style.setProperty("--pl-color", this.value)
+        }).onEvent("change", ".palette-shared-input", function () {
+            if (activeItem) {
+                const color = this.value
+                activeItem.dataset.val = color
+                activeItem.style.setProperty("--pl-color", color)
+                Control_Palette._commit(this.closest(".palette-wrapper"), form)
+                activeItem = null
+            }
         }).onEvent("click", ".palette-del", function () {
             const item = this.closest(".palette-item")
             const wrapper = this.closest(".palette-wrapper")
@@ -3193,7 +3378,7 @@ const Control_Palette = {
                 form.reactiveCommit(wrapper.dataset.key, currentData)
             } else {
                 item.remove()
-                Control_Palette._collectAndCommit(wrapper, form)
+                Control_Palette._commit(wrapper, form)
             }
         }).onEvent("click", ".palette-btn-del-row", utils.createConsecutiveAction({
             threshold: 2,
@@ -3202,7 +3387,7 @@ const Control_Palette = {
             onConfirmed: (ev) => {
                 const wrapper = ev.target.closest(".palette-wrapper")
                 ev.target.closest(".palette-row-group").remove()
-                Control_Palette._collectAndCommit(wrapper, form)
+                Control_Palette._commit(wrapper, form)
             }
         })).onEvent("click", ".palette-btn-add", function () {
             const type = this.dataset.type
@@ -3240,9 +3425,8 @@ const Control_Palette = {
     _createItem: (color, rIdx, cIdx) => {
         const coords = (rIdx !== undefined) ? `data-row="${rIdx}" data-col="${cIdx}"` : ""
         return `
-            <div class="palette-item" ${coords}>
-                <div class="palette-swatch" style="background-color: ${color || "transparent"}"></div>
-                <input type="color" class="palette-ghost-input" value="${color}">
+            <div class="palette-item" ${coords} data-val="${color}" style="--pl-color: ${color};">
+                <div class="palette-swatch"></div>
                 <div class="palette-del plugin-common-close"></div>
             </div>`
     },
@@ -3250,14 +3434,15 @@ const Control_Palette = {
         const rowAttr = (rowIdx !== undefined) ? `data-row="${rowIdx}"` : ""
         return `<div class="palette-btn-add ${type}" data-type="${type}" ${rowAttr}><i class="fa fa-plus"></i></div>`
     },
-    _collectAndCommit: (wrapper, form) => {
+    _commit: (wrapper, form) => {
+        if (!wrapper) return
         const key = wrapper.dataset.key
         const mode = parseInt(wrapper.dataset.mode)
-        const getVal = i => i.value
+        const getVal = i => i.dataset.val
         const newData = (mode === 1)
-            ? Array.from(wrapper.querySelectorAll(".palette-grid .palette-ghost-input"), getVal)
-            : Array.from(wrapper.querySelectorAll(".palette-row-group"), row => Array.from(row.querySelectorAll(".palette-ghost-input"), getVal))
-        form.reactiveCommit(key, newData)
+            ? Array.from(wrapper.querySelectorAll(".palette-grid .palette-item"), getVal)
+            : Array.from(wrapper.querySelectorAll(".palette-row-group"), row => Array.from(row.querySelectorAll(".palette-item"), getVal))
+        form.validateAndCommit(key, newData)
     },
 }
 
@@ -3317,7 +3502,7 @@ const Control_Table = {
                 utils.zip(row, tds).slice(0, -1).forEach(([val, td]) => td.textContent = val)
                 utils.notification.show(i18n.t("global", "success.edit"))
             }
-        }).onEvent("click", ".table-delete", utils.createConsecutiveAction({
+        }).onEvent("click", ".table-del", utils.createConsecutiveAction({
             threshold: 2,
             timeWindow: 3000,
             getIdentifier: (ev) => ev.target,
@@ -3336,7 +3521,7 @@ const Control_Table = {
     _createTableRow: (thMap, item) => {
         const header = utils.pick(item, [...Object.keys(thMap)])
         const headerValues = [...Object.values(header)].map(headerValue => typeof headerValue === "string" ? utils.escape(headerValue) : headerValue)
-        const editButtons = '<div class="table-edit fa fa-pencil"></div><div class="table-delete fa fa-trash-o"></div>'
+        const editButtons = '<div class="table-edit fa fa-pencil"></div><div class="table-del fa fa-trash-o"></div>'
         return [...headerValues, editButtons]
     },
 }

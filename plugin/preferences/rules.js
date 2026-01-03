@@ -1,3 +1,6 @@
+const self = (rules) => ({ $self: rules })
+const each = (rules) => ({ $each: rules })
+
 const url = "url"
 const regex = "regex"
 const path = "path"
@@ -8,6 +11,11 @@ const hotkey = { name: "pattern", args: [/^((ctrl|shift|alt)\+)*\w+$/i] }
 const fileExt = { name: "pattern", args: [/^([a-zA-Z0-9]+)?$/] }
 const codingLang = { name: "pattern", args: [/^[a-zA-Z0-9#+.\-]+$/] }
 const hexColor = { name: "pattern", args: [/^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i] }
+
+const minItems = (min) => ({ name: "minItems", args: [min] })
+const maxItems = (max) => ({ name: "minItems", args: [max] })
+
+const hotkeys = each([required, hotkey])
 
 const chartStyles = {
     DEFAULT_FENCE_HEIGHT: required,
@@ -21,28 +29,28 @@ module.exports = {
         TAB_MAX_WIDTH: required,
         MAX_TAB_NUM: notZero,
         DRAG_NEW_WINDOW_THRESHOLD: notZero,
-        CLOSE_HOTKEY: [required, hotkey],
-        SWITCH_PREVIOUS_TAB_HOTKEY: [required, hotkey],
-        SWITCH_NEXT_TAB_HOTKEY: [required, hotkey],
-        SWITCH_LAST_ACTIVE_TAB_HOTKEY: [required, hotkey],
-        SORT_TABS_HOTKEY: [required, hotkey],
-        COPY_PATH_HOTKEY: [required, hotkey],
-        TOGGLE_TAB_BAR_HOTKEY: [required, hotkey],
+        CLOSE_HOTKEY: hotkeys,
+        SWITCH_PREVIOUS_TAB_HOTKEY: hotkeys,
+        SWITCH_NEXT_TAB_HOTKEY: hotkeys,
+        SWITCH_LAST_ACTIVE_TAB_HOTKEY: hotkeys,
+        SORT_TABS_HOTKEY: hotkeys,
+        COPY_PATH_HOTKEY: hotkeys,
+        TOGGLE_TAB_BAR_HOTKEY: hotkeys,
     },
     search_multi: {
-        ALLOW_EXT: fileExt,
-        IGNORE_FOLDERS: required,
+        ALLOW_EXT: each(fileExt),
+        IGNORE_FOLDERS: each(required),
         TIMEOUT: notZero,
         MAX_STATS: notZero,
         MAX_DEPTH: notZero,
     },
     md_padding: {
-        IGNORE_WORDS: required,
-        IGNORE_PATTERNS: [required, regex],
+        IGNORE_WORDS: each(required),
+        IGNORE_PATTERNS: each([required, regex]),
     },
     markmap: {
         NODE_BORDER_WHEN_HOVER: required,
-        CANDIDATE_COLOR_SCHEMES: [required, array],
+        CANDIDATE_COLOR_SCHEMES: each([required, array]),
         "DOWNLOAD_OPTIONS.FOLDER": path,
         "DOWNLOAD_OPTIONS.FILENAME": required,
         "DOWNLOAD_OPTIONS.BACKGROUND_COLOR": [required, hexColor],
@@ -63,30 +71,28 @@ module.exports = {
         BUTTON_PADDING: required,
         BUTTON_TOP: required,
         BUTTON_RIGHT: required,
-        EXCLUDE_LANGUAGE_ON_INDENT: codingLang,
+        EXCLUDE_LANGUAGE_ON_INDENT: each(codingLang),
         HIGHLIGHT_PATTERN: [required, regex],
         HIGHLIGHT_LINE_COLOR: required,
     },
     sidebar_enhance: {
-        HIDDEN_NODE_PATTERNS: [required, regex],
+        HIDDEN_NODE_PATTERNS: each([required, regex]),
+        COUNT_EXT: each(fileExt),
+        IGNORE_FOLDERS: each(required),
     },
     text_stylize: {
         "DEFAULT_COLORS.FOREGROUND": [required, hexColor],
         "DEFAULT_COLORS.BACKGROUND": [required, hexColor],
         "DEFAULT_COLORS.BORDER": [required, hexColor],
-        COLOR_TABLE: [required, array],
+        COLOR_TABLE: each([required, array]),
     },
     slash_commands: {
         TRIGGER_REGEXP: [required, regex]
     },
-    file_counter: {
-        ALLOW_EXT: fileExt,
-        IGNORE_FOLDERS: required,
-    },
     resource_manager: {
         MAX_STATS: notZero,
         MAX_DEPTH: notZero,
-        IGNORE_FOLDERS: required,
+        IGNORE_FOLDERS: each(required),
     },
     editor_width_slider: {
         WIDTH_RATIO: notZero,
@@ -134,7 +140,7 @@ module.exports = {
     chart: chartStyles,
     wavedrom: {
         ...chartStyles,
-        SKIN_FILES: [required, path],
+        SKIN_FILES: each([required, path]),
     },
     calendar: chartStyles,
     abc: chartStyles,
@@ -156,10 +162,7 @@ module.exports = {
         template: required,
     },
     templater: {
-        template_folders: [required, path],
-    },
-    toc: {
-        toc_font_size: required,
+        template_folders: each([required, path]),
     },
     imageReviewer: {
         thumbnail_height: required,
@@ -171,7 +174,7 @@ module.exports = {
         button_border_radius: required,
         pass_color: required,
         error_color: required,
-        custom_rule_files: [required, path],
+        custom_rule_files: each([required, path]),
     },
     quickButton: {
         button_size: required,

@@ -52,17 +52,15 @@ class TOCPlugin extends BaseCustomPlugin {
         }
         const onClick = () => {
             this.entities.modal.addEventListener("click", ev => {
-                const toggleEl = ev.target.closest(".toc-toggle")
-                if (toggleEl) {
-                    toggleEl.closest("li").classList.toggle("collapsed")
+                const toggleLi = ev.target.closest(".toc-toggle")?.closest("li")
+                if (toggleLi) {
+                    toggleLi.classList.toggle("collapsed")
                     return
                 }
 
                 const ref = ev.target.closest(".toc-node")?.dataset.ref
                 if (ref) {
-                    if (File.editor.sourceView.inSourceMode) {
-                        File.toggleSourceMode()
-                    }
+                    if (File.editor.sourceView.inSourceMode) File.toggleSourceMode()
                     this.utils.scrollByCid(ref, -1, true)
                     return
                 }
@@ -353,7 +351,8 @@ class TOCPlugin extends BaseCustomPlugin {
                 const li = children.map(genLi).join("")
                 nodeEl += `<ul>${li}</ul>`
             }
-            return `<li data-depth="${depth}">${nodeEl}</li>`
+            const depthAttr = depth ? `data-depth="${depth}"` : ""
+            return `<li ${depthAttr}>${nodeEl}</li>`
         }
         const li = rootNode.children.map(genLi).join("")
         return `<ul class="toc-root">${li}</ul>`

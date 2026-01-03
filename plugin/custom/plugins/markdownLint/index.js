@@ -166,24 +166,25 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
                     return new Error(`Array elements must be numbers`)
                 }
             }
+            const each = (rules) => ({ $each: rules })
             return {
                 "extends": [path, readJSON],
                 "MD001.front_matter_title": [required, regex],
-                "MD010.ignore_code_languages": [required, codingLang],
+                "MD010.ignore_code_languages": each([required, codingLang]),
                 "MD022.lines_above": numberOrNumberArray,
                 "MD022.lines_below": numberOrNumberArray,
                 "MD025.front_matter_title": [required, regex],
-                "MD033.allowed_elements": required,
-                "MD033.table_allowed_elements": required,
+                "MD033.allowed_elements": each(required),
+                "MD033.table_allowed_elements": each(required),
                 "MD035.style": required,
-                "MD040.allowed_languages": [required, codingLang],
+                "MD040.allowed_languages": each([required, codingLang]),
                 "MD041.front_matter_title": [required, regex],
-                "MD043.headings": [required, heading],
-                "MD044.names": [required, word],
+                "MD043.headings": each([required, heading]),
+                "MD044.names": each([required, word]),
                 "MD051.ignored_pattern": regex,
-                "MD052.ignored_labels": required,
-                "MD053.ignored_definitions": required,
-                "MD059.prohibited_texts": required,
+                "MD052.ignored_labels": each(required),
+                "MD053.ignored_definitions": each(required),
+                "MD059.prohibited_texts": each(required),
             }
         }
         const getParsers = () => {

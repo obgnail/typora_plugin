@@ -361,8 +361,7 @@
     "$label.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY": "Click hyperlink to open",
     "$label.DISABLE_CONTEXT_MENU_WHEN_READ_ONLY": "Disable some context menu options",
     "$label.SHOW_TEXT": "Hint Text",
-    "$label.REMAIN_AVAILABLE_MENU_KEY": "Available context menu options",
-    "$title.underReadOnly": "Read Only"
+    "$label.REMAIN_AVAILABLE_MENU_KEY": "Available context menu options"
   },
   "blur": {
     "pluginName": "Blur Mode",
@@ -969,17 +968,6 @@
     "$option.DEPENDENCIES_FAILURE_BEHAVIOR.readonly": "Read Only",
     "$option.DEPENDENCIES_FAILURE_BEHAVIOR.hide": "Hide"
   },
-  "file_counter": {
-    "pluginName": "File Counter",
-    "error.tooManyFiles": "Too Many Files. Plugin \"{{pluginName}}\" Suspends Running",
-    "$label.FONT_WEIGHT": "Font Weight",
-    "$label.COLOR": "Color",
-    "$label.BACKGROUND_COLOR": "Background Color",
-    "$label.IGNORE_MIN_NUM": "Min File Count in Directory",
-    "$label.ALLOW_EXT": "Allowed File Extensions",
-    "$label.IGNORE_FOLDERS": "Ignored Folders",
-    "$tooltip.ignoreMinNum": "Ignore directories containing less than X files"
-  },
   "hotkeys": {
     "pluginName": "Hotkeys",
     "registeredHotkey": "Registered Hotkeys",
@@ -1052,6 +1040,7 @@
   },
   "sidebar_enhance": {
     "pluginName": "Enhance Sidebar",
+    "error.tooManyFiles": "Too Many Files. File Counting Suspends Running",
     "$label.DISPLAY_NON_MARKDOWN_FILES": "Display non-Markdown Files",
     "$label.OPEN_BY_SYSTEM_EXT": "External Open Extensions",
     "$label.OPEN_BY_TYPORA_EXT": "Internal Open Extensions",
@@ -1064,6 +1053,14 @@
     "$label.SIDEBAR_ICONS.enable": "Enable",
     "$label.SIDEBAR_ICONS.extensions": "Extensions",
     "$label.SIDEBAR_ICONS.icon": "Icon",
+    "$label.ENABLE_FILE_COUNT": "Count File",
+    "$label.FONT_WEIGHT": "Font Weight",
+    "$label.TEXT_COLOR": "Color",
+    "$label.BACKGROUND_COLOR": "Background Color",
+    "$label.IGNORE_MIN_NUM": "Min File Count in Directory",
+    "$label.COUNT_EXT": "Allowed File Extensions",
+    "$label.IGNORE_FOLDERS": "Ignored Folders",
+    "$tooltip.ignoreMinNum": "Ignore directories containing less than X files",
     "$tooltip.canCollapseOutlinePanel": "Need to enable Typora config [Collapsible Outline on Left Panel]"
   },
   "cursor_history": {
@@ -1264,16 +1261,14 @@
     "$label.remove_header_styles": "Remove Header Styles",
     "$label.sortable": "Drag & Drop outline to rearrange",
     "$label.right_click_outline_button_to_toggle": "Shortcut: Right-click Outline Button",
-    "$label.width_percent_when_pin_right": "Width When Pinned Right",
-    "$label.toc_font_size": "Font Size",
+    "$label.width_percent_when_pin_right": "Default Width",
     "$label.title_bar_buttons": "Title Bar Buttons",
     "$label.include_headings.fence": "Code Block",
     "$label.include_headings.image": "Image",
     "$label.include_headings.table": "Table",
     "$label.include_headings.link": "Link",
-    "$label.include_headings.math": "Math Block",
-    "$title.tocStyle": "TOC Style",
-    "$title.displayHeader": "Display Header in TOC",
+    "$label.include_headings.math": "Math",
+    "$title.displayHeader": "Display Header",
     "$option.title_bar_buttons.header": "Header",
     "$option.title_bar_buttons.image": "Image",
     "$option.title_bar_buttons.table": "Table",
@@ -1624,7 +1619,7 @@
     "$title.detectAndFix": "Detect and Fix"
   },
   "quickButton": {
-    "pluginName": "QuickButton",
+    "pluginName": "Floating Action Button",
     "$label.button_size": "Size",
     "$label.button_border_radius": "Border Radius",
     "$label.button_box_shadow": "Shadow",
@@ -1643,7 +1638,7 @@
     "$label.buttons.color": "Icon Color",
     "$label.buttons.bgColor": "Background Color",
     "$label.buttons.hint": "Hint",
-    "$label.buttons.callback": "Callback",
+    "$label.buttons.callback": "System Callback",
     "$label.buttons.evil": "Custom Callback",
     "$title.buttonStyle": "Button Style",
     "$tooltip.buttons.coordinate.0": "Increments in the upward direction",

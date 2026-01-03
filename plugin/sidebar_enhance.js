@@ -16,11 +16,18 @@ class SidebarEnhancePlugin extends BasePlugin {
         if (this.config.CTRL_WHEEL_TO_SCROLL_SIDEBAR) {
             this._ctrlWheelToScroll()
         }
+        if (this.config.ENABLE_FILE_COUNT) {
+            this._fileCount()
+        }
     }
 
     init = () => {
         this.entities = {
-            outline: document.getElementById("outline-content"),
+            outline: document.querySelector("#outline-content"),
+            fileTree: document.querySelector("#file-library-tree"),
+            get fileTreeRoot() {
+                return document.querySelector("#file-library-tree > .file-library-root")  // rootNode may be dynamic
+            },
         }
     }
 
@@ -196,6 +203,87 @@ class SidebarEnhancePlugin extends BasePlugin {
             ev.stopPropagation()
             ev.preventDefault()
         }, { passive: false, capture: true })
+    }
+
+    _fileCount = () => {
+        const getObserver = () => {
+            return new MutationObserver(mutations => {
+                if (mutations.length === 1) {
+                    const added = mutations[0].addedNodes[0]
+                    if (added?.classList?.contains("file-library-node")) {
+                        countDir(added)
+                        return
+                    }
+                }
+                countAllDirs()
+            })
+        }
+        const getWalkOptions = () => {
+            const abortController = new AbortController()
+            const allowedExt = new Set(this.config.COUNT_EXT.map(ext => {
+                const prefix = (ext !== "" && !ext.startsWith(".")) ? "." : ""
+                return prefix + ext.toLowerCase()
+            }))
+            const verifyExt = name => allowedExt.has(this.utils.Package.Path.extname(name).toLowerCase())
+            const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE
+            return {
+                fileFilter: (name, filepath, stat) => verifySize(stat) && verifyExt(name),
+                dirFilter: name => !this.config.IGNORE_FOLDERS.includes(name),
+                fileParamsGetter: this.utils.identity,
+                maxStats: this.config.MAX_STATS,
+                semaphore: this.config.CONCURRENCY_LIMIT,
+                followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
+                signal: abortController.signal,
+                onFinished: (err) => {
+                    if (!err) return
+                    if (err.name === "AbortError") {
+                        console.warn("File-Counter Aborted")
+                    } else if (err.name === "QuotaExceededError") {
+                        observer.disconnect()
+                        abortController.abort(new DOMException("Stop File-Counter", "AbortError"))
+                        document.querySelectorAll(".file-node-content[data-count]").forEach(el => el.removeAttribute("data-count"))
+                        this.utils.notification.show(this.i18n.t("error.tooManyFiles"), "warning", 7000)
+                    }
+                },
+            }
+        }
+
+        const observer = getObserver()
+        const walkOptions = getWalkOptions()
+        const setCount = async (node) => {
+            let fileCount = 0
+            await this.utils.walkDir({ ...walkOptions, dir: node.dataset.path, onFile: () => fileCount++ })
+            const displayEl = node.querySelector(":scope > .file-node-content")
+            if (fileCount <= this.config.IGNORE_MIN_NUM) {
+                displayEl.removeAttribute("data-count")
+            } else {
+                displayEl.setAttribute("data-count", fileCount)
+            }
+        }
+        const countDir = (node) => {
+            if (!node) return
+            setCount(node)
+            node.querySelectorAll(':scope > .file-node-children > .file-library-node[data-has-sub="true"]').forEach(countDir)
+        }
+        const countAllDirs = () => countDir(this.entities.fileTreeRoot)
+
+        this.utils.insertStyle("plugin-count-file-style", `
+            .file-node-content:after {
+                content: attr(data-count);
+                position: absolute;
+                right: 10px;
+                padding: 0 3px;
+                border-radius: 3px;
+                color: ${this.config.TEXT_COLOR || "var(--active-file-text-color)"};
+                background: ${this.config.BACKGROUND_COLOR || "var(--active-file-bg-color)"};
+                font-weight: ${this.config.FONT_WEIGHT};
+            }`
+        )
+        this.utils.eventHub.once(this.utils.eventHub.eventType.fileOpened, () => {
+            File.editor.library.refreshPanelCommand()
+            countAllDirs()
+        })
+        observer.observe(this.entities.fileTree, { subtree: true, childList: true })
     }
 }
 

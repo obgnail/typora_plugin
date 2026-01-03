@@ -87,6 +87,7 @@ class ReadOnlyPlugin extends BasePlugin {
             }
         }
         const setLabel = wantToLock => {
+            if (!this.config.SHOW_TEXT) return
             document.getElementById("footer-word-count-label").dataset.value = wantToLock ? this.config.SHOW_TEXT + String.fromCharCode(160).repeat(3) : ""
         }
         const toggleMenu = (wantToLock) => {
