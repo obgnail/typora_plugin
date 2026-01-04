@@ -402,7 +402,7 @@ class FastForm extends HTMLElement {
                     const state = this.states.init(name, initialState)
                     if (typeof clear !== "function") {
                         clear = (state && typeof state.values === "function")
-                            ? () => Array.from(state.values()).forEach(val => val && typeof val.clear === "function" && val.clear())
+                            ? () => Array.from(state.values()).forEach(s => s && typeof s.clear === "function" && s.clear())
                             : () => void 0
                     }
                     this.registerCleanup(() => clear(state))
@@ -1449,74 +1449,30 @@ const Feature_Watchers = (() => {
     }
 })()
 
-function compileMatchers({ source, strategy, processValue, errorContext }) {
-    if (!source || typeof source !== "object") {
-        return []
-    }
-    const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-    return Object.entries(source).map(([key, rawValue]) => {
-        const payload = processValue(rawValue, key)
-        if (payload == null) return
-        try {
-            const exp = (strategy === "regex")
-                ? key
-                : (strategy === "wildcard")
-                    ? `^${escapeRegex(key).replace(/\\\*/g, ".*")}$`
-                    : `^${escapeRegex(key)}$`
-            const regex = new RegExp(exp)
-            return { key, regex, ...payload }
-        } catch (e) {
-            throw new TypeError(`Invalid ${errorContext} pattern for '${strategy}' mode: '${key}'.`)
-        }
-    }).filter(Boolean)
-}
-
 const Feature_Parsing = {
     featureOptions: {
         parsers: {},
-        parserMatchStrategy: "exact", // "exact", "wildcard", "regex"
     },
     configure: ({ hooks, initState, registerApi }) => {
-        const state = initState(
-            { rawParsers: new Map(), compiledParsers: [] },
-            state => {
-                state.rawParsers.clear()
-                state.compiledParsers = []
-            },
-        )
+        const parsers = initState(new Map(), s => s.clear())
         registerApi("parsing", {
-            setParser: (key, parserToAdd) => {
+            set: (key, parserToAdd) => {
                 if (key && typeof parserToAdd === "function") {
-                    state.rawParsers.set(key, parserToAdd)
+                    parsers.set(key, parserToAdd)
                 } else {
                     console.warn(`FastForm Warning: Parser for key '${key}' is not a function.`)
                 }
-            }
+            },
+            get: (key) => parsers.get(key),
         })
         hooks.on("onProcessValue", (value, changeContext) => {
-            const newChangeContext = { ...changeContext, value }
-            const matchedParsers = state.compiledParsers.filter(p => p.regex.test(newChangeContext.key))
-            if (matchedParsers.length === 0) {
-                return value
-            }
-            if (matchedParsers.length > 1) {
-                matchedParsers.sort((a, b) => b.key.length - a.key.length)
-            }
-            return matchedParsers[0].parser(value, newChangeContext)
+            const parser = parsers.get(changeContext.key)
+            return parser ? parser(value, changeContext) : value
         })
     },
-    compile: ({ state, options, form }) => {
-        const { parsers, parserMatchStrategy } = options
-
+    compile: ({ options, form }) => {
         const api = form.getApi("parsing")
-        Object.entries(parsers).forEach(([key, rule]) => api.setParser(key, rule))
-
-        state.compiledParsers = compileMatchers({
-            source: Object.fromEntries(state.rawParsers),
-            strategy: parserMatchStrategy,
-            errorContext: "parser",
-            processValue: (parser) => ({ parser })
-        })
+        Object.entries(options.parsers).forEach(([key, rule]) => api.set(key, rule))
     },
 }
 
@@ -1580,13 +1536,7 @@ const Feature_Validation = {
         }).filter(Boolean)
     },
     configure: ({ initState, hooks, registerApi, form }) => {
-        const state = initState(
-            { rawRules: new Map(), compiledRules: new Map() },
-            state => {
-                state.rawRules.clear()
-                state.compiledRules.clear()
-            }
-        )
+        const state = initState({ rawRules: new Map(), compiledRules: new Map() })
         registerApi("validation", {
             addRule: (key, ruleConfig) => {
                 if (!key || !ruleConfig) return
@@ -2222,7 +2172,7 @@ const Control_Color = {
         const input = element.querySelector(".color-input")
         const display = element.querySelector(".color-display")
         if (input && display) {
-            value = value || "#000000"
+            value = value || "#FFFFFF"
             updateInputState(input, field, value)
             display.textContent = value.toUpperCase()
         }
@@ -2504,6 +2454,86 @@ const Control_Textarea = {
         }, true).onEvent("change", ".textarea", function () {
             form.validateAndCommit(this.dataset.key, this.value)
         })
+    },
+}
+
+const Control_CodeEditor = {
+    controlOptions: {
+        tabSize: 4,
+        lineNumbers: true,
+    },
+    setup: ({ field }) => defaultBlockLayout(field),
+    create: ({ field, controlOptions }) => {
+        const { lineNumbers } = controlOptions
+        const { key, placeholder } = getCommonHTMLAttrs(field)
+        const gutterClass = lineNumbers ? "code-gutter" : "code-gutter plugin-common-hidden"
+        const textarea = `<textarea class="code-textarea" ${placeholder} spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>`
+        return `<div class="code-editor-wrap" ${key}><div class="${gutterClass}"></div><div class="code-grow-wrap"><div class="code-ghost"></div>${textarea}</div></div>`
+    },
+    update: ({ element, value, field, controlOptions }) => {
+        const textarea = element.querySelector(".code-textarea")
+        if (!textarea) return
+        const ghost = element.querySelector(".code-ghost")
+        const gutter = element.querySelector(".code-gutter")
+        const val = value || ""
+        if (textarea.value !== val) textarea.value = val
+        if (ghost) ghost.textContent = val + "\n"
+        updateInputState(textarea, field, val)
+        if (controlOptions.lineNumbers && gutter) {
+            Control_CodeEditor._updateLineNumbers(textarea, gutter)
+        }
+    },
+    bindEvents: ({ form }) => {
+        const syncState = (textarea) => {
+            const wrap = textarea.closest(".code-editor-wrap")
+            const ghost = wrap.querySelector(".code-ghost")
+            const gutter = wrap.querySelector(".code-gutter")
+            ghost.textContent = textarea.value + "\n"
+            if (gutter && !gutter.classList.contains("plugin-common-hidden")) {
+                Control_CodeEditor._updateLineNumbers(textarea, gutter)
+            }
+        }
+
+        form.onEvent("input", ".code-textarea", function () {
+            syncState(this)
+        }).onEvent("change", ".code-textarea", function () {
+            form.validateAndCommit(this.closest(".code-editor-wrap").dataset.key, this.value)
+        }).onEvent("scroll", ".code-textarea", function () {
+            const gutter = this.closest(".code-editor-wrap").querySelector(".code-gutter")
+            if (gutter) gutter.scrollTop = this.scrollTop
+        }).onEvent("keydown", ".code-textarea", function (ev) {
+            const key = this.closest(".code-editor-wrap").dataset.key
+            const { tabSize } = form.getControlOptionsFromKey(key)
+            if (ev.key === "Tab") {
+                ev.preventDefault()
+                const spaces = " ".repeat(tabSize)
+                Control_CodeEditor._insertText(this, spaces)
+                syncState(this)
+                form.validateAndCommit(key, this.value)
+            } else if (ev.key === "Enter") {
+                ev.preventDefault()
+                const cursor = this.selectionStart
+                const currentLineStart = this.value.lastIndexOf("\n", cursor - 1) + 1
+                const currentLine = this.value.substring(currentLineStart, cursor)
+                const match = currentLine.match(/^\s+/)
+                const indentation = match ? match[0] : ""
+                Control_CodeEditor._insertText(this, "\n" + indentation)
+                syncState(this)
+                this.blur()
+                this.focus()
+                form.validateAndCommit(key, this.value)
+            }
+        }, true)
+    },
+    _updateLineNumbers: (textarea, gutter) => {
+        const lineCount = textarea.value.split("\n").length
+        if (gutter.childElementCount === lineCount) return
+        gutter.innerHTML = Array.from({ length: lineCount }, (_, i) => `<div>${i + 1}</div>`).join("")
+    },
+    _insertText: (textarea, text) => {
+        const start = textarea.selectionStart
+        const end = textarea.selectionEnd
+        textarea.setRangeText(text, start, end, "end")
     },
 }
 
@@ -3114,11 +3144,7 @@ const Control_Transfer = {
                 item.animate([
                     { transform: `translate(${dx}px, ${dy}px)` },
                     { transform: "translate(0, 0)" }
-                ], {
-                    duration: 200,
-                    easing: "cubic-bezier(0.2, 0, 0, 1)",
-                    fill: "both"
-                })
+                ], { duration: 200, easing: "cubic-bezier(0.2, 0, 0, 1)", fill: "both" })
             }
         })
     },
@@ -3632,6 +3658,7 @@ FastForm.registerControl("custom", Control_Custom)
 FastForm.registerControl("hint", Control_Hint)
 FastForm.registerControl("hotkey", Control_Hotkey)
 FastForm.registerControl("textarea", Control_Textarea)
+FastForm.registerControl("code", Control_CodeEditor)
 FastForm.registerControl("object", Control_Object)
 FastForm.registerControl("array", Control_Array)
 FastForm.registerControl("select", Control_Select)

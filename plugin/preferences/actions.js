@@ -42,7 +42,7 @@ module.exports = (plugin) => {
         },
         invokeMarkdownLintSettings: async () => utils.callPluginFunction("markdownLint", "settings"),
         installPlantUMLServer: async () => {
-            const dockerFields = [{ key: "dockerCommand", type: "textarea", readonly: true, rows: 3 }]
+            const dockerFields = [{ key: "dockerCommand", type: "code", readonly: true }]
             const actionFields = [
                 { key: "viewWebsite", type: "action", label: "Official Website" },
                 { key: "viewDockerHub", type: "action", label: "Docker Hub" },
@@ -79,7 +79,7 @@ module.exports = (plugin) => {
             const settings = await plugin._getSettings(fixedName)
             const op = {
                 title: i18n._t("settings", "$label.runtimeSettings") + `（${i18n.t("readonly")}）`,
-                schema: [{ fields: [{ key: "runtimeSettings", type: "textarea", readonly: true, rows: 14 }] }],
+                schema: [{ fields: [{ key: "runtimeSettings", type: "code", readonly: true }] }],
                 data: { runtimeSettings: JSON.stringify(settings, null, "\t") },
             }
             await utils.formDialog.modal(op)

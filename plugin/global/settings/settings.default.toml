@@ -989,6 +989,7 @@ Note that if blocks and lists appear at the same level, the lists will be ignore
 |-|-|
 | Apple | 4 |
 | Banana | 2 |
+```
 """
 
 

@@ -122,6 +122,12 @@ const Textarea = (key, props = {}) => Field(key, "textarea", { isBlockLayout: fa
 
 /**
  * @param {string} key
+ * @param {BaseProps & { tabSize?: number, lineNumbers?: boolean, placeholder?: string }} [props]
+ */
+const Code = (key, props = {}) => Field(key, "code", { isBlockLayout: false, ...props })
+
+/**
+ * @param {string} key
  * @param {string[] | Record<string, string>} options
  * @param {BaseProps & { columns?: number, disabledOptions?: string[] }} [props]
  */
@@ -216,6 +222,12 @@ const ObjectBox = (key, props = {}) => SingleFieldBox(key, "object", { rows: 10,
  * @param {BoxProps & { rows?: number, cols?: number, placeholder?: string }} [props]
  */
 const TextareaBox = (key, props = {}) => SingleFieldBox(key, "textarea", { rows: 10, ...props })
+
+/**
+ * @param {string} key
+ * @param {BaseProps & { tabSize?: number, lineNumbers?: boolean, placeholder?: string }} [props]
+ */
+const CodeBox = (key, props = {}) => SingleFieldBox(key, "code", { ...props })
 
 /**
  * @param {string} key
@@ -791,7 +803,7 @@ const schema_markmap = [
         Text("DEFAULT_FENCE_OPTIONS.backgroundColor", dep_markmapFence),
         Palette("DEFAULT_FENCE_OPTIONS.color", dep_markmapFence),
     ),
-    TextareaBox("FENCE_TEMPLATE", dep_markmapFence),
+    CodeBox("FENCE_TEMPLATE", dep_markmapFence),
     box_settingHandler,
 ]
 
@@ -878,7 +890,7 @@ const schema_auto_number = [
     UntitledBox(
         Switch("ENABLE_WHEN_EXPORT"),
     ),
-    TextareaBox("APPLY_EXPORT_HEADER_NUMBERING", { tooltip: "expertsOnly", rows: 12, dependencies: Dep.true("ENABLE_WHEN_EXPORT") }),
+    CodeBox("APPLY_EXPORT_HEADER_NUMBERING", { tooltip: "expertsOnly", dependencies: Dep.true("ENABLE_WHEN_EXPORT") }),
     box_settingHandler,
 ]
 
@@ -928,17 +940,17 @@ const schema_fence_enhance = [
                 Icon("ICON"),
                 Text("HINT"),
             ),
-            TextareaBox("ON_INIT", { rows: 3 }),
-            TextareaBox("ON_RENDER", { rows: 3 }),
-            TextareaBox("ON_CLICK", { rows: 3 }),
+            CodeBox("ON_INIT"),
+            CodeBox("ON_RENDER"),
+            CodeBox("ON_CLICK"),
         ],
         {
             DISABLE: false,
             ICON: "fa fa-bomb",
             HINT: "",
-            ON_INIT: "plu => console.log('The button has been initialized')",
-            ON_RENDER: "({ btn, fence, cid, enhance }) => console.log('The button has been rendered')",
-            ON_CLICK: "({ ev, btn, cont, fence, cm, cid, plu }) => console.log('The button has been clicked')",
+            ON_INIT: "plu => console.log('Button initialized')",
+            ON_RENDER: "({ btn, fence, cid, enhance }) => console.log('Button rendered')",
+            ON_CLICK: "({ ev, btn, cont, fence, cm, cid, plu }) => console.log('Button has been clicked')",
         },
         dep_fenceEnhanceButton,
     ),
@@ -961,7 +973,7 @@ const schema_fence_enhance = [
                 Switch("DISABLE"),
                 Text("HOTKEY"),
             ),
-            TextareaBox("CALLBACK", { rows: 5 }),
+            CodeBox("CALLBACK"),
         ],
         {
             DISABLE: false,
@@ -1177,7 +1189,7 @@ const schema_slash_commands = [
                 Integer("cursorOffset.0"),
                 Integer("cursorOffset.1"),
             ),
-            TextareaBox("callback", { rows: 5, placeholder: "callbackType" }),
+            CodeBox("callback", { placeholder: "callbackType" }),
         ],
         {
             enable: true,
@@ -1262,7 +1274,7 @@ const schema_preferences = [
         Select("DEFAULT_MENU"),
         Select("HIDE_MENUS"),
     ),
-    TextareaBox("FORM_RENDERING_HOOK", { tooltip: "expertsOnly", rows: 3 }),
+    CodeBox("FORM_RENDERING_HOOK", { tooltip: "expertsOnly" }),
     box_settingHandler,
 ]
 
@@ -1280,7 +1292,7 @@ const schema_hotkeys = [
                 Text("function"),
                 Text("closestSelector"),
             ),
-            TextareaBox("evil", { rows: 3 }),
+            CodeBox("evil"),
         ],
         {
             enable: true,
@@ -1486,7 +1498,7 @@ const schema_kanban = [
         Palette("KANBAN_COLOR"),
         Palette("TASK_COLOR"),
     ),
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     box_settingHandler,
 ]
 
@@ -1507,7 +1519,7 @@ const schema_chat = [
         Text("DEFAULT_OPTIONS.senderNickname"),
         Text("DEFAULT_OPTIONS.timeNickname"),
     ),
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     box_settingHandler,
 ]
 
@@ -1527,7 +1539,7 @@ const schema_timeline = [
         Text("TIME_COLOR"),
         Text("CIRCLE_TOP"),
     ),
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     box_settingHandler,
 ]
 
@@ -1535,7 +1547,7 @@ const schema_echarts = [
     box_customPluginLite,
     box_langMode,
     box_chartStyle,
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     TitledBox(
         "advanced",
         Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: "svgBetter" }),
@@ -1549,7 +1561,7 @@ const schema_chart = [
     box_customPluginLite,
     box_langMode,
     box_chartStyle,
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     box_settingHandler,
 ]
 
@@ -1562,7 +1574,7 @@ const schema_wavedrom = [
         Switch("SAFE_MODE"),
     ),
     box_chartStyle,
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     ArrayBox("SKIN_FILES"),
     UntitledBox(
         Action("downloadWaveDromSkins"),
@@ -1574,7 +1586,7 @@ const schema_calendar = [
     box_customPluginLite,
     box_langMode,
     box_chartStyle,
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     box_settingHandler,
 ]
 
@@ -1582,7 +1594,7 @@ const schema_abc = [
     box_customPluginLite,
     box_langMode,
     box_chartStyle,
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     DictBox("VISUAL_OPTIONS"),
     UntitledBox(
         Action("viewAbcVisualOptionsHelp"),
@@ -1594,7 +1606,7 @@ const schema_drawIO = [
     box_customPluginLite,
     box_langMode,
     box_chartStyle,
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     TitledBox(
         "advanced",
         Text("RESOURCE_URI"),
@@ -1616,7 +1628,7 @@ const schema_plantUML = [
     ),
     box_langMode,
     box_chartStyle,
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     box_settingHandler,
 ]
 
@@ -1624,7 +1636,7 @@ const schema_marp = [
     box_customPluginLite,
     box_langMode,
     DictBox("MARP_CORE_OPTIONS"),
-    TextareaBox("TEMPLATE"),
+    CodeBox("TEMPLATE"),
     box_settingHandler,
 ]
 
@@ -1669,7 +1681,7 @@ const schema_callouts = [
             left_line_color: "",
         },
     ),
-    TextareaBox("template", { rows: 5 }),
+    CodeBox("template"),
     box_settingHandler,
 ]
 
@@ -1686,7 +1698,7 @@ const schema_templater = [
                 Switch("enable"),
                 Text("name"),
             ),
-            TextareaBox("callback", { rows: 5 }),
+            CodeBox("callback"),
         ],
         {
             enable: true,
@@ -1909,7 +1921,7 @@ const schema_quickButton = [
                 Text("hint"),
                 Text("callback", { tooltip: "exclusive", dependencies: Dep.bool("evil", false) }),
             ),
-            TextareaBox("evil", { placeholder: "customCallback", rows: 5, dependencies: Dep.bool("callback", false) }),
+            CodeBox("evil", { placeholder: "customCallback", dependencies: Dep.bool("callback", false) }),
         ],
         {
             disable: true,
