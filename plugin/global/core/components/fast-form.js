@@ -16,6 +16,7 @@ class FastForm extends HTMLElement {
             setup: { type: "function" },
             setupType: { type: "function" },
             onMount: { type: "function" },
+            getNestedSchemas: { type: "function" },
             controlOptions: { type: "plainObject" },
         })
         if (this.controls.hasOwnProperty(name)) {
@@ -165,9 +166,8 @@ class FastForm extends HTMLElement {
         for (const box of schema) {
             for (const field of box.fields || []) {
                 visitorFn(field, parentField, box)
-                if (Array.isArray(field.subSchema)) {
-                    this.traverseFields(visitorFn, field.subSchema, field)
-                }
+                const nestedSchemas = this._getControlNestedSchemas(field)
+                nestedSchemas.forEach(schema => this.traverseFields(visitorFn, schema, field))
             }
         }
     }
@@ -176,9 +176,8 @@ class FastForm extends HTMLElement {
         for (const box of schema) {
             visitorFn(box, parentBox)
             for (const field of box.fields || []) {
-                if (Array.isArray(field.subSchema)) {
-                    this.traverseBoxes(visitorFn, field.subSchema, box)
-                }
+                const nestedSchemas = this._getControlNestedSchemas(field)
+                nestedSchemas.forEach(schema => this.traverseBoxes(visitorFn, schema, box))
             }
         }
     }
@@ -313,6 +312,15 @@ class FastForm extends HTMLElement {
             }
         }
         return null
+    }
+
+    _getControlNestedSchemas(field) {
+        const controlDef = this.constructor.controls[field.type]
+        if (controlDef && typeof controlDef.getNestedSchemas === "function") {
+            const schemas = controlDef.getNestedSchemas(field)
+            return Array.isArray(schemas) ? schemas : []
+        }
+        return []
     }
 
     _updateControl = (key, value) => {
@@ -629,7 +637,7 @@ const Layout_Default = {
     },
     createTooltip(item) {
         return item.tooltip
-            ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${utils.escape(item.tooltip).replace("\n", "<br>")}</span></span>`
+            ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${utils.escape(item.tooltip).replace(/\n/g, "<br>")}</span></span>`
             : ""
     },
     createExplain(field) {
@@ -733,6 +741,23 @@ const Feature_EventDelegation = {
 const Feature_DefaultKeybindings = {
     configure: ({ hooks }) => {
         hooks.on("onRender", (form) => form.onEvent("keydown", ev => ev.stopPropagation(), true))
+    }
+}
+
+const Feature_CollapsibleBox = {
+    featureOptions: {
+        collapsibleBox: true,
+    },
+    configure: ({ hooks, options }) => {
+        hooks.on("onRender", (form) => {
+            form.getFormEl().classList.toggle("feature-collapsible-box", options.collapsibleBox)
+
+            if (options.collapsibleBox) {
+                form.onEvent("click", ".box-container .title", function () {
+                    this.closest(".box-container")?.classList.toggle("collapsed")
+                })
+            }
+        })
     }
 }
 
@@ -1862,6 +1887,7 @@ const Feature_Cascades = {
 
 FastForm.registerFeature("eventDelegation", Feature_EventDelegation)
 FastForm.registerFeature("defaultKeybindings", Feature_DefaultKeybindings)
+FastForm.registerFeature("collapsibleBox", Feature_CollapsibleBox)
 FastForm.registerFeature("watchers", Feature_Watchers)
 FastForm.registerFeature("parsing", Feature_Parsing)
 FastForm.registerFeature("validation", Feature_Validation)
@@ -2332,6 +2358,10 @@ const Control_Action = {
 }
 
 const Control_Static = {
+    setup: ({ field }) => {
+        field.isBlockLayout = false
+        setRandomKey(field)
+    },
     create: () => `<div class="static"></div>`,
     update: ({ element, value, field }) => {
         const wrap = element.querySelector(".static")
@@ -2374,6 +2404,26 @@ const Control_Hint = {
             const headerHTML = hintHeader ? `<div class="hint-header">${hintHeader}</div>` : ""
             const detailHTML = hintDetail ? `<div class="hint-detail">${hintDetail}</div>` : ""
             wrap.innerHTML = headerHTML + detailHTML
+        }
+    },
+}
+
+const Control_Divider = {
+    controlOptions: {
+        position: "center",  // center | left | right
+        dashed: true,
+    },
+    setup: ({ field }) => {
+        field.isBlockLayout = true
+        setRandomKey(field)
+    },
+    create: () => `<div class="divider-wrap"></div>`,
+    update: ({ element, field, controlOptions }) => {
+        const wrap = element.querySelector(".divider-wrap")
+        if (wrap) {
+            const line = '<div class="divider-line"></div>'
+            wrap.classList.add(controlOptions.position, controlOptions.dashed ? "dashed" : undefined)
+            wrap.innerHTML = field.divider ? `${line}<div class="divider-text">${utils.escape(field.divider)}</div>${line}` : line
         }
     },
 }
@@ -2678,6 +2728,7 @@ const Control_Array = {
             this.classList.add("editing")
             valueEl.contentEditable = "true"
             valueEl.focus()
+            Control_Array._moveCursor(valueEl)
         }).onEvent("keydown", selector, function (ev) {
             if (ev.key === "Enter") {
                 ev.preventDefault()
@@ -2704,6 +2755,14 @@ const Control_Array = {
             utils.show(inputEl)
             inputEl.focus()
         })
+    },
+    _moveCursor: (node, toStart = false) => {
+        const range = document.createRange()
+        range.selectNodeContents(node)
+        range.collapse(toStart)
+        const sel = window.getSelection()
+        sel.removeAllRanges()
+        sel.addRange(range)
     },
     _createItem: (value) => `
         <div class="array-item">
@@ -2733,7 +2792,7 @@ const Control_Array = {
             itemEl.classList.remove("editing")
             form.validateAndCommit(`${key}.${idx}`, val, "set")
         }
-    }
+    },
 }
 
 const Control_Select = {
@@ -3570,6 +3629,7 @@ const Control_Composite = {
         Control_Composite._setCacheWatcher(options, field, state)
         Control_Composite._setDependencies(field)
     },
+    getNestedSchemas: (field) => Array.isArray(field.subSchema) ? [field.subSchema] : [],
     create: ({ field, form }) => {
         const layout = form.options.layout
         const switchControlDef = form.options.controls["switch"]
@@ -3644,6 +3704,81 @@ const Control_Composite = {
     },
 }
 
+const Control_Tabs = {
+    controlOptions: {
+        tabStyle: "line",  // line | card | segment
+        tabPosition: "top",  // top | left
+        defaultSelectedTab: "0",
+    },
+    setupType: ({ initState }) => initState(new Map()),  // Map<FieldKey, SelectedTabValue>
+    setup: ({ field, state, form }) => {
+        field.isBlockLayout = true
+
+        const tabs = field.tabs || []
+        tabs.forEach((tab, idx) => tab.value = String(tab.value ?? idx))
+
+        let targetValue = state.get(field.key) ?? String(form.getControlOptions(field).defaultSelectedTab)
+        const isValid = targetValue && tabs.some(t => t.value === targetValue)
+        if (!isValid && tabs.length > 0) {
+            targetValue = tabs[0].value
+        }
+        if (targetValue != null) {
+            state.set(field.key, targetValue)
+        }
+    },
+    getNestedSchemas: (field) => (field.tabs || []).map(tab => tab.schema).filter(schema => Array.isArray(schema)),
+    create: ({ field, controlOptions }) => {
+        const { key } = getCommonHTMLAttrs(field)
+        const tabs = field.tabs || []
+
+        const headers = tabs.map(tab => {
+            const iconHtml = tab.icon ? `<i class="${tab.icon}"></i>` : ""
+            const labelHtml = `<div>${utils.escape(tab.label || "Untitled Tab")}</div>`
+            return `<div class="tab-header-item" data-tab-value="${tab.value}">${iconHtml}${labelHtml}</div>`
+        })
+        const panes = tabs.map(tab => `<div class="tab-pane" data-tab-value="${tab.value}"></div>`)
+        const styleMap = { line: "tabs-style-line", card: "tabs-style-card", segment: "tabs-style-segment" }
+        const styleClass = styleMap[controlOptions.tabStyle] || "tabs-style-line"
+        const posClass = controlOptions.tabPosition === "left" ? "tabs-pos-left" : "tabs-pos-top"
+        return `
+            <div class="tabs-wrapper ${styleClass} ${posClass}" ${key}>
+                <div class="tabs-header-list">${headers.join("")}</div>
+                <div class="tabs-content-wrapper">${panes.join("")}</div>
+            </div>`
+    },
+    update: ({ element, field, form, state }) => {
+        const active = state.get(field.key)
+        if (active == null) return
+        const wrapper = element.querySelector(".tabs-wrapper")
+        if (!wrapper) return
+
+        wrapper.querySelectorAll(".tab-header-item").forEach(header => {
+            const isActive = header.dataset.tabValue === active
+            header.classList.toggle("active", isActive)
+        })
+        wrapper.querySelectorAll(".tab-pane").forEach(pane => {
+            const val = pane.dataset.tabValue
+            const isActive = val === active
+            pane.classList.toggle("plugin-common-hidden", !isActive)
+            if (isActive && pane.childElementCount === 0) {
+                const tabConfig = (field.tabs || []).find(t => t.value === val)
+                if (tabConfig && Array.isArray(tabConfig.schema)) {
+                    form.fillForm(tabConfig.schema, pane)
+                }
+            }
+        })
+    },
+    bindEvents: ({ form, state }) => {
+        form.onEvent("click", ".tab-header-item", function () {
+            if (!this.classList.contains("active")) {
+                const key = this.closest(".tabs-wrapper").dataset.key
+                state.set(key, this.dataset.tabValue)
+                form._updateControl(key)
+            }
+        })
+    }
+}
+
 FastForm.registerControl("switch", Control_Switch)
 FastForm.registerControl("text", Control_Text)
 FastForm.registerControl("password", Control_Password)
@@ -3656,6 +3791,7 @@ FastForm.registerControl("action", Control_Action)
 FastForm.registerControl("static", Control_Static)
 FastForm.registerControl("custom", Control_Custom)
 FastForm.registerControl("hint", Control_Hint)
+FastForm.registerControl("divider", Control_Divider)
 FastForm.registerControl("hotkey", Control_Hotkey)
 FastForm.registerControl("textarea", Control_Textarea)
 FastForm.registerControl("code", Control_CodeEditor)
@@ -3669,5 +3805,6 @@ FastForm.registerControl("dict", Control_Dict)
 FastForm.registerControl("palette", Control_Palette)
 FastForm.registerControl("table", Control_Table)
 FastForm.registerControl("composite", Control_Composite)
+FastForm.registerControl("tabs", Control_Tabs)
 
 customElements.define("fast-form", FastForm)
