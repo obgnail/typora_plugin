@@ -1714,7 +1714,7 @@ SIDEBAR_ICONS = [
 #   true:  支持
 #   false: 不支持
 # 若置为 false，则以下选项全部失效
-ENABLE_FILE_COUNT = false
+ENABLE_FILE_COUNT = true
 
 # 文本字体粗细，填写 font-weight 的 CSS 值
 #   例如：设置为 "bold" 表示加粗文本

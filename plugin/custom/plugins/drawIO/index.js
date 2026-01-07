@@ -42,7 +42,7 @@ class DrawIOPlugin extends BaseCustomPlugin {
             throw new Error(this.i18n.t("error.messingSource"))
         }
         await this._setXML(graphConfig)
-        $wrap[0].innerHTML = await this._toElement(graphConfig)
+        $wrap[0].innerHTML = this._toElement(graphConfig)
         this._refresh()
         return $wrap[0]
     }

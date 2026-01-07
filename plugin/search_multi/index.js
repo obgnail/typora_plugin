@@ -120,7 +120,7 @@ class SearchMultiPlugin extends BasePlugin {
             ast = ast || this.getAST()
             this.utils.hide(this.entities.highlights)
             if (!ast) return
-            const tokens = this.searcher.getContentTokens(ast).filter(Boolean)
+            const tokens = this.searcher.getPositiveContentTokens(ast)
             if (tokens.length === 0) return
 
             const hint = this.i18n.t("highlightHint")

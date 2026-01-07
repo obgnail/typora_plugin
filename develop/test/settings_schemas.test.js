@@ -118,7 +118,7 @@ test("all schemas keys should be translated", async t => {
     const i18n = require("../../plugin/global/core/i18n.js")
     await i18n.init("zh-CN")
 
-    const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "unit"]
+    const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "divider", "unit"]
     const specialProps = ["options", "thMap"]
     const nestedFieldProps = ["nestedBoxes", "subSchema"]
     const checkTranslated = (newBox, isTranslated) => {
@@ -180,7 +180,7 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
 
     const filterUsedKeys = (allI18NKeys, schemas) => {
         const boxProps = ["title", "tooltip"]
-        const baseFieldProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "unit"]
+        const baseFieldProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "divider", "unit"]
         const specialFieldProps = ["options", "thMap"]
         const nestedFieldProps = ["nestedBoxes", "subSchema"]
         const _filterUsedKeys = (fixedName, key) => {

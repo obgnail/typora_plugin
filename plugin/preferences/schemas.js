@@ -109,6 +109,16 @@ const Select = (key, options, props = {}) => Field(key, "select", { options, ...
 const Composite = (key, subSchema, defaultValues, props = {}) => Field(key, "composite", { subSchema, defaultValues, ...props })
 
 /**
+ * @param {Object[]} tabs
+ * @param {string} tabs.label
+ * @param {string} tabs.icon
+ * @param {string} tabs.value
+ * @param {Object[]} tabs.schema
+ * @param {BaseProps & { tabStyle?: "line"|"card"|"segment", tabPosition?: "top"|"left", defaultSelectedTab?: string }} [props]
+ */
+const Tabs = (tabs, props = {}) => Field(String(Date.now()), "tabs", { tabs, ...props })
+
+/**
  * @param {string} key
  * @param {BaseProps & { rows?: number, noResize?: boolean, format?: "JSON"|"TOML"|"YAML" }} [props]
  */
@@ -168,13 +178,13 @@ const Dict = (key, options, props = {}) => Field(key, "dict", { isBlockLayout: f
 
 /**
  * @param {string} key
- * @param {string[]} ths
+ * @param {string[]} headers
  * @param {Object[]} nestedBoxes
  * @param {Object} defaultValues
  * @param {BaseProps} [props]
  */
-const Table = (key, ths, nestedBoxes, defaultValues, props = {}) => {
-    const thMap = Object.fromEntries(ths.map(th => [th, `${key}.${th}`]))
+const Table = (key, headers, nestedBoxes, defaultValues, props = {}) => {
+    const thMap = Object.fromEntries(headers.map(th => [th, `${key}.${th}`]))
     return Field(key, "table", { isBlockLayout: false, nestedBoxes, defaultValues, thMap, ...props })
 }
 
@@ -184,6 +194,12 @@ const Table = (key, ths, nestedBoxes, defaultValues, props = {}) => {
  * @param {BaseProps & { hintHeader?: string, hintDetail?: string, unsafe?: boolean }} [props]
  */
 const Hint = (hintHeader, hintDetail, props = {}) => ({ type: "hint", hintHeader, hintDetail, unsafe: false, ...props })
+
+/**
+ * @param {string} divider
+ * @param {BaseProps & { position?: "center"|"left"|"right", dashed?: boolean }} [props]
+ */
+const Divider = (divider, props = {}) => ({ type: "divider", divider, ...props })
 
 /**
  * @param {string} content
@@ -271,13 +287,13 @@ const DictBox = (key, options, props = {}) => SingleFieldBox(key, "dict", { opti
 
 /**
  * @param {string} key
- * @param {string[]} ths
+ * @param {string[]} headers
  * @param {Object[]} nestedBoxes
  * @param {Object} defaultValues
  * @param {BoxProps} [props]
  */
-const TableBox = (key, ths, nestedBoxes, defaultValues, props = {}) => {
-    const thMap = Object.fromEntries(ths.map(th => [th, `${key}.${th}`]))
+const TableBox = (key, headers, nestedBoxes, defaultValues, props = {}) => {
+    const thMap = Object.fromEntries(headers.map(th => [th, `${key}.${th}`]))
     return SingleFieldBox(key, "table", { nestedBoxes, defaultValues, thMap, boxDependencyUnmetAction: "readonly", ...props })
 }
 
@@ -505,7 +521,8 @@ const schema_window_tab = [
         Switch("WHEEL_TO_SCROLL_TAB_BAR"),
         Switch("SHOW_FULL_PATH_WHEN_HOVER"),
     ),
-    UntitledBox(
+    TitledBox(
+        "drag",
         Select("DRAG_STYLE", OPTIONS.window_tab.DRAG_STYLE),
         Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: Dep.eq("DRAG_STYLE", "JetBrains") }),
         Float("DETACHMENT_THRESHOLD", {
@@ -818,7 +835,8 @@ const schema_auto_number = [
         Switch("ENABLE_TABLE"),
         Switch("ENABLE_FENCE"),
     ),
-    UntitledBox(
+    TitledBox(
+        "style",
         Text("FONT_FAMILY"),
         Switch("SHOW_IMAGE_NAME", { dependencies: Dep.true("ENABLE_IMAGE") }),
         Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, { dependencies: Dep.true("ENABLE_TABLE") }),
@@ -916,12 +934,10 @@ const schema_fence_enhance = [
         Switch("TRIM_WHITESPACE_ON_COPY", { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_COPY")) }),
         Switch("COPY_AS_MARKDOWN", { dependencies: Dep.follow("TRIM_WHITESPACE_ON_COPY") }),
         Select("LINE_BREAKS_ON_COPY", OPTIONS.fence_enhance.LINE_BREAKS_ON_COPY, { dependencies: Dep.follow("TRIM_WHITESPACE_ON_COPY") }),
-    ),
-    UntitledBox(
+        Divider(),
         Switch("ENABLE_INDENT", dep_fenceEnhanceButton),
         Array_("EXCLUDE_LANGUAGE_ON_INDENT", { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_INDENT")) }),
-    ),
-    UntitledBox(
+        Divider(),
         Switch("ENABLE_FOLD", dep_fenceEnhanceButton),
         Select("FOLD_OVERFLOW", OPTIONS.fence_enhance.FOLD_OVERFLOW, { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_FOLD")) }),
         Integer("MANUAL_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: Dep.follow("FOLD_OVERFLOW") }),
@@ -1301,7 +1317,7 @@ const schema_hotkeys = [
             plugin: "",
             function: "",
             closestSelector: "",
-            evil: "",
+            evil: "(anchorNode) => console.log(`invoke with anchor: ${anchorNode}`)",
         },
     ),
     box_settingHandler,
@@ -1703,7 +1719,7 @@ const schema_templater = [
         {
             enable: true,
             name: "",
-            callback: "",
+            callback: "(...args) => console.log(`invoke with params: ${args}`)",
         },
     ),
     TableBox(
@@ -1895,6 +1911,8 @@ const schema_quickButton = [
     box_customPluginFull,
     TitledBox(
         "buttonStyle",
+        Switch("support_right_click"),
+        Switch("hide_button_hint"),
         Text("button_size"),
         Text("button_border_radius"),
         Text("button_box_shadow"),
@@ -1902,18 +1920,14 @@ const schema_quickButton = [
         Text("position_right"),
         Text("position_bottom"),
     ),
-    UntitledBox(
-        Switch("support_right_click"),
-        Switch("hide_button_hint"),
-    ),
     TableBox(
         "buttons",
         ["coordinate", "icon"],
         [
             UntitledBox(
                 Switch("disable"),
-                Integer("coordinate.0", { tooltip: "buttons.coordinate.0", min: 0 }),
-                Integer("coordinate.1", { tooltip: "buttons.coordinate.1", min: 0 }),
+                Integer("coordinate.0", { tooltip: "coord0", min: 0 }),
+                Integer("coordinate.1", { tooltip: "coord1", min: 0 }),
                 Icon("icon"),
                 Text("size"),
                 Text("color"),
@@ -2020,7 +2034,8 @@ const SCHEMAS = {
 const I18N = (schemas, i18nData = require("../global/locales/en.json")) => {
     const PREFIX_DEPENDENT_PROPS = { label: "$label" }
     const SPECIAL_PROPS = { options: "$option", thMap: "$label" }
-    const GLOBAL_PROPS = { tooltip: "$tooltip", placeholder: "$placeholder", hintHeader: "$hintHeader", hintDetail: "$hintDetail", unit: "$unit" }
+    const GLOBAL_PROPS = { tooltip: "$tooltip", placeholder: "$placeholder", hintHeader: "$hintHeader", hintDetail: "$hintDetail", divider: "$divider", unit: "$unit" }
+    const TAB_PROPS = { tabs: "$tab" }
     const NESTED_PROPS = ["nestedBoxes", "subSchema"]
 
     const translateBox = (box, t, prefix = "") => {
@@ -2033,8 +2048,7 @@ const I18N = (schemas, i18nData = require("../global/locales/en.json")) => {
             newBox.title = t(`$title.${i18nKey}`)
         }
         if (newBox.tooltip) {
-            const i18nKey = prefix ? `${prefix}.${newBox.title}` : newBox.tooltip
-            newBox.tooltip = t(`$tooltip.${i18nKey}`)
+            newBox.tooltip = t(`$tooltip.${newBox.tooltip}`)
         }
         if (Array.isArray(newBox.fields)) {
             newBox.fields = newBox.fields.map(field => {
@@ -2055,6 +2069,12 @@ const I18N = (schemas, i18nData = require("../global/locales/en.json")) => {
                         newField[prop] = Object.fromEntries(
                             Object.entries(newField[prop]).map(([k, v]) => [k, t(`${i18nPrefix}.${v}`)])
                         )
+                    }
+                })
+                Object.entries(TAB_PROPS).forEach(([prop, i18nPrefix]) => {
+                    if (Array.isArray(newField[prop])) {
+                        newField[prop].label = t(`${i18nPrefix}.${newField[prop].label}`)
+                        newField[prop].schema = newField[prop].schema.map(nested => translateBox(nested, t, newField.key))
                     }
                 })
                 NESTED_PROPS.forEach(prop => {

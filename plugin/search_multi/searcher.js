@@ -512,7 +512,7 @@ class Searcher {
 
     postParse = (ast) => {
         const { REGEXP } = this.parser.TYPE
-        this.parser.walk(ast, node => {
+        this.parser.walkLeaves(ast, node => {
             const qualifier = this.qualifiers.get(node.scope.toLowerCase())
             node.operand = qualifier.preprocess(node.scope, node.operator, node.operand, node.type)
             node.validateError = qualifier.validate(node.scope.toUpperCase(), node.operator, node.operand, node.type)
@@ -524,6 +524,7 @@ class Searcher {
     }
 
     /**
+     * Re-balances OR/AND trees to execute cheaper conditions first (Short-circuiting)
      * Process OR/AND nodes by:
      *   1. Gathering data child nodes into `dataNodes`
      *   2. Sorting `dataNodes` by `cost`
@@ -532,54 +533,56 @@ class Searcher {
     optimize = (ast) => {
         if (!ast) return
 
-        const { OR, AND } = this.parser.TYPE
-        const setCost = node => {
-            if (!node) return
-
-            setCost(node.left)
-            setCost(node.right)
-
-            const rootCost = node.cost ?? 1
-            const leftCost = node.left?.cost ?? 1
-            const rightCost = node.right?.cost ?? 1
-            node.cost = Math.max(rootCost, leftCost, rightCost)
-        }
-        const getDataNodes = (cur, root, dataNodes = []) => {
-            if (cur.type === root.type) {
-                if (cur.right) {
-                    getDataNodes(cur.right, root, dataNodes)
-                }
-                if (cur.left) {
-                    getDataNodes(cur.left, root, dataNodes)
-                }
-            } else {
-                dataNodes.push(cur)
+        const { OR, AND, NOT } = this.parser.TYPE
+        const calcCost = (node) => {
+            if (!node) return 0
+            if (node.cost !== undefined && node.type !== OR && node.type !== AND && node.type !== NOT) {
+                return node.cost
             }
-            return dataNodes
-        }
-        const rebuild = node => {
-            if (!node) return
-
-            if (node.type === OR || node.type === AND) {
-                const dataNodes = getDataNodes(node, node)
-                if (dataNodes.length > 1) {
-                    dataNodes.sort((a, b) => a.cost - b.cost)
-                    let newNode = dataNodes.shift()
-                    while (dataNodes.length) {
-                        const right = dataNodes.shift()
-                        newNode = { type: node.type, left: newNode, right: right, cost: right.cost }
-                    }
-                    node.left = newNode.left
-                    node.right = newNode.right
-                    node.cost = newNode.cost
-                }
+            if (node.type === NOT) {
+                node.cost = calcCost(node.right)
+                return node.cost
             }
+            const leftCost = calcCost(node.left)
+            const rightCost = calcCost(node.right)
+            node.cost = Math.max(leftCost, rightCost)
+            return node.cost
+        }
+        const rebuild = (node) => {
+            if (!node) return
+            if (node.type === NOT) {
+                rebuild(node.right)
+                return
+            }
+            if (node.type !== OR && node.type !== AND) return
 
-            rebuild(node.right)
             rebuild(node.left)
+            rebuild(node.right)
+
+            const dataNodes = getDataNodes(node, node.type)
+            if (dataNodes.length > 1) {
+                dataNodes.sort((a, b) => (a.cost || 0) - (b.cost || 0))
+                let newNode = dataNodes.shift()
+                while (dataNodes.length) {
+                    const right = dataNodes.shift()
+                    newNode = { type: node.type, left: newNode, right: right, cost: Math.max(newNode.cost, right.cost) }
+                }
+                node.left = newNode.left
+                node.right = newNode.right
+                node.cost = newNode.cost
+            }
+        }
+        const getDataNodes = (node, type, ret = []) => {
+            if (node.type === type) {
+                getDataNodes(node.left, type, ret)
+                getDataNodes(node.right, type, ret)
+            } else {
+                ret.push(node)
+            }
+            return ret
         }
 
-        setCost(ast)
+        calcCost(ast)
         rebuild(ast)
         return ast
     }
@@ -595,8 +598,8 @@ class Searcher {
         if (!this.config.CASE_SENSITIVE) {
             if (typeof queryResult === "string") {
                 queryResult = queryResult.toLowerCase()
-            } else if (Array.isArray(queryResult) && typeof queryResult[0] === "string") {
-                queryResult = queryResult.map(s => s.toLowerCase())
+            } else if (Array.isArray(queryResult)) {
+                queryResult = queryResult.map(s => typeof s === "string" ? s.toLowerCase() : s)
             }
         }
         const match = qualifier[type]
@@ -606,7 +609,7 @@ class Searcher {
     getReadFileScopes = (ast) => {
         const scope = new Set()
         const needRead = new Set([...this.qualifiers.values()].filter(q => q.need_read_file).map(q => q.scope))
-        this.parser.walk(ast, node => {
+        this.parser.walkLeaves(ast, node => {
             if (needRead.has(node.scope)) {
                 scope.add(node.scope)
             }
@@ -614,44 +617,39 @@ class Searcher {
         return [...scope]
     }
 
-    getContentTokens = (ast) => {
+    getPositiveContentTokens = (ast) => {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
         const isMeta = new Set([...this.qualifiers.values()].filter(q => q.is_meta).map(q => q.scope))
         const contentNodes = new Set()
         const _eval = (node, negated) => {
-            const { type, left, right, scope } = node
-            switch (type) {
+            if (!node) return
+            switch (node.type) {
                 case KEYWORD:
                 case PHRASE:
                 case REGEXP:
-                    if (!isMeta.has(scope)) {
+                    if (!isMeta.has(node.scope)) {
                         node._negated = negated
                         contentNodes.add(node)
                     }
                     break
                 case OR:
                 case AND:
-                    _eval(left, negated)
-                    _eval(right, negated)
+                    _eval(node.left, negated)
+                    _eval(node.right, negated)
                     break
                 case NOT:
-                    if (left) {
-                        _eval(left, negated)
-                    }
-                    _eval(right, !negated)
+                    _eval(node.right, !negated)
                     break
                 default:
-                    throw new Error(`Unknown AST Node「${type}」`)
+                    throw new Error(`Unknown Node Type: ${node.type}`)
             }
         }
 
-        _eval(ast)
+        _eval(ast, false)
         return [...contentNodes]
             .filter(n => !n._negated)
-            .map(n => {
-                const operand = n.operand
-                return n.type === REGEXP ? operand : operand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-            })
+            .map(n => n.type === REGEXP ? n.operand : n.operand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+            .filter(Boolean)
     }
 
     toMermaid = (ast, translate = false, direction = "TB") => {
@@ -721,7 +719,7 @@ class Searcher {
                     node.result = [...left.result, ...right.result]
                     return node
                 case NOT:
-                    left = node.left ? _eval(node.left, negated) : { result: [], head: [], tail: [] }
+                    left = { result: [], head: [], tail: [] }
                     right = _eval(node.right, !negated)
                     node.head = node.left ? left.head : right.head
                     node.tail = right.tail
@@ -799,7 +797,7 @@ class Searcher {
                     node.result = [...left.result, ...right.result]
                     return node
                 case NOT:
-                    left = node.left ? _eval(node.left, negated) : { result: [[]], head: [], tail: [] }
+                    left = { result: [[]], head: [], tail: [] }
                     right = _eval(node.right, !negated)
                     node.result = _link(left, right)
                     return node
@@ -874,7 +872,7 @@ class Searcher {
             [em("/\\bsour\\b/ pear mtime<2024-05-16"), t("modal.example.desc6")],
             [em("frontmatter:dev | head=plugin | strong:MIT"), t("modal.example.desc7")],
             [em("size>10kb (linenum>=1000 | hasimage=true)"), t("modal.example.desc8")],
-            [em("path:(info | warn | err) -ext:md"), t("modal.example.desc9")],
+            [em("-(path:warn | path:err) -ext:md"), t("modal.example.desc9")],
             [em('thead:k8s h2:prometheus blockcode:"kubectl apply"'), t("modal.example.desc10")],
         ])
 
@@ -931,7 +929,7 @@ class Searcher {
             ]
             const playgroundFields = [
                 { key: "expression", type: "textarea", rows: 3, noResize: true },
-                { key: "_displayAST", type: "textarea", readonly: true, rows: 5, dependencies: { presentation: "ast" }, dependencyUnmetAction: "hide" },
+                { key: "_displayAST", type: "code", readonly: true, dependencies: { presentation: "ast" }, dependencyUnmetAction: "hide" },
                 { key: "_displayGraph", type: "hint", unsafe: true, dependencies: { presentation: "graph" }, dependencyUnmetAction: "hide" },
                 { key: "_displayText", type: "hint", unsafe: true, dependencies: { presentation: "text" }, dependencyUnmetAction: "hide" },
                 { key: "optimize", type: "switch", label: t("$label.OPTIMIZE_SEARCH"), tooltip: t("$tooltip.breakOrder") },
@@ -944,7 +942,7 @@ class Searcher {
                 { title: t("modal.title.example"), fields: [{ type: "custom", content: example, unsafe: true }] },
                 { title: t("modal.title.playground"), fields: playgroundFields },
                 { title: undefined, fields: [{ key: "_grammar_box_visible", type: "action", label: t("modal.title.grammar"), actionType: "toggle" }] },
-                { title: undefined, fields: [{ key: "grammar", type: "textarea", readonly: true, rows: 21 }], dependencies: { _grammar_box_visible: true } },
+                { title: undefined, fields: [{ key: "grammar", type: "code", readonly: true }], dependencies: { _grammar_box_visible: true } },
             ]
         }
 
@@ -953,7 +951,7 @@ class Searcher {
             schema: getSchema(),
             data: {
                 grammar: grammar.trim(),
-                expression: "head:sour  file:pear  ( linenum<=200 | size>10kb )",
+                expression: '-file:baz  head:"foo bar"  ( linenum<=200 | size>2kb )',
                 presentation: "graph",
                 direction: "LR",
                 optimize: false,
