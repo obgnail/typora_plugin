@@ -2,3 +2,16 @@
 .geDiagramContainer svg {
     line-height: initial;
 }
+
+@media print {
+    .fix-drawio-unlocked {
+        width: 100% !important; max-width: 100% !important;
+        height: auto !important; min-width: 0 !important;
+        margin: 0 auto !important; padding: 0 !important;
+        display: block !important; overflow: visible !important;
+    }
+    svg.fix-drawio-svg {
+        width: 100% !important; height: auto !important;
+        background: transparent !important; display: block !important;
+    }
+}

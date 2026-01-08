@@ -173,6 +173,20 @@ class ThirdPartyDiagramParser {
         return ($pre, $wrap, content) => this.applyFenceStyles($pre, $wrap, {}, css)
     }
 
+    SVG_PRINT_STYLE_FIXER = (lang, selector) => () => `
+        @media print {
+            .md-diagram-panel[lang="${lang}"] ${selector} {
+                max-width: 100% !important;
+                width: 100% !important;
+                overflow: visible !important; 
+            }
+            .md-diagram-panel[lang="${lang}"] svg {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+            }
+        }`
+
     process = () => {
         const getLifeCycleFn = (fnName) => () => {
             for (const parser of this.parsers.values()) {

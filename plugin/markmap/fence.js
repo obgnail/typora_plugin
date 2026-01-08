@@ -24,7 +24,7 @@ class FenceMarkmap {
             destroyFunc: this.destroy,
             beforeExportToNative: null,
             beforeExportToHTML: null,
-            extraStyleGetter: null,
+            extraStyleGetter: this.getStyleContent,
             versionGetter: this.getVersion,
         })
     }
@@ -75,6 +75,16 @@ class FenceMarkmap {
     destroy = instance => instance.destroy()
 
     getVersion = () => this.Lib.transformerVersions["markmap-lib"]
+
+    getStyleContent = () => `
+        .md-diagram-panel .plugin-fence-markmap-svg {
+            line-height: initial !important;
+            user-select: none;
+        }
+        .plugin-fence-markmap-svg table {
+            margin: 0;
+            padding: 0;
+        }`
 }
 
 module.exports = FenceMarkmap

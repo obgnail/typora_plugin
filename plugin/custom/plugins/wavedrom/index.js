@@ -60,7 +60,10 @@ class WavedromPlugin extends BaseCustomPlugin {
             destroyFunc: null,
             beforeExportToNative: null,
             beforeExportToHTML: null,
-            extraStyleGetter: null,
+            extraStyleGetter: parser.SVG_PRINT_STYLE_FIXER(
+                this.config.LANGUAGE,
+                ".plugin-wavedrom-content",
+            ),
             versionGetter: this.getVersion,
         })
     }
