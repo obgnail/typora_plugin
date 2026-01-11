@@ -144,7 +144,7 @@ class insertMindmap extends BaseCustomPlugin {
                 return node._shortName
             }
             node._shortName = "T" + ++num
-            const name = node.text.replace(/"/g, "")
+            const name = node.text.replace(/"/g, "#quot;")
             return `${node._shortName}("${name}")`
         }
         const getTokens = (node, list) => {

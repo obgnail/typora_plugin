@@ -1,7 +1,17 @@
 /**
+ * @typedef {Object} TooltipConfig
+ * @property {string} action
+ * @property {string} [icon]
+ * @property {string} [text]
+ * @property {*} [data]
+ */
+
+/** @typedef {string | TooltipConfig | Array<string|TooltipConfig>} ITooltip */
+
+/**
  * @typedef {Object} BaseProps
  * @property {string} [label]
- * @property {string} [tooltip]
+ * @property {ITooltip} [tooltip]
  * @property {string} [explain]
  * @property {boolean} [hidden]
  * @property {boolean} [disabled]
@@ -14,10 +24,12 @@
 /** @typedef {InputProps & { min?: number, max?: number, step?: number, isInteger?: boolean }} NumberProps */
 /** @typedef {BaseProps & { minItems?: number, maxItems?: number, disabledOptions?: string[] }} OptionsProps */
 
+/** @typedef {{ key?: string } & BaseProps & Object} IField */
+
 /**
  * @param {string} key
  * @param {string} type
- * @param {Object} [props]
+ * @param {IField} [props]
  */
 const Field = (key, type, props = {}) => ({ type, key, label: key, ...props })
 
@@ -210,7 +222,7 @@ const Custom = (content, props = {}) => ({ type: "custom", content, unsafe: fals
 /**
  * @typedef {Object} BoxProps
  * @property {string} [label]
- * @property {string} [tooltip]
+ * @property {ITooltip} [tooltip]
  * @property {Object} [dependencies]
  * @property {"hide"|"readonly"} [dependencyUnmetAction="hide"]
  */
@@ -298,19 +310,25 @@ const TableBox = (key, headers, nestedBoxes, defaultValues, props = {}) => {
 }
 
 /**
- * @param {...Object} fields
+ * @param {...IField} fields
  */
 const UntitledBox = (...fields) => ({ fields })
 
 /**
  * @param {string} title
- * @param {...Object} fields
+ * @param {...IField} fields
  */
 const TitledBox = (title, ...fields) => ({ title, fields })
 
+/**
+ * @param {string} title
+ * @param {ITooltip} tooltip
+ * @param {...IField} fields
+ */
+const TitledTipBox = (title, tooltip, ...fields) => ({ title, tooltip, fields })
 
 /******** Dependency Helper ********/
-// MORE: See `comparisonEvaluators` in fast-form.js
+// MORE: See `comparisonEvaluators` in `Feature_Watchers` in fast-form.js
 const Dep = {
     true: (key) => ({ [key]: true }),
     false: (key) => ({ [key]: false }),
@@ -325,9 +343,16 @@ const Dep = {
     and: (...conditions) => ({ $and: conditions }),
 }
 
+/******** Tooltip Helper ********/
+// MORE: See `Feature_InteractiveTooltip` in fast-form.js
+const Tip = {
+    info: (text) => text,
+    action: (action, icon, text) => ({ action, icon, text })
+}
+
 /******** Common Props ********/
 const prop_percent = { min: 0, max: 100, step: 1 }
-const prop_protected = { tooltip: "protected", disabled: true }
+const prop_protected = { tooltip: Tip.action("openSettingsFolder", "fa fa-gear", "protected"), disabled: true }
 const prop_minusOne = { tooltip: "minusOneMeansUnlimited", min: -1 }
 
 const dep_markmapToc = { dependencies: Dep.true("ENABLE_TOC_MARKMAP") }
@@ -369,7 +394,23 @@ const UNITS = {
 }
 
 /******** Prop Options (for Select/Transfer only) ********/
-const OPTIONS = {
+const createOptions = (definitions) => {
+    return Object.freeze(Object.fromEntries(
+        Object.entries(definitions).map(([name, fields]) => {
+            const ret = Object.freeze(Object.fromEntries(
+                Object.entries(fields).map(([key, options]) => {
+                    const opts = Object.freeze(Object.fromEntries(
+                        options.map(opt => [opt, `${key}.${opt}`]))
+                    )
+                    return [key, opts]
+                })
+            ))
+            return [name, ret]
+        })
+    ))
+}
+
+const OPTIONS = createOptions({
     global: {
         LOCALE: ["auto", "en", "zh-CN", "zh-TW"],
         EXIT_INTERACTIVE_MODE: ["click_exit_button", "ctrl_click_fence"],
@@ -455,12 +496,6 @@ const OPTIONS = {
         tools: ["info", "locate", "fix"],
         result_order_by: ["index", "lineNumber", "ruleName", "ruleDesc"],
     },
-}
-
-Object.values(OPTIONS).forEach(field => {
-    Object.entries(field).forEach(([fieldKey, options]) => {
-        field[fieldKey] = Object.fromEntries(options.map(option => [option, `${fieldKey}.${option}`]))
-    })
 })
 
 /******** Schemas ********/
@@ -488,7 +523,7 @@ const schema_global = [
     UntitledBox(
         Action("updatePlugin"),
         Action("uninstallPlugin"),
-        Action("sendEmail"),
+        Action("sendEmail", { tooltip: Tip.action("toggleDevTools", "fa fa-wrench") }),
         Action("donate"),
         Static("pluginVersion"),
     ),
@@ -972,14 +1007,13 @@ const schema_fence_enhance = [
     ),
     TitledBox(
         "buttonHotkeys",
-        Switch("ENABLE_HOTKEY"),
-        Text("SWAP_PREVIOUS_LINE", { tooltip: "codeMirrorStyle", ...dep_fenceEnhanceHotkey }),
+        Switch("ENABLE_HOTKEY", { tooltip: Tip.action("viewCodeMirrorKeymapsManual", "fa fa-chain") }),
+        Text("SWAP_PREVIOUS_LINE", dep_fenceEnhanceHotkey),
         Text("SWAP_NEXT_LINE", dep_fenceEnhanceHotkey),
         Text("COPY_PREVIOUS_LINE", dep_fenceEnhanceHotkey),
         Text("COPY_NEXT_LINE", dep_fenceEnhanceHotkey),
         Text("INSERT_LINE_PREVIOUS", dep_fenceEnhanceHotkey),
         Text("INSERT_LINE_NEXT", dep_fenceEnhanceHotkey),
-        Action("viewCodeMirrorKeymapsManual"),
     ),
     TableBox(
         "CUSTOM_HOTKEYS",
@@ -1000,17 +1034,16 @@ const schema_fence_enhance = [
     ),
     TitledBox(
         "lineHighlighting",
-        Switch("HIGHLIGHT_BY_LANGUAGE"),
+        Switch("HIGHLIGHT_BY_LANGUAGE", { tooltip: Tip.action("viewVitePressLineHighlighting", "fa fa-chain") }),
         Switch("HIGHLIGHT_WHEN_HOVER"),
         Select("NUMBERING_BASE", OPTIONS.fence_enhance.NUMBERING_BASE, { dependencies: Dep.true("HIGHLIGHT_BY_LANGUAGE") }),
         Text("HIGHLIGHT_PATTERN", { dependencies: Dep.follow("NUMBERING_BASE") }),
         Text("HIGHLIGHT_LINE_COLOR", { dependencies: Dep.or(Dep.follow("NUMBERING_BASE"), Dep.true("HIGHLIGHT_WHEN_HOVER")) }),
-        Action("viewVitePressLineHighlighting"),
     ),
     TitledBox(
         "advanced",
-        Switch("ENABLE_LANGUAGE_FOLD"),
-        Switch("INDENTED_WRAPPED_LINE"),
+        Switch("ENABLE_LANGUAGE_FOLD", { tooltip: Tip.action("viewCodeFoldingDemo", "fa fa-chain") }),
+        Switch("INDENTED_WRAPPED_LINE", { tooltip: Tip.action("viewIndentedWrappedLineDemo", "fa fa-chain") }),
         Switch("PRELOAD_ALL_FENCES", { tooltip: "dangerous" }),
     ),
     box_settingHandler,
@@ -1095,10 +1128,6 @@ const schema_text_stylize = [
             hotkey: "",
             action: "weight",
         },
-    ),
-    TitledBox(
-        "toolBar",
-        Text("MODAL_BACKGROUND_COLOR"),
     ),
     TitledBox(
         "buttonDefaultOptions",
@@ -1332,7 +1361,10 @@ const schema_editor_width_slider = [
 ]
 
 const schema_article_uploader = [
-    box_basePluginLite,
+    UntitledBox(
+        Switch("ENABLE", { tooltip: Tip.action("viewArticleUploaderReadme", "fa fa-flask") }),
+        field_NAME,
+    ),
     UntitledBox(
         Switch("HIDE"),
     ),
@@ -1367,9 +1399,6 @@ const schema_article_uploader = [
         Switch("upload.csdn.enabled"),
         Text("upload.csdn.cookie", { dependencies: Dep.true("upload.csdn.enabled") }),
     ),
-    UntitledBox(
-        Action("viewArticleUploaderReadme"),
-    ),
     box_settingHandler,
 ]
 
@@ -1397,7 +1426,7 @@ const schema_sidebar_enhance = [
     box_basePluginLite,
     UntitledBox(
         Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR"),
-        Switch("KEEP_OUTLINE_FOLD_STATE", { tooltip: "canCollapseOutlinePanel" }),
+        Switch("KEEP_OUTLINE_FOLD_STATE"),
         Switch("SORTABLE_OUTLINE"),
     ),
     UntitledBox(
@@ -1460,16 +1489,16 @@ const schema_cursor_history = [
 ]
 
 const schema_json_rpc = [
-    box_basePluginLite,
+    UntitledBox(
+        Switch("ENABLE", { tooltip: Tip.action("viewJsonRPCReadme", "fa fa-flask") }),
+        field_NAME,
+    ),
     TitledBox(
         "rpcServer",
         Switch("SERVER_OPTIONS.strict"),
         Text("SERVER_OPTIONS.host"),
         Integer("SERVER_OPTIONS.port", { min: 0, max: 65535, step: 1 }),
         Text("SERVER_OPTIONS.path"),
-    ),
-    UntitledBox(
-        Action("viewJsonRPCReadme"),
     ),
     box_settingHandler,
 ]
@@ -1566,9 +1595,8 @@ const schema_echarts = [
     CodeBox("TEMPLATE"),
     TitledBox(
         "advanced",
-        Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: "svgBetter" }),
+        Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: Tip.action("chooseEchartsRenderer", "fa fa-link") }),
         Select("EXPORT_TYPE", OPTIONS.echarts.EXPORT_TYPE),
-        Action("chooseEchartsRenderer"),
     ),
     box_settingHandler,
 ]
@@ -1591,10 +1619,7 @@ const schema_wavedrom = [
     ),
     box_chartStyle,
     CodeBox("TEMPLATE"),
-    ArrayBox("SKIN_FILES"),
-    UntitledBox(
-        Action("downloadWaveDromSkins"),
-    ),
+    ArrayBox("SKIN_FILES", { tooltip: Tip.action("downloadWaveDromSkins", "fa fa-download") }),
     box_settingHandler,
 ]
 
@@ -1611,10 +1636,7 @@ const schema_abc = [
     box_langMode,
     box_chartStyle,
     CodeBox("TEMPLATE"),
-    DictBox("VISUAL_OPTIONS"),
-    UntitledBox(
-        Action("viewAbcVisualOptionsHelp"),
-    ),
+    DictBox("VISUAL_OPTIONS", null, { tooltip: Tip.action("viewAbcVisualOptionsHelp", "fa fa-link") }),
     box_settingHandler,
 ]
 
@@ -1634,13 +1656,17 @@ const schema_drawIO = [
 ]
 
 const schema_plantUML = [
-    box_customPluginLite,
+    UntitledBox(
+        Switch("enable", { tooltip: Tip.action("installPlantUMLServer", "fa fa-flask") }),
+        field_hide,
+        field_name,
+        field_order,
+    ),
     UntitledBox(
         Text("SERVER_URL"),
-        Select("OUTPUT_FORMAT", OPTIONS.plantUML.OUTPUT_FORMAT),
         Integer("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
         Integer("MEMORIZED_URL_COUNT", { min: 1 }),
-        Action("installPlantUMLServer"),
+        Select("OUTPUT_FORMAT", OPTIONS.plantUML.OUTPUT_FORMAT),
     ),
     box_langMode,
     box_chartStyle,
@@ -1651,7 +1677,7 @@ const schema_plantUML = [
 const schema_marp = [
     box_customPluginLite,
     box_langMode,
-    DictBox("MARP_CORE_OPTIONS"),
+    DictBox("MARP_CORE_OPTIONS", null, { tooltip: Tip.action("viewMarpOptions", "fa fa-link") }),
     CodeBox("TEMPLATE"),
     box_settingHandler,
 ]
@@ -1899,11 +1925,8 @@ const schema_markdownLint = [
         Color("pass_color", { dependencies: Dep.true("use_button") }),
         Color("error_color", { dependencies: Dep.true("use_button") }),
     ),
-    DictBox("rule_config"),
+    DictBox("rule_config", null, { tooltip: Tip.action("viewMarkdownlintRules", "fa fa-link") }),
     ArrayBox("custom_rule_files"),
-    UntitledBox(
-        Action("viewMarkdownlintRules"),
-    ),
     box_settingHandler,
 ]
 
@@ -2034,57 +2057,77 @@ const SCHEMAS = {
 const I18N = (schemas, i18nData = require("../global/locales/en.json")) => {
     const PREFIX_DEPENDENT_PROPS = { label: "$label" }
     const SPECIAL_PROPS = { options: "$option", thMap: "$label" }
-    const GLOBAL_PROPS = { tooltip: "$tooltip", placeholder: "$placeholder", hintHeader: "$hintHeader", hintDetail: "$hintDetail", divider: "$divider", unit: "$unit" }
+    const GLOBAL_PROPS = { placeholder: "$placeholder", hintHeader: "$hintHeader", hintDetail: "$hintDetail", divider: "$divider", unit: "$unit" }
     const TAB_PROPS = { tabs: "$tab" }
     const NESTED_PROPS = ["nestedBoxes", "subSchema"]
 
-    const translateBox = (box, t, prefix = "") => {
-        const { label, ...newBox } = { ...box }
+    const translateTitle = (item, label, t, prefix) => {
         if (label) {
             const i18nKey = prefix ? `${prefix}.${label}` : label
-            newBox.title = t(`$label.${i18nKey}`)
-        } else if (newBox.title) {
-            const i18nKey = prefix ? `${prefix}.${newBox.title}` : newBox.title
-            newBox.title = t(`$title.${i18nKey}`)
+            item.title = t(`$label.${i18nKey}`)
+        } else if (item.title) {
+            const i18nKey = prefix ? `${prefix}.${item.title}` : item.title
+            item.title = t(`$title.${i18nKey}`)
         }
-        if (newBox.tooltip) {
-            newBox.tooltip = t(`$tooltip.${newBox.tooltip}`)
-        }
-        if (Array.isArray(newBox.fields)) {
-            newBox.fields = newBox.fields.map(field => {
-                const newField = { ...field }
-                Object.entries(PREFIX_DEPENDENT_PROPS).forEach(([prop, i18nPrefix]) => {
-                    if (newField[prop] != null) {
-                        const key = prefix ? `${prefix}.${newField[prop]}` : newField[prop]
-                        newField[prop] = t(`${i18nPrefix}.${key}`)
-                    }
-                })
-                Object.entries(GLOBAL_PROPS).forEach(([prop, i18nPrefix]) => {
-                    if (newField[prop] != null) {
-                        newField[prop] = t(`${i18nPrefix}.${newField[prop]}`)
-                    }
-                })
-                Object.entries(SPECIAL_PROPS).forEach(([prop, i18nPrefix]) => {
-                    if (newField[prop] != null && typeof newField[prop] === "object" && !Array.isArray(newField[prop])) {
-                        newField[prop] = Object.fromEntries(
-                            Object.entries(newField[prop]).map(([k, v]) => [k, t(`${i18nPrefix}.${v}`)])
-                        )
-                    }
-                })
-                Object.entries(TAB_PROPS).forEach(([prop, i18nPrefix]) => {
-                    if (Array.isArray(newField[prop])) {
-                        newField[prop].label = t(`${i18nPrefix}.${newField[prop].label}`)
-                        newField[prop].schema = newField[prop].schema.map(nested => translateBox(nested, t, newField.key))
-                    }
-                })
-                NESTED_PROPS.forEach(prop => {
-                    if (Array.isArray(newField[prop])) {
-                        newField[prop] = newField[prop].map(nested => translateBox(nested, t, newField.key))
-                    }
-                })
-                return newField
+    }
+    const translateTooltip = (item, t) => {
+        if (item.tooltip == null) return
+        const tips = Array.isArray(item.tooltip) ? item.tooltip : [item.tooltip]
+        item.tooltip = tips.map(tip => {
+            if (typeof tip === "string") {
+                return t(`$tooltip.${tip}`)
+            }
+            if (typeof tip?.text === "string") {
+                tip = { ...tip, text: t(`$tooltip.${tip.text}`) }
+            }
+            if (typeof tip?.action === "string" && tip?.text == null) {
+                tip = { ...tip, text: t(`$tooltip.${tip.action}`) }
+            }
+            return tip
+        })
+    }
+    const translateFields = (box, t, prefix) => {
+        if (!Array.isArray(box.fields)) return
+        box.fields = box.fields.map(field => {
+            const newField = { ...field }
+            translateTooltip(newField, t)
+            Object.entries(PREFIX_DEPENDENT_PROPS).forEach(([prop, i18nPrefix]) => {
+                if (newField[prop] != null) {
+                    const key = prefix ? `${prefix}.${newField[prop]}` : newField[prop]
+                    newField[prop] = t(`${i18nPrefix}.${key}`)
+                }
             })
-        }
+            Object.entries(GLOBAL_PROPS).forEach(([prop, i18nPrefix]) => {
+                if (newField[prop] != null) {
+                    newField[prop] = t(`${i18nPrefix}.${newField[prop]}`)
+                }
+            })
+            Object.entries(SPECIAL_PROPS).forEach(([prop, i18nPrefix]) => {
+                if (newField[prop] != null && typeof newField[prop] === "object" && !Array.isArray(newField[prop])) {
+                    newField[prop] = Object.fromEntries(
+                        Object.entries(newField[prop]).map(([k, v]) => [k, t(`${i18nPrefix}.${v}`)])
+                    )
+                }
+            })
+            Object.entries(TAB_PROPS).forEach(([prop, i18nPrefix]) => {
+                if (Array.isArray(newField[prop])) {
+                    newField[prop].label = t(`${i18nPrefix}.${newField[prop].label}`)
+                    newField[prop].schema = newField[prop].schema.map(nested => translateBox(nested, t, newField.key))
+                }
+            })
+            NESTED_PROPS.forEach(prop => {
+                if (Array.isArray(newField[prop])) {
+                    newField[prop] = newField[prop].map(nested => translateBox(nested, t, newField.key))
+                }
+            })
+            return newField
+        })
+    }
+    const translateBox = (box, t, prefix = "") => {
+        const { label, ...newBox } = { ...box }
+        translateTitle(newBox, label, t, prefix)
+        translateTooltip(newBox, t)
+        translateFields(newBox, t, prefix)
         return newBox
     }
 

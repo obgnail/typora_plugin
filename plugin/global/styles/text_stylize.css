@@ -1,7 +1,7 @@
 #plugin-text-stylize {
     top: 25%;
     left: 100px;
-    background-color: ${backgroundColor};
+    background-color: var(--side-bar-bg-color);
     min-height: auto;
     overflow: visible;
 }
@@ -31,8 +31,8 @@
     position: absolute;
     left: 0;
     margin: 0;
-    display: none;
-    transition: all 0.3s ease-in-out;
+    display: initial;
+    transform: translateY(60px);
 }
 
 #plugin-text-stylize .stylize-palette td {

@@ -229,55 +229,94 @@
     line-height: 12px;
 }
 
+@keyframes tooltipSlideUp {
+    from {
+        opacity: 0;
+        margin-top: 4px;
+    }
+    to {
+        opacity: 1;
+        margin-top: 10px;
+    }
+}
+
 .tooltip {
     position: relative;
-    display: inline-block;
-    margin-left: 4px;
-}
-
-.tooltip > span:first-child {
-    font-size: 13px;
-    color: var(--ff-text-sub);
+    display: inline-flex;
+    align-items: center;
     margin-left: 2px;
-    cursor: help;
 }
 
-.tooltip > span:last-child {
+.tooltip .tooltip-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 14px;
+    color: var(--ff-text-sub);
+    cursor: help;
+    transition: background-color 0.2s, color 0.2s, transform 0.1s;
+}
+
+.tooltip .tooltip-content {
     display: none;
     position: absolute;
-    top: 30px;
-    left: -50px;
-    background-color: rgba(0, 0, 0, 0.75);
+    top: 100%;
+    left: -12px;
+    margin-top: 10px;
+    background-color: rgba(0, 0, 0, 0.85);
     color: var(--ff-bg-white);
     padding: 8px 12px;
-    z-index: 10;
     border-radius: var(--ff-radius);
+    font-size: 12px;
+    line-height: 1.5;
     width: max-content;
-    max-width: 300px;
-    word-wrap: break-word;
-    line-height: 24px;
-    box-shadow: var(--ff-shadow-base);
+    max-width: 260px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+    animation: tooltipSlideUp 0.2s ease-out;
 }
 
-.tooltip > span:last-child::after {
-    content: '';
+.tooltip .tooltip-content::after {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 24px;
+    transform: translateX(-50%);
     width: 0;
     height: 0;
-    position: absolute;
-    border-bottom: 6px solid rgba(0, 0, 0, 0.75);
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    top: -6px;
-    left: 50px;
+    border-bottom: 5px solid rgba(0, 0, 0, 0.85);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
 }
 
-.tooltip:hover > span:first-child {
+.tooltip:hover .tooltip-content {
+    display: block;
+}
+
+.tooltip:hover .tooltip-trigger {
+    background-color: rgba(0, 0, 0, 0.06);
+    color: var(--ff-text-main);
+}
+
+.tooltip.has-action .tooltip-trigger {
+    cursor: pointer;
     color: var(--ff-primary);
 }
 
-.tooltip:hover > span:last-child {
-    display: block;
-    animation: fadeIn 0.2s;
+.tooltip.has-action:hover .tooltip-trigger {
+    background-color: var(--ff-primary-alpha);
+    color: var(--ff-primary);
+}
+
+.tooltip.has-action:active .tooltip-trigger {
+    background-color: var(--ff-focus-ring);
 }
 
 /* ==========================================================================
@@ -723,7 +762,6 @@ textarea:disabled {
 
 .control[data-type="action"] {
     cursor: pointer;
-    overflow: hidden; /* Hides the ripple outside the element */
     position: relative; /* Allows absolute positioning of the ripple */
 }
 
@@ -734,6 +772,17 @@ textarea:disabled {
 .control[data-type="action"]:hover .action {
     margin-right: 0;
     color: var(--ff-primary);
+}
+
+.action-ripple-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: inherit;
 }
 
 .ripple {
@@ -928,6 +977,10 @@ textarea:disabled {
     min-width: 20px;
     text-align: center;
     margin-right: 0;
+}
+
+.array-item-val[contenteditable="true"] {
+    max-width: none;
 }
 
 .array-item-del {
@@ -1961,7 +2014,7 @@ textarea:disabled {
 
 .tabs-style-card.tabs-pos-top .tab-header-item.active {
     background-color: var(--ff-bg-white);
-    box-shadow: 0 -1px 2px rgba(0,0,0,0.02);
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .tabs-style-card.tabs-pos-left .tabs-header-list {
@@ -1979,7 +2032,7 @@ textarea:disabled {
 
 .tabs-style-card.tabs-pos-left .tab-header-item.active {
     background-color: var(--ff-bg-white);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     color: var(--ff-primary);
 }
 

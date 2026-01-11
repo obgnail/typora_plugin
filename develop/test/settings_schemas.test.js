@@ -118,13 +118,16 @@ test("all schemas keys should be translated", async t => {
     const i18n = require("../../plugin/global/core/i18n.js")
     await i18n.init("zh-CN")
 
+    const boxProps = ["title", "tooltip"]
     const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail", "divider", "unit"]
     const specialProps = ["options", "thMap"]
     const nestedFieldProps = ["nestedBoxes", "subSchema"]
     const checkTranslated = (newBox, isTranslated) => {
-        if (newBox.title) {
-            isTranslated(newBox.title, { property: "title", boxTitle: newBox.title })
-        }
+        boxProps.forEach(prop => {
+            if (newBox[prop]) {
+                isTranslated(newBox[prop], { property: prop, value: newBox[prop] })
+            }
+        })
         newBox.fields.forEach(newField => {
             baseProps.forEach(prop => {
                 if (newField[prop] != null) {
@@ -147,14 +150,22 @@ test("all schemas keys should be translated", async t => {
 
     Object.entries(schemas).forEach(([fixedName, boxes]) => {
         const isTranslated = (key, context) => {
+            if (Array.isArray(key)) {
+                key.forEach(k => isTranslated(k, context))
+                return
+            }
+            if (typeof key === "object" && key.text != null) {
+                key = key.text
+            }
+
             const ok = i18n.data[fixedName]?.[key] || i18n.data.settings?.[key]
             if (ok) return
 
             const contextMsg = [`schema: "${fixedName}"`, `key: "${key}"`]
             if (context.property) contextMsg.push(`property: "${context.property}"`)
+            if (context.value) contextMsg.push(`value: "${JSON.stringify(context.value)}"`)
             if (context.fieldKey) contextMsg.push(`field: "${context.fieldKey}"`)
             if (context.optionKey) contextMsg.push(`optionKey: "${context.optionKey}"`)
-            if (context.boxTitle && !context.fieldKey) contextMsg.push(`(location: box title)`)
             assert.ok(
                 ok,
                 `[Translation] Missing translation for [${contextMsg.join(", ")}]`
@@ -185,6 +196,13 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
         const nestedFieldProps = ["nestedBoxes", "subSchema"]
         const _filterUsedKeys = (fixedName, key) => {
             if (key == null) return
+            if (Array.isArray(key)) {
+                key.forEach(k => _filterUsedKeys(fixedName, k))
+                return
+            }
+            if (typeof key === "object" && typeof key.text === "string") {
+                key = key.text
+            }
             if (allI18NKeys[fixedName].has(key)) {
                 allI18NKeys[fixedName].delete(key)
             } else if (allI18NKeys.settings.has(key)) {
@@ -234,9 +252,11 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
                 "$title.CUSTOM_HOTKEYS.DISABLE",
                 "$title.CUSTOM_HOTKEYS.HOTKEY",
             ],
+            sidebar_enhance: ["$tooltip.canCollapseOutlinePanel"],
             slash_commands: ["$label.COMMANDS.callback"],
             hotkeys: ["$label.CUSTOM_HOTKEYS.evil"],
             markdownLint: ["$label.invokeMarkdownLintSettings"],
+            chineseSymbolAutoPairer: ["$tooltip.enablePairing"],
             quickButton: ["$label.buttons.evil"],
         }
         Object.entries(allowedUnusedKeys).forEach(([fixedName, keys]) => {

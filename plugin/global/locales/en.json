@@ -113,7 +113,8 @@
     "$option.LOCALE.zh-CN": "简体中文",
     "$option.LOCALE.zh-TW": "繁體中文",
     "$option.EXIT_INTERACTIVE_MODE.click_exit_button": "Click Button",
-    "$option.EXIT_INTERACTIVE_MODE.ctrl_click_fence": "Ctrl+Click"
+    "$option.EXIT_INTERACTIVE_MODE.ctrl_click_fence": "Ctrl+Click",
+    "$tooltip.toggleDevTools": "Dev Tools"
   },
   "window_tab": {
     "pluginName": "Window Tab Bar",
@@ -716,11 +717,9 @@
     "$label.CUSTOM_HOTKEYS.DISABLE": "Disable",
     "$label.CUSTOM_HOTKEYS.HOTKEY": "Hotkey",
     "$label.CUSTOM_HOTKEYS.CALLBACK": "Callback",
-    "$label.viewCodeMirrorKeymapsManual": "CodeMirror Manual",
     "$label.HIGHLIGHT_BY_LANGUAGE": "Line Highlighting",
     "$label.NUMBERING_BASE": "Line Numbering",
     "$label.HIGHLIGHT_PATTERN": "Line Highlight Pattern",
-    "$label.viewVitePressLineHighlighting": "Help",
     "$label.ENABLE_LANGUAGE_FOLD": "Foldable Code",
     "$label.INDENTED_WRAPPED_LINE": "Auto-align Indent",
     "$label.PRELOAD_ALL_FENCES": "Load All Fences in Advance",
@@ -730,8 +729,11 @@
     "$title.functionButtons": "Function Buttons",
     "$title.buttonHotkeys": "Code Block Hotkeys",
     "$title.lineHighlighting": "Line Highlighting",
-    "$tooltip.dangerous": "High resource consumption may cause Typora to lag for a long time",
-    "$tooltip.codeMirrorStyle": "CodeMirror style representation"
+    "$tooltip.viewCodeMirrorKeymapsManual": "Hotkeys in CodeMirror style",
+    "$tooltip.viewVitePressLineHighlighting": "Line Highlighting Grammar",
+    "$tooltip.viewCodeFoldingDemo": "View Demo",
+    "$tooltip.viewIndentedWrappedLineDemo": "View Demo",
+    "$tooltip.dangerous": "High resource consumption may cause Typora to lag for a long time"
   },
   "collapse_paragraph": {
     "pluginName": "Chapter Folding",
@@ -808,7 +810,6 @@
     "$option.TOOLS.setBrush": "Set Format Brush",
     "$option.TOOLS.useBrush": "Use Format Brush",
     "$label.SHOW_MODAL_HOTKEY": "Hotkey",
-    "$label.MODAL_BACKGROUND_COLOR": "Background Color",
     "$label.DEFAULT_COLORS.FOREGROUND": "Foreground Color",
     "$label.DEFAULT_COLORS.BACKGROUND": "Background Color",
     "$label.DEFAULT_COLORS.BORDER": "Border Color",
@@ -818,7 +819,6 @@
     "$label.ACTION_HOTKEYS": "Preset Hotkey",
     "$label.ACTION_HOTKEYS.hotkey": "Hotkey",
     "$label.ACTION_HOTKEYS.action": "Action",
-    "$title.toolBar": "Toolbar",
     "$title.buttonDefaultOptions": "Default Values for Buttons",
     "$tooltip.brushExample": "Example: color:#FFF; font-weight:bold;"
   },
@@ -1006,11 +1006,11 @@
     "$label.upload.cnblog.password": "Password",
     "$label.upload.csdn.enabled": "Enabled",
     "$label.upload.csdn.cookie": "Cookie",
-    "$label.viewArticleUploaderReadme": "README",
     "$title.upload": "Upload Settings",
     "$title.wordPress": "WordPress",
     "$title.cnblog": "CNBlog",
-    "$title.csdn": "CSDN"
+    "$title.csdn": "CSDN",
+    "$tooltip.viewArticleUploaderReadme": "Install Upload Server"
   },
   "ripgrep": {
     "pluginName": "RipGrep",
@@ -1076,8 +1076,8 @@
     "$label.SERVER_OPTIONS.host": "Host",
     "$label.SERVER_OPTIONS.port": "Port",
     "$label.SERVER_OPTIONS.path": "Path",
-    "$label.viewJsonRPCReadme": "README",
-    "$title.rpcServer": "RPC Server"
+    "$title.rpcServer": "RPC Server",
+    "$tooltip.viewJsonRPCReadme": "Install RPC Server"
   },
   "updater": {
     "pluginName": "Updater",
@@ -1160,8 +1160,7 @@
     "$option.EXPORT_TYPE.svg": "SVG (requires SVG renderer) ",
     "$label.RENDERER": "Renderer",
     "$label.EXPORT_TYPE": "Export Type",
-    "$label.chooseEchartsRenderer": "Render with SVG or Canvas",
-    "$tooltip.svgBetter": "SVG is more Typora-friendly"
+    "$tooltip.chooseEchartsRenderer": "SVG is more Typora-friendly"
   },
   "chart": {
     "pluginName": "Chart"
@@ -1169,16 +1168,16 @@
   "wavedrom": {
     "pluginName": "WaveDrom",
     "$label.SAFE_MODE": "Safe Mode",
-    "$label.downloadWaveDromSkins": "Download Skin Files",
-    "$label.SKIN_FILES": "Skin Files"
+    "$label.SKIN_FILES": "Skin Files",
+    "$tooltip.downloadWaveDromSkins": "Download Skin Files"
   },
   "calendar": {
     "pluginName": "Calendar"
   },
   "abc": {
     "pluginName": "ABC",
-    "$label.viewAbcVisualOptionsHelp": "Visual Options Docs",
-    "$label.VISUAL_OPTIONS": "Visual Options"
+    "$label.VISUAL_OPTIONS": "Visual Options",
+    "$tooltip.viewAbcVisualOptionsHelp": "Visual Options Docs"
   },
   "drawIO": {
     "pluginName": "DrawIO",
@@ -1196,14 +1195,15 @@
     "$label.OUTPUT_FORMAT": "Output Format",
     "$label.SERVER_TIMEOUT": "Timeout",
     "$label.MEMORIZED_URL_COUNT": "Memorized URL Count",
-    "$label.installPlantUMLServer": "Install PlantUML Server",
     "$option.OUTPUT_FORMAT.svg": "SVG",
     "$option.OUTPUT_FORMAT.png": "PNG",
-    "$option.OUTPUT_FORMAT.txt": "TXT"
+    "$option.OUTPUT_FORMAT.txt": "TXT",
+    "$tooltip.installPlantUMLServer": "Install Server"
   },
   "marp": {
     "pluginName": "Marp",
-    "$label.MARP_CORE_OPTIONS": "marp-core Options"
+    "$label.MARP_CORE_OPTIONS": "marp-core Options",
+    "$tooltip.viewMarpOptions": "Options Docs"
   },
   "callouts": {
     "pluginName": "Callouts",
@@ -1254,7 +1254,8 @@
     "$label.auto_swap_symbols": "Auto Convert Symbols",
     "$label.auto_swap_symbols.0": "Input Symbol",
     "$label.auto_swap_symbols.1": "Swapped Symbol",
-    "$label.auto_select_after_surround": "Auto Select Wrapped Content"
+    "$label.auto_select_after_surround": "Auto Select Wrapped Content",
+    "$tooltip.enablePairing": "Need to enable Typora config 'Auto pair brackets and quotes'"
   },
   "toc": {
     "pluginName": "TOC",
@@ -1594,7 +1595,6 @@
     "$label.result_order_by": "Sort Results",
     "$label.right_click_table_to_toggle_source_mode": "Right Click Table to Toggle Source Code",
     "$label.hotkey_fix_lint_error": "Hotkey: Fix",
-    "$label.viewMarkdownlintRules": "Rules Document",
     "$label.invokeMarkdownLintSettings": "Configure Lint Rules",
     "$label.rule_config": "Lint Rules",
     "$label.custom_rule_files": "Custom Lint Rule Files",
@@ -1617,7 +1617,8 @@
     "$option.result_order_by.ruleName": "Sort by Rule Name",
     "$option.result_order_by.ruleDesc": "Sort by Rule Desc",
     "$title.indicator": "Indicator",
-    "$title.detectAndFix": "Detect and Fix"
+    "$title.detectAndFix": "Detect and Fix",
+    "$tooltip.viewMarkdownlintRules": "Rules Document"
   },
   "quickButton": {
     "pluginName": "Floating Action Button",

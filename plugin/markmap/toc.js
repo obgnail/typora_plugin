@@ -346,9 +346,7 @@ class TOCMarkmap {
                     field("DEFAULT_TOC_OPTIONS.spacingVertical", "range", { min: 0, max: 100, step: 1 }),
                     field("DEFAULT_TOC_OPTIONS.paddingX", "range", { min: 0, max: 100, step: 1 }),
                     field("DEFAULT_TOC_OPTIONS.maxWidth", "range", "zero", { min: 0, max: 1000, step: 10 }),
-                    field("DEFAULT_TOC_OPTIONS.nodeMinHeight", "range", { min: 5, max: 50, step: 1 })
-                ),
-                untitledBox(
+                    field("DEFAULT_TOC_OPTIONS.nodeMinHeight", "range", { min: 5, max: 50, step: 1 }),
                     field("DEFAULT_TOC_OPTIONS.colorFreezeLevel", "range", { min: 1, max: 7, step: 1 }),
                     field("DEFAULT_TOC_OPTIONS.initialExpandLevel", "range", { min: 1, max: 7, step: 1 }),
                     field("DEFAULT_TOC_OPTIONS.duration", "range", { min: 0, max: 1000, step: 10 }),
@@ -388,8 +386,6 @@ class TOCMarkmap {
                     field("DOWNLOAD_OPTIONS.SHOW_IN_FINDER", "switch"),
                     field("DOWNLOAD_OPTIONS.FOLDER", "text", { tooltip: "tempDir", placeholder: this.utils.tempFolder }),
                     field("DOWNLOAD_OPTIONS.FILENAME", "text"),
-                ),
-                untitledBox(
                     field("DOWNLOAD_OPTIONS.IMAGE_SCALE", "number", { min: 0.1, step: 0.1 }),
                     field("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", "unit", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
                     field("DOWNLOAD_OPTIONS.PADDING_VERTICAL", "unit", { min: 1, step: 1, unit: this.i18n._t("settings", "$unit.pixel") }),
@@ -397,8 +393,6 @@ class TOCMarkmap {
                     field("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", "color"),
                     field("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", "color", { tooltip: "jpgFormatOnly" }),
                     field("DOWNLOAD_OPTIONS.IMAGE_QUALITY", "range", { tooltip: "pixelImagesOnly", min: 0.01, max: 1, step: 0.01 }),
-                ),
-                untitledBox(
                     field("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL", "switch"),
                     field("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES", "switch"),
                     field("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", "switch", { tooltip: "removeForeignObj" }),

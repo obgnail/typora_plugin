@@ -636,9 +636,21 @@ const Layout_Default = {
             : ""
     },
     createTooltip(item) {
-        return item.tooltip
-            ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${utils.escape(item.tooltip).replace(/\n/g, "<br>")}</span></span>`
-            : ""
+        if (!item.tooltip) return ""
+        const tooltips = Array.isArray(item.tooltip) ? item.tooltip : [item.tooltip]
+        return tooltips.map((tip, index) => {
+            if (!tip) return ""
+            const config = typeof tip === "string" ? { text: tip } : tip
+            const hasAction = !!config.action
+            const id = item.key || item.id
+            const idAttr = hasAction && id ? `data-trigger-id="${id}"` : ""
+            const indexAttr = hasAction ? `data-index="${index}"` : ""
+            const actionAttr = hasAction ? `data-action="${config.action}"` : ""
+            const triggerHtml = `<div class="tooltip-trigger"><i class="${config.icon || "fa fa-info-circle"}"></i></div>`
+            const contentHtml = config.text ? `<div class="tooltip-content">${utils.escape(config.text).replace(/\n/g, "<br>")}</div>` : ""
+            const cls = hasAction ? "tooltip has-action" : "tooltip"
+            return `<div class="${cls}" ${actionAttr} ${idAttr} ${indexAttr}>${triggerHtml}${contentHtml}</div>`
+        }).join("")
     },
     createExplain(field) {
         return `<div class="explain">${utils.escape(field.explain)}</div>`
@@ -758,6 +770,38 @@ const Feature_CollapsibleBox = {
                 })
             }
         })
+    }
+}
+
+const Feature_InteractiveTooltip = {
+    configure: ({ hooks, options, initState }) => {
+        const state = initState(new Map())
+        hooks.on("onRender", (form) => {
+            form.onEvent("mousedown", ".tooltip-trigger", () => false, true)
+            form.onEvent("click", ".tooltip-trigger", function (event) {
+                const tooltipEl = this.closest(".tooltip")
+                const key = this.closest("[data-control]")?.dataset?.control ?? this.closest("[data-box]")?.dataset?.box
+                const fn = options.actions?.[tooltipEl.dataset.action]
+                if (typeof fn === "function") {
+                    const idx = parseInt(tooltipEl.dataset.index || "0", 10)
+                    const configs = state.get(tooltipEl.dataset.triggerId)
+                    const data = (Array.isArray(configs) && configs[idx]) ? configs[idx].data : undefined
+                    fn({ form, key, event, data })
+                }
+                return false
+            }, true)
+        })
+    },
+    compile: ({ form, state }) => {
+        const collect = (item) => {
+            const id = item.key || item.id
+            if (id && item.tooltip) {
+                const normalized = Array.isArray(item.tooltip) ? item.tooltip : [item.tooltip]
+                state.set(id, normalized)
+            }
+        }
+        form.traverseBoxes(collect)
+        form.traverseFields(collect)
     }
 }
 
@@ -1888,6 +1932,7 @@ const Feature_Cascades = {
 FastForm.registerFeature("eventDelegation", Feature_EventDelegation)
 FastForm.registerFeature("defaultKeybindings", Feature_DefaultKeybindings)
 FastForm.registerFeature("collapsibleBox", Feature_CollapsibleBox)
+FastForm.registerFeature("interactiveTooltip", Feature_InteractiveTooltip)
 FastForm.registerFeature("watchers", Feature_Watchers)
 FastForm.registerFeature("parsing", Feature_Parsing)
 FastForm.registerFeature("validation", Feature_Validation)
@@ -2330,30 +2375,45 @@ const Control_Action = {
     },
     bindEvents: ({ form }) => {
         form.onEvent("mousedown", '.control[data-type="action"]', function (ev) {
-            const ripple = document.createElement("span")
-            ripple.classList.add("ripple")
-            const diameter = Math.max(this.clientWidth, this.clientHeight) * 2
-            const radius = diameter / 2
-            const rect = this.getBoundingClientRect()
-            const x = ev.clientX - rect.left - radius
-            const y = ev.clientY - rect.top - radius
-            ripple.style.width = `${diameter}px`
-            ripple.style.height = `${diameter}px`
-            ripple.style.left = `${x}px`
-            ripple.style.top = `${y}px`
-            this.appendChild(ripple)
-            ripple.addEventListener("animationend", () => ripple.remove(), { once: true })
+            Control_Action._ripple(this, ev)
         }).onEvent("click", '.control[data-type="action"]', function () {
-            const key = this.querySelector(".action").dataset.action
-            const actionType = form.getControlOptionsFromKey(key).actionType || "function"
-            if (actionType === "toggle") {
-                form.reactiveCommit(key, !form.getData(key))  // Toggle mode: reverse the current value, submit data
-            } else if (actionType === "trigger") {
-                form.reactiveCommit(key, Date.now())  // Trigger mode: Update to timestamp to signal watchers
-            } else {
-                form.options.actions[key]?.(form)  // Function mode: Execute callbacks
-            }
+            Control_Action._doAction(this, form)
         })
+    },
+    _ripple: (el, ev) => {
+        let mask = el.querySelector(".action-ripple-mask")
+        if (!mask) {
+            mask = document.createElement("div")
+            mask.classList.add("action-ripple-mask")
+            el.appendChild(mask)
+        }
+        const ripple = document.createElement("span")
+        ripple.classList.add("ripple")
+        const diameter = Math.max(el.clientWidth, el.clientHeight) * 2
+        const radius = diameter / 2
+        const rect = el.getBoundingClientRect()
+        const x = ev.clientX - rect.left - radius
+        const y = ev.clientY - rect.top - radius
+        ripple.style.width = `${diameter}px`
+        ripple.style.height = `${diameter}px`
+        ripple.style.left = `${x}px`
+        ripple.style.top = `${y}px`
+        mask.appendChild(ripple)
+        ripple.addEventListener("animationend", () => {
+            ripple.remove()
+            if (mask.childNodes.length === 0) mask.remove()
+        }, { once: true })
+    },
+    _doAction: (el, form) => {
+        const key = el.querySelector(".action").dataset.action
+        const actionType = form.getControlOptionsFromKey(key).actionType || "function"
+        if (actionType === "toggle") {
+            form.reactiveCommit(key, !form.getData(key))  // Toggle mode: reverse the current value, submit data
+        } else if (actionType === "trigger") {
+            form.reactiveCommit(key, Date.now())  // Trigger mode: Update to timestamp to signal watchers
+        } else {
+            form.options.actions[key]?.(form)  // Function mode: Execute callbacks
+        }
     },
 }
 

@@ -1,10 +1,14 @@
 module.exports = (plugin) => {
     const { utils, i18n } = plugin
     const _disableOptions = (field, ...options) => field.disabledOptions = options
-    const _incompatibleSwitch = (field, data, tooltip = i18n._t("settings", "$tooltip.lowVersion")) => {
+    const _disableSwitch = (field, data, tooltip = i18n._t("settings", "$tooltip.lowVersion")) => {
         field.disabled = true
         field.tooltip = tooltip
         data[field.key] = false
+    }
+    const _reEnableSwitch = (field, deleteTooltip = false) => {
+        field.disabled = false
+        if (deleteTooltip) delete field.tooltip
     }
     return {
         global: {
@@ -51,45 +55,53 @@ module.exports = (plugin) => {
         fence_enhance: {
             ENABLE_INDENT: (field, data) => {
                 if (utils.isBetaVersion) {
-                    _incompatibleSwitch(field, data)
+                    _disableSwitch(field, data)
                 }
             },
             PRELOAD_ALL_FENCES: (field, data) => {
                 if (!File.hasOwnProperty("loadFile")) {
-                    _incompatibleSwitch(field, data)
+                    _disableSwitch(field, data)
                 }
             },
         },
         blur: {
             ENABLE: (field, data) => {
                 if (!utils.supportHasSelector) {
-                    _incompatibleSwitch(field, data)
+                    _disableSwitch(field, data)
                 }
             },
         },
         export_enhance: {
             ENABLE: (field, data) => {
                 if (!utils.exportHelper.isAsync) {
-                    _incompatibleSwitch(field, data)
+                    _disableSwitch(field, data)
                 }
             },
         },
         sidebar_enhance: {
             DISPLAY_NON_MARKDOWN_FILES: (field, data) => {
                 if (!File.SupportedFiles) {
-                    _incompatibleSwitch(field, data)
+                    _disableSwitch(field, data)
                 }
             },
             KEEP_OUTLINE_FOLD_STATE: (field, data) => {
-                if (!File.option.canCollapseOutlinePanel) {
-                    _incompatibleSwitch(field, data)
+                if (!File.option.hasOwnProperty("canCollapseOutlinePanel")) {
+                    _disableSwitch(field, data)
+                } else if (!File.option.canCollapseOutlinePanel) {
+                    const text = i18n._t("sidebar_enhance", "$tooltip.canCollapseOutlinePanel")
+                    const tooltip = { action: "togglePreferencePanel", icon: "fa fa-gear", text }
+                    _disableSwitch(field, data, tooltip)
+                } else {
+                    _reEnableSwitch(field, true)
                 }
             },
         },
         markmap: {
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: (field, data) => {
                 if (!utils.getBasePlugin("collapse_paragraph")) {
-                    _incompatibleSwitch(field, data, i18n._t("markmap", "$tooltip.experimental"))
+                    _disableSwitch(field, data, i18n._t("markmap", "$tooltip.experimental"))
+                } else {
+                    _reEnableSwitch(field)
                 }
             },
         },
@@ -121,11 +133,22 @@ module.exports = (plugin) => {
                 }
             },
         },
+        chineseSymbolAutoPairer: {
+            enable: (field, data) => {
+                if (File.option.noPairingMatch) {
+                    const text = i18n._t("chineseSymbolAutoPairer", "$tooltip.enablePairing")
+                    const tooltip = { action: "togglePreferencePanel", icon: "fa fa-gear", text }
+                    _disableSwitch(field, data, tooltip)
+                } else {
+                    _reEnableSwitch(field, true)
+                }
+            },
+        },
         markdownLint: {
             rule_config: (field, data, box) => {
                 if (utils.getCustomPlugin("markdownLint")) {
                     box.title = undefined
-                    box.fields[0] = { type: "action", key: "invokeMarkdownLintSettings", label: i18n._t("markdownLint", "$label.invokeMarkdownLintSettings") }
+                    box.fields[0] = { type: "action", key: "invokeMarkdownLintSettings", tooltip: box.tooltip, label: i18n._t("markdownLint", "$label.invokeMarkdownLintSettings") }
                 }
             },
         },

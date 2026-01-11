@@ -694,7 +694,7 @@ class Searcher {
                 longName = [negatedText, node.scope, node.operator, operand].join(" ").trim()
             }
 
-            return `${node._shortName}("${longName}")`
+            return `${node._shortName}("${longName.replace(/"/g, "#quot;")}")`
         }
 
         const _link = (left, right) => {

@@ -24,14 +24,13 @@ class QuickButtonPlugin extends BaseCustomPlugin {
         this.buttonGroup.addEventListener("mousedown", ev => {
             const target = ev.target.closest(".action-item")
             if (!target) return
+            ev.stopPropagation()
+            ev.preventDefault()
             if (ev.button === 2 && this.config.support_right_click) {
                 [...this.buttonGroup.children]
                     .filter(e => e !== target)
                     .forEach(e => e.classList.toggle("plu-hidden"))
             } else if (ev.button === 0) {
-                target.classList.add("plu-click")
-                setTimeout(() => target.classList.remove("plu-click"), 80)
-
                 const action = target.getAttribute("action")
                 const button = this.buttons.get(action)
                 if (action && button) {

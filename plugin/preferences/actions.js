@@ -11,13 +11,19 @@ module.exports = (plugin) => {
         viewCodeMirrorKeymapsManual: () => utils.openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
         viewVitePressLineHighlighting: () => utils.openUrl("https://vitepress.dev/guide/markdown#line-highlighting-in-code-blocks"),
         viewAbcVisualOptionsHelp: () => utils.openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
+        viewCodeFoldingDemo: () => utils.openUrl("https://codemirror.net/5/demo/folding.html"),
+        viewIndentedWrappedLineDemo: () => utils.openUrl("https://codemirror.net/5/demo/indentwrap.html"),
         chooseEchartsRenderer: () => utils.openUrl("https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/"),
         downloadWaveDromSkins: () => utils.openUrl("https://github.com/wavedrom/wavedrom/tree/trunk/skins"),
+        viewMarpOptions: () => utils.openUrl("https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options"),
         viewArticleUploaderReadme: () => utils.showInFinder(utils.joinPath("./plugin/article_uploader/README.md")),
         viewJsonRPCReadme: () => utils.showInFinder(utils.joinPath("./plugin/json_rpc/README.md")),
         editStyles: () => utils.showInFinder(utils.joinPath("./plugin/global/user_styles/README.md")),
         developPlugins: () => utils.showInFinder(utils.joinPath("./plugin/custom/README.md")),
         openPluginFolder: () => utils.showInFinder(utils.joinPath("./plugin")),
+        openSettingsFolder: async () => utils.settings.openSettingFolder(),
+        toggleDevTools: () => JSBridge.invoke("window.toggleDevTools"),
+        togglePreferencePanel: () => File.megaMenu.togglePreferencePanel(),
         sendEmail: () => utils.sendEmail("he1251698542@gmail.com", "Feedback"),
         exportSettings: async () => {
             const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
@@ -49,7 +55,7 @@ module.exports = (plugin) => {
                 { key: "viewGithub", type: "action", label: "Github" },
             ]
             const op = {
-                title: i18n._t("plantUML", "$label.installPlantUMLServer"),
+                title: i18n._t("plantUML", "$tooltip.installPlantUMLServer"),
                 schema: [{ fields: dockerFields, title: "Run the server with Docker" }, { fields: actionFields, title: "Help" }],
                 data: { dockerCommand: "docker pull plantuml/plantuml-server:jetty\ndocker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty" },
                 actions: {

@@ -74,7 +74,7 @@
     "success.restoreAll": "已恢複所有默認",
     "error.timeout": "執行超時",
     "error.IncorrectFormatContent": "內容必須爲正確的 {{format}} 格式",
-    "error.required": "此欄位不可爲空",
+    "error.required": "欄位不可爲空",
     "error.pattern": "格式不符合要求",
     "error.isNaN": "非數值",
     "error.integer": "僅限整數",
@@ -113,7 +113,8 @@
     "$option.LOCALE.zh-CN": "简体中文",
     "$option.LOCALE.zh-TW": "繁體中文",
     "$option.EXIT_INTERACTIVE_MODE.click_exit_button": "點擊按鈕",
-    "$option.EXIT_INTERACTIVE_MODE.ctrl_click_fence": "Ctrl+Click"
+    "$option.EXIT_INTERACTIVE_MODE.ctrl_click_fence": "Ctrl+Click",
+    "$tooltip.toggleDevTools": "開發人員工具"
   },
   "window_tab": {
     "pluginName": "標籤頁管理",
@@ -591,7 +592,7 @@
     "$tooltip.zero": "0 表示無限制",
     "$tooltip.tempDir": "為空則使用 TEMP 目錄",
     "$tooltip.experimental": "實驗性功能，僅當「章節摺疊」插件開啟時可用",
-    "$tooltip.removeForeignObj": "牺牲樣式提高兼容性，匯出圖片異常時勾選",
+    "$tooltip.removeForeignObj": "牺牲樣式提高兼容性，匯出異常時勾選",
     "$tooltip.positioningViewPort": "定位目標章節滾動到當前視口高度",
     "$tooltip.pixelImagesOnly": "適用像素圖",
     "$tooltip.jpgFormatOnly": "適用 JPG 格式"
@@ -716,11 +717,9 @@
     "$label.CUSTOM_HOTKEYS.DISABLE": "禁用",
     "$label.CUSTOM_HOTKEYS.HOTKEY": "快捷鍵",
     "$label.CUSTOM_HOTKEYS.CALLBACK": "回呼",
-    "$label.viewCodeMirrorKeymapsManual": "幫助",
     "$label.HIGHLIGHT_BY_LANGUAGE": "行高亮",
     "$label.NUMBERING_BASE": "行號計數基準",
     "$label.HIGHLIGHT_PATTERN": "行高亮格式",
-    "$label.viewVitePressLineHighlighting": "幫助",
     "$label.ENABLE_LANGUAGE_FOLD": "程式碼可摺疊",
     "$label.INDENTED_WRAPPED_LINE": "自動對齊縮排",
     "$label.PRELOAD_ALL_FENCES": "提前加載全部程式碼區塊",
@@ -730,8 +729,11 @@
     "$title.functionButtons": "功能按鈕",
     "$title.buttonHotkeys": "程式碼區塊快捷鍵",
     "$title.lineHighlighting": "行高亮",
-    "$tooltip.dangerous": "資源消耗過大，Typora 可能會長時間卡頓",
-    "$tooltip.codeMirrorStyle": "使用 CodeMirror 風格的表示方式"
+    "$tooltip.viewCodeMirrorKeymapsManual": "CodeMirror 風格的快捷鍵",
+    "$tooltip.viewVitePressLineHighlighting": "行高亮語法",
+    "$tooltip.viewCodeFoldingDemo": "查看示例",
+    "$tooltip.viewIndentedWrappedLineDemo": "查看示例",
+    "$tooltip.dangerous": "資源消耗過大，Typora 可能會長時間卡頓"
   },
   "collapse_paragraph": {
     "pluginName": "章節摺疊",
@@ -808,7 +810,6 @@
     "$option.TOOLS.setBrush": "設定格式刷",
     "$option.TOOLS.useBrush": "使用格式刷",
     "$label.SHOW_MODAL_HOTKEY": "快捷鍵",
-    "$label.MODAL_BACKGROUND_COLOR": "背景顏色",
     "$label.DEFAULT_COLORS.FOREGROUND": "前景色",
     "$label.DEFAULT_COLORS.BACKGROUND": "背景顏色",
     "$label.DEFAULT_COLORS.BORDER": "邊框顏色",
@@ -818,7 +819,6 @@
     "$label.ACTION_HOTKEYS": "快捷鍵",
     "$label.ACTION_HOTKEYS.hotkey": "快速鍵",
     "$label.ACTION_HOTKEYS.action": "動作",
-    "$title.toolBar": "工具列",
     "$title.buttonDefaultOptions": "按鈕的預設值",
     "$tooltip.brushExample": "例如：color:#FFF; font-weight:bold;"
   },
@@ -1006,11 +1006,11 @@
     "$label.upload.cnblog.password": "密碼",
     "$label.upload.csdn.enabled": "啟用",
     "$label.upload.csdn.cookie": "Cookie",
-    "$label.viewArticleUploaderReadme": "README",
     "$title.upload": "上傳設定",
     "$title.wordPress": "WordPress",
     "$title.cnblog": "博客园",
-    "$title.csdn": "CSDN"
+    "$title.csdn": "CSDN",
+    "$tooltip.viewArticleUploaderReadme": "安裝上傳服務"
   },
   "ripgrep": {
     "pluginName": "RipGrep",
@@ -1076,8 +1076,8 @@
     "$label.SERVER_OPTIONS.host": "主機",
     "$label.SERVER_OPTIONS.port": "埠號",
     "$label.SERVER_OPTIONS.path": "路徑",
-    "$label.viewJsonRPCReadme": "README",
-    "$title.rpcServer": "RPC 伺服器"
+    "$title.rpcServer": "RPC 伺服器",
+    "$tooltip.viewJsonRPCReadme": "安裝 RPC 服務"
   },
   "updater": {
     "pluginName": "升級插件",
@@ -1160,8 +1160,7 @@
     "$option.EXPORT_TYPE.svg": "SVG（依賴 SVG 渲染器）",
     "$label.RENDERER": "渲染器",
     "$label.EXPORT_TYPE": "匯出格式",
-    "$label.chooseEchartsRenderer": "如何選擇渲染器",
-    "$tooltip.svgBetter": "Typora 對 SVG 的支援更好"
+    "$tooltip.chooseEchartsRenderer": "Typora 對 SVG 的支援更好"
   },
   "chart": {
     "pluginName": "Chart"
@@ -1169,16 +1168,16 @@
   "wavedrom": {
     "pluginName": "WaveDrom",
     "$label.SAFE_MODE": "安全模式",
-    "$label.downloadWaveDromSkins": "下載皮膚檔案",
-    "$label.SKIN_FILES": "皮膚檔案"
+    "$label.SKIN_FILES": "皮膚檔案",
+    "$tooltip.downloadWaveDromSkins": "下載皮膚檔案"
   },
   "calendar": {
     "pluginName": "Calendar"
   },
   "abc": {
     "pluginName": "ABC",
-    "$label.viewAbcVisualOptionsHelp": "可視化選項文檔",
-    "$label.VISUAL_OPTIONS": "可視化選項"
+    "$label.VISUAL_OPTIONS": "可視化選項",
+    "$tooltip.viewAbcVisualOptionsHelp": "可視化選項文檔"
   },
   "drawIO": {
     "pluginName": "DrawIO",
@@ -1196,14 +1195,15 @@
     "$label.OUTPUT_FORMAT": "輸出格式",
     "$label.SERVER_TIMEOUT": "服務超時時間",
     "$label.MEMORIZED_URL_COUNT": "緩存數量",
-    "$label.installPlantUMLServer": "安裝 PlantUML 渲染服務",
     "$option.OUTPUT_FORMAT.svg": "SVG",
     "$option.OUTPUT_FORMAT.png": "PNG",
-    "$option.OUTPUT_FORMAT.txt": "TXT"
+    "$option.OUTPUT_FORMAT.txt": "TXT",
+    "$tooltip.installPlantUMLServer": "安裝渲染服務"
   },
   "marp": {
     "pluginName": "Marp",
-    "$label.MARP_CORE_OPTIONS": "marp-core 配置"
+    "$label.MARP_CORE_OPTIONS": "marp-core 配置",
+    "$tooltip.viewMarpOptions": "選項文檔"
   },
   "callouts": {
     "pluginName": "Callouts",
@@ -1254,7 +1254,8 @@
     "$label.auto_swap_symbols": "自動轉換的符號",
     "$label.auto_swap_symbols.0": "輸入符號",
     "$label.auto_swap_symbols.1": "轉換符號",
-    "$label.auto_select_after_surround": "自動選中包裹內容"
+    "$label.auto_select_after_surround": "自動選中包裹內容",
+    "$tooltip.enablePairing": "需啟用 Typora 設定「自動配對括號及引號」"
   },
   "toc": {
     "pluginName": "大綱目錄",
@@ -1594,7 +1595,6 @@
     "$label.result_order_by": "檢測結果排序",
     "$label.right_click_table_to_toggle_source_mode": "右擊表格以切換源碼模式",
     "$label.hotkey_fix_lint_error": "快捷鍵：修復",
-    "$label.viewMarkdownlintRules": "規則文檔",
     "$label.invokeMarkdownLintSettings": "設置檢測規則",
     "$label.rule_config": "檢測規則",
     "$label.custom_rule_files": "自訂檢測規則檔案",
@@ -1617,7 +1617,8 @@
     "$option.result_order_by.ruleName": "按規則名排序",
     "$option.result_order_by.ruleDesc": "按規則描述排序",
     "$title.indicator": "狀態指示器",
-    "$title.detectAndFix": "檢測與修復"
+    "$title.detectAndFix": "檢測與修復",
+    "$tooltip.viewMarkdownlintRules": "規則文檔"
   },
   "quickButton": {
     "pluginName": "懸浮動作按鈕",

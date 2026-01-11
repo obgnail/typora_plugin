@@ -71,7 +71,6 @@
     flex-wrap: wrap;
     align-items: center;
     max-width: 2em;
-    margin: 4px 0 0 4px;
 }
 
 .plugin-markmap-icon {
@@ -84,7 +83,7 @@
 
 .plugin-markmap-icon:not([action="resize"]):hover {
     opacity: 1;
-    transform: translateY(-2px) scale(1.2);
+    transform: scale(1.2);
 }
 
 .plugin-markmap-icon[action="resize"] {
@@ -94,13 +93,13 @@
     right: 0.2em;
     margin: 0;
     cursor: nwse-resize;
-    font-size: 1.1em;
+    font-size: 1em;
 }
 
 .plugin-markmap-icon[action="resize"] svg {
     fill: currentColor;
-    height: 1.1em;
-    width: 1.1em;
+    height: 1em;
+    width: 1em;
 }
 
 #plugin-markmap-svg {

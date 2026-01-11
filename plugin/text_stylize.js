@@ -1,8 +1,8 @@
 class TextStylizePlugin extends BasePlugin {
-    styleTemplate = () => ({ backgroundColor: this.config.MODAL_BACKGROUND_COLOR || "var(--side-bar-bg-color)" })
+    styleTemplate = () => true
 
     html = () => {
-        const svgMap = {
+        const SVGs = {
             blank: "",
             weight: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M272-200v-560h221q65 0 120 40t55 111q0 51-23 78.5T602-491q25 11 55.5 41t30.5 90q0 89-65 124.5T501-200H272Zm121-112h104q48 0 58.5-24.5T566-372q0-11-10.5-35.5T494-432H393v120Zm0-228h93q33 0 48-17t15-38q0-24-17-39t-44-15h-95v109Z"/></svg>',
             italic: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-200v-100h160l120-360H320v-100h400v100H580L460-300h140v100H200Z"/></svg>',
@@ -26,33 +26,22 @@ class TextStylizePlugin extends BasePlugin {
             useBrush: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z"/></svg>',
             erase: '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m528-546-93-93-121-121h486v120H568l-40 94ZM792-56 460-388l-80 188H249l119-280L56-792l56-56 736 736-56 56Z"/></svg>',
         }
-        const hintMap = this.i18n.entries(Object.keys(svgMap), "$option.TOOLS.")
-
+        const hints = this.i18n.entries(Object.keys(SVGs), "$option.TOOLS.")
         const tools = this.config.TOOLS
-            .filter(name => svgMap.hasOwnProperty(name))
+            .filter(name => SVGs.hasOwnProperty(name))
             .map(name => {
-                const svg = svgMap[name]
-                const hint = hintMap[name]
                 const style = name === "blank" ? 'style="visibility: hidden"' : ""
-                return `<div action="${name}" ty-hint="${hint}" ${style}>${svg}</div>`
+                return `<div action="${name}" ty-hint="${hints[name]}" ${style}>${SVGs[name]}</div>`
             })
             .join("")
         const trs = this.config.COLOR_TABLE
-            .map(colors => {
-                const tds = colors.map(c => `<td style="background-color: ${c}" data-color="${c}"></td>`).join("")
-                return `<tr>${tds}</tr>`
-            })
+            .map(colors => colors.map(c => `<td style="background-color: ${c}" data-color="${c}"></td>`).join(""))
+            .map(tds => `<tr>${tds}</tr>`)
             .join("")
-
         return `
-            <fast-window 
-                id="plugin-text-stylize"
-                hidden
-                window-resize="none"
-                window-title="${this.pluginName}"
-                window-buttons="close|fa-times">
+            <fast-window id="plugin-text-stylize" hidden window-resize="none" window-title="${this.pluginName}" window-buttons="close|fa-times">
                 <div class="stylize-tool">${tools}</div>
-                <table class="stylize-palette"><tbody>${trs}</tbody></table>
+                <table class="stylize-palette plugin-common-hidden"><tbody>${trs}</tbody></table>
             </fast-window>`
     }
 
@@ -70,136 +59,133 @@ class TextStylizePlugin extends BasePlugin {
     }
 
     init = () => {
+        this.actions = this.getActions()
         this.entities = {
             window: document.querySelector("#plugin-text-stylize"),
             toolbar: document.querySelector("#plugin-text-stylize .stylize-tool"),
             palette: document.querySelector("#plugin-text-stylize .stylize-palette"),
         }
-        this.styleSetter = new StyleSetter(this, this.config.DEFAULT_FORMAT_BRUSH)
-        this.setStyle = this.styleSetter.setStyle
     }
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.entities.window.hide())
 
-        const that = this;
-        $(this.entities.toolbar).on("mouseenter", "[action]", function () {
-            const action = this.getAttribute("action")
-            const showPalette = action === "foregroundColor" || action === "backgroundColor" || action === "borderColor"
-            that.entities.toolbar.querySelectorAll(":scope > [action]").forEach(ele => ele.classList.remove("select"))
-            this.classList.add("select")
-            if (showPalette) {
-                const { height } = that.entities.window.getBoundingClientRect()
-                that.entities.palette.style.top = height + 10 + "px"
-            }
-            that.entities.palette.style.display = showPalette ? "initial" : ""
+        $(this.entities.toolbar).on("mouseenter", "[action]", ev => {
+            const target = ev.currentTarget
+            this.entities.toolbar.querySelectorAll(":scope > [action]").forEach(el => el.classList.toggle("select", el === target))
+            const hide = !["foregroundColor", "backgroundColor", "borderColor"].includes(target.getAttribute("action"))
+            this.utils.toggleInvisible(this.entities.palette, hide)
         })
-
         this.entities.window.addEventListener("btn-click", ev => {
-            const { action } = ev.detail
-            if (action === "close") {
+            if (ev.detail.action === "close") {
                 this.entities.window.hide()
             }
         })
-
         this.entities.toolbar.addEventListener("mousedown", ev => {
             if (!ev.target.closest(`[action="move"]`)) {
-                ev.preventDefault();
-                ev.stopPropagation();
+                ev.preventDefault()
+                ev.stopPropagation()
             }
-            const target = ev.target.closest("[action]");
-            if (!target) return;
-            const action = target.getAttribute("action");
-            const color = target.getAttribute("last-color");
-            this.onAction(action, color);
-        }, true)
-
-        this.entities.palette.addEventListener("mousedown", ev => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            const td = ev.target.closest("td");
-            if (!td) return;
-            const color = td.dataset.color
-            const target = this.entities.toolbar.querySelector(":scope > .select");
-            target.querySelector("svg .color-indicator").setAttribute("fill", color);
-            target.setAttribute("last-color", color);
+            const target = ev.target.closest("[action]")
+            if (!target) return
             const action = target.getAttribute("action")
-            this.onAction(action, color);
+            const color = target.getAttribute("last-color")
+            this.onAction(action, color)
+        }, true)
+        this.entities.palette.addEventListener("mousedown", ev => {
+            ev.preventDefault()
+            ev.stopPropagation()
+            const td = ev.target.closest("td")
+            if (!td) return
+            const color = td.dataset.color
+            const target = this.entities.toolbar.querySelector(":scope > .select")
+            target.querySelector("svg .color-indicator").setAttribute("fill", color)
+            target.setAttribute("last-color", color)
+            const action = target.getAttribute("action")
+            this.onAction(action, color)
         }, true)
     }
 
     call = () => this.entities.window.toggle()
 
-    onAction = (action, color) => this.getFuncMap(color)[action]?.()
-
-    getFuncMap = color => ({
-        close: this.call,
-        erase: this.clearAll,
-        setBrush: this.setBrush,
-        useBrush: this.useBrush,
-        italic: this.toggleItalic,
-        underline: this.toggleUnderline,
-        throughline: this.toggleThroughline,
-        overline: this.toggleOverline,
-        superScript: this.toggleSuperScript,
-        subScript: this.toggleSubScript,
-        emphasis: () => this.toggleEmphasis("filled red"),
-        blur: () => this.toggleBlur(0.5),
-        weight: () => this.toggleWeight("bold"),
-        title: () => this.toggleSize("2em"),
-        increaseSize: () => this.increaseSize(0.1),
-        decreaseSize: () => this.decreaseSize(0.1),
-        increaseLetterSpacing: () => this.increaseLetterSpacing(1),
-        decreaseLetterSpacing: () => this.decreaseLetterSpacing(1),
-        family: () => this.toggleFamily("serif"),
-        foregroundColor: () => this.toggleForegroundColor(color || this.config.DEFAULT_COLORS.FOREGROUND),
-        backgroundColor: () => this.toggleBackgroundColor(color || this.config.DEFAULT_COLORS.BACKGROUND),
-        borderColor: () => this.toggleBorder(`1px solid ${color || this.config.DEFAULT_COLORS.BORDER}`),
-    })
-
-    toggleForegroundColor = color => this.setStyle({ toggleMap: { color: color } });
-    toggleBackgroundColor = color => this.setStyle({ toggleMap: { background: color } });
-    toggleSize = size => this.setStyle({ toggleMap: { "font-size": size } });
-    toggleWeight = weight => this.setStyle({ toggleMap: { "font-weight": weight } });
-    toggleFamily = family => this.setStyle({ toggleMap: { "font-family": family } });
-    toggleBorder = border => this.setStyle({ toggleMap: { border } });
-    toggleEmphasis = emphasis => this.setStyle({ toggleMap: { "text-emphasis": emphasis } })
-    toggleBlur = (num = 0.5) => this.setStyle({ mergeMap: { "filter": `blur(${num}em)` } })
-    toggleItalic = () => this.setStyle({ toggleMap: { "font-style": "italic" } });
-    toggleUnderline = () => this.setStyle({ mergeMap: { "text-decoration": "underline" } });
-    toggleThroughline = () => this.setStyle({ mergeMap: { "text-decoration": "line-through" } });
-    toggleOverline = () => this.setStyle({ mergeMap: { "text-decoration": "overline" } });
-    toggleSuperScript = () => this.setStyle({ toggleMap: { "vertical-align": "super" } });
-    toggleSubScript = () => this.setStyle({ toggleMap: { "vertical-align": "sub" } });
-    setBrush = () => this.styleSetter.setBrush();
-    useBrush = () => this.styleSetter.useBrush();
-    clearAll = () => this.setStyle({ replaceMap: {} });
-    increaseSize = (num = 0.1) => this.setStyle({
-        hook: styleMap => {
-            styleMap["font-size"] = styleMap["font-size"] || "1.0em";
-            const origin = parseFloat(styleMap["font-size"]);
-            const size = Math.max(0.1, (origin + num).toFixed(1));
-            if (size !== 1) {
-                styleMap["font-size"] = size + "em";
-            } else {
-                delete styleMap["font-size"]
-            }
+    onAction = (action, color) => {
+        const fnMap = {
+            close: this.call,
+            erase: this.actions.clearAll,
+            setBrush: this.actions.setBrush,
+            useBrush: this.actions.useBrush,
+            italic: this.actions.toggleItalic,
+            underline: this.actions.toggleUnderline,
+            throughline: this.actions.toggleThroughline,
+            overline: this.actions.toggleOverline,
+            superScript: this.actions.toggleSuperScript,
+            subScript: this.actions.toggleSubScript,
+            emphasis: () => this.actions.toggleEmphasis("filled red"),
+            blur: () => this.actions.toggleBlur(0.5),
+            weight: () => this.actions.toggleWeight("bold"),
+            title: () => this.actions.toggleSize("2em"),
+            increaseSize: () => this.actions.increaseSize(0.1),
+            decreaseSize: () => this.actions.decreaseSize(0.1),
+            increaseLetterSpacing: () => this.actions.increaseLetterSpacing(1),
+            decreaseLetterSpacing: () => this.actions.decreaseLetterSpacing(1),
+            family: () => this.actions.toggleFamily("serif"),
+            foregroundColor: () => this.actions.toggleForegroundColor(color || this.config.DEFAULT_COLORS.FOREGROUND),
+            backgroundColor: () => this.actions.toggleBackgroundColor(color || this.config.DEFAULT_COLORS.BACKGROUND),
+            borderColor: () => this.actions.toggleBorder(`1px solid ${color || this.config.DEFAULT_COLORS.BORDER}`),
         }
-    });
-    decreaseSize = (num = 0.1) => this.increaseSize(-num);
-    increaseLetterSpacing = (num = 1) => this.setStyle({
-        hook: styleMap => {
-            styleMap["letter-spacing"] = styleMap["letter-spacing"] || "1pt";
-            const origin = parseInt(styleMap["letter-spacing"]);
-            const spacing = Math.max(0, origin + num);
-            if (spacing !== 0) {
-                styleMap["letter-spacing"] = spacing + "pt";
-            } else {
-                delete styleMap["letter-spacing"];
-            }
+        fnMap[action]?.()
+    }
+
+    getActions = () => {
+        const { setStyle, setBrush, useBrush } = new StyleSetter(this, this.config.DEFAULT_FORMAT_BRUSH)
+        const actions = {
+            setStyle,
+            setBrush,
+            useBrush,
+            clearAll: () => setStyle({ replaceMap: {} }),
+            toggleForegroundColor: color => setStyle({ toggleMap: { color: color } }),
+            toggleBackgroundColor: color => setStyle({ toggleMap: { background: color } }),
+            toggleSize: size => setStyle({ toggleMap: { "font-size": size } }),
+            toggleWeight: weight => setStyle({ toggleMap: { "font-weight": weight } }),
+            toggleFamily: family => setStyle({ toggleMap: { "font-family": family } }),
+            toggleBorder: border => setStyle({ toggleMap: { border } }),
+            toggleEmphasis: emphasis => setStyle({ toggleMap: { "text-emphasis": emphasis } }),
+            toggleBlur: (num = 0.5) => setStyle({ mergeMap: { "filter": `blur(${num}em)` } }),
+            toggleItalic: () => setStyle({ toggleMap: { "font-style": "italic" } }),
+            toggleUnderline: () => setStyle({ mergeMap: { "text-decoration": "underline" } }),
+            toggleThroughline: () => setStyle({ mergeMap: { "text-decoration": "line-through" } }),
+            toggleOverline: () => setStyle({ mergeMap: { "text-decoration": "overline" } }),
+            toggleSuperScript: () => setStyle({ toggleMap: { "vertical-align": "super" } }),
+            toggleSubScript: () => setStyle({ toggleMap: { "vertical-align": "sub" } }),
+            increaseSize: (num = 0.1) => setStyle({
+                hook: styleMap => {
+                    styleMap["font-size"] = styleMap["font-size"] || "1.0em"
+                    const origin = parseFloat(styleMap["font-size"])
+                    const size = Math.max(0.1, (origin + num).toFixed(1))
+                    if (size !== 1) {
+                        styleMap["font-size"] = size + "em"
+                    } else {
+                        delete styleMap["font-size"]
+                    }
+                }
+            }),
+            decreaseSize: (num = 0.1) => actions.increaseSize(-num),
+            increaseLetterSpacing: (num = 1) => setStyle({
+                hook: styleMap => {
+                    styleMap["letter-spacing"] = styleMap["letter-spacing"] || "1pt"
+                    const origin = parseInt(styleMap["letter-spacing"])
+                    const spacing = Math.max(0, origin + num)
+                    if (spacing !== 0) {
+                        styleMap["letter-spacing"] = spacing + "pt"
+                    } else {
+                        delete styleMap["letter-spacing"]
+                    }
+                }
+            }),
+            decreaseLetterSpacing: (num = 1) => actions.increaseLetterSpacing(-num),
         }
-    });
-    decreaseLetterSpacing = (num = 1) => this.increaseLetterSpacing(-num);
+        return actions
+    }
 }
 
 /**

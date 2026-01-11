@@ -50,11 +50,32 @@ const rendererConstraints = createBidirectionalConstraint("RENDERER", "EXPORT_TY
 module.exports = {
     echarts: rendererConstraints,
     plantUML: [{
-        name: "showServerHint",
+        name: "showPlantUMLServerHint",
         when: { $and: [{ enable: true }, { $meta: { $isMounting: false } }] },
         affects: [],
         effect: (isConditionMet, context) => {
             if (isConditionMet) utils.notification.show(`Plugin Enabled!\nPlease ensure server ${context.getValue("SERVER_URL")} is available.`)
+        }
+    }],
+    json_rpc: [{
+        name: "showRPCServerHint",
+        when: { $and: [{ ENABLE: true }, { $meta: { $isMounting: false } }] },
+        affects: [],
+        effect: (isMet, context) => {
+            if (isMet) {
+                const { host, port } = context.getValue("SERVER_OPTIONS")
+                utils.notification.show(`Plugin Enabled!\nPlease ensure server ${host}:${port} is available.`)
+            }
+        }
+    }],
+    article_uploader: [{
+        name: "showArticleUploaderHint",
+        when: { $and: [{ ENABLE: true }, { $meta: { $isMounting: false } }] },
+        affects: [],
+        effect: (isMet) => {
+            if (isMet) {
+                utils.notification.show(`Plugin Enabled!\nPlease ensure uploader has been installed.`)
+            }
         }
     }],
     sidebar_enhance: [{

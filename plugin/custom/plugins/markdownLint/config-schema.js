@@ -277,7 +277,7 @@ const specificRules = [
 const generalRules = Object.entries(generalRulesMap).map(([name, rules]) => Switch(name, { explain: rules.join("、") }))
 
 const actions = [
-    Action("viewRules", _t("$label.viewMarkdownlintRules")),
+    Action("viewRules", _t("$tooltip.viewMarkdownlintRules")),
     Action("restoreRules", i18n.t("settings", "$label.restoreSettings")),
 ]
 

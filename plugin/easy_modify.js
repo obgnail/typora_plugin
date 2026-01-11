@@ -247,7 +247,7 @@ class EasyModifyPlugin extends BasePlugin {
         if (!target) return
 
         const errorMsg = this.i18n.t("act.insert_mermaid_mindmap.incompatible")
-        const clean = title => `("${title.replace(/"/g, "")}")`
+        const clean = title => `("${title.replace(/"/g, "#quot;")}")`
         const getComment = type => (type === "mindmap" && !window.mermaidAPI.defaultConfig.mindmap) ? `%%${errorMsg}\n` : ""
         const mermaidFunc = {
             mindmap: tree => {
