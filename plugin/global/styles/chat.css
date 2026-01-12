@@ -1,3 +1,11 @@
+@media print {
+    .plugin-chat-receive,
+    .plugin-chat-send {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+}
+
 .plugin-chat {
     background-color: #ebebeb;
     overflow: hidden;
