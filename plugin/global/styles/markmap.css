@@ -10,18 +10,18 @@
 
 #plugin-markmap {
     display: flex;
-    flex-direction: row;
-    transition: all 0.8s ease 0s;
-    user-select: none;
     min-width: 120px;
     min-height: 120px;
-    border-radius: 8px;
     padding: 0;
+    border-radius: 8px;
+    transition: all 0.8s ease 0s;
+    user-select: none;
 }
 
 @media (prefers-color-scheme: dark) {
     #plugin-markmap {
-        background: rgba(30, 30, 30, 0.85);
+        color: #ccc !important;
+        background: rgba(30, 30, 30, 0.85) !important;
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
     }
@@ -29,6 +29,8 @@
 
 #plugin-markmap.pinned-window {
     box-shadow: none;
+    background-color: var(--side-bar-bg-color);
+    border-radius: 0;
 }
 
 #plugin-markmap:not(.pinned-window) .plugin-markmap-header {
@@ -57,12 +59,23 @@
     cursor: ew-resize;
 }
 
-#plugin-markmap-svg .markmap-node .markmap-foreign:hover {
-    outline: ${this.config.NODE_BORDER_WHEN_HOVER};
+#plugin-markmap-svg {
+    flex: 1;
+    margin: 4px;
+    color: currentColor;
+    user-select: none;
 }
 
-#plugin-markmap-svg .markmap-node:hover {
+#plugin-markmap-svg .markmap-foreign {
+    line-height: 20px;
+}
+
+#plugin-markmap-svg .markmap-node {
     cursor: pointer;
+}
+
+#plugin-markmap-svg .markmap-node .markmap-foreign:hover {
+    outline: 3px solid #FF7B00;
 }
 
 .plugin-markmap-header {
@@ -83,7 +96,6 @@
 
 .plugin-markmap-icon:not([action="resize"]):hover {
     opacity: 1;
-    transform: scale(1.2);
 }
 
 .plugin-markmap-icon[action="resize"] {
@@ -100,15 +112,4 @@
     fill: currentColor;
     height: 1em;
     width: 1em;
-}
-
-#plugin-markmap-svg {
-    flex: 1;
-    user-select: none;
-    color: currentColor;
-    padding: 4px;
-}
-
-#plugin-markmap-svg .markmap-foreign {
-    line-height: 20px;
 }
