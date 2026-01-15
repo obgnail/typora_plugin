@@ -58,6 +58,7 @@ const i18n = {
         return Object.fromEntries(keys.map(k => [k, i18n.t(field, prefix + k)]))
     },
     bind: (field) => ({
+        locale: i18n.locale,
         data: i18n.data[field],
         link: i18n.link,
         _t: i18n.t,

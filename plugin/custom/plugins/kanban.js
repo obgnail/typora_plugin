@@ -24,11 +24,10 @@ class KanbanPlugin extends BaseCustomPlugin {
         })
 
         if (this.config.CTRL_WHEEL_TO_SWITCH) {
-            const utils = this.utils
-            utils.entities.$eWrite.on("wheel", ".plugin-kanban-content", function (ev) {
-                if (utils.metaKeyPressed(ev.originalEvent)) {
-                    this.scrollLeft += ev.originalEvent.deltaY * 0.3
-                }
+            this.utils.entities.eWrite.addEventListener("wheel", ev => {
+                if (!this.utils.metaKeyPressed(ev)) return
+                const target = ev.target.closest(".plugin-kanban-content")
+                if (target) target.scrollLeft += ev.deltaY * 0.5
             })
         }
     }

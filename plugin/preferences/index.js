@@ -37,8 +37,8 @@ class PreferencesPlugin extends BasePlugin {
         this.RULES = require("./rules.js")
         this.ACTIONS = require("./actions.js")(this)
         this.PREPROCESSORS = require("./preprocessors.js")(this)
-        this.applyOptions = this._getHook()
         this.META = this._getMeta()
+        this.applyOptions = this._getHook()
     }
 
     process = () => {
@@ -96,7 +96,7 @@ class PreferencesPlugin extends BasePlugin {
                 const handleProperty = this.utils.nestedPropertyHelpers[type]
                 if (!handleProperty) return
 
-                const fixedName = this.entities.form.dataset.plugin
+                const fixedName = this._getCurrentPlugin()
                 const settings = await this._getSettings(fixedName)
                 handleProperty(settings, key, value)
                 await this.utils.settings.handleSettings(fixedName, (_, allSettings) => allSettings[fixedName] = settings)
@@ -179,16 +179,12 @@ class PreferencesPlugin extends BasePlugin {
     }
 
     _getAllPlugins = () => {
-        const names = [
-            "global",
-            ...Object.keys(this.utils.getAllBasePluginSettings()),
-            ...Object.keys(this.utils.getAllCustomPluginSettings()),
-        ]
-        const plugins = names
+        const basePlugins = Object.keys(this.utils.getAllBasePluginSettings())
+        const customPlugins = Object.keys(this.utils.getAllCustomPluginSettings())
+        const plugins = ["global", ...basePlugins, ...customPlugins]
             .filter(name => this.SCHEMAS.hasOwnProperty(name))
             .map(name => {
-                const p = this.utils.tryGetPlugin(name)
-                const pluginName = p ? p.pluginName : this.i18n._t(name, "pluginName")
+                const pluginName = this.utils.tryGetPlugin(name)?.pluginName ?? this.i18n._t(name, "pluginName")
                 return [name, pluginName]
             })
         return Object.fromEntries(plugins)
@@ -214,13 +210,13 @@ class PreferencesPlugin extends BasePlugin {
     }
 
     _getHook = () => {
-        const fn = this.utils.safeEval(this.config.FORM_RENDERING_HOOK)
-        return (typeof fn === "function") ? fn : this.utils.identity
+        const hook = this.utils.safeEval(this.config.FORM_RENDERING_HOOK)
+        return (typeof hook === "function") ? hook : this.utils.identity
     }
 
-    _getMeta = () => {
-        return { $isBetaTypora: () => this.utils.isBetaVersion }
-    }
+    _getMeta = () => ({
+        $isBetaTypora: () => this.utils.isBetaVersion,
+    })
 
     _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
     _hasDialogChanged = () => this.entities.dialog.hasAttribute("has-changed")

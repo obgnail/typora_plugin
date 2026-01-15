@@ -44,6 +44,7 @@
     display: flex;
     overflow-x: auto;
     flex-wrap: ${wrap};
+    cursor: auto;
 }
 
 .plugin-kanban-content .no-wrap-title {
@@ -66,7 +67,7 @@
 
 .plugin-kanban-content .plugin-kanban-col {
     width: ${kanbanWidth} !important;
-    margin: 8px;
+    margin: 8px 6px;
 }
 
 .plugin-kanban-col p {

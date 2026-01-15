@@ -816,10 +816,6 @@ HEIGHT_PERCENT_WHEN_PIN_TOP = 30
 #   取值范围：0 到 100 之间的整数
 WIDTH_PERCENT_WHEN_PIN_RIGHT = 50
 
-# 当鼠标悬停在思维导图节点上时，显示的边框样式
-#   可以使用 CSS 边框样式，例如 "2px solid red", "1px dashed #000000"
-NODE_BORDER_WHEN_HOVER = "3px solid #FF7B00"
-
 # 预设的配色方案列表：用于设置思维导图节点的颜色
 #   每个配色方案是一个颜色数组，插件会按顺序使用这些颜色
 #   默认是 D3 categorical schemes：https://d3js.org/d3-scale-chromatic/categorical

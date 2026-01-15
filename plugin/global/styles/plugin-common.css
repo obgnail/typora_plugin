@@ -2,11 +2,11 @@
     position: fixed;
     z-index: 9999;
     padding: 4px;
-    background-color: var(--side-bar-bg-color);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
-    border-top: none;
+    background-color: var(--bg-color);
     color: var(--text-color);
+    border-top: none;
     border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
 }
 
 .plugin-common-hidden {

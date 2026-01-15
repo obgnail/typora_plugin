@@ -23,18 +23,17 @@ class TemplaterPlugin extends BaseCustomPlugin {
 
     callback = async anchorNode => {
         const templates = this.config.template.map(tpl => tpl.name)
-        const settingFields = [
-            { key: "template", type: "select", label: this.i18n.t("$label.template.text"), options: templates },
-            { key: "filename", type: "text", label: this.i18n.t("filename"), placeholder: this.i18n.t("createCopyIfEmpty") },
-            { key: "autoOpen", type: "switch", label: this.i18n.t("$label.auto_open") },
-        ]
         const defaultTpl = this.config.template[0]
         const getTplCnt = (name) => this.config.template.find(tpl => tpl.name === name)?.text ?? ""
         const op = {
             title: this.pluginName,
-            schema: [
-                { title: undefined, fields: settingFields },
-                { title: this.i18n.t("preview"), fields: [{ key: "preview", type: "textarea", rows: 8 }] },
+            schema: ({ Group, Controls }) => [
+                Group(
+                    Controls.Select("template").Label(this.i18n.t("$label.template.text")).Options(templates),
+                    Controls.Text("filename").Label(this.i18n.t("filename")).Placeholder(this.i18n.t("createCopyIfEmpty")),
+                    Controls.Switch("autoOpen").Label(this.i18n.t("$label.auto_open")),
+                ),
+                Controls.Textarea("preview").Label(this.i18n.t("preview")).Rows(8),
             ],
             data: {
                 filename: "",

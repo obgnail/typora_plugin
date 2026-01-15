@@ -49,7 +49,6 @@ module.exports = {
         IGNORE_PATTERNS: each([required, regex]),
     },
     markmap: {
-        NODE_BORDER_WHEN_HOVER: required,
         CANDIDATE_COLOR_SCHEMES: each([required, array]),
         "DOWNLOAD_OPTIONS.FOLDER": path,
         "DOWNLOAD_OPTIONS.FILENAME": required,

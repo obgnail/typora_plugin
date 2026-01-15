@@ -55,7 +55,7 @@ WRAP = false
 # 当鼠标位于看板时，是否允许使用 ctrl + 鼠标滚轮 滚动看板
 #   true:  允许使用 ctrl + 鼠标滚轮 滚动看板
 #   false: 禁止使用 ctrl + 鼠标滚轮 滚动看板
-CTRL_WHEEL_TO_SWITCH = true
+CTRL_WHEEL_TO_SWITCH = false
 
 # ------------------- 内容样式 -------------------
 # 允许在任务描述框中使用 markdown 内联样式（code, strong, em, del, link, img）

@@ -12,7 +12,10 @@ class TOCMarkmap {
             download: "ion-archive", settings: "ion-android-settings", unfold: "ion-refresh", fit: "ion-cube",
             pinRight: "ion-chevron-right", pinTop: "ion-chevron-up", expand: "ion-qr-scanner", close: "ion-close",
         }
-        const buttons = this.config.TITLE_BAR_BUTTONS.map(name => `<div class="plugin-markmap-icon ${icons[name]}" action="${name}" ty-hint="${this.i18n.t(`$option.TITLE_BAR_BUTTONS.${name}`)}"></div>`).join("")
+        const buttons = this.config.TITLE_BAR_BUTTONS.map(name => {
+            const hint = this.i18n.t(`$option.TITLE_BAR_BUTTONS.${name}`)
+            return `<div class="plugin-markmap-icon" action="${name}" ty-hint="${hint}"><i class="${icons[name]}"></i></div>`
+        }).join("")
         const resizeButton = '<div class="plugin-markmap-icon" action="resize"><svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg></div>'
         return `
             <div id="plugin-markmap" class="plugin-common-modal plugin-common-hidden">
@@ -676,8 +679,9 @@ class TOCMarkmap {
         this._setFullScreenStyles(false)
 
         const btn = this.entities.header.querySelector(`[action="${act}"]`)
-        btn.classList.toggle(icon, !pinned)
-        btn.classList.toggle("ion-ios7-undo", pinned)
+        const iconEl = btn.firstElementChild
+        iconEl.classList.toggle(icon, !pinned)
+        iconEl.classList.toggle("ion-ios7-undo", pinned)
         btn.setAttribute("ty-hint", this.i18n.t(pinned ? "$option.TITLE_BAR_BUTTONS.pinRecover" : hint))
     }
 
@@ -686,8 +690,9 @@ class TOCMarkmap {
         if (!btn) return
         btn.setAttribute("action", expand ? "shrink" : "expand")
         btn.setAttribute("ty-hint", this.i18n.t(expand ? "$option.TITLE_BAR_BUTTONS.shrink" : "$option.TITLE_BAR_BUTTONS.expand"))
-        btn.classList.toggle("ion-qr-scanner", !expand)
-        btn.classList.toggle("ion-ios7-undo", expand)
+        const iconEl = btn.firstElementChild
+        iconEl.classList.toggle("ion-qr-scanner", !expand)
+        iconEl.classList.toggle("ion-ios7-undo", expand)
     }
 
     _toggleFullscreen = (expand = true) => {

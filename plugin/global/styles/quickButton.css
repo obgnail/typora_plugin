@@ -14,7 +14,7 @@
     gap: ${this.config.button_gap};
     right: ${this.config.position_right};
     bottom: ${this.config.position_bottom};
-    color: var(--active-file-border-color);
+    color: var(--text-color);
 }
 
 #plugin-quick-button .action-item {
@@ -35,6 +35,10 @@
 
 #plugin-quick-button .action-item:active {
     transform: scale(0.95);
+}
+
+#plugin-quick-button .action-item i {
+    opacity: 0.8;
 }
 
 #plugin-quick-button .plu-hidden,

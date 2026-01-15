@@ -24,7 +24,7 @@
 /** @typedef {InputProps & { min?: number, max?: number, step?: number, isInteger?: boolean }} NumberProps */
 /** @typedef {BaseProps & { minItems?: number, maxItems?: number, disabledOptions?: string[] }} OptionsProps */
 
-/** @typedef {{ key?: string } & BaseProps & Object} IField */
+/** @typedef {{ key?: string } & BaseProps} IField */
 
 /**
  * @param {string} key
@@ -230,7 +230,7 @@ const Custom = (content, props = {}) => ({ type: "custom", content, unsafe: fals
 /**
  * @param {string} key
  * @param {string} type
- * @param {BoxProps & Object} [props]
+ * @param {BoxProps} [props]
  * @returns {Object}
  */
 const SingleFieldBox = (key, type, props = {}) => {
@@ -393,7 +393,7 @@ const UNITS = {
     em: "em",
 }
 
-/******** Prop Options (for Select/Transfer only) ********/
+/******** Prop Options (for Select/Transfer/Checkbox only) ********/
 const createOptions = (definitions) => {
     return Object.freeze(Object.fromEntries(
         Object.entries(definitions).map(([name, fields]) => {
@@ -514,11 +514,11 @@ const schema_global = [
     ),
     UntitledBox(
         Action("visitRepo"),
-        Action("viewDeepWiki"),
+        Action("viewDeepWiki", { tooltip: Tip.action("neverGonnaTellALie", "fa fa-book") }),
         Action("openPluginFolder"),
         Action("editStyles"),
         Action("developPlugins"),
-        Action("githubImageBed"),
+        Action("viewGithubImageBed"),
     ),
     UntitledBox(
         Action("updatePlugin"),
@@ -667,7 +667,7 @@ const schema_read_only = [
     TitledBox(
         "advanced",
         Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
-        Select("REMAIN_AVAILABLE_MENU_KEY", undefined, { dependencies: Dep.true("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY") }),
+        Select("REMAIN_AVAILABLE_MENU_KEY", null, { dependencies: Dep.true("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY") }),
     ),
     box_settingHandler,
 ]
@@ -789,7 +789,6 @@ const schema_markmap = [
         Range("HEIGHT_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
         Range("HEIGHT_PERCENT_WHEN_PIN_TOP", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
         Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
-        Text("NODE_BORDER_WHEN_HOVER", dep_markmapToc),
     ),
     TransferBox("TITLE_BAR_BUTTONS", OPTIONS.markmap.TITLE_BAR_BUTTONS, { minItems: 1, ...dep_markmapToc }),
     TitledBox(

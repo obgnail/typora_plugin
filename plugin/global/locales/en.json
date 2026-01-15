@@ -100,7 +100,7 @@
     "$label.restoreAllSettings": "Restore All Default Settings",
     "$label.visitRepo": "Source Code",
     "$label.viewDeepWiki": "Ask AI Wiki",
-    "$label.githubImageBed": "GitHub Image Bed",
+    "$label.viewGithubImageBed": "GitHub Image Bed",
     "$label.editStyles": "Edit Styles",
     "$label.developPlugins": "Develop a Plugin",
     "$label.updatePlugin": "Check for Updates",
@@ -114,6 +114,7 @@
     "$option.LOCALE.zh-TW": "繁體中文",
     "$option.EXIT_INTERACTIVE_MODE.click_exit_button": "Click Button",
     "$option.EXIT_INTERACTIVE_MODE.ctrl_click_fence": "Ctrl+Click",
+    "$tooltip.neverGonnaTellALie": "Official Docs",
     "$tooltip.toggleDevTools": "Dev Tools"
   },
   "window_tab": {
@@ -521,7 +522,6 @@
     "$label.HEIGHT_PERCENT_WHEN_INIT": "Initial Window Height",
     "$label.HEIGHT_PERCENT_WHEN_PIN_TOP": "Pinned Top Window Height",
     "$label.WIDTH_PERCENT_WHEN_PIN_RIGHT": "Pinned Right Window Width",
-    "$label.NODE_BORDER_WHEN_HOVER": "Node Border Style on Hover",
     "$label.DEFAULT_TOC_OPTIONS.zoom": "Allow Zoom",
     "$label.DEFAULT_TOC_OPTIONS.pan": "Allow Pan",
     "$label.DEFAULT_TOC_OPTIONS.toggleRecursively": "Toggle Recursively",
@@ -1384,7 +1384,7 @@
     "$title.adjustScale": "Adjustment Scale"
   },
   "markdownLint": {
-    "pluginName": "MarkdownLint",
+    "pluginName": "Markdownlint",
     "success.fixAll": "Lint Errors Fixed",
     "MD001": "Heading levels should increment by one",
     "MD003": "Incorrect heading style",

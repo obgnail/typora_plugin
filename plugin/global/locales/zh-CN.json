@@ -100,7 +100,7 @@
     "$label.restoreAllSettings": "恢复所有默认配置",
     "$label.visitRepo": "源代码",
     "$label.viewDeepWiki": "AI 文档",
-    "$label.githubImageBed": "Github 图床",
+    "$label.viewGithubImageBed": "Github 图床",
     "$label.editStyles": "我要改样式",
     "$label.developPlugins": "我要写插件",
     "$label.updatePlugin": "检查更新",
@@ -114,6 +114,7 @@
     "$option.LOCALE.zh-TW": "繁體中文",
     "$option.EXIT_INTERACTIVE_MODE.click_exit_button": "点击按钮",
     "$option.EXIT_INTERACTIVE_MODE.ctrl_click_fence": "Ctrl+Click",
+    "$tooltip.neverGonnaTellALie": "插件文档",
     "$tooltip.toggleDevTools": "开发者工具"
   },
   "window_tab": {
@@ -521,7 +522,6 @@
     "$label.HEIGHT_PERCENT_WHEN_INIT": "初始窗口高度",
     "$label.HEIGHT_PERCENT_WHEN_PIN_TOP": "固定顶部的窗口高度",
     "$label.WIDTH_PERCENT_WHEN_PIN_RIGHT": "固定右侧的窗口宽度",
-    "$label.NODE_BORDER_WHEN_HOVER": "鼠标悬停节点边框样式",
     "$label.DEFAULT_TOC_OPTIONS.zoom": "允许缩放",
     "$label.DEFAULT_TOC_OPTIONS.pan": "允许平移",
     "$label.DEFAULT_TOC_OPTIONS.toggleRecursively": "递归折叠/展开节点",

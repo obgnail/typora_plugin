@@ -8,7 +8,7 @@ class MarkmapPlugin extends BasePlugin {
         this.fenceMarkmap = this.config.ENABLE_FENCE_MARKMAP ? new FenceMarkmap(this) : null
     }
 
-    styleTemplate = () => this
+    styleTemplate = () => true
 
     html = () => this.tocMarkmap?.html()
 
