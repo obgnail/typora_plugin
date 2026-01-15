@@ -656,9 +656,10 @@ const Layout_Default = {
         return `<div class="explain">${utils.escape(field.explain)}</div>`
     },
     createLabel(field) {
+        const label = field.label || ""
         return field.explain
-            ? `<div><div>${field.label}${this.createTooltip(field)}</div>${this.createExplain(field)}</div>`
-            : field.label + this.createTooltip(field)
+            ? `<div><div>${label}${this.createTooltip(field)}</div>${this.createExplain(field)}</div>`
+            : label + this.createTooltip(field)
     },
     createControlContainer(field, controlHTML, className) {
         const isBlockLayout = field.isBlockLayout || false
@@ -774,6 +775,9 @@ const Feature_CollapsibleBox = {
 }
 
 const Feature_InteractiveTooltip = {
+    featureOptions: {
+        defaultIcon: "fa fa-info-circle",
+    },
     configure: ({ hooks, options, initState }) => {
         const state = initState(new Map())
         hooks.on("onRender", (form) => {
@@ -792,16 +796,359 @@ const Feature_InteractiveTooltip = {
             }, true)
         })
     },
-    compile: ({ form, state }) => {
-        const collect = (item) => {
+    compile: ({ form, state, options }) => {
+        const defaultIcon = options.defaultIcon || "fa fa-info-circle"
+        const normalize = (item) => {
+            if (!item.tooltip) return
+            const rawList = Array.isArray(item.tooltip) ? item.tooltip : [item.tooltip]
+            const normalized = rawList.filter(Boolean).map(tip => {
+                if (typeof tip === "string") {
+                    return { text: tip, icon: defaultIcon }
+                }
+                if (typeof tip === "object") {
+                    return { ...tip, icon: tip.icon || defaultIcon }
+                }
+                return tip
+            })
+            item.tooltip = normalized
             const id = item.key || item.id
-            if (id && item.tooltip) {
-                const normalized = Array.isArray(item.tooltip) ? item.tooltip : [item.tooltip]
-                state.set(id, normalized)
+            if (id) state.set(id, normalized)
+        }
+        form.traverseBoxes(normalize)
+        form.traverseFields(normalize)
+    }
+}
+
+/**
+ * Core meta-programming engine that enables a fluent Builder Pattern for schema generation.
+ *
+ * It provides the infrastructure for chainable method calls, handles dependency merging via
+ * `Dep` proxies, and recursively unwraps builder instances into raw JSON schema configurations.
+ */
+const Feature_SchemaBuilder = (() => {
+    const UNWRAP_SYM = Symbol.for("Unwrap")
+
+    const Dep = new Proxy({
+        or: (...args) => ({ $or: args }),
+        and: (...args) => ({ $and: args }),
+        follow: (key) => ({ $follow: key }),
+        eq: (key, val) => ({ [key]: val }),
+        ne: (key, val) => ({ [key]: { $ne: val } }),
+        true: (key) => ({ [key]: true }),
+        false: (key) => ({ [key]: false }),
+        raw: (obj) => obj,
+    }, {
+        get: (target, prop) => {
+            return prop in target
+                ? target[prop]
+                : (key, val) => ({ [key]: { [`$${prop}`]: val } })
+        }
+    })
+    const Tip = {
+        info: (text) => text,
+        action: (action, icon, text) => ({ action, icon, text }),
+    }
+    const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
+    const mergeDeps = (previousDep, nextDep) => {
+        if (!previousDep) return nextDep
+        if (!nextDep) return previousDep
+        const normalize = (d) => !d ? [] : Array.isArray(d.$and) ? d.$and : [d]
+        const prevList = normalize(previousDep)
+        const nextList = normalize(nextDep)
+        const combined = [...prevList]
+        for (const newItem of nextList) {
+            if (!newItem) continue
+            const isDuplicate = combined.some(existingItem => utils.deepEqual(existingItem, newItem))
+            if (!isDuplicate) {
+                combined.push(newItem)
             }
         }
-        form.traverseBoxes(collect)
-        form.traverseFields(collect)
+        if (combined.length === 0) return
+        if (combined.length === 1) return combined[0]
+        return { $and: combined }
+    }
+    const unwrap = (items) => {
+        if (!items) return items
+        if (items[UNWRAP_SYM]) {
+            return unwrap(items[UNWRAP_SYM]())
+        }
+        if (Array.isArray(items)) {
+            return items.flatMap(item => {
+                if (Array.isArray(item)) {
+                    return unwrap(item)
+                }
+                if (item?.[UNWRAP_SYM]) {
+                    const result = item[UNWRAP_SYM]()
+                    return Array.isArray(result) ? unwrap(result) : result
+                }
+                return item
+            })
+        }
+        return items
+    }
+    const normalizeBoxes = (boxes) => {
+        const ret = Array.isArray(boxes) ? boxes : [boxes]
+        return ret.flat(Infinity).filter(box => box && typeof box === "object")
+    }
+
+    const Transformers = {
+        FIELD: {
+            stage: (box, innerField, propKey, propValue) => innerField[propKey] = propValue,
+            commit: null,
+        },
+        BOX: {
+            stage: (box, innerField, propKey, propValue) => box[propKey] = propValue,
+            commit: null,
+        },
+        SHARED: {
+            stage: (box, innerField, propKey, propValue) => box[propKey] = propValue,
+            commit: (box, innerField, propKey) => {
+                if (box[propKey] !== undefined) {  // `null` is allowed
+                    innerField[propKey] = box[propKey]
+                }
+            },
+        },
+        TITLE_LABEL: {
+            stage: (box, innerField, propKey, propValue) => box.title = propValue,
+            commit: (box, innerField) => {
+                if (box.title != null) {
+                    innerField.label = box.title
+                }
+            },
+        },
+        DIRECT: {
+            stage: (target, innerField, propKey, propValue) => target[propKey] = propValue,
+            commit: null,
+        },
+        DEPENDENCY: {
+            stage: (target, innerField, propKey, ...args) => {
+                const [keyOrDep, value] = args
+                const newDep = (value != null) ? Dep.eq(keyOrDep, value)
+                    : (typeof keyOrDep === "string") ? Dep.true(keyOrDep)
+                        : keyOrDep
+                target.dependencies = mergeDeps(target.dependencies, newDep)
+            },
+            commit: (box, innerField) => {
+                if (box.dependencies != null) {
+                    innerField.dependencies = mergeDeps(innerField.dependencies, box.dependencies)
+                }
+            },
+        },
+        FIELDS: {
+            stage: (target, innerField, propKey, ...items) => {
+                if (!target.fields) target.fields = []
+                target.fields.push(...unwrap(items))
+            },
+            commit: null,
+        },
+        SCHEMA: {
+            stage: (box, innerField, propKey, ...items) => innerField[propKey] = normalizeBoxes(items),
+            commit: null,
+        },
+        TABS: {
+            stage: (box, innerField, propKey, tabsConfig) => {
+                if (!Array.isArray(tabsConfig)) return
+                innerField[propKey] = tabsConfig.map(tab => {
+                    return tab.schema
+                        ? { ...tab, schema: normalizeBoxes(tab.schema) }
+                        : tab
+                })
+            },
+            commit: null,
+        },
+    }
+    const EntitySpecs = {
+        FIELD: {
+            key: Transformers.FIELD,
+            type: Transformers.FIELD,
+            label: Transformers.TITLE_LABEL,
+            tooltip: Transformers.SHARED,
+            explain: Transformers.SHARED,
+            hidden: Transformers.SHARED,
+            disabled: Transformers.SHARED,
+            className: Transformers.SHARED,
+            dependencyUnmetAction: Transformers.SHARED,
+            dependencies: Transformers.DEPENDENCY,
+            showIf: Transformers.DEPENDENCY,  // Alias for `dependencies`
+        },
+        BOX: {
+            id: Transformers.DIRECT,
+            title: Transformers.DIRECT,
+            tooltip: Transformers.DIRECT,
+            fields: Transformers.FIELDS,
+            dependencyUnmetAction: Transformers.DIRECT,
+            dependencies: Transformers.DEPENDENCY,
+            showIf: Transformers.DEPENDENCY,  // Alias for `dependencies`
+            children: Transformers.FIELDS,  // Alias for `fields`
+        }
+    }
+    const BuilderFactory = {
+        FIELD: {
+            createSetter: (propKey, transformer) => function (...args) {
+                transformer.stage(this, this.fields[0], propKey, ...args)
+                return this
+            },
+            createPropSetter: () => function (key, value) {
+                this.fields[0][key] = value
+                return this
+            },
+            createUnwrapper: (specs) => function () {
+                const inner = { ...this.fields[0] }
+                for (const key of Object.keys(specs)) {
+                    specs[key].commit?.(this, inner, key)
+                }
+                return inner
+            }
+        },
+        BOX: {
+            createSetter: (propKey, transformer) => function (...args) {
+                transformer.stage(this, null, propKey, ...args)
+                return this
+            },
+            createPropSetter: () => function (key, value) {
+                this[key] = value
+                return this
+            },
+            createUnwrapper: () => function () {
+                return this
+            }
+        }
+    }
+
+    return {
+        statics: { mergeDeps, unwrap, normalizeBoxes, UNWRAP_SYM, Dep, Tip, Transformers, EntitySpecs, BuilderFactory },
+        install: (FastFormClass) => {
+            const { UNWRAP_SYM, Dep, Tip, Transformers, EntitySpecs, BuilderFactory } = Feature_SchemaBuilder.statics
+            const createSetter = (handler) => function (...args) {
+                handler(this, ...args)
+                return this
+            }
+            const createSchemaBuilder = () => {
+                const SCOPED_PRESETS = new Map()
+                const buildProto = (specs, factory) => {
+                    const presetMethods = [...SCOPED_PRESETS].map(([name, handler]) => [name, createSetter(handler)])
+                    const propMethods = Object.entries(specs).map(([propKey, transformer]) => [capitalize(propKey), factory.createSetter(propKey, transformer)])
+                    return {
+                        ...Object.fromEntries(presetMethods),
+                        ...Object.fromEntries(propMethods),
+                        prop: factory.createPropSetter(),
+                        [UNWRAP_SYM]: factory.createUnwrapper(specs),
+                    }
+                }
+                const applyProps = (instance, innerField, props, specs) => {
+                    for (const prop of Object.keys(props)) {
+                        const transformer = specs[prop]
+                        if (!transformer) {
+                            throw new Error(`[SchemaBuilder] Property "${prop}" is NOT defined in the specs`)
+                        }
+                        transformer.stage(instance, innerField, prop, props[prop])
+                    }
+                }
+                const defineField = (type, specs = {}, defaultProps = {}) => {
+                    const finalSpecs = { ...EntitySpecs.FIELD, ...specs }
+                    const proto = buildProto(finalSpecs, BuilderFactory.FIELD)
+                    return (key, overrideProps = {}) => {
+                        const finalProps = { ...defaultProps, ...overrideProps }
+                        // if (key && finalProps.label == null) {
+                        //     finalProps.label = key
+                        // }
+                        const instance = Object.create(proto)
+                        const innerField = { type, key }
+                        instance.fields = [innerField]
+                        applyProps(instance, innerField, finalProps, finalSpecs)
+                        return instance
+                    }
+                }
+                const defineBox = (specs = {}, defaultProps = {}) => {
+                    const finalSpecs = { ...EntitySpecs.BOX, ...specs }
+                    const proto = buildProto(finalSpecs, BuilderFactory.BOX)
+                    return (...args) => {
+                        const instance = Object.create(proto)
+                        applyProps(instance, null, defaultProps, finalSpecs)
+                        let argIndex = 0
+                        if (args.length > 0 && typeof args[0] === "string") {
+                            instance.title = args[0]
+                            argIndex = 1
+                        }
+                        const children = args.slice(argIndex)
+                        if (children.length > 0) {
+                            if (!instance.fields) instance.fields = []
+                            instance.fields.push(...unwrap(children))
+                        }
+                        return instance
+                    }
+                }
+                return {
+                    Transformers, Dep, Tip, unwrap, normalizeBoxes,
+                    preset: (name, handler) => SCOPED_PRESETS.set(name, handler),
+                    define: defineField,
+                    defineBox: defineBox,
+                    Group: defineBox(),
+                }
+            }
+            FastFormClass.schemaBuilder = createSchemaBuilder
+            FastFormClass.prototype.schemaBuilder = createSchemaBuilder
+        }
+    }
+})()
+
+/**
+ * Implements the standard fluent API (DSL) for all built-in FastForm controls.
+ *
+ * It utilizes `SchemaBuilder` to define concrete builder factories (e.g., `Controls.Text`, `Controls.Select`)
+ * and exposes utility helpers like `Dep` and `Group`, enabling declarative and readable schema construction.
+ */
+const Feature_StandardDSL = {
+    install: (FastFormClass) => {
+        if (!FastFormClass.schemaBuilder) {
+            console.warn("Feature_StandardDSL requires 'schemaBuilder' feature.")
+            return
+        }
+        const builder = FastFormClass.schemaBuilder()
+        const { unwrap, normalizeBoxes, define, defineBox, preset, Group, Tip, Dep, Transformers } = builder
+        const { FIELD: F, SCHEMA, TABS } = Transformers
+        const BASE = { placeholder: F, readonly: F, disabled: F, className: F, isBlockLayout: F }
+        const NUM = { ...BASE, min: F, max: F, step: F, isInteger: F }
+        const OPT = { ...BASE, options: F, disabledOptions: F }
+        const LIST = { minItems: F, maxItems: F }
+        const Controls = {
+            Switch: define("switch", BASE),
+            Text: define("text", BASE),
+            Password: define("password", BASE),
+            Color: define("color", BASE),
+            Number: define("number", NUM),
+            Unit: define("unit", { ...NUM, unit: F }),
+            Icon: define("icon", BASE),
+            Range: define("range", NUM),
+            Action: define("action", { ...BASE, actionType: F, activeClass: F }),
+            Static: define("static", { ...BASE, content: F, unsafe: F }),
+            Custom: define("custom", { ...BASE, content: F, unsafe: F }),
+            Hint: define("hint", { ...BASE, hintHeader: F, hintDetail: F, unsafe: F }),
+            Divider: define("divider", { ...BASE, divider: F, position: F, dashed: F }),
+            Hotkey: define("hotkey", BASE),
+            Textarea: define("textarea", { ...BASE, rows: F, cols: F, noResize: F }),
+            Code: define("code", { ...BASE, tabSize: F, lineNumbers: F }),
+            Object: define("object", { ...BASE, rows: F, noResize: F, format: F }),
+            Array: define("array", { ...BASE, ...LIST, allowDuplicates: F, dataType: F }),
+            Select: define("select", { ...OPT, ...LIST, labelJoiner: F }),
+            Radio: define("radio", { ...OPT, columns: F }),
+            Checkbox: define("checkbox", { ...OPT, ...LIST, columns: F }),
+            Transfer: define("transfer", { ...OPT, ...LIST, titles: F, defaultHeight: F }),
+            Dict: define("dict", { ...BASE, keyPlaceholder: F, valuePlaceholder: F, allowAddItem: F }),
+            Palette: define("palette", { ...BASE, defaultColor: F, dimensions: F, allowJagged: F }),
+            Table: define("table", { ...BASE, thMap: F, nestedBoxes: SCHEMA, defaultValues: F }),
+            Composite: define("composite", { ...BASE, subSchema: SCHEMA, defaultValues: F }),
+            Tabs: define("tabs", { ...BASE, tabs: TABS, tabStyle: F, tabPosition: F, defaultSelectedTab: F }),
+        }
+        const buildSchema = (input) => {
+            const ret = (input instanceof Function) ? input(dsl) : input
+            const boxes = Array.isArray(ret) ? ret : [ret]
+            return normalizeBoxes(boxes)
+        }
+        const dsl = { builder, unwrap, normalizeBoxes, define, defineBox, preset, buildSchema, Group, Controls, Tip, Dep }
+
+        FastFormClass.DSL = dsl
+        FastFormClass.prototype.DSL = dsl
     }
 }
 
@@ -1939,6 +2286,8 @@ FastForm.registerFeature("validation", Feature_Validation)
 FastForm.registerFeature("fieldDependencies", Feature_FieldDependencies)
 FastForm.registerFeature("boxDependencies", Feature_BoxDependencies)
 FastForm.registerFeature("cascades", Feature_Cascades)
+FastForm.registerFeature("schemaBuilder", Feature_SchemaBuilder)
+FastForm.registerFeature("standardDSL", Feature_StandardDSL)
 
 // usage:
 //  $compareFields: { left: "fieldKey1", operator: "$lt", right: "fieldKey2" }
@@ -3327,7 +3676,7 @@ const Control_Dict = {
                 return
             }
             badgeEl.dataset.type = targetType
-            badgeEl.textContent = typeHandler.label
+            badgeEl.textContent = typeHandler.label || ""
             closeAllMenus()
             Control_Dict._collectAndCommit(wrapEl, form)
         }).onEvent("change", ".dict-input", function () {
@@ -3366,8 +3715,8 @@ const Control_Dict = {
         const k = utils.escape(String(key || ""))
         const v = utils.escape(displayVal)
         const typeConfig = Control_Dict._types
-        const currentLabel = typeConfig[currentType].label
-        const toOption = ([key, def]) => `<div class="dict-type-option ${key === currentType ? "active" : ""}" data-type="${key}">${def.label}</div>`
+        const currentLabel = typeConfig[currentType].label || ""
+        const toOption = ([key, def]) => `<div class="dict-type-option ${key === currentType ? "active" : ""}" data-type="${key}">${def.label || ""}</div>`
         const menuItems = Object.entries(typeConfig).map(toOption).join("")
         return `
             <div class="dict-row">
@@ -3400,7 +3749,7 @@ const Control_Dict = {
                 handler = typeConfig.string
 
                 badgeEl.dataset.type = "string"
-                badgeEl.textContent = handler.label
+                badgeEl.textContent = handler.label || ""
 
                 valInput.classList.add("input-warn")
                 setTimeout(() => valInput.classList.remove("input-warn"), 500)
