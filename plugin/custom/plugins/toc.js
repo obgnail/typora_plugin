@@ -162,7 +162,8 @@ class TOCPlugin extends BaseCustomPlugin {
                     if (isAncestorOf(dragItem, this)) return
 
                     const headers = []
-                    const blocks = File.editor.nodeMap.blocks.toArray()
+                    const blocks = []
+                    File.editor.nodeMap.blocks.sortedForEach(node => blocks.push(node))
                     blocks.forEach((node, idx) => {
                         if (node.attributes.type === Node.TYPE.heading) headers.push({ idx: idx, node: node })
                     })

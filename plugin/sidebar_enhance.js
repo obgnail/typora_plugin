@@ -176,7 +176,8 @@ class SidebarEnhancePlugin extends BasePlugin {
                 if (!dragCid || !dropCid) return
 
                 const headers = []
-                const blocks = File.editor.nodeMap.blocks.toArray()
+                const blocks = []
+                File.editor.nodeMap.blocks.sortedForEach(node => blocks.push(node))
                 blocks.forEach((node, idx) => node.attributes.type === Node.TYPE.heading && headers.push({ idx: idx, node: node }))
 
                 const drag = getHeader(dragCid, headers, blocks)
