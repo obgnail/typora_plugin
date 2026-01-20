@@ -63,17 +63,18 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 44   | truncate_text           | Hide content to improve performance for large files          | ×                  |
 | 45   | dark                    | Dark mode                                                    |                    |
 | 46   | no_image                | No image mode                                                |                    |
-| 47   | updater                 | One-click plugin update                                      |                    |
-| 48   | easy_modify             | Editing tools                                                |                    |
-| 49   | editor_width_slider     | Adjust writing area width                                    |                    |
-| 50   | redirectLocalRootUrl    | Redirect local resource root directory                       | ×                  |
-| 51   | blockSideBySide         | Display active blocks side by side                           | ×                  |
-| 52   | scrollBookmarker        | Bookmark manager                                             | ×                  |
-| 53   | cipher                  | Encrypt files                                                | ×                  |
-| 54   | ripgrep                 | Search files using ripgrep                                   | ×                  |
-| 55   | article_uploader        | One-click upload blog to supported platforms                 | ×                  |
-| 56   | cursor_history          | Cursor History                                               | ×                  |
-| 57   | static_markers          | Static Markers                                               | ×                  |
+| 47   | myopic_defocus          | Defocus Comfort Mode                                         |                    |
+| 48   | updater                 | One-click plugin update                                      |                    |
+| 49   | easy_modify             | Editing tools                                                |                    |
+| 50   | editor_width_slider     | Adjust writing area width                                    |                    |
+| 51   | redirectLocalRootUrl    | Redirect local resource root directory                       | ×                  |
+| 52   | blockSideBySide         | Display active blocks side by side                           | ×                  |
+| 53   | scrollBookmarker        | Bookmark manager                                             | ×                  |
+| 54   | cipher                  | Encrypt files                                                | ×                  |
+| 55   | ripgrep                 | Search files using ripgrep                                   | ×                  |
+| 56   | article_uploader        | One-click upload blog to supported platforms                 | ×                  |
+| 57   | cursor_history          | Cursor History                                               | ×                  |
+| 58   | static_markers          | Static Markers                                               | ×                  |
 | 59   | custom                  | Open platform for user-defined plugins (advanced)            |                    |
 | 60   | hotkeys                 | Hotkey registration center (advanced)                        |                    |
 | 61   | quickButton             | Add function buttons in the lower right corner (advanced)    |                    |
@@ -390,7 +391,7 @@ Function: Use markdown to create PPT.
 
 Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Marp
 
-## plantUML: Provide PlantUML Support
+### plantUML: Provide PlantUML Support
 
 Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> PlantUML
 
@@ -500,7 +501,7 @@ Function: `alt + mouse scroll`: Adjust the image size.
 
 Function: When exporting HTML, convert images to base64 to avoid image loss.
 
-## sidebar_enhance
+### sidebar_enhance
 
 Function: 
 
@@ -520,6 +521,10 @@ Usage: Right-click menu -> Often Used Plugins -> Night Mode
 ### no_image: No Image Mode
 
 Usage: Right-click menu -> Often Used Plugins -> No Image Mode
+
+### myopic_defocus: Defocus Comfort Mode
+
+Usage: Right-click menu -> Often Used Plugins -> Defocus Comfort Mode
 
 ### markdownLint
 
@@ -664,7 +669,7 @@ For specific usage, refer to: [README.md](https://github.com/obgnail/typora_plug
 
 ## Acknowledgements
 
-- GPL: [PlantUML](https://plantuml.com/)
+- GPL: [PlantUML](https://plantuml.com/) | [Refractify Myopic Defocus](https://chromewebstore.google.com/detail/refractify-myopic-defocus/dpnfdlnkgojjihdmgmacnmheflkojijm?hl=en)
 - Apache: [ECharts](https://echarts.apache.org/zh/index.html) | [draw.io](https://github.com/jgraph/drawio)
 - MIT: [markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
 - no-licence: [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/)

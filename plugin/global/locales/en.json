@@ -6,6 +6,8 @@
     "$unit.pixel": "pixels",
     "$unit.millisecond": "ms",
     "$unit.second": "seconds",
+    "$unit.inch": "inches",
+    "$unit.centimeter": "cm",
     "$unit.item": "items",
     "$unit.line": "lines",
     "$unit.percent": "%",
@@ -391,6 +393,20 @@
     "$label.RESHOW_WHEN_HOVER": "Restore Visibility on Hover",
     "$label.TRANSITION_DURATION": "Transition Duration",
     "$label.TRANSITION_DELAY": "Transition Delay"
+  },
+  "myopic_defocus": {
+    "pluginName": "Defocus Comfort Mode",
+    "modeEnabled": "Defocus Mode Enabled",
+    "modeDisabled": "Defocus Mode Disabled",
+    "demoExplain": "Simulates 0.23D Myopic Defocus via Longitudinal Chromatic Aberration (LCA), guiding the focal plane to fall in front of the retina.\nMechanism: Eyes refract wavelengths differently: Blue light focuses in front, Green on the retina, and Red behind. This extension algorithmically shifts pixel colors to mimic this optical variance, creating a protective defocus signal that relieves accommodation stress.",
+    "$label.myopicDefocusEffectDemo": "Myopic Defocus Effect Demo",
+    "$label.DEFAULT_DEFOCUS_MODE": "Enable by Default",
+    "$label.SCREEN_SIZE": "Screen Size",
+    "$label.SCREEN_RESOLUTION_X": "Screen Horizontal Resolution",
+    "$label.SCREEN_RESOLUTION_Y": "Screen Vertical Resolution",
+    "$label.SCREEN_DISTANCE": "Screen Distance",
+    "$label.EFFECT_STRENGTH": "Effect Strength",
+    "$explain.enableMyopicDefocus": "Simulates myopic defocus to alleviate refractive stress. Enabling this will cause color fringing on edges and may impact rendering performance."
   },
   "toolbar": {
     "pluginName": "Multi-Purpose Searcher",
@@ -1046,7 +1062,7 @@
     "$label.OPEN_BY_SYSTEM_EXT": "External Open Extensions",
     "$label.OPEN_BY_TYPORA_EXT": "Internal Open Extensions",
     "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR": "Ctrl+Wheel: Scroll Sidebar Horizontally",
-    "$label.KEEP_OUTLINE_FOLD_STATE": "Keep Outline Fold State",
+    "$label.OUTLINE_FOLD_STATE": "Outline Fold State",
     "$label.SORTABLE_OUTLINE": "Sortable Outline",
     "$label.HIDDEN_NODE_PATTERNS": "Hide Specific Files/Folders (Regex)",
     "$label.CUSTOMIZE_SIDEBAR_ICONS": "Customize Sidebar File Icons",
@@ -1061,6 +1077,9 @@
     "$label.IGNORE_MIN_NUM": "Min File Count in Directory",
     "$label.COUNT_EXT": "Allowed File Extensions",
     "$label.IGNORE_FOLDERS": "Ignored Folders",
+    "$option.OUTLINE_FOLD_STATE.alwaysUnfold": "Always Unfold",
+    "$option.OUTLINE_FOLD_STATE.alwaysFold": "Always Fold",
+    "$option.OUTLINE_FOLD_STATE.remember": "Remember State",
     "$tooltip.ignoreMinNum": "Ignore directories containing less than X files",
     "$tooltip.canCollapseOutlinePanel": "Need to enable Typora config [Collapsible Outline on Left Panel]"
   },

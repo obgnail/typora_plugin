@@ -7,8 +7,8 @@ class SidebarEnhancePlugin extends BasePlugin {
         if (this.config.HIDDEN_NODE_PATTERNS.length || (displayNonMarkdownFiles && this.config.CUSTOMIZE_SIDEBAR_ICONS)) {
             this._rerenderOutlineNode()
         }
-        if (this.config.KEEP_OUTLINE_FOLD_STATE && File.option.canCollapseOutlinePanel) {
-            this._keepOutlineFoldState()
+        if (File.option.canCollapseOutlinePanel) {
+            this._setOutlineState()
         }
         if (this.config.SORTABLE_OUTLINE) {
             this._sortableOutline()
@@ -91,18 +91,28 @@ class SidebarEnhancePlugin extends BasePlugin {
         this.utils.eventHub.once(this.utils.eventHub.eventType.fileOpened, () => File.editor.library.refreshPanelCommand())
     }
 
-    _keepOutlineFoldState = () => {
-        const [arm, fire] = this.utils.oneShot()
+    _setOutlineState = () => {
         const hasOpenClass = "outline-item-open"
         const singleItemClass = this.utils.isBetaVersion ? "outline-item-signle" : "outline-item-single"  // `signle` is Typora's typo
-        this.utils.stateRecorder.register({
-            name: this.fixedName,
-            selector: `#outline-content .outline-item-wrapper:not(.${singleItemClass})`,
-            stateGetter: el => el.classList.contains(hasOpenClass),
-            stateRestorer: (el, isOpen) => isOpen && el.classList.add(hasOpenClass),
-            delayFn: (task) => arm(task),
-        })
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, fire)
+        switch (this.config.OUTLINE_FOLD_STATE) {
+            case "alwaysFold": return
+            case "alwaysUnfold":
+                this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => {
+                    this.entities.outline.querySelectorAll(`.outline-item-wrapper:not(.${singleItemClass})`).forEach(el => el.classList.add(hasOpenClass))
+                })
+                break
+            case "remember":
+                const [arm, fire] = this.utils.oneShot()
+                this.utils.stateRecorder.register({
+                    name: this.fixedName,
+                    selector: `#outline-content .outline-item-wrapper:not(.${singleItemClass})`,
+                    stateGetter: el => el.classList.contains(hasOpenClass),
+                    stateRestorer: (el, isOpen) => isOpen && el.classList.add(hasOpenClass),
+                    delayFn: (task) => arm(task),
+                })
+                this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, fire)
+                break
+        }
     }
 
     _sortableOutline = () => {

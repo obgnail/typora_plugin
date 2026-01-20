@@ -6,6 +6,8 @@
     "$unit.pixel": "像素",
     "$unit.millisecond": "毫秒",
     "$unit.second": "秒",
+    "$unit.inch": "英寸",
+    "$unit.centimeter": "厘米",
     "$unit.item": "条",
     "$unit.line": "行",
     "$unit.percent": "%",
@@ -391,6 +393,20 @@
     "$label.RESHOW_WHEN_HOVER": "鼠标悬停恢复可见",
     "$label.TRANSITION_DURATION": "动画持续时间",
     "$label.TRANSITION_DELAY": "动画延迟时间"
+  },
+  "myopic_defocus": {
+    "pluginName": "离焦视力舒缓",
+    "modeEnabled": "离焦模式已启用",
+    "modeDisabled": "离焦模式已关闭",
+    "demoExplain": "基于纵向色差 (LCA) 模拟 0.23D 近视离焦，引导成像焦点落在视网膜前方。\n原理：利用人眼对不同波长光线的折射差异——蓝光聚焦靠前，绿光居中，红光靠后。通过算法重构像素色差，人工营造这种光学离焦环境，从而缓解调节滞后，抑制近视发展。",
+    "$label.myopicDefocusEffectDemo": "近视离焦效果演示",
+    "$label.DEFAULT_DEFOCUS_MODE": "默认开启",
+    "$label.SCREEN_SIZE": "屏幕尺寸",
+    "$label.SCREEN_RESOLUTION_X": "屏幕水平分辨率",
+    "$label.SCREEN_RESOLUTION_Y": "屏幕竖直分辨率",
+    "$label.SCREEN_DISTANCE": "观看距离",
+    "$label.EFFECT_STRENGTH": "效果强度",
+    "$explain.enableMyopicDefocus": "模拟近视离焦图像，缓解用眼屈光紧张。开启后，轮廓边缘会呈现色彩变化，会降低渲染性能。"
   },
   "toolbar": {
     "pluginName": "多功能搜索",
@@ -1046,7 +1062,7 @@
     "$label.OPEN_BY_SYSTEM_EXT": "外部打开的扩展名",
     "$label.OPEN_BY_TYPORA_EXT": "内部打开的扩展名",
     "$label.CTRL_WHEEL_TO_SCROLL_SIDEBAR": "Ctrl+Wheel：横向滚动侧边栏",
-    "$label.KEEP_OUTLINE_FOLD_STATE": "记忆大纲折叠状态",
+    "$label.OUTLINE_FOLD_STATE": "大纲折叠状态",
     "$label.SORTABLE_OUTLINE": "大纲拖拽排序",
     "$label.HIDDEN_NODE_PATTERNS": "文件树隐藏指定文件或目录（正则）",
     "$label.CUSTOMIZE_SIDEBAR_ICONS": "定制侧边栏文件图标",
@@ -1061,6 +1077,9 @@
     "$label.IGNORE_MIN_NUM": "目录下最小文件数",
     "$label.COUNT_EXT": "文件扩展名",
     "$label.IGNORE_FOLDERS": "忽略的目录名",
+    "$option.OUTLINE_FOLD_STATE.alwaysUnfold": "总是展开",
+    "$option.OUTLINE_FOLD_STATE.alwaysFold": "总是折叠",
+    "$option.OUTLINE_FOLD_STATE.remember": "记忆状态",
     "$tooltip.ignoreMinNum": "忽略所含文件数少于 X 的目录",
     "$tooltip.canCollapseOutlinePanel": "需启用 Typora 配置「允许折叠和展开侧边栏的大纲视图」"
   },

@@ -386,6 +386,8 @@ const UNITS = {
     pixel: "pixel",
     millisecond: "millisecond",
     second: "second",
+    inch: "inch",
+    centimeter: "centimeter",
     item: "item",
     line: "line",
     percent: "percent",
@@ -451,6 +453,9 @@ const OPTIONS = createOptions({
         LINE_BREAKS_ON_COPY: ["lf", "crlf", "preserve"],
         FOLD_OVERFLOW: ["hidden", "scroll"],
         NUMBERING_BASE: ["0-based", "1-based"],
+    },
+    sidebar_enhance: {
+        OUTLINE_FOLD_STATE: ["alwaysUnfold", "alwaysFold", "remember"],
     },
     text_stylize: {
         TOOLS: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush"],
@@ -698,6 +703,22 @@ const schema_no_image = [
         Switch("RESHOW_WHEN_HOVER"),
         Integer("TRANSITION_DURATION", { unit: UNITS.millisecond, min: 0 }),
         Integer("TRANSITION_DELAY", { unit: UNITS.millisecond, min: 0 }),
+    ),
+    box_settingHandler,
+]
+
+const schema_myopic_defocus = [
+    box_basePluginFull,
+    UntitledBox(
+        Action("myopicDefocusEffectDemo", { explain: "enableMyopicDefocus" }),
+    ),
+    UntitledBox(
+        Switch("DEFAULT_DEFOCUS_MODE"),
+        Range("EFFECT_STRENGTH", { unit: UNITS.percent, min: 1, max: 35 }),
+        Float("SCREEN_SIZE", { unit: UNITS.inch, min: 1 }),
+        Integer("SCREEN_RESOLUTION_X", { unit: UNITS.pixel, min: 1 }),
+        Integer("SCREEN_RESOLUTION_Y", { unit: UNITS.pixel, min: 1 }),
+        Float("SCREEN_DISTANCE", { unit: UNITS.centimeter, min: 1 }),
     ),
     box_settingHandler,
 ]
@@ -1425,8 +1446,8 @@ const schema_sidebar_enhance = [
     box_basePluginLite,
     UntitledBox(
         Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR"),
-        Switch("KEEP_OUTLINE_FOLD_STATE"),
         Switch("SORTABLE_OUTLINE"),
+        Select("OUTLINE_FOLD_STATE", OPTIONS.sidebar_enhance.OUTLINE_FOLD_STATE),
     ),
     UntitledBox(
         Array_("HIDDEN_NODE_PATTERNS"),
@@ -1998,6 +2019,7 @@ const SCHEMAS = {
     blur: schema_blur,
     dark: schema_dark,
     no_image: schema_no_image,
+    myopic_defocus: schema_myopic_defocus,
     toolbar: schema_toolbar,
     resize_image: schema_resize_image,
     resize_table: schema_resize_table,
@@ -2056,7 +2078,7 @@ const SCHEMAS = {
 const I18N = (schemas, i18nData = require("../global/locales/en.json")) => {
     const PREFIX_DEPENDENT_PROPS = { label: "$label" }
     const SPECIAL_PROPS = { options: "$option", thMap: "$label" }
-    const GLOBAL_PROPS = { placeholder: "$placeholder", hintHeader: "$hintHeader", hintDetail: "$hintDetail", divider: "$divider", unit: "$unit" }
+    const GLOBAL_PROPS = { explain: "$explain", placeholder: "$placeholder", hintHeader: "$hintHeader", hintDetail: "$hintDetail", divider: "$divider", unit: "$unit" }
     const TAB_PROPS = { tabs: "$tab" }
     const NESTED_PROPS = ["nestedBoxes", "subSchema"]
 

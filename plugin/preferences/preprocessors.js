@@ -1,15 +1,18 @@
 module.exports = (plugin) => {
     const { utils, i18n } = plugin
-    const _disableOptions = (field, ...options) => field.disabledOptions = options
-    const _disableSwitch = (field, data, tooltip = i18n._t("settings", "$tooltip.lowVersion")) => {
+    const _disableControl = (field, tooltip = i18n._t("settings", "$tooltip.lowVersion")) => {
         field.disabled = true
         field.tooltip = tooltip
-        data[field.key] = false
     }
-    const _reEnableSwitch = (field, deleteTooltip = false) => {
+    const _enableControl = (field, deleteTooltip = false) => {
         field.disabled = false
         if (deleteTooltip) delete field.tooltip
     }
+    const _disableSwitch = (field, data, tooltip) => {
+        _disableControl(field, tooltip)
+        data[field.key] = false
+    }
+    const _disableOptions = (field, ...options) => field.disabledOptions = options
     return {
         global: {
             pluginVersion: async (field, data) => {
@@ -84,15 +87,15 @@ module.exports = (plugin) => {
                     _disableSwitch(field, data)
                 }
             },
-            KEEP_OUTLINE_FOLD_STATE: (field, data) => {
+            OUTLINE_FOLD_STATE: (field) => {
                 if (!File.option.hasOwnProperty("canCollapseOutlinePanel")) {
-                    _disableSwitch(field, data)
+                    _disableControl(field)
                 } else if (!File.option.canCollapseOutlinePanel) {
                     const text = i18n._t("sidebar_enhance", "$tooltip.canCollapseOutlinePanel")
                     const tooltip = { action: "togglePreferencePanel", icon: "fa fa-gear", text }
-                    _disableSwitch(field, data, tooltip)
+                    _disableControl(field, tooltip)
                 } else {
-                    _reEnableSwitch(field, true)
+                    _enableControl(field, true)
                 }
             },
         },
@@ -101,7 +104,7 @@ module.exports = (plugin) => {
                 if (!utils.getBasePlugin("collapse_paragraph")) {
                     _disableSwitch(field, data, i18n._t("markmap", "$tooltip.experimental"))
                 } else {
-                    _reEnableSwitch(field)
+                    _enableControl(field)
                 }
             },
         },
@@ -140,7 +143,7 @@ module.exports = (plugin) => {
                     const tooltip = { action: "togglePreferencePanel", icon: "fa fa-gear", text }
                     _disableSwitch(field, data, tooltip)
                 } else {
-                    _reEnableSwitch(field, true)
+                    _enableControl(field, true)
                 }
             },
         },

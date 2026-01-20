@@ -67,6 +67,56 @@ module.exports = (plugin) => {
             }
             await utils.formDialog.modal(op)
         },
+        myopicDefocusEffectDemo: async () => {
+            const { MyopicDefocus } = require("../myopic_defocus.js")
+            const myopicDefocus = new MyopicDefocus({ svgContainerId: "myopic-defocus-svg-demo", blurLayerId: "myopic-defocus-layer-demo" })
+
+            const t = (x) => i18n._t("myopic_defocus", x)
+            const _t = (x) => i18n._t("settings", x)
+            const getData = () => {
+                const { width, height } = window.screen
+                const dpr = window.devicePixelRatio || 1
+                const resX = parseInt(width * dpr)
+                const resY = parseInt(height * dpr)
+                return { screenSize: 14, screenResolutionX: resX, screenResolutionY: resY, screenDistance: 40, effectStrength: 10 }
+            }
+            const getSchema = () => {
+                const [explain1, explain2] = t("demoExplain").split("\n")
+                const colors = ["#ff0000", "#008000", "#0000ff"].map(c => `<div style="width: 60px; height: 60px; background: ${c}; border-radius: 50%"></div>`).join("")
+                const explain = `
+                    <div style="line-height: 1.7; color: #666; margin-top: 5px"><b>${explain1}</b></div>
+                    <div style="line-height: 1.7; color: #666; margin: 10px 0 20px">${explain2}</div>
+                    <div style="display: flex; justify-content: space-around; margin-bottom: 10px">${colors}</div>`
+                return ({ Group, Controls }) => [
+                    Controls.Custom().Content(explain).Unsafe(true),
+                    Group(
+                        Controls.Range("effectStrength").Label(t("$label.EFFECT_STRENGTH")).Min(0).Max(35),
+                        Controls.Unit("screenSize").Label(t("$label.SCREEN_SIZE")).Unit(_t("$unit.inch")),
+                        Controls.Unit("screenResolutionX").Label(t("$label.SCREEN_RESOLUTION_X")).Unit(_t("$unit.pixel")).IsInteger(true).Min(1),
+                        Controls.Unit("screenResolutionY").Label(t("$label.SCREEN_RESOLUTION_Y")).Unit(_t("$unit.pixel")).IsInteger(true).Min(1),
+                        Controls.Unit("screenDistance").Label(t("$label.SCREEN_DISTANCE")).Unit(_t("$unit.centimeter")).Min(1),
+                    ),
+                ]
+            }
+            const getWatchers = () => {
+                const CONFIG = ["screenSize", "screenResolutionX", "screenResolutionY", "screenDistance", "effectStrength"]
+                const effect = (_, ctx) => {
+                    const cfg = Object.fromEntries(CONFIG.map(f => [f, ctx.getValue(f)]))
+                    const fn = (cfg.effectStrength === 0) ? "removeEffect" : "applyEffect"
+                    myopicDefocus[fn](cfg)
+                }
+                return [{ triggers: CONFIG, affects: [], effect }]
+            }
+
+            const op = {
+                title: t("$label.myopicDefocusEffectDemo"),
+                schema: getSchema(),
+                data: getData(),
+                watchers: getWatchers(),
+            }
+            await utils.formDialog.modal(op)
+            myopicDefocus.removeEffect()
+        },
         restoreSettings: consecutive(async () => {
             const fixedName = plugin._getCurrentPlugin()
             await utils.settings.clearSettings(fixedName)

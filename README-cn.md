@@ -63,17 +63,18 @@
 | 44   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能           | ×        |
 | 45   | dark                    | 夜间模式                                   |          |
 | 46   | no_image                | 无图模式                                   |          |
-| 47   | updater                 | 一键升级插件                               |          |
-| 48   | easy_modify             | 编辑工具                                   |          |
-| 49   | editor_width_slider     | 写作区宽度调整                             |          |
-| 50   | redirectLocalRootUrl    | 重定向本地资源根目录                       | ×        |
-| 51   | blockSideBySide         | 并列显示活动块                             | ×        |
-| 52   | scrollBookmarker        | 书签管理器                                 | ×        |
-| 53   | cipher                  | 加密文件                                   | ×        |
-| 54   | ripgrep                 | 使用 ripgrep 搜索文件                      | ×        |
-| 55   | article_uploader        | 一键上传博客到支持的所有平台               | ×        |
-| 56   | cursor_history          | 光标跳转                                   | ×        |
-| 57   | static_markers          | Markdown 标记常显                          | ×        |
+| 47   | myopic_defocus          | 离焦视力舒缓                               |          |
+| 48   | updater                 | 一键升级插件                               |          |
+| 49   | easy_modify             | 编辑工具                                   |          |
+| 50   | editor_width_slider     | 写作区宽度调整                             |          |
+| 51   | redirectLocalRootUrl    | 重定向本地资源根目录                       | ×        |
+| 52   | blockSideBySide         | 并列显示活动块                             | ×        |
+| 53   | scrollBookmarker        | 书签管理器                                 | ×        |
+| 54   | cipher                  | 加密文件                                   | ×        |
+| 55   | ripgrep                 | 使用 ripgrep 搜索文件                      | ×        |
+| 56   | article_uploader        | 一键上传博客到支持的所有平台               | ×        |
+| 57   | cursor_history          | 光标跳转                                   | ×        |
+| 58   | static_markers          | Markdown 标记常显                          | ×        |
 | 59   | custom                  | 开放平台，用户自定义插件（高级）           |          |
 | 60   | hotkeys                 | 快捷键注册中心（高级）                     |          |
 | 61   | quickButton             | 于右下角添加功能按钮（高级）               |          |
@@ -424,7 +425,7 @@ yay -S typora-plugin
 
 
 
-## plantUML：提供 PlantUML 组件支持
+### plantUML：提供 PlantUML 组件支持
 
 使用方式：右键菜单 -> 常用插件 -> 二级插件 -> PlantUML
 
@@ -590,6 +591,12 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 ### no_image：无图模式
 
 使用方式：右键菜单 -> 常用插件 -> 无图模式
+
+
+
+### myopic_defocus：离焦视力舒缓
+
+使用方式：右键菜单 -> 常用插件 -> 离焦视力舒缓
 
 
 
@@ -768,7 +775,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 ## 致谢
 
-- GPL: [PlantUML](https://plantuml.com/)
+- GPL: [PlantUML](https://plantuml.com/) | [Refractify Myopic Defocus](https://chromewebstore.google.com/detail/refractify-myopic-defocus/dpnfdlnkgojjihdmgmacnmheflkojijm?hl=en)
 - Apache：[ECharts](https://echarts.apache.org/zh/index.html) | [draw.io](https://github.com/jgraph/drawio)
 - MIT：[markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
 - no-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/harttle/md-padding)

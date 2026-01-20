@@ -526,6 +526,42 @@ TRANSITION_DURATION = 300
 TRANSITION_DELAY = 0
 
 
+################### myopic_defocus ###################
+[myopic_defocus]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# 切换离焦模式的快捷键
+#   留空则不设置快捷键
+HOTKEY = ""
+
+# ------------------- 模式显示 -------------------
+# 默认启动离焦模式：设置 Typora 启动时是否默认进入离焦模式
+#   true:  Typora 启动时默认启用离焦模式
+#   false: Typora 启动时默认不启用离焦模式
+DEFAULT_DEFOCUS_MODE = false
+
+# 屏幕尺寸，即屏幕对角线长度（单位：英寸）
+SCREEN_SIZE = 14
+
+# 屏幕水平分辨率（单位：像素）
+SCREEN_RESOLUTION_X = 1920
+
+# 屏幕竖直分辨率（单位：像素）
+SCREEN_RESOLUTION_Y = 1080
+
+# 观看距离（单位：厘米）
+SCREEN_DISTANCE = 40
+
+# 效果强度 (%)
+#   建议值：10 到 35 之间
+EFFECT_STRENGTH = 10
+
+
 ################### toolbar ###################
 [toolbar]
 # ------------------- 基础 -------------------
@@ -1658,11 +1694,12 @@ NAME = ""
 # 当侧边栏出现横向滚动条时，允许通过按住 Ctrl 键并滚动鼠标滚轮进行横向滚动
 CTRL_WHEEL_TO_SCROLL_SIDEBAR = true
 
-# ------------------- 记忆折叠状态 -------------------
-# 保持侧边栏大纲折叠/展开状态
-#   true:  保持
-#   false: 不保持
-KEEP_OUTLINE_FOLD_STATE = true
+# ------------------- 折叠状态 -------------------
+# 侧边栏大纲折叠/展开状态
+#   - alwaysUnfold: 总是展开
+#   - alwaysFold: 总是折叠
+#   - remember: 记忆状态
+OUTLINE_FOLD_STATE = "remember"
 
 # ------------------- 大纲拖拽排序 -------------------
 # 支持通过拖拽排序大纲内容
@@ -2184,6 +2221,7 @@ LIST = [
     "blur",
     "dark",
     "no_image",
+    "myopic_defocus",
 ]
 
 
