@@ -334,26 +334,26 @@ class DiagramParser {
         }
 
         const showEditButtonOnly = fence => {
-            const enhance = fence.querySelector(".fence-enhance");
-            if (!enhance) return;
-            enhance.style.display = "";
-            enhance.querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "none");
-            enhance.querySelector(".edit-diagram").style.display = "";
+            const enhance = fence.querySelector(".fence-enhance")
+            if (!enhance) return
+            enhance.style.display = ""
+            enhance.querySelectorAll(".enhance-btn").forEach(el => el.style.display = "none")
+            enhance.querySelector('.enhance-btn[action="edit"]').style.display = ""
         }
 
         const hideAllButton = fence => {
-            const enhance = showAllTButton(fence);
-            if (!enhance) return;
-            const editButton = enhance.querySelector(".edit-diagram");
+            const enhance = showAllTButton(fence)
+            if (!enhance) return
+            const editButton = enhance.querySelector('.enhance-btn[action="edit"]')
             if (editButton) {
-                editButton.style.display = "none";
+                editButton.style.display = "none"
             }
-            enhance.style.display = "none";
+            enhance.style.display = "none"
         }
 
-        const registerButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
+        const registerButton = (action, hint, iconClassName, enable, listener, extraFunc) => {
             const fn = this.utils.getPluginFunction("fence_enhance", "registerButton")
-            fn?.({ className, action, hint, iconClassName, enable, listener, extraFunc })
+            fn?.({ action, hint, iconClassName, enable, listener, extraFunc })
             return !!fn
         }
 
@@ -378,7 +378,7 @@ class DiagramParser {
                 btn.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "")
                 enableFocus()
             }
-            const ok = registerButton("edit-diagram", "editDiagram", editText, "fa fa-pencil", false, listener)
+            const ok = registerButton("edit", editText, "fa fa-pencil", false, listener)
             if (!ok) return;
 
             this.utils.entities.$eWrite.on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {

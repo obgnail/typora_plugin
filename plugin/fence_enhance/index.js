@@ -45,7 +45,6 @@ class FenceEnhancePlugin extends BasePlugin {
                 try {
                     const callbackFn = evalFn(ON_CLICK)
                     return {
-                        className: "custom-btn",
                         action: this.utils.randomString(),
                         hint: HINT,
                         iconClassName: ICON,
@@ -126,7 +125,7 @@ class FenceEnhancePlugin extends BasePlugin {
                 let lastFocusFenceCid = ""
                 const fold = (cid) => {
                     if (FOLD_ON_BLUR && cid) {
-                        const btn = this.utils.entities.querySelectorInWrite(`[cid="${cid}"] .fold-code:not(.folded)`)
+                        const btn = this.utils.entities.querySelectorInWrite(`.md-fences[cid="${cid}"] .enhance-btn:not(.folded)[action="fold"]`)
                         if (btn) defaultFold({ btn, cid })
                     }
                     lastFocusFenceCid = ""
@@ -134,7 +133,7 @@ class FenceEnhancePlugin extends BasePlugin {
                 const expand = (fence) => {
                     const cid = fence.getAttribute("cid")
                     if (EXPAND_ON_FOCUS && lastFocusFenceCid !== cid) {
-                        const btn = fence.querySelector(".fold-code.folded")
+                        const btn = fence.querySelector('.enhance-btn.folded[action="fold"]')
                         if (btn) defaultFold({ btn, cid })
                         if (lastFocusFenceCid) fold(lastFocusFenceCid)
                     }
@@ -152,8 +151,7 @@ class FenceEnhancePlugin extends BasePlugin {
             }
             const builtinButtons = [
                 {
-                    className: "copy-code",
-                    action: "copyCode",
+                    action: "copy",
                     hint: this.i18n.t("btn.hint.copy"),
                     iconClassName: "fa fa-clipboard",
                     enable: this.config.ENABLE_COPY,
@@ -162,8 +160,7 @@ class FenceEnhancePlugin extends BasePlugin {
                     initFunc: null,
                 },
                 {
-                    className: "indent-code",
-                    action: "indentCode",
+                    action: "indent",
                     hint: this.i18n.t("btn.hint.indent"),
                     iconClassName: "fa fa-indent",
                     enable: this.enableIndent,
@@ -172,8 +169,7 @@ class FenceEnhancePlugin extends BasePlugin {
                     initFunc: null,
                 },
                 {
-                    className: "fold-code",
-                    action: "foldCode",
+                    action: "fold",
                     hint: this.i18n.t("btn.hint.fold"),
                     iconClassName: "fa fa-minus",
                     enable: this.config.ENABLE_FOLD,
@@ -187,7 +183,7 @@ class FenceEnhancePlugin extends BasePlugin {
 
         const handleLifecycleEvents = () => {
             this.utils.exportHelper.register(this.fixedName, () => {
-                this.utils.entities.querySelectorAllInWrite(".fold-code.folded").forEach(ele => ele.click())
+                this.utils.entities.querySelectorAllInWrite('.enhance-btn.folded[action="fold"]').forEach(el => el.click())
             })
             const eventHub = this.utils.eventHub
             eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => {
@@ -206,19 +202,19 @@ class FenceEnhancePlugin extends BasePlugin {
                     enhance.style.visibility = "hidden"
                 }
                 const buttons = this.buttons.map(btn => {
-                    const button = document.createElement("div")
-                    button.classList.add("enhance-btn", btn.className)
-                    button.setAttribute("action", btn.action)
+                    const btnEl = document.createElement("div")
+                    btnEl.classList.add("enhance-btn")
+                    btnEl.setAttribute("action", btn.action)
                     if (!this.config.REMOVE_BUTTON_HINT && btn.hint) {
-                        button.setAttribute("ty-hint", btn.hint)
+                        btnEl.setAttribute("ty-hint", btn.hint)
                     }
                     if (!btn.enable) {
-                        button.style.display = "none"
+                        btnEl.style.display = "none"
                     }
-                    const span = document.createElement("span")
-                    span.className = btn.iconClassName
-                    button.appendChild(span)
-                    return button
+                    const i = document.createElement("i")
+                    i.className = btn.iconClassName
+                    btnEl.appendChild(i)
+                    return btnEl
                 })
                 enhance.append(...buttons)
                 fence.appendChild(enhance)
@@ -251,7 +247,7 @@ class FenceEnhancePlugin extends BasePlugin {
                     this.querySelector(".fence-enhance").style.visibility = ""
                 }
             }).on("mouseleave", ".md-fences", function () {
-                if (config.AUTO_HIDE && !this.querySelector(".fold-code.folded")) {
+                if (config.AUTO_HIDE && !this.querySelector('.enhance-btn.folded[action="fold"]')) {
                     this.querySelector(".fence-enhance").style.visibility = "hidden"
                 }
             })
@@ -269,15 +265,15 @@ class FenceEnhancePlugin extends BasePlugin {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, preload)
     }
 
-    registerButton = ({ className, action, hint, iconClassName, enable, listener, extraFunc, initFunc }) => {
-        this.buttons.push({ className, action, hint, iconClassName, enable, listener, extraFunc, initFunc })
+    registerButton = ({ action, hint, iconClassName, enable, listener, extraFunc, initFunc }) => {
+        this.buttons.push({ action, hint, iconClassName, enable, listener, extraFunc, initFunc })
     }
     unregisterButton = action => this.buttons = this.buttons.filter(btn => btn.action !== action)
 
-    copyFence = fence => fence.querySelector(".copy-code").click()
-    indentFence = fence => fence.querySelector(".indent-code").click()
-    foldFence = fence => fence.querySelector(".fold-code").click()
-    expandFence = fence => fence.querySelector(".fence-enhance .fold-code.folded")?.click()
+    copyFence = fence => fence.querySelector('.enhance-btn[action="copy"]').click()
+    indentFence = fence => fence.querySelector('.enhance-btn[action="indent"]').click()
+    foldFence = fence => fence.querySelector('.enhance-btn[action="fold"]').click()
+    expandFence = fence => fence.querySelector('.enhance-btn.folded[action="fold"]')?.click()
     indentAllFences = () => this.traverseAllFences(({ fence }) => this.indentFence(fence))
 
     traverseAllFences = (visitor) => {
@@ -331,24 +327,24 @@ class FenceEnhancePlugin extends BasePlugin {
             toggle_state_fold: () => {
                 this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD
                 if (!this.config.ENABLE_FOLD) {
-                    document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click())
+                    document.querySelectorAll('.fence-enhance > .enhance-btn.folded[action="fold"]').forEach(el => el.click())
                 }
                 const display = this.config.ENABLE_FOLD ? "block" : "none"
-                document.querySelectorAll(".fence-enhance .fold-code").forEach(ele => ele.style.display = display)
+                document.querySelectorAll('.fence-enhance > .enhance-btn[action="fold"]').forEach(el => el.style.display = display)
             },
             toggle_state_copy: () => {
                 this.config.ENABLE_COPY = !this.config.ENABLE_COPY
                 const display = this.config.ENABLE_COPY ? "block" : "none"
-                document.querySelectorAll(".fence-enhance .copy-code").forEach(ele => ele.style.display = display)
+                document.querySelectorAll('.fence-enhance > [action="copy"]').forEach(el => el.style.display = display)
             },
             toggle_state_indent: () => {
                 this.enableIndent = !this.enableIndent
                 const display = this.enableIndent ? "block" : "none"
-                document.querySelectorAll(".fence-enhance .indent-code").forEach(ele => ele.style.display = display)
+                document.querySelectorAll('.fence-enhance > [action="indent"]').forEach(el => el.style.display = display)
             },
             toggle_state_default_fold: () => {
                 this.config.DEFAULT_FOLD = !this.config.DEFAULT_FOLD
-                const selector = this.config.DEFAULT_FOLD ? ".fold-code:not(.folded)" : ".fold-code.folded"
+                const selector = this.config.DEFAULT_FOLD ? '.enhance-btn:not(.folded)[action="fold"]' : '.enhance-btn.folded[action="fold"]'
                 let buttons = [...document.querySelectorAll(selector)]
                 if (this.config.DEFAULT_FOLD && this.config.DEFAULT_FOLD_THRESHOLD > 0) {
                     buttons = buttons.filter(btn => {
@@ -357,14 +353,14 @@ class FenceEnhancePlugin extends BasePlugin {
                         return lineCount > this.config.DEFAULT_FOLD_THRESHOLD
                     })
                 }
-                buttons.forEach(ele => ele.click())
+                buttons.forEach(el => el.click())
             },
             toggle_state_auto_hide: () => {
                 this.config.AUTO_HIDE = !this.config.AUTO_HIDE
                 const visibility = this.config.AUTO_HIDE ? "hidden" : ""
-                document.querySelectorAll(".fence-enhance").forEach(ele => {
+                document.querySelectorAll(".fence-enhance").forEach(el => {
                     // Code blocks in collapsed state cannot be hidden.
-                    ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility
+                    el.style.visibility = el.querySelector('.enhance-btn.folded[action="fold"]') ? "" : visibility
                 })
             },
             indent_all_fences: async () => {
@@ -409,10 +405,9 @@ class FenceEnhancePlugin extends BasePlugin {
 
 // doc: https://codemirror.net/5/doc/manual.html
 class EditorHotkeyHelper {
-    constructor(controller) {
-        this.controller = controller;
-        this.utils = controller.utils;
-        this.config = controller.config;
+    constructor(plugin) {
+        this.utils = plugin.utils
+        this.config = plugin.config
     }
 
     process = () => {
@@ -464,12 +459,12 @@ class EditorHotkeyHelper {
     }
 
     keydown = keyObj => {
-        const dict = { shiftKey: false, ctrlKey: false, altKey: false, ...keyObj };
-        document.activeElement.dispatchEvent(new KeyboardEvent('keydown', dict));
+        const dict = { shiftKey: false, ctrlKey: false, altKey: false, ...keyObj }
+        document.activeElement.dispatchEvent(new KeyboardEvent("keydown", dict))
     }
     // Do not use `cm.execCommand("goLineUp")`: it checks if the Shift key is pressed.
-    goLineUp = () => this.keydown({ key: 'ArrowUp', keyCode: 38, code: 'ArrowUp', which: 38 });
-    goLineDown = () => this.keydown({ key: 'ArrowDown', keyCode: 40, code: 'ArrowDown', which: 40 });
+    goLineUp = () => this.keydown({ key: "ArrowUp", keyCode: 38, code: "ArrowUp", which: 38 })
+    goLineDown = () => this.keydown({ key: "ArrowDown", keyCode: 40, code: "ArrowDown", which: 40 })
 
     swapLine = (previous = true) => {
         const { cm, separator, lineNum, lastNum } = this.getFocusedFence()
