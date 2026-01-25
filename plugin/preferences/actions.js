@@ -82,7 +82,7 @@ module.exports = (plugin) => {
             }
             const getSchema = () => {
                 const [explain1, explain2] = t("demoExplain").split("\n")
-                const colors = ["#ff0000", "#008000", "#0000ff"].map(c => `<div style="width: 60px; height: 60px; background: ${c}; border-radius: 50%"></div>`).join("")
+                const colors = ["#ff0000", "#008000", "#0000ff"].map(c => `<div style="width: 50px; height: 50px; background: ${c}; border-radius: 50%"></div>`).join("")
                 const explain = `
                     <div style="line-height: 1.7; color: #666; margin-top: 5px"><b>${explain1}</b></div>
                     <div style="line-height: 1.7; color: #666; margin: 10px 0 20px">${explain2}</div>
@@ -91,10 +91,10 @@ module.exports = (plugin) => {
                     Controls.Custom().Content(explain).Unsafe(true),
                     Group(
                         Controls.Range("effectStrength").Label(t("$label.EFFECT_STRENGTH")).Min(0).Max(35),
-                        Controls.Unit("screenSize").Label(t("$label.SCREEN_SIZE")).Unit(_t("$unit.inch")),
-                        Controls.Unit("screenResolutionX").Label(t("$label.SCREEN_RESOLUTION_X")).Unit(_t("$unit.pixel")).IsInteger(true).Min(1),
-                        Controls.Unit("screenResolutionY").Label(t("$label.SCREEN_RESOLUTION_Y")).Unit(_t("$unit.pixel")).IsInteger(true).Min(1),
-                        Controls.Unit("screenDistance").Label(t("$label.SCREEN_DISTANCE")).Unit(_t("$unit.centimeter")).Min(1),
+                        Controls.Float("screenSize").Label(t("$label.SCREEN_SIZE")).Unit(_t("$unit.inch")),
+                        Controls.Integer("screenResolutionX").Label(t("$label.SCREEN_RESOLUTION_X")).Unit(_t("$unit.pixel")).Min(1),
+                        Controls.Integer("screenResolutionY").Label(t("$label.SCREEN_RESOLUTION_Y")).Unit(_t("$unit.pixel")).Min(1),
+                        Controls.Float("screenDistance").Label(t("$label.SCREEN_DISTANCE")).Unit(_t("$unit.centimeter")).Min(1),
                     ),
                 ]
             }

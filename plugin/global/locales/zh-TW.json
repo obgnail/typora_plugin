@@ -302,6 +302,7 @@
     "modal.playground.presentation.ast": "抽象語法樹",
     "modal.playground.presentation.graph": "流程圖",
     "modal.playground.presentation.text": "説明文本",
+    "modal.playground.textStyle": "文本樣式",
     "modal.playground.translate": "翻譯流程圖內容",
     "modal.playground.direction": "流程圖佈局方向",
     "$label.RELATIVE_PATH": "使用相對路徑",
@@ -749,7 +750,7 @@
     "$tooltip.viewVitePressLineHighlighting": "行高亮語法",
     "$tooltip.viewCodeFoldingDemo": "查看示例",
     "$tooltip.viewIndentedWrappedLineDemo": "查看示例",
-    "$tooltip.dangerous": "資源消耗過大，Typora 可能會長時間卡頓"
+    "$tooltip.dangerous": "資源消耗大，Typora 可能會長時間卡頓"
   },
   "collapse_paragraph": {
     "pluginName": "章節摺疊",
@@ -977,6 +978,7 @@
     "$label.OBJECT_SETTINGS_FORMAT": "對象類型的數據格式",
     "$label.DEFAULT_MENU": "預設的配置頁",
     "$label.HIDE_MENUS": "隱藏的配置頁",
+    "$label.COLLAPSIBLE_BOX": "標題可折疊",
     "$label.DEPENDENCIES_FAILURE_BEHAVIOR": "依賴失效行為",
     "$label.FORM_RENDERING_HOOK": "表單渲染鉤子",
     "$option.OBJECT_SETTINGS_FORMAT.JSON": "JSON",

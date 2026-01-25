@@ -94,24 +94,26 @@ class SidebarEnhancePlugin extends BasePlugin {
     _setOutlineState = () => {
         const hasOpenClass = "outline-item-open"
         const singleItemClass = this.utils.isBetaVersion ? "outline-item-signle" : "outline-item-single"  // `signle` is Typora's typo
+        const openItem = el => el.classList.add(hasOpenClass)
+        const isItemOpen = el => el.classList.contains(hasOpenClass)
         switch (this.config.OUTLINE_FOLD_STATE) {
             case "alwaysFold": return
             case "alwaysUnfold":
                 this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => {
-                    this.entities.outline.querySelectorAll(`.outline-item-wrapper:not(.${singleItemClass})`).forEach(el => el.classList.add(hasOpenClass))
+                    this.entities.outline.querySelectorAll(`.outline-item-wrapper:not(.${singleItemClass})`).forEach(openItem)
                 })
-                break
+                return
             case "remember":
                 const [arm, fire] = this.utils.oneShot()
                 this.utils.stateRecorder.register({
                     name: this.fixedName,
                     selector: `#outline-content .outline-item-wrapper:not(.${singleItemClass})`,
-                    stateGetter: el => el.classList.contains(hasOpenClass),
-                    stateRestorer: (el, isOpen) => isOpen && el.classList.add(hasOpenClass),
+                    stateGetter: isItemOpen,
+                    stateRestorer: (el, isOpen) => isOpen && openItem(el),
                     delayFn: (task) => arm(task),
                 })
                 this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, fire)
-                break
+                return
         }
     }
 

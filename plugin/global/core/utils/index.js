@@ -609,8 +609,8 @@ class utils {
     }
 
     static compareVersion = (ver1, ver2) => {
-        const arr1 = ver1.split(".")
-        const arr2 = ver2.split(".")
+        const arr1 = (ver1 || "").split(".")
+        const arr2 = (ver2 || "").split(".")
         const maxLength = Math.max(arr1.length, arr2.length)
         for (let i = 0; i < maxLength; i++) {
             const num1 = parseInt(arr1[i] || 0, 10)

@@ -2298,6 +2298,11 @@ DEFAULT_MENU = "global"
 #   填入插件的 fixedName
 HIDE_MENUS = []
 
+# 标题可折叠
+#   true:  标题可折叠
+#   false: 标题不可折叠
+COLLAPSIBLE_BOX = true
+
 # 依赖失效行为
 #   readonly: 只读
 #   hide:     隐藏

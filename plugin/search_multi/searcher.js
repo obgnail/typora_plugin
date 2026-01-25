@@ -652,7 +652,7 @@ class Searcher {
             .filter(Boolean)
     }
 
-    toMermaid = (ast, translate = false, direction = "TB") => {
+    toMermaid = (ast, translate = false, textStyle = false, direction = "TB") => {
         let idx = 0
         const { t, link } = this.i18n
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
@@ -677,21 +677,23 @@ class Searcher {
             let longName
             const isRegex = node.type === REGEXP
             const operand = isRegex ? `/${node.operand}/` : node.operand
+            const styledOperand = textStyle ? `<u>${operand}</u>` : operand
             const negated = node.negated
             if (translate) {
                 const name = this.qualifiers.get(node.scope).name
+                const styledName = textStyle ? `<b>${name}</b>` : name
                 if (typeof node.castResult === "boolean") {
                     const finalNegated = node.castResult ? negated : !negated
                     const negatedText = finalNegated ? I18N.not : ""
-                    longName = link([negatedText, name])
+                    longName = link([negatedText, styledName])
                 } else {
                     const operator = isRegex ? I18N.matchRegex : I18N[node.operator]
                     const negatedText = negated ? I18N.not : ""
-                    longName = link([name, negatedText, operator, operand])
+                    longName = link([styledName, negatedText, operator, styledOperand])
                 }
             } else {
                 const negatedText = negated ? "-" : ""
-                longName = [negatedText, node.scope, node.operator, operand].join(" ").trim()
+                longName = [negatedText, node.scope, node.operator, styledOperand].join(" ").trim()
             }
 
             return `${node._shortName}("${longName.replace(/"/g, "#quot;")}")`
@@ -742,10 +744,11 @@ class Searcher {
         const { head, tail, result } = _eval(ast)
         const start = head.map(h => `S --> ${_getName(h)}`)
         const end = tail.map(t => `${_getName(t)} --> E`)
-        return [`graph ${direction}`, "S((Start))", "E((End))", ...result, ...start, ...end].join("\n")
+        const styles = ["S", "E"].map(id => `style ${id} fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 0 1`)
+        return [`graph ${direction}`, "S((START))", "E((END))", ...result, ...start, ...end, ...styles].join("\n")
     }
 
-    toExplain = (ast) => {
+    toExplain = (ast, textStyle = false) => {
         const { t, link } = this.i18n
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
         const I18N = {
@@ -765,16 +768,18 @@ class Searcher {
         const _getName = (node) => {
             let negated = node.negated
             const name = this.qualifiers.get(node.scope).name
+            const styledName = textStyle ? `<b>${name}</b>` : name
             const operator = node.type === REGEXP ? I18N.matchRegex : I18N[node.operator]
             const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand
+            const styledOperand = textStyle ? `<u>${operand}</u>` : operand
             let content
             if (typeof node.castResult === "boolean") {
                 negated = node.castResult ? negated : !negated
                 const negatedText = negated ? I18N.not : ""
-                content = link([negatedText, name])
+                content = link([negatedText, styledName])
             } else {
                 const negatedText = negated ? I18N.not : ""
-                content = link([name, negatedText, operator, operand])
+                content = link([styledName, negatedText, operator, styledOperand])
             }
             return `「${content}」`
         }
@@ -904,10 +909,10 @@ class Searcher {
             }
         }
         const _toJSON = ({ expression, optimize }) => _to(expression, optimize, ast => JSON.stringify(ast, null, "\t"))
-        const _toText = ({ expression, optimize }) => _to(expression, optimize, ast => this.toExplain(ast))
-        const _toGraph = async ({ expression, optimize, translate, direction }) => {
+        const _toText = ({ expression, optimize, textStyle }) => _to(expression, optimize, ast => this.toExplain(ast, textStyle))
+        const _toGraph = async ({ expression, optimize, translate, textStyle, direction }) => {
             return _to(expression, optimize, async ast => {
-                const definition = this.toMermaid(ast, translate, direction)
+                const definition = this.toMermaid(ast, translate, textStyle, direction)
                 const svg = await this.utils.mermaid.render(definition)
                 return `<div style="font-size:initial; line-height: initial; text-align:center;">${svg}</div>`
             })
@@ -933,6 +938,7 @@ class Searcher {
                 { key: "_displayGraph", type: "hint", unsafe: true, dependencies: { presentation: "graph" }, dependencyUnmetAction: "hide" },
                 { key: "_displayText", type: "hint", unsafe: true, dependencies: { presentation: "text" }, dependencyUnmetAction: "hide" },
                 { key: "optimize", type: "switch", label: t("$label.OPTIMIZE_SEARCH"), tooltip: t("$tooltip.breakOrder") },
+                { key: "textStyle", type: "switch", label: t("modal.playground.textStyle"), dependencies: { presentation: { $includes: ["graph", "text"] } } },
                 { key: "presentation", type: "select", label: t("modal.playground.presentation"), options: presentOps },
                 { key: "direction", type: "select", label: t("modal.playground.direction"), options: ["TB", "BT", "RL", "LR"], dependencies: { presentation: "graph" } },
                 { key: "translate", type: "switch", label: t("modal.playground.translate"), dependencies: { presentation: "graph" } },
@@ -951,10 +957,11 @@ class Searcher {
             schema: getSchema(),
             data: {
                 grammar: grammar.trim(),
-                expression: '-file:baz  head:"foo bar"  ( linenum<=200 | size>2kb )',
+                expression: '-file:baz  head:"foo bar"  ( linenum<200 | size>2kb | abc )',
                 presentation: "graph",
                 direction: "LR",
                 optimize: false,
+                textStyle: true,
                 translate: true,
                 _displayAST: "",
                 _displayGraph: { hintDetail: "" },
@@ -963,24 +970,26 @@ class Searcher {
             },
             rules: { expression: "required" },
             watchers: [{
-                triggers: ["expression", "presentation", "direction", "optimize", "translate"],
+                triggers: ["expression", "presentation", "direction", "optimize", "textStyle", "translate"],
                 affects: ["_displayAST", "_displayText", "_displayGraph"],
                 effect: (isMet, ctx) => {
                     if (!isMet) return
                     const presentation = ctx.getValue("presentation")
                     const expression = ctx.getValue("expression")
                     const optimize = ctx.getValue("optimize")
+                    const textStyle = ctx.getValue("textStyle")
                     if (presentation === "ast") {
                         _toJSON({ expression, optimize }).then(data => ctx.setValue("_displayAST", data))
                     } else if (presentation === "text") {
-                        _toText({ expression, optimize }).then(data => ctx.setValue("_displayText", { hintDetail: data }))
+                        _toText({ expression, optimize, textStyle }).then(data => ctx.setValue("_displayText", { hintDetail: data }))
                     } else if (presentation === "graph") {
                         const translate = ctx.getValue("translate")
                         const direction = ctx.getValue("direction")
-                        _toGraph({ expression, optimize, translate, direction }).then(data => ctx.setValue("_displayGraph", { hintDetail: data }))
+                        _toGraph({ expression, optimize, translate, textStyle, direction }).then(data => ctx.setValue("_displayGraph", { hintDetail: data }))
                     }
                 }
             }],
+            collapsibleBox: false,
         }
         await this.utils.formDialog.modal(op)
     }

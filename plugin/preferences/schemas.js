@@ -1334,6 +1334,7 @@ const schema_preferences = [
     ),
     UntitledBox(
         Switch("SEARCH_PLUGIN_FIXEDNAME"),
+        Switch("COLLAPSIBLE_BOX"),
         Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR),
         Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
         Select("DEFAULT_MENU"),

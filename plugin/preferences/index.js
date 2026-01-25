@@ -175,6 +175,7 @@ class PreferencesPlugin extends BasePlugin {
             controlOptions: { object: { format: this.config.OBJECT_SETTINGS_FORMAT } },
             fieldDependencyUnmetAction: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
             boxDependencyUnmetAction: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
+            collapsibleBox: this.config.COLLAPSIBLE_BOX,
         }, fixedName)
     }
 
