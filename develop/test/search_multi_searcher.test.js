@@ -299,8 +299,8 @@ describe("Searcher Integration Tests", () => {
             const ast = searcher.parse("a AND b OR c")
             const mermaid = searcher.toMermaid(ast)
             assert.ok(mermaid.startsWith("graph TB"))
-            assert.ok(mermaid.includes("S((Start))"))
-            assert.ok(mermaid.includes("E((End))"))
+            assert.ok(mermaid.includes("S((START))"))
+            assert.ok(mermaid.includes("E((END))"))
         })
         test("toMermaid should handle complex nested structures without crash", () => {
             const ast = searcher.parse("(a OR b) AND (c OR d) AND NOT e")
