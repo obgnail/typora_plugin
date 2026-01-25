@@ -1228,55 +1228,6 @@ const Feature_Watchers = (() => {
                     })
                 }
             },
-            /**
-             * A condition that queries the state of a UI element (e.g., visibility, class)
-             * at the moment a watcher is evaluated. Its behavior as a trigger depends on the
-             * form's `reactiveUiEffects` option.
-             *
-             * NOTE: UI is a function of state. Try NOT to use this.
-             *
-             * BEHAVIOR with `reactiveUiEffects: false` (Default):
-             * It acts as a read-only check. The watcher will NOT be re-triggered by UI state changes,
-             * enforcing a strict, one-way data flow from data to UI.
-             *
-             * BEHAVIOR with `reactiveUiEffects: true`:
-             * It establishes a reactive dependency. The watcher WILL be re-triggered if the checked UI
-             * property is modified by another watcher's `$updateUI` effect.
-             * This enables UI-driven logic but requires caution to avoid infinite loops.
-             */
-            $checkUI: {
-                collectTriggers: (declaration, ctx) => {
-                    Object.entries(declaration).forEach(([target, evaluators]) => {
-                        Object.keys(evaluators).forEach(assertionKey => {
-                            const property = uiAssertionToPropertyMap.get(assertionKey)
-                            if (property) {
-                                ctx.addKey(ctx.createUiStateKey({ target, property }))
-                            } else {
-                                console.warn(`FastForm Warning: Unknown assertion '${assertionKey}' in $checkUI trigger collection.`)
-                            }
-                        })
-                    })
-                },
-                beforeEvaluate: (declaration, ctx) => {
-                    ctx._flushUI()
-                    return declaration
-                },
-                evaluate: (declaration, ctx) => {
-                    return Object.entries(declaration).every(([target, evaluators]) => {
-                        const el = ctx.getControl(target) || ctx.getBox(target)
-                        if (!el) {
-                            console.warn(`FastForm Warning: $checkUI could not find element for target '${target}'.`)
-                            return false
-                        }
-                        return Object.entries(evaluators).every(([assertionKey, expected]) => {
-                            const property = uiAssertionToPropertyMap.get(assertionKey)
-                            if (!property) return false
-                            const evaluator = uiBehaviors[property].uiStateEvaluators[assertionKey]
-                            return evaluator(el, expected, ctx)
-                        })
-                    })
-                }
-            },
         }
 
         const comparisonEvaluators = {
@@ -1309,14 +1260,7 @@ const Feature_Watchers = (() => {
                 }
             },
             $updateUI: {
-                collectAffects: (declaration) => {
-                    if (declaration && (declaration.$then || declaration.$else)) {
-                        const thenAffects = declaration.$then ? DependencyAnalyzer.collectUIAffects(declaration.$then) : []
-                        const elseAffects = declaration.$else ? DependencyAnalyzer.collectUIAffects(declaration.$else) : []
-                        return [...new Set([...thenAffects, ...elseAffects])]
-                    }
-                    return DependencyAnalyzer.collectUIAffects(declaration)
-                },
+                collectAffects: () => [],
                 execute: (isMet, declaration, ctx) => {
                     const branch = isMet ? declaration.$then : declaration.$else
                     if (branch) {
@@ -1329,139 +1273,44 @@ const Feature_Watchers = (() => {
         }
 
         const uiBehaviors = {
-            visibility: {
-                uiStateEvaluators: {
-                    $isVisible: (el, expected, ctx) => utils.isHidden(el) !== expected,
-                },
-                uiEffect: (el, actions, ctx) => {
-                    if (actions.hasOwnProperty("$toggle")) {
-                        utils.toggleInvisible(el)
-                    } else if (actions.hasOwnProperty("$set")) {
-                        utils.toggleInvisible(el, actions.$set === "hidden")
-                    } else {
-                        console.warn("FastForm Warning: Invalid action for '$visibility' effect. Use '$set' or '$toggle'.", actions)
-                    }
-                },
+            visibility: (el, actions, ctx) => {
+                if (actions.hasOwnProperty("$toggle")) {
+                    utils.toggleInvisible(el)
+                } else if (actions.hasOwnProperty("$set")) {
+                    utils.toggleInvisible(el, actions.$set === "hidden")
+                } else {
+                    console.warn("FastForm Warning: Invalid action for '$visibility' effect. Use '$set' or '$toggle'.", actions)
+                }
             },
-            attributes: {
-                uiStateEvaluators: {
-                    $hasAttribute: (el, expected, ctx) => {
-                        const attributes = Array.isArray(expected) ? expected : [expected]
-                        return attributes.every(attr => typeof attr === "string" && el.hasAttribute(attr))
-                    },
-                    $attributes: (el, expected, ctx) => {
-                        return Object.entries(expected).every(([attrName, cond]) => {
-                            const actualValue = el.getAttribute(attrName)
-                            return ctx.compare(actualValue, cond)
-                        })
-                    },
-                },
-                uiEffect: (el, actions, ctx) => {
-                    if (actions.$set) {
-                        Object.entries(actions.$set).forEach(([name, value]) => el.setAttribute(name, value))
-                    }
-                    if (actions.$remove) {
-                        actions.$remove.forEach(name => el.removeAttribute(name))
-                    }
-                },
+            attributes: (el, actions, ctx) => {
+                if (actions.$set) Object.entries(actions.$set).forEach(([name, value]) => el.setAttribute(name, value))
+                if (actions.$remove) actions.$remove.forEach(name => el.removeAttribute(name))
             },
-            classes: {
-                uiStateEvaluators: {
-                    $hasClasses: (el, expected, ctx) => {
-                        return (typeof expected === "string")
-                            ? expected.split(" ").filter(Boolean).every(cls => el.classList.contains(cls))
-                            : false
-                    },
-                },
-                uiEffect: (el, actions, ctx) => {
-                    if (actions.$add) el.classList.add(...actions.$add.split(" ").filter(Boolean))
-                    if (actions.$remove) el.classList.remove(...actions.$remove.split(" ").filter(Boolean))
-                    if (actions.$toggle) el.classList.toggle(actions.$toggle)
-                },
+            classes: (el, actions, ctx) => {
+                if (actions.$add) el.classList.add(...actions.$add.split(" ").filter(Boolean))
+                if (actions.$remove) el.classList.remove(...actions.$remove.split(" ").filter(Boolean))
+                if (actions.$toggle) el.classList.toggle(actions.$toggle)
             },
-            styles: {
-                uiStateEvaluators: {
-                    $styles: (el, expected, ctx) => {
-                        return Object.entries(expected).every(([styleProp, cond]) => {
-                            const actualValue = window.getComputedStyle(el)[styleProp]
-                            return ctx.compare(actualValue, cond)
-                        })
-                    },
-                },
-                uiEffect: (el, actions, ctx) => {
-                    if (actions.$set) Object.entries(actions.$set).forEach(([prop, value]) => el.style[prop] = value)
-                    if (actions.$remove) actions.$remove.forEach(prop => el.style[prop] = "")
-                },
+            styles: (el, actions, ctx) => {
+                if (actions.$set) Object.entries(actions.$set).forEach(([prop, value]) => el.style[prop] = value)
+                if (actions.$remove) actions.$remove.forEach(prop => el.style[prop] = "")
             },
-            content: {
-                uiStateEvaluators: {
-                    $content: (el, expected, ctx) => ctx.compare(el.textContent, expected),
-                },
-                uiEffect: (el, actions, ctx) => {
-                    if (actions.$text !== undefined) el.textContent = actions.$text
-                    if (actions.$html !== undefined) el.innerHTML = actions.$html
-                },
+            content: (el, actions, ctx) => {
+                if (actions.$text !== undefined) el.textContent = actions.$text
+                if (actions.$html !== undefined) el.innerHTML = actions.$html
             },
-            properties: {
-                uiStateEvaluators: {
-                    $properties: (el, expected, ctx) => {
-                        return Object.entries(expected).every(([propName, cond]) => {
-                            const actualValue = el[propName]
-                            return ctx.compare(actualValue, cond)
-                        })
-                    }
-                },
-                uiEffect: (el, actions, ctx) => {
-                    if (actions.$set) Object.entries(actions.$set).forEach(([prop, value]) => el[prop] = value)
-                    if (actions.$remove) actions.$remove.forEach(prop => el[prop] = undefined)
-                },
+            properties: (el, actions, ctx) => {
+                if (actions.$set) Object.entries(actions.$set).forEach(([prop, value]) => el[prop] = value)
+                if (actions.$remove) actions.$remove.forEach(prop => el[prop] = undefined)
             },
         }
 
-        const uiAssertionToPropertyMap = new Map()
-        const uiEffectToHandlerMap = new Map()
-        Object.entries(uiBehaviors).forEach(([property, handler]) => {
-            Object.keys(handler.uiStateEvaluators || {}).forEach(key => uiAssertionToPropertyMap.set(key, property))
-            uiEffectToHandlerMap.set(`$${property}`, handler)
-        })
+        const uiEffectToHandlerMap = new Map(Object.entries(uiBehaviors).map(([property, handler]) => [`$${property}`, handler]))
 
-        return { uiBehaviors, uiAssertionToPropertyMap, uiEffectToHandlerMap, meta, conditionEvaluators, comparisonEvaluators, effectHandlers }
+        return { uiBehaviors, uiEffectToHandlerMap, meta, conditionEvaluators, comparisonEvaluators, effectHandlers }
     })()
 
     const DependencyAnalyzer = (() => {
-        const createUiStateKey = (uiState) => ["@ui", uiState.target, uiState.property].join("\u001F")
-
-        const collectUIAffects = (declaration) => {
-            const affectedProperties = new Set()
-            Object.entries(declaration).forEach(([target, groups]) => {
-                Object.keys(groups).forEach($property => {
-                    const handler = Registries.uiEffectToHandlerMap.get($property)
-                    if (handler) {
-                        const property = Object.keys(Registries.uiBehaviors).find(p => Registries.uiBehaviors[p] === handler)
-                        affectedProperties.add(createUiStateKey({ target, property }))
-                    } else {
-                        console.warn(`FastForm Warning: Unknown UI effect group '${$property}' during affect collection.`)
-                    }
-                })
-            })
-            return [...affectedProperties]
-        }
-
-        /**
-         * Applies a declarative set of UI state changes to the corresponding DOM elements.
-         * The reactivity of this function is controlled by a form-level option.
-         *
-         * IMPORTANT: This function's behavior changes based on the 'reactiveUiEffects' option.
-         *
-         * - By default (`reactiveUiEffects: false`): This is a TERMINAL operation.
-         * Applying UI effects does NOT trigger a new watcher cycle. This enforces a strict
-         * unidirectional data flow, making the application predictable and free from infinite loops.
-         *
-         * - When enabled (`reactiveUiEffects: true`): This operation becomes REACTIVE.
-         * It will trigger a new evaluation cycle for any watchers that depend on the UI properties
-         * being modified. This allows for powerful UI-driven logic but must be used with
-         * caution to prevent infinite loops.
-         */
         const applyUiEffects = (declaration, ctx) => {
             Object.entries(declaration).forEach(([targetKey, groups]) => {
                 const el = ctx.getControl(targetKey) || ctx.getBox(targetKey)
@@ -1469,15 +1318,13 @@ const Feature_Watchers = (() => {
 
                 Object.entries(groups).forEach(([groupName, actions]) => {
                     const handler = Registries.uiEffectToHandlerMap.get(groupName)
-                    if (handler && typeof handler.uiEffect === "function") {
-                        handler.uiEffect(el, actions, ctx)
+                    if (typeof handler === "function") {
+                        handler(el, actions, ctx)
                     } else {
                         console.warn(`FastForm Warning: Unknown UI effect group '${groupName}'.`)
                     }
                 })
             })
-
-            ctx.propagateUiEffects(declaration)
         }
 
         const _collectConditionTriggers = (form, condition, keys) => {
@@ -1485,7 +1332,6 @@ const Feature_Watchers = (() => {
                 collectTriggers: (subCond) => _collectConditionTriggers(form, subCond, keys),
                 getField: (key) => form.getField(key),
                 addKey: (key) => keys.add(key),
-                createUiStateKey,
             }
             for (const [name, handler] of Object.entries(form.options.conditionEvaluators)) {
                 if (condition.hasOwnProperty(name)) {
@@ -1563,7 +1409,7 @@ const Feature_Watchers = (() => {
             state.set(StateKey.TriggerToWatchers, triggerMap)
         }
 
-        return { createUiStateKey, collectUIAffects, applyUiEffects, collectAffects, buildTriggerMap }
+        return { applyUiEffects, collectAffects, buildTriggerMap }
     })()
 
     const ExecutionEngine = (() => {
@@ -1574,7 +1420,7 @@ const Feature_Watchers = (() => {
                 return true
             }
 
-            // Handle logical evaluators like $and, $or, $checkUI
+            // Handle logical evaluators like $and, $or
             for (const [name, handler] of Object.entries(context.conditionEvaluators)) {
                 if (condition.hasOwnProperty(name)) {
                     let value = condition[name]
@@ -1651,7 +1497,6 @@ const Feature_Watchers = (() => {
                         if (producer === consumer) continue
                         const consumerTriggers = watcherToTriggers.get(consumer) || new Set()
                         const hasDependency = [...producerAffects].some(affect => consumerTriggers.has(affect))
-
                         if (hasDependency) {
                             graph.get(producer).push(consumer) // Edge A -> B
                             inDegree.set(consumer, inDegree.get(consumer) + 1)
@@ -1686,8 +1531,6 @@ const Feature_Watchers = (() => {
                         getControl: (key) => form.options.layout.findControl(key, form.form),
                         getValue: (key) => transactionalData.has(key) ? transactionalData.get(key) : form.getData(key),
                         getField: (key) => form.getField(key),
-                        _flushUI: () => transactionalData.forEach((val, key) => form._updateControl(key, val)),
-                        createUiStateKey: DependencyAnalyzer.createUiStateKey,
                         evaluate: (condition) => _evaluateCondition(condition, evaluateContext),
                         compare: (actual, conditionObject, defaultOperator = "$eq") => {
                             const finalCond = (conditionObject == null || typeof conditionObject !== "object")
@@ -1710,13 +1553,6 @@ const Feature_Watchers = (() => {
                             form.queueFieldValueUpdate(key, value, type)
                         },
                         updateUI: (declaration, customContext) => DependencyAnalyzer.applyUiEffects(declaration, customContext || effectContext),
-                        propagateUiEffects: (declaration) => {
-                            if (!form.options.reactiveUiEffects) return
-                            const affectedUiKeys = new Set(DependencyAnalyzer.collectUIAffects(declaration))
-                            if (affectedUiKeys.size > 0) {
-                                ExecutionEngine.executeForKeys(state, form, [...affectedUiKeys], evaluateContext.payload)
-                            }
-                        },
                     }
 
                     for (const watcher of watchers) {
@@ -1806,7 +1642,6 @@ const Feature_Watchers = (() => {
             allowCircularDependencies: false,
             requireTriggersForFunctionWhen: false,
             requireAffectsForFunctionEffect: false,
-            reactiveUiEffects: false, // Violating the principle of the Single Source of Truth. Do NOT edit this option unless you know what you are doing.
         },
         configure: ({ form, options, registerApi, initState, hooks }) => {
             options.watchers = normalizeWatchers(options.watchers)
@@ -1857,7 +1692,6 @@ const Feature_Watchers = (() => {
                 if (Registries.effectHandlers.hasOwnProperty(name)) console.warn(`FastForm Warning: Overwriting Effect Handler for '${name}'.`)
                 Registries.effectHandlers[name] = definition
             }
-            FastFormClass.createUiStateKey = DependencyAnalyzer.createUiStateKey
         },
     }
 })()
@@ -1867,7 +1701,7 @@ const Feature_Parsing = {
         parsers: {},
     },
     configure: ({ hooks, initState, registerApi }) => {
-        const parsers = initState(new Map(), s => s.clear())
+        const parsers = initState(new Map())
         registerApi("parsing", {
             set: (key, parserToAdd) => {
                 if (key && typeof parserToAdd === "function") {
@@ -2199,11 +2033,10 @@ const Feature_BoxDependencies = {
 
             const watcherKey = `_box_dependency_${boxId}`
             const { when, triggers } = normalizeWatcherOptions(rule)
-            const affects = [form.constructor.createUiStateKey({ target: boxId, property: "classes" })]
             register(watcherKey, {
                 when: when,
                 triggers: triggers,
-                affects: affects,
+                affects: [],
                 effect: (isConditionMet, context) => {
                     const box = context.getBox(boxId)
                     if (!box) return
