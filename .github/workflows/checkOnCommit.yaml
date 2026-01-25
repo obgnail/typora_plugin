@@ -3,6 +3,7 @@ name: Check On Commit
 on:
   push:
     paths:
+      - 'develop/**'
       - 'plugin/global/locales/**'
       - 'plugin/global/settings/**'
       - 'plugin/preferences/**'

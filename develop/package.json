@@ -13,7 +13,7 @@
     "@marp-team/marp-core": "^4.2.0",
     "@moritzrs/mdast-util-ofm": "^0.0.1",
     "@moritzrs/micromark-extension-ofm": "^0.0.1",
-    "abcjs": "^6.5.2",
+    "abcjs": "^6.6.0",
     "crypto-js": "^4.2.0",
     "https-proxy-agent": "^7.0.6",
     "markdown-it": "^14.1.0",
@@ -31,7 +31,7 @@
     "micromark-extension-math": "^3.1.0",
     "minimatch": "^10.1.1",
     "node-json-rpc": "^0.0.1",
-    "smol-toml": "^1.5.2"
+    "smol-toml": "^1.6.0"
   },
   "devDependencies": {
     "chokidar": "^4.0.3",
