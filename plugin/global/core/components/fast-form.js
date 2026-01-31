@@ -42,11 +42,9 @@ class FastForm extends HTMLElement {
     }
 
     static registerLayout = (name, definition) => {
-        validateDefinition(name, definition, {
-            render: { required: true, type: "function" },
-            findBox: { required: true, type: "function" },
-            findControl: { required: true, type: "function" },
-        })
+        if (!definition || typeof definition !== "object") {
+            throw new TypeError("Layout definition must be an object.")
+        }
         if (this.layouts.hasOwnProperty(name)) {
             console.warn(`FastForm Warning: Overwriting layout for '${name}'.`)
         }
@@ -62,7 +60,6 @@ class FastForm extends HTMLElement {
         this.form = root.querySelector("#form")
         this.options = {}
         this.states = new States()
-        this.hooks = this._createHooksManager(Object.values(this.constructor.features))
         this._runtime = {
             fields: {},
             cleanups: [],
@@ -70,6 +67,7 @@ class FastForm extends HTMLElement {
             pendingChanges: new Map(),
             isTaskQueued: false,
         }
+        this.hooks = this._createHooksManager()
         this.hooks.invoke("onConstruct", this)
     }
 
@@ -80,22 +78,22 @@ class FastForm extends HTMLElement {
     render = (options) => {
         this.clear()
 
-        this.options = this._initOptions(options)
+        this.options = this._initOptions(this.hooks.invoke("onOptions", options, this))
         this._normalizeSchema(this.options.schema)
         this._configureFeatures(this.options)  // register feature APIs and hooks
-        this._normalizeControls(this.options)  // init control and expand options
+        this._normalizeControls(this.options)  // init controls and expand options
         this._compileFeatures(this.options)    // compile features base on the final options
-        this._applyUserHooks(this.options.hooks)
-        this._collectFields(this.options)
 
-        this.options.schema = this.hooks.invoke("onSchemaReady", this.options.schema, this) || this.options.schema
+        this.hooks.invoke("onOptionsReady", this)
+        this._applyUserHooks(this.options.hooks)
+        this._collectFields(this.options.schema)
 
         this.fillForm(this.options.schema, this.form)
         this._bindAllEvents(this.options.controls)
         this.hooks.invoke("onRender", this)
     }
 
-    _createHooksManager = (subscribers) => {
+    _createHooksManager(staticSubscribers = Object.values(this.constructor.features)) {
         const getValidationResult = (result) => {
             return result instanceof Error
                 ? [result]
@@ -103,7 +101,8 @@ class FastForm extends HTMLElement {
         }
         const defaultHooks = {
             onConstruct: (form) => void 0,
-            onSchemaReady: (schema, form) => schema,
+            onOptions: (options, form) => options,
+            onOptionsReady: (form) => void 0,
             onRender: (form) => void 0,
             onProcessValue: (value, changeContext) => value,
             onBeforeValidate: (changeContext) => [],             // return true or [] for success; return Error or [Error, ...] for failure
@@ -120,15 +119,16 @@ class FastForm extends HTMLElement {
             onBeforeCommit: (changeContext, form) => void 0,
             onCommit: (changeContext, form) => form.dispatchEvent(new CustomEvent("form-crud", { detail: changeContext })),
             onAfterCommit: (changeContext, form) => void 0,
+            onDestroy: (form) => void 0,
         }
         const hookStrategies = {
-            onSchemaReady: { strategy: "pipeline" },
+            onOptions: { strategy: "pipeline" },
             onProcessValue: { strategy: "pipeline" },
             onAfterValidate: { strategy: "pipeline" },
             onBeforeValidate: { strategy: "aggregate", getResult: getValidationResult },
             onValidate: { strategy: "aggregate", getResult: getValidationResult },
         }
-        return new LifecycleHooks(defaultHooks, hookStrategies, subscribers)
+        return new LifecycleHooks(defaultHooks, hookStrategies, staticSubscribers)
     }
 
     _initOptions(options) {
@@ -273,16 +273,13 @@ class FastForm extends HTMLElement {
     getFormEl = () => this.form
 
     fillForm(schema, container) {
-        const layout = this.options.layout
-        if (!layout || typeof layout.render !== "function") {
-            throw new TypeError("FastForm Error: Layout must have a 'render' method.")
-        }
-        layout.render({ schema, container, form: this })
+        this.options.layout.render({ schema, container, form: this })
         this.traverseFields(field => this._updateControl(field.key), schema)
         this.traverseFields(field => this._mountControl(field), schema)
     }
 
     clear = () => {
+        this.hooks.invoke("onDestroy", this)
         this._runtime.cleanups.forEach(cleanup => cleanup())
         this._runtime.cleanups = []
         this._runtime.apis.clear()
@@ -397,7 +394,7 @@ class FastForm extends HTMLElement {
 
     _normalizeSchema = (schema) => {
         this.traverseBoxes(box => {
-            if (!box.id) box.id = `box_${utils.randomString()}`
+            if (!box.id) box.id = `_box_${uniqueNum()}`
         }, schema)
     }
 
@@ -443,39 +440,52 @@ class FastForm extends HTMLElement {
     }
 
     _applyUserHooks = (userHooks) => {
-        for (const [name, config] of Object.entries(userHooks)) {
-            if (typeof config === "function") {
-                this.hooks.on(name, config)
-            } else if (config && typeof config === "object") {
-                if (typeof config.on === "function") {
-                    this.hooks.on(name, config.on)
+        for (const [name, impl] of Object.entries(userHooks)) {
+            if (typeof impl === "function") {
+                this.hooks.on(name, impl)
+            } else if (impl && typeof impl === "object") {
+                if (typeof impl.on === "function") {
+                    this.hooks.on(name, impl.on)
                 }
-                if (typeof config.override === "function") {
-                    this.hooks.override(name, config.override)
+                if (typeof impl.override === "function") {
+                    this.hooks.override(name, impl.override)
                 }
             }
         }
     }
 
-    _resolveLayout(layout) {
-        const { layouts } = this.constructor
-        if (!layout) {
-            return layouts.default || {}
+    /**
+     * _resolveLayout("gird")
+     * _resolveLayout({ base: "grid", defaultCol: 12 })
+     * _resolveLayout({ base: "grid", defaultCol: 12, setup: (base) => ({ render: (ctx) => {} }) })
+     */
+    _resolveLayout(rawInput) {
+        const resolve = (nameOrDef) => {
+            let def = nameOrDef
+            if (typeof nameOrDef === "string") {
+                def = this.constructor.layouts[nameOrDef]
+                if (!def) {
+                    throw new Error(`FastForm Layout Error: Layout '${nameOrDef}' not found.`)
+                }
+            } else if (!def || typeof def !== "object") {
+                return resolve("default")
+            }
+
+            const { base, setup, ...currentConfig } = def
+            const baseName = base || (nameOrDef === "default" ? null : "default")
+            const { instance: baseInstance, config: baseConfig } = baseName ? resolve(baseName) : { instance: null, config: {} }
+            const mergedConfig = { ...baseConfig, ...currentConfig }
+            const methods = (typeof setup === "function") ? setup(baseInstance, mergedConfig) : void 0
+            const proto = baseInstance || Object.prototype
+            const instance = Object.assign(Object.create(proto), currentConfig, methods)
+            return { instance, config: mergedConfig }
         }
 
-        const inheritances = new Set()
-        let current = layout
-        while (current) {
-            const currentDef = (typeof current === "string") ? layouts[current] : current
-            if (!currentDef || typeof currentDef !== "object") break
-            if (inheritances.has(currentDef)) {
-                console.warn("FastForm Warning: Circular layout inheritance detected.")
-                break
-            }
-            inheritances.add(currentDef)
-            current = currentDef.base
+        const { instance } = resolve(rawInput)
+        if (typeof instance.render !== "function") {
+            throw new Error(`FastForm Layout Error: The resolved layout is missing a 'render' method.`)
         }
-        return Object.assign({}, layouts.default, ...[...inheritances].reverse())
+        return instance
     }
 
     _registerApi = (namespace, api, destroy) => {
@@ -494,31 +504,31 @@ class FastForm extends HTMLElement {
 
     getApi = (namespace) => this._runtime.apis.get(namespace)
 
-    _collectFields = (options) => {
+    _collectFields = (schema) => {
         const fields = {}
-        this.traverseFields(field => field.key && (fields[field.key] = field), options.schema)
+        this.traverseFields(field => field.key && (fields[field.key] = field), schema)
         this._runtime.fields = fields
     }
 }
 
 class LifecycleHooks {
-    constructor(defaultImplementations, strategies, subscribers = []) {
-        this._listeners = new Map()
-        this._overrides = new Map()
+    constructor(defaultImpls, strategies, staticSubscribers = []) {
         this._definitions = new Map(
-            Object.entries(defaultImplementations).map(([hookName, impl]) => {
+            Object.entries(defaultImpls).map(([hookName, impl]) => {
                 const strategy = strategies[hookName] || {}
                 return [hookName, { impl, ...strategy }]
             })
         )
-        subscribers.forEach(subscriber => {
-            if (!subscriber || typeof subscriber !== "object") return
-            Object.entries(subscriber).forEach(([name, fn]) => {
-                if (this._definitions.has(name) && typeof fn === "function") {
-                    this.on(name, fn)
-                }
-            })
-        })
+        this._statics = new Map(
+            [...this._definitions.keys()]
+                .map(hookName => {
+                    const impls = staticSubscribers.map(sub => sub?.[hookName]).filter(fn => typeof fn === "function")
+                    return [hookName, new Set(impls)]
+                })
+                .filter(([_, set]) => set.size > 0)
+        )
+        this._temporaries = new Map()
+        this._overrides = new Map()
     }
 
     on = (hookName, listener) => {
@@ -526,11 +536,11 @@ class LifecycleHooks {
             console.warn(`Attempting to subscribe to an unknown hook "${hookName}".`)
             return
         }
-        if (!this._listeners.has(hookName)) {
-            this._listeners.set(hookName, new Set())
+        if (!this._temporaries.has(hookName)) {
+            this._temporaries.set(hookName, new Set())
         }
         if (typeof listener === "function") {
-            this._listeners.get(hookName).add(listener)
+            this._temporaries.get(hookName).add(listener)
         }
     }
     override = (hookName, listener) => {
@@ -551,29 +561,36 @@ class LifecycleHooks {
         }
 
         const { strategy, impl, getResult } = this._definitions.get(hookName)
-        const userImpl = this._listeners.get(hookName) || []
-        const allFns = [...userImpl, impl]
-        if (allFns.length === 0) return
+        const staticImpls = this._statics.get(hookName) || []
+        const tempImpls = this._temporaries.get(hookName) || []
+        const allImpls = [...staticImpls, ...tempImpls, impl]
+        if (allImpls.length === 0) return
         switch (strategy) {
             case "pipeline":
                 const [initialValue, ...otherArgs] = initialArgs
-                return allFns.reduce((currentValue, fn) => fn(currentValue, ...otherArgs), initialValue)
+                return allImpls.reduce((currentValue, fn) => fn(currentValue, ...otherArgs), initialValue)
             case "aggregate":
                 if (typeof getResult !== "function") {
-                    console.error(`FastForm Error: Hook "${hookName}" uses 'aggregate' strategy but is missing a 'getResult' function.`)
+                    console.error(`Hook "${hookName}" uses 'aggregate' strategy but is missing a 'getResult' function.`)
                     return []
                 }
-                return allFns.flatMap(fn => getResult(fn(...initialArgs)))
+                return allImpls.flatMap(fn => getResult(fn(...initialArgs)))
+            // case "bail":
+            //     for (const fn of allImpls) {
+            //         const ret = fn(...initialArgs)
+            //         if (ret !== undefined) return ret
+            //     }
+            //     return
             case "broadcast":
             default:
-                return allFns.reduce((_, fn) => fn(...initialArgs), undefined)
+                return allImpls.forEach(fn => fn(...initialArgs))
         }
     }
     clear = () => {
-        this._listeners.clear()
+        this._temporaries.clear()
         this._overrides.clear()
     }
-    has = (name) => this._definitions.has(name)
+    has = (hookName) => this._definitions.has(hookName)
 }
 
 class States {
@@ -615,79 +632,119 @@ function validateDefinition(name, definition, checks, options = {}) {
 
 const Layout_Default = {
     base: null,
-    render({ schema, container, form }) {
-        const createControl = (field) => {
-            const controlDef = form.options.controls[field.type]
-            if (!controlDef) {
-                console.warn(`FastForm Warning: No control registered for type "${field.type}".`)
-                return ""
+    containerClass: "",
+    setup(base, config) {
+        return {
+            findBox(key, formEl) {
+                return formEl.querySelector(`.box-container[data-box="${CSS.escape(key)}"]`)
+            },
+            findControl(key, formEl) {
+                return formEl.querySelector(`.control[data-control="${CSS.escape(key)}"]`)
+            },
+            render({ schema, container, form }) {
+                const createControl = (field) => {
+                    const controlDef = form.options.controls[field.type]
+                    if (!controlDef) {
+                        console.warn(`FastForm Warning: No control registered for type "${field.type}".`)
+                        return ""
+                    }
+                    const controlOptions = form.getControlOptions(field)
+                    const controlContext = { field, controlOptions, form }
+                    const controlHTML = controlDef.create(controlContext)
+                    return this.renderFieldWrapper(field, controlHTML, controlOptions.className)
+                }
+                const createBox = (box) => {
+                    const titleHTML = this.renderBoxTitle(box)
+                    const controlHTMLs = (box.fields || []).map(createControl).join("")
+                    const boxHTML = this.renderBoxContent(controlHTMLs, box)
+                    return this.renderBoxWrapper(box, titleHTML, boxHTML)
+                }
+                this.updateRootContainer(container)
+                container.innerHTML = schema.map(createBox).join("")
+            },
+            updateRootContainer(container) {
+                const cls = config.containerClass
+                if (cls) container.className = cls
+            },
+            renderBoxWrapper(box, titleHTML, contentHTML, extraClass = "") {
+                const userClass = box.className || ""
+                const cls = ["box-container", userClass, extraClass].filter(Boolean).join(" ")
+                return `<div class="${cls}" data-box="${box.id}">${titleHTML}${contentHTML}</div>`
+            },
+            renderBoxContent(fieldsHTML, box, extraClass = "") {
+                const cls = ["box", extraClass].filter(Boolean).join(" ")
+                return `<div class="${cls}">${fieldsHTML}</div>`
+            },
+            renderBoxTitle(box) {
+                return box.title ? `<div class="title">${box.title}${this.renderTooltip(box)}</div>` : ""
+            },
+            renderFieldWrapper(field, controlHTML, extraClass = "") {
+                const isBlock = field.isBlockLayout || false
+                const labelHTML = isBlock ? "" : `<div class="control-left">${this.renderLabel(field)}</div>`
+                const inputWrapHTML = isBlock ? controlHTML : `<div class="control-right">${controlHTML}</div>`
+                const clsList = ["control"]
+                if (isBlock) clsList.push("control-block")
+                if (field.hidden) clsList.push("plugin-common-hidden")
+                if (extraClass) clsList.push(extraClass)
+                return `<div class="${clsList.join(" ")}" data-type="${field.type}" data-control="${field.key}">${labelHTML}${inputWrapHTML}</div>`
+            },
+            renderLabel(field) {
+                const label = field.label || ""
+                return field.explain
+                    ? `<div><div>${label}${this.renderTooltip(field)}</div>${this.renderExplain(field)}</div>`
+                    : label + this.renderTooltip(field)
+            },
+            renderExplain(field) {
+                return `<div class="explain">${utils.escape(field.explain)}</div>`
+            },
+            renderTooltip(item) {
+                if (!item.tooltip) return ""
+                const tips = Array.isArray(item.tooltip) ? item.tooltip : [item.tooltip]
+                const toHTML = (tip, idx) => {
+                    if (!tip) return ""
+                    const cfg = typeof tip === "string" ? { text: tip } : tip
+                    cfg.icon = cfg.icon || "fa fa-info-circle"
+                    const cls = cfg.action ? "tooltip has-action" : "tooltip"
+                    const actionAttrs = cfg.action ? `data-action="${cfg.action}" data-trigger-id="${item.key || item.id}" data-index="${idx}"` : ""
+                    const triggerHTML = `<div class="tooltip-trigger"><i class="${cfg.icon}"></i></div>`
+                    const contentHTML = cfg.text ? `<div class="tooltip-content">${utils.escape(cfg.text).replace(/\n/g, "<br>")}</div>` : ""
+                    return `<div class="${cls}" ${actionAttrs}>${triggerHTML}${contentHTML}</div>`
+                }
+                return tips.map(toHTML).join("")
+            },
+        }
+    }
+}
+
+const Layout_Grid = {
+    base: "default",
+    defaultCol: 12,
+    setup(base, config) {
+        return {
+            updateRootContainer(container) {
+                base.updateRootContainer.call(this, container)
+                container.classList.add("ff-row")
+            },
+            renderBoxContent(fieldsHTML, box) {
+                return base.renderBoxContent.call(this, fieldsHTML, box, "ff-row")
+            },
+            renderBoxWrapper(box, titleHTML, contentHTML) {
+                const col = box.col || config.defaultCol
+                const colClass = `ff-col-${col}`
+                return base.renderBoxWrapper.call(this, box, titleHTML, contentHTML, colClass)
+            },
+            renderFieldWrapper(field, controlHTML, extraClass = "") {
+                const col = field.col || config.defaultCol
+                const colClass = `ff-col-${col}`
+                const combinedClass = `${extraClass} ${colClass}`.trim()
+                return base.renderFieldWrapper.call(this, field, controlHTML, combinedClass)
             }
-            const controlOptions = form.getControlOptions(field)
-            const controlContext = { field, controlOptions, form }
-            const controlHTML = controlDef.create(controlContext)
-            return this.createControlContainer(field, controlHTML, controlOptions.className)
         }
-        const createBox = (box) => {
-            const titleHTML = this.createTitle(box)
-            const controlHTMLs = (box.fields || []).map(createControl)
-            const boxHTML = this.createBoxContent(controlHTMLs)
-            return this.createBoxContainer(box.id, titleHTML, boxHTML)
-        }
-        container.innerHTML = schema.map(createBox).join("")
-    },
-    findBox(key, formEl) {
-        return formEl.querySelector(`[data-box="${CSS.escape(key)}"]`)
-    },
-    findControl(key, formEl) {
-        return formEl.querySelector(`[data-control="${CSS.escape(key)}"]`)
-    },
-    createTitle(box) {
-        return box.title
-            ? `<div class="title">${box.title}${this.createTooltip(box)}</div>`
-            : ""
-    },
-    createTooltip(item) {
-        if (!item.tooltip) return ""
-        const tooltips = Array.isArray(item.tooltip) ? item.tooltip : [item.tooltip]
-        return tooltips.map((tip, index) => {
-            if (!tip) return ""
-            const config = typeof tip === "string" ? { text: tip } : tip
-            const hasAction = !!config.action
-            const id = item.key || item.id
-            const idAttr = hasAction && id ? `data-trigger-id="${id}"` : ""
-            const indexAttr = hasAction ? `data-index="${index}"` : ""
-            const actionAttr = hasAction ? `data-action="${config.action}"` : ""
-            const triggerHtml = `<div class="tooltip-trigger"><i class="${config.icon || "fa fa-info-circle"}"></i></div>`
-            const contentHtml = config.text ? `<div class="tooltip-content">${utils.escape(config.text).replace(/\n/g, "<br>")}</div>` : ""
-            const cls = hasAction ? "tooltip has-action" : "tooltip"
-            return `<div class="${cls}" ${actionAttr} ${idAttr} ${indexAttr}>${triggerHtml}${contentHtml}</div>`
-        }).join("")
-    },
-    createExplain(field) {
-        return `<div class="explain">${utils.escape(field.explain)}</div>`
-    },
-    createLabel(field) {
-        const label = field.label || ""
-        return field.explain
-            ? `<div><div>${label}${this.createTooltip(field)}</div>${this.createExplain(field)}</div>`
-            : label + this.createTooltip(field)
-    },
-    createControlContainer(field, controlHTML, className) {
-        const isBlockLayout = field.isBlockLayout || false
-        const label = isBlockLayout ? "" : `<div class="control-left">${this.createLabel(field)}</div>`
-        const control = isBlockLayout ? controlHTML : `<div class="control-right">${controlHTML}</div>`
-        const cls = "control" + (isBlockLayout ? " control-block" : "") + (className ? ` ${className}` : "") + (field.hidden ? " plugin-common-hidden" : "")
-        return `<div class="${cls}" data-type="${field.type}" data-control="${field.key}">${label}${control}</div>`
-    },
-    createBoxContent(controlHTMLs) {
-        return `<div class="box">${controlHTMLs.join("")}</div>`
-    },
-    createBoxContainer(id, titleHTML, boxHTML) {
-        return `<div class="box-container" data-box="${id}">${titleHTML}${boxHTML}</div>`
-    },
+    }
 }
 
 FastForm.registerLayout("default", Layout_Default)
+FastForm.registerLayout("grid", Layout_Grid)
 
 const Feature_EventDelegation = {
     onConstruct: (form) => {
@@ -699,9 +756,9 @@ const Feature_EventDelegation = {
          * onEvent(eventsMap, selector, [options])             -- onEvent({ click: Fn1, mouseenter: Fn2 }, ".my-button")
          * onEvent(eventsMap, selector, data, [options])       -- onEvent({ click: Fn1, mouseenter: Fn2 }, ".my-button", { id: 456 })
          */
-        form.onEvent = function (...args) {
-            const formEl = this.getFormEl()
-            if (!formEl) return this
+        form.onEvent = (...args) => {
+            const formEl = form.getFormEl()
+            if (!formEl) return form
 
             let events, selector, data, handler, options
 
@@ -724,13 +781,13 @@ const Feature_EventDelegation = {
             // EventsMap
             if (typeof events === "object" && events !== null) {
                 for (const type of Object.keys(events)) {
-                    this.onEvent(type, selector, data, events[type], options)
+                    form.onEvent(type, selector, data, events[type], options)
                 }
-                return this
+                return form
             }
 
             if (!events || typeof events !== "string") {
-                throw new TypeError(`event must be a string/object: ${events}.`)
+                throw new TypeError(`Event must be a string/object: ${events}.`)
             }
 
             const eventTypes = events.split(" ").filter(Boolean) // Multiple event string: "click mouseover"
@@ -755,9 +812,10 @@ const Feature_EventDelegation = {
                 }
 
                 formEl.addEventListener(eventType, listener, options)
-                this.registerCleanup(() => formEl.removeEventListener(eventType, listener, options))
+                form.registerCleanup(() => formEl.removeEventListener(eventType, listener, options))
             }
-            return this
+
+            return form
         }
     }
 }
@@ -833,7 +891,7 @@ const Feature_InteractiveTooltip = {
  * This hybrid design allows the builder instance to serve directly as the final data object,
  * enabling native `JSON.stringify` serialization without a `.build()` step and ensuring a clean, transparent debugging experience.
  */
-const Feature_SchemaBuilder = (() => {
+const Feature_DSLEngine = (() => {
     const RESOLVE_SYM = Symbol("schema:resolve")
 
     const Dep = new Proxy({
@@ -854,6 +912,7 @@ const Feature_SchemaBuilder = (() => {
     })
     const Tip = {
         info: (text) => text,
+        custom: (icon, text) => ({ icon, text }),
         action: (action, icon, text) => ({ action, icon, text }),
     }
     const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1)
@@ -875,24 +934,15 @@ const Feature_SchemaBuilder = (() => {
         if (combined.length === 1) return combined[0]
         return { $and: combined }
     }
-    const resolve = (items) => {
-        if (!items) return items
-        if (items[RESOLVE_SYM]) {
-            return resolve(items[RESOLVE_SYM]())
+    const resolve = (input) => {
+        if (input == null) return input
+        if (input[RESOLVE_SYM]) {
+            return resolve(input[RESOLVE_SYM]())
         }
-        if (Array.isArray(items)) {
-            return items.flatMap(item => {
-                if (Array.isArray(item)) {
-                    return resolve(item)
-                }
-                if (item?.[RESOLVE_SYM]) {
-                    const result = item[RESOLVE_SYM]()
-                    return Array.isArray(result) ? resolve(result) : result
-                }
-                return item
-            })
+        if (Array.isArray(input)) {
+            return input.flatMap(resolve)
         }
-        return items
+        return input
     }
     const normalizeBoxes = (boxes) => {
         const ret = Array.isArray(boxes) ? boxes : [boxes]
@@ -989,6 +1039,7 @@ const Feature_SchemaBuilder = (() => {
             explain: PropResolvers.SHARED,
             hidden: PropResolvers.SHARED,
             disabled: PropResolvers.SHARED,
+            col: PropResolvers.SHARED,
             className: PropResolvers.SHARED,
             dependencyUnmetAction: PropResolvers.SHARED,
             dependencies: PropResolvers.DEPENDENCY,
@@ -998,6 +1049,8 @@ const Feature_SchemaBuilder = (() => {
             id: PropResolvers.BOX,
             title: PropResolvers.BOX,
             tooltip: PropResolvers.BOX,
+            col: PropResolvers.BOX,
+            className: PropResolvers.BOX,
             dependencyUnmetAction: PropResolvers.BOX,
             fields: PropResolvers.FIELDS,
             children: PropResolvers.FIELDS,  // Alias for `fields`
@@ -1037,10 +1090,8 @@ const Feature_SchemaBuilder = (() => {
     }
 
     return {
-        statics: { mergeDeps, resolve, normalizeBoxes, RESOLVE_SYM, Dep, Tip, PropResolvers, BaseSpecs, BuilderFactory },
         onConstruct: (form) => {
-            const { RESOLVE_SYM, Dep, Tip, PropResolvers, BaseSpecs, BuilderFactory } = Feature_SchemaBuilder.statics
-            form.schemaBuilder = () => {
+            form.dslEngine = () => {
                 const scopedPresetMap = new Map()
                 const preset = (name, handler) => scopedPresetMap.set(name, handler)
                 const buildProto = (specs, factory) => {
@@ -1088,20 +1139,24 @@ const Feature_SchemaBuilder = (() => {
                         return box
                     }
                 }
-                return { PropResolvers, Dep, Tip, resolve, normalizeBoxes, preset, defineField, defineBox, Group: defineBox() }
+                const createDefine = (context) => {
+                    return (input) => normalizeBoxes(typeof input === "function" ? input(context) : input)
+                }
+                return { Dep, Tip, PropResolvers, createDefine, defineField, defineBox, preset }
             }
+            form.dslEngine.statics = { resolve, normalizeBoxes, applyFields, RESOLVE_SYM, Dep, Tip, PropResolvers, BaseSpecs, BuilderFactory }
         }
     }
 })()
 
 const Feature_StandardDSL = {
     onConstruct: (form) => {
-        if (!form.schemaBuilder) {
-            console.error("FastForm Error: Feature_StandardDSL requires 'schemaBuilder' feature.")
+        if (!form.dslEngine) {
+            console.error("FastForm Error: Feature_StandardDSL requires 'Feature_DSLEngine' feature.")
             return
         }
-        const builder = form.schemaBuilder()
-        const { resolve, normalizeBoxes, defineField, defineBox, preset, Group, Tip, Dep, PropResolvers } = builder
+        const engine = form.dslEngine()
+        const { createDefine, defineBox, defineField, Tip, Dep, PropResolvers } = engine
         const { FIELD: F, SCHEMA, UNIT_CONVERTER, TABS, TAB_APPEND } = PropResolvers
         const BASE = { placeholder: F, readonly: F, disabled: F, className: F, isBlockLayout: F }
         const NUM = { ...BASE, min: F, max: F, step: F, isInteger: F }
@@ -1139,14 +1194,16 @@ const Feature_StandardDSL = {
             Composite: defineField("composite", { ...BASE, subSchema: SCHEMA, defaultValues: F }),
             Tabs: defineField("tabs", { ...BASE, tabs: TABS, tab: TAB_APPEND, tabStyle: F, tabPosition: F, defaultSelectedTab: F, defaultTabLabel: F }),
         }
-        const buildSchema = (input) => {
-            const ret = (typeof input === "function") ? input(dsl) : input
-            const boxes = Array.isArray(ret) ? ret : [ret]
-            return normalizeBoxes(boxes)
+        const dsl = { Group: defineBox(), Controls, Tip, Dep, Extend: engine }
+        dsl.define = createDefine(dsl)
+        form.dsl = dsl
+    },
+    onOptions: (options, form) => {
+        if (options && typeof options.schema === "function") {
+            options.schema = form.dsl.define(options.schema)
         }
-        const dsl = { builder, resolve, normalizeBoxes, defineField, defineBox, preset, buildSchema, Group, Controls, Tip, Dep }
-        form.DSL = dsl
-    }
+        return options
+    },
 }
 
 const Feature_Watchers = (() => {
@@ -1956,14 +2013,14 @@ const Feature_FieldDependencies = {
 
             const watcherKey = `_field_dependency_${fieldKey}`
             const { when, triggers } = normalizeWatcherOptions(rule)
-            const className = (allActions[fieldKey] === "hide") ? "plugin-common-hidden" : "plugin-common-readonly"
+            const clsName = (allActions[fieldKey] === "hide") ? "plugin-common-hidden" : "plugin-common-readonly"
             register(watcherKey, {
                 when: when,
                 triggers: triggers,
                 effect: {
                     $updateUI: {
-                        $then: { [fieldKey]: { $classes: { $remove: className } } },
-                        $else: { [fieldKey]: { $classes: { $add: className } } },
+                        $then: { [fieldKey]: { $classes: { $remove: clsName } } },
+                        $else: { [fieldKey]: { $classes: { $add: clsName } } },
                     },
                 },
                 isFieldDependency: true, // Special property to identify it as an auto-generated watcher
@@ -2116,7 +2173,7 @@ FastForm.registerFeature("validation", Feature_Validation)
 FastForm.registerFeature("fieldDependencies", Feature_FieldDependencies)
 FastForm.registerFeature("boxDependencies", Feature_BoxDependencies)
 FastForm.registerFeature("cascades", Feature_Cascades)
-FastForm.registerFeature("schemaBuilder", Feature_SchemaBuilder)
+FastForm.registerFeature("dslEngine", Feature_DSLEngine)
 FastForm.registerFeature("standardDSL", Feature_StandardDSL)
 
 // usage:
@@ -2261,6 +2318,15 @@ FastForm.validator.register("url", Validator_Url)
 FastForm.validator.register("regex", Validator_Regex)
 FastForm.validator.register("path", Validator_Path)
 
+const uniqueNum = (() => {
+    let n = 0
+    return () => n++
+})()
+
+function setRandomKey(field) {
+    field.key = field.key || `_field_${uniqueNum()}`
+}
+
 function getCommonHTMLAttrs(field, allowEmpty) {
     return {
         key: `data-key="${field.key}"`,
@@ -2347,11 +2413,6 @@ function registerItemLengthLimitRule({ field, form }) {
     }
     registerRules({ field, form }, { $self: [lengthRule] })
 }
-
-const setRandomKey = (() => {
-    let num = 0
-    return (field) => field.key = field.key || `_random_key_${num++}`
-})()
 
 const Control_Switch = {
     controlOptions: {
@@ -3088,7 +3149,7 @@ const Control_Select = {
             const boxes = [...form.getFormEl().querySelectorAll(".option-box")]
             boxes.filter(box => box !== optionBox).forEach(utils.hide)
             utils.toggleInvisible(optionBox)
-            const isShown = utils.isShow(optionBox)
+            const isShown = utils.isShown(optionBox)
             if (isShown) {
                 optionBox.scrollIntoView({ block: "nearest" })
             }
@@ -3870,7 +3931,6 @@ const Control_Composite = {
     },
     getNestedSchemas: (field) => Array.isArray(field.subSchema) ? [field.subSchema] : [],
     create: ({ field, form }) => {
-        const layout = form.options.layout
         const switchControlDef = form.options.controls["switch"]
 
         const newSwitchField = { ...field, type: "switch", isBlockLayout: false }
@@ -3878,7 +3938,7 @@ const Control_Composite = {
         const newSwitchFieldContext = { form, field: newSwitchField, controlOptions: newSwitchControlOptions }
 
         const toggleControlHtml = switchControlDef.create(newSwitchFieldContext)
-        const fullToggleHtml = layout.createControlContainer(newSwitchField, toggleControlHtml, newSwitchControlOptions.className)
+        const fullToggleHtml = form.options.layout.renderFieldWrapper(newSwitchField, toggleControlHtml, newSwitchControlOptions.className)
         const subBoxWrapper = `<div class="sub-box-wrapper" data-parent-key="${field.key}"></div>`
         return fullToggleHtml + subBoxWrapper
     },

@@ -52,10 +52,6 @@ class FormDialog {
     }
 
     modal = ({ title, ...options }) => {
-        if (options.schema instanceof Function) {
-            options.schema = this.entities.form.DSL.buildSchema(options.schema)
-        }
-
         const { promise, resolve } = Promise.withResolvers()
         this.resolver = resolve
 

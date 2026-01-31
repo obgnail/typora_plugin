@@ -22,6 +22,9 @@
     --ff-bg-block: #FAFBFC;
     --ff-bg-disabled: #F5F7FA;
 
+    --ff-bg-selection: #007AFF4D;
+    --ff-bg-selection-disabled: #E4E7ED;
+
     --ff-border: #DCDFE6;
     --ff-border-hover: #C0C4CC;
 
@@ -170,10 +173,101 @@
 }
 
 /* ==========================================================================
+   Grid System
+   ========================================================================== */
+.ff-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    /*margin-right: -5px;*/
+    /*margin-left: -5px;*/
+}
+
+.ff-row .control {
+    align-self: flex-start;
+}
+
+[class*="ff-col-"] {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    padding-right: 5px;
+    padding-left: 5px;
+
+    --ff-col: 12;
+    --ff-max-col: 12;
+    --ff-width: calc(100% * var(--ff-col) / var(--ff-max-col));
+    flex: 0 0 var(--ff-width);
+    max-width: var(--ff-width);
+}
+
+.ff-col-1 {
+    --ff-col: 1;
+}
+
+.ff-col-2 {
+    --ff-col: 2;
+}
+
+.ff-col-3 {
+    --ff-col: 3;
+}
+
+.ff-col-4 {
+    --ff-col: 4;
+}
+
+.ff-col-5 {
+    --ff-col: 5;
+}
+
+.ff-col-6 {
+    --ff-col: 6;
+}
+
+.ff-col-7 {
+    --ff-col: 7;
+}
+
+.ff-col-8 {
+    --ff-col: 8;
+}
+
+.ff-col-9 {
+    --ff-col: 9;
+}
+
+.ff-col-10 {
+    --ff-col: 10;
+}
+
+.ff-col-11 {
+    --ff-col: 11;
+}
+
+.ff-col-12 {
+    --ff-col: 12;
+}
+
+/* ==========================================================================
+   Selection
+   ========================================================================== */
+::selection {
+    background-color: var(--ff-bg-selection);
+}
+
+input:disabled::selection,
+textarea:disabled::selection,
+.plugin-common-readonly::selection {
+    background-color: var(--ff-bg-selection-disabled);
+}
+
+/* ==========================================================================
    Layout Containers
    ========================================================================== */
 .box-container {
-    padding: 5px 0;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 .box {
