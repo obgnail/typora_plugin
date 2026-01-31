@@ -1062,8 +1062,9 @@ const schema_fence_enhance = [
     ),
     TitledBox(
         "advanced",
-        Switch("ENABLE_LANGUAGE_FOLD", { tooltip: Tip.action("viewCodeFoldingDemo", "fa fa-chain") }),
-        Switch("INDENTED_WRAPPED_LINE", { tooltip: Tip.action("viewIndentedWrappedLineDemo", "fa fa-chain") }),
+        Switch("SIDE_BY_SIDE_VIEW", { tooltip: Tip.action("viewSideBySideEffect", "fa fa-chain") }),
+        Switch("ENABLE_LANGUAGE_FOLD", { tooltip: Tip.action("viewCodeFoldingEffect", "fa fa-chain") }),
+        Switch("INDENTED_WRAPPED_LINE", { tooltip: Tip.action("viewIndentedWrappedLineEffect", "fa fa-chain") }),
         Switch("PRELOAD_ALL_FENCES", { tooltip: "dangerous" }),
     ),
     box_settingHandler,
@@ -1451,9 +1452,23 @@ const schema_sidebar_enhance = [
         Select("OUTLINE_FOLD_STATE", OPTIONS.sidebar_enhance.OUTLINE_FOLD_STATE),
     ),
     UntitledBox(
-        Array_("HIDDEN_NODE_PATTERNS"),
+        Switch("ENABLE_FILE_COUNT"),
+        Text("FONT_WEIGHT", dep_countFile),
+        Text("TEXT_COLOR", dep_countFile),
+        Text("BACKGROUND_COLOR", dep_countFile),
+        Divider(),
+        Array_("COUNT_EXT", dep_countFile),
+        Array_("IGNORE_FOLDERS", dep_countFile),
+        Divider(),
+        Switch("FOLLOW_SYMBOLIC_LINKS", dep_countFile),
+        Integer("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1, ...dep_countFile }),
+        Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000, ...dep_countFile }),
+        Integer("MAX_STATS", { min: 100, ...dep_countFile }),
+        Integer("CONCURRENCY_LIMIT", { min: 1, ...dep_countFile }),
     ),
     UntitledBox(
+        Array_("HIDDEN_NODE_PATTERNS"),
+        Divider(),
         Switch("DISPLAY_NON_MARKDOWN_FILES"),
         Array_("OPEN_BY_TYPORA_EXT", { dependencies: Dep.true("DISPLAY_NON_MARKDOWN_FILES") }),
         Array_("OPEN_BY_SYSTEM_EXT", { dependencies: Dep.true("DISPLAY_NON_MARKDOWN_FILES") }),
@@ -1475,23 +1490,6 @@ const schema_sidebar_enhance = [
             extensions: [],
         },
         { dependencies: Dep.and(Dep.true("CUSTOMIZE_SIDEBAR_ICONS"), Dep.follow("CUSTOMIZE_SIDEBAR_ICONS")) },
-    ),
-    UntitledBox(
-        Switch("ENABLE_FILE_COUNT"),
-        Text("FONT_WEIGHT", dep_countFile),
-        Text("TEXT_COLOR", dep_countFile),
-        Text("BACKGROUND_COLOR", dep_countFile),
-    ),
-    UntitledBox(
-        Array_("COUNT_EXT", dep_countFile),
-        Array_("IGNORE_FOLDERS", dep_countFile),
-    ),
-    UntitledBox(
-        Switch("FOLLOW_SYMBOLIC_LINKS", dep_countFile),
-        Integer("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1, ...dep_countFile }),
-        Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000, ...dep_countFile }),
-        Integer("MAX_STATS", { min: 100, ...dep_countFile }),
-        Integer("CONCURRENCY_LIMIT", { min: 1, ...dep_countFile }),
     ),
     box_settingHandler,
 ]
@@ -1996,11 +1994,6 @@ const schema_quickButton = [
     box_settingHandler,
 ]
 
-const schema_blockSideBySide = [
-    box_customPluginFull,
-    box_settingHandler,
-]
-
 const schema_redirectLocalRootUrl = [
     box_customPluginLite,
     UntitledBox(
@@ -2072,7 +2065,6 @@ const SCHEMAS = {
     imageReviewer: schema_imageReviewer,
     markdownLint: schema_markdownLint,
     quickButton: schema_quickButton,
-    blockSideBySide: schema_blockSideBySide,
     redirectLocalRootUrl: schema_redirectLocalRootUrl,
 }
 

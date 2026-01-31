@@ -739,6 +739,7 @@
     "$label.HIGHLIGHT_PATTERN": "行高亮格式",
     "$label.ENABLE_LANGUAGE_FOLD": "程式碼可摺疊",
     "$label.INDENTED_WRAPPED_LINE": "自動對齊縮排",
+    "$label.SIDE_BY_SIDE_VIEW": "並列視圖",
     "$label.PRELOAD_ALL_FENCES": "提前加載全部程式碼區塊",
     "$label.HIGHLIGHT_WHEN_HOVER": "滑鼠懸停高亮",
     "$label.HIGHLIGHT_LINE_COLOR": "高亮背景色",
@@ -748,8 +749,9 @@
     "$title.lineHighlighting": "行高亮",
     "$tooltip.viewCodeMirrorKeymapsManual": "CodeMirror 風格的快捷鍵",
     "$tooltip.viewVitePressLineHighlighting": "行高亮語法",
-    "$tooltip.viewCodeFoldingDemo": "查看示例",
-    "$tooltip.viewIndentedWrappedLineDemo": "查看示例",
+    "$tooltip.viewSideBySideEffect": "查看效果",
+    "$tooltip.viewCodeFoldingEffect": "查看效果",
+    "$tooltip.viewIndentedWrappedLineEffect": "查看效果",
     "$tooltip.dangerous": "資源消耗大，Typora 可能會長時間卡頓"
   },
   "collapse_paragraph": {
@@ -1668,9 +1670,6 @@
     "$tooltip.coord1": "向左遞增",
     "$tooltip.exclusive": "與「自訂回呼」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
-  },
-  "blockSideBySide": {
-    "pluginName": "並排顯示活動區塊"
   },
   "redirectLocalRootUrl": {
     "pluginName": "重新導向本地資源根目錄",

@@ -22,6 +22,9 @@ class FenceEnhancePlugin extends BasePlugin {
         if (this.config.PRELOAD_ALL_FENCES) {
             this.preloadAllFences()
         }
+        if (this.config.SIDE_BY_SIDE_VIEW) {
+            sideBySideView(this)
+        }
         if (this.config.HIGHLIGHT_BY_LANGUAGE) {
             new HighlightHelper(this).process()
         }
@@ -34,7 +37,7 @@ class FenceEnhancePlugin extends BasePlugin {
         const registerCustomButtons = () => {
             const evalFn = fnString => {
                 const fn = this.utils.safeEval(fnString)
-                if (!(fn instanceof Function)) {
+                if (typeof fn !== "function") {
                     throw Error(`custom button param is not function: ${fnString}`)
                 }
                 return fn
@@ -403,6 +406,13 @@ class FenceEnhancePlugin extends BasePlugin {
     }
 }
 
+// credit: https://github.com/gruvw/typora-side-by-side
+const sideBySideView = ({ utils }) => {
+    const id = "plugin-fence-enhance-side-by-side-style"
+    const href = "./plugin/fence_enhance/resource/side-by-side-view.css"
+    utils.insertStyleFile(id, href)
+}
+
 // doc: https://codemirror.net/5/doc/manual.html
 class EditorHotkeyHelper {
     constructor(plugin) {
@@ -434,7 +444,7 @@ class EditorHotkeyHelper {
         this.config.CUSTOM_HOTKEYS.forEach(({ DISABLE, HOTKEY, CALLBACK }) => {
             if (DISABLE || !HOTKEY || !CALLBACK) return
             const fn = this.utils.safeEval(CALLBACK)
-            if (!(fn instanceof Function)) {
+            if (typeof fn !== "function") {
                 throw Error(`CALLBACK param is not function: ${CALLBACK}`)
             }
             hotkeys[HOTKEY] = () => fn(this.getFocusedFence())

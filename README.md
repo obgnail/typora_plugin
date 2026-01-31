@@ -68,17 +68,16 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 49   | easy_modify             | Editing tools                                                |                    |
 | 50   | editor_width_slider     | Adjust writing area width                                    |                    |
 | 51   | redirectLocalRootUrl    | Redirect local resource root directory                       | ×                  |
-| 52   | blockSideBySide         | Display active blocks side by side                           | ×                  |
-| 53   | scrollBookmarker        | Bookmark manager                                             | ×                  |
-| 54   | cipher                  | Encrypt files                                                | ×                  |
-| 55   | ripgrep                 | Search files using ripgrep                                   | ×                  |
-| 56   | article_uploader        | One-click upload blog to supported platforms                 | ×                  |
-| 57   | cursor_history          | Cursor History                                               | ×                  |
-| 58   | static_markers          | Static Markers                                               | ×                  |
-| 59   | custom                  | Open platform for user-defined plugins (advanced)            |                    |
-| 60   | hotkeys                 | Hotkey registration center (advanced)                        |                    |
-| 61   | quickButton             | Add function buttons in the lower right corner (advanced)    |                    |
-| 62   | json_rpc                | External control of Typora (advanced)                        | ×                  |
+| 52   | scrollBookmarker        | Bookmark manager                                             | ×                  |
+| 53   | cipher                  | Encrypt files                                                | ×                  |
+| 54   | ripgrep                 | Search files using ripgrep                                   | ×                  |
+| 55   | article_uploader        | One-click upload blog to supported platforms                 | ×                  |
+| 56   | cursor_history          | Cursor History                                               | ×                  |
+| 57   | static_markers          | Static Markers                                               | ×                  |
+| 58   | custom                  | Open platform for user-defined plugins (advanced)            |                    |
+| 59   | hotkeys                 | Hotkey registration center (advanced)                        |                    |
+| 60   | quickButton             | Add function buttons in the lower right corner (advanced)    |                    |
+| 61   | json_rpc                | External control of Typora (advanced)                        | ×                  |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
@@ -571,14 +570,6 @@ Function: If you mainly use Obsidian or Joplin to manage files and occasionally 
 > This plugin is disabled by default and needs to be manually enabled.
 
 
-
-### blockSideBySide: Display Active Blocks Side by Side
-
-Function: The active block is displayed vertically by default, changed to side by side.
-
-![blockSideBySide](./assets/blockSideBySide.png)
-
-> Note: This function is achieved by injecting CSS, which may conflict with the theme you are using.
 
 ### scrollBookmarker: Bookmark Manager
 

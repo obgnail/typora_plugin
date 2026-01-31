@@ -11,7 +11,7 @@ class Migrate {
         const files = [
             "fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode",
             "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander", "resourceOperation",
-            "reopenClosedFiles", "sortableOutline", "__modal_example",
+            "reopenClosedFiles", "sortableOutline", "blockSideBySide", "__modal_example",
         ]
         const toDir = name => this.utils.joinPath("./plugin/custom/plugins", name)
         const toFile = name => this.utils.joinPath("./plugin/custom/plugins", `${name}.js`)

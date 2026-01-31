@@ -739,6 +739,7 @@
     "$label.HIGHLIGHT_PATTERN": "Line Highlight Pattern",
     "$label.ENABLE_LANGUAGE_FOLD": "Foldable Code",
     "$label.INDENTED_WRAPPED_LINE": "Auto-align Indent",
+    "$label.SIDE_BY_SIDE_VIEW": "Side-by-Side View",
     "$label.PRELOAD_ALL_FENCES": "Load All Fences in Advance",
     "$label.HIGHLIGHT_WHEN_HOVER": "Highlight on Hover",
     "$label.HIGHLIGHT_LINE_COLOR": "Highlight Line Background Color",
@@ -748,8 +749,9 @@
     "$title.lineHighlighting": "Line Highlighting",
     "$tooltip.viewCodeMirrorKeymapsManual": "Hotkeys in CodeMirror style",
     "$tooltip.viewVitePressLineHighlighting": "Line Highlighting Grammar",
-    "$tooltip.viewCodeFoldingDemo": "View Demo",
-    "$tooltip.viewIndentedWrappedLineDemo": "View Demo",
+    "$tooltip.viewSideBySideEffect": "View Effect",
+    "$tooltip.viewCodeFoldingEffect": "View Effect",
+    "$tooltip.viewIndentedWrappedLineEffect": "View Effect",
     "$tooltip.dangerous": "High resource consumption may cause Typora to lag for a long time"
   },
   "collapse_paragraph": {
@@ -1668,9 +1670,6 @@
     "$tooltip.coord1": "Increments in the leftward direction",
     "$tooltip.exclusive": "Mutually exclusive with the option 'Custom Callback'",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
-  },
-  "blockSideBySide": {
-    "pluginName": "Block Side By Side"
   },
   "redirectLocalRootUrl": {
     "pluginName": "Redirect Local Root Url",

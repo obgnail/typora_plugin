@@ -68,17 +68,16 @@
 | 49   | easy_modify             | 编辑工具                                   |          |
 | 50   | editor_width_slider     | 写作区宽度调整                             |          |
 | 51   | redirectLocalRootUrl    | 重定向本地资源根目录                       | ×        |
-| 52   | blockSideBySide         | 并列显示活动块                             | ×        |
-| 53   | scrollBookmarker        | 书签管理器                                 | ×        |
-| 54   | cipher                  | 加密文件                                   | ×        |
-| 55   | ripgrep                 | 使用 ripgrep 搜索文件                      | ×        |
-| 56   | article_uploader        | 一键上传博客到支持的所有平台               | ×        |
-| 57   | cursor_history          | 光标跳转                                   | ×        |
-| 58   | static_markers          | Markdown 标记常显                          | ×        |
-| 59   | custom                  | 开放平台，用户自定义插件（高级）           |          |
-| 60   | hotkeys                 | 快捷键注册中心（高级）                     |          |
-| 61   | quickButton             | 于右下角添加功能按钮（高级）               |          |
-| 62   | json_rpc                | 外部操纵 Typora（高级）                    | ×        |
+| 52   | scrollBookmarker        | 书签管理器                                 | ×        |
+| 53   | cipher                  | 加密文件                                   | ×        |
+| 54   | ripgrep                 | 使用 ripgrep 搜索文件                      | ×        |
+| 55   | article_uploader        | 一键上传博客到支持的所有平台               | ×        |
+| 56   | cursor_history          | 光标跳转                                   | ×        |
+| 57   | static_markers          | Markdown 标记常显                          | ×        |
+| 58   | custom                  | 开放平台，用户自定义插件（高级）           |          |
+| 59   | hotkeys                 | 快捷键注册中心（高级）                     |          |
+| 60   | quickButton             | 于右下角添加功能按钮（高级）               |          |
+| 61   | json_rpc                | 外部操纵 Typora（高级）                    | ×        |
 
 > 如果有需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果觉得本项目对您有帮助，请不吝点亮一个 Star ⭐！
 
@@ -651,16 +650,6 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 功能：如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中，这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
 
 > 此插件默认关闭，需手动开启。
-
-
-
-### blockSideBySide：并列显示活动块
-
-功能：活动块默认是上下显示，改为并列显示。
-
-![blockSideBySide](./assets/blockSideBySide.png)
-
-> 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突。
 
 
 

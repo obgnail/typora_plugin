@@ -1548,6 +1548,12 @@ INDENTED_WRAPPED_LINE = false
 #   false: 延迟并按需加载代码块
 PRELOAD_ALL_FENCES = false
 
+# 并列显示活动块
+# 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突
+#   true:  并列显示活动块
+#   false: 竖向显示活动块
+SIDE_BY_SIDE_VIEW = false
+
 
 ################### collapse_paragraph ###################
 [collapse_paragraph]
