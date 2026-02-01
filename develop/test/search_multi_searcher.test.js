@@ -1,18 +1,9 @@
 const { test, describe, before } = require("node:test")
 const assert = require("node:assert")
-const proxyquire = require("proxyquire")
 const Searcher = require("../../plugin/search_multi/searcher.js")
 
-// --- Global Environment Setup ---
-Object.assign(global, {
-    window: { _options: { appVersion: "1.0.0" } },
-    document: { querySelector: () => undefined, querySelectorAll: () => [] },
-    CSS: { supports: () => true },
-    File: { option: { wordsPerMinute: 300 } },
-    $: () => ({}),
-})
 const mockPlugin = {
-    utils: proxyquire("../../plugin/global/core/utils", { "fs-extra": { "@noCallThru": true } }),
+    utils: require("./mocks/utils.mock.js"),
     config: { CASE_SENSITIVE: false },
     i18n: { t: (key) => key, link: (arr) => arr.join(" "), },
 }

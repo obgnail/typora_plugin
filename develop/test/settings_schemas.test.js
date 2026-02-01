@@ -275,3 +275,50 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
         )
     })
 })
+
+test("Action Consistency Check: Defined vs Used", t => {
+    const mockPlugin = {
+        utils: require("./mocks/utils.mock.js"),
+        i18n: require("./mocks/i18n.mock.js"),
+    }
+
+    const actionsMap = require("../../plugin/preferences/actions.js")(mockPlugin)
+    const definedActions = new Set(Object.keys(actionsMap))
+    const ignoredActions = new Set(["invokeMarkdownLintSettings", "togglePreferencePanel"])
+    const usedActions = new Set()
+
+    const collectFromTooltip = (tooltip) => {
+        if (!tooltip) return
+        if (Array.isArray(tooltip)) {
+            tooltip.forEach(collectFromTooltip)
+        } else if (typeof tooltip === "object" && tooltip.action) {
+            usedActions.add(tooltip.action)
+        }
+    }
+
+    Object.values(schemas).forEach(boxes => {
+        boxes.forEach(box => {
+            collectFromTooltip(box.tooltip)
+            box.fields.forEach(field => {
+                const { type, key, tooltip } = field
+                collectFromTooltip(tooltip)
+                if (type === "action") {
+                    usedActions.add(key)
+                }
+            })
+        })
+    })
+
+    const undefinedUsage = [...usedActions].filter(key => !ignoredActions.has(key) && !definedActions.has(key))
+    const unusedDefinitions = [...definedActions].filter(key => !ignoredActions.has(key) && !usedActions.has(key))
+    assert.deepStrictEqual(
+        undefinedUsage,
+        [],
+        `[Action Error] Found actions used in 'schemas.js' but NOT defined in 'actions.js':`
+    )
+    assert.deepStrictEqual(
+        unusedDefinitions,
+        [],
+        `[Action Error] Found actions defined in 'actions.js' but NEVER used in 'schemas.js' (Dead code):`
+    )
+})
