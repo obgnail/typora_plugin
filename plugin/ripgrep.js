@@ -38,7 +38,7 @@ class RipgrepPlugin extends BasePlugin {
 
     call = () => {
         const { modal, input } = this.entities;
-        if (this.utils.isShow(modal)) {
+        if (this.utils.isShown(modal)) {
             this.utils.hide(modal);
         } else {
             const widthRatio = this.config.WIDTH_PERCENT / 100;

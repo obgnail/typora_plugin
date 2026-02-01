@@ -111,8 +111,7 @@ class PreferencesPlugin extends BasePlugin {
     }
 
     call = async () => {
-        const isShow = this.utils.isShow(this.entities.dialog)
-        if (isShow) {
+        if (this.utils.isShown(this.entities.dialog)) {
             this.entities.searchInput.value = ""
             this.utils.hide(this.entities.dialog)
             if (this._hasDialogChanged()) {

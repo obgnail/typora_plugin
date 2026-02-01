@@ -36,7 +36,7 @@ class TOCPlugin extends BaseCustomPlugin {
         const onEvent = () => {
             const { eventHub } = this.utils
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.refreshModal())
-            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.hideModal())
+            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShown() && this.hideModal())
             eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.refreshModal, 300))
             this.utils.decorate(() => File?.editor?.library?.outline, "highlightVisibleHeader", null, this._highlightVisibleHeader)
             const resetPosition = () => {
@@ -198,7 +198,7 @@ class TOCPlugin extends BaseCustomPlugin {
 
     callback = anchorNode => this.toggleModal()
 
-    isModalShow = () => this.utils.isShow(this.entities.modal)
+    isModalShown = () => this.utils.isShown(this.entities.modal)
 
     hideModal = () => {
         const { modal, content } = this.entities;
@@ -219,9 +219,9 @@ class TOCPlugin extends BaseCustomPlugin {
         if (forceRefresh) this.refreshModal()
     }
 
-    toggleModal = () => this.isModalShow() ? this.hideModal() : this.showModal()
+    toggleModal = () => this.isModalShown() ? this.hideModal() : this.showModal()
 
-    refreshModal = type => this.isModalShow() && this._refreshModal(type)
+    refreshModal = type => this.isModalShown() && this._refreshModal(type)
 
     _refreshModal = (type = this._getCurrentType()) => {
         this._activeIcon(type)
@@ -239,7 +239,7 @@ class TOCPlugin extends BaseCustomPlugin {
     _activeIcon = type => this.entities.header.children.forEach(el => el.classList.toggle("select", el.dataset.type === type))
 
     _highlightVisibleHeader = (_, $header, targetIdx) => {
-        if (!this.isModalShow() || this._getCurrentType() !== "header") return
+        if (!this.isModalShown() || this._getCurrentType() !== "header") return
 
         const headers = $header || this.utils.entities.$eWrite.children(File.editor.library.outline.headerStr)
         if (!headers.length) return;
@@ -275,7 +275,7 @@ class TOCPlugin extends BaseCustomPlugin {
         if (activeIndex >= headers.length) return;
 
         const targetCid = headers[activeIndex].getAttribute("cid");
-        this.entities.list.querySelectorAll(".toc-node.active").forEach(ele => ele.classList.remove("active"));
+        this.entities.list.querySelectorAll(".toc-node.active").forEach(el => el.classList.remove("active"))
         const targetNode = this.entities.list.querySelector(`.toc-node[data-ref=${targetCid}]`);
         if (!targetNode) return;
 

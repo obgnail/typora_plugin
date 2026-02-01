@@ -170,13 +170,12 @@ class EasyModifyPlugin extends BasePlugin {
             return false
         }
 
-        const fields = [
-            { key: "filename", type: "text", label: this.i18n.t("act.extract_rang_to_new_file.filename"), placeholder: this.i18n.t("act.extract_rang_to_new_file.filenameHint") },
-            { key: "autoOpen", type: "switch", label: this.i18n.t("act.extract_rang_to_new_file.autoOpenFile") },
-        ]
         const op = {
-            title: this.i18n.t("act.extract_rang_to_new_file"),
-            schema: [{ title: undefined, fields }],
+            title: this.i18n.t("$label.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE"),
+            schema: ({ Group, Controls }) => Group(
+                Controls.Text("filename").Label(this.i18n.t("act.extract_rang_to_new_file.filename")).Placeholder(this.i18n.t("act.extract_rang_to_new_file.filenameHint")),
+                Controls.Switch("autoOpen").Label(this.i18n.t("act.extract_rang_to_new_file.autoOpenFile")),
+            ),
             data: { filename: "", autoOpen: true },
         }
         const { response, data } = await this.utils.formDialog.modal(op)

@@ -77,56 +77,56 @@ class TemplateHelper {
     }
 
     _getTemplateVars = () => {
-        const map = {};
+        const map = {}
         this.config.template_variables.forEach(({ enable, name, callback }) => {
-            if (!enable) return;
-            const func = eval(callback);
-            if (func instanceof Function) {
-                map[name] = func;
+            if (!enable) return
+            const func = eval(callback)
+            if (typeof func === "function") {
+                map[name] = func
             }
-        });
+        })
         Object.entries(this).forEach(([key, value]) => {
-            if (!key.startsWith("_") && value instanceof Function) {
-                map[key] = value;
+            if (!key.startsWith("_") && typeof value === "function") {
+                map[key] = value
             }
-        });
+        })
         return map
     }
     _convert = text => {
-        const context = this._getTemplateVars();
-        const parentheses = `\\((.*?)\\)`;
-        const LBrace = `\\{\\{`;
-        const RBrace = `\\}\\}`;
-        const space = `\\s`;
+        const context = this._getTemplateVars()
+        const parentheses = `\\((.*?)\\)`
+        const LBrace = `\\{\\{`
+        const RBrace = `\\}\\}`
+        const space = `\\s`
         for (const [symbol, func] of Object.entries(context)) {
-            const regExp = `${LBrace}${space}*${symbol}(${parentheses})?${space}*${RBrace}`;
+            const regExp = `${LBrace}${space}*${symbol}(${parentheses})?${space}*${RBrace}`
             text = text.replace(new RegExp(regExp, "g"), (origin, _, templateArgs) => {
-                const args = !templateArgs ? [] : eval(`[${templateArgs}]`);
-                return func.apply(this, args);
-            });
+                const args = !templateArgs ? [] : eval(`[${templateArgs}]`)
+                return func.apply(this, args)
+            })
         }
         return text
     }
 
-    uuid = () => this.utils.getUUID();
-    randomInt = (floor, ceil) => this.utils.randomInt(floor, ceil);
-    randomStr = len => this.utils.randomString(len);
-    title = () => this._title;
-    folder = () => this.utils.getCurrentDirPath();
-    mountFolder = () => this.utils.getMountFolder();
-    filepath = () => this.utils.Package.Path.join(this.folder(), this.title());
+    uuid = () => this.utils.getUUID()
+    randomInt = (floor, ceil) => this.utils.randomInt(floor, ceil)
+    randomStr = len => this.utils.randomString(len)
+    title = () => this._title
+    folder = () => this.utils.getCurrentDirPath()
+    mountFolder = () => this.utils.getMountFolder()
+    filepath = () => this.utils.Package.Path.join(this.folder(), this.title())
     formatDate = (format, locale) => this.utils.dateTimeFormat(this._date, format, locale)
     timestamp = () => this._date.getTime()
-    datetime = locale => this.formatDate("yyyy-MM-dd HH:mm:ss", locale);
-    date = locale => this.formatDate("yyyy-MM-dd", locale);
-    time = locale => this.formatDate("HH:mm:ss", locale);
-    weekday = locale => this.formatDate("ddd", locale);
+    datetime = locale => this.formatDate("yyyy-MM-dd HH:mm:ss", locale)
+    date = locale => this.formatDate("yyyy-MM-dd", locale)
+    time = locale => this.formatDate("HH:mm:ss", locale)
+    weekday = locale => this.formatDate("ddd", locale)
     dateOffset = (offset = 0, format = "yyyy-MM-dd", locale) => {
         const timestamp = this.timestamp() + parseInt(offset) * (24 * 60 * 60 * 1000)
         return this.utils.dateTimeFormat(new Date(timestamp), format, locale)
     }
-    yesterday = (format, locale) => this.dateOffset(-1, format, locale);
-    tomorrow = (format, locale) => this.dateOffset(1, format, locale);
+    yesterday = (format, locale) => this.dateOffset(-1, format, locale)
+    tomorrow = (format, locale) => this.dateOffset(1, format, locale)
 }
 
 module.exports = {

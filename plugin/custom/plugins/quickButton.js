@@ -49,7 +49,7 @@ class QuickButtonPlugin extends BaseCustomPlugin {
             const cb = evil
                 ? eval(evil)
                 : this.utils.getPluginFunction(...callback.split("."))
-            if (cb instanceof Function && x >= 0 && y >= 0) {
+            if (typeof cb === "function" && x >= 0 && y >= 0) {
                 const action = `__${idx}`
                 const btn = { x, y, action, hint, icon, size, color, bgColor, callback: cb }
                 this.buttons.set(action, btn)

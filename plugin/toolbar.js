@@ -64,10 +64,10 @@ class ToolbarPlugin extends BasePlugin {
 
     call = () => {
         setTimeout(async () => {
-            if (this.utils.isShow(this.entities.toolbar)) {
-                this.hide();
+            if (this.utils.isShown(this.entities.toolbar)) {
+                this.hide()
             } else {
-                await this.show();
+                await this.show()
             }
         })
     }

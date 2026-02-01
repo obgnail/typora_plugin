@@ -92,7 +92,7 @@ class TOCMarkmap {
             eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, repositioning)
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this.close())
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => {
-                if (!this.utils.isShow(modal)) return
+                if (!this.utils.isShown(modal)) return
                 this.draw()
                 if (this.config.AUTO_FIT_WHEN_UPDATE) {
                     this.fit()
@@ -266,7 +266,7 @@ class TOCMarkmap {
     }
 
     callback = async () => {
-        if (this.utils.isShow(this.entities.modal)) {
+        if (this.utils.isShown(this.entities.modal)) {
             this.close()
         } else {
             await this.plugin.lazyLoad()
@@ -478,9 +478,8 @@ class TOCMarkmap {
                 folder = this.utils.tempFolder
             }
             const tpl = {
-                uuid: this.utils.getUUID(),
-                random: this.utils.randomString(),
                 timestamp: Date.now(),
+                random: this.utils.randomString(),
                 filename: this.utils.getFileName() || "MARKMAP",
             }
             const name = file.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)

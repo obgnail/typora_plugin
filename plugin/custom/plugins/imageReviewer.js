@@ -137,30 +137,30 @@ class ImageReviewerPlugin extends BaseCustomPlugin {
             this.entities.mask.addEventListener("click", this.callback)
         }
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close())
-        this.entities.reviewer.querySelectorAll(".review-item").forEach(ele => {
-            ele.addEventListener("click", ev => {
+        this.entities.reviewer.querySelectorAll(".review-item").forEach(el => {
+            el.addEventListener("click", ev => {
                 const act = ev.target.closest(".review-item").getAttribute("action")
                 this[act]?.()
             })
         })
         this.entities.reviewer.addEventListener("wheel", ev => {
-            if (this.utils.isShow(this.entities.waterFall)) return
+            if (this.utils.isShown(this.entities.waterFall)) return
             ev.preventDefault()
             const list = this.getFuncList(ev, "wheel")
             const func = list[ev.deltaY > 0 ? 1 : 0]
-            if (func instanceof Function) func()
+            if (typeof func === "function") func()
         }, { passive: false })
         this.entities.image.addEventListener("mousedown", ev => {
             const list = this.getFuncList(ev, "mousedown")
             const func = list[ev.button]
-            if (func instanceof Function) func()
+            if (typeof func === "function") func()
         })
         this.entities.ops.addEventListener("click", ev => {
             const target = ev.target.closest("[option]")
             if (!target) return
             const option = target.getAttribute("option")
             const arg = option.indexOf("rotate") !== -1 ? 90 : undefined
-            if (this[option] instanceof Function) this[option](arg)
+            if (typeof this[option] === "function") this[option](arg)
         })
         this.entities.nav.addEventListener("click", ev => {
             const target = ev.target.closest(".review-thumbnail")
@@ -189,7 +189,7 @@ class ImageReviewerPlugin extends BaseCustomPlugin {
         else if (this.utils.altKeyPressed(ev)) arg.push("alt")
         arg.push(method, "function")
         const config = this.config[arg.join("_")]
-        return config.map(ele => this[ele])
+        return config.map(el => this[el])
     }
 
     replaceImageTransform = (regex, func, moveCenter = true) => {

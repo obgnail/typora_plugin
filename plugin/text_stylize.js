@@ -282,8 +282,8 @@ class StyleSetter {
 
         const { range, node, bookmark } = this.utils.getRangy();
         if (!node) return;
-        const ele = File.editor.findElemById(node.cid);
-        const line = ele.rawText();
+        const el = File.editor.findElemById(node.cid)
+        const line = el.rawText()
 
         const beforeText = line.substring(0, bookmark.start);
         let innerText = line.substring(bookmark.start, bookmark.end);
@@ -374,7 +374,7 @@ class StyleSetter {
                 Object.keys(deleteMap).forEach(key => delete styleMap[key]);
             }
         }
-        if (hook instanceof Function) {
+        if (typeof hook === "function") {
             hook(styleMap);
         }
         if (rememberFormat) {
@@ -500,8 +500,8 @@ class StyleSetter {
         for (const range of ranges) {
             const startTEXT = range.startContainer;
             const endTEXT = range.endContainer;
-            const ele = startTEXT.parentElement;
-            const target = ele.closest("[cid]");
+            const el = startTEXT.parentElement
+            const target = el.closest("[cid]")
             const TEXTs = this.getAllTEXT(target);
 
             for (let i = 0; i < TEXTs.length; i++) {
@@ -574,7 +574,7 @@ class StyleSetter {
         }
 
         let filterEmptyText = nodeList.filter((node, idx) => !(isText(node) && isSoftBreakElement(nodeList[idx - 1])));
-        const selectLines = splitArray(filterEmptyText, isBreakElement).map(line => line.filter(isText)).filter(ele => ele.length);
+        const selectLines = splitArray(filterEmptyText, isBreakElement).map(line => line.filter(isText)).filter(el => el.length)
 
         const startLineTexts = selectLines.shift();
         const endLineTexts = selectLines.pop() || startLineTexts;

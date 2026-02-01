@@ -74,17 +74,17 @@ class utils {
     static hasOverrideCustomPluginFn = (plugin, fn) => plugin[fn] !== global.BaseCustomPlugin.prototype[fn]
 
     static isUnderMountFolder = path => {
-        const mountFolder = PATH.resolve(this.getMountFolder());
-        const _path = PATH.resolve(path);
-        return _path && mountFolder && _path.startsWith(mountFolder);
+        const mountFolder = PATH.resolve(this.getMountFolder())
+        const _path = PATH.resolve(path)
+        return _path && mountFolder && _path.startsWith(mountFolder)
     }
     static openFile = filepath => {
         if (!this.getMountFolder() || this.isUnderMountFolder(filepath)) {
-            File.editor.restoreLastCursor();
-            File.editor.focusAndRestorePos();
-            File.editor.library.openFile(filepath);
+            File.editor.restoreLastCursor()
+            File.editor.focusAndRestorePos()
+            File.editor.library.openFile(filepath)
         } else {
-            File.editor.library.openFileInNewWindow(filepath, false);
+            File.editor.library.openFileInNewWindow(filepath, false)
         }
     }
     static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true)
@@ -95,9 +95,9 @@ class utils {
     }
 
     static showHiddenElementByPlugin = target => {
-        if (!target) return;
-        const plugins = ["collapse_paragraph", "collapse_table", "collapse_list", "truncate_text"];
-        plugins.forEach(plu => this.callPluginFunction(plu, "rollback", target));
+        if (!target) return
+        const plugins = ["collapse_paragraph", "collapse_table", "collapse_list", "truncate_text"]
+        plugins.forEach(plu => this.callPluginFunction(plu, "rollback", target))
     }
 
     static getAnchorNode = (closest) => {
@@ -107,7 +107,7 @@ class utils {
 
     static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
         const plugin = this.getBasePlugin(fixedName)
-        if (plugin && plugin.getDynamicActions instanceof Function) {
+        if (plugin && typeof plugin.getDynamicActions === "function") {
             anchorNode = anchorNode || this.getAnchorNode()
             const anchor = anchorNode[0]
             if (anchor) {
@@ -118,7 +118,7 @@ class utils {
     }
     static callPluginDynamicAction = (fixedName, action) => {
         const plugin = this.getBasePlugin(fixedName)
-        if (plugin?.hasOwnProperty("call") && plugin.call instanceof Function) {
+        if (plugin?.hasOwnProperty("call") && typeof plugin.call === "function") {
             plugin.call(action, this._meta)
         }
     }
@@ -135,9 +135,9 @@ class utils {
     static openPath = (path) => reqnode("electron").shell.openPath(path)
 
     static downloadImage = async (src, folder, filename) => {
-        folder = folder || this.tempFolder;
+        folder = folder || this.tempFolder
         filename = filename || (this.randomString() + "_" + PATH.extname(src))
-        const { state } = await JSBridge.invoke("app.download", src, folder, filename);
+        const { state } = await JSBridge.invoke("app.download", src, folder, filename)
         return { ok: state === "completed", filepath: PATH.join(folder, filename) }
     }
 
@@ -158,10 +158,10 @@ class utils {
     static altKeyPressed = ev => ev.altKey
     static isIMEActivated = ev => ev.key === "Process"
     static modifierKey = keyString => {
-        const keys = keyString.toLowerCase().split("+").map(k => k.trim());
-        const ctrl = keys.indexOf("ctrl") !== -1;
-        const shift = keys.indexOf("shift") !== -1;
-        const alt = keys.indexOf("alt") !== -1;
+        const keys = keyString.toLowerCase().split("+").map(k => k.trim())
+        const ctrl = keys.indexOf("ctrl") !== -1
+        const shift = keys.indexOf("shift") !== -1
+        const alt = keys.indexOf("alt") !== -1
         return ev => this.metaKeyPressed(ev) === ctrl && this.shiftKeyPressed(ev) === shift && this.altKeyPressed(ev) === alt
     }
 
@@ -175,16 +175,16 @@ class utils {
 
     /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static throttle = (fn, delay) => {
-        let timer;
-        const isAsync = this.isAsyncFunction(fn);
+        let timer
+        const isAsync = this.isAsyncFunction(fn)
         return function (...args) {
-            if (timer) return;
+            if (timer) return
             const result = isAsync
                 ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
                 : fn(...args)
             timer = setTimeout(() => {
-                clearTimeout(timer);
-                timer = null;
+                clearTimeout(timer)
+                timer = null
             }, delay)
             return result
         }
@@ -192,16 +192,16 @@ class utils {
 
     /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static debounce = (fn, delay) => {
-        let timer;
-        const isAsync = this.isAsyncFunction(fn);
+        let timer
+        const isAsync = this.isAsyncFunction(fn)
         return function (...args) {
-            clearTimeout(timer);
+            clearTimeout(timer)
             if (isAsync) {
                 return new Promise(resolve => timer = setTimeout(() => resolve(fn(...args)), delay)).catch(e => Promise.reject(e))
             } else {
-                timer = setTimeout(() => fn(...args), delay);
+                timer = setTimeout(() => fn(...args), delay)
             }
-        };
+        }
     }
 
     /** @description param fn cannot be an ordinary function that returns promise-like objects */
@@ -384,13 +384,13 @@ class utils {
     }
 
     static chunk = (array, size = 10) => {
-        let index = 0;
-        let result = [];
+        let index = 0
+        let result = []
         while (index < array.length) {
-            result.push(array.slice(index, (index + size)));
-            index += size;
+            result.push(array.slice(index, (index + size)))
+            index += size
         }
-        return result;
+        return result
     }
 
     static zip = (...arrays) => {
@@ -535,31 +535,31 @@ class utils {
             throw Error("Called with a non-global RegExp argument")
         }
 
-        let match;
-        let lastIndex = 0;
-        const reg = new RegExp(regexp);  // To avoid modifying the RegExp.lastIndex property, copy a new object
-        const promises = [];
+        let match
+        let lastIndex = 0
+        const reg = new RegExp(regexp)  // To avoid modifying `RegExp.lastIndex`, copy a new object
+        const promises = []
         while (match = reg.exec(content)) {
-            const args = [...match, match.index, match.input];
-            promises.push(content.slice(lastIndex, match.index), replaceFunc(...args));
-            lastIndex = reg.lastIndex;
+            const args = [...match, match.index, match.input]
+            promises.push(content.slice(lastIndex, match.index), replaceFunc(...args))
+            lastIndex = reg.lastIndex
         }
-        promises.push(content.slice(lastIndex));
+        promises.push(content.slice(lastIndex))
         return Promise.all(promises).then(results => results.join(""))
     }
 
     static randomString = (len = 8) => Math.random().toString(36).substring(2, 2 + len).padEnd(len, "0")
     static randomInt = (min, max) => {
-        const ceil = Math.ceil(min);
-        const floor = Math.floor(max);
-        return Math.floor(Math.random() * (floor - ceil) + ceil);
+        const ceil = Math.ceil(min)
+        const floor = Math.floor(max)
+        return Math.floor(Math.random() * (floor - ceil) + ceil)
     }
     static getUUID = () => {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
             const r = (Math.random() * 16) | 0
-            const v = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
+            const v = c === "x" ? r : (r & 0x3) | 0x8
+            return v.toString(16)
+        })
     }
 
     static dateTimeFormat = (date = new Date(), format = "yyyy-MM-dd HH:mm:ss", locale = undefined) => {
@@ -686,7 +686,7 @@ class utils {
             try {
                 const filepath = this.getFilePath()
                 const content = this.getCurrentFileContent()
-                const replaced = replacement instanceof Function
+                const replaced = typeof replacement === "function"
                     ? await replacement(content)
                     : replacement
                 if (replaced === content) return
@@ -705,24 +705,24 @@ class utils {
     }
 
     static fixScrollTop = async func => {
-        const inSourceMode = File.editor.sourceView.inSourceMode;
+        const inSourceMode = File.editor.sourceView.inSourceMode
         const scrollTop = inSourceMode
             ? File.editor.sourceView.cm.getScrollInfo().top
-            : document.querySelector("content").scrollTop;
-        await func();
+            : this.entities.eContent.scrollTop
+        await func()
         if (inSourceMode) {
-            File.editor.sourceView.cm.scrollTo(0, scrollTop);
+            File.editor.sourceView.cm.scrollTo(0, scrollTop)
         } else {
-            document.querySelector("content").scrollTop = scrollTop;
+            this.entities.eContent.scrollTop = scrollTop
         }
     }
 
     static insertStyle = (id, css) => {
         if (!css) return
-        const style = document.createElement("style");
-        style.id = id;
-        style.appendChild(document.createTextNode(css));
-        document.head.appendChild(style);
+        const style = document.createElement("style")
+        style.id = id
+        style.appendChild(document.createTextNode(css))
+        document.head.appendChild(style)
     }
     static insertStyleFile = (id, href) => {
         const link = document.createElement("link")
@@ -733,14 +733,14 @@ class utils {
         document.head.appendChild(link)
     }
     static registerStyle = (fixedName, style) => {
-        if (!style) return;
+        if (!style) return
         switch (typeof style) {
             case "string":
-                const name = fixedName.replace(/_/g, "-");
-                this.insertStyle(`plugin-${name}-style`, style);
+                const name = fixedName.replace(/_/g, "-")
+                this.insertStyle(`plugin-${name}-style`, style)
                 break
             case "object":
-                const { textID, text, fileID, file } = style;
+                const { textID, text, fileID, file } = style
                 if (fileID && file) {
                     this.insertStyleFile(fileID, file)
                 }
@@ -756,27 +756,27 @@ class utils {
 
     static newFilePath = async filename => {
         filename = filename || File.getFileName() || Date.now() + ".md"
-        const dirPath = this.getFilePath() ? this.getCurrentDirPath() : this.getMountFolder();
+        const dirPath = this.getFilePath() ? this.getCurrentDirPath() : this.getMountFolder()
         if (!dirPath) {
             alert(i18n.t("global", "error.onBlankPage"))
-            return;
+            return
         }
-        let filepath = PATH.resolve(dirPath, filename);
-        const exist = await this.existPath(filepath);
+        let filepath = PATH.resolve(dirPath, filename)
+        const exist = await this.existPath(filepath)
         if (exist) {
-            const ext = PATH.extname(filepath);
-            filepath = ext ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`) : filepath + "-copy.md";
+            const ext = PATH.extname(filepath)
+            filepath = ext ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`) : filepath + "-copy.md"
         }
         return filepath
     }
 
     static getFileName = (filePath, removeSuffix = true) => {
-        let fileName = filePath ? PATH.basename(filePath) : File.getFileName();
+        let fileName = filePath ? PATH.basename(filePath) : File.getFileName()
         if (fileName === undefined) return
         if (removeSuffix) {
-            const idx = fileName.lastIndexOf(".");
+            const idx = fileName.lastIndexOf(".")
             if (idx !== -1) {
-                fileName = fileName.substring(0, idx);
+                fileName = fileName.substring(0, idx)
             }
         }
         return fileName
@@ -1097,33 +1097,33 @@ class utils {
     }
 
     ////////////////////////////// DOM Operations //////////////////////////////
-    static removeElement = ele => ele?.parentElement?.removeChild(ele)
+    static removeElement = el => el?.parentElement?.removeChild(el)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
 
-    static isShow = ele => !ele.classList.contains("plugin-common-hidden");
-    static isHidden = ele => ele.classList.contains("plugin-common-hidden");
-    static hide = ele => ele.classList.add("plugin-common-hidden");
-    static show = ele => ele.classList.remove("plugin-common-hidden");
-    static toggleInvisible = (ele, hide) => ele.classList.toggle("plugin-common-hidden", hide)
+    static isShown = el => !el.classList.contains("plugin-common-hidden")
+    static isHidden = el => el.classList.contains("plugin-common-hidden")
+    static hide = el => el.classList.add("plugin-common-hidden")
+    static show = el => el.classList.remove("plugin-common-hidden")
+    static toggleInvisible = (el, hide) => el.classList.toggle("plugin-common-hidden", hide)
 
     static isImgEmbed = img => img.complete && img.naturalWidth !== 0 && img.naturalHeight !== 0
 
     static isInViewBox = el => {
-        const totalHeight = window.innerHeight || document.documentElement.clientHeight;
-        const totalWidth = window.innerWidth || document.documentElement.clientWidth;
-        const { top, right, bottom, left } = el.getBoundingClientRect();
-        return top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight;
+        const totalHeight = window.innerHeight || document.documentElement.clientHeight
+        const totalWidth = window.innerWidth || document.documentElement.clientWidth
+        const { top, right, bottom, left } = el.getBoundingClientRect()
+        return top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight
     }
 
     static compareScrollPosition = (element, contentScrollTop) => {
-        contentScrollTop = contentScrollTop || $("content").scrollTop();
-        const elementOffsetTop = element.offsetTop;
+        contentScrollTop = contentScrollTop || this.entities.eContent.scrollTop()
+        const elementOffsetTop = element.offsetTop
         if (elementOffsetTop < contentScrollTop) {
-            return -1;
+            return -1
         } else if (elementOffsetTop > contentScrollTop + window.innerHeight) {
-            return 1;
+            return 1
         } else {
-            return 0;
+            return 0
         }
     }
 
@@ -1157,17 +1157,17 @@ class utils {
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
         if (!$target) return
         if ($target instanceof Element) {
-            $target = $($target);
+            $target = $($target)
         }
-        File.editor.focusAndRestorePos();
+        File.editor.focusAndRestorePos()
         if (moveCursor) {
-            this.moveCursor($target);
+            this.moveCursor($target)
         }
         if (showHiddenElement) {
-            this.showHiddenElementByPlugin($target[0]);
+            this.showHiddenElementByPlugin($target[0])
         }
         if (height === -1) {
-            height = (window.innerHeight || document.documentElement.clientHeight) / 2;
+            height = (window.innerHeight || document.documentElement.clientHeight) / 2
         }
         if (File.isTypeWriterMode) {
             File.editor.selection.typeWriterScroll($target)
@@ -1185,41 +1185,41 @@ class utils {
     }
 
     static scrollSourceView = lineToGo => {
-        const cm = File.editor.sourceView.cm;
-        cm.scrollIntoView({ line: lineToGo - 1, ch: 0 });
-        cm.setCursor({ line: lineToGo - 1, ch: 0 });
+        const cm = File.editor.sourceView.cm
+        cm.scrollIntoView({ line: lineToGo - 1, ch: 0 })
+        cm.setCursor({ line: lineToGo - 1, ch: 0 })
     }
 
     // content: string type. \n represents a soft line break; \n\n represents a hard line break.
     static insertText = (anchorNode, content, restoreLastCursor = true) => {
         if (restoreLastCursor) {
-            File.editor.contextMenu.hide();
-            // File.editor.writingArea.focus();
-            File.editor.restoreLastCursor();
+            File.editor.contextMenu.hide()
+            // File.editor.writingArea.focus()
+            File.editor.restoreLastCursor()
         }
-        File.editor.insertText(content);
+        File.editor.insertText(content)
     }
 
     static createDocumentFragment = elements => {
-        if (!elements) return;
+        if (!elements) return
 
         if (typeof elements === "string") {
             const dom = new DOMParser().parseFromString(elements, "text/html")
             elements = [...dom.body.childNodes]
         }
-        let fragment = elements;
+        let fragment = elements
         if (Array.isArray(elements) || elements instanceof NodeList) {
-            fragment = document.createDocumentFragment();
-            fragment.append(...elements);
+            fragment = document.createDocumentFragment()
+            fragment.append(...elements)
         }
-        return fragment;
+        return fragment
     }
 
     static insertElement = elements => {
-        const fragment = this.createDocumentFragment(elements);
+        const fragment = this.createDocumentFragment(elements)
         if (fragment) {
-            const quickOpenNode = document.getElementById("typora-quick-open");
-            quickOpenNode.parentNode.insertBefore(fragment, quickOpenNode.nextSibling);
+            const quickOpenNode = document.getElementById("typora-quick-open")
+            quickOpenNode.parentNode.insertBefore(fragment, quickOpenNode.nextSibling)
         }
     }
 
@@ -1244,9 +1244,9 @@ class utils {
     }
 
     static getRangyText = () => {
-        const { node, bookmark } = this.getRangy();
-        const ele = File.editor.findElemById(node.cid);
-        return ele.rawText().substring(bookmark.start, bookmark.end);
+        const { node, bookmark } = this.getRangy()
+        const el = File.editor.findElemById(node.cid)
+        return el.rawText().substring(bookmark.start, bookmark.end)
     }
 
     static resizeElement = (

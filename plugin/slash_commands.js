@@ -170,7 +170,7 @@ class SlashCommandsPlugin extends BasePlugin {
 
     _evalFunction = (fnString, ...args) => {
         const ret = eval(fnString)
-        return ret instanceof Function ? (ret(...args) || "").toString() : fnString
+        return (typeof ret === "function") ? (ret(...args) || "").toString() : fnString
     }
 
     _clearAnchor = (anchor) => {

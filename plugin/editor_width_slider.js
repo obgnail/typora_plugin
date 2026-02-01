@@ -21,16 +21,14 @@ class EditorWidthSliderPlugin extends BasePlugin {
     }
 
     setWidth = async () => {
-        const field = {
-            width: { key: "width", type: "range", min: 30, max: 100, label: this.i18n.t("$label.WIDTH_RATIO") },
-            tmpAdjust: { key: "tmpAdjust", type: "switch", label: this.i18n.t("tmpAdjust") },
-            restore: { key: "restore", type: "action", label: this.i18n.t("restore") },
-        }
         const op = {
             title: this.pluginName,
-            schema: [
-                { fields: [field.width, field.tmpAdjust] },
-                { fields: [field.restore] },
+            schema: ({ Group, Controls }) => [
+                Group(
+                    Controls.Range("width").Label(this.i18n.t("$label.WIDTH_RATIO")).Min(30).Max(100),
+                    Controls.Switch("tmpAdjust").Label(this.i18n.t("tmpAdjust")),
+                ),
+                Group(Controls.Action("restore").Label(this.i18n.t("restore"))),
             ],
             data: {
                 width: this._getWidth(),

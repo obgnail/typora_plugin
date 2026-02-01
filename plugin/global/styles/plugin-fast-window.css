@@ -1,9 +1,3 @@
-@media (prefers-color-scheme: dark) {
-    :host {
-        filter: invert(.9) hue-rotate(.5turn);
-    }
-}
-
 :host {
     --window-resize: both;
     --window-min-width: 320px;
@@ -38,6 +32,12 @@
     z-index: 9999;
     resize: var(--window-resize);
     transition: box-shadow 0.3s ease-in-out, transform 0.1s ease-out;
+}
+
+@media (prefers-color-scheme: dark) {
+    :host {
+        filter: invert(.9) hue-rotate(.5turn);
+    }
 }
 
 @keyframes showWindow {

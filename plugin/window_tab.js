@@ -247,7 +247,7 @@ class WindowTabPlugin extends BasePlugin {
                 let lastOver = null;
                 $("#plugin-window-tab .tab-bar").on("dragstart", ".tab-container", function (ev) {
                     ev.originalEvent.dataTransfer.effectAllowed = "move";
-                    ev.originalEvent.dataTransfer.dropEffect = 'move';
+                    ev.originalEvent.dataTransfer.dropEffect = "move"
                     this.style.opacity = 0.5;
                     lastOver = null;
                 }).on("dragend", ".tab-container", function (ev) {
@@ -259,8 +259,8 @@ class WindowTabPlugin extends BasePlugin {
                         const activePath = that.tabUtil.getTabPathByIdx(activeIdx)
                         const toIdx = parseInt(lastOver.dataset.idx)
                         const fromIdx = parseInt(this.dataset.idx)
-                        const ele = that.tabUtil.spliceTabs(fromIdx, 1)[0]
-                        that.tabUtil.spliceTabs(toIdx, 0, ele)
+                        const tab = that.tabUtil.spliceTabs(fromIdx, 1)[0]
+                        that.tabUtil.spliceTabs(toIdx, 0, tab)
                         that.openTab(activePath)
                     }
                 }).on("dragover", ".tab-container", function () {
@@ -343,7 +343,7 @@ class WindowTabPlugin extends BasePlugin {
                 ev.preventDefault();
                 ev.stopPropagation();
                 const path = item.dataset.path;
-                const isDir = item.dataset.isDir + "" === "true";
+                const isDir = item.dataset.isDir === "true"
                 if (isDir) {
                     this.utils.openFolder(path);
                 } else {
@@ -362,8 +362,8 @@ class WindowTabPlugin extends BasePlugin {
             }, true)
             document.querySelector("#typora-quick-open-input > input").addEventListener("keydown", ev => {
                 if (ev.key === "Enter") {
-                    const ele = document.querySelector(".typora-quick-open-item.active");
-                    if (ele) openTab(ele, ev)
+                    const el = document.querySelector(".typora-quick-open-item.active")
+                    if (el) openTab(el, ev)
                 }
             }, true)
         }
@@ -460,9 +460,9 @@ class WindowTabPlugin extends BasePlugin {
     }
 
     _hideTabBar = () => {
-        if (this.utils.isShow(this.entities.windowTab) && this.tabUtil.tabCount === 0) {
-            this.utils.hide(this.entities.windowTab);
-            this._resetContentTop();
+        if (this.utils.isShown(this.entities.windowTab) && this.tabUtil.tabCount === 0) {
+            this.utils.hide(this.entities.windowTab)
+            this._resetContentTop()
         }
     }
 

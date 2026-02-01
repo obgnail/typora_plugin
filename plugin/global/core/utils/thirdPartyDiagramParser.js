@@ -3,11 +3,11 @@
  */
 class ThirdPartyDiagramParser {
     constructor(utils) {
-        this.utils = utils;
-        this.parsers = new Map();
-        this.defaultHeight = "230px";
-        this.defaultBackgroundColor = "#F8F8F8";
-        this.regexp = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/;
+        this.utils = utils
+        this.parsers = new Map()
+        this.defaultHeight = "230px"
+        this.defaultBackgroundColor = "#F8F8F8"
+        this.regexp = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/
     }
 
     /**
@@ -34,9 +34,9 @@ class ThirdPartyDiagramParser {
                     updateFunc, destroyFunc, beforeExportToNative, beforeExportToHTML, extraStyleGetter,
                     versionGetter,
                 }) => {
-        lang = lang.toLowerCase();
-        lazyLoadFunc = this.utils.once(lazyLoadFunc);
-        const settingMsg = null;
+        lang = lang.toLowerCase()
+        lazyLoadFunc = this.utils.once(lazyLoadFunc)
+        const settingMsg = null
         this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg,
             checkSelector, wrapElement, lazyLoadFunc, beforeRenderFunc, setStyleFunc,
@@ -50,8 +50,8 @@ class ThirdPartyDiagramParser {
     }
 
     unregister = lang => {
-        this.parsers.delete(lang);
-        this.utils.diagramParser.unregister(lang);
+        this.parsers.delete(lang)
+        this.utils.diagramParser.unregister(lang)
     }
 
     render = async (cid, content, $pre, lang) => {
@@ -61,10 +61,10 @@ class ThirdPartyDiagramParser {
         await parser.lazyLoadFunc()
         const $wrap = this.getWrap(parser, $pre)
         try {
-            const meta = parser.beforeRenderFunc instanceof Function
+            const meta = typeof parser.beforeRenderFunc === "function"
                 ? parser.beforeRenderFunc(cid, content, $pre)
                 : undefined
-            if (parser.setStyleFunc instanceof Function) {
+            if (typeof parser.setStyleFunc === "function") {
                 parser.setStyleFunc($pre, $wrap, content, meta)
             }
             let instance = this.createOrUpdate(parser, cid, content, $wrap, lang, meta)
@@ -83,15 +83,15 @@ class ThirdPartyDiagramParser {
     }
 
     createOrUpdate = (parser, cid, content, $wrap, lang, meta) => {
-        const oldInstance = parser.instanceMap.get(cid);
+        const oldInstance = parser.instanceMap.get(cid)
         if (oldInstance && parser.updateFunc) {
-            const newInstance = parser.updateFunc($wrap, content, oldInstance, meta);
+            const newInstance = parser.updateFunc($wrap, content, oldInstance, meta)
             return newInstance || oldInstance
         } else {
             if (oldInstance) {
                 this.cancel(cid, lang)
             }
-            return parser.createFunc($wrap, content, meta);
+            return parser.createFunc($wrap, content, meta)
         }
     }
 
@@ -113,7 +113,7 @@ class ThirdPartyDiagramParser {
     getWrap = (parser, $pre) => {
         let $wrap = $pre.find(parser.checkSelector)
         if ($wrap.length === 0) {
-            const wrap = parser.wrapElement instanceof Function
+            const wrap = typeof parser.wrapElement === "function"
                 ? parser.wrapElement($pre)
                 : parser.wrapElement
             $wrap = $(wrap)
@@ -123,12 +123,12 @@ class ThirdPartyDiagramParser {
     }
 
     cancel = (cid, lang) => {
-        const parser = this.parsers.get(lang);
-        if (!parser) return;
-        const instance = parser.instanceMap.get(cid);
-        if (!instance) return;
+        const parser = this.parsers.get(lang)
+        if (!parser) return
+        const instance = parser.instanceMap.get(cid)
+        if (!instance) return
         parser.destroyFunc?.(instance)
-        parser.instanceMap.delete(cid);
+        parser.instanceMap.delete(cid)
     }
 
     destroyAll = () => {
@@ -165,7 +165,7 @@ class ThirdPartyDiagramParser {
     STYLE_SETTER = css => {
         return ($pre, $wrap, content) => {
             const userSize = this.getFenceUserSize(content)
-            const defaultCss = css instanceof Function ? css($pre, $wrap, content) : css
+            const defaultCss = (typeof css === "function") ? css($pre, $wrap, content) : css
             this.applyFenceStyles($pre, $wrap, userSize, defaultCss)
         }
     }
