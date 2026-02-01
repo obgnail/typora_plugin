@@ -347,6 +347,7 @@ const Dep = {
 // MORE: See `Feature_InteractiveTooltip` in fast-form.js
 const Tip = {
     info: (text) => text,
+    custom: (icon, text) => ({ icon, text }),
     action: (action, icon, text) => ({ action, icon, text })
 }
 
@@ -1062,7 +1063,8 @@ const schema_fence_enhance = [
     ),
     TitledBox(
         "advanced",
-        Switch("SIDE_BY_SIDE_VIEW", { tooltip: Tip.action("viewSideBySideEffect", "fa fa-chain") }),
+        Switch("SIDE_BY_SIDE_VIEW", { tooltip: [Tip.info("stylisticConfusion"), Tip.action("viewSideBySideEffect", "fa fa-chain")] }),
+        Switch("VISIBLE_TABS", { tooltip: Tip.action("viewVisibleTabsEffect", "fa fa-chain") }),
         Switch("ENABLE_LANGUAGE_FOLD", { tooltip: Tip.action("viewCodeFoldingEffect", "fa fa-chain") }),
         Switch("INDENTED_WRAPPED_LINE", { tooltip: Tip.action("viewIndentedWrappedLineEffect", "fa fa-chain") }),
         Switch("PRELOAD_ALL_FENCES", { tooltip: "dangerous" }),

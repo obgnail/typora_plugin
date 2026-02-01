@@ -25,6 +25,9 @@ class FenceEnhancePlugin extends BasePlugin {
         if (this.config.SIDE_BY_SIDE_VIEW) {
             sideBySideView(this)
         }
+        if (this.config.VISIBLE_TABS) {
+            visibleTabs(this)
+        }
         if (this.config.HIGHLIGHT_BY_LANGUAGE) {
             new HighlightHelper(this).process()
         }
@@ -410,6 +413,13 @@ class FenceEnhancePlugin extends BasePlugin {
 const sideBySideView = ({ utils }) => {
     const id = "plugin-fence-enhance-side-by-side-style"
     const href = "./plugin/fence_enhance/resource/side-by-side-view.css"
+    utils.insertStyleFile(id, href)
+}
+
+// doc: https://codemirror.net/5/demo/visibletabs.html
+const visibleTabs = ({ utils }) => {
+    const id = "plugin-fence-enhance-visible-tabs-style"
+    const href = "./plugin/fence_enhance/resource/visible-tabs.css"
     utils.insertStyleFile(id, href)
 }
 

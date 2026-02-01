@@ -11,6 +11,7 @@ module.exports = (plugin) => {
         viewCodeMirrorKeymapsManual: () => utils.openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
         viewVitePressLineHighlighting: () => utils.openUrl("https://vitepress.dev/guide/markdown#line-highlighting-in-code-blocks"),
         viewAbcVisualOptionsHelp: () => utils.openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
+        viewVisibleTabsEffect: () => utils.openUrl("https://codemirror.net/5/demo/visibletabs.html"),
         viewCodeFoldingEffect: () => utils.openUrl("https://codemirror.net/5/demo/folding.html"),
         viewSideBySideEffect: () => utils.openUrl("https://github.com/obgnail/typora_plugin/blob/master/assets/sideBySideView.png"),
         viewIndentedWrappedLineEffect: () => utils.openUrl("https://codemirror.net/5/demo/indentwrap.html"),

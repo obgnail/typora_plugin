@@ -1554,6 +1554,11 @@ PRELOAD_ALL_FENCES = false
 #   false: 竖向显示活动块
 SIDE_BY_SIDE_VIEW = false
 
+# tab 字符可见
+#   true:  tab 字符可见
+#   false: tab 不字符可见
+VISIBLE_TABS = false
+
 
 ################### collapse_paragraph ###################
 [collapse_paragraph]
