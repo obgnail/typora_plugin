@@ -72,7 +72,9 @@ module.exports = {
         BUTTON_RIGHT: required,
         EXCLUDE_LANGUAGE_ON_INDENT: each(codingLang),
         HIGHLIGHT_PATTERN: [required, regex],
-        HIGHLIGHT_LINE_COLOR: required,
+        HIGHLIGHT_LINE_COLOR_BY_LANGUAGE: required,
+        HIGHLIGHT_LINE_COLOR_ON_HOVER: required,
+        HIGHLIGHT_LINE_COLOR_ON_FOCUS: required,
     },
     sidebar_enhance: {
         HIDDEN_NODE_PATTERNS: each([required, regex]),

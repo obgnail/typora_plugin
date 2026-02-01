@@ -1523,9 +1523,6 @@ ENABLE_LANGUAGE_FOLD = true
 # 举例：```js{2, 5-8, 10-12}``` 表示：高亮 js 代码块的第 2 行，第 5-8，10-12 行
 HIGHLIGHT_BY_LANGUAGE = false
 
-# 高亮鼠标悬停的代码行
-HIGHLIGHT_WHEN_HOVER = false
-
 # 行号基准
 #   1-based: 从 1 开始
 #   0-based: 从 0 开始
@@ -1534,8 +1531,20 @@ NUMBERING_BASE = "1-based"
 # 行高亮格式
 HIGHLIGHT_PATTERN = '^(?<lang>[^{}]+){(?<line>[\d\s,-]+)}$'
 
-# 高亮行的背景色
-HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
+# 通过代码块的语言设置高亮的高亮行的背景色
+HIGHLIGHT_LINE_COLOR_BY_LANGUAGE = "rgba(142, 150, 170, 0.14)"
+
+# 高亮鼠标悬停的代码行
+HIGHLIGHT_ON_HOVER = false
+
+# 鼠标悬停的高亮行的背景色
+HIGHLIGHT_LINE_COLOR_ON_HOVER = "rgba(142, 150, 170, 0.14)"
+
+# 高亮光标聚焦的代码行
+HIGHLIGHT_ON_FOCUS = false
+
+# 光标聚焦的高亮行的背景色
+HIGHLIGHT_LINE_COLOR_ON_FOCUS = "rgba(142, 150, 170, 0.14)"
 
 # ------------------- 其他功能 -------------------
 # 长文本的换行会保持相同的缩进（详见：https://github.com/codemirror/codemirror5/issues/2085）

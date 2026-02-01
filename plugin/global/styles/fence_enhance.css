@@ -27,10 +27,9 @@
     opacity: ${this.config.BUTTON_OPACITY_HOVER};
 }
 
-.CodeMirror-line:hover {
-    background-color: ${bgColorWhenHover};
+.plugin-fence-enhance-highlight {
+    background-color: ${this.config.HIGHLIGHT_LINE_COLOR_BY_LANGUAGE} !important;
 }
 
-.plugin-fence-enhance-highlight {
-    background-color: ${this.config.HIGHLIGHT_LINE_COLOR} !important;
-}
+${bgColorOnHover}
+${bgColorOnFocus}

@@ -347,8 +347,8 @@ const Dep = {
 // MORE: See `Feature_InteractiveTooltip` in fast-form.js
 const Tip = {
     info: (text) => text,
-    custom: (icon, text) => ({ icon, text }),
-    action: (action, icon, text) => ({ action, icon, text })
+    custom: (text, icon) => ({ text, icon }),
+    action: (action, icon = "fa fa-link", text = undefined) => ({ action, icon, text }),
 }
 
 /******** Common Props ********/
@@ -1028,7 +1028,7 @@ const schema_fence_enhance = [
     ),
     TitledBox(
         "buttonHotkeys",
-        Switch("ENABLE_HOTKEY", { tooltip: Tip.action("viewCodeMirrorKeymapsManual", "fa fa-chain") }),
+        Switch("ENABLE_HOTKEY", { tooltip: Tip.action("viewCodeMirrorKeymapsManual") }),
         Text("SWAP_PREVIOUS_LINE", dep_fenceEnhanceHotkey),
         Text("SWAP_NEXT_LINE", dep_fenceEnhanceHotkey),
         Text("COPY_PREVIOUS_LINE", dep_fenceEnhanceHotkey),
@@ -1055,18 +1055,23 @@ const schema_fence_enhance = [
     ),
     TitledBox(
         "lineHighlighting",
-        Switch("HIGHLIGHT_BY_LANGUAGE", { tooltip: Tip.action("viewVitePressLineHighlighting", "fa fa-chain") }),
-        Switch("HIGHLIGHT_WHEN_HOVER"),
+        Switch("HIGHLIGHT_BY_LANGUAGE", { tooltip: Tip.action("viewVitePressLineHighlighting") }),
         Select("NUMBERING_BASE", OPTIONS.fence_enhance.NUMBERING_BASE, { dependencies: Dep.true("HIGHLIGHT_BY_LANGUAGE") }),
         Text("HIGHLIGHT_PATTERN", { dependencies: Dep.follow("NUMBERING_BASE") }),
-        Text("HIGHLIGHT_LINE_COLOR", { dependencies: Dep.or(Dep.follow("NUMBERING_BASE"), Dep.true("HIGHLIGHT_WHEN_HOVER")) }),
+        Text("HIGHLIGHT_LINE_COLOR_BY_LANGUAGE", { dependencies: Dep.follow("NUMBERING_BASE") }),
+        Divider(),
+        Switch("HIGHLIGHT_ON_FOCUS", { tooltip: Tip.action("viewFocusLineHighlightingEffect") }),
+        Text("HIGHLIGHT_LINE_COLOR_ON_FOCUS", { dependencies: Dep.true("HIGHLIGHT_ON_FOCUS") }),
+        Divider(),
+        Switch("HIGHLIGHT_ON_HOVER"),
+        Text("HIGHLIGHT_LINE_COLOR_ON_HOVER", { dependencies: Dep.true("HIGHLIGHT_ON_HOVER") }),
     ),
     TitledBox(
         "advanced",
-        Switch("SIDE_BY_SIDE_VIEW", { tooltip: [Tip.info("stylisticConfusion"), Tip.action("viewSideBySideEffect", "fa fa-chain")] }),
-        Switch("VISIBLE_TABS", { tooltip: Tip.action("viewVisibleTabsEffect", "fa fa-chain") }),
-        Switch("ENABLE_LANGUAGE_FOLD", { tooltip: Tip.action("viewCodeFoldingEffect", "fa fa-chain") }),
-        Switch("INDENTED_WRAPPED_LINE", { tooltip: Tip.action("viewIndentedWrappedLineEffect", "fa fa-chain") }),
+        Switch("SIDE_BY_SIDE_VIEW", { tooltip: [Tip.info("stylisticConfusion"), Tip.action("viewSideBySideEffect")] }),
+        Switch("VISIBLE_TABS", { tooltip: Tip.action("viewVisibleTabsEffect") }),
+        Switch("ENABLE_LANGUAGE_FOLD", { tooltip: Tip.action("viewCodeFoldingEffect") }),
+        Switch("INDENTED_WRAPPED_LINE", { tooltip: Tip.action("viewIndentedWrappedLineEffect") }),
         Switch("PRELOAD_ALL_FENCES", { tooltip: "dangerous" }),
     ),
     box_settingHandler,
@@ -1616,7 +1621,7 @@ const schema_echarts = [
     CodeBox("TEMPLATE"),
     TitledBox(
         "advanced",
-        Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: Tip.action("chooseEchartsRenderer", "fa fa-link") }),
+        Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: Tip.action("chooseEchartsRenderer") }),
         Select("EXPORT_TYPE", OPTIONS.echarts.EXPORT_TYPE),
     ),
     box_settingHandler,
@@ -1657,7 +1662,7 @@ const schema_abc = [
     box_langMode,
     box_chartStyle,
     CodeBox("TEMPLATE"),
-    DictBox("VISUAL_OPTIONS", null, { tooltip: Tip.action("viewAbcVisualOptionsHelp", "fa fa-link") }),
+    DictBox("VISUAL_OPTIONS", null, { tooltip: Tip.action("viewAbcVisualOptionsManual") }),
     box_settingHandler,
 ]
 
@@ -1698,7 +1703,7 @@ const schema_plantUML = [
 const schema_marp = [
     box_customPluginLite,
     box_langMode,
-    DictBox("MARP_CORE_OPTIONS", null, { tooltip: Tip.action("viewMarpOptions", "fa fa-link") }),
+    DictBox("MARP_CORE_OPTIONS", null, { tooltip: Tip.action("viewMarpOptions") }),
     CodeBox("TEMPLATE"),
     box_settingHandler,
 ]
@@ -1946,7 +1951,7 @@ const schema_markdownLint = [
         Color("pass_color", { dependencies: Dep.true("use_button") }),
         Color("error_color", { dependencies: Dep.true("use_button") }),
     ),
-    DictBox("rule_config", null, { tooltip: Tip.action("viewMarkdownlintRules", "fa fa-link") }),
+    DictBox("rule_config", null, { tooltip: Tip.action("viewMarkdownlintRules") }),
     ArrayBox("custom_rule_files"),
     box_settingHandler,
 ]

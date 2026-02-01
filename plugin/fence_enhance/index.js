@@ -1,5 +1,8 @@
 class FenceEnhancePlugin extends BasePlugin {
-    styleTemplate = () => ({ bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial" })
+    styleTemplate = () => ({
+        bgColorOnHover: this.config.HIGHLIGHT_ON_HOVER ? `.CodeMirror-line:hover { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_HOVER}; }` : "",
+        bgColorOnFocus: this.config.HIGHLIGHT_ON_FOCUS ? `.md-focus .CodeMirror-activeline { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_FOCUS}; }` : "",
+    })
 
     init = () => {
         this.supportIndent = this.config.ENABLE_INDENT && File.editor.fences?.formatContent
