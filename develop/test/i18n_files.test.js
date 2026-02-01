@@ -1,27 +1,6 @@
 const test = require("node:test")
 const assert = require("node:assert")
-const path = require("node:path")
-const fs = require("node:fs")
-
-let i18nFiles
-
-test.before(() => {
-    const dir = path.resolve(__dirname, "../../plugin/global/locales")
-    i18nFiles = Object.fromEntries(
-        fs.readdirSync(dir, { withFileTypes: true, recursive: false })
-            .filter(file => file.isFile() && path.extname(file.name).toLowerCase() === ".json")
-            .map(file => {
-                const key = file.name.replace(/\.json$/, "")
-                const p = path.join(file.path, file.name)
-                const val = {
-                    name: key,
-                    path: p,
-                    obj: require(p),
-                }
-                return [key, val]
-            })
-    )
-})
+const I18N_FILES = require("./fixtures/i18n_files.js")
 
 function compareStructure(base, compare, paths, errors) {
     const pathStr = paths.length > 0 ? paths.join("->") : "(root)"
@@ -64,8 +43,8 @@ function compareStructure(base, compare, paths, errors) {
 }
 
 test("i18n locale file structure and key order", async (t) => {
-    const baseFile = i18nFiles["zh-CN"] || Object.values(i18nFiles)[0]
-    const filesToTest = Object.values(i18nFiles).filter(file => file.name !== baseFile.name)
+    const baseFile = I18N_FILES["zh-CN"] || Object.values(I18N_FILES)[0]
+    const filesToTest = Object.values(I18N_FILES).filter(file => file.name !== baseFile.name)
     if (!baseFile) {
         t.skip("No i18n files found in locales directory.")
         return

@@ -1,10 +1,12 @@
 const test = require("node:test")
 const assert = require("node:assert")
-const fs = require("node:fs/promises")
 
-let settings, schemas, processedSchemas
+let settings
+let rawSchemas, filteredRawSchemas
+let i18n
+let actionsMap
 
-function hasNestedProperty(obj, key) {
+const hasNestedProperty = (obj, key) => {
     if (key == null || typeof obj !== 'object' || obj === null) {
         return false
     }
@@ -48,26 +50,39 @@ const flattenKeys = (obj, prefix = [], result = new Set()) => {
 }
 
 test.before(async () => {
-    const toml = require("../../plugin/global/core/lib/smol-toml.js")
-    const [base, custom] = await Promise.all([
-        fs.readFile("../plugin/global/settings/settings.default.toml", "utf-8"),
-        fs.readFile("../plugin/global/settings/custom_plugin.default.toml", "utf-8")
-    ])
-    settings = { ...toml.parse(base), ...toml.parse(custom) }
+    const { base, custom } = await require("./fixtures/settings.js").getDefaults()
+    settings = { ...base, ...custom }
+})
 
-    schemas = require("../../plugin/preferences/schemas.js")
-    processedSchemas = {}
-    Object.entries(schemas).forEach(([fixedName, boxes]) => {
-        processedSchemas[fixedName] = boxes.map(box => ({
-            ...box,
-            fields: box.fields.filter(ctl => ctl.key && ctl.type !== "static" && ctl.type !== "action")
-        }))
-    })
+test.before(async () => {
+    i18n = await require("./fixtures/i18n.js").get("zh-CN")
+})
+
+
+test.before(() => {
+    rawSchemas = require("./fixtures/schemas.js").get(undefined)
+    filteredRawSchemas = Object.fromEntries(
+        Object.entries(rawSchemas).map(([fixedName, boxes]) => {
+            const newBoxes = boxes.map(box => ({
+                ...box,
+                fields: box.fields.filter(f => f.key && !["static", "action"].includes(f.type)),
+            }))
+            return [fixedName, newBoxes]
+        })
+    )
+})
+
+test.before(() => {
+    const mockPlugin = {
+        utils: require("./mocks/utils.mock.js"),
+        i18n,
+    }
+    actionsMap = require("../../plugin/preferences/actions.js")(mockPlugin)
 })
 
 test("Schema and Settings Key Synchronization", async t => {
     await t.test("Schema keys should exist in Settings (Schema -> Settings)", () => {
-        Object.entries(processedSchemas).forEach(([fixedName, boxes]) => {
+        Object.entries(filteredRawSchemas).forEach(([fixedName, boxes]) => {
             const setting = settings[fixedName]
             assert.ok(
                 setting,
@@ -75,10 +90,10 @@ test("Schema and Settings Key Synchronization", async t => {
             )
 
             boxes.forEach(box => {
-                box.fields.forEach(ctl => {
+                box.fields.forEach(field => {
                     assert.ok(
-                        hasNestedProperty(setting, ctl.key),
-                        `[Schema -> Settings] Schema key "${fixedName}.${ctl.key}" (from schemas.js) was NOT found in the corresponding settings object.`
+                        hasNestedProperty(setting, field.key),
+                        `[Schema -> Settings] Schema key "${fixedName}.${field.key}" (from schemas.js) was NOT found in the corresponding settings object.`
                     )
                 })
             })
@@ -87,7 +102,7 @@ test("Schema and Settings Key Synchronization", async t => {
 
     await t.test("Settings keys should exist in Schema (Settings -> Schema)", () => {
         for (const [fixedName, setting] of Object.entries(settings)) {
-            const boxes = processedSchemas[fixedName]
+            const boxes = filteredRawSchemas[fixedName]
             assert.ok(
                 boxes,
                 `[Sync Check] Setting key "${fixedName}" (from settings TOML) is missing its corresponding entry in schemas.js.`
@@ -115,9 +130,6 @@ test("Schema and Settings Key Synchronization", async t => {
 })
 
 test("all schemas keys should be translated", async t => {
-    const i18n = require("../../plugin/global/core/i18n.js")
-    await i18n.init("zh-CN")
-
     const boxProps = ["title", "tooltip"]
     const baseProps = ["label", "explain", "tooltip", "placeholder", "hintHeader", "hintDetail", "divider", "unit"]
     const specialProps = ["options", "thMap"]
@@ -148,7 +160,7 @@ test("all schemas keys should be translated", async t => {
         })
     }
 
-    Object.entries(schemas).forEach(([fixedName, boxes]) => {
+    Object.entries(rawSchemas).forEach(([fixedName, boxes]) => {
         const isTranslated = (key, context) => {
             if (Array.isArray(key)) {
                 key.forEach(k => isTranslated(k, context))
@@ -177,8 +189,6 @@ test("all schemas keys should be translated", async t => {
 
 test("all i18n keys starting with $ should be used in schemas", async t => {
     const getAllI18NKeys = async () => {
-        const i18n = require("../../plugin/global/core/i18n.js")
-        await i18n.init("zh-CN")
         return Object.fromEntries(
             Object.entries(i18n.data).map(([fixedName, data]) => {
                 const keys = new Set(
@@ -265,7 +275,7 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
     }
 
     const allI18NKeys = await getAllI18NKeys()
-    filterUsedKeys(allI18NKeys, schemas)
+    filterUsedKeys(allI18NKeys, rawSchemas)
     filterAllowedUnusedKeys(allI18NKeys)
 
     Object.entries(allI18NKeys).forEach(([fixedName, keys]) => {
@@ -277,12 +287,6 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
 })
 
 test("Action Consistency Check: Defined vs Used", t => {
-    const mockPlugin = {
-        utils: require("./mocks/utils.mock.js"),
-        i18n: require("./mocks/i18n.mock.js"),
-    }
-
-    const actionsMap = require("../../plugin/preferences/actions.js")(mockPlugin)
     const definedActions = new Set(Object.keys(actionsMap))
     const ignoredActions = new Set(["invokeMarkdownLintSettings", "togglePreferencePanel"])
     const usedActions = new Set()
@@ -296,7 +300,7 @@ test("Action Consistency Check: Defined vs Used", t => {
         }
     }
 
-    Object.values(schemas).forEach(boxes => {
+    Object.values(rawSchemas).forEach(boxes => {
         boxes.forEach(box => {
             collectFromTooltip(box.tooltip)
             box.fields.forEach(field => {

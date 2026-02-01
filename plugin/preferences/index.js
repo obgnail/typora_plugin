@@ -32,11 +32,11 @@ class PreferencesPlugin extends BasePlugin {
             searchInput: document.querySelector(".plugin-preferences-search input"),
             closeButton: document.querySelector(".plugin-preferences-close"),
         }
-        this.SCHEMAS = require("./schemas.js")
-        this.WATCHERS = require("./watchers.js")
         this.RULES = require("./rules.js")
+        this.WATCHERS = require("./watchers.js")(this)
         this.ACTIONS = require("./actions.js")(this)
         this.PREPROCESSORS = require("./preprocessors.js")(this)
+        this.SCHEMAS = this._getSchemas()
         this.META = this._getMeta()
         this.applyOptions = this._getHook()
     }
@@ -96,8 +96,7 @@ class PreferencesPlugin extends BasePlugin {
                 const handleProperty = this.utils.nestedPropertyHelpers[type]
                 if (!handleProperty) return
 
-                const fixedName = this._getCurrentPlugin()
-                const settings = await this._getSettings(fixedName)
+                const { fixedName, settings } = await this.getCurrent()
                 handleProperty(settings, key, value)
                 await this.utils.settings.handleSettings(fixedName, (_, allSettings) => allSettings[fixedName] = settings)
 
@@ -127,20 +126,12 @@ class PreferencesPlugin extends BasePlugin {
 
     showDialog = async (fixedName) => {
         const plugins = this._getAllPlugins()
-        const menus = Object.entries(plugins)
-            .filter(([name]) => !this.config.HIDE_MENUS.includes(name))
-            .map(([name, pluginName]) => {
-                const showName = this.utils.escape(pluginName)
-                return `<div class="plugin-preferences-menu-item" data-plugin="${name}">${showName}</div>`
-            })
-        this.entities.menu.innerHTML = menus.join("")
-
+        this._fillMenu(plugins)
         const menu = plugins.hasOwnProperty(fixedName) ? fixedName : this.fallbackMenu
-        await this.switchMenu(menu)
-        requestAnimationFrame(() => this.entities.menu.querySelector(".plugin-preferences-menu-item.active").scrollIntoView({ block: "center" }))
+        await this.switchMenu(menu, true)
     }
 
-    switchMenu = async (fixedName) => {
+    switchMenu = async (fixedName, scrollMenuIntoView = false, scrollMainToTop = true) => {
         if (this.config.HIDE_MENUS.includes(fixedName)) {
             fixedName = this.fallbackMenu
         }
@@ -150,13 +141,36 @@ class PreferencesPlugin extends BasePlugin {
 
         this.entities.form.dataset.plugin = fixedName
         this.entities.form.render(options)
-        this.entities.menu.querySelectorAll(".active").forEach(e => e.classList.remove("active"))
-        const menuItem = this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`)
-        menuItem.classList.add("active")
-        this.entities.title.textContent = menuItem.textContent
-        $(this.entities.main).animate({ scrollTop: 0 }, 300)
-
+        this.entities.menu.querySelectorAll(".plugin-preferences-menu-item").forEach(e => e.classList.toggle("active", e.dataset.plugin === fixedName))
+        this.entities.title.textContent = this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`).textContent
         this.menuStorage.set(fixedName)
+
+        if (scrollMainToTop) {
+            $(this.entities.main).animate({ scrollTop: 0 }, 300)
+        }
+        if (scrollMenuIntoView) {
+            requestAnimationFrame(() => this.entities.menu.querySelector(".plugin-preferences-menu-item.active").scrollIntoView({ block: "center" }))
+        }
+    }
+
+    renewMenu = async (renewFn) => {
+        const fixedName = this._getCurrentPlugin()
+        await renewFn(fixedName)
+        await this.switchMenu(fixedName)
+        this._setDialogState(true)
+    }
+
+    getCurrent = async () => {
+        const fixedName = this._getCurrentPlugin()
+        const settings = await this._getSettings(fixedName)
+        return { fixedName, settings }
+    }
+
+    _fillMenu = (plugins) => {
+        this.entities.menu.innerHTML = Object.entries(plugins)
+            .filter(([name]) => !this.config.HIDE_MENUS.includes(name))
+            .map(([name, pluginName]) => `<div class="plugin-preferences-menu-item" data-plugin="${name}">${this.utils.escape(pluginName)}</div>`)
+            .join("")
     }
 
     _getFormOptions = async (fixedName) => {
@@ -207,6 +221,11 @@ class PreferencesPlugin extends BasePlugin {
         })
         await Promise.all(promises)
         return data
+    }
+
+    _getSchemas = () => {
+        const { schemas, i18n } = require("./schemas.js")
+        return i18n(schemas, this.i18n.allData)
     }
 
     _getHook = () => {

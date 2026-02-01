@@ -2010,7 +2010,7 @@ const schema_redirectLocalRootUrl = [
     box_settingHandler,
 ]
 
-const SCHEMAS = {
+const schemas = {
     global: schema_global,
     window_tab: schema_window_tab,
     search_multi: schema_search_multi,
@@ -2075,7 +2075,10 @@ const SCHEMAS = {
     redirectLocalRootUrl: schema_redirectLocalRootUrl,
 }
 
-const I18N = (schemas, i18nData = require("../global/locales/en.json")) => {
+const i18n = (
+    schemas = schemas,
+    i18nData = require("../global/locales/en.json"),
+) => {
     const PREFIX_DEPENDENT_PROPS = { label: "$label" }
     const SPECIAL_PROPS = { options: "$option", thMap: "$label" }
     const GLOBAL_PROPS = { explain: "$explain", placeholder: "$placeholder", hintHeader: "$hintHeader", hintDetail: "$hintDetail", divider: "$divider", unit: "$unit" }
@@ -2161,4 +2164,7 @@ const I18N = (schemas, i18nData = require("../global/locales/en.json")) => {
     )
 }
 
-module.exports = I18N(SCHEMAS, require("../global/core/i18n").data)
+module.exports = {
+    schemas,
+    i18n,
+}

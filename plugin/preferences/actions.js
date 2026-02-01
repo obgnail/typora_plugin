@@ -29,6 +29,16 @@ module.exports = (plugin) => {
         toggleDevTools: () => JSBridge.invoke("window.toggleDevTools"),
         togglePreferencePanel: () => File.megaMenu.togglePreferencePanel(),
         sendEmail: () => utils.sendEmail("he1251698542@gmail.com", "Feedback"),
+        importSettings: async () => {
+            const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
+                title: i18n.t("$label.importSettings"),
+                properties: ["openFile", "dontAddToRecent"],
+                filters: [{ name: "JSON", extensions: ["json"] }],
+            })
+            if (canceled || filePaths.length === 0) return
+            await utils.settings.importSettings(filePaths[0])
+            utils.notification.show(i18n.t("success"))
+        },
         exportSettings: async () => {
             const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
                 title: i18n.t("$label.exportSettings"),
@@ -40,15 +50,22 @@ module.exports = (plugin) => {
             await utils.settings.exportSettings(filePath)
             utils.notification.show(i18n.t("success"))
         },
-        importSettings: async () => {
-            const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
-                title: i18n.t("$label.importSettings"),
-                properties: ["openFile", "dontAddToRecent"],
-                filters: [{ name: "JSON", extensions: ["json"] }],
-            })
-            if (canceled || filePaths.length === 0) return
-            await utils.settings.importSettings(filePaths[0])
-            utils.notification.show(i18n.t("success"))
+        restoreSettings: consecutive(async () => {
+            await plugin.renewMenu(fixedName => utils.settings.clearSettings(fixedName))
+            utils.notification.show(i18n.t("success.restore"))
+        }),
+        restoreAllSettings: consecutive(async () => {
+            await plugin.renewMenu(() => utils.settings.clearAllSettings())
+            utils.notification.show(i18n.t("success.restoreAll"))
+        }),
+        runtimeSettings: async () => {
+            const { settings } = await plugin.getCurrent()
+            const op = {
+                title: i18n._t("settings", "$label.runtimeSettings") + `（${i18n.t("readonly")}）`,
+                schema: [{ fields: [{ key: "runtimeSettings", type: "code", readonly: true }] }],
+                data: { runtimeSettings: JSON.stringify(settings, null, "\t") },
+            }
+            await utils.formDialog.modal(op)
         },
         invokeMarkdownLintSettings: async () => utils.callPluginFunction("markdownLint", "settings"),
         installPlantUMLServer: async () => {
@@ -119,30 +136,6 @@ module.exports = (plugin) => {
             }
             await utils.formDialog.modal(op)
             myopicDefocus.removeEffect()
-        },
-        restoreSettings: consecutive(async () => {
-            const fixedName = plugin._getCurrentPlugin()
-            await utils.settings.clearSettings(fixedName)
-            await plugin.switchMenu(fixedName)
-            plugin._setDialogState(true)
-            utils.notification.show(i18n.t("success.restore"))
-        }),
-        restoreAllSettings: consecutive(async () => {
-            const fixedName = plugin._getCurrentPlugin()
-            await utils.settings.clearAllSettings()
-            await plugin.switchMenu(fixedName)
-            plugin._setDialogState(true)
-            utils.notification.show(i18n.t("success.restoreAll"))
-        }),
-        runtimeSettings: async () => {
-            const fixedName = plugin._getCurrentPlugin()
-            const settings = await plugin._getSettings(fixedName)
-            const op = {
-                title: i18n._t("settings", "$label.runtimeSettings") + `（${i18n.t("readonly")}）`,
-                schema: [{ fields: [{ key: "runtimeSettings", type: "code", readonly: true }] }],
-                data: { runtimeSettings: JSON.stringify(settings, null, "\t") },
-            }
-            await utils.formDialog.modal(op)
         },
         updatePlugin: async () => {
             const updater = utils.getBasePlugin("updater")

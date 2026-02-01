@@ -59,6 +59,7 @@ const i18n = {
     },
     bind: (field) => ({
         locale: i18n.locale,
+        allData: i18n.data,
         data: i18n.data[field],
         link: i18n.link,
         _t: i18n.t,
