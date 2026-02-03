@@ -26,10 +26,6 @@ const allBuildTasks = {
         entryPoints: ["mdast.mjs"],
         outfile: "plugin/global/core/lib/mdast.js",
     },
-    "minimatch": {
-        entryPoints: ["minimatch.mjs"],
-        outfile: "plugin/global/core/lib/minimatch.js",
-    },
     "https-proxy-agent": {
         entryPoints: ["https-proxy-agent.mjs"],
         outfile: "plugin/global/core/lib/https-proxy-agent.js",

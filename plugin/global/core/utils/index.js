@@ -19,6 +19,7 @@ const MIXINS = {
     thirdPartyDiagramParser: require("./thirdPartyDiagramParser"),
     mermaid: require("./mermaid"),
     entities: require("./entities"),
+    unstableRequire: require("./unstableRequire"),
 }
 
 class utils {
@@ -126,10 +127,6 @@ class utils {
         this.updatePluginDynamicActions(fixedName, anchorNode, notInContextMenu)
         this.callPluginDynamicAction(fixedName, action)
     }
-
-    // Repo: https://github.com/jimp-dev/jimp
-    // after loadJimp(), you can use `globalThis.Jimp`
-    static loadJimp = async () => await $.getScript((File.isNode ? "./lib.asar" : "./lib") + "/jimp/browser/lib/jimp.min.js")
 
     static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
     static openPath = (path) => reqnode("electron").shell.openPath(path)

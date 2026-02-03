@@ -38,11 +38,13 @@ async function loadPlugins(container, settings) {
     const _postprocessMixins = async (...mixins) => Promise.all(mixins.map(m => m.afterProcess?.()))
 
     const {
-        styleTemplater, contextMenu, notification, progressBar, formDialog, stateRecorder, hotkeyHub, exportHelper,
-        eventHub, diagramParser, thirdPartyDiagramParser,
+        unstableRequire, styleTemplater,
+        contextMenu, notification, progressBar, formDialog, stateRecorder, hotkeyHub, exportHelper,
+        eventHub,
+        diagramParser, thirdPartyDiagramParser,
     } = utils.mixins
 
-    await _processMixins(styleTemplater)
+    await _processMixins(unstableRequire, styleTemplater)
     await _processMixins(contextMenu, notification, progressBar, formDialog, stateRecorder, hotkeyHub, exportHelper)
 
     const { enable } = await LoadPlugins(settings)

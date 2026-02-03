@@ -29,7 +29,6 @@
     "mdast-util-to-markdown": "^2.1.2",
     "micromark-extension-gfm": "^3.0.0",
     "micromark-extension-math": "^3.1.0",
-    "minimatch": "^10.1.1",
     "node-json-rpc": "^0.0.1",
     "smol-toml": "^1.6.0"
   },
