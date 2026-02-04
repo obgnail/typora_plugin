@@ -93,8 +93,6 @@ try {
         throw "Could not find the settings directory at '$($paths.SettingsDir)'."
     }
     $usersSid = New-Object System.Security.Principal.SecurityIdentifier([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid, $null)
-    Write-Host "      -> Processing permissions for 'plugin' directory."
-    $dirAcl = Get-Acl -Path $paths.PluginDir
     $directoryAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
         $usersSid,
         [System.Security.AccessControl.FileSystemRights]::FullControl,
@@ -102,8 +100,16 @@ try {
         [System.Security.AccessControl.PropagationFlags]::None,
         [System.Security.AccessControl.AccessControlType]::Allow
     )
+
+    Write-Host "      -> Processing permissions for 'plugin' directory."
+    $dirAcl = Get-Acl -Path $paths.PluginDir
     $dirAcl.SetAccessRule($directoryAccessRule)
     Set-Acl -Path $paths.PluginDir -AclObject $dirAcl
+
+    Write-Host "      -> Processing permissions for 'settings' directory."
+    $settingsAcl = Get-Acl -Path $paths.SettingsDir
+    $settingsAcl.SetAccessRule($directoryAccessRule)
+    Set-Acl -Path $paths.SettingsDir -AclObject $settingsAcl
 
     Write-Host "      -> Processing permissions for settings files."
     $filesToProcess = @(

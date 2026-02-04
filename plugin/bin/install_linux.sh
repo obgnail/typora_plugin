@@ -2,6 +2,7 @@
 
 readonly ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
 readonly PLUGIN_DIR="$ROOT_DIR/plugin"
+readonly SETTINGS_DIR="$ROOT_DIR/plugin/global/settings"
 readonly APP_PATH="$ROOT_DIR/app"
 readonly APPSRC_PATH="$ROOT_DIR/appsrc"
 readonly WINDOW_HTML_PATH="$ROOT_DIR/window.html"
@@ -43,6 +44,9 @@ echo "[3/9] Verifying plugin directory existence"
 if [[ ! -d "$PLUGIN_DIR" ]]; then
     panic "Plugin folder not found: '$PLUGIN_DIR'."
 fi
+if [[ ! -d "$SETTINGS_DIR" ]]; then
+    panic "Settings folder not found: '$SETTINGS_DIR'."
+fi
 
 echo "[4/9] Verifying window.html existence"
 if [[ ! -f "$WINDOW_HTML_PATH" ]]; then
@@ -73,8 +77,9 @@ cp "$WINDOW_HTML_PATH" "$WINDOW_HTML_BAK_PATH" || panic "Failed to create backup
 
 echo "[8/9] Adjusting permissions for plugin files"
 chmod 0777 "$PLUGIN_DIR" || panic "Failed to set permissions for '$PLUGIN_DIR'."
-chmod 0777 "$PLUGIN_DIR/global/settings/settings.user.toml" || panic "Failed to set permissions for settings.user.toml."
-chmod 0777 "$PLUGIN_DIR/global/settings/custom_plugin.user.toml" || panic "Failed to set permissions for custom_plugin.user.toml."
+chmod 0777 "$SETTINGS_DIR" || panic "Failed to set permissions for '$SETTINGS_DIR'."
+chmod 0777 "$SETTINGS_DIR/settings.user.toml" || panic "Failed to set permissions for settings.user.toml."
+chmod 0777 "$SETTINGS_DIR/custom_plugin.user.toml" || panic "Failed to set permissions for custom_plugin.user.toml."
 
 echo "[9/9] Updating window.html to inject plugin script"
 ESCAPED_FRAME_SCRIPT=$(escape_sed_regex "$FRAME_SCRIPT")

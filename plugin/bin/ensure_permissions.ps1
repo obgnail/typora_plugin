@@ -76,9 +76,8 @@ try {
         }
     }
 
-    Write-Host "[2/3] Processing permissions for 'plugin' directory" -ForegroundColor Yellow
+    Write-Host "[2/3] Processing directory permissions" -ForegroundColor Yellow
     $usersSid = New-Object System.Security.Principal.SecurityIdentifier([System.Security.Principal.WellKnownSidType]::BuiltinUsersSid, $null)
-    $dirAcl = Get-Acl -Path $paths.PluginDir
     $directoryAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
         $usersSid,
         [System.Security.AccessControl.FileSystemRights]::FullControl,
@@ -86,12 +85,19 @@ try {
         [System.Security.AccessControl.PropagationFlags]::None,
         [System.Security.AccessControl.AccessControlType]::Allow
     )
-    Write-Host "      -> Setting 'FullControl' with inheritance for Users group."
-    $dirAcl.SetAccessRule($directoryAccessRule)
-    Set-Acl -Path $paths.PluginDir -AclObject $dirAcl
-    Write-Host "      -> Permissions set successfully for 'plugin' directory."
 
-    Write-Host "[3/3] Processing permissions for settings files" -ForegroundColor Yellow
+    Write-Host "      -> Setting 'FullControl' for 'plugin' directory."
+    $pluginAcl = Get-Acl -Path $paths.PluginDir
+    $pluginAcl.SetAccessRule($directoryAccessRule)
+    Set-Acl -Path $paths.PluginDir -AclObject $pluginAcl
+
+    Write-Host "      -> Setting 'FullControl' for 'settings' directory."
+    $settingsAcl = Get-Acl -Path $paths.SettingsDir
+    $settingsAcl.SetAccessRule($directoryAccessRule)
+    Set-Acl -Path $paths.SettingsDir -AclObject $settingsAcl
+
+    Write-Host "      -> Directory permissions set successfully."
+    Write-Host "[3/3] Processing specific settings files" -ForegroundColor Yellow
     $filesToProcess = @(
         $paths.BasePluginCfg
         $paths.CustomPluginCfg
@@ -106,7 +112,7 @@ try {
         if (Test-Path -Path $file -PathType Leaf) {
             Write-Host "     -> Processing permissions for '$fileName'."
             $acl = Get-Acl -Path $file
-            Write-Host "          -> Resetting permissions and applying 'FullControl' for Users group."
+            Write-Host "          -> Resetting permissions and applying 'FullControl'."
             $acl.ResetAccessRule($fileAccessRule)
             Set-Acl -Path $file -AclObject $acl
             Write-Host "          -> Permissions set successfully for '$fileName'."
