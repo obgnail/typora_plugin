@@ -8,7 +8,7 @@ class TemplaterPlugin extends BaseCustomPlugin {
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             const { template_folders, template } = this.config
-            const { Path: { extname }, Fs: { promises: { readFile } } } = this.utils.Package
+            const { Path: { extname }, FsExtra: { readFile } } = this.utils.Package
 
             if (!template_folders || template_folders.length === 0) return
 

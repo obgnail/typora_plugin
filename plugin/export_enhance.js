@@ -33,7 +33,7 @@ class ExportEnhancePlugin extends BasePlugin {
                 } else {
                     imagePath = this.utils.Package.Path.resolve(dirname, decodeURIComponent(src))
                 }
-                const bin = await this.utils.Package.Fs.promises.readFile(imagePath)
+                const bin = await this.utils.Package.FsExtra.readFile(imagePath)
                 const base64 = this.utils.convertImageToBase64(bin)
                 return origin.replace(src, base64)
             } catch (e) {

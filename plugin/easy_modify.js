@@ -337,7 +337,7 @@ class EasyModifyPlugin extends BasePlugin {
             }
         }
 
-        const bin = await this.utils.Package.Fs.promises.readFile(src)
+        const bin = await this.utils.Package.FsExtra.readFile(src)
         const base64 = this.utils.convertImageToBase64(bin)
 
         const { range } = this.utils.getRangy()

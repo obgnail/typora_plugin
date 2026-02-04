@@ -28,8 +28,7 @@ class UploadUtils {
         const Notification = require('../utils/customNotification.js').plugin;
         const notification = new Notification();
         try {
-            const fs = this.plugin.utils.Package.Fs;
-            const data = fs.readFileSync(filePath, 'utf-8');
+            const data = this.plugin.utils.Package.FsExtra.readFileSync(filePath, 'utf-8')
             const lines = data.split('\n');
             const title = lines[0].trim().replace(/#/g, '').trim();
             const content = lines.slice(1).join('\n').trim();

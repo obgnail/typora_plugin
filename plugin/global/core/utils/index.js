@@ -1,5 +1,4 @@
 const PATH = require("path")
-const FS = require("fs")
 const FS_EXTRA = require("fs-extra")
 const i18n = require("../i18n")
 
@@ -33,7 +32,7 @@ class utils {
     static fileProtocolUrlBase = this.isBetaVersion ? "typora://typemark" : "typora://app/typemark"
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static tempFolder = window._options.tempPath || require("os").tmpdir()
-    static Package = Object.freeze({ Path: PATH, Fs: FS, FsExtra: FS_EXTRA })
+    static Package = Object.freeze({ Path: PATH, FsExtra: FS_EXTRA })
 
     static nonExistSelector = "__non_exist__"  // Plugin temporarily unavailable, return this.
     static disableForeverSelector = "__disabled__"  // Plugin permanently unavailable, return this.
@@ -797,11 +796,11 @@ class utils {
     static require = (...paths) => require(this.joinPath(...paths))
     static getUserSpaceFile = (file = "") => this.joinPath("./plugin/global/user_space", file)
 
-    static readFiles = async files => Promise.all(files.map(file => FS.promises.readFile(file, "utf-8").catch(() => undefined)))
-    static existPath = async path => FS.promises.access(path).then(() => true).catch(() => false)
+    static readFiles = async files => Promise.all(files.map(file => FS_EXTRA.readFile(file, "utf-8").catch(() => undefined)))
+    static existPath = async path => FS_EXTRA.access(path).then(() => true).catch(() => false)
     static writeFile = async (filepath, content) => {
         try {
-            await FS.promises.writeFile(filepath, content)
+            await FS_EXTRA.writeFile(filepath, content)
             return true
         } catch (e) {
             const detail = e.toString()
@@ -816,26 +815,25 @@ class utils {
     static stringifyYaml = (obj, args) => require("../lib/js-yaml").safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
     static readToml = content => require("../lib/smol-toml").parse(content)
     static stringifyToml = obj => require("../lib/smol-toml").stringify(obj)
-    static readTomlFile = async filepath => this.readToml(await FS.promises.readFile(filepath, "utf-8"))
+    static readTomlFile = async filepath => this.readToml(await FS_EXTRA.readFile(filepath, "utf-8"))
 
     static unzip = async (buffer, workDir) => {
-        const jsZip = require("../lib/jszip")
-        const files = []
-        const zipData = await jsZip.loadAsync(buffer)
-        const promises = Object.values(zipData.files).map(async file => {
-            const dest = PATH.join(workDir, file.name)
-            if (!dest.startsWith(PATH.resolve(workDir))) return  // Zip Slip Attack
-            files.push(dest)
-            if (file.dir) {
-                await FS_EXTRA.ensureDir(dest)
-            } else {
-                await FS_EXTRA.ensureDir(PATH.dirname(dest))
-                const content = await file.async("nodebuffer")
-                await FS.promises.writeFile(dest, content)
-            }
+        const extract = require("extract-zip")
+        const absWorkDir = PATH.resolve(workDir)
+        const zipPath = PATH.join(absWorkDir, `temp_zip_${Date.now()}.zip`)
+        await FS_EXTRA.writeFile(zipPath, buffer)
+        const { promise, resolve, reject } = Promise.withResolvers()
+        const entries = []
+        const opts = {
+            dir: absWorkDir,
+            onEntry: (entry) => entries.push(PATH.join(absWorkDir, entry.fileName)),
+        }
+        extract(zipPath, opts, (err) => {
+            if (err) reject(err)
+            else resolve()
         })
-        await Promise.all(promises)
-        return files
+        await promise.finally(() => FS_EXTRA.remove(zipPath).catch(err => console.error(err)))
+        return entries
     }
 
     // TODO: Uses dual counters to prevent from terminating prematurely while tasks are paused for asynchronous IO. Too complicated.
@@ -866,7 +864,7 @@ class utils {
 
         semaphore = Math.max(semaphore, 1)
 
-        const { promises: { readdir, stat, lstat } } = FS
+        const { readdir, stat, lstat } = FS_EXTRA
         const { join, dirname, basename } = PATH
         const statFn = followSymlinks ? stat : lstat
         const dequeueFn = strategy === "dfs" ? "pop" : "shift"

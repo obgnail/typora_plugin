@@ -282,7 +282,7 @@ class WindowTabPlugin extends BasePlugin {
         }
         const handleRename = () => {
             reqnode("electron").ipcRenderer.on("didRename", (sender, { oldPath, newPath }) => {
-                const isDir = this.utils.Package.Fs.statSync(newPath).isDirectory()
+                const isDir = this.utils.Package.FsExtra.statSync(newPath).isDirectory()
                 if (isDir) {
                     this.tabUtil.tabs
                         .filter(tab => tab.path.startsWith(oldPath))

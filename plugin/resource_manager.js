@@ -54,7 +54,7 @@ class ResourceManagerPlugin extends BasePlugin {
                         this.showWarnDialog = false
                     }
                 }
-                await this.utils.Package.Fs.promises.unlink(rowData.src)
+                await this.utils.Package.FsExtra.remove(rowData.src)
                 this.entities.fileTable.deleteRow("idx", rowData.idx)
                 this.utils.notification.show(this.i18n.t("success.deleted"))
             }
@@ -219,7 +219,7 @@ const findResources = async (plugin, searchDir) => {
 
     const { Package, isNetworkImage, isSpecialImage } = utils
     const findImagesInFile = async (mdPath, mdDir) => {
-        const md = await Package.Fs.promises.readFile(mdPath, "utf-8")
+        const md = await Package.FsExtra.readFile(mdPath, "utf-8")
         const images = findImagesInText(md)
             .map(img => {
                 try {

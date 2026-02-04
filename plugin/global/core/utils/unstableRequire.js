@@ -13,27 +13,25 @@ class UnstableRequire {
         const libBase = File.isNode ? "./lib.asar" : "./lib"
         this.registerMods({
             "chokidar": "chokidar",
+            "fs-extra": "fs-extra",
             "getos": "getos",  // New version only
             "hjson": "hjson",
             "iconv-lite": "iconv-lite",
             "jschardet": "jschardet",
-            "jsonfile": "jsonfile",
             "native-reg": "native-reg",  // New version only
             "node-machine-id": "node-machine-id",  // New version only
             "spellchecker": "spellchecker",
-            "fs-extra": "fs-extra",
             "electron-fetch": "electron-fetch",  // New version only
 
             "extract-zip": "extract-zip",
-            "mkdirp": "extract-zip/node_modules/mkdirp",
             "yauzl": "extract-zip/node_modules/yauzl",
 
             "fs-plus": "fs-plus",
-            "brace-expansion": "fs-plus/node_modules/brace-expansion",
             "glob": "fs-plus/node_modules/glob",
             "minimatch": "fs-plus/node_modules/minimatch",
             "underscore": "fs-plus/node_modules/underscore",
             "underscore-plus": "fs-plus/node_modules/underscore-plus",
+            "brace-expansion": "fs-plus/node_modules/brace-expansion",
 
             "lowdb": "lowdb",
             "lodash": "lowdb/node_modules/lodash",

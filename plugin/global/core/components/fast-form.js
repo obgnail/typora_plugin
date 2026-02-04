@@ -2311,7 +2311,7 @@ const Validator_Regex = ({ value }) => {
 
 const Validator_Path = ({ value }) => {
     const base = utils.resolvePath(value)
-    return Try(() => value && utils.Package.Fs.accessSync(base), () => `No such path: ${base}`)
+    return Try(() => value && utils.Package.FsExtra.accessSync(base), () => `No such path: ${base}`)
 }
 
 FastForm.validator.register("url", Validator_Url)

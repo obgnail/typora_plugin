@@ -1,6 +1,6 @@
 module.exports = (plugin) => {
     const { utils, i18n } = plugin
-    const { Path, Fs, FsExtra } = utils.Package
+    const { Path, FsExtra } = utils.Package
     const consecutive = (onConfirmed) => utils.createConsecutiveAction({ threshold: 3, timeWindow: 3000, onConfirmed })
 
     const actions = {
@@ -216,7 +216,7 @@ module.exports = (plugin) => {
                 return `<div style="display: flex; flex-direction: column; align-items: center">${svg}${label}</div>`
             })
             const qrcodeCnt = `<div style="display: flex; justify-content: space-evenly; margin-top: 8px">${qrEls.join("")}</div>`
-            const backers = (await Fs.promises.readFile(utils.joinPath("./plugin/preferences/backers.txt"), "utf-8"))
+            const backers = (await FsExtra.readFile(utils.joinPath("./plugin/preferences/backers.txt"), "utf-8"))
                 .split("\n").filter(Boolean).map(e => `<div>${utils.escape(e)}</div>`).join("")
             const backersCnt = `<div style="text-align: center; font-weight: bold; margin-bottom: 5px;">THANK YOU TO ALL THE BACKERS</div><div style="display: grid; grid-template-columns: repeat(10, auto);">${backers}</div>`
             const op = {

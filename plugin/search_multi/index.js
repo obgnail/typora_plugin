@@ -150,7 +150,7 @@ class SearchMultiPlugin extends BasePlugin {
         this.entities.files.innerHTML = ""
 
         const { MAX_SIZE, MAX_DEPTH, MAX_STATS, TIMEOUT, TRAVERSE_STRATEGY, CONCURRENCY_LIMIT, IGNORE_FOLDERS, FOLLOW_SYMBOLIC_LINKS, STOP_SEARCHING_ON_HIDING } = this.config
-        const { Path: { extname }, Fs: { promises: { readFile } } } = this.utils.Package
+        const { Path: { extname }, FsExtra: { readFile } } = this.utils.Package
 
         const getFileFilter = () => {
             const verifyExt = name => this.allowedExtensions.has(extname(name).toLowerCase())

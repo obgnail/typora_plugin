@@ -790,17 +790,14 @@ textarea:disabled {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background-color: var(--ff-bg-white);
-    border: 1px solid var(--ff-border);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    background-color: var(--ff-primary);
     margin-top: -6px;
     cursor: pointer;
     transition: border-color .2s, transform .2s;
 }
 
 .range-input[type="range"]:active::-webkit-slider-thumb {
-    border-color: var(--ff-primary);
-    /*transform: scale(1.1);*/
+    transform: scale(1.05);
 }
 
 /* Color */

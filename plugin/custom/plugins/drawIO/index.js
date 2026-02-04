@@ -58,7 +58,7 @@ class DrawIOPlugin extends BaseCustomPlugin {
             } else {
                 const dir = this.utils.getLocalRootUrl()
                 source = this.utils.Package.Path.resolve(dir, source)
-                graphConfig.xml = await this.utils.Package.Fs.promises.readFile(source, "utf-8")
+                graphConfig.xml = await this.utils.Package.FsExtra.readFile(source, "utf-8")
             }
         } catch (e) {
             const msg = this.i18n.t(isNetwork ? "error.getFileFailedFromNetwork" : "error.getFileFailedFromLocal")

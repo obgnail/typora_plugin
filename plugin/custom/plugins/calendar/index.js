@@ -52,7 +52,7 @@ class CalendarPlugin extends BaseCustomPlugin {
 
     getStyleContent = () => {
         const path = this.utils.joinPath("./plugin/custom/plugins/calendar/toastui-calendar.min.css")
-        return this.utils.Package.Fs.readFileSync(path, "utf-8")
+        return this.utils.Package.FsExtra.readFileSync(path, "utf-8")
     }
 }
 
