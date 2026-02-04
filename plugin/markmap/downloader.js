@@ -1,7 +1,7 @@
 class Downloader {
     static _toSVG = (
         plugin,
-        svg = plugin.entities.svg.cloneNode(true),
+        svg = plugin.entities.svg,
         options = {
             nodeMinHeight: plugin.config.DEFAULT_TOC_OPTIONS.nodeMinHeight,
             paddingX: plugin.config.DEFAULT_TOC_OPTIONS.paddingX,
@@ -14,23 +14,23 @@ class Downloader {
             removeUselessClasses: plugin.config.DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES,
         },
     ) => {
-        const setAttrs = svg => {
-            const { x, y, width, height } = plugin.entities.svg.querySelector("g").getBBox()
+        const setAttrs = (svg, clonedSVG) => {
+            const { x, y, width, height } = svg.querySelector("g").getBBox()
             const { paddingH, paddingV, imageScale } = options
             const svgWidth = width + paddingH * 2  // both sides
             const svgHeight = height + paddingV * 2
             const scaledWidth = svgWidth * imageScale
             const scaledHeight = svgHeight * imageScale
-            svg.removeAttribute("id")
-            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg")
-            svg.setAttribute("class", "markmap")
-            svg.setAttribute("width", scaledWidth)
-            svg.setAttribute("height", scaledHeight)
-            svg.setAttribute("viewBox", `${x} ${y} ${svgWidth} ${svgHeight}`)
-            svg.querySelector("g").setAttribute("transform", `translate(${paddingH}, ${paddingV})`)
+            clonedSVG.removeAttribute("id")
+            clonedSVG.setAttribute("xmlns", "http://www.w3.org/2000/svg")
+            clonedSVG.setAttribute("class", "markmap")
+            clonedSVG.setAttribute("width", scaledWidth)
+            clonedSVG.setAttribute("height", scaledHeight)
+            clonedSVG.setAttribute("viewBox", `${x} ${y} ${svgWidth} ${svgHeight}`)
+            clonedSVG.querySelector("g").setAttribute("transform", `translate(${paddingH}, ${paddingV})`)
         }
 
-        const fixStyles = svg => {
+        const fixStyles = clonedSVG => {
             // remove useless styles
             const _useless1 = [
                 ".markmap-dark .markmap",
@@ -51,10 +51,10 @@ class Downloader {
                 ".markmap-foreign em",
                 ".markmap-foreign strong",
                 ".markmap-foreign mark",
-            ].filter(selector => !svg.querySelector(selector))
+            ].filter(selector => !clonedSVG.querySelector(selector))
             const _useless3 = _useless2.includes(".markmap-foreign a") ? [".markmap-foreign a:hover"] : []
             const useless = new Set([..._useless1, ..._useless2, ..._useless3])
-            const style = svg.querySelector("style")
+            const style = clonedSVG.querySelector("style")
             // The `sheet` property of <style> in cloned <svg> is undefined, parse the style text to get it
             const styleEle = new DOMParser().parseFromString(`<style>${style.textContent}</style>`, "text/html").querySelector("style")
             const usefulRules = [...styleEle.sheet.cssRules].filter(rule => !useless.has(rule.selectorText))
@@ -77,11 +77,11 @@ class Downloader {
             // replace style element
             style.replaceChild(document.createTextNode(cssText), style.firstChild)
             // replace CSS variables `--markmap-circle-open-bg`
-            svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", options.openCircleColor))
+            clonedSVG.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(el => el.setAttribute("fill", options.openCircleColor))
         }
 
-        const removeForeignObject = svg => {
-            svg.querySelectorAll("foreignObject").forEach(foreign => {
+        const removeForeignObject = clonedSVG => {
+            clonedSVG.querySelectorAll("foreignObject").forEach(foreign => {
                 const x = options.paddingX
                 const y = 16  // font size
                 // const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - (options.nodeMinHeight - 16)
@@ -101,19 +101,20 @@ class Downloader {
             })
         }
 
-        const removeUselessClasses = svg => {
-            svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
+        const removeUselessClasses = clonedSVG => {
+            clonedSVG.querySelectorAll(".markmap-node").forEach(el => el.removeAttribute("class"))
         }
 
-        setAttrs(svg)
-        fixStyles(svg)
+        const clonedSVG = svg.cloneNode(true)
+        setAttrs(svg, clonedSVG)
+        fixStyles(clonedSVG)
         if (options.removeForeignObject) {
-            removeForeignObject(svg)
+            removeForeignObject(clonedSVG)
         }
         if (options.removeUselessClasses) {
-            removeUselessClasses(svg)
+            removeUselessClasses(clonedSVG)
         }
-        return svg
+        return clonedSVG
     }
 
     static _toString = (svg) => new XMLSerializer().serializeToString(svg)
