@@ -5,7 +5,7 @@ class AutoNumberPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.settings.autoSaveSettings(this)
+        this.utils.settings.autoSave(this)
         if (this.config.ENABLE_WHEN_EXPORT) {
             this._fixExportToPDF()
         }

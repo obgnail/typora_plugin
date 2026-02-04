@@ -9,7 +9,7 @@ async function entry() {
     const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0
     if (incompatible) return
 
-    const settings = await utils.settings.readBasePluginSettings()
+    const settings = await utils.settings.readBase()
     if (!settings?.global?.ENABLE) {
         console.warn("Typora-Plugin disabled")
         return

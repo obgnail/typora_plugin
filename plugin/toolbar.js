@@ -373,7 +373,7 @@ class OperationTool extends BaseToolInterface {
         const explorer = () => this.utils.showInFinder(this.utils.getFilePath())
         const copyPath = () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath())
         const togglePreferencePanel = () => File.megaMenu.togglePreferencePanel()
-        const openSettingFolder = () => this.utils.settings.openSettingFolder()
+        const openSettingFolder = () => this.utils.settings.openFolder()
         const togglePinWindow = () => {
             const pined = document.body.classList.contains("always-on-top")
             const func = pined ? "unpinWindow" : "pinWindow"

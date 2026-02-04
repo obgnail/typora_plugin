@@ -443,7 +443,7 @@ class WindowTabPlugin extends BasePlugin {
     call = action => {
         const toggleConfig = async (cfg) => {
             this.config[cfg] = !this.config[cfg]
-            await this.utils.settings.saveSettings(this.fixedName, { [cfg]: this.config[cfg] })
+            await this.utils.settings.save(this.fixedName, { [cfg]: this.config[cfg] })
             this.rerenderTabBar()
         }
         const callMap = {

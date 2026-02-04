@@ -25,7 +25,7 @@ module.exports = (plugin) => {
         editStyles: () => utils.showInFinder(utils.joinPath("./plugin/global/user_styles/README.md")),
         developPlugins: () => utils.showInFinder(utils.joinPath("./plugin/custom/README.md")),
         openPluginFolder: () => utils.showInFinder(utils.joinPath("./plugin")),
-        openSettingsFolder: async () => utils.settings.openSettingFolder(),
+        openSettingsFolder: async () => utils.settings.openFolder(),
         toggleDevTools: () => JSBridge.invoke("window.toggleDevTools"),
         togglePreferencePanel: () => File.megaMenu.togglePreferencePanel(),
         sendEmail: () => utils.sendEmail("he1251698542@gmail.com", "Feedback"),
@@ -36,7 +36,7 @@ module.exports = (plugin) => {
                 filters: [{ name: "JSON", extensions: ["json"] }],
             })
             if (canceled || filePaths.length === 0) return
-            await utils.settings.importSettings(filePaths[0])
+            await utils.settings.import(filePaths[0])
             utils.notification.show(i18n.t("success"))
         },
         exportSettings: async () => {
@@ -47,15 +47,15 @@ module.exports = (plugin) => {
                 filters: [{ name: "JSON", extensions: ["json"] }],
             })
             if (canceled || !filePath) return
-            await utils.settings.exportSettings(filePath)
+            await utils.settings.export(filePath)
             utils.notification.show(i18n.t("success"))
         },
         restoreSettings: consecutive(async () => {
-            await plugin.renewMenu(fixedName => utils.settings.clearSettings(fixedName))
+            await plugin.renewMenu(fixedName => utils.settings.clear(fixedName))
             utils.notification.show(i18n.t("success.restore"))
         }),
         restoreAllSettings: consecutive(async () => {
-            await plugin.renewMenu(() => utils.settings.clearAllSettings())
+            await plugin.renewMenu(() => utils.settings.clearAll())
             utils.notification.show(i18n.t("success.restoreAll"))
         }),
         runtimeSettings: async () => {

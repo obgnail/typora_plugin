@@ -2,7 +2,7 @@ class ResizeTablePlugin extends BasePlugin {
     styleTemplate = () => this.config.REMOVE_MIN_CELL_WIDTH
 
     process = () => {
-        this.utils.settings.autoSaveSettings(this)
+        this.utils.settings.autoSave(this)
         this.toggleRecorder(false);
         this.onResize();
     }

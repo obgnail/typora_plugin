@@ -2,7 +2,7 @@ const { LoadPlugins } = require("../global/core/plugin")
 
 class CustomPlugin extends BasePlugin {
     beforeProcess = async () => {
-        const settings = await this.utils.settings.readCustomPluginSettings()
+        const settings = await this.utils.settings.readCustom()
         const { enable } = await LoadPlugins(settings)
         this.settings = settings  // all plugin settings
         this.plugins = enable     // all enabled plugins

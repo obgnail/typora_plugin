@@ -98,7 +98,7 @@ class PreferencesPlugin extends BasePlugin {
 
                 const { fixedName, settings } = await this.getCurrent()
                 handleProperty(settings, key, value)
-                await this.utils.settings.handleSettings(fixedName, (_, allSettings) => allSettings[fixedName] = settings)
+                await this.utils.settings.handle(fixedName, (_, allSettings) => allSettings[fixedName] = settings)
 
                 this._setDialogState(true)
             })
@@ -206,7 +206,7 @@ class PreferencesPlugin extends BasePlugin {
 
     _getSettings = async (fixedName) => {
         const isBase = this.utils.getBasePluginSetting(fixedName)
-        const fn = isBase ? "readBasePluginSettings" : "readCustomPluginSettings"
+        const fn = isBase ? "readBase" : "readCustom"
         const settings = await this.utils.settings[fn]()
         return settings[fixedName]
     }

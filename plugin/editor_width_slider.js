@@ -16,7 +16,7 @@ class EditorWidthSliderPlugin extends BasePlugin {
         }
         this.config.WIDTH_RATIO = width
         if (!tmp) {
-            await this.utils.settings.saveSettings(this.fixedName, this.config)
+            await this.utils.settings.save(this.fixedName, this.config)
         }
     }
 

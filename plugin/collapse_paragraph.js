@@ -9,7 +9,7 @@ class CollapseParagraphPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.settings.autoSaveSettings(this)
+        this.utils.settings.autoSave(this)
         this.disableExpandSimpleBlock()
         this.recordCollapseState(false)
 

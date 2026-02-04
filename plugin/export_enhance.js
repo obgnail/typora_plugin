@@ -6,7 +6,7 @@ class ExportEnhancePlugin extends BasePlugin {
     })
 
     process = () => {
-        this.utils.settings.autoSaveSettings(this)
+        this.utils.settings.autoSave(this)
         this.enable = this.config.ENABLE
         this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs")
         this.utils.exportHelper.register(this.fixedName, null, this.afterExportToHTML)

@@ -60,8 +60,8 @@ class Migrate {
     }
 
     getConfigs = async () => {
-        const [baseDefault, baseUser, baseHome] = await this.utils.settings.getSettingObjects("settings.default.toml", "settings.user.toml")
-        const [customDefault, customUser, customHome] = await this.utils.settings.getSettingObjects("custom_plugin.default.toml", "custom_plugin.user.toml")
+        const [baseDefault, baseUser, baseHome] = await this.utils.settings.getObjects("settings.default.toml", "settings.user.toml")
+        const [customDefault, customUser, customHome] = await this.utils.settings.getObjects("custom_plugin.default.toml", "custom_plugin.user.toml")
         return [
             { file: "settings.user.toml", configDefault: baseDefault, configUser: this.utils.merge(baseUser, baseHome) },
             { file: "custom_plugin.user.toml", configDefault: customDefault, configUser: this.utils.merge(customUser, customHome) },
@@ -70,7 +70,7 @@ class Migrate {
 
     saveFiles = async (files) => {
         const promises = files.map(async ({ file, configUser }) => {
-            const path = await this.utils.settings.getActualSettingPath(file)
+            const path = await this.utils.settings.getActualPath(file)
             const content = this.utils.stringifyToml(configUser)
             return this.utils.writeFile(path, content)
         })

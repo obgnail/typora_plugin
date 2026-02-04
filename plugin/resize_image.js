@@ -6,7 +6,7 @@ class ResizeImagePlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.settings.autoSaveSettings(this)
+        this.utils.settings.autoSave(this)
         this.recordResizeState(false);
 
         this.utils.entities.eWrite.addEventListener("wheel", ev => {

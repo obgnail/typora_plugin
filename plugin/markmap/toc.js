@@ -416,7 +416,7 @@ class TOCMarkmap {
         const save = async (result) => {
             result.DEFAULT_TOC_OPTIONS.color = str2Arr(result.DEFAULT_TOC_OPTIONS.color)
             Object.assign(this.config, result)
-            await this.utils.settings.saveSettings(this.plugin.fixedName, result)
+            await this.utils.settings.save(this.plugin.fixedName, result)
         }
 
         let _edited = false
@@ -430,10 +430,10 @@ class TOCMarkmap {
                     timeWindow: 3000,
                     onConfirmed: async () => {
                         const fixedName = this.plugin.fixedName
-                        await this.utils.settings.handleSettings(fixedName, (pluginSettings, allSettings) => {
+                        await this.utils.settings.handle(fixedName, (pluginSettings, allSettings) => {
                             allSettings[fixedName] = this.utils.pickBy(pluginSettings, (_, k) => !attrsToSave.includes(k))
                         })
-                        const settings = await this.utils.settings.readBasePluginSettings()
+                        const settings = await this.utils.settings.readBase()
                         this.config = settings[fixedName]
                         this.utils.notification.show(this.i18n.t("success.restore"))
                         await this.utils.formDialog.updateModal(op => {

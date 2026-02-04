@@ -11,7 +11,7 @@ class FenceEnhancePlugin extends BasePlugin {
     }
 
     process = async () => {
-        this.utils.settings.autoSaveSettings(this)
+        this.utils.settings.autoSave(this)
 
         if (this.config.ENABLE_HOTKEY) {
             new EditorHotkeyHelper(this).process()

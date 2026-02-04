@@ -211,8 +211,8 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
                 threshold: 3,
                 timeWindow: 3000,
                 onConfirmed: async () => {
-                    await this.utils.settings.handleSettings(this.fixedName, pluginSettings => delete pluginSettings.rule_config)
-                    const settings = await this.utils.settings.readCustomPluginSettings()
+                    await this.utils.settings.handle(this.fixedName, pluginSettings => delete pluginSettings.rule_config)
+                    const settings = await this.utils.settings.readCustom()
                     this.config = settings[this.fixedName]
                     this.utils.notification.show(this.i18n.t("success.restore"))
                     await this.utils.formDialog.updateModal(op => op.data = getData())
@@ -257,7 +257,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             configure: async ({ ruleConfig = this.config.rule_config, customRuleFiles = this.config.custom_rule_files, persistent = false } = {}) => {
                 if (persistent) {
                     const conf = { rule_config: ruleConfig, custom_rule_files: customRuleFiles }
-                    await this.utils.settings.handleSettings(this.fixedName, pluginSettings => Object.assign(pluginSettings, conf))
+                    await this.utils.settings.handle(this.fixedName, pluginSettings => Object.assign(pluginSettings, conf))
                     Object.assign(this.config, conf)
                 }
                 send(ACTION.CONFIGURE, {

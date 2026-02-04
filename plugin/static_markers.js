@@ -40,7 +40,7 @@ class StaticMarkersPlugin extends BasePlugin {
             const set = new Set(this.config.STATIC_MARKERS)
             set.has(action) ? set.delete(action) : set.add(action)
             this.config.STATIC_MARKERS = [...set]
-            await this.utils.settings.saveSettings(this.fixedName, { STATIC_MARKERS: this.config.STATIC_MARKERS })
+            await this.utils.settings.save(this.fixedName, { STATIC_MARKERS: this.config.STATIC_MARKERS })
         }
         this._reloadCSS()
     }
