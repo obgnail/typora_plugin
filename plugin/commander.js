@@ -6,6 +6,7 @@
  */
 class CommanderPlugin extends BasePlugin {
     beforeProcess = () => {
+        this.DISPLAY_TYPE = { ALWAYS: "always", ERROR: "error", SILENT: "silent", ECHO: "echo" }
         this.SHELL = { CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl" }
         const shellList = Object.values(this.SHELL)
         this.builtins = this.config.BUILTIN.filter(e => !e.disable && e.shell && shellList.includes(e.shell))
@@ -70,26 +71,26 @@ class CommanderPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.entities.commit.addEventListener("click", () => this.commitExecute());
-        this.entities.shellSelect.addEventListener("change", () => this.entities.input.focus());
+        this.entities.commit.addEventListener("click", () => this.commitExecute())
+        this.entities.shellSelect.addEventListener("change", () => this.entities.input.focus())
         this.entities.builtinSelect.addEventListener("change", ev => {
-            const option = ev.target.selectedOptions[0];
-            if (!option) return;
-            this.entities.shellSelect.value = option.dataset.shell;
-            this.entities.input.value = option.value;
-            this.entities.input.dispatchEvent(new Event("input"));
-            this.entities.input.focus();
+            const option = ev.target.selectedOptions[0]
+            if (!option) return
+            this.entities.shellSelect.value = option.dataset.shell
+            this.entities.input.value = option.value
+            this.entities.input.dispatchEvent(new Event("input"))
+            this.entities.input.focus()
         })
         this.entities.input.addEventListener("input", ev => {
-            const hasCMD = ev.target.value.trim();
+            const hasCMD = ev.target.value.trim()
             this.utils.toggleInvisible(this.entities.commit, !hasCMD)
             if (!hasCMD) {
-                this.entities.builtinSelect.value = "";
+                this.entities.builtinSelect.value = ""
             }
         })
         this.entities.form.addEventListener("submit", ev => {
-            ev.preventDefault();
-            this.commitExecute();
+            ev.preventDefault()
+            this.commitExecute()
         })
         this.entities.form.addEventListener("keydown", ev => {
             const wantHide = ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value)
@@ -140,20 +141,20 @@ class CommanderPlugin extends BasePlugin {
         return `${prefix} ${shellCommand} "${nestCommand}"`
     }
 
-    _refreshModal = (cmd, shell) => {
-        this.entities.input.value = cmd;
-        this.entities.input.dispatchEvent(new Event("input"));
-        this.entities.shellSelect.value = shell;
-        this._showResult("", false, false);
+    _refreshModal = (cmd, shell, showModal = false, error = false) => {
+        this.entities.input.value = cmd
+        this.entities.input.dispatchEvent(new Event("input"))
+        this.entities.shellSelect.value = shell
+        this._showResult("", showModal, error)
     }
 
     _showResult = (result, showModal = true, error = false) => {
         if (showModal) {
             this.entities.window.show()
         }
-        this.utils.show(this.entities.output);
-        this.entities.pre.textContent = result;
-        this.entities.pre.classList.toggle("error", error);
+        this.utils.show(this.entities.output)
+        this.entities.pre.textContent = result
+        this.entities.pre.classList.toggle("error", error)
     }
     _showStdout = result => this._showResult(result, true, false)
     _showStderr = result => this._showResult(result, true, true)
@@ -161,7 +162,7 @@ class CommanderPlugin extends BasePlugin {
     // Why not use shell options? A: Cannot support WSL.
     // Why not use env options? A: For compatibility. cmd uses %VAR%, bash uses $VAR. Commands may also span multiple shell layers.
     _exec = ({ cmd, shell, options = {}, resolve = console.log, reject = console.error, callback = null }) => {
-        const command = this._getCommand(cmd, shell);
+        const command = this._getCommand(cmd, shell)
         const options_ = { encoding: "utf8", cwd: this._getFolder(), ...options }
         const callback_ = (err, stdout, stderr) => {
             const hasError = err || stderr.length > 0
@@ -179,39 +180,45 @@ class CommanderPlugin extends BasePlugin {
         require("child_process").exec(command, options_, callback_)
     }
     _spawn = ({ cmd, shell, options = {}, callback = null }) => {
-        const command = this._getCommand(cmd, shell);
-        const options_ = { encoding: "utf8", cwd: this._getFolder(), shell: true, ...options };
-        const resolve = data => this.entities.pre.textContent += data.toString();
+        const command = this._getCommand(cmd, shell)
+        const options_ = { encoding: "utf8", cwd: this._getFolder(), shell: true, ...options }
+        const resolve = data => this.entities.pre.textContent += data.toString()
         const reject = data => {
-            this.entities.pre.textContent += data.toString();
-            this.entities.pre.classList.add("error");
+            this.entities.pre.textContent += data.toString()
+            this.entities.pre.classList.add("error")
         }
-        const callback_ = code => callback && callback(code);
+        const callback_ = code => callback?.(code)
 
-        this._refreshModal(cmd, shell);
+        this._refreshModal(cmd, shell, true)
         const child = require("child_process").spawn(command, options_)
-        child.stdout.on("data", resolve);
-        child.stderr.on("data", reject);
-        child.on("close", callback_);
+        child.stdout.on("data", resolve)
+        child.stderr.on("data", reject)
+        child.on("close", callback_)
     }
 
-    echoExec = (cmd, shell, options = {}, callback = null) => this._spawn({ cmd, shell, options, callback });
-    silentExec = (cmd, shell, options = {}, callback = null) => this._exec({ cmd, shell, options, callback });
-    errorExec = (cmd, shell, options = {}, callback = null) => this._exec({ cmd, shell, options, callback, reject: this._showStderr });
-    alwaysExec = (cmd, shell, options = {}, callback = null) => this._exec({ cmd, shell, options, callback, resolve: this._showStdout, reject: this._showStderr });
+    echoExec = (cmd, shell, options = {}, callback = null) => this._spawn({ cmd, shell, options, callback })
+    silentExec = (cmd, shell, options = {}, callback = null) => this._exec({ cmd, shell, options, callback })
+    errorExec = (cmd, shell, options = {}, callback = null) => this._exec({ cmd, shell, options, callback, reject: this._showStderr })
+    alwaysExec = (cmd, shell, options = {}, callback = null) => this._exec({ cmd, shell, options, callback, resolve: this._showStdout, reject: this._showStderr })
 
     execute = (type, cmd, shell, options = {}, callback = null) => {
-        const execFunctions = { always: this.alwaysExec, error: this.errorExec, silent: this.silentExec, echo: this.echoExec };
-        const execFunction = execFunctions[type] || execFunctions.echo;
-        return execFunction(cmd, shell, options, callback);
-    };
+        const T = this.DISPLAY_TYPE
+        const execFns = {
+            [T.ALWAYS]: this.alwaysExec,
+            [T.ERROR]: this.errorExec,
+            [T.SILENT]: this.silentExec,
+            [T.ECHO]: this.echoExec,
+        }
+        const execFn = execFns[type] || execFns.echo
+        return execFn(cmd, shell, options, callback)
+    }
     quickExecute = (cmd, shell) => this.execute(this.config.QUICK_RUN_DISPLAY, cmd, shell)
     commitExecute = () => {
-        const cmd = this.entities.input.value;
+        const cmd = this.entities.input.value
         if (!cmd) {
             this._showStderr("Empty Command")
         } else {
-            const option = this.entities.shellSelect.selectedOptions[0];
+            const option = this.entities.shellSelect.selectedOptions[0]
             if (option) {
                 this.execute(this.config.COMMIT_RUN_DISPLAY, cmd, option.value)
             }
