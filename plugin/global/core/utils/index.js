@@ -664,17 +664,7 @@ class utils {
     static getLocalRootUrl = () => File.editor.docMenu.getLocalRootUrl() || this.getCurrentDirPath()
     static getFileProtocolUrl = (url) => new URL(url, this.fileProtocolUrlBase)
 
-    /**
-     * @param {boolean} shouldSave - Whether to save the content.
-     * @param {string} contentType - The content type (e.g., 'markdown', 'html').
-     * @param {boolean} skipSetContent - Whether to skip setting the content.
-     * @param {any} saveContext - Contextual information for saving (optional).
-     * @returns {string} - The content of the editor.
-     */
-    static getCurrentFileContent = (shouldSave = false, contentType, skipSetContent, saveContext) => {
-        return File.sync(shouldSave, contentType, skipSetContent, saveContext)
-    }
-
+    static getCurrentFileContent = () => File.editor.getMarkdown()
     static editCurrentFile = async (replacement, persistence = File.option.enableAutoSave) => {
         await this.fixScrollTop(async () => {
             const bak = File.presentedItemChanged
@@ -811,8 +801,8 @@ class utils {
         }
     }
 
-    static readYaml = content => require("../lib/js-yaml").safeLoad(content)
-    static stringifyYaml = (obj, args) => require("../lib/js-yaml").safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
+    static readYaml = content => require("../lib/js-yaml").load(content)
+    static stringifyYaml = (obj, args) => require("../lib/js-yaml").dump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
     static readToml = content => require("../lib/smol-toml").parse(content)
     static stringifyToml = obj => require("../lib/smol-toml").stringify(obj)
     static readTomlFile = async filepath => this.readToml(await FS_EXTRA.readFile(filepath, "utf-8"))
@@ -990,7 +980,7 @@ class utils {
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
 
-    static getMarkdownIt = this.once(() => require("../lib/markdown-it").markdownit({ html: true, linkify: true, typographer: true }))
+    static getMarkdownIt = this.once(() => require("../lib/markdown-it")({ html: true, linkify: true, typographer: true }))
     static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
     static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
 
@@ -1003,8 +993,8 @@ class utils {
             const { HttpsProxyAgent } = require("../lib/https-proxy-agent")
             agent = new HttpsProxyAgent(proxy)
         }
-        const nodeFetch = require("../lib/node-fetch")
-        return nodeFetch.fetch(url, { agent, signal, ...args })
+        const nodeFetch = require("../lib/node-fetch-commonjs")
+        return nodeFetch(url, { agent, signal, ...args })
     }
 
     static splitFrontMatter = content => {

@@ -1,8 +1,9 @@
 {
   "scripts": {
-    "build": "node build/index.cjs",
-    "build:single": "npm run build markdownlint-rule-helpers",
-    "build:selected": "npm run build md-padding markmap markdownlint-rule-helpers",
+    "build:all": "node build/index.cjs",
+    "build:single": "node build/index.cjs node-fetch-commonjs",
+    "build:external": "node build/index.cjs markdown-it marp-core markmap",
+    "build:analyze": "node build/index.cjs --analyze markmap",
     "test": "node --test",
     "dev": "node --env-file=.env scripts/index.js",
     "rpc": "npm run dev rpc",
@@ -16,6 +17,8 @@
     "abcjs": "^6.6.0",
     "crypto-js": "^4.2.0",
     "https-proxy-agent": "^7.0.6",
+    "js-yaml": "^4.1.0",
+    "katex": "^0.16.25",
     "markdown-it": "^14.1.0",
     "markdownlint": "^0.39.0",
     "markdownlint-rule-helpers": "^0.30.0",
@@ -29,6 +32,7 @@
     "mdast-util-to-markdown": "^2.1.2",
     "micromark-extension-gfm": "^3.0.0",
     "micromark-extension-math": "^3.1.0",
+    "node-fetch-commonjs": "^3.3.2",
     "node-json-rpc": "^0.0.1",
     "smol-toml": "^1.6.0"
   },

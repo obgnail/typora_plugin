@@ -1,2 +1,1 @@
-const markdownit = require("markdown-it")
-module.exports = { markdownit }
+module.exports = require("markdown-it")

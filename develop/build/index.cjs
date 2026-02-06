@@ -5,102 +5,180 @@
 const path = require("path")
 const esbuild = require("esbuild")
 
-const options = {
+const ENV = {
+    BUILD_DIR: __dirname,
+    ROOT_DIR: path.dirname(path.dirname(__dirname)),
+    SHARED_LIB_DIR: "plugin/global/core/lib",
+}
+
+const ESBUILD_OPTIONS = {
     bundle: true,
     minify: true,
     platform: "node",
     target: "node12.14",
     logLevel: "info",
+    sourcemap: false,
 }
 
-const allBuildTasks = {
-    "markdown-it": {
-        entryPoints: ["markdown-it.cjs"],
-        outfile: "plugin/global/core/lib/markdown-it.js",
-    },
-    "smol-toml": {
-        entryPoints: ["smol-toml.mjs"],
-        outfile: "plugin/global/core/lib/smol-toml.js",
-    },
-    "mdast": {
-        entryPoints: ["mdast.mjs"],
-        outfile: "plugin/global/core/lib/mdast.js",
-    },
-    "https-proxy-agent": {
-        entryPoints: ["https-proxy-agent.mjs"],
-        outfile: "plugin/global/core/lib/https-proxy-agent.js",
-    },
+const sharedLib = (entryFile) => {
+    const name = path.basename(entryFile, path.extname(entryFile))
+    return { entry: entryFile, out: `${ENV.SHARED_LIB_DIR}/${name}.js` }
+}
+
+const SHARED_LIBS_CONFIG = {
+    "js-yaml": sharedLib("js-yaml.cjs"),
+    "katex": sharedLib("katex.cjs"),
+    "markdown-it": sharedLib("markdown-it.cjs"),
+    "smol-toml": sharedLib("smol-toml.mjs"),
+    "node-fetch-commonjs": sharedLib("node-fetch-commonjs.cjs"),
+    "https-proxy-agent": sharedLib("https-proxy-agent.mjs"),
+    "mdast": sharedLib("mdast.mjs"),
+}
+
+const CUSTOM_TASKS_CONFIG = {
     "node-json-rpc": {
-        entryPoints: ["node-json-rpc.cjs"],
-        outfile: "plugin/json_rpc/node-json-rpc.js",
+        entry: "node-json-rpc.cjs",
+        out: "plugin/json_rpc/node-json-rpc.js"
     },
     "md-padding": {
-        entryPoints: ["md-padding.mjs"],
-        outfile: "plugin/md_padding/md-padding.min.js",
+        entry: "md-padding.mjs",
+        out: "plugin/md_padding/md-padding.min.js"
     },
     "aes-ecb": {
-        entryPoints: ["aes-ecb.mjs"],
-        outfile: "plugin/cipher/aes-ecb.min.js",
+        entry: "aes-ecb.mjs",
+        out: "plugin/cipher/aes-ecb.min.js"
     },
     "markmap": {
-        entryPoints: ["markmap.mjs"],
-        outfile: "plugin/markmap/resource/markmap.min.js",
+        entry: "markmap.mjs",
+        out: "plugin/markmap/resource/markmap.min.js"
     },
     "abc": {
-        entryPoints: ["abc.mjs"],
-        outfile: "plugin/custom/plugins/abc/abcjs-basic-min.js",
+        entry: "abc.mjs",
+        out: "plugin/custom/plugins/abc/abcjs-basic-min.js"
     },
     "marp-core": {
-        entryPoints: ["marp-core.mjs"],
-        outfile: "plugin/custom/plugins/marp/marp-core.min.js",
+        entry: "marp-core.mjs",
+        out: "plugin/custom/plugins/marp/marp-core.min.js"
     },
     "markdownlint": {
-        entryPoints: ["markdownlint.mjs"],
-        outfile: "plugin/custom/plugins/markdownLint/markdownlint.min.js",
+        entry: "markdownlint.mjs",
+        out: "plugin/custom/plugins/markdownLint/markdownlint.min.js"
     },
     "markdownlint-rule-helpers": {
-        entryPoints: ["markdownlint-rule-helpers.cjs"],
-        outfile: "plugin/custom/plugins/markdownLint/markdownlint-rule-helpers.min.js",
+        entry: "markdownlint-rule-helpers.cjs",
+        out: "plugin/custom/plugins/markdownLint/markdownlint-rule-helpers.min.js"
     },
 }
 
-let tasksToBuild = []
-const args = process.argv.slice(2)
-if (args.length === 0) {
-    tasksToBuild = Object.values(allBuildTasks)
-    console.log("Building all dependencies...")
-} else {
-    args.forEach(taskName => {
-        if (allBuildTasks[taskName]) {
-            tasksToBuild.push(allBuildTasks[taskName])
-            console.log(`Adding task: ${taskName}`)
-        } else {
-            console.warn(`Warning: Task "${taskName}" not found. Skipping.`)
+function generateBuildData(configMap, isShared) {
+    const tasks = {}
+    const registry = {}
+    Object.entries(configMap).forEach(([name, config]) => {
+        if (!config.entry || !config.out) {
+            throw new Error(`Invalid config for "${name}"`)
+        }
+        tasks[name] = {
+            entryPoints: [path.join(ENV.BUILD_DIR, config.entry)],
+            outfile: path.join(ENV.ROOT_DIR, config.out),
+        }
+        if (isShared) {
+            registry[name] = config.out
         }
     })
-}
-if (tasksToBuild.length === 0) {
-    console.error("No valid tasks specified. Please provide valid task names")
-    process.exit(1)
+    return { tasks, registry }
 }
 
-const pluginDir = path.dirname(path.dirname(__dirname))
-
-Promise.all(
-    tasksToBuild
-        .map(task => ({
-            entryPoints: task.entryPoints.map(e => path.join(__dirname, e)),
-            outfile: path.join(pluginDir, task.outfile)
-        }))
-        .map(task => esbuild.build({
-            ...options,
-            ...task,
-        }))
-)
-    .then(() => {
-        console.log("Selected packaging tasks have been successfully completed!")
+function resolveTasksToRun(args, allTasks) {
+    const analyze = args.includes("--analyze")
+    const taskNames = args.filter(arg => !arg.startsWith("--"))
+    if (taskNames.length === 0) {
+        return { tasks: Object.values(allTasks), names: ["ALL"], analyze }
+    }
+    const tasks = []
+    const names = []
+    taskNames.forEach(name => {
+        if (allTasks[name]) {
+            tasks.push(allTasks[name])
+            names.push(name)
+        } else {
+            console.warn(`\x1b[33mWarning: Task "${name}" not found. Skipping.\x1b[0m`)
+        }
     })
-    .catch((err) => {
-        console.error("Build Error:", err)
+    return { tasks, names, analyze }
+}
+
+function createAliasPlugin(registry, currentOutfile) {
+    return {
+        name: "auto-external-alias",
+        setup(build) {
+            const sharedLibNames = Object.keys(registry)
+            if (sharedLibNames.length === 0) return
+
+            const libs = sharedLibNames.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")
+            const filter = new RegExp(`^(${libs})$`)
+            build.onResolve({ filter }, (args) => {
+                const libName = args.path
+                const targetRelPath = registry[libName]
+                const targetAbsPath = path.join(ENV.ROOT_DIR, targetRelPath)
+
+                // If the file currently being compiled is the shared library itself, do not external it
+                if (currentOutfile === targetAbsPath) return null
+
+                const outputDir = path.dirname(currentOutfile)
+                let relPath = path.relative(outputDir, targetAbsPath).split(path.sep).join("/")
+                if (!relPath.startsWith(".")) {
+                    relPath = "./" + relPath
+                }
+                return { path: relPath, external: true }
+            })
+        }
+    }
+}
+
+async function build() {
+    const sharedData = generateBuildData(SHARED_LIBS_CONFIG, true)
+    const customData = generateBuildData(CUSTOM_TASKS_CONFIG, false)
+
+    const globalRegistry = sharedData.registry
+    const allTasks = { ...sharedData.tasks, ...customData.tasks }
+
+    const cliArgs = process.argv.slice(2)
+    const { tasks: tasksToRun, names: selectedNames, analyze } = resolveTasksToRun(cliArgs, allTasks)
+    if (tasksToRun.length === 0) {
+        console.error("\x1b[31mError: No valid tasks specified.\x1b[0m")
         process.exit(1)
-    })
+    }
+
+    console.log(`\x1b[36mTargets: ${selectedNames.join(", ")} (${tasksToRun.length} tasks)\x1b[0m`)
+    if (analyze) console.log(`\x1b[35mMode: Analysis Enabled\x1b[0m`)
+    console.time("Build Time")
+
+    try {
+        const promises = tasksToRun.map(async task => {
+            const alias = createAliasPlugin(globalRegistry, task.outfile)
+            const buildOptions = {
+                ...ESBUILD_OPTIONS,
+                ...task,
+                plugins: [alias],
+                metafile: analyze,
+            }
+
+            const result = await esbuild.build(buildOptions)
+            if (analyze && result.metafile) {
+                const text = await esbuild.analyzeMetafile(result.metafile)
+                console.log(`\n\x1b[35m[Analysis: ${path.basename(task.outfile)}]\x1b[0m`)
+                console.log(text)
+            }
+
+            return result
+        })
+        await Promise.all(promises)
+        console.timeEnd("Build Time")
+        console.log("\x1b[32m✔ Build success!\x1b[0m")
+    } catch (err) {
+        console.error("\x1b[31m✘ Build failed:\x1b[0m", err)
+        process.exit(1)
+    }
+}
+
+build()
