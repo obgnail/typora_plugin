@@ -49,84 +49,70 @@ class TemplaterPlugin extends BaseCustomPlugin {
         const { response, data } = await this.utils.formDialog.modal(op)
         if (response === 1) {
             const { filename, preview, autoOpen } = data
-            await this.writeTemplateFile(filename, preview, autoOpen)
+            await this._writeFile(filename, preview, autoOpen)
         }
     }
 
-    writeTemplateFile = async (filename, template, autoOpen) => {
+    _writeFile = async (filename, template, autoOpen) => {
         if (filename && !filename.endsWith(".md")) {
             filename += ".md"
         }
         filename = await this.utils.newFilePath(filename)
         const title = this.utils.Package.Path.basename(filename)
-        const content = (new TemplateHelper(title, this))._convert(template)
+        const content = this._parseTemplate(template, title)
         const ok = await this.utils.writeFile(filename, content)
         if (!ok) return
         if (autoOpen) {
             this.utils.openFile(filename)
         }
     }
-}
 
-class TemplateHelper {
-    constructor(title, plugin) {
-        this._title = title.substring(0, title.lastIndexOf("."))
-        this.utils = plugin.utils
-        this.config = plugin.config
-        this._date = new Date()
-    }
+    _parseTemplate = (template, title) => {
+        const _date = new Date()
+        const _title = title.substring(0, title.lastIndexOf("."))
 
-    _getTemplateVars = () => {
-        const map = {}
+        const fns = {
+            title: () => _title,
+            folder: () => this.utils.getCurrentDirPath(),
+            mountFolder: () => this.utils.getMountFolder(),
+            filepath: () => this.utils.Package.Path.join(fns.folder(), _title),
+            uuid: () => this.utils.getUUID(),
+            randomInt: (floor, ceil) => this.utils.randomInt(floor, ceil),
+            randomStr: (length) => this.utils.randomString(length),
+            timestamp: () => _date.getTime(),
+            formatDate: (format, locale) => this.utils.dateTimeFormat(_date, format, locale),
+            datetime: (locale) => fns.formatDate("yyyy-MM-dd HH:mm:ss", locale),
+            date: (locale) => fns.formatDate("yyyy-MM-dd", locale),
+            time: (locale) => fns.formatDate("HH:mm:ss", locale),
+            weekday: (locale) => fns.formatDate("ddd", locale),
+            dateOffset: (offset = 0, format = "yyyy-MM-dd", locale) => {
+                const timestamp = fns.timestamp() + parseInt(offset) * (24 * 60 * 60 * 1000)
+                return this.utils.dateTimeFormat(new Date(timestamp), format, locale)
+            },
+            yesterday: (format, locale) => fns.dateOffset(-1, format, locale),
+            tomorrow: (format, locale) => fns.dateOffset(1, format, locale),
+        }
         this.config.template_variables.forEach(({ enable, name, callback }) => {
             if (!enable) return
-            const func = eval(callback)
-            if (typeof func === "function") {
-                map[name] = func
+            const fn = eval(callback)
+            if (typeof fn === "function") {
+                fns[name] = fn
             }
         })
-        Object.entries(this).forEach(([key, value]) => {
-            if (!key.startsWith("_") && typeof value === "function") {
-                map[key] = value
-            }
-        })
-        return map
-    }
-    _convert = text => {
-        const context = this._getTemplateVars()
-        const parentheses = `\\((.*?)\\)`
-        const LBrace = `\\{\\{`
-        const RBrace = `\\}\\}`
-        const space = `\\s`
-        for (const [symbol, func] of Object.entries(context)) {
-            const regExp = `${LBrace}${space}*${symbol}(${parentheses})?${space}*${RBrace}`
-            text = text.replace(new RegExp(regExp, "g"), (origin, _, templateArgs) => {
-                const args = !templateArgs ? [] : eval(`[${templateArgs}]`)
-                return func.apply(this, args)
-            })
-        }
-        return text
-    }
 
-    uuid = () => this.utils.getUUID()
-    randomInt = (floor, ceil) => this.utils.randomInt(floor, ceil)
-    randomStr = len => this.utils.randomString(len)
-    title = () => this._title
-    folder = () => this.utils.getCurrentDirPath()
-    mountFolder = () => this.utils.getMountFolder()
-    filepath = () => this.utils.Package.Path.join(this.folder(), this.title())
-    formatDate = (format, locale) => this.utils.dateTimeFormat(this._date, format, locale)
-    timestamp = () => this._date.getTime()
-    datetime = locale => this.formatDate("yyyy-MM-dd HH:mm:ss", locale)
-    date = locale => this.formatDate("yyyy-MM-dd", locale)
-    time = locale => this.formatDate("HH:mm:ss", locale)
-    weekday = locale => this.formatDate("ddd", locale)
-    dateOffset = (offset = 0, format = "yyyy-MM-dd", locale) => {
-        const timestamp = this.timestamp() + parseInt(offset) * (24 * 60 * 60 * 1000)
-        return this.utils.dateTimeFormat(new Date(timestamp), format, locale)
+        const regex = /\{\{\s*([a-zA-Z0-9_$]+)(?:\((.*?)\))?\s*\}\}/g
+        return template.replace(regex, (origin, fnName, argsStr) => {
+            const fn = fns[fnName]
+            if (typeof fn !== "function") return origin
+            try {
+                const args = argsStr ? eval(`[${argsStr}]`) : []
+                return fn.apply(this, args)
+            } catch (e) {
+                console.error(`Template error in ${fnName}:`, e)
+                return origin
+            }
+        })
     }
-    yesterday = (format, locale) => this.dateOffset(-1, format, locale)
-    tomorrow = (format, locale) => this.dateOffset(1, format, locale)
 }
 
 module.exports = {

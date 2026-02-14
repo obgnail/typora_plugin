@@ -1101,7 +1101,7 @@ class utils {
     }
 
     static compareScrollPosition = (element, contentScrollTop) => {
-        contentScrollTop = contentScrollTop || this.entities.eContent.scrollTop()
+        contentScrollTop = contentScrollTop || this.entities.eContent.scrollTop
         const elementOffsetTop = element.offsetTop
         if (elementOffsetTop < contentScrollTop) {
             return -1
@@ -1138,6 +1138,15 @@ class utils {
     }
 
     static moveCursor = $target => File.editor.selection.jumpIntoElemEnd($target)
+
+    static jumpToEdge = (toTop = true) => {
+        const fn = toTop ? "jumpTop" : "jumpBottom"
+        File.editor.selection[fn]()
+        if (File.isTypeWriterMode) {
+            const scrollTop = toTop ? "0" : this.entities.eWrite.getBoundingClientRect().height
+            this.entities.$eContent.animate({ scrollTop }, "100", "swing", () => File.editor.library.outline.highlightVisibleHeader())
+        }
+    }
 
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
         if (!$target) return

@@ -37,7 +37,7 @@ class UnstableRequire {
             "lodash": "lowdb/node_modules/lodash",
 
             "vscode-ripgrep": "vscode-ripgrep",
-            "debug": "vscode-ripgrep/node_modules/debug",
+            "debug": "vscode-ripgrep/node_modules/debug",  // New version only
             "ms": "vscode-ripgrep/node_modules/ms",
             "https-proxy-agent": "vscode-ripgrep/node_modules/https-proxy-agent",  // New version only
 
@@ -45,7 +45,7 @@ class UnstableRequire {
             "uuid": "raven/node_modules/uuid",
 
             "jimp": this.utils.joinPath(libBase, "jimp/browser/lib/jimp.min.js"),
-            'pdf-lib': this.utils.joinPath(libBase, "pdf/pdf-lib.min.js"),
+            "pdf-lib": this.utils.joinPath(libBase, "pdf/pdf-lib.min.js"),
         })
     }
 

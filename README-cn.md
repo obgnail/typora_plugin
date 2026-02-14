@@ -59,25 +59,24 @@
 | 40   | export_enhance          | 导出 HTML 时避免图片丢失                   |          |
 | 41   | sidebar_enhance         | 显示其他扩展名文件、记忆折叠状态、拖拽排序 |          |
 | 42   | markdownLint            | markdown 格式检查                          |          |
-| 43   | go_top                  | 一键到文章顶部、底部                       |          |
-| 44   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能           | ×        |
-| 45   | dark                    | 夜间模式                                   |          |
-| 46   | no_image                | 无图模式                                   |          |
-| 47   | myopic_defocus          | 离焦视力舒缓                               |          |
-| 48   | updater                 | 一键升级插件                               |          |
-| 49   | easy_modify             | 编辑工具                                   |          |
-| 50   | editor_width_slider     | 写作区宽度调整                             |          |
-| 51   | redirectLocalRootUrl    | 重定向本地资源根目录                       | ×        |
-| 52   | scrollBookmarker        | 书签管理器                                 | ×        |
-| 53   | cipher                  | 加密文件                                   | ×        |
-| 54   | ripgrep                 | 使用 ripgrep 搜索文件                      | ×        |
-| 55   | article_uploader        | 一键上传博客到支持的所有平台               | ×        |
-| 56   | cursor_history          | 光标跳转                                   | ×        |
-| 57   | static_markers          | Markdown 标记常显                          | ×        |
-| 58   | custom                  | 开放平台，用户自定义插件（高级）           |          |
-| 59   | hotkeys                 | 快捷键注册中心（高级）                     |          |
-| 60   | quickButton             | 于右下角添加功能按钮（高级）               |          |
-| 61   | json_rpc                | 外部操纵 Typora（高级）                    | ×        |
+| 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能           | ×        |
+| 44   | dark                    | 夜间模式                                   |          |
+| 45   | no_image                | 无图模式                                   |          |
+| 46   | myopic_defocus          | 离焦视力舒缓                               |          |
+| 47   | updater                 | 一键升级插件                               |          |
+| 48   | easy_modify             | 编辑工具                                   |          |
+| 49   | editor_width_slider     | 写作区宽度调整                             |          |
+| 50   | redirectLocalRootUrl    | 重定向本地资源根目录                       | ×        |
+| 51   | scrollBookmarker        | 书签管理器                                 | ×        |
+| 52   | cipher                  | 加密文件                                   | ×        |
+| 53   | ripgrep                 | 使用 ripgrep 搜索文件                      | ×        |
+| 54   | article_uploader        | 一键上传博客到支持的所有平台               | ×        |
+| 55   | cursor_history          | 光标跳转                                   | ×        |
+| 56   | static_markers          | Markdown 标记常显                          | ×        |
+| 57   | custom                  | 开放平台，用户自定义插件（高级）           |          |
+| 58   | hotkeys                 | 快捷键注册中心（高级）                     |          |
+| 59   | quickButton             | 于右下角添加功能按钮（高级）               |          |
+| 60   | json_rpc                | 外部操纵 Typora（高级）                    | ×        |
 
 > 如果有需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果觉得本项目对您有帮助，请不吝点亮一个 Star ⭐！
 
@@ -572,12 +571,6 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 - 目录树显示其他扩展名文件
 - 记忆大纲折叠状态
 - 定制侧边栏文件图标
-
-
-
-### go_top： 一键到顶
-
-功能：在右下角添加一个一键到顶的按钮。
 
 
 

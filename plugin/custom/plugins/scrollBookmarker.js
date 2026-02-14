@@ -117,17 +117,18 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
         for (const [filepath, idxList] of map.entries()) {
             for (const idx of idxList.keys()) {
                 const fileName = this.utils.getFileName(filepath)
+                const itemText = this._itemText(fileName, idx)
                 if (item) {
                     const content = item.querySelector(".bookmark-item-content")
                     if (content) {
-                        content.textContent = `${fileName} - ${idx}`
+                        content.textContent = itemText
                         content.dataset.file = filepath
                         content.dataset.idx = idx
                     }
                 } else {
                     this.entities.list.insertAdjacentHTML("beforeend", `
                         <div class="bookmark-item">
-                            <div class="bookmark-item-content" data-file="${filepath}" data-idx="${idx}">${fileName} - ${idx}</div>
+                            <div class="bookmark-item-content" data-file="${filepath}" data-idx="${idx}">${itemText}</div>
                             <div class="bookmark-btn fa fa-trash-o"></div>
                         </div>`)
                     item = this.entities.list.lastElementChild
@@ -141,6 +142,8 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
             item = next
         }
     }
+
+    _itemText = (fileName, idx) => `${fileName} - ${idx}`
 }
 
 module.exports = {

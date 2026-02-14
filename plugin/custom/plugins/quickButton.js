@@ -17,7 +17,13 @@ class QuickButtonPlugin extends BaseCustomPlugin {
             if (buttons.size) {
                 const maxX = Math.max(-1, ...[...buttons.values()].map(c => c.x))
                 const maxY = Math.max(-1, ...[...buttons.values()].map(c => c.y))
-                await this.utils.styleTemplater.register(this.fixedName, { rowCount: maxX + 1, colCount: maxY + 1, this: this })
+                await this.utils.styleTemplater.register(this.fixedName, {
+                    rowCount: maxX + 1,
+                    colCount: maxY + 1,
+                    this: this,
+                    buttonColor: "var(--text-color)",
+                    buttonBgColor: "initial",
+                })
                 this.buttonGroup.append(...this.genButtons(maxX, maxY))
             }
         })

@@ -179,8 +179,10 @@ module.exports = {
     },
     quickButton: {
         button_size: required,
+        button_icon_size: required,
         button_border_radius: required,
         button_box_shadow: required,
+        button_box_shadow_on_hover: required,
         button_gap: required,
         position_right: required,
         position_bottom: required,

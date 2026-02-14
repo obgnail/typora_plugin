@@ -59,25 +59,24 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 40   | export_enhance          | Avoid image loss when exporting to HTML                      |                    |
 | 41   | sidebar_enhance         | Drag & drop to rearrange、Display non-Markdown files、Keep Fold State |                    |
 | 42   | markdownLint            | Markdown Lint Check                                          |                    |
-| 43   | go_top                  | One-click to top of the article                              |                    |
-| 44   | truncate_text           | Hide content to improve performance for large files          | ×                  |
-| 45   | dark                    | Dark mode                                                    |                    |
-| 46   | no_image                | No image mode                                                |                    |
-| 47   | myopic_defocus          | Defocus Comfort Mode                                         |                    |
-| 48   | updater                 | One-click plugin update                                      |                    |
-| 49   | easy_modify             | Editing tools                                                |                    |
-| 50   | editor_width_slider     | Adjust writing area width                                    |                    |
-| 51   | redirectLocalRootUrl    | Redirect local resource root directory                       | ×                  |
-| 52   | scrollBookmarker        | Bookmark manager                                             | ×                  |
-| 53   | cipher                  | Encrypt files                                                | ×                  |
-| 54   | ripgrep                 | Search files using ripgrep                                   | ×                  |
-| 55   | article_uploader        | One-click upload blog to supported platforms                 | ×                  |
-| 56   | cursor_history          | Cursor History                                               | ×                  |
-| 57   | static_markers          | Static Markers                                               | ×                  |
-| 58   | custom                  | Open platform for user-defined plugins (advanced)            |                    |
-| 59   | hotkeys                 | Hotkey registration center (advanced)                        |                    |
-| 60   | quickButton             | Add function buttons in the lower right corner (advanced)    |                    |
-| 61   | json_rpc                | External control of Typora (advanced)                        | ×                  |
+| 43   | truncate_text           | Hide content to improve performance for large files          | ×                  |
+| 44   | dark                    | Dark mode                                                    |                    |
+| 45   | no_image                | No image mode                                                |                    |
+| 46   | myopic_defocus          | Defocus Comfort Mode                                         |                    |
+| 47   | updater                 | One-click plugin update                                      |                    |
+| 48   | easy_modify             | Editing tools                                                |                    |
+| 49   | editor_width_slider     | Adjust writing area width                                    |                    |
+| 50   | redirectLocalRootUrl    | Redirect local resource root directory                       | ×                  |
+| 51   | scrollBookmarker        | Bookmark manager                                             | ×                  |
+| 52   | cipher                  | Encrypt files                                                | ×                  |
+| 53   | ripgrep                 | Search files using ripgrep                                   | ×                  |
+| 54   | article_uploader        | One-click upload blog to supported platforms                 | ×                  |
+| 55   | cursor_history          | Cursor History                                               | ×                  |
+| 56   | static_markers          | Static Markers                                               | ×                  |
+| 57   | custom                  | Open platform for user-defined plugins (advanced)            |                    |
+| 58   | hotkeys                 | Hotkey registration center (advanced)                        |                    |
+| 59   | quickButton             | Add function buttons in the lower right corner (advanced)    |                    |
+| 60   | json_rpc                | External control of Typora (advanced)                        | ×                  |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
@@ -508,10 +507,6 @@ Function:
 - Display non-Markdown files in the sidebar
 - Keep Fold Outline State
 - Customize Sidebar File Icons
-
-### go_top
-
-Function: Add a "Go to Top" button at the bottom right corner.
 
 ### dark: Dark Mode
 

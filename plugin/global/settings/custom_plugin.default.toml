@@ -1501,11 +1501,17 @@ support_right_click = true
 # 按钮的尺寸，例如："35px"、"40px" 等
 button_size = "35px"
 
+# 按钮图标的尺寸
+button_icon_size = "17px"
+
 # 按钮的圆角半径，例如："4px"、"5px" 等
 button_border_radius = "4px"
 
 # 按钮的阴影效果，使用 CSS box-shadow 语法
-button_box_shadow = "0 1px 20px 0 rgba(0,0,0,0.1), inset 0 -1px 0 0 rgba(0,0,0,0.1)"
+button_box_shadow = "0 1px 20px 0 rgba(0, 0, 0, 0.1), inset 0 -1px 0 0 rgba(0, 0, 0, 0.1)"
+
+# 悬停时的按钮的阴影
+button_box_shadow_on_hover = "0 2px 10px 3px rgba(0, 0, 0, .15)"
 
 # 按钮之间的间隔，例如："10px"、"15px" 等
 button_gap = "10px"
@@ -1545,8 +1551,8 @@ hide_button_hint = false
 #       这里的文本内容会被 eval() 执行，具有潜在的安全风险
 #       如果设置了此参数，callback 参数将会失效
 buttons = [
-    { disable = false, coordinate = [0, 0], size = "24px", icon = "fa fa-caret-down", callback = "go_top.goBottom" },
-    { disable = false, coordinate = [1, 0], size = "24px", icon = "fa fa-caret-up", callback = "go_top.goTop" },
+    { disable = false, coordinate = [0, 0], size = "24px", icon = "fa fa-caret-down", evil = "() => this.utils.jumpToEdge(false)" },
+    { disable = false, coordinate = [1, 0], size = "24px", icon = "fa fa-caret-up", evil = "() => this.utils.jumpToEdge(true)" },
     { disable = false, coordinate = [2, 0], size = "17px", icon = "fa fa-font", callback = "text_stylize.call" },
     { disable = false, coordinate = [3, 0], size = "17px", icon = "fa fa-indent", callback = "md_padding.call" },
     { disable = false, coordinate = [4, 0], size = "17px", icon = "fa fa-gear", callback = "preferences.call" },

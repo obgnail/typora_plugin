@@ -2216,7 +2216,6 @@ LIST = [
     "right_click_menu",
     "---",
     "pie_menu",
-    "go_top",
     "resource_manager",
     "text_stylize",
     "hotkeys",
