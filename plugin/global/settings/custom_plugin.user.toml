@@ -1,0 +1,21 @@
+[CompleteWithLLM]
+name = "使用LLM补全"
+enable = true
+hide = false
+order = 1
+hotkey_string = "ctrl+shift+H"
+apiKey = "sk-xxx"
+url = "https://api.deepseek.com"
+model = "deepseek-chat"
+prompt = """
+Please read the input text, and follow these instructions:\r
+1. Optimize and complete the input text. \r
+2. The language of the output should be consistent with the language of the input text, even if it is in a mixed-language form.\r
+3. Don't provide any additional explanation before or after the answer and output directly.\r
+"""
+
+[LatexCompletion]
+name = "Latex自动补全"
+enable = true
+hide = true
+order = 1
