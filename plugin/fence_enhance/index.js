@@ -546,10 +546,12 @@ class HighlightHelper {
         this.pattern = new RegExp(plugin.config.HIGHLIGHT_PATTERN)
         this.numberingBase = (plugin.config.NUMBERING_BASE === "0-based") ? 0 : 1
         this.className = "plugin-fence-enhance-highlight"
+        this.highlightSym = Symbol("highlight")
+        this.highlightHandlesSym = Symbol("highlight_handles")
     }
 
     _setHighlight = (cm) => {
-        const line = cm?.options?.mode?.__highlight?.line
+        const line = cm?.options?.mode?.[this.highlightSym]?.line
         if (!line) return
 
         const lastLine = cm.lastLine()
@@ -564,7 +566,7 @@ class HighlightHelper {
             .map(n => n - this.numberingBase)
             .filter(n => n >= 0 && n <= lastLine)
 
-        cm.__highlight_handles = [...new Set(lineNumbers)].map(lineNo => {
+        cm[this.highlightHandlesSym] = [...new Set(lineNumbers)].map(lineNo => {
             const handle = cm.getLineHandle(lineNo)
             cm.addLineClass(handle, "background", this.className)
             return handle
@@ -572,11 +574,11 @@ class HighlightHelper {
     }
 
     _clearHighlight = cm => {
-        const handles = cm.__highlight_handles
+        const handles = cm[this.highlightHandlesSym]
         if (Array.isArray(handles) && handles.length > 0) {
             handles.filter(handle => handle?.parent).forEach(handle => cm.removeLineClass(handle, "background", this.className))
         }
-        cm.__highlight_handles = null
+        cm[this.highlightHandlesSym] = null
     }
 
     _rerender = (cm) => {
@@ -605,9 +607,13 @@ class HighlightHelper {
         const after = (mode) => {
             if (mode == null) return mode
             if (typeof mode !== "object") {
-                mode = { name: mode }
+                // `monkeyPatch` makes `frame.js` happy
+                // `File.editor.diagrams.updateDiagram` uses `isType(cm.options.mode, "mermaid")` to determine the type
+                // `isType` compares whether `mode.attributes.type === "mermaid"`
+                const monkeyPatch = { attributes: { type: mode } }
+                mode = { name: mode, ...monkeyPatch }
             }
-            mode.__highlight = context
+            mode[this.highlightSym] = context
             context = null
             return mode
         }
