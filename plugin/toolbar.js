@@ -2,7 +2,7 @@ class ToolbarPlugin extends BasePlugin {
     beforeProcess = () => {
         this.toolController = new ToolController(this)
         const tools = [TabTool, PluginTool, RecentFileTool, OperationTool, ModeTool, ThemeTool, OutlineTool, FunctionTool, MixTool]
-        tools.forEach(tool => this.toolController.register(new tool()));
+        tools.forEach(tool => this.toolController.register(new tool()))
     }
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -28,9 +28,9 @@ class ToolbarPlugin extends BasePlugin {
         }
 
         this.search = this.utils.debounce(async () => {
-            const result = await this.toolController.handleInput();
-            const ok = result && result.matches && result.tool;
-            this.entities.result.innerHTML = ok ? this._newItems(result).join("") : "";
+            const result = await this.toolController.handleInput()
+            const ok = result && result.matches && result.tool
+            this.entities.result.innerHTML = ok ? this._newItems(result).join("") : ""
         }, this.config.DEBOUNCE_INTERVAL)
     }
 
@@ -109,21 +109,21 @@ class ToolbarPlugin extends BasePlugin {
     }
 
     show = async () => {
-        this.toolController.setAnchorNode();
-        const widthRatio = this.config.TOOLBAR_WIDTH_PERCENT / 100;
-        const { width, left } = this.entities.content.getBoundingClientRect();
-        this.entities.toolbar.style.width = width * widthRatio + "px";
-        this.entities.toolbar.style.left = left + width * (1 - widthRatio) / 2 + "px";
-        this.utils.show(this.entities.toolbar);
-        this.entities.input.select();
-        await this.search();
+        this.toolController.setAnchorNode()
+        const widthRatio = this.config.TOOLBAR_WIDTH_PERCENT / 100
+        const { width, left } = this.entities.content.getBoundingClientRect()
+        this.entities.toolbar.style.width = width * widthRatio + "px"
+        this.entities.toolbar.style.left = left + width * (1 - widthRatio) / 2 + "px"
+        this.utils.show(this.entities.toolbar)
+        this.entities.input.select()
+        await this.search()
         this._registerAutoHide()
     }
 
     hide = () => {
-        this.utils.hide(this.entities.toolbar);
-        this.entities.input.value = "";
-        this.entities.result.innerHTML = "";
+        this.utils.hide(this.entities.toolbar)
+        this.entities.input.value = ""
+        this.entities.result.innerHTML = ""
     }
 }
 
@@ -135,49 +135,48 @@ class BaseToolInterface {
     search = async input => null  // Return []string or [{ showName:"", fixedName:"", meta:"" }]
     callback = (fixedName, meta) => null
     baseSearch = (input, list, searchFields) => {
-        if (input === "") return list;
-
-        input = input.toLowerCase();
-        const func = searchFields
+        if (input === "") return list
+        input = input.toLowerCase()
+        const fn = searchFields
             ? item => searchFields.some(field => item[field].toLowerCase().indexOf(input) !== -1)
             : item => item.toLowerCase().indexOf(input) !== -1
-        return list.filter(func)
+        return list.filter(fn)
     }
 }
 
 class ToolController {
     constructor(plugin) {
-        this.plugin = plugin;
-        this.utils = plugin.utils;
-        this.i18n = plugin.i18n;
-        this.tools = new Map();  // map[short]tool
-        this.anchorNode = null;
+        this.plugin = plugin
+        this.utils = plugin.utils
+        this.i18n = plugin.i18n
+        this.tools = new Map()  // map[short]tool
+        this.anchorNode = null
     }
 
     register = tool => {
-        tool.controller = this;
-        tool.utils = this.utils;
-        tool.i18n = this.i18n;
-        tool.init();
+        tool.controller = this
+        tool.utils = this.utils
+        tool.i18n = this.i18n
+        tool.init()
 
-        const short = tool.name();
-        this.tools.set(short, tool);
+        const short = tool.name()
+        this.tools.set(short, tool)
     }
 
-    unregister = name => this.tools.delete(name);
+    unregister = name => this.tools.delete(name)
 
     callback = (toolName, fixedName, meta) => this.tools.get(toolName)?.callback(fixedName, meta)
 
-    setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
+    setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode()
 
     intersect = arrays => {
-        if (!Array.isArray(arrays) || arrays.length === 0 || arrays.some(ele => !ele)) return [];
+        if (!Array.isArray(arrays) || arrays.length === 0 || arrays.some(el => !el)) return []
         if (arrays.length === 1) return arrays[0]
 
-        const func = (typeof arrays[0][0] === "string")
-            ? ele => arrays.every(array => array.includes(ele))
-            : ele => arrays.every(array => array.some(item => item.showName === ele.showName && item.fixedName === ele.fixedName && item.meta === ele.meta))
-        return arrays[0].filter(func);
+        const fn = (typeof arrays[0][0] === "string")
+            ? el => arrays.every(array => array.includes(el))
+            : el => arrays.every(array => array.some(item => item.showName === el.showName && item.fixedName === el.fixedName && item.meta === el.meta))
+        return arrays[0].filter(fn)
     }
 
     // Add a prefix to distinguish object and string items
@@ -209,15 +208,15 @@ class ToolController {
     }
 
     kind = input => {
-        const all = input.split(" ").filter(Boolean);
-        const positive = [];
-        const negative = [];
-        all.forEach(ele => {
-            if (ele.startsWith("-")) {
-                const value = ele.slice(1);
-                if (value) negative.push(value)
+        const all = input.split(" ").filter(Boolean)
+        const positive = []
+        const negative = []
+        all.forEach(el => {
+            if (el.startsWith("-")) {
+                const val = el.slice(1)
+                if (val) negative.push(val)
             } else {
-                positive.push(ele);
+                positive.push(el)
             }
         })
         if (positive.length === 0) positive.push("")
@@ -229,30 +228,30 @@ class ToolController {
         const [posList, negList] = await Promise.all([
             Promise.all(positive.map(tool.search)),
             Promise.all(negative.map(tool.search)),
-        ]);
-        const posResult = this.intersect(posList);
-        const negResult = this.union(negList);
-        const matches = this.difference(posResult, negResult);
+        ])
+        const posResult = this.intersect(posList)
+        const negResult = this.union(negList)
+        const matches = this.difference(posResult, negResult)
         return { inputList: positive, matches }
     }
 
     searchWithoutNeg = async (tool, all) => {
-        const resultList = await Promise.all(all.map(tool.search));
-        const matches = this.intersect(resultList);
+        const resultList = await Promise.all(all.map(tool.search))
+        const matches = this.intersect(resultList)
         return { inputList: all, matches }
     }
 
     search = async (tool, input) => {
-        const { all, positive, negative } = this.kind(input);
+        const { all, positive, negative } = this.kind(input)
         if (this.plugin.config.USE_NEGATIVE_SEARCH) {
-            return this.searchWithNeg(tool, positive, negative);
+            return this.searchWithNeg(tool, positive, negative)
         } else {
-            return this.searchWithoutNeg(tool, all);
+            return this.searchWithoutNeg(tool, all)
         }
     }
 
     dispatch = raw => {
-        raw = raw.trimLeft();
+        raw = raw.trimLeft()
         for (const short of this.tools.keys()) {
             if (raw.startsWith(short + " ")) {
                 return { tool: this.tools.get(short), input: raw.slice(short.length + 1).trim() }
@@ -265,11 +264,11 @@ class ToolController {
     }
 
     handleInput = async () => {
-        const raw = this.plugin.entities.input.value;
-        let { tool, input } = this.dispatch(raw);
+        const raw = this.plugin.entities.input.value
+        let { tool, input } = this.dispatch(raw)
         if (!tool) return
 
-        const { inputList, matches } = await this.search(tool, input);
+        const { inputList, matches } = await this.search(tool, input)
         if (matches?.length) {
             return { tool, input: inputList, matches }
         }
@@ -317,8 +316,8 @@ class PluginTool extends BaseToolInterface {
             })
     }
     search = async input => {
-        const pluginsList = this.collectAll();
-        return this.baseSearch(input, pluginsList, ["showName"])
+        const plugins = this.collectAll()
+        return this.baseSearch(input, plugins, ["showName"])
     }
     callback = (fixedName, action) => {
         this.utils.updateAndCallPluginDynamicAction(fixedName, action, this.controller.anchorNode)
@@ -329,17 +328,17 @@ class RecentFileTool extends BaseToolInterface {
     name = () => "his"
     translate = () => this.i18n.t("tool.his")
     icon = () => "🕖"
-    getRecentFile = async () => {
+    getRecentFiles = async () => {
         if (!File.isNode) return
 
         const result = []
         const blank = "\u00A0".repeat(3)
         const { files, folders } = await this.utils.getRecentFiles()
-        const add = (list, meta) => {
-            for (const file of list) {
-                if (file.path) {
+        const add = (entities, meta) => {
+            for (const entity of entities) {
+                if (entity.path) {
                     const prefix = (meta === "file") ? "📄" : "📁"
-                    const item = { showName: `${prefix}${blank}${file.path}`, fixedName: file.path, meta: meta }
+                    const item = { showName: `${prefix}${blank}${entity.path}`, fixedName: entity.path, meta: meta }
                     result.push(item)
                 }
             }
@@ -349,18 +348,18 @@ class RecentFileTool extends BaseToolInterface {
         return result
     }
     search = async input => {
-        let files = await this.getRecentFile();
-        if (!files || files.length === 0) return;
+        let files = await this.getRecentFiles()
+        if (!files || files.length === 0) return
 
-        const current = this.utils.getFilePath();
-        files = files.filter(file => file.fixedName !== current); // remove the current file
+        const current = this.utils.getFilePath()
+        files = files.filter(file => file.fixedName !== current) // remove the current file
         return this.baseSearch(input, files, ["showName"])
     }
     callback = (fixedName, meta) => {
         if (meta === "file") {
-            this.utils.openFile(fixedName);
+            this.utils.openFile(fixedName)
         } else if (meta === "folder") {
-            this.utils.openFolder(fixedName);
+            this.utils.openFolder(fixedName)
         }
     }
 }
@@ -376,8 +375,8 @@ class OperationTool extends BaseToolInterface {
         const openSettingFolder = () => this.utils.settings.openFolder()
         const togglePinWindow = () => {
             const pined = document.body.classList.contains("always-on-top")
-            const func = pined ? "unpinWindow" : "pinWindow"
-            ClientCommand[func]()
+            const fn = pined ? "unpinWindow" : "pinWindow"
+            ClientCommand[fn]()
         }
         const openFileInNewWindow = () => File.editor.library.openFileInNewWindow(this.utils.getFilePath(), false)
         this.ops = [
@@ -394,7 +393,7 @@ class OperationTool extends BaseToolInterface {
         })
     }
     search = async input => this.baseSearch(input, this.ops, ["showName"])
-    callback = (fixedName, meta) => this.ops.find(ele => ele.fixedName === fixedName)?.callback(meta)
+    callback = (fixedName, meta) => this.ops.find(el => el.fixedName === fixedName)?.callback(meta)
 }
 
 class ModeTool extends BaseToolInterface {
@@ -403,7 +402,7 @@ class ModeTool extends BaseToolInterface {
     icon = () => "🌗"
     init = () => {
         const outlineView = () => {
-            File.editor.library.toggleSidebar();
+            File.editor.library.toggleSidebar()
             if (File.isNode) ClientCommand.refreshViewMenu()
         }
         this.modes = [
@@ -429,25 +428,25 @@ class ModeTool extends BaseToolInterface {
             this.modes.forEach(mode => {
                 const name = this.i18n.t("tool.mode." + mode.fixedName)
                 mode.showName = `${name} - ${mode.fixedName}`
-            });
+            })
         })
     }
     search = async input => this.baseSearch(input, this.modes, ["showName"])
-    callback = (fixedName, meta) => this.modes.find(ele => ele.fixedName === fixedName)?.callback(meta)
+    callback = (fixedName, meta) => this.modes.find(el => el.fixedName === fixedName)?.callback(meta)
 }
 
 class ThemeTool extends BaseToolInterface {
     name = () => "theme"
     translate = () => this.i18n.t("tool.theme")
     icon = () => "🎨"
-    setThemeForever = theme => ClientCommand.setTheme(theme);
+    setThemeForever = theme => ClientCommand.setTheme(theme)
     // setThemeTemp = theme => File.setTheme(theme)
     search = async input => {
-        const { all, current } = await JSBridge.invoke("setting.getThemes");
+        const { all, current } = await JSBridge.invoke("setting.getThemes")
         const list = all.map(theme => ({ showName: theme.replace(/\.css$/gi, ""), fixedName: theme }))
-        return this.baseSearch(input, list, ["showName"]);
+        return this.baseSearch(input, list, ["showName"])
     }
-    callback = fixedName => this.setThemeForever(fixedName);
+    callback = fixedName => this.setThemeForever(fixedName)
 }
 
 class OutlineTool extends BaseToolInterface {
@@ -480,9 +479,9 @@ class FunctionTool extends BaseToolInterface {
         return this.baseSearch(input, all, ["showName"])
     }
     callback = fixedName => {
-        const { input } = this.controller.plugin.entities;
-        input.value = fixedName + " ";
-        input.dispatchEvent(new Event("input"));
+        const { input } = this.controller.plugin.entities
+        input.value = fixedName + " "
+        input.dispatchEvent(new Event("input"))
     }
 }
 
@@ -500,9 +499,9 @@ class MixTool extends BaseToolInterface {
                 if (!result) {
                     return []
                 }
-                return result.map(ele => {
-                    const meta = `${name}@${ele.meta || ""}`
-                    const item = typeof ele === "string" ? { showName: ele, fixedName: ele, meta } : { ...ele, meta }
+                return result.map(el => {
+                    const meta = `${name}@${el.meta || ""}`
+                    const item = typeof el === "string" ? { showName: el, fixedName: el, meta } : { ...el, meta }
                     item.showName = `${tool.icon()}${blank}${item.showName}`
                     return item
                 })

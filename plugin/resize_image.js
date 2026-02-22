@@ -1,24 +1,24 @@
 class ResizeImagePlugin extends BasePlugin {
     init = () => {
-        this.checklist = Object.entries(this.config.MODIFIER_KEY)
+        this.checkers = Object.entries(this.config.MODIFIER_KEY)
             .filter(([_, modifier]) => Boolean(modifier))
-            .map(([type, modifier]) => ({ type, checker: this.utils.modifierKey(modifier) }))
+            .map(([type, modifier]) => ({ type, check: this.utils.modifierKey(modifier) }))
     }
 
     process = () => {
         this.utils.settings.autoSave(this)
-        this.recordResizeState(false);
+        this.recordResizeState(false)
 
         this.utils.entities.eWrite.addEventListener("wheel", ev => {
-            const zoom = this.checklist.find(e => e.checker(ev));
-            if (!zoom) return;
-            const target = ev.target.closest("img");
-            if (!target) return;
-            ev.preventDefault();
-            ev.stopPropagation();
-            const zoomFunc = zoom.type === "TEMPORARY" ? this.zoomTemporary : this.zoomPersistent;
-            zoomFunc(target, ev.deltaY > 0);
-        }, { passive: false, capture: true });
+            const zoom = this.checkers.find(c => c.check(ev))
+            if (!zoom) return
+            const target = ev.target.closest("img")
+            if (!target) return
+            ev.preventDefault()
+            ev.stopPropagation()
+            const zoomFn = zoom.type === "TEMPORARY" ? this.zoomTemporary : this.zoomPersistent
+            zoomFn(target, ev.deltaY > 0)
+        }, { passive: false, capture: true })
     }
 
     recordResizeState = (needChange = true) => {
@@ -40,48 +40,48 @@ class ResizeImagePlugin extends BasePlugin {
     resetImageSize = () => {
         this.config.ALLOW_EXCEED_LIMIT = !this.config.ALLOW_EXCEED_LIMIT
         if (!this.config.ALLOW_EXCEED_LIMIT) {
-            this.utils.entities.querySelectorAllInWrite("img").forEach(image => {
-                if (image.style.maxWidth) {
-                    const maxSize = image.parentElement.offsetWidth;
-                    if (this.getWidth(image) > maxSize) {
-                        image.style.removeProperty("width");
+            this.utils.entities.querySelectorAllInWrite("img").forEach(img => {
+                if (img.style.maxWidth) {
+                    const maxSize = img.parentElement.offsetWidth
+                    if (this.getWidth(img) > maxSize) {
+                        img.style.removeProperty("width")
                     }
-                    image.style.removeProperty("maxWidth");
+                    img.style.removeProperty("maxWidth")
                 }
-                image.style.removeProperty("left");
-                image.style.removeProperty("position");
+                img.style.removeProperty("left")
+                img.style.removeProperty("position")
             })
         }
     }
 
-    getWidth = image => image.style.width ? parseFloat(image.style.width) : image.getBoundingClientRect().width
+    getWidth = img => img.style.width ? parseFloat(img.style.width) : img.getBoundingClientRect().width
 
-    setAlign = (align, image, maxWidth) => {
-        image.setAttribute("align", align);
+    setAlign = (align, img, maxWidth) => {
+        img.setAttribute("align", align)
         if (!maxWidth) {
-            maxWidth = image.parentElement.offsetWidth;
+            maxWidth = img.parentElement.offsetWidth
         }
-        image.style.marginRight = "";
-        image.style.marginLeft = "";
+        img.style.marginRight = ""
+        img.style.marginLeft = ""
         if (align !== "center") {
-            const width = this.getWidth(image);
-            const margin = (align === "left") ? "marginRight" : "marginLeft";
-            image.style[margin] = maxWidth - width + "px";
+            const width = this.getWidth(img)
+            const margin = (align === "left") ? "marginRight" : "marginLeft"
+            img.style[margin] = maxWidth - width + "px"
         }
     }
 
-    zoomTemporary = (image, zoomOut, scale = 0.1) => {
-        let width = this.getWidth(image);
-        width = zoomOut ? width * (1 - scale) : width * (1 + scale);
-        const maxWidth = image.parentElement.offsetWidth;
-        image.style.maxWidth = "";
+    zoomTemporary = (img, zoomOut, scale = 0.1) => {
+        let width = this.getWidth(img)
+        width = zoomOut ? width * (1 - scale) : width * (1 + scale)
+        const maxWidth = img.parentElement.offsetWidth
+        img.style.maxWidth = ""
 
         if (!this.config.ALLOW_EXCEED_LIMIT || width <= maxWidth) {
-            width = Math.min(width, maxWidth);
-            image.style.width = width + "px";
-            this.setAlign(this.config.IMAGE_ALIGN, image, maxWidth);
+            width = Math.min(width, maxWidth)
+            img.style.width = width + "px"
+            this.setAlign(this.config.IMAGE_ALIGN, img, maxWidth)
         } else {
-            Object.assign(image.style, {
+            Object.assign(img.style, {
                 position: "relative",
                 width: width + "px",
                 maxWidth: width + "px",
@@ -90,13 +90,13 @@ class ResizeImagePlugin extends BasePlugin {
         }
     }
 
-    zoomPersistent = (image, zoomOut, scale = 5) => {
-        const originZoom = image.style.zoom || "100%";
-        const nextZoom = Math.max(10, Math.min(parseInt(originZoom) + (zoomOut ? -scale : scale), 200)) + "%";
-        Object.assign(image.style, { position: "", width: "", maxWidth: "", left: "" });
-        const $span = $(image.closest(".md-image.md-img-loaded"));
+    zoomPersistent = (img, zoomOut, scale = 5) => {
+        const originZoom = img.style.zoom || "100%"
+        const nextZoom = Math.max(10, Math.min(parseInt(originZoom) + (zoomOut ? -scale : scale), 200)) + "%"
+        Object.assign(img.style, { position: "", width: "", maxWidth: "", left: "" })
+        const $span = $(img.closest(".md-image.md-img-loaded"))
         if ($span.length === 1) {
-            File.editor.imgEdit.zoomAction($span, nextZoom);
+            File.editor.imgEdit.zoomAction($span, nextZoom)
         }
     }
 
@@ -108,24 +108,22 @@ class ResizeImagePlugin extends BasePlugin {
             { act_value: "set_align_center", act_hidden: true },
             { act_value: "set_align_right", act_hidden: true },
         ]
-        const acts = this.i18n.fillActions([
+        const actions = this.i18n.fillActions([
             { act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE },
             { act_value: "allow_exceed_limit", act_state: this.config.ALLOW_EXCEED_LIMIT },
             ...other
         ])
 
-        const images = anchorNode.closest("#write .md-image")
-        if (!images) return acts
-        const image = images.querySelector("img")
-        if (!image) return acts
+        const img = anchorNode.closest("#write .md-image")?.querySelector("img")
+        if (!img) return actions
 
-        meta.target = image
+        meta.target = img
         other.forEach(a => a.act_hidden = false)
-        return acts
+        return actions
     }
 
     call = (action, meta) => {
-        const callMap = {
+        const fnMap = {
             record_resize_state: () => this.recordResizeState(),
             allow_exceed_limit: () => this.resetImageSize(),
             zoom_out_20_percent: meta => this.zoomTemporary(meta.target, true, 0.2),
@@ -134,7 +132,7 @@ class ResizeImagePlugin extends BasePlugin {
             set_align_center: meta => this.setAlign("center", meta.target),
             set_align_right: meta => this.setAlign("right", meta.target),
         }
-        callMap[action]?.(meta)
+        fnMap[action]?.(meta)
     }
 }
 

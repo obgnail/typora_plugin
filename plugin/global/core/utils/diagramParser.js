@@ -3,15 +3,15 @@
  */
 class DiagramParser {
     constructor(utils, i18n) {
-        this.utils = utils;
-        this.i18n = i18n;
-        this.diagramModeFlag = "custom_diagram";  // can be any value, just a flag
-        this.panel = `<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`;
-        this.exitInteractiveStrategies = ["click_exit_button"];
-        this.parsers = new Map();     // {lang: parser}
-        this.langMapping = new Map(); // {lang: mappingLang}
-        // this.pending = new Set();     // cid
-        // this.timeout = 300;
+        this.utils = utils
+        this.i18n = i18n
+        this.enableMappingSym = Symbol("enable_mapping")
+        this.panel = `<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`
+        this.exitInteractiveStrategies = ["click_exit_button"]
+        this.parsers = new Map()     // map[lang]parser
+        this.langMapping = new Map() // map[lang]mappingLang
+        // this.pending = new Set()     // cid
+        // this.timeout = 300
     }
 
     /**
@@ -28,13 +28,10 @@ class DiagramParser {
                     lang, mappingLang, destroyWhenUpdate = false,
                     renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true
                 }) => {
-        lang = lang.toLowerCase();
-        mappingLang = mappingLang ? mappingLang.toLowerCase() : lang;
-        this.langMapping.set(lang, { name: mappingLang, mappingType: this.diagramModeFlag });
-        this.parsers.set(lang, {
-            lang, mappingLang, destroyWhenUpdate, renderFunc,
-            cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode
-        });
+        lang = lang.toLowerCase()
+        mappingLang = mappingLang ? mappingLang.toLowerCase() : lang
+        this.langMapping.set(lang, { name: mappingLang, [this.enableMappingSym]: true })
+        this.parsers.set(lang, { lang, mappingLang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode })
     }
 
     unregister = lang => this.parsers.delete(lang)
@@ -74,25 +71,25 @@ class DiagramParser {
 
     polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
-            await this.utils.styleTemplater.register("plugin-diagram-parser");
+            await this.utils.styleTemplater.register("plugin-diagram-parser")
         }
     }
 
     /** If the fenceEnhance plugin is disabled and EXIT_INTERACTIVE_MODE === click_exit_button, then force all charts to disable interactive mode. */
     fixInteractiveMode = () => {
-        const cfg = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE");
+        const cfg = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE")
         if (Array.isArray(cfg)) {
-            const arr = cfg.filter(e => e === "ctrl_click_fence" || e === "click_exit_button");
+            const arr = cfg.filter(e => e === "ctrl_click_fence" || e === "click_exit_button")
             if (arr.length) {
-                this.exitInteractiveStrategies = arr;
+                this.exitInteractiveStrategies = arr
             }
         }
 
-        const isClickBtn = this.exitInteractiveStrategies.length === 1 && this.exitInteractiveStrategies[0] === "click_exit_button";
+        const isClickBtn = this.exitInteractiveStrategies.length === 1 && this.exitInteractiveStrategies[0] === "click_exit_button"
         const hasPlugin = this.utils.getBasePlugin("fence_enhance")
         if (!hasPlugin && isClickBtn) {
             for (const p of this.parsers.values()) {
-                p.interactiveMode = false;
+                p.interactiveMode = false
             }
         }
     }
@@ -106,14 +103,9 @@ class DiagramParser {
             const isObj = typeof mode === "object"
             const originLang = isObj ? mode.name : mode
             const mappingLang = this.langMapping.get(originLang)
-            if (!mappingLang) {
-                return mode
-            }
-            if (!isObj) {
-                return mappingLang
-            }
-            mode.name = mappingLang
-            return mode
+            if (!mappingLang) return mode
+            if (!isObj) return mappingLang
+            return { ...mode, ...mappingLang }
         }
         this.utils.decorate(() => window, "getCodeMirrorMode", null, after, true)
     }
@@ -164,18 +156,18 @@ class DiagramParser {
 
     noticeRollback = async cid => {
         for (const [lang, parser] of this.parsers.entries()) {
-            if (!parser.cancelFunc) continue;
+            if (!parser.cancelFunc) continue
             try {
-                parser.cancelFunc(cid, lang);
+                parser.cancelFunc(cid, lang)
             } catch (e) {
-                console.error("call cancel func error:", e);
+                console.error("call cancel func error:", e)
             }
         }
     }
 
     cleanErrorMsg = $pre => {
-        $pre.find(".md-diagram-panel-header").html("");
-        $pre.find(".md-diagram-panel-error").html("");
+        $pre.find(".md-diagram-panel-header").html("")
+        $pre.find(".md-diagram-panel-error").html("")
     }
 
     destroyIfNeed = (parser, cid, lang, $pre) => {
@@ -187,56 +179,55 @@ class DiagramParser {
 
     appendPanelIfNeed = $pre => {
         if ($pre.find(".md-diagram-panel").length === 0) {
-            $pre.append(this.panel);
+            $pre.append(this.panel)
         }
     }
 
     renderCustomDiagram = async (cid, lang, $pre) => {
-        const parser = this.parsers.get(lang);
+        const parser = this.parsers.get(lang)
 
-        this.cleanErrorMsg($pre);
-        this.destroyIfNeed(parser, cid, lang, $pre);
+        this.cleanErrorMsg($pre)
+        this.destroyIfNeed(parser, cid, lang, $pre)
 
-        const content = this.utils.getFenceContentByCid(cid);
-        $pre.addClass("md-fences-advanced");
-        this.appendPanelIfNeed($pre);
+        const content = this.utils.getFenceContentByCid(cid)
+        $pre.addClass("md-fences-advanced")
+        this.appendPanelIfNeed($pre)
 
         if (!content) {
-            await this.whenEmptyContent(cid, lang, $pre);
-            return;
+            await this.whenEmptyContent(cid, lang, $pre)
+            return
         }
 
-        if (!parser.renderFunc) return;
+        if (!parser.renderFunc) return
         try {
-            await parser.renderFunc(cid, content, $pre, lang);
+            await parser.renderFunc(cid, content, $pre, lang)
         } catch (error) {
             await this.whenCannotDraw(cid, lang, $pre, content, error)
         }
     }
 
     renderDiagram = async cid => {
-        const $pre = File.editor.findElemById(cid);
-        const lang_ = $pre.attr("lang");
-        if (lang_ === undefined) return;
+        const $pre = File.editor.findElemById(cid)
+        const lang = $pre.attr("lang")?.trim().toLowerCase()
+        if (lang === undefined) return
 
-        const lang = lang_.trim().toLowerCase();
         // If it is not Diagram, show the enhancement button.
         if (!this.isDiagramType(lang)) {
-            $pre.children(".fence-enhance").show();
-            $pre.removeClass("md-fences-advanced md-fences-interactive plugin-custom-diagram");
-            await this.noticeRollback(cid);
+            $pre.children(".fence-enhance").show()
+            $pre.removeClass("md-fences-advanced md-fences-interactive plugin-custom-diagram")
+            await this.noticeRollback(cid)
         } else {
             // If it is Diagram, but not a custom type, do not show the enhancement button and return directly.
-            $pre.children(".fence-enhance").hide();
+            $pre.children(".fence-enhance").hide()
             // If it is Diagram and also a custom type, call its callback function.
-            const parser = this.parsers.get(lang);
+            const parser = this.parsers.get(lang)
             if (parser) {
-                $pre.addClass("plugin-custom-diagram");
+                $pre.addClass("plugin-custom-diagram")
                 if (parser.interactiveMode) $pre.addClass("md-fences-interactive")
-                await this.renderCustomDiagram(cid, lang, $pre);
+                await this.renderCustomDiagram(cid, lang, $pre)
             } else {
-                $pre.removeClass("md-fences-interactive plugin-custom-diagram");
-                await this.noticeRollback(cid);
+                $pre.removeClass("md-fences-interactive plugin-custom-diagram")
+                await this.noticeRollback(cid)
             }
         }
     }
@@ -244,13 +235,13 @@ class DiagramParser {
     // // When the user is continuously typing, how to reduce rendering frequency while ensuring interactive experience?
     // // A: Render immediately when the user types for the first time, then render once every X milliseconds, and finally render again based on the final input string.
     // renderDiagram = async cid => {
-    //     if (this.pending.has(cid)) return;
+    //     if (this.pending.has(cid)) return
     //
-    //     this.pending.add(cid);
-    //     await this._renderDiagram(cid);
-    //     await this.utils.sleep(this.timeout);
-    //     this.pending.delete(cid);
-    //     await this._renderDiagram(cid);
+    //     this.pending.add(cid)
+    //     await this._renderDiagram(cid)
+    //     await this.utils.sleep(this.timeout)
+    //     this.pending.delete(cid)
+    //     await this._renderDiagram(cid)
     // }
 
     onAddCodeBlock = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.renderDiagram)
@@ -288,12 +279,9 @@ class DiagramParser {
             const beforeToNative = () => {
                 this.parsers.forEach((parser, lang) => {
                     this.renderAllLangFence(lang)
-                    const previews = this.utils.entities.querySelectorAllInWrite(`.md-fences[lang="${lang}"] .md-diagram-panel-preview`)
-                    previews.forEach(preview => {
+                    this.utils.entities.querySelectorAllInWrite(`.md-fences[lang="${lang}"] .md-diagram-panel-preview`).forEach(preview => {
                         const svg = preview.querySelector("svg")
-                        if (!svg) {
-                            preview.innerHTML = "<svg></svg>"
-                        }
+                        if (!svg) preview.innerHTML = "<svg></svg>"
                     })
                 })
             }
@@ -305,11 +293,11 @@ class DiagramParser {
     }
 
     onFocus = () => {
-        let dontFocus = true;
+        let dontFocus = true
 
         const enableFocus = () => {
-            dontFocus = false;
-            setTimeout(() => dontFocus = true, 200);
+            dontFocus = false
+            setTimeout(() => dontFocus = true, 200)
         }
 
         const stopCall = (node) => {
@@ -327,9 +315,9 @@ class DiagramParser {
         this.utils.decorate(() => File?.editor, "refocus", stopCall)
 
         const showAllTButton = fence => {
-            const enhance = fence.querySelector(".fence-enhance");
-            if (!enhance) return;
-            enhance.querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
+            const enhance = fence.querySelector(".fence-enhance")
+            if (!enhance) return
+            enhance.querySelectorAll(".enhance-btn").forEach(el => el.style.display = "")
             return enhance
         }
 
@@ -358,64 +346,64 @@ class DiagramParser {
         }
 
         const handleCtrlClick = () => {
-            const ctrlClick = this.exitInteractiveStrategies.includes("ctrl_click_fence");
-            if (!ctrlClick) return;
+            const ctrlClick = this.exitInteractiveStrategies.includes("ctrl_click_fence")
+            if (!ctrlClick) return
             this.utils.entities.eWrite.addEventListener("mouseup", ev => {
                 if (this.utils.metaKeyPressed(ev) && ev.target.closest(".md-fences-interactive .md-diagram-panel-preview")) {
-                    showAllTButton(ev.target.closest(".md-fences-interactive"));
-                    enableFocus();
+                    showAllTButton(ev.target.closest(".md-fences-interactive"))
+                    enableFocus()
                 }
             }, true)
         }
 
         const handleEditButton = () => {
-            const editBtn = this.exitInteractiveStrategies.includes("click_exit_button");
-            const hasInteractive = Array.from(this.parsers.values()).some(parser => parser.interactiveMode);
-            if (!editBtn || !hasInteractive) return;
+            const editBtn = this.exitInteractiveStrategies.includes("click_exit_button")
+            const hasInteractive = Array.from(this.parsers.values()).some(parser => parser.interactiveMode)
+            if (!editBtn || !hasInteractive) return
 
             const editText = this.i18n.t("global", "edit")
             const listener = ({ btn }) => {
-                btn.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "")
+                btn.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(el => el.style.display = "")
                 enableFocus()
             }
             const ok = registerButton("edit", editText, "fa fa-pencil", false, listener)
-            if (!ok) return;
+            if (!ok) return
 
             this.utils.entities.$eWrite.on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
-                showEditButtonOnly(this);
+                showEditButtonOnly(this)
             }).on("mouseleave", ".md-fences-interactive.md-focus", function () {
-                showEditButtonOnly(this);
+                showEditButtonOnly(this)
             }).on("mouseleave", ".md-fences-interactive:not(.md-focus)", function () {
-                hideAllButton(this);
+                hideAllButton(this)
             }).on("mouseenter", ".md-fences-interactive.md-focus", function () {
-                showAllTButton(this);
+                showAllTButton(this)
             })
         }
 
-        handleCtrlClick();
-        handleEditButton();
+        handleCtrlClick()
+        handleEditButton()
     }
 
     onChangeFile = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, () => {
-            for (const { destroyAllFunc } of this.parsers.values()) {
-                destroyAllFunc?.()
+            for (const p of this.parsers.values()) {
+                p.destroyAllFunc?.()
             }
-        });
+        })
     }
 
     onCheckIsDiagramType = () => {
-        const after = (origin, lang) => {
+        const after = (origin, mode) => {
             if (origin === true) return true
-            if (!lang) return false
+            if (!mode) return false
+            if (mode.hasOwnProperty(this.enableMappingSym)) return true
 
-            const t = typeof lang
-            if (t === "object" && lang.mappingType === this.diagramModeFlag) return true
-            if (t === "object" && lang.name) {
-                lang = lang.name
+            const t = typeof mode
+            if (t === "object" && mode.name) {
+                mode = mode.name
             }
             if (t === "string") {
-                return this.parsers.get(lang.toLowerCase())
+                return this.parsers.get(mode.toLowerCase())
             }
             return origin
         }
