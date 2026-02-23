@@ -950,6 +950,22 @@
     "$placeholder.emojiOnly": "仅限单个 Emoji 符号",
     "$placeholder.callbackType": "若类型为 “插入文字片段”，填入待插入的字符串；\n若类型为 “插入动态文字片段”，填入返回字符串的函数；\n若类型为 “执行逻辑命令”，填入执行逻辑命令的函数。"
   },
+  "cjk_symbol_pairing": {
+    "pluginName": "中文符号配对",
+    "$label.AUTO_SKIP_PAIR": "自动跳过配对符号",
+    "$label.AUTO_DELETE_PAIR": "成对删除符号",
+    "$label.AUTO_SURROUND_PAIR": "自动包裹选区",
+    "$label.AUTO_CONVERT_FULL_TO_HALF": "连续全角转为半角",
+    "$label.AUTO_PAIR_SYMBOLS": "自动配对的符号",
+    "$label.AUTO_PAIR_SYMBOLS.enable": "启用",
+    "$label.AUTO_PAIR_SYMBOLS.input": "输入符号",
+    "$label.AUTO_PAIR_SYMBOLS.output": "补全符号",
+    "$label.AUTO_CONVERT_SYMBOLS": "自动转换的符号",
+    "$label.AUTO_CONVERT_SYMBOLS.enable": "启用",
+    "$label.AUTO_CONVERT_SYMBOLS.input": "输入符号",
+    "$label.AUTO_CONVERT_SYMBOLS.output": "转换符号",
+    "$tooltip.enablePairing": "需启用 Typora 配置「匹配括号和引号」"
+  },
   "right_click_menu": {
     "pluginName": "右键菜单",
     "act.disabled": "不可点击",
@@ -1266,21 +1282,6 @@
     "$label.template": "自定义模板",
     "$label.template.name": "名称",
     "$label.template.text": "模板"
-  },
-  "chineseSymbolAutoPairer": {
-    "pluginName": "中文符号自动补全",
-    "$label.auto_skip": "自动跳过配对符号",
-    "$label.auto_delete_pair": "成对删除符号",
-    "$label.auto_swap": "连续全角转为半角",
-    "$label.auto_surround_pair": "自动包裹选区",
-    "$label.auto_pair_symbols": "自动补全的符号",
-    "$label.auto_pair_symbols.0": "输入符号",
-    "$label.auto_pair_symbols.1": "补全符号",
-    "$label.auto_swap_symbols": "自动转换的符号",
-    "$label.auto_swap_symbols.0": "输入符号",
-    "$label.auto_swap_symbols.1": "转换符号",
-    "$label.auto_select_after_surround": "自动选中包裹内容",
-    "$tooltip.enablePairing": "需启用 Typora 配置「匹配括号和引号」"
   },
   "toc": {
     "pluginName": "大纲目录",

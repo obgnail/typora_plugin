@@ -262,11 +262,11 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
                 "$title.CUSTOM_HOTKEYS.DISABLE",
                 "$title.CUSTOM_HOTKEYS.HOTKEY",
             ],
+            cjk_symbol_pairing: ["$tooltip.enablePairing"],
             sidebar_enhance: ["$tooltip.canCollapseOutlinePanel"],
             slash_commands: ["$label.COMMANDS.callback"],
             hotkeys: ["$label.CUSTOM_HOTKEYS.evil"],
             markdownLint: ["$label.invokeMarkdownLintSettings"],
-            chineseSymbolAutoPairer: ["$tooltip.enablePairing"],
             quickButton: ["$label.buttons.evil"],
         }
         Object.entries(allowedUnusedKeys).forEach(([fixedName, keys]) => {

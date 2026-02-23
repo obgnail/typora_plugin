@@ -2132,6 +2132,68 @@ COMMANDS = [
 ]
 
 
+################### CJKSYMBOLPAIRING ###################
+[cjk_symbol_pairing]
+# ------------------- 基础 -------------------
+# 启用插件
+# 注意：若 TYPORA 的配置项【匹配括号和引号】为 FALSE，则此插件自动禁用
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 功能 -------------------
+# 自动跳过配对符号：当光标在中间，左右两边都是成对符号，如：【|】；且用户键入】时，将光标跳到】的右边
+#   TRUE:  启用此行为
+#   FALSE: 禁用此行为
+AUTO_SKIP_PAIR = true
+
+# 成对删除符号：当光标在中间，左右两边都是成对符号，如：【|】；且用户键入 BACKSPACE 时，同时删除左右两边的符号
+#   TRUE:  启用此行为
+#   FALSE: 禁用此行为
+AUTO_DELETE_PAIR = true
+
+# 自动包裹选区：当框选文字，键入中文符号时，自动包裹框选文字
+#   TRUE:  启用此行为
+#   FALSE: 禁用此行为
+AUTO_SURROUND_PAIR = true
+
+# 连续全角转为半角：连续输入两个相同的中文标点符号，转为对应的英文标点符号（双全角标点合成一个半角标点）
+#   TRUE:  启用此行为
+#   FALSE: 禁用此行为
+AUTO_CONVERT_FULL_TO_HALF = false
+
+# ------------------- 符号 -------------------
+# 需要自动配对的符号
+AUTO_PAIR_SYMBOLS = [
+    { enable = true, input = "（", output = "）" },
+    { enable = true, input = "《", output = "》" },
+    { enable = true, input = "‘", output = "’" },
+    { enable = true, input = "“", output = "”" },
+    { enable = true, input = "【", output = "】" },
+    { enable = true, input = "「", output = "」" },
+    { enable = true, input = "『", output = "』" },
+]
+
+# 需要自动转换的符号
+AUTO_CONVERT_SYMBOLS = [
+    { enable = true, input = "【", output = "[" },
+    { enable = true, input = "】", output = "]" },
+    { enable = true, input = "（", output = "(" },
+    { enable = true, input = "）", output = ")" },
+    { enable = true, input = "《", output = "<" },
+    { enable = true, input = "》", output = ">" },
+    { enable = true, input = "！", output = "!" },
+    { enable = true, input = "；", output = ";" },
+    { enable = true, input = "：", output = ":" },
+    { enable = true, input = "，", output = "," },
+    { enable = true, input = "。", output = "." },
+    { enable = true, input = "？", output = "?" },
+    { enable = true, input = "·", output = "`" },
+    { enable = true, input = "￥", output = "$" },
+]
+
+
 ################### right_click_menu ###################
 [right_click_menu]
 # ------------------- 基础 -------------------

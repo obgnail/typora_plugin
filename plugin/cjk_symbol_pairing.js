@@ -1,26 +1,27 @@
-// This plugin does not handle Chinese input under fences.
-// If needed, you can listen to the afterAddCodeBlock event and modify File.editor.fences.queue.n90.state.keyMaps[1].
-// You can refer to the fence_enhance plugin's editorHotkey for more details.
-class ChineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
+/**
+ * This plugin does not handle CJK symbol under fences.
+ * If needed, you can listen to the `afterAddCodeBlock` event and modify `File.editor.fences.queue.n1.state.keyMaps[1]`.
+ * You can refer to the `fence_enhance` plugin's editorHotkey for more details.
+ */
+class CJKSymbolPairingPlugin extends BasePlugin {
     // Older versions of Typora delay setting noPairingMatch.
     // Therefore, to maintain compatibility with older versions, this configuration will be checked again later.
     beforeProcess = () => File.option.noPairingMatch ? this.utils.stopLoadPluginError : undefined
 
-    selector = () => this.utils.disableForeverSelector
-
     init = () => {
-        this.rangyText = ""
+        const toMap = (symbols, predicate = s => [s.input, s.output]) => new Map(symbols.filter(s => s.enable === true).map(predicate))
 
-        this.swapMap = new Map(this.config.auto_swap_symbols)
-        this.pairMap = new Map(this.config.auto_pair_symbols)
-        this.reversePairMap = new Map(this.config.auto_pair_symbols.map(([k, v]) => [v, k]))
+        this.rangyText = ""
         this.codeSet = new Set([
             "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0",
             "Backquote", "BracketLeft", "BracketRight", "Backslash", "Semicolon", "Quote", "Comma", "Period", "Slash",
         ])
+        this.convertMap = toMap(this.config.AUTO_CONVERT_SYMBOLS)
+        this.pairMap = toMap(this.config.AUTO_PAIR_SYMBOLS)
+        this.reversePairMap = toMap(this.config.AUTO_PAIR_SYMBOLS, s => [s.output, s.input])
 
         const until = () => File?.editor?.undo?.UndoManager?.SnapFlag
-        const after = () => this.undoSnapType = File.editor.undo.UndoManager.SnapFlag
+        const after = () => this.UNDO_SNAP_TYPE = File.editor.undo.UndoManager.SnapFlag
         this.utils.pollUntil(until, after)
     }
 
@@ -31,32 +32,32 @@ class ChineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
             const inputSymbol = ev.data
             const pairSymbol = this.pairMap.get(inputSymbol)
             if (pairSymbol) {
-                this.insertText(this.rangyText + pairSymbol)
-                setTimeout(this.selectText, 50)
-            } else if (this.config.auto_skip && this.reversePairMap.get(inputSymbol)) {
+                this._insertText(this.rangyText + pairSymbol)
+                setTimeout(this._selectRange, 50)
+            } else if (this.config.AUTO_SKIP_PAIR && this.reversePairMap.get(inputSymbol)) {
                 this.skipSymbol(inputSymbol)
             }
-            if (this.config.auto_swap && this.swapMap.has(inputSymbol)) {
-                this.swapSymbol(inputSymbol)
+            if (this.config.AUTO_CONVERT_FULL_TO_HALF && this.convertMap.has(inputSymbol)) {
+                this.convertSymbol(inputSymbol)
             }
         }, 30))
 
-        if (this.config.auto_delete_pair || this.config.auto_surround_pair) {
+        if (this.config.AUTO_DELETE_PAIR || this.config.AUTO_SURROUND_PAIR) {
             this.utils.entities.eWrite.addEventListener("keydown", ev => {
                 if (File.option.noPairingMatch || document.activeElement.tagName === "TEXTAREA") return
 
-                if (this.config.auto_surround_pair && this.utils.isIMEActivated(ev) && this.codeSet.has(ev.code)) {
+                if (this.config.AUTO_SURROUND_PAIR && this.utils.isIMEActivated(ev) && this.codeSet.has(ev.code)) {
                     this.rangyText = this.utils.getRangyText()
                 }
-                if (this.config.auto_delete_pair && ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
+                if (this.config.AUTO_DELETE_PAIR && ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
                     this.deletePair()
                 }
             }, true)
         }
     }
 
-    selectText = () => {
-        if (this.config.auto_select_after_surround || this.rangyText) {
+    _selectRange = () => {
+        if (this.rangyText) {
             const { range, bookmark } = this.utils.getRangy()
             bookmark.end += this.rangyText.length
             range.moveToBookmark(bookmark)
@@ -65,11 +66,11 @@ class ChineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         this.rangyText = ""
     }
 
-    insertText = symbol => {
+    _insertText = text => {
         const { range, node } = this.utils.getRangy()
-        const textNode = document.createTextNode(symbol)
+        const textNode = document.createTextNode(text)
         range.insertNode(textNode)
-        File.editor.undo.addSnap(node.cid, this.undoSnapType.REPLACE)
+        File.editor.undo.addSnap(node.cid, this.UNDO_SNAP_TYPE.REPLACE)
     }
 
     _getRange = () => {
@@ -77,7 +78,7 @@ class ChineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         if (!node) return {}
 
         File.editor.undo.endSnap()
-        File.editor.undo.addSnap(node.cid, this.undoSnapType.NONE)
+        File.editor.undo.addSnap(node.cid, this.UNDO_SNAP_TYPE.NONE)
         const ele = File.editor.findElemById(node.cid)
         if (ele.hasClass("md-fences")) return {}
 
@@ -94,7 +95,7 @@ class ChineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         }
     }
 
-    swapSymbol = (inputSymbol, offset = 0, forceStay = false) => {
+    convertSymbol = (inputSymbol, offset = 0, forceStay = false) => {
         const { rawText, bookmark } = this._getRange()
         if (!rawText || !bookmark) return
 
@@ -109,18 +110,18 @@ class ChineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
 
         if (left && left === current) {
             bookmark.start -= 2
-            this._swapSymbol(inputSymbol, bookmark, forceStay)
+            this._convertSymbol(inputSymbol, bookmark, forceStay)
         } else if (right && right === current) {
             bookmark.start -= 1
             bookmark.end += 1
-            this._swapSymbol(inputSymbol, bookmark, forceStay)
+            this._convertSymbol(inputSymbol, bookmark, forceStay)
         }
     }
 
-    _swapSymbol = async (inputSymbol, bk, forceStay) => {
+    _convertSymbol = async (inputSymbol, bk, forceStay) => {
         await this.utils.sleep(50)
         this.deleteContent(bk)
-        this.insertText(this.swapMap.get(inputSymbol))
+        this._insertText(this.convertMap.get(inputSymbol))
 
         await this.utils.sleep(50)
         const { range, bookmark } = this.utils.getRangy()
@@ -135,7 +136,7 @@ class ChineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         await this.utils.sleep(50)
         const pair = this.pairMap.get(inputSymbol)
         if (pair) {
-            this.swapSymbol(pair, 1, true)
+            this.convertSymbol(pair, 1, true)
         }
     }
 
@@ -160,5 +161,5 @@ class ChineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: ChineseSymbolAutoPairerPlugin
+    plugin: CJKSymbolPairingPlugin
 }

@@ -136,10 +136,10 @@ module.exports = (plugin) => {
                 }
             },
         },
-        chineseSymbolAutoPairer: {
-            enable: (field, data) => {
+        cjk_symbol_pairing: {
+            ENABLE: (field, data) => {
                 if (File.option.noPairingMatch) {
-                    const text = i18n._t("chineseSymbolAutoPairer", "$tooltip.enablePairing")
+                    const text = i18n._t("cjk_symbol_pairing", "$tooltip.enablePairing")
                     const tooltip = { action: "togglePreferencePanel", icon: "fa fa-gear", text }
                     _disableSwitch(field, data, tooltip)
                 } else {

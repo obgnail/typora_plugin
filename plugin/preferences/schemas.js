@@ -1268,6 +1268,42 @@ const schema_slash_commands = [
     box_settingHandler,
 ]
 
+const schema_cjk_symbol_pairing = [
+    box_basePluginLite,
+    UntitledBox(
+        Switch("AUTO_SKIP_PAIR"),
+        Switch("AUTO_DELETE_PAIR"),
+        Switch("AUTO_SURROUND_PAIR"),
+        Switch("AUTO_CONVERT_FULL_TO_HALF"),
+    ),
+    TableBox(
+        "AUTO_PAIR_SYMBOLS",
+        ["input", "output"],
+        [
+            UntitledBox(
+                Switch("enable"),
+                Text("input"),
+                Text("output"),
+            ),
+        ],
+        { enable: true, input: "", output: "" },
+    ),
+    TableBox(
+        "AUTO_CONVERT_SYMBOLS",
+        ["input", "output"],
+        [
+            UntitledBox(
+                Switch("enable"),
+                Text("input"),
+                Text("output"),
+            ),
+        ],
+        { enable: true, input: "", output: "" },
+        { dependencies: Dep.true("AUTO_CONVERT_FULL_TO_HALF") },
+    ),
+    box_settingHandler,
+]
+
 const schema_right_click_menu = [
     UntitledBox(
         Switch("ENABLE", prop_protected),
@@ -1782,40 +1818,6 @@ const schema_templater = [
     box_settingHandler,
 ]
 
-const schema_chineseSymbolAutoPairer = [
-    box_customPluginLite,
-    UntitledBox(
-        Switch("auto_skip"),
-        Switch("auto_delete_pair"),
-        Switch("auto_swap"),
-        Switch("auto_surround_pair"),
-        Switch("auto_select_after_surround"),
-    ),
-    TableBox(
-        "auto_pair_symbols",
-        ["0", "1"],
-        [
-            UntitledBox(
-                Text("0"),
-                Text("1"),
-            ),
-        ],
-        ["", ""],
-    ),
-    TableBox(
-        "auto_swap_symbols",
-        ["0", "1"],
-        [
-            UntitledBox(
-                Text("0"),
-                Text("1"),
-            ),
-        ],
-        ["", ""],
-    ),
-    box_settingHandler,
-]
-
 const schema_toc = [
     box_customPluginFull,
     UntitledBox(
@@ -2033,6 +2035,7 @@ const schemas = {
     easy_modify: schema_easy_modify,
     custom: schema_custom,
     slash_commands: schema_slash_commands,
+    cjk_symbol_pairing: schema_cjk_symbol_pairing,
     right_click_menu: schema_right_click_menu,
     pie_menu: schema_pie_menu,
     preferences: schema_preferences,
@@ -2059,7 +2062,6 @@ const schemas = {
     marp: schema_marp,
     callouts: schema_callouts,
     templater: schema_templater,
-    chineseSymbolAutoPairer: schema_chineseSymbolAutoPairer,
     toc: schema_toc,
     scrollBookmarker: schema_scrollBookmarker,
     imageReviewer: schema_imageReviewer,

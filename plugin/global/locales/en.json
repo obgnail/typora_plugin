@@ -950,6 +950,22 @@
     "$placeholder.emojiOnly": "Single Emoji Only",
     "$placeholder.callbackType": "If the Type is 'Insert Snippet', the value is the string to be inserted; \nIf the Type is 'Insert Dynamic Snippet', the value is a function that returns a string; \nIf the Type is 'Execute Command', the value is a function that executes the logical command."
   },
+  "cjk_symbol_pairing": {
+    "pluginName": "CJK Symbol Pairing",
+    "$label.AUTO_SKIP_PAIR": "Auto Skip Pair Symbols",
+    "$label.AUTO_DELETE_PAIR": "Auto Delete Pair Symbols",
+    "$label.AUTO_SURROUND_PAIR": "Auto Wrap Selection",
+    "$label.AUTO_CONVERT_FULL_TO_HALF": "Auto Convert Full-width to Half-width",
+    "$label.AUTO_PAIR_SYMBOLS": "Auto Pair Symbols",
+    "$label.AUTO_PAIR_SYMBOLS.enable": "Enable",
+    "$label.AUTO_PAIR_SYMBOLS.input": "Input Symbol",
+    "$label.AUTO_PAIR_SYMBOLS.output": "Paired Symbol",
+    "$label.AUTO_CONVERT_SYMBOLS": "Auto Convert Symbols",
+    "$label.AUTO_CONVERT_SYMBOLS.enable": "Enable",
+    "$label.AUTO_CONVERT_SYMBOLS.input": "Input Symbol",
+    "$label.AUTO_CONVERT_SYMBOLS.output": "Swapped Symbol",
+    "$tooltip.enablePairing": "Need to enable Typora config 'Auto pair brackets and quotes'"
+  },
   "right_click_menu": {
     "pluginName": "Right-Click Menu",
     "act.disabled": "Not Clickable",
@@ -1266,21 +1282,6 @@
     "$label.template": "Custom Templates",
     "$label.template.name": "Name",
     "$label.template.text": "Template"
-  },
-  "chineseSymbolAutoPairer": {
-    "pluginName": "Chinese Symbol Auto-Pairer",
-    "$label.auto_skip": "Auto Skip Pair Symbols",
-    "$label.auto_delete_pair": "Auto Delete Pair Symbols",
-    "$label.auto_swap": "Auto Convert Full-width to Half-width",
-    "$label.auto_surround_pair": "Auto Wrap Selection",
-    "$label.auto_pair_symbols": "Auto Complete Symbols",
-    "$label.auto_pair_symbols.0": "Input Symbol",
-    "$label.auto_pair_symbols.1": "Paired Symbol",
-    "$label.auto_swap_symbols": "Auto Convert Symbols",
-    "$label.auto_swap_symbols.0": "Input Symbol",
-    "$label.auto_swap_symbols.1": "Swapped Symbol",
-    "$label.auto_select_after_surround": "Auto Select Wrapped Content",
-    "$tooltip.enablePairing": "Need to enable Typora config 'Auto pair brackets and quotes'"
   },
   "toc": {
     "pluginName": "TOC",
