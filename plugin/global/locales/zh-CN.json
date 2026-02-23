@@ -505,11 +505,6 @@
     "$label.PAGING": "启用分页",
     "$label.PAGE_LENGTH": "单页数据量"
   },
-  "go_top": {
-    "pluginName": "一键到顶",
-    "$label.HOTKEY_GO_TOP": "至顶",
-    "$label.HOTKEY_GO_BOTTOM": "至底"
-  },
   "markmap": {
     "pluginName": "Markmap",
     "act.toggle_toc": "思维导图弹窗",

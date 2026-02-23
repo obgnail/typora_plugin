@@ -505,11 +505,6 @@
     "$label.PAGING": "Enable Paging",
     "$label.PAGE_LENGTH": "Page Length"
   },
-  "go_top": {
-    "pluginName": "To the top",
-    "$label.HOTKEY_GO_TOP": "Go to Top",
-    "$label.HOTKEY_GO_BOTTOM": "Go to Bottom"
-  },
   "markmap": {
     "pluginName": "Markmap",
     "act.toggle_toc": "MindMap Popup",

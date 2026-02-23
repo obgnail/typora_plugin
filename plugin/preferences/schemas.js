@@ -782,16 +782,6 @@ const schema_datatables = [
     box_settingHandler,
 ]
 
-const schema_go_top = [
-    box_basePluginLite,
-    TitledBox(
-        "hotkey",
-        Hotkey("HOTKEY_GO_TOP"),
-        Hotkey("HOTKEY_GO_BOTTOM"),
-    ),
-    box_settingHandler,
-]
-
 const schema_markmap = [
     box_basePluginLite,
     TitledBox(
@@ -2029,7 +2019,6 @@ const schemas = {
     resize_image: schema_resize_image,
     resize_table: schema_resize_table,
     datatables: schema_datatables,
-    go_top: schema_go_top,
     markmap: schema_markmap,
     auto_number: schema_auto_number,
     fence_enhance: schema_fence_enhance,
