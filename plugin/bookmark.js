@@ -1,12 +1,9 @@
-class ScrollBookmarkerPlugin extends BaseCustomPlugin {
+class BookmarkPlugin extends BasePlugin {
     styleTemplate = () => true
 
-    html = () => `
-        <fast-window id="plugin-scroll-bookmarker" window-title="${this.pluginName}" window-buttons="close|fa-times" hidden>
-            <div class="plugin-scroll-bookmarker-list"></div>
-        </fast-window>`
+    html = () => `<fast-window id="plugin-bookmark" window-title="${this.pluginName}" window-buttons="close|fa-times" hidden><div class="plugin-bookmark-list"></div></fast-window>`
 
-    hotkey = () => [this.config.hotkey]
+    hotkey = () => [this.config.HOTKEY]
 
     init = () => {
         this.recordSelector = "#write [cid]"
@@ -42,21 +39,21 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
         }
         this.entities = {
             write: this.utils.entities.eWrite,
-            window: document.querySelector("#plugin-scroll-bookmarker"),
-            list: document.querySelector(".plugin-scroll-bookmarker-list"),
+            window: document.querySelector("#plugin-bookmark"),
+            list: document.querySelector(".plugin-bookmark-list"),
         }
     }
 
     process = () => {
         this.recorder.register()
 
-        const isModifierKeyPressed = this.utils.modifierKey(this.config.modifier_key)
+        const isModifierKeyPressed = this.utils.modifierKey(this.config.MODIFIER_KEY)
         this.entities.write.addEventListener("click", ev => {
             if (!isModifierKeyPressed(ev)) return
             const node = ev.target.closest(this.recordSelector)
             if (!node) return
             node.classList.add(this.className)
-            if (this.config.auto_popup_modal) {
+            if (this.config.AUTO_POPUP_WINDOW) {
                 this.entities.window.show()
             }
             this.refresh()
@@ -99,7 +96,7 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
         })
     }
 
-    callback = anchorNode => {
+    call = anchorNode => {
         this.entities.window.toggle()
         this.refresh()
     }
@@ -147,5 +144,5 @@ class ScrollBookmarkerPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: ScrollBookmarkerPlugin
+    plugin: BookmarkPlugin
 }

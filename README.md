@@ -67,7 +67,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 48   | easy_modify         | Editing tools                                                |                    |
 | 49   | editor_width_slider | Adjust writing area width                                    |                    |
 | 50   | asset_root_redirect | Redirect local resource root directory                       | ×                  |
-| 51   | scrollBookmarker    | Bookmark manager                                             | ×                  |
+| 51   | bookmark            | Bookmark manager                                             | ×                  |
 | 52   | cipher              | Encrypt files                                                | ×                  |
 | 53   | ripgrep             | Search files using ripgrep                                   | ×                  |
 | 54   | article_uploader    | One-click upload blog to supported platforms                 | ×                  |
@@ -566,14 +566,14 @@ Function: If you mainly use Obsidian or Joplin to manage files and occasionally 
 
 
 
-### scrollBookmarker: Bookmark Manager
+### bookmark: Bookmark Manager
 
 Usage:
 
 1. Use alt + click on the text content to bookmark.
 2. This will automatically bring up the bookmark manager. Click on the bookmark above to jump to the bookmark.
 
-Show/Hide Bookmark Manager: Right-click menu -> Often Used Plugins -> Secondary plugins -> Bookmark Manager
+Show/Hide Bookmark Manager: Right-click menu -> Less Used Plugins -> Bookmark Manager
 
 ### cipher: Encrypt File
 

@@ -1416,6 +1416,15 @@ const schema_asset_root_redirect = [
     box_settingHandler,
 ]
 
+const schema_bookmark = [
+    box_basePluginFull,
+    UntitledBox(
+        Hotkey("MODIFIER_KEY", { tooltip: "modifierKeyExample" }),
+        Switch("AUTO_POPUP_WINDOW"),
+    ),
+    box_settingHandler,
+]
+
 const schema_editor_width_slider = [
     box_basePluginLite,
     UntitledBox(
@@ -1848,15 +1857,6 @@ const schema_toc = [
     box_settingHandler,
 ]
 
-const schema_scrollBookmarker = [
-    box_customPluginFull,
-    UntitledBox(
-        Hotkey("modifier_key", { tooltip: "modifierKeyExample" }),
-        Switch("auto_popup_modal"),
-    ),
-    box_settingHandler,
-]
-
 const schema_imageReviewer = [
     box_customPluginFull,
     TitledBox(
@@ -2041,6 +2041,7 @@ const schemas = {
     preferences: schema_preferences,
     hotkeys: schema_hotkeys,
     asset_root_redirect: schema_asset_root_redirect,
+    bookmark: schema_bookmark,
     editor_width_slider: schema_editor_width_slider,
     article_uploader: schema_article_uploader,
     ripgrep: schema_ripgrep,
@@ -2064,7 +2065,6 @@ const schemas = {
     callouts: schema_callouts,
     templater: schema_templater,
     toc: schema_toc,
-    scrollBookmarker: schema_scrollBookmarker,
     imageReviewer: schema_imageReviewer,
     markdownLint: schema_markdownLint,
     quickButton: schema_quickButton,

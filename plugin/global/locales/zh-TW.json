@@ -1025,6 +1025,12 @@
     "$label.IGNORE_GLOB_FILES": "忽略檔案",
     "$tooltip.viewGlobPattern": "Glob Pattern"
   },
+  "bookmark": {
+    "pluginName": "書籤管理",
+    "$label.MODIFIER_KEY": "左鍵修飾鍵",
+    "$label.AUTO_POPUP_WINDOW": "標註書籤的同時彈出管理視窗",
+    "$tooltip.modifierKeyExample": "舉例：填入 alt，則 Alt+LClick 標註書籤"
+  },
   "editor_width_slider": {
     "pluginName": "編輯區寬度調整",
     "tmpAdjust": "臨時性調整",
@@ -1309,12 +1315,6 @@
     "$option.title_bar_buttons.fence": "程式碼區塊",
     "$option.title_bar_buttons.link": "連結",
     "$option.title_bar_buttons.math": "公式"
-  },
-  "scrollBookmarker": {
-    "pluginName": "書籤管理",
-    "$label.modifier_key": "左鍵修飾鍵",
-    "$label.auto_popup_modal": "標註書籤的同時彈出管理視窗",
-    "$tooltip.modifierKeyExample": "舉例：填入 alt，則 Alt+LClick 標註書籤"
   },
   "imageReviewer": {
     "pluginName": "圖片檢視",

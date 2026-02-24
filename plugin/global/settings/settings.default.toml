@@ -1583,7 +1583,7 @@ RECORD_COLLAPSE = true
 # ------------------- 功能对应的修饰键 -------------------
 # 为不同的折叠/展开功能设置修饰键
 #   1. 支持 ctrl/alt/shift 的随意组合，例如 "shift+alt", "ctrl+shift"
-#   2. 但是不能为 "alt" （因为 alt + click 已经被【scrollBookmarker】插件占用），也不能为 "shift" （因为 shift + click 被系统自带的【框选】功能占用）
+#   2. 但是不能为 "alt" （因为 alt + click 已经被【bookmark】插件占用），也不能为 "shift" （因为 shift + click 被系统自带的【框选】功能占用）
 #   3. 为空表示不启用此功能
 #   4. 例如【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘 ctrl 和 alt，并且鼠标 click 标题时，会折叠/展开父章节下所有同级的章节
 #
@@ -2265,6 +2265,7 @@ LIST = [
     "editor_width_slider",
     "ripgrep",
     "article_uploader",
+    "bookmark",
     "preferences",
 ]
 [[right_click_menu.MENUS]]
@@ -2331,7 +2332,7 @@ BUTTONS = [
     { ICON = "fa fa-image", CALLBACK = "imageReviewer" },
     { ICON = "fa fa-filter", CALLBACK = "resource_manager" },
     { ICON = "fa fa-wrench", CALLBACK = "preferences" },
-    { ICON = "fa fa-bookmark", CALLBACK = "scrollBookmarker" },
+    { ICON = "fa fa-bookmark", CALLBACK = "bookmark" },
     { ICON = "fa fa-code", CALLBACK = "commander" }
 ]
 
@@ -2529,6 +2530,32 @@ ROOT_PATH = "./"
 # 忽略的文件：若文件命中 IGNORE_GLOB_FILES 匹配的文件，则不会执行重定向
 #   填入 Glob Pattern
 IGNORE_GLOB_FILES = ["**/node_modules", "**/.git", "**/.idea"]
+
+
+################### bookmark ###################
+[bookmark]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = false
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 快捷键 -------------------
+#  触发插件的快捷键
+#   留空则不设置快捷键
+HOTKEY = ""
+
+# ------------------- 书签管理 -------------------
+# 修饰键：与鼠标左键结合使用
+#   支持 ctrl / alt / shift 的任意组合 (如 "shift+alt", "ctrl+shift")
+#   例如：若设置为 "alt"，则使用 Alt + 鼠标左键 标注书签
+MODIFIER_KEY = "alt"
+
+# 当 alt + click 时，是否自动弹出书签管理器窗口
+#   true:  自动弹出书签管理器窗口
+#   false: 不自动弹出书签管理器窗口
+AUTO_POPUP_WINDOW = true
 
 
 ################### editor_width_slider ###################

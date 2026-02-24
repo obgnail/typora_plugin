@@ -1025,6 +1025,12 @@
     "$label.IGNORE_GLOB_FILES": "Ignore Files",
     "$tooltip.viewGlobPattern": "Glob Pattern"
   },
+  "bookmark": {
+    "pluginName": "Bookmark",
+    "$label.MODIFIER_KEY": "Left Modifier Key",
+    "$label.AUTO_POPUP_WINDOW": "Auto Popup Management Window",
+    "$tooltip.modifierKeyExample": "Example: Enter 'alt' to use Alt+LClick to bookmark"
+  },
   "editor_width_slider": {
     "pluginName": "Editor Width Slider",
     "tmpAdjust": "Temporary Adjustment",
@@ -1309,12 +1315,6 @@
     "$option.title_bar_buttons.fence": "BlockCode",
     "$option.title_bar_buttons.link": "Link",
     "$option.title_bar_buttons.math": "Math"
-  },
-  "scrollBookmarker": {
-    "pluginName": "Bookmarker",
-    "$label.modifier_key": "Left Modifier Key",
-    "$label.auto_popup_modal": "Auto Popup Management Window",
-    "$tooltip.modifierKeyExample": "Example: Enter 'alt' to use Alt+LClick to bookmark"
   },
   "imageReviewer": {
     "pluginName": "Image Reviewer",

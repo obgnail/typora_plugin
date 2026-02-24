@@ -12,7 +12,7 @@ class Migrate {
             "fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode",
             "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander", "resourceOperation",
             "reopenClosedFiles", "sortableOutline", "blockSideBySide", "chineseSymbolAutoPairer", "redirectLocalRootUrl",
-            "__modal_example",
+            "scrollBookmarker", "__modal_example",
         ]
         const toDir = name => this.utils.joinPath("./plugin/custom/plugins", name)
         const toFile = name => this.utils.joinPath("./plugin/custom/plugins", `${name}.js`)

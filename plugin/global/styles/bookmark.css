@@ -1,8 +1,8 @@
-#plugin-scroll-bookmarker {
+#plugin-bookmark {
     right: 25px;
 }
 
-#plugin-scroll-bookmarker .bookmark-item {
+#plugin-bookmark .bookmark-item {
     display: flex;
     margin: 0.3rem;
     align-items: center;
@@ -12,23 +12,23 @@
     cursor: pointer;
 }
 
-#plugin-scroll-bookmarker .bookmark-item:hover {
+#plugin-bookmark .bookmark-item:hover {
     background-color: var(--item-hover-bg-color);
 }
 
-#plugin-scroll-bookmarker .bookmark-item-content {
+#plugin-bookmark .bookmark-item-content {
     padding-right: 10px;
     flex: 1;
     font-size: 15px;
     overflow-wrap: anywhere;
 }
 
-#plugin-scroll-bookmarker .bookmark-btn {
+#plugin-bookmark .bookmark-btn {
     font-size: 17px;
     cursor: pointer;
     padding: 4px;
 }
 
-#plugin-scroll-bookmarker .bookmark-btn:hover {
+#plugin-bookmark .bookmark-btn:hover {
     color: #f70505;
 }

@@ -67,7 +67,7 @@
 | 48   | easy_modify         | 编辑工具                                   |          |
 | 49   | editor_width_slider | 写作区宽度调整                             |          |
 | 50   | asset_root_redirect | 重定向本地资源根目录                       | ×        |
-| 51   | scrollBookmarker    | 书签管理器                                 | ×        |
+| 51   | bookmark            | 书签管理器                                 | ×        |
 | 52   | cipher              | 加密文件                                   | ×        |
 | 53   | ripgrep             | 使用 ripgrep 搜索文件                      | ×        |
 | 54   | article_uploader    | 一键上传博客到支持的所有平台               | ×        |
@@ -646,14 +646,14 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 
 
 
-### scrollBookmarker： 书签管理器
+### bookmark： 书签管理器
 
 使用方式：
 
 1. 使用 alt+click 正文内容，打上书签。
 2. 此时会自动调出书签管理器，点击上面的书签，即可跳转到书签。
 
-显示/隐藏书签管理器：右键菜单 -> 常用插件 -> 二级插件 -> 书签管理器
+显示/隐藏书签管理器：右键菜单 -> 少用插件 -> 书签管理器
 
 
 

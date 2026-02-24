@@ -1025,6 +1025,12 @@
     "$label.IGNORE_GLOB_FILES": "忽略文件",
     "$tooltip.viewGlobPattern": "Glob Pattern"
   },
+  "bookmark": {
+    "pluginName": "书签管理",
+    "$label.MODIFIER_KEY": "左键修饰键",
+    "$label.AUTO_POPUP_WINDOW": "标注书签的同时弹出管理窗口",
+    "$tooltip.modifierKeyExample": "举例：填入 alt，则 Alt+LClick 标注书签"
+  },
   "editor_width_slider": {
     "pluginName": "写作区宽度调整",
     "tmpAdjust": "临时性调整",
@@ -1309,12 +1315,6 @@
     "$option.title_bar_buttons.fence": "代码块",
     "$option.title_bar_buttons.link": "链接",
     "$option.title_bar_buttons.math": "公式"
-  },
-  "scrollBookmarker": {
-    "pluginName": "书签管理",
-    "$label.modifier_key": "左键修饰键",
-    "$label.auto_popup_modal": "标注书签的同时弹出管理窗口",
-    "$tooltip.modifierKeyExample": "举例：填入 alt，则 Alt+LClick 标注书签"
   },
   "imageReviewer": {
     "pluginName": "图片查看",

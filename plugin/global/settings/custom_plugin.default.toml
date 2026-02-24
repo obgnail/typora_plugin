@@ -1025,38 +1025,6 @@ title_bar_buttons = ["header", "image", "table", "fence", "link", "math"]
 include_headings = { fence = true, image = true, table = true, link = true, math = true }
 
 
-################### scrollBookmarker ###################
-[scrollBookmarker]
-# ------------------- 基础 -------------------
-# 启用插件
-enable = false
-
-# 插件名称（为空则使用默认名）
-name = ""
-
-# 插件是否在右键菜单中隐藏
-hide = false
-
-# 插件在右键菜单中的显示顺序（数值越大越靠后，支持负数）
-order = 1
-
-# ------------------- 快捷键 -------------------
-# 快捷键，用于快速触发此插件的功能
-#   留空表示不设置快捷键
-hotkey = ""
-
-# ------------------- 书签管理 -------------------
-# 修饰键：与鼠标左键结合使用
-#   支持 ctrl / alt / shift 的任意组合 (如 "shift+alt", "ctrl+shift")
-#   例如：若设置为 "alt"，则使用 Alt + 鼠标左键 标注书签
-modifier_key = "alt"
-
-# 当 alt + click 时，是否自动弹出书签管理器窗口
-#   true:  自动弹出书签管理器窗口
-#   false: 不自动弹出书签管理器窗口
-auto_popup_modal = true
-
-
 ################### imageReviewer ###################
 [imageReviewer]
 # ------------------- 基础 -------------------
