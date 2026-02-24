@@ -1,11 +1,11 @@
-class MarkdownLintPlugin extends BaseCustomPlugin {
+class MarkdownlintPlugin extends BasePlugin {
     // Markdownlint config supports names and aliases,
     // keys are not case-sensitive and processed in order from top to bottom with later values overriding earlier ones.
     // To simplify the main processing logic, we first normalize the config by resolving all aliases to their names.
     beforeProcess = () => {
         const mapAliasToName = require("./rules-aliases.json")
-        this.config.rule_config = Object.fromEntries(
-            Object.entries(this.config.rule_config).map(([key, val]) => {
+        this.config.RULE_CONFIG = Object.fromEntries(
+            Object.entries(this.config.RULE_CONFIG).map(([key, val]) => {
                 key = /^md\d{3}$/i.test(key) ? key.toUpperCase() : key.toLowerCase()
                 key = mapAliasToName[key] ?? key
                 return [key, val]
@@ -16,18 +16,18 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
     hotkey = () => [
-        { hotkey: this.config.hotkey, callback: this.callback },
-        { hotkey: this.config.hotkey_fix_lint_error, callback: this.linter.fix },
+        { hotkey: this.config.HOTKEY, callback: () => this.call() },
+        { hotkey: this.config.HOTKEY_FIX_LINT, callback: () => this.linter.fix() },
     ]
 
     html = () => {
         const icons = { settings: "fa-gear", detailAll: "fa-info-circle", fixAll: "fa-wrench", toggleSourceMode: "fa-code", refresh: "fa-refresh", close: "fa-times" }
-        const buttons = this.config.title_bar_buttons.map(name => `${name}|${icons[name]}|${this.i18n.t(`$option.title_bar_buttons.${name}`)}`).join(";")
+        const buttons = this.config.TITLE_BAR_BUTTONS.map(name => `${name}|${icons[name]}|${this.i18n.t(`$option.TITLE_BAR_BUTTONS.${name}`)}`).join(";")
         return `
             <fast-window id="plugin-markdownlint" window-title="${this.pluginName}" window-buttons="${buttons}" hidden>
                 <div class="plugin-markdownlint-table-wrap"><fast-table class="plugin-markdownlint-table"></fast-table></div>
             </fast-window>
-            ${this.config.use_button ? `<div id="plugin-markdownlint-button"></div>` : ""}
+            ${this.config.USE_BUTTON ? `<div id="plugin-markdownlint-button"></div>` : ""}
         `
     }
 
@@ -66,7 +66,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             const value = infoList.length === 1 ? infoList[0] : infoList
             const content = JSON.stringify(value, null, "\t")
             const op = {
-                title: this.i18n.t("$option.title_bar_buttons.detailAll"),
+                title: this.i18n.t("$option.TITLE_BAR_BUTTONS.detailAll"),
                 schema: [{ fields: [{ type: "textarea", key: "detail", rows: 14, readonly: true }] }],
                 data: { detail: content }
             }
@@ -74,7 +74,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
         }
 
         const funcMap = {
-            close: () => this.callback(),
+            close: () => this.call(),
             refresh: () => {
                 this.linter.check()
                 this.utils.notification.show(this.i18n.t("success.refresh"))
@@ -97,12 +97,12 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
         const onElementEvent = () => {
             this.entities.button?.addEventListener("mousedown", ev => {
                 if (ev.button === 0) {
-                    this.callback()
-                } else if (this.config.right_click_button_to_fix && ev.button === 2) {
+                    this.call()
+                } else if (this.config.RIGHT_CLICK_BUTTON_TO_FIX && ev.button === 2) {
                     this.linter.fix()
                 }
             })
-            if (this.config.right_click_table_to_toggle_source_mode) {
+            if (this.config.RIGHT_CLICK_TABLE_TO_TOGGLE_SOURCE_MODE) {
                 this.entities.wrap.addEventListener("mousedown", ev => {
                     ev.preventDefault()
                     ev.stopPropagation()
@@ -123,7 +123,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
         onElementEvent()
     }
 
-    callback = async anchorNode => {
+    call = anchorNode => {
         this.entities.window.toggle()
         this.linter.check()
     }
@@ -131,7 +131,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
     settings = async () => {
         const defaultValues = require("./rules-default-values.json")
         const getData = () => {
-            const cfg = this.config.rule_config
+            const cfg = this.config.RULE_CONFIG
             return {
                 ...defaultValues,
                 ...cfg,
@@ -211,7 +211,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
                 threshold: 3,
                 timeWindow: 3000,
                 onConfirmed: async () => {
-                    await this.utils.settings.handle(this.fixedName, pluginSettings => delete pluginSettings.rule_config)
+                    await this.utils.settings.handle(this.fixedName, pluginSettings => delete pluginSettings.RULE_CONFIG)
                     const settings = await this.utils.settings.readCustom()
                     this.config = settings[this.fixedName]
                     this.utils.notification.show(this.i18n.t("success.restore"))
@@ -221,7 +221,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
         })
 
         const op = {
-            title: this.i18n.t("$option.title_bar_buttons.settings"),
+            title: this.i18n.t("$option.TITLE_BAR_BUTTONS.settings"),
             schema: require("./config-schema.js"),
             data: getData(),
             actions: getActions(),
@@ -241,7 +241,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
 
     _createLinter = (onCheck, onFix) => {
         const ACTION = { CONFIGURE: "configure", CLOSE: "close", CHECK: "check", FIX: "fix" }
-        const worker = new Worker("plugin/custom/plugins/markdownLint/linter-worker.js")
+        const worker = new Worker("plugin/markdownlint/linter-worker.js")
         worker.onmessage = event => {
             const { action, result } = event.data
             const onEvent = (action === ACTION.FIX) ? onFix : onCheck
@@ -254,16 +254,16 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             worker.postMessage({ action, payload })
         }
         return {
-            configure: async ({ ruleConfig = this.config.rule_config, customRuleFiles = this.config.custom_rule_files, persistent = false } = {}) => {
+            configure: async ({ ruleConfig = this.config.RULE_CONFIG, customRuleFiles = this.config.CUSTOM_RULE_FILES, persistent = false } = {}) => {
                 if (persistent) {
-                    const conf = { rule_config: ruleConfig, custom_rule_files: customRuleFiles }
+                    const conf = { RULE_CONFIG: ruleConfig, CUSTOM_RULE_FILES: customRuleFiles }
                     await this.utils.settings.handle(this.fixedName, pluginSettings => Object.assign(pluginSettings, conf))
                     Object.assign(this.config, conf)
                 }
                 send(ACTION.CONFIGURE, {
                     ruleConfig,
-                    coreLib: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js"),
-                    helpersLib: this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint-rule-helpers.min.js"),
+                    coreLib: this.utils.joinPath("plugin/markdownlint/markdownlint.min.js"),
+                    helpersLib: this.utils.joinPath("plugin/markdownlint/markdownlint-rule-helpers.min.js"),
                     polyfillLib: this.utils.joinPath("plugin/global/core/polyfill.js"),
                     customRuleFiles: customRuleFiles.map(file => this.utils.resolvePath(file)),
                 })
@@ -275,26 +275,26 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
     }
 
     _initTableColumns = () => {
-        const useInfo = this.config.tools.includes("info")
-        const useLocate = this.config.tools.includes("locate")
-        const useFix = this.config.tools.includes("fix")
+        const useInfo = this.config.TOOLS.includes("info")
+        const useLocate = this.config.TOOLS.includes("locate")
+        const useFix = this.config.TOOLS.includes("fix")
         const operationsRender = (rowData) => {
             const info = useInfo ? `<i class="fa fa-info-circle action-icon" action="detailSingle"></i>` : ""
             const locate = useLocate ? `<i class="fa fa-crosshairs action-icon" action="jumpToLine"></i>` : ""
             const fixInfo = (useFix && rowData.fixable) ? `<i class="fa fa-wrench action-icon" action="fixSingle"></i>` : ""
             return [info, locate, fixInfo].join("")
         }
-        const sortKey = { index: "idx", lineNumber: "line", ruleName: "rule", ruleDesc: "desc" }[this.config.result_order_by] || "line"
+        const sortKey = { index: "idx", lineNumber: "line", ruleName: "rule", ruleDesc: "desc" }[this.config.RESULT_ORDER_BY] || "line"
         const supportColumns = {
-            idx: { key: "idx", title: this.i18n.t("$option.columns.idx"), width: "3em", sortable: true },
-            line: { key: "line", title: this.i18n.t("$option.columns.line"), width: "4em", sortable: true },
-            rule: { key: "rule", title: this.i18n.t("$option.columns.rule"), width: "5em", sortable: true },
-            desc: { key: "desc", title: this.i18n.t("$option.columns.desc"), sortable: true },
-            ops: { key: "ops", title: this.i18n.t("$option.columns.ops"), width: "5.2em", render: operationsRender },
+            idx: { key: "idx", title: this.i18n.t("$option.COLUMNS.idx"), width: "3em", sortable: true },
+            line: { key: "line", title: this.i18n.t("$option.COLUMNS.line"), width: "4em", sortable: true },
+            rule: { key: "rule", title: this.i18n.t("$option.COLUMNS.rule"), width: "5em", sortable: true },
+            desc: { key: "desc", title: this.i18n.t("$option.COLUMNS.desc"), sortable: true },
+            ops: { key: "ops", title: this.i18n.t("$option.COLUMNS.ops"), width: "5.2em", render: operationsRender },
         }
         const schema = {
             defaultSort: { key: sortKey, direction: "asc" },
-            columns: this.config.columns.map(col => supportColumns[col])
+            columns: this.config.COLUMNS.map(col => supportColumns[col])
         }
         this.entities.table.setSchema(schema)
     }
@@ -304,7 +304,7 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
             const rule = item.ruleNames[0]
             const line = item.lineNumber
             const fixable = !!item.fixInfo
-            const desc = (this.config.translate && this.TRANSLATIONS[rule]) || item.ruleDescription
+            const desc = (this.config.TRANSLATE && this.TRANSLATIONS[rule]) || item.ruleDescription
             return { idx, rule, line, fixable, desc }
         })
         this.entities.table.setData(data)
@@ -326,5 +326,5 @@ class MarkdownLintPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: MarkdownLintPlugin
+    plugin: MarkdownlintPlugin
 }

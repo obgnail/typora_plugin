@@ -7,7 +7,7 @@ class Migrate {
     }
 
     deleteUselessPlugins = async () => {
-        const dirs = ["scrollBookmarker"]
+        const dirs = ["scrollBookmarker", "markdownLint"]
         const files = [
             "fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode",
             "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander", "resourceOperation",

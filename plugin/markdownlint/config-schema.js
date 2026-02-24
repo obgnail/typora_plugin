@@ -1,6 +1,6 @@
 const generalRulesMap = require("./general-rules.json")
 const rulesDefaultValues = require("./rules-default-values.json")
-const i18n = require("../../../global/core/i18n.js")
+const i18n = require("../global/core/i18n.js")
 
 const OPTIONS = {
     "MD003.style": ["consistent", "atx", "atx_closed", "setext", "setext_with_atx", "setext_with_atx_closed"],
@@ -30,7 +30,7 @@ const buildGeneralRuleDependencies = () => {
 
 const generalRuleDependencies = buildGeneralRuleDependencies()
 
-const _t = (key) => i18n.t("markdownLint", key)
+const _t = (key) => i18n.t("markdownlint", key)
 const RuleName = (name) => `${name} - ${_t(name)}`
 const Label = (key) => _t(`label.${key}`)
 

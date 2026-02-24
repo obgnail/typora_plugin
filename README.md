@@ -58,7 +58,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 39   | resize_image        | Adjust image display size                                    |                    |
 | 40   | export_enhance      | Avoid image loss when exporting to HTML                      |                    |
 | 41   | sidebar_enhance     | Drag & drop to rearrange、Display non-Markdown files、Keep Fold State |                    |
-| 42   | markdownLint        | Markdown Lint Check                                          |                    |
+| 42   | markdownlint        | Markdown Lint Check                                          |                    |
 | 43   | truncate_text       | Hide content to improve performance for large files          | ×                  |
 | 44   | dark                | Dark mode                                                    |                    |
 | 45   | no_image            | No image mode                                                |                    |
@@ -520,14 +520,11 @@ Usage: Right-click menu -> Often Used Plugins -> No Image Mode
 
 Usage: Right-click menu -> Often Used Plugins -> Defocus Comfort Mode
 
-### markdownLint
+### markdownlint
 
-Function: Check whether the current file complies with markdown best practices.
+Function: Check whether the current file complies with the markdown best practices.
 
-Usage:
-
-1. Method 1: Click the small square at the top right corner
-2. Method 2: Right-click menu -> Often Used Plugins -> Secondary plugins -> Format Check
+Usage:Click the small square in the top right corner
 
 ### updater: One-Click Plugin Upgrade
 

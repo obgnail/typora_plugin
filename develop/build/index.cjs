@@ -62,11 +62,11 @@ const CUSTOM_TASKS_CONFIG = {
     },
     "markdownlint": {
         entry: "markdownlint.mjs",
-        out: "plugin/custom/plugins/markdownLint/markdownlint.min.js"
+        out: "plugin/markdownlint/markdownlint.min.js"
     },
     "markdownlint-rule-helpers": {
         entry: "markdownlint-rule-helpers.cjs",
-        out: "plugin/custom/plugins/markdownLint/markdownlint-rule-helpers.min.js"
+        out: "plugin/markdownlint/markdownlint-rule-helpers.min.js"
     },
 }
 

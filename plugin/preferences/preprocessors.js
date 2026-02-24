@@ -147,11 +147,11 @@ module.exports = (plugin) => {
                 }
             },
         },
-        markdownLint: {
-            rule_config: (field, data, box) => {
-                if (utils.getCustomPlugin("markdownLint")) {
+        markdownlint: {
+            RULE_CONFIG: (field, data, box) => {
+                if (utils.getBasePlugin("markdownlint")) {
                     box.title = undefined
-                    box.fields[0] = { type: "action", key: "invokeMarkdownLintSettings", tooltip: box.tooltip, label: i18n._t("markdownLint", "$label.invokeMarkdownLintSettings") }
+                    box.fields[0] = { type: "action", key: "invokeMarkdownlintSettings", tooltip: box.tooltip, label: i18n._t("markdownlint", "$label.invokeMarkdownlintSettings") }
                 }
             },
         },

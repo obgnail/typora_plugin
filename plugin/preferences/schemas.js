@@ -496,11 +496,11 @@ const OPTIONS = createOptions({
         first_image_strategies: ["inViewBoxImage", "closestViewBoxImage", "firstImage"],
         thumbnail_object_fit: ["fill", "contain", "cover", "scale-down"],
     },
-    markdownLint: {
-        title_bar_buttons: ["settings", "detailAll", "fixAll", "toggleSourceMode", "refresh", "close"],
-        columns: ["idx", "line", "rule", "desc", "ops"],
-        tools: ["info", "locate", "fix"],
-        result_order_by: ["index", "lineNumber", "ruleName", "ruleDesc"],
+    markdownlint: {
+        TITLE_BAR_BUTTONS: ["settings", "detailAll", "fixAll", "toggleSourceMode", "refresh", "close"],
+        COLUMNS: ["idx", "line", "rule", "desc", "ops"],
+        TOOLS: ["info", "locate", "fix"],
+        RESULT_ORDER_BY: ["index", "lineNumber", "ruleName", "ruleDesc"],
     },
 })
 
@@ -1928,32 +1928,32 @@ const schema_imageReviewer = [
     box_settingHandler,
 ]
 
-const schema_markdownLint = [
-    box_customPluginFull,
+const schema_markdownlint = [
+    box_basePluginFull,
     TitledBox(
         "detectAndFix",
-        Switch("translate"),
-        Switch("right_click_table_to_toggle_source_mode"),
-        Select("title_bar_buttons", OPTIONS.markdownLint.title_bar_buttons),
-        Select("columns", OPTIONS.markdownLint.columns, { minItems: 1 }),
-        Select("result_order_by", OPTIONS.markdownLint.result_order_by),
-        Select("tools", OPTIONS.markdownLint.tools, { minItems: 1 }),
-        Hotkey("hotkey_fix_lint_error"),
+        Switch("TRANSLATE"),
+        Switch("RIGHT_CLICK_TABLE_TO_TOGGLE_SOURCE_MODE"),
+        Select("TITLE_BAR_BUTTONS", OPTIONS.markdownlint.TITLE_BAR_BUTTONS),
+        Select("COLUMNS", OPTIONS.markdownlint.COLUMNS, { minItems: 1 }),
+        Select("RESULT_ORDER_BY", OPTIONS.markdownlint.RESULT_ORDER_BY),
+        Select("TOOLS", OPTIONS.markdownlint.TOOLS, { minItems: 1 }),
+        Hotkey("HOTKEY_FIX_LINT"),
     ),
     TitledBox(
         "indicator",
-        Switch("use_button"),
-        Switch("right_click_button_to_fix", { dependencies: Dep.true("use_button") }),
-        Text("button_width", { dependencies: Dep.true("use_button") }),
-        Text("button_height", { dependencies: Dep.true("use_button") }),
-        Text("button_right", { dependencies: Dep.true("use_button") }),
-        Text("button_border_radius", { dependencies: Dep.true("use_button") }),
-        Range("button_opacity", { min: 0, max: 1, step: 0.05, dependencies: Dep.true("use_button") }),
-        Color("pass_color", { dependencies: Dep.true("use_button") }),
-        Color("error_color", { dependencies: Dep.true("use_button") }),
+        Switch("USE_BUTTON"),
+        Switch("RIGHT_CLICK_BUTTON_TO_FIX", { dependencies: Dep.true("USE_BUTTON") }),
+        Text("BUTTON_WIDTH", { dependencies: Dep.true("USE_BUTTON") }),
+        Text("BUTTON_HEIGHT", { dependencies: Dep.true("USE_BUTTON") }),
+        Text("BUTTON_RIGHT", { dependencies: Dep.true("USE_BUTTON") }),
+        Text("BUTTON_BORDER_RADIUS", { dependencies: Dep.true("USE_BUTTON") }),
+        Range("BUTTON_OPACITY", { min: 0, max: 1, step: 0.05, dependencies: Dep.true("USE_BUTTON") }),
+        Color("PASS_COLOR", { dependencies: Dep.true("USE_BUTTON") }),
+        Color("ERROR_COLOR", { dependencies: Dep.true("USE_BUTTON") }),
     ),
-    DictBox("rule_config", null, { tooltip: Tip.action("viewMarkdownlintRules") }),
-    ArrayBox("custom_rule_files"),
+    DictBox("RULE_CONFIG", null, { tooltip: Tip.action("viewMarkdownlintRules") }),
+    ArrayBox("CUSTOM_RULE_FILES"),
     box_settingHandler,
 ]
 
@@ -2027,6 +2027,7 @@ const schemas = {
     collapse_paragraph: schema_collapse_paragraph,
     collapse_list: schema_collapse_list,
     collapse_table: schema_collapse_table,
+    markdownlint: schema_markdownlint,
     truncate_text: schema_truncate_text,
     export_enhance: schema_export_enhance,
     text_stylize: schema_text_stylize,
@@ -2066,7 +2067,6 @@ const schemas = {
     templater: schema_templater,
     toc: schema_toc,
     imageReviewer: schema_imageReviewer,
-    markdownLint: schema_markdownLint,
     quickButton: schema_quickButton,
 }
 

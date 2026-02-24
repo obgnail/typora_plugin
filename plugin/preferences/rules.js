@@ -174,14 +174,14 @@ module.exports = {
     imageReviewer: {
         thumbnail_height: required,
     },
-    markdownLint: {
-        button_width: required,
-        button_height: required,
-        button_right: required,
-        button_border_radius: required,
-        pass_color: required,
-        error_color: required,
-        custom_rule_files: each([required, path]),
+    markdownlint: {
+        BUTTON_WIDTH: required,
+        BUTTON_HEIGHT: required,
+        BUTTON_RIGHT: required,
+        BUTTON_BORDER_RADIUS: required,
+        PASS_COLOR: required,
+        ERROR_COLOR: required,
+        CUSTOM_RULE_FILES: each([required, path]),
     },
     quickButton: {
         button_size: required,

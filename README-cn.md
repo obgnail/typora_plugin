@@ -58,7 +58,7 @@
 | 39   | resize_image        | 调整图片显示大小                           |          |
 | 40   | export_enhance      | 导出 HTML 时避免图片丢失                   |          |
 | 41   | sidebar_enhance     | 显示其他扩展名文件、记忆折叠状态、拖拽排序 |          |
-| 42   | markdownLint        | markdown 格式检查                          |          |
+| 42   | markdownlint        | markdown 格式检查                          |          |
 | 43   | truncate_text       | 暂时隐藏内容，提高大文件渲染性能           | ×        |
 | 44   | dark                | 夜间模式                                   |          |
 | 45   | no_image            | 无图模式                                   |          |
@@ -592,15 +592,11 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 
 
 
-### markdownLint：markdown 格式检查
+### markdownlint：markdown 格式检查
 
 功能：检测当前文件是否符合 markdown 最佳实践规范。
 
-使用方式：
-
-1. 方法一：点击右上角的小方块
-2. 方法二：右键菜单 -> 常用插件 -> 二级插件 -> 格式检查
-
+使用方式：点击右上角的小方块
 
 
 ### updater：一键升级插件

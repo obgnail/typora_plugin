@@ -30,7 +30,7 @@ const hasNestedProperty = (obj, key) => {
 
 const isIgnored = (fixedName, key) => (
     (fixedName === "abc" && key.startsWith("VISUAL_OPTIONS"))
-    || (fixedName === "markdownLint" && key.startsWith("rule_config"))
+    || (fixedName === "markdownlint" && key.startsWith("RULE_CONFIG"))
     || (fixedName === "marp" && key.startsWith("MARP_CORE_OPTIONS"))
 )
 
@@ -270,7 +270,7 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
             sidebar_enhance: ["$tooltip.canCollapseOutlinePanel"],
             slash_commands: ["$label.COMMANDS.callback"],
             hotkeys: ["$label.CUSTOM_HOTKEYS.evil"],
-            markdownLint: ["$label.invokeMarkdownLintSettings"],
+            markdownlint: ["$label.invokeMarkdownlintSettings"],
             quickButton: ["$label.buttons.evil"],
         }
         Object.entries(allowedUnusedKeys).forEach(([fixedName, keys]) => {
@@ -292,7 +292,7 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
 
 test("Action Consistency Check: Defined vs Used", t => {
     const definedActions = new Set(Object.keys(actionsMap))
-    const ignoredActions = new Set(["invokeMarkdownLintSettings", "togglePreferencePanel"])
+    const ignoredActions = new Set(["invokeMarkdownlintSettings", "togglePreferencePanel"])
     const usedActions = new Set()
 
     const collectFromTooltip = (tooltip) => {

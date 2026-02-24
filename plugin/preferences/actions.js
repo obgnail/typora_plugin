@@ -68,7 +68,7 @@ module.exports = (plugin) => {
             }
             await utils.formDialog.modal(op)
         },
-        invokeMarkdownLintSettings: async () => utils.callPluginFunction("markdownLint", "settings"),
+        invokeMarkdownlintSettings: async () => utils.callPluginFunction("markdownlint", "settings"),
         installPlantUMLServer: async () => {
             const dockerFields = [{ key: "dockerCommand", type: "code", readonly: true }]
             const actionFields = [

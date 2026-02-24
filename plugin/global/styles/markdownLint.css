@@ -28,17 +28,17 @@
 
 #plugin-markdownlint-button {
     position: fixed;
-    right: ${this.config.button_right};
-    width: ${this.config.button_width};
-    height: ${this.config.button_height};
-    border-radius: ${this.config.button_border_radius};
-    background-color: ${this.config.pass_color};
-    opacity: ${this.config.button_opacity};
+    right: ${this.config.BUTTON_RIGHT};
+    width: ${this.config.BUTTON_WIDTH};
+    height: ${this.config.BUTTON_HEIGHT};
+    border-radius: ${this.config.BUTTON_BORDER_RADIUS};
+    background-color: ${this.config.PASS_COLOR};
+    opacity: ${this.config.BUTTON_OPACITY};
     cursor: pointer;
     transition: background-color 0.1s ease 0s;
     z-index: 9992;
 }
 
 #plugin-markdownlint-button[lint-check-failed] {
-    background-color: ${this.config.error_color};
+    background-color: ${this.config.ERROR_COLOR};
 }
