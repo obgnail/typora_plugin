@@ -1,12 +1,12 @@
 class DataTablesPlugin extends BasePlugin {
     init = () => {
-        this.dataTablesConfig = null;
-        this.tableList = [];
+        this.dataTablesConfig = null
+        this.tableList = []
     }
 
     process = () => {
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.destroyAllDataTable);
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeToggleSourceMode, this.destroyAllDataTable);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.destroyAllDataTable)
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeToggleSourceMode, this.destroyAllDataTable)
 
         this.utils.decorate(() => File?.editor?.tableEdit, "showTableEdit", (...args) => {
             const table = args[0]?.find?.("table")
@@ -21,26 +21,26 @@ class DataTablesPlugin extends BasePlugin {
 
     destroyAllDataTable = () => {
         while (this.tableList.length) {
-            this.removeDataTable(this.tableList[0].uuid);
+            this.removeDataTable(this.tableList[0].uuid)
         }
-        this.tableList = [];
+        this.tableList = []
     }
 
     // addTfoot = $table => {
-    //     const th = $table.find("thead th");
-    //     const list = [...th].map(ele => `<td>${ele.textContent}: </td>`);
-    //     const tfoot = `<tfoot><tr>${list.join("")}</tr></tfoot>`;
-    //     $table.append(tfoot);
+    //     const th = $table.find("thead th")
+    //     const list = [...th].map(ele => `<td>${ele.textContent}: </td>`)
+    //     const tfoot = `<tfoot><tr>${list.join("")}</tr></tfoot>`
+    //     $table.append(tfoot)
     // }
 
     appendFilter = dataTable => {
         dataTable.columns().flatten().each(function (colIdx) {
             const select = $("<select />").appendTo(dataTable.column(colIdx).header()).on("change", function () {
-                dataTable.column(colIdx).search($(this).val()).draw();
+                dataTable.column(colIdx).search($(this).val()).draw()
             }).on("click", function () {
                 return false
             })
-            select.append($(`<option value=""></option>>`));
+            select.append($(`<option value=""></option>>`))
             dataTable.column(colIdx).cache("search").sort().unique().each(d => select.append($(`<option value="${d}">${d}</option>>`)))
         })
     }
@@ -86,42 +86,42 @@ class DataTablesPlugin extends BasePlugin {
     }
 
     newDataTable = async target => {
-        if (!target) return;
-        await this.lazyLoad();
-        const edit = target.parentElement.querySelector(".md-table-edit");
-        const $table = $(target);
-        const uuid = this.utils.randomString();
-        $table.attr("table-uuid", uuid);
-        // addTfoot($table);
-        const table = $table.dataTable(this.dataTablesConfig);
-        this.appendFilter(table.api());
-        this.tableList.push({ uuid, table });
+        if (!target) return
+        await this.lazyLoad()
+        const edit = target.parentElement.querySelector(".md-table-edit")
+        const $table = $(target)
+        const uuid = this.utils.randomString()
+        $table.attr("table-uuid", uuid)
+        // addTfoot($table)
+        const table = $table.dataTable(this.dataTablesConfig)
+        this.appendFilter(table.api())
+        this.tableList.push({ uuid, table })
         edit?.parentNode.removeChild(edit)
         return uuid
     }
 
     removeDataTable = uuid => {
-        if (!uuid || !this.tableList.length) return;
+        if (!uuid || !this.tableList.length) return
         const idx = this.tableList.findIndex(t => t.uuid === uuid)
-        if (idx === -1) return;
+        if (idx === -1) return
 
-        const table = this.tableList[idx].table;
-        const target = table[0];
-        table.api().destroy();
-        target.removeAttribute("table-uuid");
-        this.tableList.splice(idx, 1);
-        target.querySelectorAll("th select").forEach(ele => ele.parentNode.removeChild(ele));
+        const table = this.tableList[idx].table
+        const target = table[0]
+        table.api().destroy()
+        target.removeAttribute("table-uuid")
+        this.tableList.splice(idx, 1)
+        target.querySelectorAll("th select").forEach(ele => ele.parentNode.removeChild(ele))
         if (target) {
-            const $fig = $(target.parentElement);
-            File.editor.tableEdit.showTableEdit($fig);
+            const $fig = $(target.parentElement)
+            File.editor.tableEdit.showTableEdit($fig)
         }
     }
 
     getDynamicActions = (anchorNode, meta) => {
-        const table = anchorNode.closest("#write table.md-table");
+        const table = anchorNode.closest("#write table.md-table")
         const uuid = table?.getAttribute("table-uuid")
-        meta.uuid = uuid;
-        meta.target = table;
+        meta.uuid = uuid
+        meta.target = table
 
         const hint = this.i18n.t("actHint.positioningTable")
         const act_name = this.i18n.t(uuid ? "act.revert_table" : "act.enhance_table")

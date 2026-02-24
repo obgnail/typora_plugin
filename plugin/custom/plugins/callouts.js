@@ -1,18 +1,17 @@
 class CalloutsPlugin extends BaseCustomPlugin {
     styleTemplate = () => {
-        const { list, hover_to_show_fold_callout, set_title_color } = this.config;
-        const callouts = list.map(c => (
+        const callouts = this.config.list.map(c => (
             `.plugin-callout[callout-type="${c.type}"] {
                 --callout-bg-color: ${c.background_color};
                 --callout-left-line-color: ${c.left_line_color};
                 --callout-icon: "${c.icon}";
             }`
-        )).join("\n");
+        )).join("\n")
         const hoverCss = `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }`
         const colorCss = `.plugin-callout > p:first-child span:first-child { color: var(--callout-left-line-color); }
-               .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`;
-        const hover = hover_to_show_fold_callout ? hoverCss : ""
-        const color = set_title_color ? colorCss : ""
+               .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`
+        const hover = this.config.hover_to_show_fold_callout ? hoverCss : ""
+        const color = this.config.set_title_color ? colorCss : ""
         return { callouts, hover, color }
     }
 
@@ -23,16 +22,16 @@ class CalloutsPlugin extends BaseCustomPlugin {
 
     setCallouts = () => {
         this.utils.entities.querySelectorAllInWrite("blockquote > p:first-child").forEach(p => {
-            const blockquote = p.parentElement;
-            const result = p.textContent.match(/^\[!(?<type>\w+)\](?<fold>[+-]?)/);
+            const blockquote = p.parentElement
+            const result = p.textContent.match(/^\[!(?<type>\w+)\](?<fold>[+-]?)/)
             const ok = !!(result?.groups)
-            blockquote.classList.toggle("plugin-callout", ok);
+            blockquote.classList.toggle("plugin-callout", ok)
             if (ok) {
-                const { type, fold } = result.groups;
+                const { type, fold } = result.groups
                 // Add data-type attribute to spans containing [!type]
                 p.querySelector("span:first-child")?.setAttribute("data-type", type)
-                blockquote.setAttribute("callout-type", type.toLowerCase());
-                blockquote.classList.toggle("callout-folded", fold === "-");
+                blockquote.setAttribute("callout-type", type.toLowerCase())
+                blockquote.classList.toggle("callout-folded", fold === "-")
             }
         })
     }

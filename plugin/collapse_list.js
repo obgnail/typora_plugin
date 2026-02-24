@@ -5,46 +5,47 @@
  */
 class CollapseListPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.className = "plugin-collapsed-list";
-        this.selector = '#write [mdtype="list"]';
-        const color = this.config.TRIANGLE_COLOR || "var(--meta-content-color)";
-        this.triangleStyle = { left: -18, top: 0, height: 9, halfWidth: 7, color: color };
+        this.className = "plugin-collapsed-list"
+        this.selector = '#write [mdtype="list"]'
+        const color = this.config.TRIANGLE_COLOR || "var(--meta-content-color)"
+        this.triangleStyle = { left: -18, top: 0, height: 9, halfWidth: 7, color: color }
     }
 
     styleTemplate = () => true
 
     process = () => {
         this.utils.settings.autoSave(this)
-        this.recordCollapseState(false);
+        this.recordCollapseState(false)
         this.utils.entities.eWrite.addEventListener("click", ev => {
-            const parent = ev.target.closest(this.selector);
-            if (!parent) return;
+            const parent = ev.target.closest(this.selector)
+            if (!parent) return
 
-            const { clientX, clientY } = ev;
-            const { left: PLeft, top: PTop } = parent.getBoundingClientRect();
-            const { left: TLeft, top: TTop, height: THeight, halfWidth: THalfWidth } = this.triangleStyle;
+            const { clientX, clientY } = ev
+            const { left: PLeft, top: PTop } = parent.getBoundingClientRect()
+            const { left: TLeft, top: TTop, height: THeight, halfWidth: THalfWidth } = this.triangleStyle
 
-            const left = PLeft + TLeft;
-            const top = PTop + TTop;
-            const height = THeight;
-            const width = 2 * THalfWidth;
-            if (
+            const left = PLeft + TLeft
+            const top = PTop + TTop
+            const height = THeight
+            const width = 2 * THalfWidth
+            const clicked = (
                 left - width <= clientX
                 && clientX <= left + width
                 && top - height <= clientY
                 && clientY <= top + height
-            ) {
-                ev.stopPropagation();
-                ev.preventDefault();
-                this.toggleCollapse(parent);
+            )
+            if (clicked) {
+                ev.stopPropagation()
+                ev.preventDefault()
+                this.toggleCollapse(parent)
             }
         })
     }
 
-    checkCollapse = ele => ele.classList.contains(this.className);
-    setCollapse = ele => ele.classList.add(this.className);
-    cancelCollapse = ele => ele.classList.remove(this.className);
-    toggleCollapse = ele => ele.classList.toggle(this.className);
+    checkCollapse = ele => ele.classList.contains(this.className)
+    setCollapse = ele => ele.classList.add(this.className)
+    cancelCollapse = ele => ele.classList.remove(this.className)
+    toggleCollapse = ele => ele.classList.toggle(this.className)
 
     recordCollapseState = (needChange = true) => {
         if (needChange) {
@@ -74,7 +75,7 @@ class CollapseListPlugin extends BasePlugin {
 
     call = action => {
         if (action === "record_collapse_state") {
-            this.recordCollapseState(true);
+            this.recordCollapseState(true)
         }
     }
 }

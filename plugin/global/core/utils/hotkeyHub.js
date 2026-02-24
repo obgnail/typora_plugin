@@ -3,16 +3,16 @@
  */
 class HotkeyHub {
     constructor(utils) {
-        this.utils = utils;
-        this.map = new Map();
+        this.utils = utils
+        this.map = new Map()
     }
 
     normalize = hotkeyString => {
-        const modifier = ["ctrl", "shift", "alt"];
-        const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
-        const modifierKeys = modifier.filter(k => keyList.includes(k));
-        const mainKey = keyList.find(k => !modifier.includes(k)) || (hotkeyString.includes("++") ? "+" : " ");
-        return [...modifierKeys, mainKey].join("+");
+        const modifier = ["ctrl", "shift", "alt"]
+        const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim())
+        const modifierKeys = modifier.filter(k => keyList.includes(k))
+        const mainKey = keyList.find(k => !modifier.includes(k)) || (hotkeyString.includes("++") ? "+" : " ")
+        return [...modifierKeys, mainKey].join("+")
     }
 
     /**
@@ -51,18 +51,18 @@ class HotkeyHub {
 
     process = () => {
         window.addEventListener("keydown", ev => {
-            if (ev.key === undefined) return;
-            const arr = [];
+            if (ev.key === undefined) return
+            const arr = []
             if (this.utils.metaKeyPressed(ev)) arr.push("ctrl")
             if (this.utils.shiftKeyPressed(ev)) arr.push("shift")
             if (this.utils.altKeyPressed(ev)) arr.push("alt")
-            arr.push(ev.key.toLowerCase());
-            const key = arr.join("+");
-            const callback = this.map.get(key);
+            arr.push(ev.key.toLowerCase())
+            const key = arr.join("+")
+            const callback = this.map.get(key)
             if (callback) {
-                callback();
-                ev.preventDefault();
-                ev.stopPropagation();
+                callback()
+                ev.preventDefault()
+                ev.stopPropagation()
             }
         }, true)
     }

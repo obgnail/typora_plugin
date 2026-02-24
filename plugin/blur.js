@@ -4,39 +4,39 @@ class BlurPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
-        this.blurType = { BLUR: "blur", HIDE: "hide" };
-        this.css_id = "plugin-blur-style";
-        this.inBlur = this.config.BLUR_DEFAULT;
+        this.BLUR_TYPE = { BLUR: "blur", HIDE: "hide" }
+        this.isBlurMode = this.config.BLUR_DEFAULT
     }
 
-    process = () => this.run(false);
+    process = () => this.run(false)
 
     call = () => {
-        this.inBlur = !this.inBlur;
-        this.run();
+        this.isBlurMode = !this.isBlurMode
+        this.run()
     }
 
     getStyleText = () => {
-        const selector = "#write > [cid]:not(.md-focus):not(:has(.md-focus)):not(:has(.md-focus-container))";
-        const [effect, restore] = (this.config.BLUR_TYPE === this.blurType.HIDE)
+        const selector = "#write > [cid]:not(.md-focus):not(:has(.md-focus)):not(:has(.md-focus-container))"
+        const [effect, restore] = (this.config.BLUR_TYPE === this.BLUR_TYPE.HIDE)
             ? ["visibility: hidden;", "visibility: visible;"]
             : [`filter: blur(${this.config.BLUR_LEVEL}px);`, "filter: initial;"]
 
-        let css = `${selector} { ${effect} }`;
+        let css = `${selector} { ${effect} }`
         if (this.config.RESTORE_WHEN_HOVER) {
-            css += `${selector}:hover { ${restore} }`;
+            css += `${selector}:hover { ${restore} }`
         }
         return css
     }
 
     run = (showNotification = true) => {
-        if (this.inBlur) {
-            this.utils.insertStyle(this.css_id, this.getStyleText())
+        const id = this.utils.styleTemplater.getID(this.fixedName)
+        if (this.isBlurMode) {
+            this.utils.insertStyle(id, this.getStyleText())
         } else {
-            this.utils.removeStyle(this.css_id)
+            this.utils.removeStyle(id)
         }
         if (showNotification) {
-            const msg = this.i18n.t(this.inBlur ? "modeEnabled" : "modeDisabled")
+            const msg = this.i18n.t(this.isBlurMode ? "modeEnabled" : "modeDisabled")
             this.utils.notification.show(msg)
         }
     }

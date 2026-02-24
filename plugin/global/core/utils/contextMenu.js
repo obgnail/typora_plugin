@@ -76,18 +76,18 @@ class ContextMenu {
 
     _showMenu = ev => {
         const $menu = $(this.menuEl)
-        $menu.addClass("show");
-        const { innerWidth, innerHeight } = window;
-        const { clientX, clientY } = ev;
-        let width = $menu.width() + 20;
-        width = Math.min(clientX, innerWidth - width);
-        width = Math.max(0, width);
-        let height = $menu.height() + 48;
+        $menu.addClass("show")
+        const { innerWidth, innerHeight } = window
+        const { clientX, clientY } = ev
+        let width = $menu.width() + 20
+        width = Math.min(clientX, innerWidth - width)
+        width = Math.max(0, width)
+        let height = $menu.height() + 48
         height = clientY > innerHeight - height
             ? innerHeight - height
-            : clientY - $("#top-titlebar").height() + 8;
-        height = Math.max(0, height);
-        $menu.css({ top: height + "px", left: width + "px" });
+            : clientY - $("#top-titlebar").height() + 8
+        height = Math.max(0, height)
+        $menu.css({ top: height + "px", left: width + "px" })
     }
 }
 

@@ -1,6 +1,6 @@
 class NoImageModePlugin extends BasePlugin {
     init = () => {
-        this.isNoImageMode = this.config.DEFAULT_NO_IMAGE_MODE;
+        this.isNoImageMode = this.config.DEFAULT_NO_IMAGE_MODE
     }
 
     hotkey = () => [this.config.HOTKEY]
@@ -11,13 +11,13 @@ class NoImageModePlugin extends BasePlugin {
             transition_delay: this.config.TRANSITION_DELAY,
             opacity_on_hover: this.config.RESHOW_WHEN_HOVER ? "100%" : "0",
         }
-        await this.utils.styleTemplater.register(this.fixedName, renderArg);
-        this.isNoImageMode = true;
+        await this.utils.styleTemplater.register(this.fixedName, renderArg)
+        this.isNoImageMode = true
     }
 
     disableNoImageMode = () => {
-        this.utils.styleTemplater.unregister(this.fixedName);
-        this.isNoImageMode = false;
+        this.utils.styleTemplater.unregister(this.fixedName)
+        this.isNoImageMode = false
     }
 
     toggleNoImageMode = async () => {
@@ -27,7 +27,7 @@ class NoImageModePlugin extends BasePlugin {
         this.utils.notification.show(msg)
     }
 
-    process = () => this.isNoImageMode && this.enableNoImageMode();
+    process = () => this.isNoImageMode && this.enableNoImageMode()
 
     call = (action, meta) => this.toggleNoImageMode()
 }

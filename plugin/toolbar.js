@@ -127,7 +127,7 @@ class ToolbarPlugin extends BasePlugin {
     }
 }
 
-class BaseToolInterface {
+class BaseTool {
     name = () => ""
     translate = () => ""
     icon = () => "🎯"
@@ -275,7 +275,7 @@ class ToolController {
     }
 }
 
-class TabTool extends BaseToolInterface {
+class TabTool extends BaseTool {
     name = () => "tab"
     translate = () => this.i18n.t("tool.tab")
     icon = () => "📖"
@@ -292,7 +292,7 @@ class TabTool extends BaseToolInterface {
     callback = fixedName => this.windowTabPlugin.switchTabByPath(fixedName)
 }
 
-class PluginTool extends BaseToolInterface {
+class PluginTool extends BaseTool {
     name = () => "plu"
     translate = () => this.i18n.t("tool.plu")
     icon = () => "🔌"
@@ -324,7 +324,7 @@ class PluginTool extends BaseToolInterface {
     }
 }
 
-class RecentFileTool extends BaseToolInterface {
+class RecentFileTool extends BaseTool {
     name = () => "his"
     translate = () => this.i18n.t("tool.his")
     icon = () => "🕖"
@@ -364,7 +364,7 @@ class RecentFileTool extends BaseToolInterface {
     }
 }
 
-class OperationTool extends BaseToolInterface {
+class OperationTool extends BaseTool {
     name = () => "ops"
     translate = () => this.i18n.t("tool.ops")
     icon = () => "🔨"
@@ -396,7 +396,7 @@ class OperationTool extends BaseToolInterface {
     callback = (fixedName, meta) => this.ops.find(el => el.fixedName === fixedName)?.callback(meta)
 }
 
-class ModeTool extends BaseToolInterface {
+class ModeTool extends BaseTool {
     name = () => "mode"
     translate = () => this.i18n.t("tool.mode")
     icon = () => "🌗"
@@ -435,7 +435,7 @@ class ModeTool extends BaseToolInterface {
     callback = (fixedName, meta) => this.modes.find(el => el.fixedName === fixedName)?.callback(meta)
 }
 
-class ThemeTool extends BaseToolInterface {
+class ThemeTool extends BaseTool {
     name = () => "theme"
     translate = () => this.i18n.t("tool.theme")
     icon = () => "🎨"
@@ -449,7 +449,7 @@ class ThemeTool extends BaseToolInterface {
     callback = fixedName => this.setThemeForever(fixedName)
 }
 
-class OutlineTool extends BaseToolInterface {
+class OutlineTool extends BaseTool {
     name = () => "out"
     translate = () => this.i18n.t("tool.out")
     icon = () => "🧷"
@@ -467,7 +467,7 @@ class OutlineTool extends BaseToolInterface {
     callback = fixedName => this.utils.scrollByCid(fixedName)
 }
 
-class FunctionTool extends BaseToolInterface {
+class FunctionTool extends BaseTool {
     name = () => "func"
     translate = () => this.i18n.t("tool.func")
     icon = () => "💡"
@@ -485,7 +485,7 @@ class FunctionTool extends BaseToolInterface {
     }
 }
 
-class MixTool extends BaseToolInterface {
+class MixTool extends BaseTool {
     name = () => "all"
     translate = () => this.i18n.t("tool.all")
     icon = () => "🔱"

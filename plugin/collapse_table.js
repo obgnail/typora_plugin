@@ -2,12 +2,12 @@ class CollapseTablePlugin extends BasePlugin {
     styleTemplate = () => true
 
     init = () => {
-        this.className = "plugin-collapse-table";
+        this.className = "plugin-collapse-table"
     }
 
     process = () => {
         this.utils.settings.autoSave(this)
-        this.recordCollapseState(false);
+        this.recordCollapseState(false)
 
         this.utils.decorate(() => File?.editor?.tableEdit, "showTableEdit", null, (result, $figure) => {
             if (!$figure || $figure.length === 0) return
@@ -28,9 +28,9 @@ class CollapseTablePlugin extends BasePlugin {
 
     call = (action, meta) => {
         if (action === "convert_current") {
-            this.toggleTable(meta.target);
+            this.toggleTable(meta.target)
         } else if (action === "record_collapse_state") {
-            this.recordCollapseState(true);
+            this.recordCollapseState(true)
         }
     }
 
@@ -45,9 +45,9 @@ class CollapseTablePlugin extends BasePlugin {
     }
 
     toggleTable = figure => {
-        const table = figure.querySelector("table");
-        if (!table) return;
-        figure.classList.toggle(this.className);
+        const table = figure.querySelector("table")
+        if (!table) return
+        figure.classList.toggle(this.className)
         const btn = figure.querySelector(".plugin-collapse-table-btn span")
         if (btn) {
             btn.classList.toggle("fa-plus")
@@ -56,14 +56,14 @@ class CollapseTablePlugin extends BasePlugin {
     }
 
     rollback = start => {
-        let cur = start;
+        let cur = start
         while (cur && (cur = cur.closest(`.${this.className}`))) {
-            this.toggleTable(cur);
-            cur = cur.parentElement;
+            this.toggleTable(cur)
+            cur = cur.parentElement
         }
     }
 
-    checkCollapse = figure => figure.classList.contains(this.className);
+    checkCollapse = figure => figure.classList.contains(this.className)
 
     recordCollapseState = (needChange = true) => {
         if (needChange) {

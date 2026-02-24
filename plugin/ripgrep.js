@@ -37,23 +37,23 @@ class RipgrepPlugin extends BasePlugin {
     }
 
     call = () => {
-        const { modal, input } = this.entities;
+        const { modal, input } = this.entities
         if (this.utils.isShown(modal)) {
-            this.utils.hide(modal);
+            this.utils.hide(modal)
         } else {
-            const widthRatio = this.config.WIDTH_PERCENT / 100;
-            const { width, left } = this.entities.content.getBoundingClientRect();
-            this.entities.modal.style.width = width * widthRatio + "px";
-            this.entities.modal.style.left = left + width * (1 - widthRatio) / 2 + "px";
-            this.utils.show(modal);
-            input.select();
+            const widthRatio = this.config.WIDTH_PERCENT / 100
+            const { width, left } = this.entities.content.getBoundingClientRect()
+            this.entities.modal.style.width = width * widthRatio + "px"
+            this.entities.modal.style.left = left + width * (1 - widthRatio) / 2 + "px"
+            this.utils.show(modal)
+            input.select()
         }
     }
 
     resetOutput = () => {
-        this.entities.pre.textContent = "";
-        this.entities.pre.classList.remove("error");
-        this.utils.show(this.entities.output);
+        this.entities.pre.textContent = ""
+        this.entities.pre.classList.remove("error")
+        this.utils.show(this.entities.output)
     }
 
     ripgrep = (args, callback) => {
@@ -80,70 +80,70 @@ class RipgrepPlugin extends BasePlugin {
      *       data => console.log(data),
      *       data => console.error(data),
      *       code => console.log("finish code:", code),
-     *   );
+     *   )
      */
     _ripgrep = (args, onData, onErr, onClose) => {
-        const rgPath = reqnode("vscode-ripgrep").rgPath.replace("node_modules.asar", "node_modules");
-        const options = { cwd: File.getMountFolder(), stdio: ["ignore", "pipe", "pipe"], env: { rg: rgPath } };
+        const rgPath = reqnode("vscode-ripgrep").rgPath.replace("node_modules.asar", "node_modules")
+        const options = { cwd: File.getMountFolder(), stdio: ["ignore", "pipe", "pipe"], env: { rg: rgPath } }
         const child = require("child_process").spawn(rgPath, args, options)
-        child.stdout.setEncoding("utf8");
-        child.stderr.setEncoding("utf8");
-        child.stdout.on("data", onData);
-        child.stderr.on("data", onErr);
-        child.on("close", onClose);
+        child.stdout.setEncoding("utf8")
+        child.stderr.setEncoding("utf8")
+        child.stdout.on("data", onData)
+        child.stderr.on("data", onErr)
+        child.on("close", onClose)
     }
 
     _parseCommandLineArgs = args => {
-        const result = [];
-        let currentArg = '';
-        let inQuote = false;
-        let escapeNextChar = false;
+        const result = []
+        let currentArg = ''
+        let inQuote = false
+        let escapeNextChar = false
 
         for (let i = 0; i < args.length; i++) {
-            const char = args[i];
+            const char = args[i]
 
             if (escapeNextChar) {
-                currentArg += char;
-                escapeNextChar = false;
+                currentArg += char
+                escapeNextChar = false
             } else if (char === '\\') {
-                escapeNextChar = true;
+                escapeNextChar = true
             } else if (char === ' ') {
                 if (inQuote) {
-                    currentArg += char;
+                    currentArg += char
                 } else if (currentArg) {
-                    result.push(currentArg);
-                    currentArg = '';
+                    result.push(currentArg)
+                    currentArg = ''
                 }
             } else if (char === '"') {
                 if (inQuote) {
                     if (args[i - 1] !== '\\') {
-                        inQuote = false;
+                        inQuote = false
                     }
                 } else {
-                    inQuote = true;
+                    inQuote = true
                 }
             } else {
-                currentArg += char;
+                currentArg += char
             }
         }
 
         if (currentArg) {
-            result.push(currentArg);
+            result.push(currentArg)
         }
 
         // Split options with values
-        const parsedResult = [];
+        const parsedResult = []
         for (const arg of result) {
-            const equalIndex = arg.indexOf('=');
+            const equalIndex = arg.indexOf('=')
             if (equalIndex !== -1) {
-                parsedResult.push(arg.substring(0, equalIndex));
-                parsedResult.push(arg.substring(equalIndex + 1));
+                parsedResult.push(arg.substring(0, equalIndex))
+                parsedResult.push(arg.substring(equalIndex + 1))
             } else {
-                parsedResult.push(arg);
+                parsedResult.push(arg)
             }
         }
 
-        return parsedResult;
+        return parsedResult
     }
 }
 

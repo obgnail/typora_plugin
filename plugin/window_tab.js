@@ -1,8 +1,8 @@
 class WindowTabPlugin extends BasePlugin {
     beforeProcess = () => {
         if (window._options.framelessWindow && this.config.HIDE_WINDOW_TITLE_BAR) {
-            document.querySelector("header").style.zIndex = "897";
-            document.getElementById("top-titlebar").style.display = "none";
+            document.querySelector("header").style.zIndex = "897"
+            document.getElementById("top-titlebar").style.display = "none"
         }
         if (this.config.LAST_TAB_CLOSE_ACTION === "blankPage" && this.utils.isBetaVersion) {
             this.config.LAST_TAB_CLOSE_ACTION = "reconfirm"
@@ -66,58 +66,58 @@ class WindowTabPlugin extends BasePlugin {
 
     process = () => {
         const handleLifeCycle = () => {
-            this._hideTabBar();
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, this.openTab);
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this._scrollContent);
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial");
+            this._hideTabBar()
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, this.openTab)
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this._scrollContent)
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial")
             const isHeaderReady = () => this.utils.isBetaVersion ? this.entities.header.getBoundingClientRect().height : true
             const adjustTop = () => setTimeout(() => {
                 if (!this.config.HIDE_WINDOW_TITLE_BAR) {
                     const { height, top } = this.entities.header.getBoundingClientRect()
-                    this.entities.windowTab.style.top = height + top + "px";
+                    this.entities.windowTab.style.top = height + top + "px"
                 }
                 // Adjust the top position of the content Tag to prevent it from being obscured by the tab.
-                this._adjustContentTop();
-            }, 200);
+                this._adjustContentTop()
+            }, 200)
             this.utils.pollUntil(isHeaderReady, adjustTop, 50, 1000)
         }
         const handleClick = () => {
             this.entities.tabBar.addEventListener("click", ev => {
-                const closeButton = ev.target.closest(".close-button");
-                const tabContainer = ev.target.closest(".tab-container");
-                if (!closeButton && !tabContainer) return;
-                const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
+                const closeButton = ev.target.closest(".close-button")
+                const tabContainer = ev.target.closest(".tab-container")
+                if (!closeButton && !tabContainer) return
+                const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer
                 const idx = parseInt(tab.dataset.idx)
                 if (this.config.CTRL_CLICK_TO_NEW_WINDOW && this.utils.metaKeyPressed(ev)) {
-                    this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false);
+                    this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false)
                 } else if (closeButton) {
-                    this.closeTab(idx);
+                    this.closeTab(idx)
                 } else {
-                    this.switchTab(idx);
+                    this.switchTab(idx)
                 }
             })
         }
         const handleScroll = () => {
             this.entities.content.addEventListener("scroll", this.utils.debounce(() => {
-                const current = this.tabUtil.currentTab;
-                if (current) {
-                    current.scrollTop = this.entities.content.scrollTop;
+                const tab = this.tabUtil.currentTab
+                if (tab) {
+                    tab.scrollTop = this.entities.content.scrollTop
                 }
             }), 100)
         }
         const handleDrag = () => {
             const newWindowIfNeed = (offsetY, tab) => {
                 if (this.config.TAB_DETACHMENT === "lockVertical" || this.config.DRAG_NEW_WINDOW_THRESHOLD <= 0) return
-                offsetY = Math.abs(offsetY);
-                const { height } = this.entities.tabBar.getBoundingClientRect();
+                offsetY = Math.abs(offsetY)
+                const { height } = this.entities.tabBar.getBoundingClientRect()
                 if (offsetY > height * this.config.DRAG_NEW_WINDOW_THRESHOLD) {
                     const idx = parseInt(tab.dataset.idx)
-                    this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false);
+                    this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false)
                 }
             }
 
             const sortJetBrains = () => {
-                const that = this;
+                const that = this
 
                 const resetTabBar = () => {
                     const all = that.entities.windowTab.querySelectorAll(".tab-container")
@@ -127,63 +127,63 @@ class WindowTabPlugin extends BasePlugin {
                     that.openTab(activePath)
                 }
 
-                const tabBar = $("#plugin-window-tab .tab-bar");
-                let currentDragItem = null;
-                let _offsetX = 0;
+                const tabBar = $("#plugin-window-tab .tab-bar")
+                let currentDragItem = null
+                let _offsetX = 0
 
                 tabBar.on("dragstart", ".tab-container", function (ev) {
-                    _offsetX = ev.offsetX;
-                    currentDragItem = this;
+                    _offsetX = ev.offsetX
+                    currentDragItem = this
                 }).on("dragend", ".tab-container", function () {
-                    currentDragItem = null;
+                    currentDragItem = null
                 }).on("dragover", ".tab-container", function (ev) {
-                    ev.preventDefault();
+                    ev.preventDefault()
                     if (currentDragItem) {
-                        const func = ev.offsetX > _offsetX ? 'after' : 'before';
-                        this[func](currentDragItem);
+                        const func = ev.offsetX > _offsetX ? 'after' : 'before'
+                        this[func](currentDragItem)
                     }
                 }).on("dragenter", function () {
                     return false
                 })
 
-                let dragBox = null;
-                let cloneObj = null;
-                let offsetX = 0;
-                let offsetY = 0;
-                let startX = 0;
-                let startY = 0;
-                let axis, _axis;
+                let dragBox = null
+                let cloneObj = null
+                let offsetX = 0
+                let offsetY = 0
+                let startX = 0
+                let startY = 0
+                let axis, _axis
                 let threshold
-                const previewImage = new Image();
+                const previewImage = new Image()
 
                 tabBar.on("dragstart", ".tab-container", function (ev) {
-                    dragBox = this;
-                    axis = dragBox.getAttribute('axis');
-                    _axis = axis;
-                    ev.originalEvent.dataTransfer.setDragImage(previewImage, 0, 0);
-                    ev.originalEvent.dataTransfer.effectAllowed = "move";
-                    ev.originalEvent.dataTransfer.dropEffect = "move";
-                    let { left, top, height } = dragBox.getBoundingClientRect();
-                    startX = ev.clientX;
-                    startY = ev.clientY;
-                    offsetX = startX - left;
-                    offsetY = startY - top;
+                    dragBox = this
+                    axis = dragBox.getAttribute('axis')
+                    _axis = axis
+                    ev.originalEvent.dataTransfer.setDragImage(previewImage, 0, 0)
+                    ev.originalEvent.dataTransfer.effectAllowed = "move"
+                    ev.originalEvent.dataTransfer.dropEffect = "move"
+                    let { left, top, height } = dragBox.getBoundingClientRect()
+                    startX = ev.clientX
+                    startY = ev.clientY
+                    offsetX = startX - left
+                    offsetY = startY - top
                     threshold = height * that.config.DETACHMENT_THRESHOLD
 
-                    const fakeObj = dragBox.cloneNode(true);
-                    fakeObj.style.height = dragBox.offsetHeight + 'px'; // dragBox uses height: 100%, needs to be reset.
-                    fakeObj.style.transform = 'translate3d(0,0,0)';
-                    fakeObj.setAttribute('dragging', '');
-                    cloneObj = document.createElement('div');
-                    cloneObj.appendChild(fakeObj);
-                    cloneObj.className = 'drag-obj';
-                    cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-                    that.entities.tabBar.appendChild(cloneObj);
+                    const fakeObj = dragBox.cloneNode(true)
+                    fakeObj.style.height = dragBox.offsetHeight + 'px' // dragBox uses height: 100%, needs to be reset.
+                    fakeObj.style.transform = 'translate3d(0,0,0)'
+                    fakeObj.setAttribute('dragging', '')
+                    cloneObj = document.createElement('div')
+                    cloneObj.appendChild(fakeObj)
+                    cloneObj.className = 'drag-obj'
+                    cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`
+                    that.entities.tabBar.appendChild(cloneObj)
                 }).on("dragend", ".tab-container", function (ev) {
-                    newWindowIfNeed(ev.offsetY, this);
+                    newWindowIfNeed(ev.offsetY, this)
 
-                    if (!cloneObj) return;
-                    const { left, top } = this.getBoundingClientRect();
+                    if (!cloneObj) return
+                    const { left, top } = this.getBoundingClientRect()
                     const resetAnimation = cloneObj.animate(
                         [{ transform: cloneObj.style.transform }, { transform: `translate3d(${left}px, ${top}px, 0)` }],
                         { duration: 70, easing: "ease-in-out" }
@@ -191,65 +191,65 @@ class WindowTabPlugin extends BasePlugin {
 
                     resetAnimation.onfinish = function () {
                         if (cloneObj && cloneObj.parentNode === that.entities.tabBar) {
-                            that.entities.tabBar.removeChild(cloneObj);
+                            that.entities.tabBar.removeChild(cloneObj)
                         }
-                        cloneObj = null;
-                        dragBox.style.visibility = 'visible';
-                        resetTabBar();
+                        cloneObj = null
+                        dragBox.style.visibility = 'visible'
+                        resetTabBar()
                     }
                 })
 
                 document.addEventListener('dragover', function (ev) {
-                    if (!cloneObj) return;
+                    if (!cloneObj) return
 
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    ev.dataTransfer.dropEffect = 'move';
-                    dragBox.style.visibility = 'hidden';
-                    let left = ev.clientX - offsetX;
-                    let top = ev.clientY - offsetY;
+                    ev.preventDefault()
+                    ev.stopPropagation()
+                    ev.dataTransfer.dropEffect = 'move'
+                    dragBox.style.visibility = 'hidden'
+                    let left = ev.clientX - offsetX
+                    let top = ev.clientY - offsetY
                     if (axis) {
                         if (_axis === 'X') {
-                            top = startY - offsetY;
+                            top = startY - offsetY
                         } else if (_axis === 'Y') {
-                            left = startX - offsetX;
+                            left = startX - offsetX
                         } else {
-                            const x = Math.abs(ev.clientX - startX);
-                            const y = Math.abs(ev.clientY - startY);
+                            const x = Math.abs(ev.clientX - startX)
+                            const y = Math.abs(ev.clientY - startY)
                             _axis = (x > y && 'X') || (x < y && 'Y') || ''
                         }
                     } else {
-                        _axis = '';
+                        _axis = ''
                     }
-                    startX = left + offsetX;
-                    startY = top + offsetY;
+                    startX = left + offsetX
+                    startY = top + offsetY
 
                     const detachment = that.config.TAB_DETACHMENT
                     if (detachment === "lockVertical" || (detachment === "resistant" && top < threshold)) {
-                        top = 0;
+                        top = 0
                     }
-                    cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+                    cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`
                 })
             }
 
             const sortVscode = () => {
-                const that = this;
+                const that = this
 
                 const toggleOver = (target, f) => {
                     if (f === "add") {
-                        target.classList.add("over");
-                        lastOver = target;
+                        target.classList.add("over")
+                        lastOver = target
                     } else {
-                        target.classList.remove("over");
+                        target.classList.remove("over")
                     }
                 }
 
-                let lastOver = null;
+                let lastOver = null
                 $("#plugin-window-tab .tab-bar").on("dragstart", ".tab-container", function (ev) {
-                    ev.originalEvent.dataTransfer.effectAllowed = "move";
+                    ev.originalEvent.dataTransfer.effectAllowed = "move"
                     ev.originalEvent.dataTransfer.dropEffect = "move"
-                    this.style.opacity = 0.5;
-                    lastOver = null;
+                    this.style.opacity = 0.5
+                    lastOver = null
                 }).on("dragend", ".tab-container", function (ev) {
                     this.style.opacity = ""
                     newWindowIfNeed(ev.offsetY, this)
@@ -264,20 +264,20 @@ class WindowTabPlugin extends BasePlugin {
                         that.openTab(activePath)
                     }
                 }).on("dragover", ".tab-container", function () {
-                    toggleOver(this, "add");
+                    toggleOver(this, "add")
                     return false
                 }).on("dragenter", ".tab-container", function () {
-                    toggleOver(this, "add");
+                    toggleOver(this, "add")
                     return false
                 }).on("dragleave", ".tab-container", function () {
-                    toggleOver(this, "remove");
+                    toggleOver(this, "remove")
                 })
             }
 
             if (this.config.DRAG_STYLE === "JetBrains") {
                 sortJetBrains()
             } else {
-                sortVscode();
+                sortVscode()
             }
         }
         const handleRename = () => {
@@ -301,11 +301,11 @@ class WindowTabPlugin extends BasePlugin {
         const handleFocusChange = () => {
             window.addEventListener("focus", async () => {
                 if (this.tabUtil.tabCount > 0) {
-                    await this._checkTabsExist();
-                    this._startCheckTabsInterval();
+                    await this._checkTabsExist()
+                    this._startCheckTabsInterval()
                 }
-            });
-            window.addEventListener("blur", this._stopCheckTabsInterval);
+            })
+            window.addEventListener("blur", this._stopCheckTabsInterval)
         }
         const handleWheel = () => {
             this.entities.tabBar.addEventListener("wheel", ev => {
@@ -340,24 +340,24 @@ class WindowTabPlugin extends BasePlugin {
         }
         const adjustQuickOpen = () => {
             const openTab = (item, ev) => {
-                ev.preventDefault();
-                ev.stopPropagation();
-                const path = item.dataset.path;
+                ev.preventDefault()
+                ev.stopPropagation()
+                const path = item.dataset.path
                 const isDir = item.dataset.isDir === "true"
                 if (isDir) {
-                    this.utils.openFolder(path);
+                    this.utils.openFolder(path)
                 } else {
-                    this.utils.openFile(path);
+                    this.utils.openFile(path)
                 }
                 if (File.isMac && $("#typora-quick-open:visible").hide().length) {
                     bridge.callHandler("quickOpen.stopQuery")
                 }
             }
             document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
-                const target = ev.target.closest(".typora-quick-open-item");
-                if (!target) return;
+                const target = ev.target.closest(".typora-quick-open-item")
+                if (!target) return
                 // Changed the original click behavior to ctrl+click.
-                if (this.utils.metaKeyPressed(ev)) return;
+                if (this.utils.metaKeyPressed(ev)) return
                 openTab(target, ev)
             }, true)
             document.querySelector("#typora-quick-open-input > input").addEventListener("keydown", ev => {
@@ -409,25 +409,25 @@ class WindowTabPlugin extends BasePlugin {
             })
         }
 
-        handleLifeCycle();
-        handleClick();
-        handleScroll();
-        handleDrag();
-        handleRename();
-        handleFocusChange();
-        adjustQuickOpen();
-        interceptLink();
+        handleLifeCycle()
+        handleClick()
+        handleScroll()
+        handleDrag()
+        handleRename()
+        handleFocusChange()
+        adjustQuickOpen()
+        interceptLink()
         if (this.config.WHEEL_TO_SCROLL_TAB_BAR || this.config.CTRL_WHEEL_TO_SWITCH) {
-            handleWheel();
+            handleWheel()
         }
         if (this.config.MIDDLE_CLICK_TO_CLOSE) {
-            handleMiddleClick();
+            handleMiddleClick()
         }
         if (this.config.REOPEN_CLOSED_TABS_WHEN_INIT) {
             reopenTabsWhenInit()
         }
         if (this.config.CONTEXT_MENU.length) {
-            handleContextMenu();
+            handleContextMenu()
         }
     }
 
@@ -468,54 +468,54 @@ class WindowTabPlugin extends BasePlugin {
 
     _showTabBar = () => {
         if (this.utils.isHidden(this.entities.windowTab)) {
-            this.utils.show(this.entities.windowTab);
-            this._adjustContentTop();
+            this.utils.show(this.entities.windowTab)
+            this._adjustContentTop()
         }
     }
 
     _adjustContentTop = () => {
-        const { height, top } = this.entities.windowTab.getBoundingClientRect();
+        const { height, top } = this.entities.windowTab.getBoundingClientRect()
         if (height + top === 0) {  // Equal to 0, indicating that there are no tabs.
-            this._resetContentTop();
+            this._resetContentTop()
         } else {
-            const { height: headerHeight, top: headerTop } = document.querySelector("header").getBoundingClientRect();
+            const { height: headerHeight, top: headerTop } = document.querySelector("header").getBoundingClientRect()
             const t = Math.max(top + height, headerHeight + headerTop) + "px"
-            this.entities.content.style.top = t;
-            this.entities.source.style.top = t;
+            this.entities.content.style.top = t
+            this.entities.source.style.top = t
         }
     }
 
     _resetContentTop = () => {
-        this.entities.content.style.removeProperty("top");
-        this.entities.source.style.removeProperty("top");
+        this.entities.content.style.removeProperty("top")
+        this.entities.source.style.removeProperty("top")
     }
 
     _startCheckTabsInterval = () => {
-        if (this.checkTabsInterval) return;
+        if (this.checkTabsInterval) return
         const getDynamicInterval = () => {
-            const tabCount = this.tabUtil.tabCount;
-            let interval = 1000;
+            const tabCount = this.tabUtil.tabCount
+            let interval = 1000
             if (tabCount > 10 && tabCount <= 20) {
-                interval = 2000;
+                interval = 2000
             } else if (tabCount > 30) {
-                interval = 3000;
+                interval = 3000
             }
-            return interval;
-        };
-        const interval = getDynamicInterval();
-        this.checkTabsInterval = setInterval(this._checkTabsExist, interval);
+            return interval
+        }
+        const interval = getDynamicInterval()
+        this.checkTabsInterval = setInterval(this._checkTabsExist, interval)
     }
 
     _stopCheckTabsInterval = () => {
         if (this.checkTabsInterval) {
-            clearInterval(this.checkTabsInterval);
-            this.checkTabsInterval = null;
+            clearInterval(this.checkTabsInterval)
+            this.checkTabsInterval = null
         }
     }
 
     _onEmptyTabs = async () => {
         const _resetAndSetTitle = async () => {
-            this.tabUtil.reset();
+            this.tabUtil.reset()
             File.bundle = {
                 filePath: '',
                 originalPath: null,
@@ -534,53 +534,53 @@ class WindowTabPlugin extends BasePlugin {
                 fileMissingWhenOpen: false,
                 bundleFile: null,
                 zip: null
-            };
+            }
 
-            await this.utils.reload();
-            document.getElementById("title-text").innerHTML = "Typora";
+            await this.utils.reload()
+            document.getElementById("title-text").innerHTML = "Typora"
             document.querySelector(".file-library-node.active")?.classList.remove("active")
         }
-        this._hideTabBar();
-        this._stopCheckTabsInterval();
-        await _resetAndSetTitle();
+        this._hideTabBar()
+        this._stopCheckTabsInterval()
+        await _resetAndSetTitle()
     }
 
     _checkTabsExist = async () => {
         if (this.tabUtil.tabCount === 0) {
-            await this._onEmptyTabs();
-            return;
+            await this._onEmptyTabs()
+            return
         }
         const result = await Promise.all(this.tabUtil.tabs.map(async (tab, idx) => {
-            const exist = await this.utils.existPath(tab.path);
-            return !exist ? idx : undefined
-        }));
-        const waitToClose = result.filter(idx => idx !== undefined);
-        if (waitToClose.length === 0) return;
+            const exist = await this.utils.existPath(tab.path)
+            return exist ? undefined : idx
+        }))
+        const waitToClose = result.filter(idx => idx !== undefined)
+        if (waitToClose.length === 0) return
 
-        const closeActive = waitToClose.includes(this.tabUtil.activeIdx);
+        const closeActive = waitToClose.includes(this.tabUtil.activeIdx)
         waitToClose.reverse().forEach(idx => this.tabUtil.spliceTabs(idx, 1))
-        const leftCount = waitToClose.filter(idx => idx <= this.tabUtil.activeIdx).length;  // Removed X tabs from the left
-        this.tabUtil.activeIdx -= leftCount;
+        const leftCount = waitToClose.filter(idx => idx <= this.tabUtil.activeIdx).length  // Removed X tabs from the left
+        this.tabUtil.activeIdx -= leftCount
         if (closeActive && this.config.TAB_SWITCH_ON_CLOSE !== "left") {
-            this.tabUtil.activeIdx++;
+            this.tabUtil.activeIdx++
         }
         if (this.tabUtil.tabCount === 0) {
-            await this._onEmptyTabs();
+            await this._onEmptyTabs()
         } else {
-            this.switchTab(this.tabUtil.activeIdx);
+            this.switchTab(this.tabUtil.activeIdx)
         }
     }
 
     _setShowName = () => {
-        this.tabUtil.tabs.forEach(tab => tab.showName = this.utils.getFileName(tab.path, this.config.TRIM_FILE_EXT));
+        this.tabUtil.tabs.forEach(tab => tab.showName = this.utils.getFileName(tab.path, this.config.TRIM_FILE_EXT))
         if (this.config.SHOW_DIR_ON_DUPLICATE) {
-            this._addDir();
+            this._addDir()
         }
     }
 
     _addDir = () => {
-        const mapName2Tabs = new Map();
-        let unique = true;
+        const mapName2Tabs = new Map()
+        let unique = true
 
         this.tabUtil.tabs.forEach(tab => {
             const tabList = mapName2Tabs.get(tab.showName)
@@ -591,20 +591,20 @@ class WindowTabPlugin extends BasePlugin {
                 tabList.push(tab)
             }
         })
-        if (unique) return;
+        if (unique) return
 
         const isUnique = tabList => new Set(tabList.map(tab => tab.showName)).size === tabList.length
 
         for (const group of mapName2Tabs.values()) {
-            if (group.length === 1) continue;
-            const dirs = group.map(tab => tab.path.split(this.utils.separator).slice(0, -1));
+            if (group.length === 1) continue
+            const dirs = group.map(tab => tab.path.split(this.utils.separator).slice(0, -1))
             // Each execution of the do logic adds a parent directory to the showName of each tab under the group.
             do {
                 for (let i = 0; i < group.length; i++) {
-                    const tab = group[i];
-                    const dir = dirs[i].pop();
+                    const tab = group[i]
+                    const dir = dirs[i].pop()
                     if (!dir) return
-                    tab.showName = dir + this.utils.separator + tab.showName;
+                    tab.showName = dir + this.utils.separator + tab.showName
                 }
             } while (!isUnique(group))
         }
@@ -665,30 +665,30 @@ class WindowTabPlugin extends BasePlugin {
     })
 
     _renderDOM = wantOpenPath => {
-        this._setShowName();
+        this._setShowName()
 
-        let tabDiv = this.entities.tabBar.firstElementChild;
+        let tabDiv = this.entities.tabBar.firstElementChild
         this.tabUtil.tabs.forEach((tab, idx) => {
             if (!tabDiv) {
-                this._insertTabDiv(tab.path, tab.showName, idx);
-                tabDiv = this.entities.tabBar.lastElementChild;
+                this._insertTabDiv(tab.path, tab.showName, idx)
+                tabDiv = this.entities.tabBar.lastElementChild
             } else {
-                this._updateTabDiv(tabDiv, tab.path, tab.showName, idx);
+                this._updateTabDiv(tabDiv, tab.path, tab.showName, idx)
             }
 
-            const active = tab.path === wantOpenPath;
-            tabDiv.classList.toggle("active", active);
+            const active = tab.path === wantOpenPath
+            tabDiv.classList.toggle("active", active)
             if (active) {
-                tabDiv.scrollIntoView();
+                tabDiv.scrollIntoView()
             }
 
-            tabDiv = tabDiv.nextElementSibling;
+            tabDiv = tabDiv.nextElementSibling
         })
 
         while (tabDiv) {
-            const next = tabDiv.nextElementSibling;
-            tabDiv.parentElement.removeChild(tabDiv);
-            tabDiv = next;
+            const next = tabDiv.nextElementSibling
+            tabDiv.parentElement.removeChild(tabDiv)
+            tabDiv = next
         }
     }
 
@@ -706,9 +706,9 @@ class WindowTabPlugin extends BasePlugin {
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
 
     OpenFileLocal = filePath => {
-        this.localOpen = true;
-        this.utils.openFile(filePath);
-        this.localOpen = false;  // Auto restore
+        this.localOpen = true
+        this.utils.openFile(filePath)
+        this.localOpen = false  // Auto restore
     }
 
     openTab = wantOpenPath => requestAnimationFrame(() => {
@@ -752,9 +752,9 @@ class WindowTabPlugin extends BasePlugin {
     }
 
     switchTabByPath = path => {
-        const tabIndex = this.tabUtil.tabs.findIndex(tab => tab.path === path);
+        const tabIndex = this.tabUtil.tabs.findIndex(tab => tab.path === path)
         if (tabIndex !== -1) {
-            this.switchTab(tabIndex);
+            this.switchTab(tabIndex)
         }
     }
 
@@ -765,17 +765,17 @@ class WindowTabPlugin extends BasePlugin {
     }
 
     previousTab = () => {
-        const idx = (this.tabUtil.activeIdx === 0) ? this.tabUtil.maxTabIdx : this.tabUtil.activeIdx - 1;
-        this.switchTab(idx);
+        const idx = (this.tabUtil.activeIdx === 0) ? this.tabUtil.maxTabIdx : this.tabUtil.activeIdx - 1
+        this.switchTab(idx)
     }
 
     nextTab = () => {
-        const idx = (this.tabUtil.activeIdx === this.tabUtil.maxTabIdx) ? 0 : this.tabUtil.activeIdx + 1;
-        this.switchTab(idx);
+        const idx = (this.tabUtil.activeIdx === this.tabUtil.maxTabIdx) ? 0 : this.tabUtil.activeIdx + 1
+        this.switchTab(idx)
     }
 
     closeTab = idx => {
-        const tabUtil = this.tabUtil;
+        const tabUtil = this.tabUtil
         const { LAST_TAB_CLOSE_ACTION, TAB_SWITCH_ON_CLOSE } = this.config
 
         const getLatestTabIdx = () => tabUtil.tabs.reduce((maxIdx, tab, idx, array) => (tab.timestamp || 0) > (array[maxIdx].timestamp || 0) ? idx : maxIdx, 0)
@@ -786,12 +786,12 @@ class WindowTabPlugin extends BasePlugin {
             }
             switch (LAST_TAB_CLOSE_ACTION) {
                 case "exit":
-                    exit();
-                    break;
+                    exit()
+                    break
                 case "blankPage":
                     tabUtil.spliceTabs(idx, 1)
-                    this._onEmptyTabs();
-                    break;
+                    this._onEmptyTabs()
+                    break
                 case "reconfirm":
                 default:
                     const op = {
@@ -804,21 +804,21 @@ class WindowTabPlugin extends BasePlugin {
         }
 
         if (tabUtil.tabCount === 1) {
-            handleLastTab();
-            return;
+            handleLastTab()
+            return
         }
 
         tabUtil.spliceTabs(idx, 1)
         if (TAB_SWITCH_ON_CLOSE === "latest") {
-            tabUtil.activeIdx = getLatestTabIdx();
+            tabUtil.activeIdx = getLatestTabIdx()
         } else if (tabUtil.activeIdx !== 0) {
             if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && TAB_SWITCH_ON_CLOSE === "left")) {
-                tabUtil.activeIdx--;
+                tabUtil.activeIdx--
             } else {
-                tabUtil.activeIdx = Math.min(tabUtil.activeIdx, tabUtil.maxTabIdx);
+                tabUtil.activeIdx = Math.min(tabUtil.activeIdx, tabUtil.maxTabIdx)
             }
         }
-        this.switchTab(tabUtil.activeIdx);
+        this.switchTab(tabUtil.activeIdx)
     }
 
     closeActiveTab = () => {

@@ -44,8 +44,8 @@ class TOCPlugin extends BaseCustomPlugin {
                 const { right: modalRight } = this.entities.modal.getBoundingClientRect()
                 Object.assign(this.entities.modal.style, { left: `${contentRight}px`, width: `${modalRight - contentRight}px` })
             }
-            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition);
-            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition);
+            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition)
+            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition)
             if (this.config.default_show_toc) {
                 eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, this.toggleModal)
             }
@@ -75,27 +75,27 @@ class TOCPlugin extends BaseCustomPlugin {
             }
         }
         const onResize = () => {
-            let contentStartRight = 0;
-            let contentStartWidth = 0;
-            let modalStartLeft = 0;
-            let contentMaxRight = 0;
+            let contentStartRight = 0
+            let contentStartWidth = 0
+            let modalStartLeft = 0
+            let contentMaxRight = 0
             const onMouseDown = () => {
-                const contentRect = this.entities.content.getBoundingClientRect();
+                const contentRect = this.entities.content.getBoundingClientRect()
                 const modalRect = this.entities.modal.getBoundingClientRect()
-                contentStartRight = contentRect.right;
-                contentStartWidth = contentRect.width;
-                modalStartLeft = modalRect.left;
-                contentMaxRight = modalRect.right - 100;
+                contentStartRight = contentRect.right
+                contentStartWidth = contentRect.width
+                modalStartLeft = modalRect.left
+                contentMaxRight = modalRect.right - 100
             }
             const onMouseMove = (deltaX, deltaY) => {
-                deltaX = -deltaX;
-                deltaY = -deltaY;
-                let newContentRight = contentStartRight - deltaX;
+                deltaX = -deltaX
+                deltaY = -deltaY
+                let newContentRight = contentStartRight - deltaX
                 if (newContentRight > contentMaxRight) {
-                    deltaX = contentStartRight - contentMaxRight;
+                    deltaX = contentStartRight - contentMaxRight
                 }
-                this.entities.content.style.width = contentStartWidth - deltaX + "px";
-                this.entities.modal.style.left = modalStartLeft - deltaX + "px";
+                this.entities.content.style.width = contentStartWidth - deltaX + "px"
+                this.entities.modal.style.left = modalStartLeft - deltaX + "px"
                 return { deltaX, deltaY }
             }
             this.utils.resizeElement({
@@ -190,9 +190,9 @@ class TOCPlugin extends BaseCustomPlugin {
                 })
         }
 
-        onEvent();
-        onClick();
-        onResize();
+        onEvent()
+        onClick()
+        onResize()
         onDrag()
     }
 
@@ -201,21 +201,21 @@ class TOCPlugin extends BaseCustomPlugin {
     isModalShown = () => this.utils.isShown(this.entities.modal)
 
     hideModal = () => {
-        const { modal, content } = this.entities;
-        this.utils.entities.eWrite.style.width = "";
-        this.utils.hide(modal);
-        modal.style.removeProperty("left");
-        modal.style.removeProperty("width");
-        content.style.removeProperty("width");
+        const { modal, content } = this.entities
+        this.utils.entities.eWrite.style.width = ""
+        this.utils.hide(modal)
+        modal.style.removeProperty("left")
+        modal.style.removeProperty("width")
+        content.style.removeProperty("width")
     }
 
     showModal = (forceRefresh = true) => {
-        this.utils.show(this.entities.modal);
-        const { width } = this.entities.content.getBoundingClientRect();
-        const modalWidth = width * this.config.width_percent_when_pin_right / 100;
-        this.entities.modal.style.width = modalWidth + "px";
-        this.entities.content.style.width = `${width - modalWidth}px`;
-        this.utils.entities.eWrite.style.width = "initial";
+        this.utils.show(this.entities.modal)
+        const { width } = this.entities.content.getBoundingClientRect()
+        const modalWidth = width * this.config.width_percent_when_pin_right / 100
+        this.entities.modal.style.width = modalWidth + "px"
+        this.entities.content.style.width = `${width - modalWidth}px`
+        this.utils.entities.eWrite.style.width = "initial"
         if (forceRefresh) this.refreshModal()
     }
 
@@ -242,47 +242,47 @@ class TOCPlugin extends BaseCustomPlugin {
         if (!this.isModalShown() || this._getCurrentType() !== "header") return
 
         const headers = $header || this.utils.entities.$eWrite.children(File.editor.library.outline.headerStr)
-        if (!headers.length) return;
+        if (!headers.length) return
 
-        const contentScrollTop = this.utils.entities.$eContent.scrollTop();
-        const isBelowViewBox = 1 === this.utils.compareScrollPosition(headers[headers.length - 1], contentScrollTop);
+        const contentScrollTop = this.utils.entities.$eContent.scrollTop()
+        const isBelowViewBox = 1 === this.utils.compareScrollPosition(headers[headers.length - 1], contentScrollTop)
         const findActiveIndex = index => {
             for (index--; headers[index] && this.utils.compareScrollPosition(headers[index], contentScrollTop) === 0;) {
-                index--;
+                index--
             }
-            return index + 1;
+            return index + 1
         }
 
-        let start = isBelowViewBox ? 0 : headers.length - 1;
-        let end = headers.length - 1;
-        let activeIndex = targetIdx === undefined ? undefined : targetIdx;
+        let start = isBelowViewBox ? 0 : headers.length - 1
+        let end = headers.length - 1
+        let activeIndex = targetIdx === undefined ? undefined : targetIdx
 
         while (1 < end - start && activeIndex === undefined) {
-            let middleIndex = Math.floor((start + end) / 2);
-            let scrollPosition = this.utils.compareScrollPosition(headers[middleIndex], contentScrollTop);
+            let middleIndex = Math.floor((start + end) / 2)
+            let scrollPosition = this.utils.compareScrollPosition(headers[middleIndex], contentScrollTop)
             if (scrollPosition === 1) {
-                end = middleIndex;
+                end = middleIndex
             } else if (scrollPosition === -1) {
-                start = middleIndex;
+                start = middleIndex
             } else {
-                activeIndex = findActiveIndex(middleIndex);
+                activeIndex = findActiveIndex(middleIndex)
             }
         }
         if (activeIndex === undefined) {
-            activeIndex = start;
+            activeIndex = start
         }
 
-        if (activeIndex >= headers.length) return;
+        if (activeIndex >= headers.length) return
 
-        const targetCid = headers[activeIndex].getAttribute("cid");
+        const targetCid = headers[activeIndex].getAttribute("cid")
         this.entities.list.querySelectorAll(".toc-node.active").forEach(el => el.classList.remove("active"))
-        const targetNode = this.entities.list.querySelector(`.toc-node[data-ref=${targetCid}]`);
-        if (!targetNode) return;
+        const targetNode = this.entities.list.querySelector(`.toc-node[data-ref=${targetCid}]`)
+        if (!targetNode) return
 
-        targetNode.classList.add("active");
+        targetNode.classList.add("active")
     }
 
-    _getRoot = type => (type === "header") ? this.utils.getTocTree(this.config.remove_header_styles) : this._getKindRoot([type]);
+    _getRoot = type => (type === "header") ? this.utils.getTocTree(this.config.remove_header_styles) : this._getKindRoot([type])
 
     _getKindRoot = types => {
         const includeHeadings = types.some(type => this.config.include_headings[type])

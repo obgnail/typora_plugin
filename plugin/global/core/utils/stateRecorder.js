@@ -6,8 +6,8 @@
  */
 class StateRecorder {
     constructor(utils) {
-        this.utils = utils;
-        this.recorders = new Map(); // map[name]recorder
+        this.utils = utils
+        this.recorders = new Map() // map[name]recorder
     }
 
     /**
@@ -23,21 +23,21 @@ class StateRecorder {
     register = (options) => {
         this.recorders.set(options.name, { ...options, collections: new Map() })
     }
-    unregister = recorderName => this.recorders.delete(recorderName);
+    unregister = recorderName => this.recorders.delete(recorderName)
 
     collect = name => {
-        const filepath = this.utils.getFilePath();
+        const filepath = this.utils.getFilePath()
         for (const [recorderName, recorder] of this.recorders.entries()) {
             if (!name || name === recorderName) {
-                const collection = new Map();
+                const collection = new Map()
                 document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
-                    const state = recorder.stateGetter(ele);
+                    const state = recorder.stateGetter(ele)
                     if (state) collection.set(idx, state)
                 })
                 if (collection.size) {
                     recorder.collections.set(filepath, collection)
                 } else {
-                    recorder.collections.delete(filepath);
+                    recorder.collections.delete(filepath)
                 }
             }
         }
