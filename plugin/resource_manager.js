@@ -186,7 +186,9 @@ class ResourceManagerPlugin extends BasePlugin {
 
 const findResources = async (plugin, searchDir) => {
     const { utils, config } = plugin
+    const { Package, isNetworkImage, isSpecialImage } = utils
     const dir = searchDir || utils.getMountFolder()
+    const redirectPlugin = utils.getBasePlugin("asset_root_redirect")
 
     const _resourceExt = new Set(config.RESOURCE_EXT)
     const _markdownExt = new Set(config.MARKDOWN_EXT)
@@ -205,19 +207,6 @@ const findResources = async (plugin, searchDir) => {
         return [...md, ...html]
     }
 
-    const _redirectPlugin = utils.getCustomPlugin("redirectLocalRootUrl")
-    const getCompatibleRootURI = (mdPath, mdDir, md) => {
-        // Typora supports redirecting resource paths using the `typora-root-url`
-        const { yamlObject } = utils.splitFrontMatter(md)
-        const redirectURL = yamlObject?.["typora-root-url"]
-        if (redirectURL) {
-            return redirectURL
-        }
-        // Compatibility for `redirectLocalRootUrl` plugin
-        return _redirectPlugin?.needRedirect(mdPath) ? _redirectPlugin.config.root : mdDir
-    }
-
-    const { Package, isNetworkImage, isSpecialImage } = utils
     const findImagesInFile = async (mdPath, mdDir) => {
         const md = await Package.FsExtra.readFile(mdPath, "utf-8")
         const images = findImagesInText(md)
@@ -237,7 +226,7 @@ const findResources = async (plugin, searchDir) => {
             )
         if (images.length === 0) return
 
-        const root = getCompatibleRootURI(mdPath, mdDir, md)
+        const root = redirectPlugin?.getRootURL(md, mdPath, mdDir) ?? mdDir
         return images.map(img => Package.Path.resolve(root, img))
     }
 
@@ -252,7 +241,7 @@ const findResources = async (plugin, searchDir) => {
         signal: AbortSignal.timeout(config.TIMEOUT),
         dirFilter: name => !config.IGNORE_FOLDERS.includes(name),
         onFile: async ({ path, file, dir }) => {
-            const ext = utils.Package.Path.extname(file).toLowerCase()
+            const ext = Package.Path.extname(file).toLowerCase()
             if (isResourceExt(ext)) {
                 resources.inFolder.add(path)
             } else if (isMarkdownExt(ext)) {

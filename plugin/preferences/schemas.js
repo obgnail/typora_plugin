@@ -1407,6 +1407,15 @@ const schema_hotkeys = [
     box_settingHandler,
 ]
 
+const schema_asset_root_redirect = [
+    box_basePluginLite,
+    UntitledBox(
+        Text("ROOT_PATH"),
+    ),
+    ArrayBox("IGNORE_GLOB_FILES", { tooltip: Tip.action("viewGlobPattern") }),
+    box_settingHandler,
+]
+
 const schema_editor_width_slider = [
     box_basePluginLite,
     UntitledBox(
@@ -1997,15 +2006,6 @@ const schema_quickButton = [
     box_settingHandler,
 ]
 
-const schema_redirectLocalRootUrl = [
-    box_customPluginLite,
-    UntitledBox(
-        Text("root"),
-        Text("filter_regexp"),
-    ),
-    box_settingHandler,
-]
-
 const schemas = {
     global: schema_global,
     window_tab: schema_window_tab,
@@ -2040,6 +2040,7 @@ const schemas = {
     pie_menu: schema_pie_menu,
     preferences: schema_preferences,
     hotkeys: schema_hotkeys,
+    asset_root_redirect: schema_asset_root_redirect,
     editor_width_slider: schema_editor_width_slider,
     article_uploader: schema_article_uploader,
     ripgrep: schema_ripgrep,
@@ -2067,7 +2068,6 @@ const schemas = {
     imageReviewer: schema_imageReviewer,
     markdownLint: schema_markdownLint,
     quickButton: schema_quickButton,
-    redirectLocalRootUrl: schema_redirectLocalRootUrl,
 }
 
 const i18n = (

@@ -95,6 +95,10 @@ module.exports = {
         MAX_DEPTH: notZero,
         IGNORE_FOLDERS: each(required),
     },
+    asset_root_redirect: {
+        ROOT_PATH: required,
+        IGNORE_GLOB_FILES: each(required),
+    },
     editor_width_slider: {
         WIDTH_RATIO: notZero,
     },
@@ -153,7 +157,9 @@ module.exports = {
         ...chartStyles,
         SERVER_URL: [required, url],
     },
-    marp: chartStyles,
+    marp: {
+        TEMPLATE: required,
+    },
     callouts: {
         font_family: required,
         network_icon_url: [required, url],
@@ -186,9 +192,5 @@ module.exports = {
         button_gap: required,
         position_right: required,
         position_bottom: required,
-    },
-    redirectLocalRootUrl: {
-        root: required,
-        filter_regexp: regex,
     },
 }

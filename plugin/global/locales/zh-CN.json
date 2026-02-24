@@ -1019,6 +1019,12 @@
     "$label.CUSTOM_HOTKEYS.closestSelector": "适用光标的选择器",
     "$label.CUSTOM_HOTKEYS.evil": "回调"
   },
+  "asset_root_redirect": {
+    "pluginName": "重定向资源根目录",
+    "$label.ROOT_PATH": "资源根目录",
+    "$label.IGNORE_GLOB_FILES": "忽略文件",
+    "$tooltip.viewGlobPattern": "Glob Pattern"
+  },
   "editor_width_slider": {
     "pluginName": "写作区宽度调整",
     "tmpAdjust": "临时性调整",
@@ -1677,10 +1683,5 @@
     "$tooltip.coord1": "向左递增",
     "$tooltip.exclusive": "与「自定义回调」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
-  },
-  "redirectLocalRootUrl": {
-    "pluginName": "重定向本地资源根目录",
-    "$label.root": "资源根目录",
-    "$label.filter_regexp": "适用文件名（正则）"
   }
 }

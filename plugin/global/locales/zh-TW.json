@@ -1019,6 +1019,12 @@
     "$label.CUSTOM_HOTKEYS.closestSelector": "適用游標的選擇器",
     "$label.CUSTOM_HOTKEYS.evil": "回呼"
   },
+  "asset_root_redirect": {
+    "pluginName": "重新導向資源根目錄",
+    "$label.ROOT_PATH": "資源根目錄",
+    "$label.IGNORE_GLOB_FILES": "忽略檔案",
+    "$tooltip.viewGlobPattern": "Glob Pattern"
+  },
   "editor_width_slider": {
     "pluginName": "編輯區寬度調整",
     "tmpAdjust": "臨時性調整",
@@ -1677,10 +1683,5 @@
     "$tooltip.coord1": "向左遞增",
     "$tooltip.exclusive": "與「自訂回呼」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
-  },
-  "redirectLocalRootUrl": {
-    "pluginName": "重新導向本地資源根目錄",
-    "$label.root": "資源根目錄",
-    "$label.filter_regexp": "適用檔案名（正規）"
   }
 }

@@ -963,7 +963,7 @@
     "$label.AUTO_CONVERT_SYMBOLS": "Auto Convert Symbols",
     "$label.AUTO_CONVERT_SYMBOLS.enable": "Enable",
     "$label.AUTO_CONVERT_SYMBOLS.input": "Input Symbol",
-    "$label.AUTO_CONVERT_SYMBOLS.output": "Swapped Symbol",
+    "$label.AUTO_CONVERT_SYMBOLS.output": "Output Symbol",
     "$tooltip.enablePairing": "Need to enable Typora config 'Auto pair brackets and quotes'"
   },
   "right_click_menu": {
@@ -1018,6 +1018,12 @@
     "$label.CUSTOM_HOTKEYS.function": "Plugin Function",
     "$label.CUSTOM_HOTKEYS.closestSelector": "Cursor Closest Selector",
     "$label.CUSTOM_HOTKEYS.evil": "Callback"
+  },
+  "asset_root_redirect": {
+    "pluginName": "Redirect Local Root",
+    "$label.ROOT_PATH": "Resource Root Directory",
+    "$label.IGNORE_GLOB_FILES": "Ignore Files",
+    "$tooltip.viewGlobPattern": "Glob Pattern"
   },
   "editor_width_slider": {
     "pluginName": "Editor Width Slider",
@@ -1677,10 +1683,5 @@
     "$tooltip.coord1": "Increments in the leftward direction",
     "$tooltip.exclusive": "Mutually exclusive with the option 'Custom Callback'",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
-  },
-  "redirectLocalRootUrl": {
-    "pluginName": "Redirect Local Root Url",
-    "$label.root": "Resource Root Directory",
-    "$label.filter_regexp": "Apply File Names (Regex)"
   }
 }

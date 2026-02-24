@@ -16,6 +16,7 @@ module.exports = (plugin) => {
         viewCodeFoldingEffect: () => utils.openUrl("https://codemirror.net/5/demo/folding.html"),
         viewSideBySideEffect: () => utils.openUrl("https://github.com/obgnail/typora_plugin/blob/master/assets/sideBySideView.png"),
         viewIndentedWrappedLineEffect: () => utils.openUrl("https://codemirror.net/5/demo/indentwrap.html"),
+        viewGlobPattern: () => utils.openUrl("https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html"),
         neverGonnaTellALie: () => utils.openUrl(i18n.locale === "zh-CN" ? "https://www.bilibili.com/video/BV1GJ411x7h7/" : "https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
         chooseEchartsRenderer: () => utils.openUrl(`https://echarts.apache.org/handbook/${i18n.locale === "zh-CN" ? "zh" : "en"}/best-practices/canvas-vs-svg/`),
         downloadWaveDromSkins: () => utils.openUrl("https://github.com/wavedrom/wavedrom/tree/trunk/skins"),

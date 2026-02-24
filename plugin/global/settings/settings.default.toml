@@ -2504,6 +2504,33 @@ TRAVERSE_STRATEGY = "bfs"
 MAX_STATS = -1
 
 
+################### asset_root_redirect ###################
+[asset_root_redirect]
+# ------------------- 功能说明 -------------------
+# 如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 Typora，就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中，这导致在 Typora 打开后文件由于路径错误，无法访问本地资源
+# 此插件就是为了解决此问题，重定向本地资源根目录。除非你有此需求，否则不建议开启此插件
+# 相关 issue: https://github.com/obgnail/typora_plugin/issues/259
+
+# ------------------- 基础 -------------------
+# 启用插件
+#   注意： 【文件的 front matter 中的 typora-root-url 参数】的优先级大于【此插件】。也就是说：若文件的 front matter 显式设置了 typora-root-url，那么此插件在该文件失效
+ENABLE = false
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 路径 -------------------
+# 资源根目录，用于重定向本地资源路径
+#   支持绝对路径 (如 D:\\tmp\\img) 和相对路径 (如 .\\assets)
+#   填写时请注意转义反斜线
+#   若为空，则此插件失效
+ROOT_PATH = "./"
+
+# 忽略的文件：若文件命中 IGNORE_GLOB_FILES 匹配的文件，则不会执行重定向
+#   填入 Glob Pattern
+IGNORE_GLOB_FILES = ["**/node_modules", "**/.git", "**/.idea"]
+
+
 ################### editor_width_slider ###################
 [editor_width_slider]
 # ------------------- 基础 -------------------
