@@ -4,10 +4,14 @@ const assert = require("node:assert")
 let settings
 let rawSchemas, filteredRawSchemas
 let i18n
+
 let actionsMap
+let rulesMap
+let preprocessorMap
+let watcherMap
 
 const hasNestedProperty = (obj, key) => {
-    if (key == null || typeof obj !== 'object' || obj === null) {
+    if (key == null || typeof obj !== "object" || obj === null) {
         return false
     }
     if (obj.hasOwnProperty(key)) {
@@ -73,11 +77,11 @@ test.before(() => {
 })
 
 test.before(() => {
-    const mockPlugin = {
-        utils: require("./mocks/utils.mock.js"),
-        i18n,
-    }
+    const mockPlugin = require("./mocks/plugin.mock.js")
     actionsMap = require("../../plugin/preferences/actions.js")(mockPlugin)
+    rulesMap = require("../../plugin/preferences/rules.js")
+    preprocessorMap = require("../../plugin/preferences/preprocessors.js")(mockPlugin)
+    watcherMap = require("../../plugin/preferences/watchers.js")(mockPlugin)
 })
 
 test("Schema and Settings Key Synchronization", async t => {
@@ -325,4 +329,45 @@ test("Action Consistency Check: Defined vs Used", t => {
         [],
         `[Action Error] Found actions defined in 'actions.js' but NEVER used in 'schemas.js' (Dead code):`
     )
+})
+
+test("Schema rules and Settings Key Synchronization", t => {
+    Object.entries(rulesMap).forEach(([fixedName, rules]) => {
+        assert.ok(
+            settings.hasOwnProperty(fixedName),
+            `[Schema rules -> Settings] Schema rules key "${fixedName}" was NOT found in the corresponding settings object.`
+        )
+        Object.keys(rules).forEach(key => {
+            assert.ok(
+                hasNestedProperty(settings, `${fixedName}.${key}`),
+                `[Schema rules -> Settings] Schema rules key "${fixedName}.${key}" was NOT found in the corresponding settings object.`
+            )
+        })
+    })
+})
+
+test("Schema preprocessors and Settings Key Synchronization", t => {
+    delete preprocessorMap?.global?.pluginVersion
+    Object.entries(preprocessorMap).forEach(([fixedName, preprocessors]) => {
+        assert.ok(
+            settings.hasOwnProperty(fixedName),
+            `[Schema preprocessors -> Settings] Schema preprocessors key "${fixedName}" was NOT found in the corresponding settings object.`
+        )
+
+        Object.keys(preprocessors).forEach(key => {
+            assert.ok(
+                hasNestedProperty(settings, `${fixedName}.${key}`),
+                `[Schema preprocessors -> Settings] Schema preprocessors key "${fixedName}.${key}" was NOT found in the corresponding settings object.`
+            )
+        })
+    })
+})
+
+test("Schema watchers and Settings Key Synchronization", t => {
+    Object.keys(watcherMap).forEach((fixedName) => {
+        assert.ok(
+            settings.hasOwnProperty(fixedName),
+            `[Schema watchers -> Settings] Schema watchers key "${fixedName}" was NOT found in the corresponding settings object.`
+        )
+    })
 })
