@@ -1,4 +1,4 @@
-class TimelinePlugin extends BaseCustomPlugin {
+class TimelinePlugin extends BasePlugin {
     styleTemplate = () => true
 
     process = () => {
@@ -14,7 +14,7 @@ class TimelinePlugin extends BaseCustomPlugin {
         })
     }
 
-    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
+    call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     getStyleContent = () => this.utils.styleTemplater.getStyleContent(this.fixedName)
 

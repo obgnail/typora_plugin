@@ -161,12 +161,12 @@ module.exports = {
         TEMPLATE: required,
     },
     callouts: {
-        font_family: required,
-        network_icon_url: [required, url],
-        default_background_color: required,
-        default_left_line_color: required,
-        default_icon: required,
-        template: required,
+        FONT_FAMILY: required,
+        NETWORK_ICON_URL: [required, url],
+        DEFAULT_BACKGROUND_COLOR: required,
+        DEFAULT_LEFT_LINE_COLOR: required,
+        DEFAULT_ICON: required,
+        TEMPLATE: required,
     },
     templater: {
         TEMPLATE_FOLDERS: each([required, path]),

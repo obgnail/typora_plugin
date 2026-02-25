@@ -3,12 +3,12 @@ class MarkdownlintPlugin extends BasePlugin {
     // keys are not case-sensitive and processed in order from top to bottom with later values overriding earlier ones.
     // To simplify the main processing logic, we first normalize the config by resolving all aliases to their names.
     beforeProcess = () => {
-        const mapAliasToName = require("./rules-aliases.json")
+        const mapAliasToName = require("./rule-aliases.json")
         this.config.RULE_CONFIG = Object.fromEntries(
-            Object.entries(this.config.RULE_CONFIG).map(([key, val]) => {
-                key = /^md\d{3}$/i.test(key) ? key.toUpperCase() : key.toLowerCase()
-                key = mapAliasToName[key] ?? key
-                return [key, val]
+            Object.entries(this.config.RULE_CONFIG).map(([name, option]) => {
+                name = /^md\d{3}$/i.test(name) ? name.toUpperCase() : name.toLowerCase()
+                name = mapAliasToName[name] ?? name
+                return [name, option]
             })
         )
     }
@@ -123,13 +123,13 @@ class MarkdownlintPlugin extends BasePlugin {
         onElementEvent()
     }
 
-    call = anchorNode => {
+    call = () => {
         this.entities.window.toggle()
         this.linter.check()
     }
 
     settings = async () => {
-        const defaultValues = require("./rules-default-values.json")
+        const defaultValues = require("./rule-default-values.json")
         const getData = () => {
             const cfg = this.config.RULE_CONFIG
             return {
@@ -275,51 +275,44 @@ class MarkdownlintPlugin extends BasePlugin {
     }
 
     _initTableColumns = () => {
-        const useInfo = this.config.TOOLS.includes("info")
-        const useLocate = this.config.TOOLS.includes("locate")
-        const useFix = this.config.TOOLS.includes("fix")
-        const operationsRender = (rowData) => {
-            const info = useInfo ? `<i class="fa fa-info-circle action-icon" action="detailSingle"></i>` : ""
-            const locate = useLocate ? `<i class="fa fa-crosshairs action-icon" action="jumpToLine"></i>` : ""
-            const fixInfo = (useFix && rowData.fixable) ? `<i class="fa fa-wrench action-icon" action="fixSingle"></i>` : ""
-            return [info, locate, fixInfo].join("")
+        const [useInfo, useLocate, useFix] = ["info", "locate", "fix"].map(t => this.config.TOOLS.includes(t))
+        const opsRender = (rowData) => {
+            const infoEl = useInfo ? '<i class="fa fa-info-circle action-icon" action="detailSingle"></i>' : ""
+            const locateEl = useLocate ? '<i class="fa fa-crosshairs action-icon" action="jumpToLine"></i>' : ""
+            const fixEl = (useFix && rowData.fixable) ? '<i class="fa fa-wrench action-icon" action="fixSingle"></i>' : ""
+            return [infoEl, locateEl, fixEl].join("")
         }
         const sortKey = { index: "idx", lineNumber: "line", ruleName: "rule", ruleDesc: "desc" }[this.config.RESULT_ORDER_BY] || "line"
-        const supportColumns = {
+        const supportedColumns = {
             idx: { key: "idx", title: this.i18n.t("$option.COLUMNS.idx"), width: "3em", sortable: true },
             line: { key: "line", title: this.i18n.t("$option.COLUMNS.line"), width: "4em", sortable: true },
             rule: { key: "rule", title: this.i18n.t("$option.COLUMNS.rule"), width: "5em", sortable: true },
             desc: { key: "desc", title: this.i18n.t("$option.COLUMNS.desc"), sortable: true },
-            ops: { key: "ops", title: this.i18n.t("$option.COLUMNS.ops"), width: "5.2em", render: operationsRender },
+            ops: { key: "ops", title: this.i18n.t("$option.COLUMNS.ops"), width: "5.2em", render: opsRender },
         }
         const schema = {
             defaultSort: { key: sortKey, direction: "asc" },
-            columns: this.config.COLUMNS.map(col => supportColumns[col])
+            columns: this.config.COLUMNS.map(col => supportedColumns[col])
         }
         this.entities.table.setSchema(schema)
-    }
-
-    _setTableData = (fixInfos) => {
-        const data = fixInfos.map((item, idx) => {
-            const rule = item.ruleNames[0]
-            const line = item.lineNumber
-            const fixable = !!item.fixInfo
-            const desc = (this.config.TRANSLATE && this.TRANSLATIONS[rule]) || item.ruleDescription
-            return { idx, rule, line, fixable, desc }
-        })
-        this.entities.table.setData(data)
     }
 
     _onCheck = fixInfos => {
         this.fixInfos = fixInfos
         this.entities.button?.toggleAttribute("lint-check-failed", !!fixInfos.length)
         if (!this.entities.window.hidden) {
-            this._setTableData(fixInfos)
+            this.entities.table.setData(fixInfos.map((item, idx) => {
+                const rule = item.ruleNames[0]
+                const line = item.lineNumber
+                const fixable = !!item.fixInfo
+                const desc = (this.config.TRANSLATE && this.TRANSLATIONS[rule]) || item.ruleDescription
+                return { idx, rule, line, fixable, desc }
+            }))
         }
     }
 
-    _onFix = async fileContent => {
-        await this.utils.editCurrentFile(fileContent)
+    _onFix = async content => {
+        await this.utils.editCurrentFile(content)
         this.utils.notification.show(this.i18n.t("success.fixAll"))
         this.linter.check()
     }

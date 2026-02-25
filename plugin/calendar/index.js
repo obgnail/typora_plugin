@@ -1,7 +1,7 @@
-class CalendarPlugin extends BaseCustomPlugin {
+class CalendarPlugin extends BasePlugin {
     init = () => this.Calendar = null
 
-    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
+    call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     process = () => {
         const parser = this.utils.thirdPartyDiagramParser
@@ -45,13 +45,13 @@ class CalendarPlugin extends BaseCustomPlugin {
     getVersion = () => "2.1.3"
 
     lazyLoad = () => {
-        this.utils.insertStyleFile("plugin-calendar-style", "./plugin/custom/plugins/calendar/toastui-calendar.min.css")
+        this.utils.insertStyleFile("plugin-calendar-style", "./plugin/calendar/toastui-calendar.min.css")
         const { Calendar } = require("./toastui-calendar.min.js")
         this.Calendar = Calendar
     }
 
     getStyleContent = () => {
-        const path = this.utils.joinPath("./plugin/custom/plugins/calendar/toastui-calendar.min.css")
+        const path = this.utils.joinPath("./plugin/calendar/toastui-calendar.min.css")
         return this.utils.Package.FsExtra.readFileSync(path, "utf-8")
     }
 }

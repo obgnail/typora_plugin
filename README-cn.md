@@ -268,7 +268,7 @@ yay -S typora-plugin
 
 使用方式：
 
-- 方式一：少用插件 -> 右侧大纲
+- 方式一：右键菜单 -> 少用插件 -> 右侧大纲
 - 方式二：右键点击侧边栏的【大纲】按钮
 
 
@@ -371,7 +371,7 @@ yay -S typora-plugin
 
 ### echarts：提供 echarts 支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Echarts
+使用方式：右键菜单 -> 语言插件 -> Echarts
 
 ![echats](assets/echarts.png)
 
@@ -379,7 +379,7 @@ yay -S typora-plugin
 
 ### chart：提供 chartjs 支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Chart
+使用方式：右键菜单 -> 语言插件 -> Chart
 
 ![chart](./assets/chart.png)
 
@@ -393,7 +393,7 @@ yay -S typora-plugin
 
 ### abc：提供 abc 组件支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> ABC
+使用方式：右键菜单 -> 语言插件 -> ABC
 
 ![abcjs](./assets/abcjs.png)
 
@@ -401,7 +401,7 @@ yay -S typora-plugin
 
 ### calendar：  提供 tui.calendar 组件支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Calendar
+使用方式：右键菜单 -> 语言插件 -> Calendar
 
 ![calendar](./assets/calendar.png)
 
@@ -409,7 +409,7 @@ yay -S typora-plugin
 
 ### wavedrom：提供 wavedrom 组件支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Wavedrom
+使用方式：右键菜单 -> 语言插件 -> WaveDrom
 
 ![wavedrom](./assets/wavedrom.png)
 
@@ -419,13 +419,13 @@ yay -S typora-plugin
 
 功能：使用 markdown 做 PPT。
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Marp
+使用方式：右键菜单 -> 语言插件 -> Marp
 
 
 
 ### plantUML：提供 PlantUML 组件支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> PlantUML
+使用方式：右键菜单 -> 语言插件 -> PlantUML
 
 ![plantUML](./assets/plantUML.png)
 
@@ -440,7 +440,7 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 
 ### callouts：  提供 callouts 支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Callouts
+使用方式：右键菜单 -> 常用插件 -> Callouts
 
 ![callouts](./assets/callouts.png)
 

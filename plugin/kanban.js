@@ -1,4 +1,4 @@
-class KanbanPlugin extends BaseCustomPlugin {
+class KanbanPlugin extends BasePlugin {
     styleTemplate = () => ({
         maxHeight: (this.config.KANBAN_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_MAX_HEIGHT + "px",
         taskDescMaxHeight: (this.config.KANBAN_TASK_DESC_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_TASK_DESC_MAX_HEIGHT + "em",
@@ -34,7 +34,7 @@ class KanbanPlugin extends BaseCustomPlugin {
 
     getStyleContent = () => this.utils.styleTemplater.getStyleContent(this.fixedName)
 
-    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
+    call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     render = (cid, content, $pre) => {
         const el = this._toElement($pre, cid, content)

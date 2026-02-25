@@ -30,14 +30,14 @@
  *
  * Wavedrom's documentation is incomplete; source code inspection is often required.
  */
-class WavedromPlugin extends BaseCustomPlugin {
+class WavedromPlugin extends BasePlugin {
     init = () => {
         this.wavedromPkg = null
         this.prefix = "WaveDrom_Display_"
         this.evalFunc = this.config.SAFE_MODE ? this.utils.safeEval : this.utils.unsafeEval
     }
 
-    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
+    call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     process = () => {
         let idx = 0

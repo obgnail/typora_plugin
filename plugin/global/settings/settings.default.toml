@@ -1,4 +1,4 @@
-################### global ###################
+######################################
 [global]
 # ------------------- 总开关 -------------------
 # 启用全部插件
@@ -22,7 +22,7 @@ LOCALE = "auto"
 EXIT_INTERACTIVE_MODE = ["click_exit_button"]
 
 
-################### window_tab ###################
+######################################
 [window_tab]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -170,7 +170,7 @@ COPY_PATH_HOTKEY = []
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
 
 
-################### search_multi ###################
+######################################
 [search_multi]
 # ------------------- 基础 -------------------
 # 启用或禁用多关键字查找插件
@@ -298,7 +298,7 @@ REMOVE_BUTTON_HINT = false
 OPTIMIZE_SEARCH = false
 
 
-################### commander ###################
+######################################
 [commander]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -359,7 +359,7 @@ BUILTIN = [
 ]
 
 
-################### md_padding ###################
+######################################
 [md_padding]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -384,7 +384,7 @@ IGNORE_WORDS = []
 IGNORE_PATTERNS = [':[0-9a-z_\-]+?:', '<br\s*?/?>', '<u>.+?</u>', '<span style=".+?">.+?</span>']
 
 
-################### read_only ###################
+######################################
 [read_only]
 # ------------------- 基础 -------------------
 # 启用或禁用只读模式插件
@@ -431,7 +431,7 @@ REMAIN_AVAILABLE_MENU_KEY = ["typora-plugin", "dev-tool", "copy-img"]
 SHOW_TEXT = "ReadOnly"
 
 
-################### blur ###################
+######################################
 [blur]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -470,7 +470,7 @@ RESTORE_WHEN_HOVER = true
 BLUR_LEVEL = 10
 
 
-################### dark ###################
+######################################
 [dark]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -490,7 +490,7 @@ HOTKEY = ""
 DARK_DEFAULT = false
 
 
-################### no_image ###################
+######################################
 [no_image]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -526,7 +526,7 @@ TRANSITION_DURATION = 300
 TRANSITION_DELAY = 0
 
 
-################### myopic_defocus ###################
+######################################
 [myopic_defocus]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -562,7 +562,7 @@ SCREEN_DISTANCE = 40
 EFFECT_STRENGTH = 10
 
 
-################### toolbar ###################
+######################################
 [toolbar]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -626,7 +626,7 @@ DEFAULT_TOOL = "func"
 USE_NEGATIVE_SEARCH = true
 
 
-################### resize_image ###################
+######################################
 [resize_image]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -661,7 +661,7 @@ IMAGE_ALIGN = "center"
 RECORD_RESIZE = true
 
 
-################### resize_table ###################
+######################################
 [resize_table]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -687,7 +687,7 @@ DRAG_THRESHOLD = 20
 RECORD_RESIZE = true
 
 
-################### datatables ###################
+######################################
 [datatables]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -737,7 +737,7 @@ CASE_INSENSITIVE = true
 REGEX = false
 
 
-################### markmap ###################
+######################################
 [markmap]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -1006,7 +1006,7 @@ Note that if blocks and lists appear at the same level, the lists will be ignore
 """
 
 
-################### auto_number ###################
+######################################
 [auto_number]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -1295,7 +1295,7 @@ image = ""
 fence = ""
 
 
-################### fence_enhance ###################
+######################################
 [fence_enhance]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -1550,7 +1550,7 @@ SIDE_BY_SIDE_VIEW = false
 VISIBLE_TABS = false
 
 
-################### collapse_paragraph ###################
+######################################
 [collapse_paragraph]
 # ------------------- 基础 -------------------
 # 启用或禁用章节折叠插件
@@ -1595,7 +1595,7 @@ RECORD_COLLAPSE = true
 MODIFIER_KEY = { COLLAPSE_SINGLE = "ctrl", COLLAPSE_SIBLINGS = "ctrl+alt", COLLAPSE_ALL_SIBLINGS = "ctrl+shift+alt", COLLAPSE_RECURSIVE = "" }
 
 
-################### collapse_list ###################
+######################################
 [collapse_list]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -1615,7 +1615,7 @@ TRIANGLE_COLOR = ""
 RECORD_COLLAPSE = true
 
 
-################### collapse_table ###################
+######################################
 [collapse_table]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -1631,7 +1631,7 @@ NAME = ""
 RECORD_COLLAPSE = true
 
 
-################### markdownlint ###################
+######################################
 [markdownlint]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -1736,7 +1736,7 @@ RIGHT_CLICK_TABLE_TO_TOGGLE_SOURCE_MODE = true
 RIGHT_CLICK_BUTTON_TO_FIX = true
 
 
-################### image_viewer ###################
+######################################
 [image_viewer]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -1961,7 +1961,7 @@ HOTKEY_FUNCTION = [
 ]
 
 
-################### truncate_text ###################
+######################################
 [truncate_text]
 # ------------------- 基础 -------------------
 # 启用或禁用文段截断插件
@@ -1990,7 +1990,7 @@ HIDE_BASE_VIEW_HOTKEY = ""
 REMAIN_LENGTH = 80
 
 
-################### export_enhance ###################
+######################################
 [export_enhance]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2012,7 +2012,7 @@ DOWNLOAD_NETWORK_IMAGE = false
 DOWNLOAD_THREADS = 10
 
 
-################### sidebar_enhance ###################
+######################################
 [sidebar_enhance]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2127,7 +2127,7 @@ COUNT_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "
 IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 
 
-################### text_stylize ###################
+######################################
 [text_stylize]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2208,7 +2208,7 @@ COLOR_TABLE = [
 DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#330000" }
 
 
-################### cipher ###################
+######################################
 [cipher]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2238,7 +2238,7 @@ SECRET_KEY = "n0hLis5FjgQxa3f31sSa2wm37J81g3upTlq9it9WlfK"
 SHOW_HINT_MODAL = true
 
 
-################### easy_modify ###################
+######################################
 [easy_modify]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2288,7 +2288,7 @@ HOTKEY_CONVERT_IMAGE_TO_BASE64 = ""
 HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64 = ""
 
 
-################### custom ###################
+######################################
 [custom]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2305,7 +2305,7 @@ NAME = ""
 HIDE_DISABLE_PLUGINS = false
 
 
-################### action_buttons ###################
+######################################
 [action_buttons]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2400,7 +2400,7 @@ BUTTONS = [
 ]
 
 
-################### slash_commands ###################
+######################################
 [slash_commands]
 # ------------------- 基础 -------------------
 # 启用或禁用斜杠命令插件
@@ -2557,7 +2557,7 @@ COMMANDS = [
 ]
 
 
-################### CJKSYMBOLPAIRING ###################
+######################################
 [cjk_symbol_pairing]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2618,7 +2618,7 @@ AUTO_CONVERT_SYMBOLS = [
     { enable = true, input = "￥", output = "$" },
 ]
 
-################### right_outline ###################
+######################################
 [right_outline]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2673,7 +2673,7 @@ TITLE_BAR_BUTTONS = ["header", "image", "table", "fence", "link", "math"]
 INCLUDE_HEADINGS = { fence = true, image = true, table = true, link = true, math = true }
 
 
-################### right_click_menu ###################
+######################################
 [right_click_menu]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2721,6 +2721,23 @@ FIND_LOST_PLUGINS = false
 #   NAME: 一级菜单的名称
 #   LIST: 二级菜单的插件列表，`---` 代表在页面上插入一个分隔横线。允许填入 pluginName (插件，如：easy_modify) 或者 pluginName.action (插件的其中一个选项，如：easy_modify.copy_full_path)
 [[right_click_menu.MENUS]]
+NAME = "__BLOCK_CODE_PLUGINS__"
+LIST = [
+    "markmap",
+    "kanban",
+    "timeline",
+    "chat",
+    "abc",
+    "chart",
+    "echarts",
+    "calendar",
+    "marp",
+    "wavedrom",
+    "drawIO",
+    "plantUML",
+    "callouts",
+]
+[[right_click_menu.MENUS]]
 NAME = "__LESS_USED_PLUGINS__"
 LIST = [
     "window_tab",
@@ -2753,7 +2770,6 @@ LIST = [
 NAME = "__OFTEN_USED_PLUGINS__"
 LIST = [
     "commander",
-    "markmap",
     "collapse_paragraph",
     "easy_modify",
     "custom",
@@ -2770,7 +2786,7 @@ LIST = [
 ]
 
 
-################### pie_menu ###################
+######################################
 [pie_menu]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2819,7 +2835,7 @@ BUTTONS = [
 ]
 
 
-################### preferences ###################
+######################################
 [preferences]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2870,7 +2886,7 @@ OBJECT_SETTINGS_FORMAT = "JSON"
 FORM_RENDERING_HOOK = "(options, fixedName) => options"
 
 
-################### hotkeys ###################
+######################################
 [hotkeys]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2918,7 +2934,7 @@ CUSTOM_HOTKEYS = [
 ]
 
 
-################### resource_manager ###################
+######################################
 [resource_manager]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -2987,7 +3003,7 @@ TRAVERSE_STRATEGY = "bfs"
 MAX_STATS = -1
 
 
-################### asset_root_redirect ###################
+######################################
 [asset_root_redirect]
 # ------------------- 功能说明 -------------------
 # 如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 Typora，就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中，这导致在 Typora 打开后文件由于路径错误，无法访问本地资源
@@ -3014,7 +3030,7 @@ ROOT_PATH = "./"
 IGNORE_GLOB_FILES = ["**/node_modules", "**/.git", "**/.idea"]
 
 
-################### bookmark ###################
+######################################
 [bookmark]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -3040,7 +3056,7 @@ MODIFIER_KEY = "alt"
 AUTO_POPUP_WINDOW = true
 
 
-################### templater ###################
+######################################
 [templater]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -3155,7 +3171,7 @@ tags:
 """
 
 
-################### editor_width_slider ###################
+######################################
 [editor_width_slider]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -3170,7 +3186,7 @@ NAME = ""
 WIDTH_RATIO = -1
 
 
-################### article_uploader ###################
+######################################
 [article_uploader]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -3236,7 +3252,7 @@ cnblog = { enabled = true, username = "demo2", password = "demo2" }
 csdn = { enabled = true, cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s; log_Id_click=37......" }
 
 
-################### ripgrep ###################
+######################################
 [ripgrep]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -3263,7 +3279,7 @@ WIDTH_PERCENT = 80
 TOP_PERCENT = 20
 
 
-################### static_markers ###################
+######################################
 [static_markers]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -3296,7 +3312,7 @@ HOTKEY = ""
 STATIC_MARKERS = ["strong", "em", "del", "underline", "highlight", "superscript", "subscript", "code", "inlineMath", "image", "link", "footnote"]
 
 
-################### cursor_history ###################
+######################################
 [cursor_history]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -3317,7 +3333,7 @@ HOTKEY_GO_BACK = "alt+ArrowLeft"
 MAX_HISTORY_ENTRIES = 100
 
 
-################### json_rpc ###################
+######################################
 [json_rpc]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -3332,7 +3348,7 @@ NAME = ""
 SERVER_OPTIONS = { port = 5080, host = "127.0.0.1", path = "/", strict = false }
 
 
-################### updater ###################
+######################################
 [updater]
 # ------------------- 基础 -------------------
 # 启用插件
@@ -3377,7 +3393,743 @@ START_UPDATE_INTERVAL = 300000   # 1000 * 60 * 5 (5分钟)
 UPDATE_LOOP_INTERVAL = -1
 
 
-################### test ###################
+######################################
+[kanban]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+LANGUAGE = "kanban"
+
+# ------------------- 渲染模式与交互模式 -------------------
+# 严格模式：是否启用严格模式，严格模式下，插件不会忽略存在语法错误的代码行，而是在页面上直接报错
+#   true:  启用严格模式，所有看板都将强制进入严格模式，发生语法错误时会报错
+#   false: 关闭严格模式，所有看板都会忽略语法错误
+# 也可以在代码块首行添加 `use strict`，使得此代码块进入严格模式
+STRICT_MODE = false
+
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块，允许在看板上进行交互操作
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# ------------------- 看板显示 -------------------
+# 当看板任务描述为空时是否隐藏描述框
+#   true:  当描述为空时隐藏描述框
+#   false: 当描述为空时显示空描述框
+HIDE_DESC_WHEN_EMPTY = true
+
+# 看板最大高度（单位：px）
+#   若 < 0，则显示全部高度
+KANBAN_MAX_HEIGHT = 700
+
+# 看板的宽度（单位：px）
+KANBAN_WIDTH = 250
+
+# 看板任务描述框的最大高度（单位：em）
+#   若 < 0，则显示全部高度
+KANBAN_TASK_DESC_MAX_HEIGHT = -1
+
+# 当看板数量太多时是否换行显示
+#   true:  换行显示看板
+#   false: 不换行显示看板，超出宽度时会出现滚动条
+WRAP = false
+
+# 当鼠标位于看板时，是否允许使用 ctrl + 鼠标滚轮 滚动看板
+#   true:  允许使用 ctrl + 鼠标滚轮 滚动看板
+#   false: 禁止使用 ctrl + 鼠标滚轮 滚动看板
+CTRL_WHEEL_TO_SWITCH = false
+
+# ------------------- 内容样式 -------------------
+# 允许在任务描述框中使用 markdown 内联样式（code, strong, em, del, link, img）
+#   true:  允许使用 markdown 内联样式
+#   false: 禁止使用 markdown 内联样式
+ALLOW_MARKDOWN_INLINE_STYLE = true
+
+# 看板框的颜色，请保持 KANBAN_COLOR 和 TASK_COLOR 数量一致，否则颜色会错乱
+KANBAN_COLOR = ["#FFE0B2", "#DAE9F4", "#FEDCCC", "#C6E5D9", "#FFF1B9"]
+
+# 任务框的颜色，请保持 TASK_COLOR 和 KANBAN_COLOR 数量一致，否则颜色会错乱
+TASK_COLOR = ["#FFFDE7", "#F8FAFF", "#FFFFF2", "#FFFCF0", "#FFFFF5"]
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+use strict
+# How to use kanban
+
+## Grammar
+* General (H1: Kanban title\\nH2: Kanban Board\\nList: Kanban Task)
+- Style (Supports Markdown inline styles: **bold**, *italic*, `code`, ~~delete~~, [link](https://github.com/obgnail/typora_plugin), ![Image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4))
+- Strict Mode (Use `use strict` on the first line to enforce strict mode; syntax errors will not be ignored.)
+- Hide desc box when empty
+
+## Settings
+- Unlimited Quantity (Kanban boards and tasks are infinitely scalable.)
+- Customizable Color Scheme (Customize colors in settings.)
+- Long Task Lists (Scroll task lists using the mouse wheel below the Kanban board.)
+- Many Kanban Boards (Scroll horizontally using Ctrl+mouse wheel.)
+
+## NOTE
+- Non Universal Grammar (Intended for temporary use in daily task management.)"""
+
+
+######################################
+[chat]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 代码块 -------------------
+# 代码块语言标识符，用于指定此插件所使用的代码块类型
+LANGUAGE = "chat"
+
+# ------------------- 交互模式 -------------------
+# 是否启用交互模式
+#   true:  启用交互模式。在交互模式下，鼠标点击图表不会展开代码块
+#   false: 禁用交互模式。在非交互模式下，鼠标点击图表会展开代码块
+INTERACTIVE_MODE = true
+
+# ------------------- 代码块默认选项 -------------------
+# 插件的默认选项，控制 Chat 代码块的显示行为
+#   useStrict       : 是否开启严格模式
+#   showNickname    : 是否显示昵称
+#   showAvatar      : 是否显示头像
+#   notAllowShowTime: 是否不允许显示时间
+#   allowMarkdown   : 是否允许在消息内容中使用 Markdown 语法
+#   senderNickname  : 默认的发送者昵称
+#   timeNickname    : 表示时间的昵称
+DEFAULT_OPTIONS = { useStrict = true, showNickname = true, showAvatar = true, notAllowShowTime = false, allowMarkdown = true, senderNickname = "me", timeNickname = "time" }
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+---
+useStrict: false        # Enable strict mode (disables error tolerance).
+showNickname: true      # Display usernames.
+showAvatar: true        # Display avatars.
+notAllowShowTime: false # Disable timestamps.
+allowMarkdown: true     # Enable Markdown parsing.
+senderNickname: me      # Nickname for the sender on the right.
+timeNickname: time      # Nickname for timestamps.
+avatars:                # Avatar URLs.
+  me: https://avatars.githubusercontent.com/u/48992887?s=96&v=4
+  senderB: ./assets/senderB.jpg
+---
+
+time: Yesterday 18:21
+
+senderA: Messages are separated from usernames by a colon.
+
+me: The sender's nickname on the right is 'me', and timestamp's nickname is 'time'.
+
+me: Supports basic Markdown syntax: **bold**, *italic*, `code`, ~~strikethrough~~, [link](https://github.com/obgnail/typora_plugin), \\n![image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
+
+senderB: You can use YAML front matter to modify the configuration. \\n\\nThe `avatars` option sets user avatars, If not configured, The first letter of the user name is used as the avatar. \\n\\nTry adding `./assets/senderB.jpg` to current directory to see the user senderB's avatar change.
+
+Note: Supports exporting to HTML, PDF, etc. This syntax is plugin-specific and not universal."""
+
+
+######################################
+[timeline]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+LANGUAGE = "timeline"
+
+# ------------------- 交互模式 -------------------
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# ------------------- 时间线样式 -------------------
+# 图表背景颜色
+BACKGROUND_COLOR = "#FAFAFA"
+
+# 标题的字体颜色
+TITLE_COLOR = "#555555"
+
+# 标题的字体大小
+TITLE_FONT_SIZE = "1.5rem"
+
+# 标题的字宽
+TITLE_FONT_WEIGHT = "bold"
+
+# 左侧时间线的颜色
+LINE_COLOR = "#EEEEEE"
+
+# 左侧时间线的宽度
+LINE_WIDTH = "2px"
+
+# 时间圆点的颜色
+CIRCLE_COLOR = "#999999"
+
+# 时间圆点的直径
+CIRCLE_DIAMETER = "0.7em"
+
+# 时间圆点的位置: top
+CIRCLE_TOP = "0.6em"
+
+# 时间的字体颜色
+TIME_COLOR = "#555555"
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+# Timeline Title (H1)
+
+## 2022-10-01
+### Event Description (H3-H6)
+Supports basic Markdown:
+- Unordered list item 1
+- Unordered list item 2
+**bold**, *italic*, `code`, ~~delete~~, [link](https://github.com/obgnail/typora_plugin), ![Image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
+---
+Code blocks are not supported (nested code blocks are discouraged).
+
+## 2023-10-01
+Custom syntax; use with caution."""
+
+
+######################################
+[echarts]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+LANGUAGE = "echarts"
+
+# ------------------- 渲染与交互模式 -------------------
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块，允许在图表上进行交互操作
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# 渲染器：选择渲染器类型
+#   canvas: 使用 Canvas 渲染
+#   svg:    使用 SVG 渲染
+# 参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/
+# svg 和 Typora 更加亲和，建议使用 svg
+RENDERER = "svg"
+
+# 导出时 echarts 转成什么格式
+#   png: 仅在 RENDERER 为 canvas 时可用
+#   jpg: 仅在 RENDERER 为 canvas 时可用
+#   svg: 仅在 RENDERER 为 svg 时可用
+EXPORT_TYPE = "svg"
+
+# ------------------- 图表显示 -------------------
+# 图表默认高度，填入 CSS 高度值（例如：200px）
+DEFAULT_FENCE_HEIGHT = "300px"
+
+# 图表背景颜色
+DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+// Built-in variables:
+//   1. myChart: ECharts instance
+//   2. echarts: ECharts module
+//   3. option:  ECharts option object
+//   4. this:    ECharts plugin instance
+// More examples: https://echarts.apache.org/examples/en/index.html#chart-type-line
+// All code within this block will be evaluated (eval). Exercise caution.
+// Use the following comment to set chart dimensions (otherwise defaults apply):
+// {height: "300px", width: ""}
+
+option = {
+    tooltip: { trigger: 'item' },
+    legend: { top: '5%', left: 'center' },
+    series: [{
+        name: 'Access From',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        label: { show: false, position: 'center' },
+        emphasis: { label: { show: true,  fontSize: 40,  fontWeight: 'bold' } },
+        labelLine: { show: false },
+        data: [
+            {value: 1548, name: 'Search Engine'},
+            {value: 735, name: 'Direct'},
+            {value: 580, name: 'Email'},
+            {value: 484, name: 'Union Ads'},
+            {value: 310, name: 'Video Ads'}
+        ]
+    }]
+}"""
+
+
+######################################
+[chart]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+LANGUAGE = "chart"
+
+# ------------------- 交互模式 -------------------
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块，允许在图表上进行交互操作
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# ------------------- 图表显示 -------------------
+# 图表默认高度，填入 CSS 高度值（例如：200px）
+DEFAULT_FENCE_HEIGHT = "300px"
+
+# 图表背景颜色
+DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+// Built-in variables:
+//   1. Chart:   chart Class
+//   2. config:  chart option object
+//   3. this:    chart plugin instance
+// API: https://chart.nodejs.cn/docs/latest/configuration/
+// All code within this block will be evaluated (eval). Exercise caution.
+// Use the following comment to set chart dimensions (otherwise defaults apply):
+// {height: "300px", width: ""}
+
+config = {
+  type: "bar",
+  data: {
+    labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+    datasets: [{
+      label: "# of Votes",
+      data: [12, 19, 3, 5, 2, 3],
+      backgroundColor: [
+        "rgba(255, 99, 132, 0.2)", "rgba(54, 162, 235, 0.2)", "rgba(255, 206, 86, 0.2)",
+        "rgba(75, 192, 192, 0.2)", "rgba(153, 102, 255, 0.2)", "rgba(255, 159, 64, 0.2)"
+      ],
+      borderColor: [
+        "rgba(255, 99, 132, 1)", "rgba(54, 162, 235, 1)", "rgba(255, 206, 86, 1)",
+        "rgba(75, 192, 192, 1)", "rgba(153, 102, 255, 1)", "rgba(255, 159, 64, 1)"
+      ],
+      borderWidth: 1
+    }]
+  }
+}"""
+
+
+######################################
+[wavedrom]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+LANGUAGE = "wavedrom"
+
+# ------------------- 交互 -------------------
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块，允许在波形图上进行交互操作
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# 安全模式：是否启用安全模式
+#   true:  启用安全模式，插件将无法获取外部数据源，仅使用本地数据渲染
+#   false: 关闭安全模式，插件可以获取外部数据源
+SAFE_MODE = true
+
+# ------------------- 样式 -------------------
+# 图表默认高度：设置图表渲染后的默认高度
+#   可以使用 CSS 高度值（例如：200px），也可以设置为 "auto" 让高度自适应内容
+DEFAULT_FENCE_HEIGHT = "auto"
+
+# 图表背景颜色 (支持合法的 CSS 颜色值，如 #FFFFFF, red, rgba(255,0,0,0.5) 等)
+DEFAULT_FENCE_BACKGROUND_COLOR = "#FFFFFF"
+
+# 皮肤文件
+#   下载皮肤文件：https://cdnjs.com/libraries/wavedrom
+SKIN_FILES = ["plugin/wavedrom/narrow.js"]
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+// tutorial: https://wavedrom.com/tutorial.html
+// All code within this block will be evaluated (eval). Exercise caution.
+{
+    signal: [
+        { name: "pclk", wave: 'p.......' },
+        { name: "Pclk", wave: 'P.......' },
+        { name: "nclk", wave: 'n.......' },
+        { name: "Nclk", wave: 'N.......' },
+        { name: 'clk0', wave: 'phnlPHNL' },
+        {},
+        { name: 'clk1', wave: 'xhlhLHl.' },
+        { name: 'clk2', wave: 'hpHplnLn' },
+        { name: 'clk3', wave: 'nhNhplPl' },
+        { name: 'clk4', wave: 'xlh.L.Hx' },
+    ],
+    config : { 'hscale' : 1.4 }
+}"""
+
+
+######################################
+[calendar]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+LANGUAGE = "calendar"
+
+# ------------------- 交互模式 -------------------
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块，允许在日历上进行交互操作
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# ------------------- 日历显示 -------------------
+# 图表默认高度，填入 CSS 高度值（例如：200px）
+DEFAULT_FENCE_HEIGHT = "800px"
+
+# 图表背景颜色
+DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+// Built-in variables:
+//   1. calendar: calendar instance
+//   2. Calendar: Calendar class
+//   3. option:   calendar option object
+//   4. this:     calendar plugin instance
+// example: https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
+// API: https://github.com/nhn/tui.calendar/blob/main/docs/en/apis/options.md
+// All code within this block will be evaluated (eval). Exercise caution.
+// Use the following comment to set chart dimensions (otherwise defaults apply):
+// {height: "800px", width: ""}
+
+const today = new Date();
+const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+option = {defaultView: 'week'};
+calendar.createEvents([
+    {id: 'event1', calendarId: 'cal2', title: 'meeting', start: yesterday, end: today},
+    {id: 'event2', calendarId: 'cal1', title: 'appointment', start: yesterday, end: nextMonth},
+]);"""
+
+
+######################################
+[abc]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+LANGUAGE = "abc"
+
+# ------------------- 交互模式 -------------------
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块，允许在乐谱上进行交互操作
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# ------------------- 可视化选项 -------------------
+# 乐谱的可视化选项，请参考：https://paulrosen.github.io/abcjs/visual/render-abc-options.html
+# 常用的配置
+#   - scale: 用于指定乐谱的缩放比例
+#   - staffwidth: 用于指定乐谱谱表的宽度
+#   - responsive: 用于指定乐谱在响应式布局中的行为，例如 "resize" 表示在窗口大小改变时重新渲染乐谱
+VISUAL_OPTIONS = { scale = 1.0, staffwidth = 400, responsive = "resize" }
+
+# ------------------- 样式 -------------------
+# 图表默认高度：设置图表渲染后的默认高度
+#   可以使用 CSS 高度值（例如：200px），也可以设置为 "auto" 让高度自适应内容
+DEFAULT_FENCE_HEIGHT = "auto"
+
+# 图表背景颜色
+DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+X:1
+T:Twinkle, Twinkle, Little Star
+M:4/4
+L:1/4
+K:C
+G2 G2|A2 A2|B2 B2|c3 z|G2 G2|A2 A2|B2 G2|c3 z||"""
+
+
+######################################
+[drawIO]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 资源 -------------------
+# 依赖资源 URI：指定 draw.io viewer 的加载路径
+#   由于 draw.io 的格式经常发生变动，drawio 官方强烈建议通过 CDN 获取依赖资源，而不是将依赖资源保存在本地
+#   此插件默认从网络拉取依赖。如果你希望将依赖资源保存在本地，请按如下操作
+#     1. 下载并保存文件：https://viewer.diagrams.net/js/viewer-static.min.js
+#     2. 将 RESOURCE_URI 修改为本地的文件路径（比如：D:\\tmp\\viewer-static.min.js）
+RESOURCE_URI = "https://viewer.diagrams.net/js/viewer-static.min.js"
+
+# 超时时间（单位：毫秒）
+SERVER_TIMEOUT = 30000
+
+# 代理 URL
+PROXY = ""
+
+# 缓存的 URL 数量
+MEMORIZED_URL_COUNT = 20
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+LANGUAGE = "drawio"
+
+# ------------------- 交互模式 -------------------
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块，允许在图表上进行交互操作
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# ------------------- 图表显示 -------------------
+# 图表默认高度：设置图表渲染后的默认高度
+#   可以使用 CSS 高度值（例如：200px），也可以设置为 "auto" 让高度自适应内容
+DEFAULT_FENCE_HEIGHT = "auto"
+
+# 图表背景颜色：设置图表的背景颜色
+#   例如：transparent 表示透明背景。可以使用 CSS 颜色值，例如：#FFFFFF 或 rgba(255, 255, 255, 0.5)
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+/**
+ * Official documentation recommends CDN dependencies due to frequent .drawio format updates.
+ * This plugin defaults to remote fetching. Modify configuration for local storage if preferred.
+ *
+ * Supported options: allow-zoom-in, allow-zoom-out, auto-crop, auto-fit, auto-origin, border, center, check-visible-state, dark-mode, edit, editable, forceCenter, highlight, layerIds, layers, lightbox, max-height, move, nav, page, pageId, resize, responsive, source, target, title, titleTooltip, toolbar, toolbar-buttons, toolbar-nohide, toolbar-position, tooltips, xml, zoom.
+ *
+ * Refer to: https://github.com/jgraph/drawio/blob/f7158bfb/src/main/webapp/js/diagramly/GraphViewer.js#L118
+ */
+graphConfig = {
+    // Local or remote path to the .drawio file.
+    // Example: "./assets/example.drawio" or "D:\\\\tmp\\\\example.drawio" or "http://localhost:8000/example.drawio"
+    source: "https://cdn.jsdelivr.net/gh/obgnail/typora_images@master/image/example.drawio",
+
+    // Zero-based index to switch between multiple pages.
+    page: 0,
+}"""
+
+
+######################################
+[plantUML]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 渲染服务 -------------------
+# 渲染服务的URL。推荐使用 Docker 安装并启用服务
+#   docker pull plantuml/plantuml-server:jetty
+#   docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
+SERVER_URL = "http://localhost:8080"
+
+# 渲染格式，支持 png、svg、txt
+OUTPUT_FORMAT = "svg"
+
+# 超时时间（单位：毫秒）
+SERVER_TIMEOUT = 30000
+
+# 缓存的 URL 数量
+MEMORIZED_URL_COUNT = 20
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+LANGUAGE = "plantuml"
+
+# ------------------- 交互模式 -------------------
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块，允许在图表上进行交互操作
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# ------------------- 图表显示 -------------------
+# 图表默认高度：设置图表渲染后的默认高度
+#   可以使用 CSS 高度值（例如：200px），也可以设置为 "auto" 让高度自适应内容
+DEFAULT_FENCE_HEIGHT = "auto"
+
+# 图表背景颜色：设置图表的背景颜色
+#   例如：transparent 表示透明背景。可以使用 CSS 颜色值，例如：#FFFFFF 或 rgba(255, 255, 255, 0.5)
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+@startuml
+Bob -> Alice : hello
+@enduml"""
+
+
+######################################
+[marp]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 代码块 -------------------
+# 代码块语言：用于识别代码块的语言标识符
+LANGUAGE = "marp"
+
+# ------------------- 交互模式 -------------------
+# 交互模式：是否开启交互模式
+#   true:  开启交互模式，鼠标点击图表不会展开代码块，允许在 marp 上进行交互操作
+#   false: 关闭交互模式，鼠标点击图表将展开代码块
+INTERACTIVE_MODE = true
+
+# ------------------- marp-core 配置 -------------------
+# more detail: https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options
+MARP_CORE_OPTIONS = { html = true }
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
+TEMPLATE = """
+---
+theme: gaia
+_class: lead
+paginate: true
+backgroundColor: #FFFFFF
+backgroundImage: url('https://marp.app/assets/hero-background.svg')
+---
+
+![bg left:40% 80%](https://marp.app/assets/marp.svg)
+
+# **Marp**
+
+Markdown Presentation Ecosystem
+
+https://marp.app/
+
+---
+
+# How to write slides
+
+Split pages by horizontal ruler (`---`). It's very simple! :satisfied:"""
+
+
+######################################
+[callouts]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- callout 样式 -------------------
+# callout 的阴影
+BOX_SHADOW = "0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a"
+
+# 为标题设置颜色
+SET_TITLE_COLOR = true
+
+# 鼠标悬停在 fold callout 时展示其内容
+HOVER_TO_SHOW_FOLD_CALLOUT = true
+
+# icon 对应的图标字体。一旦修改此选项，就需要修改下面所有的 icon
+#   具体的 icon 值请参考
+#   - 旧版本 Typora: {your_typora_path}/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
+#   - 新版本 Typora: {your_typora_path}/resources/style/font-awesome-4.1.0/css/font-awesome.css
+#   - 网络下载: https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
+FONT_FAMILY = "FontAwesome"
+
+# Callouts 功能导出为 PDF 后不显示图标，因为导出过程中缺少必要的图标字体资源
+# 是否使用网络图标字体
+USE_NETWORK_ICON_WHEN_EXPORTING = true
+
+# 网络图标字体的 CDN 地址
+NETWORK_ICON_URL = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/fonts/fontawesome-webfont.woff"
+
+# callout 的类型
+#  - type            : 自定义的类型
+#  - background_color: 背景颜色
+#  - left_line_color : 左侧竖线颜色
+#  - icon            : 图标
+CALLOUTS = [
+    { type = "tip", background_color = "#D8F2E5", left_line_color = "#3ABD7E", icon = "\\f02c" },
+    { type = "bug", background_color = "#FEEED3", left_line_color = "#E0AC00", icon = "\\f188" },
+    { type = "info", background_color = "#DFF6DD", left_line_color = "#3ABD7E", icon = "\\f05a" },
+    { type = "note", background_color = "#E1D1EB", left_line_color = "#6A1B9A", icon = "\\f040" },
+    { type = "quote", background_color = "#FAFAFA", left_line_color = "#777777", icon = "\\f10d" },
+    { type = "example", background_color = "#F1EDFD", left_line_color = "#777777", icon = "\\f133" },
+    { type = "caution", background_color = "#FDE7E9", left_line_color = "#C62828", icon = "\\f024" },
+    { type = "failure", background_color = "#F4D4D4", left_line_color = "#C62828", icon = "\\f00d" },
+    { type = "warning", background_color = "#FEEED3", left_line_color = "#E0AC00", icon = "\\f071" },
+    { type = "success", background_color = "#D8F2E5", left_line_color = "#3ABD7E", icon = "\\f00c" },
+    { type = "question", background_color = "#FFF4CE", left_line_color = "#E0AC00", icon = "\\f128" },
+    { type = "abstract", background_color = "#E5F8F8", left_line_color = "#777777", icon = "\\f00b" },
+    { type = "important", background_color = "#D8E6F3", left_line_color = "#3B83C1", icon = "\\f132" },
+]
+
+# 所有【类型不属于 CALLOUTS 选项的类型】都会使用默认的样式
+# 默认的背景颜色
+DEFAULT_BACKGROUND_COLOR = "#FAFAFA"
+
+# 默认的左边线颜色
+DEFAULT_LEFT_LINE_COLOR = "#777777"
+
+# 默认的 icon
+DEFAULT_ICON = "\\f075"
+
+# ------------------- 模板 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入 callouts 时，会使用此模板
+TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
+
+
+######################################
 [test]
 # ------------------- 基础 -------------------
 # 启用或禁用整个插件

@@ -77,13 +77,35 @@ class MarkmapPlugin extends BasePlugin {
         Object.assign(this.Lib, markmap, { transformer, Transformer, transformerVersions })
 
         const { styles, scripts } = transformer.getAssets()
-        const getPath = file => this.utils.joinPath("./plugin/markmap/resource/", file)
-        styles[0].data.href = getPath("katex.min.css")
-        styles[1].data.href = getPath("default.min.css")
-        scripts[1].data.src = getPath("webfontloader.js")
+        this.localizeResources(styles, scripts)
 
         await markmap.loadCSS(styles)
         await markmap.loadJS(scripts, { getMarkmap: () => markmap })
+    }
+
+    localizeResources = (styles = [], scripts = []) => {
+        const katexBase = "./plugin/global/core/lib/katex"
+        const pluginBase = "./plugin/markmap/resource/"
+        const localResources = {
+            "katex.min.js": this.utils.joinPath(katexBase, "katex.js"),
+            "katex.min.css": this.utils.joinPath(katexBase, "katex.min.css"),
+            "default.min.css": this.utils.joinPath(pluginBase, "default.min.css"),
+            "webfontloader.js": this.utils.joinPath(pluginBase, "webfontloader.js"),
+        }
+        const localize = (items, expectedType, urlProp) => {
+            for (const item of items) {
+                if (item?.type === expectedType && typeof item?.data?.[urlProp] === "string") {
+                    const url = item.data[urlProp]
+                    const filename = url.slice(url.lastIndexOf("/") + 1)
+                    const localResource = localResources[filename]
+                    if (localResource) {
+                        item.data[urlProp] = localResource
+                    }
+                }
+            }
+        }
+        localize(styles, "stylesheet", "href")
+        localize(scripts, "script", "src")
     }
 }
 

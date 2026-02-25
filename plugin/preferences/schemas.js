@@ -366,17 +366,10 @@ const dep_countFile = { dependencies: Dep.true("ENABLE_FILE_COUNT") }
 const field_ENABLE = Switch("ENABLE")
 const field_NAME = Text("NAME", { placeholder: "defaultIfEmpty" })
 const field_HOTKEY = Hotkey("HOTKEY")
-const field_enable = Switch("enable")
-const field_hide = Switch("hide")
-const field_name = Text("name", { placeholder: "defaultIfEmpty" })
-const field_order = Integer("order")
-const field_hotkey = Hotkey("hotkey")
 
 /******** Common Boxes ********/
-const box_basePluginLite = UntitledBox(field_ENABLE, field_NAME)
-const box_basePluginFull = UntitledBox(field_ENABLE, field_NAME, field_HOTKEY)
-const box_customPluginLite = UntitledBox(field_enable, field_hide, field_name, field_order)
-const box_customPluginFull = UntitledBox(field_enable, field_hide, field_name, field_order, field_hotkey)
+const box_pluginLite = UntitledBox(field_ENABLE, field_NAME)
+const box_pluginFull = UntitledBox(field_ENABLE, field_NAME, field_HOTKEY)
 const box_settingHandler = UntitledBox(Action("runtimeSettings"), Action("restoreSettings"))
 const box_langMode = TitledBox("fenceLanguageMode", Text("LANGUAGE", prop_protected), Switch("INTERACTIVE_MODE"))
 const box_chartStyle = TitledBox("diagramStyle", Text("DEFAULT_FENCE_HEIGHT"), Text("DEFAULT_FENCE_BACKGROUND_COLOR"))
@@ -536,7 +529,7 @@ const schema_global = [
 ]
 
 const schema_window_tab = [
-    box_basePluginLite,
+    box_pluginLite,
     TitledBox(
         "appearance",
         Switch("SHOW_TAB_CLOSE_BUTTON"),
@@ -587,7 +580,7 @@ const schema_window_tab = [
 ]
 
 const schema_search_multi = [
-    box_basePluginFull,
+    box_pluginFull,
     TitledBox(
         "search",
         Switch("CASE_SENSITIVE"),
@@ -623,7 +616,7 @@ const schema_search_multi = [
 ]
 
 const schema_commander = [
-    box_basePluginFull,
+    box_pluginFull,
     TitledBox(
         "cmdDisplay",
         Select("QUICK_RUN_DISPLAY", OPTIONS.commander.QUICK_RUN_DISPLAY),
@@ -655,14 +648,14 @@ const schema_commander = [
 ]
 
 const schema_md_padding = [
-    box_basePluginFull,
+    box_pluginFull,
     ArrayBox("IGNORE_WORDS"),
     ArrayBox("IGNORE_PATTERNS"),
     box_settingHandler,
 ]
 
 const schema_read_only = [
-    box_basePluginFull,
+    box_pluginFull,
     UntitledBox(
         Switch("READ_ONLY_DEFAULT"),
         Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
@@ -679,7 +672,7 @@ const schema_read_only = [
 ]
 
 const schema_blur = [
-    box_basePluginFull,
+    box_pluginFull,
     UntitledBox(
         Switch("BLUR_DEFAULT"),
         Switch("RESTORE_WHEN_HOVER"),
@@ -690,7 +683,7 @@ const schema_blur = [
 ]
 
 const schema_dark = [
-    box_basePluginFull,
+    box_pluginFull,
     UntitledBox(
         Switch("DARK_DEFAULT"),
     ),
@@ -698,7 +691,7 @@ const schema_dark = [
 ]
 
 const schema_no_image = [
-    box_basePluginFull,
+    box_pluginFull,
     UntitledBox(
         Switch("DEFAULT_NO_IMAGE_MODE"),
         Switch("RESHOW_WHEN_HOVER"),
@@ -709,7 +702,7 @@ const schema_no_image = [
 ]
 
 const schema_myopic_defocus = [
-    box_basePluginFull,
+    box_pluginFull,
     UntitledBox(
         Action("myopicDefocusEffectDemo", { explain: "enableMyopicDefocus" }),
     ),
@@ -725,7 +718,7 @@ const schema_myopic_defocus = [
 ]
 
 const schema_toolbar = [
-    box_basePluginFull,
+    box_pluginFull,
     TitledBox(
         "searchBarPosition",
         Range("TOOLBAR_TOP_PERCENT", prop_percent),
@@ -742,7 +735,7 @@ const schema_toolbar = [
 ]
 
 const schema_resize_image = [
-    box_basePluginLite,
+    box_pluginLite,
     TitledBox(
         "image",
         Switch("RECORD_RESIZE"),
@@ -758,7 +751,7 @@ const schema_resize_image = [
 ]
 
 const schema_resize_table = [
-    box_basePluginLite,
+    box_pluginLite,
     UntitledBox(
         Switch("RECORD_RESIZE"),
         Switch("REMOVE_MIN_CELL_WIDTH"),
@@ -768,7 +761,7 @@ const schema_resize_table = [
 ]
 
 const schema_datatables = [
-    box_basePluginLite,
+    box_pluginLite,
     UntitledBox(
         Switch("ORDERING"),
         Switch("DEFAULT_ORDER"),
@@ -783,7 +776,7 @@ const schema_datatables = [
 ]
 
 const schema_markmap = [
-    box_basePluginLite,
+    box_pluginLite,
     TitledBox(
         "mindmapDiagram",
         Switch("ENABLE_TOC_MARKMAP"),
@@ -871,7 +864,7 @@ const schema_markmap = [
 ]
 
 const schema_auto_number = [
-    box_basePluginLite,
+    box_pluginLite,
     TitledBox(
         "autoNumbering",
         Switch("ENABLE_OUTLINE"),
@@ -959,7 +952,7 @@ const schema_auto_number = [
 ]
 
 const schema_fence_enhance = [
-    box_basePluginLite,
+    box_pluginLite,
     TitledBox(
         "buttonGeneral",
         Switch("ENABLE_BUTTON"),
@@ -1089,7 +1082,7 @@ const schema_collapse_paragraph = [
 ]
 
 const schema_collapse_list = [
-    box_basePluginLite,
+    box_pluginLite,
     UntitledBox(
         Switch("RECORD_COLLAPSE"),
         Text("TRIANGLE_COLOR"),
@@ -1098,7 +1091,7 @@ const schema_collapse_list = [
 ]
 
 const schema_collapse_table = [
-    box_basePluginLite,
+    box_pluginLite,
     UntitledBox(
         Switch("RECORD_COLLAPSE"),
     ),
@@ -1106,7 +1099,7 @@ const schema_collapse_table = [
 ]
 
 const schema_truncate_text = [
-    box_basePluginLite,
+    box_pluginLite,
     TitledBox(
         "hotkey",
         Hotkey("HIDE_FRONT_HOTKEY"),
@@ -1118,7 +1111,7 @@ const schema_truncate_text = [
 ]
 
 const schema_export_enhance = [
-    box_basePluginLite,
+    box_pluginLite,
     UntitledBox(
         Switch("DOWNLOAD_NETWORK_IMAGE"),
         Integer("DOWNLOAD_THREADS", { min: 1, dependencies: Dep.true("DOWNLOAD_NETWORK_IMAGE") }),
@@ -1159,7 +1152,7 @@ const schema_text_stylize = [
 ]
 
 const schema_cipher = [
-    box_basePluginLite,
+    box_pluginLite,
     UntitledBox(
         Switch("SHOW_HINT_MODAL"),
         Password("SECRET_KEY", prop_protected),
@@ -1173,7 +1166,7 @@ const schema_cipher = [
 ]
 
 const schema_resource_manager = [
-    box_basePluginFull,
+    box_pluginFull,
     TitledBox(
         "windowPosition",
         Range("MODAL_LEFT_PERCENT", prop_percent),
@@ -1197,7 +1190,7 @@ const schema_resource_manager = [
 ]
 
 const schema_easy_modify = [
-    box_basePluginLite,
+    box_pluginLite,
     TitledBox(
         "hotkey",
         Hotkey("HOTKEY_COPY_FULL_PATH"),
@@ -1229,7 +1222,7 @@ const schema_custom = [
 ]
 
 const schema_slash_commands = [
-    box_basePluginLite,
+    box_pluginLite,
     TitledBox(
         "trigger",
         Text("TRIGGER_REGEXP"),
@@ -1269,7 +1262,7 @@ const schema_slash_commands = [
 ]
 
 const schema_cjk_symbol_pairing = [
-    box_basePluginLite,
+    box_pluginLite,
     UntitledBox(
         Switch("AUTO_SKIP_PAIR"),
         Switch("AUTO_DELETE_PAIR"),
@@ -1339,7 +1332,7 @@ const schema_right_click_menu = [
 ]
 
 const schema_pie_menu = [
-    box_basePluginFull,
+    box_pluginFull,
     UntitledBox(
         Hotkey("MODIFIER_KEY", { tooltip: "example" }),
     ),
@@ -1379,7 +1372,7 @@ const schema_preferences = [
 ]
 
 const schema_hotkeys = [
-    box_basePluginFull,
+    box_pluginFull,
     TableBox(
         "CUSTOM_HOTKEYS",
         ["hotkey", "desc"],
@@ -1408,7 +1401,7 @@ const schema_hotkeys = [
 ]
 
 const schema_asset_root_redirect = [
-    box_basePluginLite,
+    box_pluginLite,
     UntitledBox(
         Text("ROOT_PATH"),
     ),
@@ -1417,7 +1410,7 @@ const schema_asset_root_redirect = [
 ]
 
 const schema_bookmark = [
-    box_basePluginFull,
+    box_pluginFull,
     UntitledBox(
         Hotkey("MODIFIER_KEY", { tooltip: "modifierKeyExample" }),
         Switch("AUTO_POPUP_WINDOW"),
@@ -1426,7 +1419,7 @@ const schema_bookmark = [
 ]
 
 const schema_editor_width_slider = [
-    box_basePluginLite,
+    box_pluginLite,
     UntitledBox(
         Integer("WIDTH_RATIO", { tooltip: "minusOneMeansDisable", unit: UNITS.percent, min: -1, max: 100, step: 1 }),
     ),
@@ -1476,7 +1469,7 @@ const schema_article_uploader = [
 ]
 
 const schema_ripgrep = [
-    box_basePluginFull,
+    box_pluginFull,
     TitledBox(
         "windowPosition",
         Range("TOP_PERCENT", prop_percent),
@@ -1490,13 +1483,13 @@ const schema_ripgrep = [
 ]
 
 const schema_static_markers = [
-    box_basePluginFull,
+    box_pluginFull,
     CheckboxBox("STATIC_MARKERS", OPTIONS.static_markers.STATIC_MARKERS, { columns: 4 }),
     box_settingHandler,
 ]
 
 const schema_sidebar_enhance = [
-    box_basePluginLite,
+    box_pluginLite,
     UntitledBox(
         Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR"),
         Switch("SORTABLE_OUTLINE"),
@@ -1546,7 +1539,7 @@ const schema_sidebar_enhance = [
 ]
 
 const schema_cursor_history = [
-    box_basePluginLite,
+    box_pluginLite,
     TitledBox(
         "hotkey",
         Hotkey("HOTKEY_GO_FORWARD"),
@@ -1574,7 +1567,7 @@ const schema_json_rpc = [
 ]
 
 const schema_updater = [
-    box_basePluginFull,
+    box_pluginFull,
     UntitledBox(
         Integer("NETWORK_REQUEST_TIMEOUT", { unit: UNITS.millisecond, min: 30000 }),
         Text("PROXY"),
@@ -1589,12 +1582,12 @@ const schema_updater = [
 ]
 
 const schema_test = [
-    box_basePluginLite,
+    box_pluginLite,
     box_settingHandler,
 ]
 
 const schema_kanban = [
-    box_customPluginLite,
+    box_pluginLite,
     TitledBox(
         "fence",
         Text("LANGUAGE", prop_protected),
@@ -1618,7 +1611,7 @@ const schema_kanban = [
 ]
 
 const schema_chat = [
-    box_customPluginLite,
+    box_pluginLite,
     TitledBox(
         "fence",
         Text("LANGUAGE", prop_protected),
@@ -1639,7 +1632,7 @@ const schema_chat = [
 ]
 
 const schema_timeline = [
-    box_customPluginLite,
+    box_pluginLite,
     box_langMode,
     TitledBox(
         "diagramStyle",
@@ -1659,7 +1652,7 @@ const schema_timeline = [
 ]
 
 const schema_echarts = [
-    box_customPluginLite,
+    box_pluginLite,
     box_langMode,
     box_chartStyle,
     CodeBox("TEMPLATE"),
@@ -1672,7 +1665,7 @@ const schema_echarts = [
 ]
 
 const schema_chart = [
-    box_customPluginLite,
+    box_pluginLite,
     box_langMode,
     box_chartStyle,
     CodeBox("TEMPLATE"),
@@ -1680,7 +1673,7 @@ const schema_chart = [
 ]
 
 const schema_wavedrom = [
-    box_customPluginLite,
+    box_pluginLite,
     TitledBox(
         "fenceLanguageMode",
         Text("LANGUAGE", prop_protected),
@@ -1694,7 +1687,7 @@ const schema_wavedrom = [
 ]
 
 const schema_calendar = [
-    box_customPluginLite,
+    box_pluginLite,
     box_langMode,
     box_chartStyle,
     CodeBox("TEMPLATE"),
@@ -1702,7 +1695,7 @@ const schema_calendar = [
 ]
 
 const schema_abc = [
-    box_customPluginLite,
+    box_pluginLite,
     box_langMode,
     box_chartStyle,
     CodeBox("TEMPLATE"),
@@ -1711,7 +1704,7 @@ const schema_abc = [
 ]
 
 const schema_drawIO = [
-    box_customPluginLite,
+    box_pluginLite,
     box_langMode,
     box_chartStyle,
     CodeBox("TEMPLATE"),
@@ -1727,10 +1720,8 @@ const schema_drawIO = [
 
 const schema_plantUML = [
     UntitledBox(
-        Switch("enable", { tooltip: Tip.action("installPlantUMLServer", "fa fa-flask") }),
-        field_hide,
-        field_name,
-        field_order,
+        Switch("ENABLE", { tooltip: Tip.action("installPlantUMLServer", "fa fa-flask") }),
+        field_NAME,
     ),
     UntitledBox(
         Text("SERVER_URL"),
@@ -1745,7 +1736,7 @@ const schema_plantUML = [
 ]
 
 const schema_marp = [
-    box_customPluginLite,
+    box_pluginLite,
     box_langMode,
     DictBox("MARP_CORE_OPTIONS", null, { tooltip: Tip.action("viewMarpOptions") }),
     CodeBox("TEMPLATE"),
@@ -1753,30 +1744,30 @@ const schema_marp = [
 ]
 
 const schema_callouts = [
-    box_customPluginLite,
+    box_pluginLite,
     TitledBox(
         "style",
-        Switch("set_title_color"),
-        Text("box_shadow"),
+        Switch("SET_TITLE_COLOR"),
+        Text("BOX_SHADOW"),
     ),
     TitledBox(
         "mouseHover",
-        Switch("hover_to_show_fold_callout"),
+        Switch("HOVER_TO_SHOW_FOLD_CALLOUT"),
     ),
     TitledBox(
         "fontFamily",
-        Text("font_family"),
-        Switch("use_network_icon_when_exporting", { tooltip: "messingFont" }),
-        Text("network_icon_url", { dependencies: Dep.true("use_network_icon_when_exporting") }),
+        Text("FONT_FAMILY"),
+        Switch("USE_NETWORK_ICON_WHEN_EXPORTING", { tooltip: "messingFont" }),
+        Text("NETWORK_ICON_URL", { dependencies: Dep.true("USE_NETWORK_ICON_WHEN_EXPORTING") }),
     ),
     TitledBox(
         "defaultOptions",
-        Color("default_background_color"),
-        Color("default_left_line_color"),
-        Text("default_icon"),
+        Color("DEFAULT_BACKGROUND_COLOR"),
+        Color("DEFAULT_LEFT_LINE_COLOR"),
+        Text("DEFAULT_ICON"),
     ),
     TableBox(
-        "list",
+        "CALLOUTS",
         ["type", "icon", "background_color"],
         [
             UntitledBox(
@@ -1793,12 +1784,12 @@ const schema_callouts = [
             left_line_color: "",
         },
     ),
-    CodeBox("template"),
+    CodeBox("TEMPLATE"),
     box_settingHandler,
 ]
 
 const schema_templater = [
-    box_basePluginFull,
+    box_pluginFull,
     UntitledBox(
         Switch("AUTO_OPEN"),
     ),
@@ -1837,7 +1828,7 @@ const schema_templater = [
 ]
 
 const schema_right_outline = [
-    box_basePluginFull,
+    box_pluginFull,
     UntitledBox(
         Switch("DEFAULT_SHOW_OUTLINE"),
         Switch("REMOVE_HEADER_STYLES"),
@@ -1858,7 +1849,7 @@ const schema_right_outline = [
 ]
 
 const schema_image_viewer = [
-    box_basePluginFull,
+    box_pluginFull,
     TitledBox(
         "style",
         Range("MASK_BACKGROUND_OPACITY", { min: 0, max: 1, step: 0.05 }),
@@ -1929,7 +1920,7 @@ const schema_image_viewer = [
 ]
 
 const schema_markdownlint = [
-    box_basePluginFull,
+    box_pluginFull,
     TitledBox(
         "detectAndFix",
         Switch("TRANSLATE"),
@@ -1958,7 +1949,7 @@ const schema_markdownlint = [
 ]
 
 const schema_action_buttons = [
-    box_basePluginFull,
+    box_pluginFull,
     TitledBox(
         "buttonStyle",
         Text("BUTTON_SIZE"),

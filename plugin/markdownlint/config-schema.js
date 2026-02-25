@@ -1,7 +1,18 @@
-const generalRulesMap = require("./general-rules.json")
-const rulesDefaultValues = require("./rules-default-values.json")
 const i18n = require("../global/core/i18n.js")
 
+const RULE_GROUPS = require("./rule-groups.json")
+const RULE_DEFAULT_VALUES = require("./rule-default-values.json")
+const RULE_DEPENDENCIES = Object.fromEntries(
+    Object.entries(
+        Object.groupBy(
+            Object.entries(RULE_GROUPS).flatMap(([group, rules]) => rules.map(rule => [rule, group])),
+            ([rule]) => rule
+        )
+    ).map(([rule, pairs]) => {
+        const deps = Object.fromEntries(pairs.map(([_, group]) => [group, true]))
+        return [rule, deps]
+    })
+)
 const OPTIONS = {
     "MD003.style": ["consistent", "atx", "atx_closed", "setext", "setext_with_atx", "setext_with_atx_closed"],
     "MD004.style": ["consistent", "asterisk", "plus", "dash", "sublist"],
@@ -15,27 +26,12 @@ const OPTIONS = {
     "MD103.style": ["consistent", "single", "double"],
 }
 
-const buildGeneralRuleDependencies = () => {
-    const dep = {}
-    for (const [generalRuleName, rules] of Object.entries(generalRulesMap)) {
-        for (const specificRuleName of rules) {
-            if (!dep.hasOwnProperty(specificRuleName)) {
-                dep[specificRuleName] = {}
-            }
-            dep[specificRuleName][generalRuleName] = true
-        }
-    }
-    return dep
-}
-
-const generalRuleDependencies = buildGeneralRuleDependencies()
-
 const _t = (key) => i18n.t("markdownlint", key)
 const RuleName = (name) => `${name} - ${_t(name)}`
 const Label = (key) => _t(`label.${key}`)
 
 const Switch = (key, { ...args } = {}) => ({ key, type: "switch", label: Label(key), ...args })
-const Number = (key, { min, max, ...args } = {}) => ({ key, type: "number", label: Label(key), min, max, ...args })
+const Integer = (key, { min, max, ...args } = {}) => ({ key, type: "number", isInteger: true, label: Label(key), min, max, ...args })
 const Text = (key, { ...args } = {}) => ({ key, type: "text", label: Label(key), ...args })
 const Select = (key, { ...args } = {}) => {
     const options = Object.fromEntries(OPTIONS[key].map(op => [op, _t(`option.${key}.${op}`)]))
@@ -47,19 +43,19 @@ const Array_Inline = (key, { ...args } = {}) => ({ key, type: "array", isBlockLa
 const UntitledBox = (...fields) => ({ title: undefined, fields })
 const TitledBox = (title, ...fields) => ({ title, fields })
 
-const SimpleRule = (name) => ({
+const UnconfigurableRule = (name) => ({
     key: name,
     type: "switch",
     label: RuleName(name),
-    dependencies: generalRuleDependencies[name],
+    dependencies: RULE_DEPENDENCIES[name],
 })
-const ConfigurableRule = (name, ...subFiled) => ({
+const ConfigurableRule = (name, ...subFields) => ({
     key: name,
     type: "composite",
     label: RuleName(name),
-    defaultValues: rulesDefaultValues[name],
-    dependencies: generalRuleDependencies[name],
-    subSchema: [UntitledBox(...subFiled)],
+    defaultValues: RULE_DEFAULT_VALUES[name],
+    dependencies: RULE_DEPENDENCIES[name],
+    subSchema: [UntitledBox(...subFields)],
 })
 
 const MD001 = ConfigurableRule(
@@ -74,53 +70,53 @@ const MD004 = ConfigurableRule(
     "MD004",
     Select("MD004.style"),
 )
-const MD005 = SimpleRule("MD005")
+const MD005 = UnconfigurableRule("MD005")
 const MD007 = ConfigurableRule(
     "MD007",
-    Number("MD007.indent", { min: 1 }),
+    Integer("MD007.indent", { min: 1 }),
     Switch("MD007.start_indented"),
-    Number("MD007.start_indent", { min: 1, dependencies: { "MD007.start_indented": true } }),
+    Integer("MD007.start_indent", { min: 1, dependencies: { "MD007.start_indented": true } }),
 )
 const MD009 = ConfigurableRule(
     "MD009",
-    Number("MD009.br_spaces", { min: 0 }),
+    Integer("MD009.br_spaces", { min: 0 }),
     Switch("MD009.code_blocks"),
     Switch("MD009.list_item_empty_lines"),
     Switch("MD009.strict"),
 )
 const MD010 = ConfigurableRule(
     "MD010",
-    Number("MD010.spaces_per_tab", { min: 1 }),
+    Integer("MD010.spaces_per_tab", { min: 1 }),
     Switch("MD010.code_blocks"),
     Array_Inline("MD010.ignore_code_languages", { dependencies: { "MD010.code_blocks": true } }),
 )
-const MD011 = SimpleRule("MD011")
+const MD011 = UnconfigurableRule("MD011")
 const MD012 = ConfigurableRule(
     "MD012",
-    Number("MD012.maximum", { min: 1 }),
+    Integer("MD012.maximum", { min: 1 }),
 )
 const MD013 = ConfigurableRule(
     "MD013",
-    Number("MD013.line_length", { min: 1 }),
+    Integer("MD013.line_length", { min: 1 }),
     Switch("MD013.tables"),
     Switch("MD013.strict"),
     Switch("MD013.stern"),
     Switch("MD013.code_blocks"),
-    Number("MD013.code_block_line_length", { min: 1, dependencies: { "MD013.code_blocks": true } }),
+    Integer("MD013.code_block_line_length", { min: 1, dependencies: { "MD013.code_blocks": true } }),
     Switch("MD013.headings"),
-    Number("MD013.heading_line_length", { min: 1, dependencies: { "MD013.headings": true } }),
+    Integer("MD013.heading_line_length", { min: 1, dependencies: { "MD013.headings": true } }),
 )
-const MD014 = SimpleRule("MD014")
-const MD018 = SimpleRule("MD018")
-const MD019 = SimpleRule("MD019")
-const MD020 = SimpleRule("MD020")
-const MD021 = SimpleRule("MD021")
+const MD014 = UnconfigurableRule("MD014")
+const MD018 = UnconfigurableRule("MD018")
+const MD019 = UnconfigurableRule("MD019")
+const MD020 = UnconfigurableRule("MD020")
+const MD021 = UnconfigurableRule("MD021")
 const MD022 = ConfigurableRule(
     "MD022",
     Text("MD022.lines_above", { tooltip: _t("tooltip.numberOrArray") }),
     Text("MD022.lines_below", { tooltip: _t("tooltip.numberOrArray") }),
 )
-const MD023 = SimpleRule("MD023")
+const MD023 = UnconfigurableRule("MD023")
 const MD024 = ConfigurableRule(
     "MD024",
     Switch("MD024.siblings_only"),
@@ -128,7 +124,7 @@ const MD024 = ConfigurableRule(
 const MD025 = ConfigurableRule(
     "MD025",
     Text("MD025.front_matter_title"),
-    Number("MD025.level", { min: 1, max: 6 }),
+    Integer("MD025.level", { min: 1, max: 6 }),
 )
 const MD026 = ConfigurableRule(
     "MD026",
@@ -138,29 +134,29 @@ const MD027 = ConfigurableRule(
     "MD027",
     Switch("MD027.list_items"),
 )
-const MD028 = SimpleRule("MD028")
+const MD028 = UnconfigurableRule("MD028")
 const MD029 = ConfigurableRule(
     "MD029",
     Select("MD029.style"),
 )
 const MD030 = ConfigurableRule(
     "MD030",
-    Number("MD030.ul_single", { min: 1 }),
-    Number("MD030.ol_single", { min: 1 }),
-    Number("MD030.ul_multi", { min: 1 }),
-    Number("MD030.ol_multi", { min: 1 }),
+    Integer("MD030.ul_single", { min: 1 }),
+    Integer("MD030.ol_single", { min: 1 }),
+    Integer("MD030.ul_multi", { min: 1 }),
+    Integer("MD030.ol_multi", { min: 1 }),
 )
 const MD031 = ConfigurableRule(
     "MD031",
     Switch("MD031.list_items"),
 )
-const MD032 = SimpleRule("MD032")
+const MD032 = UnconfigurableRule("MD032")
 const MD033 = ConfigurableRule(
     "MD033",
     Array_Inline("MD033.allowed_elements"),
     Array_Inline("MD033.table_allowed_elements"),
 )
-const MD034 = SimpleRule("MD034")
+const MD034 = UnconfigurableRule("MD034")
 const MD035 = ConfigurableRule(
     "MD035",
     Text("MD035.style"),
@@ -169,9 +165,9 @@ const MD036 = ConfigurableRule(
     "MD036",
     Text("MD036.punctuation"),
 )
-const MD037 = SimpleRule("MD037")
-const MD038 = SimpleRule("MD038")
-const MD039 = SimpleRule("MD039")
+const MD037 = UnconfigurableRule("MD037")
+const MD038 = UnconfigurableRule("MD038")
+const MD039 = UnconfigurableRule("MD039")
 const MD040 = ConfigurableRule(
     "MD040",
     Switch("MD040.language_only"),
@@ -181,9 +177,9 @@ const MD041 = ConfigurableRule(
     "MD041",
     Switch("MD041.allow_preamble"),
     Text("MD041.front_matter_title"),
-    Number("MD041.level", { min: 1, max: 6 }),
+    Integer("MD041.level", { min: 1, max: 6 }),
 )
-const MD042 = SimpleRule("MD042")
+const MD042 = UnconfigurableRule("MD042")
 const MD043 = ConfigurableRule(
     "MD043",
     Switch("MD043.match_case"),
@@ -195,12 +191,12 @@ const MD044 = ConfigurableRule(
     Switch("MD044.html_elements"),
     Array_Inline("MD044.names"),
 )
-const MD045 = SimpleRule("MD045")
+const MD045 = UnconfigurableRule("MD045")
 const MD046 = ConfigurableRule(
     "MD046",
     Select("MD046.style"),
 )
-const MD047 = SimpleRule("MD047")
+const MD047 = UnconfigurableRule("MD047")
 const MD048 = ConfigurableRule(
     "MD048",
     Select("MD048.style"),
@@ -240,8 +236,8 @@ const MD055 = ConfigurableRule(
     "MD055",
     Select("MD055.style"),
 )
-const MD056 = SimpleRule("MD056")
-const MD058 = SimpleRule("MD058")
+const MD056 = UnconfigurableRule("MD056")
+const MD058 = UnconfigurableRule("MD058")
 const MD059 = ConfigurableRule(
     "MD059",
     Array_Inline("MD059.prohibited_texts"),
@@ -254,7 +250,7 @@ const MD101 = ConfigurableRule(
     "MD101",
     Switch("MD101.list_items"),
 )
-const MD102 = SimpleRule("MD102")
+const MD102 = UnconfigurableRule("MD102")
 const MD103 = ConfigurableRule(
     "MD103",
     Select("MD103.style"),
@@ -274,7 +270,7 @@ const specificRules = [
     MD058, MD059, MD060, MD101, MD102, MD103,
 ]
 
-const generalRules = Object.entries(generalRulesMap).map(([name, rules]) => Switch(name, { explain: rules.join("、") }))
+const ruleGroups = Object.entries(RULE_GROUPS).map(([group, rules]) => Switch(group, { explain: rules.join("、") }))
 
 const actions = [
     Action("viewRules", _t("$tooltip.viewMarkdownlintRules")),
@@ -284,6 +280,6 @@ const actions = [
 module.exports = [
     UntitledBox(...globalConfigs),
     TitledBox(_t("title.specificRules"), ...specificRules),
-    TitledBox(_t("title.generalRules"), ...generalRules),
+    TitledBox(_t("title.ruleGroups"), ...ruleGroups),
     UntitledBox(...actions),
 ]

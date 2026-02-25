@@ -1,6 +1,6 @@
-class CalloutsPlugin extends BaseCustomPlugin {
+class CalloutsPlugin extends BasePlugin {
     styleTemplate = () => {
-        const callouts = this.config.list.map(c => (
+        const callouts = this.config.CALLOUTS.map(c => (
             `.plugin-callout[callout-type="${c.type}"] {
                 --callout-bg-color: ${c.background_color};
                 --callout-left-line-color: ${c.left_line_color};
@@ -10,14 +10,14 @@ class CalloutsPlugin extends BaseCustomPlugin {
         const hoverCss = `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }`
         const colorCss = `.plugin-callout > p:first-child span:first-child { color: var(--callout-left-line-color); }
                .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`
-        const hover = this.config.hover_to_show_fold_callout ? hoverCss : ""
-        const color = this.config.set_title_color ? colorCss : ""
+        const hover = this.config.HOVER_TO_SHOW_FOLD_CALLOUT ? hoverCss : ""
+        const color = this.config.SET_TITLE_COLOR ? colorCss : ""
         return { callouts, hover, color }
     }
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.setCallouts)
-        this.utils.exportHelper.register("callouts", this.beforeExport, this.afterExport)
+        this.utils.exportHelper.register(this.fixedName, this.beforeExport, this.afterExport)
     }
 
     setCallouts = () => {
@@ -36,7 +36,7 @@ class CalloutsPlugin extends BaseCustomPlugin {
         })
     }
 
-    callback = anchorNode => this.utils.insertText(anchorNode, this.config.template)
+    call = () => this.utils.insertText(null, this.config.TEMPLATE)
 
     check = args => {
         const isIgnoreType = args?.[0]?.type === "html-plain"
@@ -49,13 +49,13 @@ class CalloutsPlugin extends BaseCustomPlugin {
 
         const extra = `
             @font-face {
-                font-family: "${this.config.font_family}";
-                src: url("${this.config.network_icon_url}");
+                font-family: "${this.config.FONT_FAMILY}";
+                src: url("${this.config.NETWORK_ICON_URL}");
                 font-weight: normal;
                 font-style: normal;
             }`
         const css = this.utils.styleTemplater.getStyleContent(this.fixedName)
-        return this.config.use_network_icon_when_exporting
+        return this.config.USE_NETWORK_ICON_WHEN_EXPORTING
             ? extra + css
             : css.replace(/--callout-icon: ".*?";/g, "")
     }

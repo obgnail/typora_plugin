@@ -1,7 +1,7 @@
-class ABCPlugin extends BaseCustomPlugin {
+class ABCPlugin extends BasePlugin {
     init = () => this.ABCJS = null
 
-    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
+    call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     process = () => {
         const parser = this.utils.thirdPartyDiagramParser

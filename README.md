@@ -257,7 +257,7 @@ Function: Typora's sidebar cannot display both [File] and [Outline] simultaneous
 
 Usage:
 
-- Method 1: Less Used Plugins -> Outline
+- Method 1: Right-click menu -> Less Used Plugins -> Outline
 - Method 2: Right-click the [Outline] button on the sidebar
 
 
@@ -351,13 +351,13 @@ Usage: Right-click menu -> Less Used Plugins -> preferences
 
 ### echarts: Provide Echarts Support
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Echarts
+Usage: Right-click menu -> Language plugins -> Echarts
 
 ![echarts](assets/echarts.png)
 
 ### chart: Provide Chart.js Support
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Chart
+Usage: Right-click menu -> Language plugins -> Chart
 
 ![chart](./assets/chart.png)
 
@@ -367,19 +367,19 @@ Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Chart
 
 ### abc: Provide abc.js Support
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> ABC
+Usage: Right-click menu -> Language plugins -> ABC
 
 ![abcjs](./assets/abcjs.png)
 
 ### calendar: Provide tui.Calendar Support
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Calendar
+Usage: Right-click menu -> Language plugins -> Calendar
 
 ![calendar](./assets/calendar.png)
 
 ### wavedrom: Provide WaveDrom Support
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Wavedrom
+Usage: Right-click menu -> Language plugins -> Wavedrom
 
 ![wavedrom](./assets/wavedrom.png)
 
@@ -387,11 +387,11 @@ Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Wavedrom
 
 Function: Use markdown to create PPT.
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Marp
+Usage: Right-click menu -> Language plugins -> Marp
 
 ### plantUML: Provide PlantUML Support
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> PlantUML
+Usage: Right-click menu -> Language plugins -> PlantUML
 
 ![plantUML](./assets/plantUML.png)
 
@@ -404,7 +404,7 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 
 ### callouts: Provide Callouts Support
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Callouts
+Usage: Right-click menu -> Often Used Plugins -> Callouts
 
 ![callouts](./assets/callouts.png)
 

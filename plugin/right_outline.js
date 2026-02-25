@@ -196,7 +196,7 @@ class RightOutlinePlugin extends BasePlugin {
         onDrag()
     }
 
-    call = anchorNode => this.toggleModal()
+    call = () => this.toggleModal()
 
     isModalShown = () => this.utils.isShown(this.entities.modal)
 

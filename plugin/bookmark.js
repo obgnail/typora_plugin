@@ -96,7 +96,7 @@ class BookmarkPlugin extends BasePlugin {
         })
     }
 
-    call = anchorNode => {
+    call = () => {
         this.entities.window.toggle()
         this.refresh()
     }

@@ -2,14 +2,14 @@
     background-color: var(--callout-bg-color);
     border-left: 4px solid var(--callout-left-line-color);
     padding: 10px 10px 10px 15px;
-    box-shadow: ${this.config.box_shadow};
+    box-shadow: ${this.config.BOX_SHADOW};
     overflow: hidden;
 }
 
 .plugin-callout[callout-type] {
-    --callout-bg-color: ${this.config.default_background_color};
-    --callout-left-line-color: ${this.config.default_left_line_color};
-    --callout-icon: "${this.config.default_icon}";
+    --callout-bg-color: ${this.config.DEFAULT_BACKGROUND_COLOR};
+    --callout-left-line-color: ${this.config.DEFAULT_LEFT_LINE_COLOR};
+    --callout-icon: "${this.config.DEFAULT_ICON}";
 }
 
 .plugin-callout > p:first-child {
@@ -19,7 +19,7 @@
 }
 
 .plugin-callout > p:first-child::before {
-    font-family: ${this.config.font_family};
+    font-family: ${this.config.FONT_FAMILY};
     content: var(--callout-icon);
     margin-right: 0.5em;
 }

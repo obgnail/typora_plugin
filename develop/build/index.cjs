@@ -3,10 +3,13 @@
  * To maintain the independence of plugin, distributed dependencies are used.
  */
 const path = require("path")
+const fs = require("fs-extra")
 const esbuild = require("esbuild")
+const { minimatch } = require("minimatch")
 
 const ENV = {
     BUILD_DIR: __dirname,
+    DEVELOP_DIR: path.dirname(__dirname),
     ROOT_DIR: path.dirname(path.dirname(__dirname)),
     SHARED_LIB_DIR: "plugin/global/core/lib",
 }
@@ -20,19 +23,26 @@ const ESBUILD_OPTIONS = {
     sourcemap: false,
 }
 
-const sharedLib = (entryFile) => {
-    const name = path.basename(entryFile, path.extname(entryFile))
-    return { entry: entryFile, out: `${ENV.SHARED_LIB_DIR}/${name}.js` }
+const sharedLib = (entry, assets = []) => {
+    const name = path.basename(entry, path.extname(entry))
+    const out = assets.length > 0
+        ? `${ENV.SHARED_LIB_DIR}/${name}/${name}.js`
+        : `${ENV.SHARED_LIB_DIR}/${name}.js`
+    return { entry, out, assets }
 }
 
 const SHARED_LIBS_CONFIG = {
     "js-yaml": sharedLib("js-yaml.cjs"),
-    "katex": sharedLib("katex.cjs"),
     "markdown-it": sharedLib("markdown-it.cjs"),
     "smol-toml": sharedLib("smol-toml.mjs"),
     "node-fetch-commonjs": sharedLib("node-fetch-commonjs.cjs"),
     "https-proxy-agent": sharedLib("https-proxy-agent.mjs"),
+    "micromark": sharedLib("micromark.mjs"),
     "mdast": sharedLib("mdast.mjs"),
+    "katex": sharedLib("katex.cjs", [
+        { src: "node_modules/katex/dist/katex.min.css", dst: "katex.min.css" },
+        { src: "node_modules/katex/dist/fonts", dst: "fonts", pattern: "*.woff2" },
+    ]),
 }
 
 const CUSTOM_TASKS_CONFIG = {
@@ -54,11 +64,11 @@ const CUSTOM_TASKS_CONFIG = {
     },
     "abc": {
         entry: "abc.mjs",
-        out: "plugin/custom/plugins/abc/abcjs-basic-min.js"
+        out: "plugin/abc/abcjs-basic-min.js"
     },
     "marp-core": {
         entry: "marp-core.mjs",
-        out: "plugin/custom/plugins/marp/marp-core.min.js"
+        out: "plugin/marp/marp-core.min.js"
     },
     "markdownlint": {
         entry: "markdownlint.mjs",
@@ -77,10 +87,15 @@ function generateBuildData(configMap, isShared) {
         if (!config.entry || !config.out) {
             throw new Error(`Invalid config for "${name}"`)
         }
-        tasks[name] = {
-            entryPoints: [path.join(ENV.BUILD_DIR, config.entry)],
-            outfile: path.join(ENV.ROOT_DIR, config.out),
-        }
+
+        const entryPoints = [path.join(ENV.BUILD_DIR, config.entry)]
+        const outfile = path.join(ENV.ROOT_DIR, config.out)
+        const assets = (config.assets || []).map(asset => ({
+            ...asset,
+            srcAbs: path.join(ENV.DEVELOP_DIR, asset.src),
+            dstAbs: path.join(path.dirname(outfile), asset.dst)
+        }))
+        tasks[name] = { entryPoints, outfile, assets }
         if (isShared) {
             registry[name] = config.out
         }
@@ -135,6 +150,17 @@ function createAliasPlugin(registry, currentOutfile) {
     }
 }
 
+async function copyAssets(assets) {
+    await Promise.all(assets.map(async (asset) => {
+        const filterFn = (currentSrc) => {
+            return (!asset.pattern || fs.statSync(currentSrc).isDirectory())
+                ? true
+                : minimatch(path.relative(asset.srcAbs, currentSrc), asset.pattern, { matchBase: true })
+        }
+        return fs.copy(asset.srcAbs, asset.dstAbs, { overwrite: true, filter: filterFn })
+    }))
+}
+
 async function build() {
     const sharedData = generateBuildData(SHARED_LIBS_CONFIG, true)
     const customData = generateBuildData(CUSTOM_TASKS_CONFIG, false)
@@ -154,11 +180,12 @@ async function build() {
     console.time("Build Time")
 
     try {
-        const promises = tasksToRun.map(async task => {
+        await Promise.all(tasksToRun.map(async task => {
+            const { assets, ...taskConfig } = task
             const alias = createAliasPlugin(globalRegistry, task.outfile)
             const buildOptions = {
                 ...ESBUILD_OPTIONS,
-                ...task,
+                ...taskConfig,
                 plugins: [alias],
                 metafile: analyze,
             }
@@ -170,9 +197,12 @@ async function build() {
                 console.log(text)
             }
 
+            if (assets && assets.length > 0) {
+                await copyAssets(assets)
+            }
+
             return result
-        })
-        await Promise.all(promises)
+        }))
         console.timeEnd("Build Time")
         console.log("\x1b[32m✔ Build success!\x1b[0m")
     } catch (err) {

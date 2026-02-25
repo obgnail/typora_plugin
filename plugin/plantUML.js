@@ -1,5 +1,5 @@
-class PlantUMLPlugin extends BaseCustomPlugin {
-    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
+class PlantUMLPlugin extends BasePlugin {
+    call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     process = () => {
         const parser = this.utils.thirdPartyDiagramParser
@@ -39,24 +39,14 @@ class PlantUMLPlugin extends BaseCustomPlugin {
 
     lazyLoad = () => {
         const zlib = require("zlib")
-        const BASE64_TO_PLANTUML_MAP = {
-            'A': '0', 'B': '1', 'C': '2', 'D': '3', 'E': '4', 'F': '5', 'G': '6', 'H': '7',
-            'I': '8', 'J': '9', 'K': 'A', 'L': 'B', 'M': 'C', 'N': 'D', 'O': 'E', 'P': 'F',
-            'Q': 'G', 'R': 'H', 'S': 'I', 'T': 'J', 'U': 'K', 'V': 'L', 'W': 'M', 'X': 'N',
-            'Y': 'O', 'Z': 'P', 'a': 'Q', 'b': 'R', 'c': 'S', 'd': 'T', 'e': 'U', 'f': 'V',
-            'g': 'W', 'h': 'X', 'i': 'Y', 'j': 'Z', 'k': 'a', 'l': 'b', 'm': 'c', 'n': 'd',
-            'o': 'e', 'p': 'f', 'q': 'g', 'r': 'h', 's': 'i', 't': 'j', 'u': 'k', 'v': 'l',
-            'w': 'm', 'x': 'n', 'y': 'o', 'z': 'p', '0': 'q', '1': 'r', '2': 's', '3': 't',
-            '4': 'u', '5': 'v', '6': 'w', '7': 'x', '8': 'y', '9': 'z', '+': '-', '/': '_',
-        }
-        const encodeContent = (content) => {
-            const compressed = zlib.deflateRawSync(content)
-            const base64String = compressed.toString("base64")
-            return base64String.replace(/[A-Za-z0-9+/]/g, (char) => BASE64_TO_PLANTUML_MAP[char])
-        }
+        const B64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+        const UML_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
+        const B64_TO_UML = Object.fromEntries(this.utils.zip(B64_CHARS, UML_CHARS))
+        const toUML = c => B64_TO_UML[c]
+        const encode = (text) => zlib.deflateRawSync(text).toString("base64").replace(/[A-Za-z0-9+/]/g, toUML)
+
         this._memorizedRender = this.utils.memoizeLimited(async content => {
-            const encoded = encodeContent(content)
-            const url = `${this.config.SERVER_URL}/${this.config.OUTPUT_FORMAT}/${encoded}`
+            const url = `${this.config.SERVER_URL}/${this.config.OUTPUT_FORMAT}/${encode(content)}`
             const resp = await this.utils.fetch(url, { timeout: this.config.SERVER_TIMEOUT })
             if (!resp.ok) {
                 const errorText = await resp.text()

@@ -31,7 +31,7 @@ const linter = {
         const result = await LIB.lint(op)
         return result.content
     },
-    fix: async ({ content, fixInfo }) => {
+    fix: ({ content, fixInfo }) => {
         if (LIB && fixInfo?.length) {
             return LIB.applyFixes(content, fixInfo)
         }
@@ -47,7 +47,7 @@ self.onmessage = async (event) => {
 
     const fn = linter[action]
     if (!fn) {
-        console.error("get error action:", action)
+        console.error("[Markdownlint] Error action", action)
         return
     }
     const result = await fn(payload)

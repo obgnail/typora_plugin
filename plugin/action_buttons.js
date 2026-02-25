@@ -8,7 +8,7 @@ class ActionButtonsPlugin extends BasePlugin {
         this.buttonGroup = document.querySelector("#plugin-action-buttons")
     }
 
-    call = anchorNode => this.toggle()
+    call = () => this.toggle()
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, this.toggle)

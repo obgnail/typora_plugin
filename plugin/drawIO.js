@@ -1,4 +1,4 @@
-class DrawIOPlugin extends BaseCustomPlugin {
+class DrawIOPlugin extends BasePlugin {
     styleTemplate = () => true
 
     init = () => {
@@ -9,7 +9,7 @@ class DrawIOPlugin extends BaseCustomPlugin {
         }, this.config.MEMORIZED_URL_COUNT)
     }
 
-    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
+    call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     process = () => {
         const parser = this.utils.thirdPartyDiagramParser

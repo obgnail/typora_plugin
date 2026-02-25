@@ -390,12 +390,9 @@ class utils {
     }
 
     static zip = (...arrays) => {
-        const zipped = []
+        if (arrays.length === 0) return []
         const minLength = Math.min(...arrays.map(arr => arr.length))
-        for (let i = 0; i < minLength; i++) {
-            zipped.push(arrays.map(arr => arr[i]))
-        }
-        return zipped
+        return Array.from({ length: minLength }, (_, i) => arrays.map(arr => arr[i]))
     }
 
     static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -1192,6 +1189,11 @@ class utils {
             File.editor.restoreLastCursor()
         }
         File.editor.insertText(content)
+    }
+
+    static insertBlockCode = (anchorNode, lang, content) => {
+        const cnt = ["```", lang, "\n", content, "\n", "```"].join("")
+        this.insertText(anchorNode, cnt)
     }
 
     static createDocumentFragment = elements => {

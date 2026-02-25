@@ -111,7 +111,7 @@ class ImageViewerPlugin extends BasePlugin {
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
-    call = anchorNode => {
+    call = () => {
         if (this.utils.isHidden(this.entities.viewer)) {
             this.show()
         } else {

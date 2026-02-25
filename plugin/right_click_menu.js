@@ -230,8 +230,9 @@ class RightClickMenuPlugin extends BasePlugin {
             const third = document.querySelector(`.plugin-menu-third[data-plugin="${fixedName}"]`)
             const noStaticActions = third && third.children.length === 0
             let dynamicActions = that.utils.updatePluginDynamicActions(fixedName)
-            if (!dynamicActions && noStaticActions) {
-                dynamicActions = [{ act_name: this.unavailableActName, act_value: this.unavailableActValue, act_disabled: true }]
+            const noDynamicActions = !dynamicActions || dynamicActions.length === 0
+            if (noDynamicActions && noStaticActions) {
+                dynamicActions = [{ act_name: that.unavailableActName, act_value: that.unavailableActValue, act_disabled: true }]
             }
             if (dynamicActions && third) {
                 const templates = dynamicActions.map(act => that._thirdLiTemplate(act, true))

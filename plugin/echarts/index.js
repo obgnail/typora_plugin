@@ -1,7 +1,7 @@
-class EchartsPlugin extends BaseCustomPlugin {
+class EchartsPlugin extends BasePlugin {
     init = () => this.echartsPkg = null
 
-    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
+    call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     process = () => {
         const parser = this.utils.thirdPartyDiagramParser

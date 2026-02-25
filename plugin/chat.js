@@ -1,7 +1,7 @@
-class ChatPlugin extends BaseCustomPlugin {
+class ChatPlugin extends BasePlugin {
     styleTemplate = () => true
 
-    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
+    call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     process = () => {
         this.utils.diagramParser.register({

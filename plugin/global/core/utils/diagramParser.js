@@ -295,7 +295,8 @@ class DiagramParser {
     onFocus = () => {
         let dontFocus = true
 
-        const enableFocus = () => {
+        const focusFence = (enhance) => {
+            enhance?.querySelectorAll(".enhance-btn").forEach(el => el.style.display = "")
             dontFocus = false
             setTimeout(() => dontFocus = true, 200)
         }
@@ -304,9 +305,8 @@ class DiagramParser {
             if (!dontFocus || !node) return
             const cid = ("string" == typeof node) ? node : node.id
             if (!cid) return
-            const lang = File.editor.findElemById(cid).attr("lang")?.trim().toLowerCase()
-            if (!lang) return
-            if (this.parsers.get(lang)?.interactiveMode) {
+            const lang = File.editor.findElemById(cid)?.attr("lang")?.trim().toLowerCase()
+            if (lang && this.parsers.get(lang)?.interactiveMode) {
                 return this.utils.stopCallError
             }
         }
@@ -314,74 +314,48 @@ class DiagramParser {
         this.utils.decorate(() => File?.editor?.fences, "focus", stopCall)
         this.utils.decorate(() => File?.editor, "refocus", stopCall)
 
-        const showAllTButton = fence => {
-            const enhance = fence.querySelector(".fence-enhance")
-            if (!enhance) return
-            enhance.querySelectorAll(".enhance-btn").forEach(el => el.style.display = "")
-            return enhance
-        }
-
-        const showEditButtonOnly = fence => {
-            const enhance = fence.querySelector(".fence-enhance")
-            if (!enhance) return
-            enhance.style.display = ""
-            enhance.querySelectorAll(".enhance-btn").forEach(el => el.style.display = "none")
-            enhance.querySelector('.enhance-btn[action="edit"]').style.display = ""
-        }
-
-        const hideAllButton = fence => {
-            const enhance = showAllTButton(fence)
-            if (!enhance) return
-            const editButton = enhance.querySelector('.enhance-btn[action="edit"]')
-            if (editButton) {
-                editButton.style.display = "none"
-            }
-            enhance.style.display = "none"
-        }
-
-        const registerButton = (action, hint, iconClassName, enable, listener, extraFunc) => {
-            const fn = this.utils.getPluginFunction("fence_enhance", "registerButton")
-            fn?.({ action, hint, iconClassName, enable, listener, extraFunc })
-            return !!fn
-        }
-
-        const handleCtrlClick = () => {
-            const ctrlClick = this.exitInteractiveStrategies.includes("ctrl_click_fence")
-            if (!ctrlClick) return
+        const useCtrlClick = this.exitInteractiveStrategies.includes("ctrl_click_fence")
+        const useClickExit = this.exitInteractiveStrategies.includes("click_exit_button") && [...this.parsers.values()].some(p => p.interactiveMode)
+        if (useCtrlClick) {
             this.utils.entities.eWrite.addEventListener("mouseup", ev => {
-                if (this.utils.metaKeyPressed(ev) && ev.target.closest(".md-fences-interactive .md-diagram-panel-preview")) {
-                    showAllTButton(ev.target.closest(".md-fences-interactive"))
-                    enableFocus()
+                if (this.utils.metaKeyPressed(ev)) {
+                    const fence = ev.target.closest(".md-fences-interactive")
+                    if (fence && ev.target.closest(".md-diagram-panel-preview")) {
+                        focusFence(fence.querySelector(".fence-enhance"))
+                    }
                 }
             }, true)
         }
-
-        const handleEditButton = () => {
-            const editBtn = this.exitInteractiveStrategies.includes("click_exit_button")
-            const hasInteractive = Array.from(this.parsers.values()).some(parser => parser.interactiveMode)
-            if (!editBtn || !hasInteractive) return
-
-            const editText = this.i18n.t("global", "edit")
-            const listener = ({ btn }) => {
-                btn.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(el => el.style.display = "")
-                enableFocus()
-            }
-            const ok = registerButton("edit", editText, "fa fa-pencil", false, listener)
-            if (!ok) return
-
-            this.utils.entities.$eWrite.on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
-                showEditButtonOnly(this)
-            }).on("mouseleave", ".md-fences-interactive.md-focus", function () {
-                showEditButtonOnly(this)
-            }).on("mouseleave", ".md-fences-interactive:not(.md-focus)", function () {
-                hideAllButton(this)
-            }).on("mouseenter", ".md-fences-interactive.md-focus", function () {
-                showAllTButton(this)
+        if (useClickExit) {
+            const register = this.utils.getPluginFunction("fence_enhance", "registerButton")
+            register?.({
+                action: "edit",
+                hint: this.i18n.t("global", "edit"),
+                iconClassName: "fa fa-pencil",
+                enable: false,
+                listener: ctx => focusFence(ctx.btn.closest(".fence-enhance")),
             })
+            if (!!register) {
+                const toggleButtons = (fence, mode) => {
+                    const enhance = fence.querySelector(".fence-enhance")
+                    if (!enhance) return
+                    if (mode === "hide") {
+                        enhance.style.display = "none"
+                        return
+                    }
+                    enhance.style.display = ""
+                    const fn = mode === "editOnly"
+                        ? el => el.style.display = el.getAttribute("action") === "edit" ? "" : "none"
+                        : el => el.style.display = ""
+                    enhance.querySelectorAll(".enhance-btn").forEach(fn)
+                }
+                this.utils.entities.$eWrite
+                    .on("mouseenter", ".md-fences-interactive:not(.md-focus)", ev => toggleButtons(ev.currentTarget, "editOnly"))
+                    .on("mouseleave", ".md-fences-interactive.md-focus", ev => toggleButtons(ev.currentTarget, "editOnly"))
+                    .on("mouseleave", ".md-fences-interactive:not(.md-focus)", ev => toggleButtons(ev.currentTarget, "hide"))
+                    .on("mouseenter", ".md-fences-interactive.md-focus", ev => toggleButtons(ev.currentTarget, "all"))
+            }
         }
-
-        handleCtrlClick()
-        handleEditButton()
     }
 
     onChangeFile = () => {
