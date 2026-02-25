@@ -52,7 +52,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 33   | chat                | Chat                                                         |                    |
 | 34   | file_counter        | Show file count in directory                                 |                    |
 | 35   | auto_number         | Auto Numbering                                               |                    |
-| 36   | imageReviewer       | Image reviewer                                               |                    |
+| 36   | image_viewer        | Image reviewer                                               |                    |
 | 37   | cjk_symbol_pairing  | Automatic completion of CJK symbols                          |                    |
 | 38   | resize_table        | Adjust table row height and column width                     |                    |
 | 39   | resize_image        | Adjust image display size                                    |                    |
@@ -462,14 +462,14 @@ Unlike other implementations using theme CSS, this plugin perfectly solves the p
 
 
 
-### imageReviewer
+### image_viewer
 
 Function: One-stop image viewing, and provides simple image editing.
 
 Usage:
 
-- Method 1: Click the "View Image" button at the bottom right corner
-- Method 2: Right-click menu -> Often Used Plugins -> Secondary plugins -> Image Viewer
+- Method 1: Click the "View Image" button in the bottom right corner
+- Method 2: Right-click menu -> Less Used Plugins -> Image Viewer
 
 ![image-reviewer](./assets/image-reviewer.png)
 

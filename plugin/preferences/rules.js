@@ -171,8 +171,8 @@ module.exports = {
     templater: {
         template_folders: each([required, path]),
     },
-    imageReviewer: {
-        thumbnail_height: required,
+    image_viewer: {
+        THUMBNAIL_HEIGHT: required,
     },
     markdownlint: {
         BUTTON_WIDTH: required,

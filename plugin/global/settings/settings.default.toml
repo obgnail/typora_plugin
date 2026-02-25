@@ -1736,6 +1736,231 @@ RIGHT_CLICK_TABLE_TO_TOGGLE_SOURCE_MODE = true
 RIGHT_CLICK_BUTTON_TO_FIX = true
 
 
+################### image_viewer ###################
+[image_viewer]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 快捷键 -------------------
+# 快捷键：弹窗
+#   留空表示不设置快捷键
+HOTKEY = ""
+
+# ------------------- 查看器交互 -------------------
+# 点击遮罩层空白处是否退出图片查看器
+#   true:  点击遮罩层空白处退出
+#   false: 点击遮罩层空白处不退出
+CLICK_MASK_TO_EXIT = true
+
+# 是否跳过加载失败的图片
+#   true:  跳过加载失败的图片
+#   false: 不跳过加载失败的图片，加载失败的图片显示占位符
+FILTER_ERROR_IMAGE = true
+
+# ------------------- 界面元素 -------------------
+# 是否显示缩略图导航列表
+#   true:  显示缩略图导航列表
+#   false: 不显示缩略图导航列表
+SHOW_THUMBNAIL_NAV = true
+
+# 工具栏的位置
+#   bottom: 工具栏显示在底部
+#   top:    工具栏显示在顶部
+TOOL_POSITION = "top"
+
+# 进入查看器后，第一张图片的选择策略
+#   - inViewBoxImage:      当前视图里第一张图片
+#   - closestViewBoxImage: 距离当前视图中心最近的一张图片
+#   - firstImage:          整篇文档的第一张图片
+#   策略是一个列表，按照顺序优先级选择
+#   例如：["inViewBoxImage", "firstImage"] 表示首先寻找当前视图里第一张图片，若找不到，则使用文档的第一张图片
+FIRST_IMAGE_STRATEGIES = ["inViewBoxImage", "firstImage"]
+
+# 在工具栏左侧，展示的图片信息
+#   - index: 图片索引
+#   - title: 图片名称
+#   - size:  图片大小
+#   例如： ["index", "title", "size"] 将会显示图片索引、图片名称和图片大小
+SHOW_MESSAGE = ["index", "title", "size"]
+
+# ------------------- 图片操作 -------------------
+# 每次缩放的比率
+#   例如： 0.1 表示每次缩放 10%
+ZOOM_SCALE = 0.1
+
+# 每次旋转的角度（单位：度）
+#   例如： 10 表示每次旋转 10 度
+ROTATE_SCALE = 10
+
+# 每次倾斜的角度（单位：度）
+#   例如： 1 表示每次倾斜 1 度
+SKEW_SCALE = 1
+
+# 每次移动的像素值
+#   例如： 10 表示每次移动 10 像素
+TRANSLATE_SCALE = 10
+
+# 轮播图片时的停留时间（单位：秒）
+#   例如： 3 表示每次停留 3 秒
+PLAY_SECONDS = 3
+
+# ------------------- 视觉效果 -------------------
+# 遮罩层的不透明度，取值范围 0~1
+#   例如： 0.6 表示遮罩层为 60% 不透明
+MASK_BACKGROUND_OPACITY = 0.6
+
+# 图片最大宽度占页面宽度的百分比
+#   例如： 80 表示图片最多占据 80% 的页面宽度
+IMAGE_MAX_WIDTH = 80
+
+# 图片最大高度占页面高度的百分比
+#   例如： 70 表示图片最多占据 70% 的页面高度
+IMAGE_MAX_HEIGHT = 70
+
+# 背景模糊像素等级：数值越大越模糊（为 0 则不模糊）
+#   例如： 6 表示背景模糊 6 像素
+BLUR_LEVEL = 6
+
+# ------------------- 缩略图 -------------------
+# 缩略图列表的高度
+#   例如： "80px" 表示缩略图列表高度为 80 像素
+THUMBNAIL_HEIGHT = "80px"
+
+# 缩略图额外预览几个图片
+#   例如： 3 表示在缩略图导航栏中，当前选中图片前后各额外展示 3 张缩略图
+THUMBNAIL_SCROLL_PADDING_COUNT = 3
+
+# 缩略图如何适应容器尺寸
+#   - fill:       拉伸以适配容器，可能会导致图片变形
+#   - contain:    保持比例缩放图片，保证图片完整显示
+#   - cover:      保持图片原有尺寸，超出容器的部分会被裁剪
+#   - scale-down: 类似于 contain，但是当图片尺寸小于容器尺寸时，不会放大
+THUMBNAIL_OBJECT_FIT = "scale-down"
+
+# ------------------- 瀑布流 -------------------
+# 瀑布流格式的列数，仅当缩略图导航显示为瀑布流时生效
+WATER_FALL_COLUMNS = 5
+
+# ------------------- 图片操作 -------------------
+# 图片支持的操作，以下为可选的操作类型
+#  - dummy         : 无功能
+#  - close         : 关闭
+#  - download      : 下载网络图片（若此图片是本地图片，则失效）
+#  - scroll        : 定位到文档
+#  - play          : 轮播
+#  - location      : 打开图片路径
+#  - nextImage     : 下一张图
+#  - previousImage : 上一张图
+#  - firstImage    : 第一张图
+#  - lastImage     : 最后一张图
+#  - thumbnailNav  : 显示/隐藏缩略图列表
+#  - waterFall     : 显示/隐藏瀑布流
+#  - zoomIn        : 放大图片
+#  - zoomOut       : 缩小图片
+#  - rotateLeft    : 图片向左旋转
+#  - rotateRight   : 图片向右旋转
+#  - hFlip         : 水平翻转图片
+#  - vFlip         : 垂直翻转图片
+#  - translateLeft : 向左移动
+#  - translateRight: 向右移动
+#  - translateUp   : 向上移动
+#  - translateDown : 向下移动
+#  - incHSkew      : 图片增大水平倾斜
+#  - decHSkew      : 图片减小水平倾斜
+#  - incVSkew      : 图片增大垂直倾斜
+#  - decVSkew      : 图片减小垂直倾斜
+#  - originSize    : 还原图片尺寸
+#  - fixScreen     : 图片大小适配屏幕
+#  - autoSize      : 图片大小在【原先尺寸】和【适配屏幕】之间切换
+#  - restore       : 图片恢复为最初状态
+
+# 图片的操作提供多个入口
+#  - 工具栏按钮
+#  - 鼠标左中右键（可同时配合 ctrl、shift、alt 等修饰按键）
+#  - 快捷键
+
+# ------------------- 工具栏 -------------------
+# 工具栏按钮功能配置
+#   - 可选项比上面的功能多了一个 info，用于提示
+#   - 若是本地图片，download 按钮会自动隐藏
+TOOL_FUNCTION = ["info", "waterFall", "thumbnailNav", "download", "play", "firstImage", "lastImage", "restore", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
+
+# ------------------- 鼠标操作 -------------------
+# 鼠标点击图片绑定的功能
+#   数组三项分别对应鼠标左键、中键、右键
+MOUSEDOWN_FUNCTION = ["nextImage", "close", "previousImage"]
+
+# ctrl + 鼠标点击图片时，绑定的功能
+#   数组三项分别对应鼠标左键、中键、右键
+CTRL_MOUSEDOWN_FUNCTION = ["hFlip", "dummy", "vFlip"]
+
+# shift + 鼠标点击图片时，绑定的功能
+#   数组三项分别对应鼠标左键、中键、右键
+SHIFT_MOUSEDOWN_FUNCTION = ["autoSize", "dummy", "dummy"]
+
+# alt + 鼠标点击图片时，绑定的功能
+#   数组三项分别对应鼠标左键、中键、右键
+ALT_MOUSEDOWN_FUNCTION = ["restore", "location", "dummy"]
+
+# 当鼠标位于图片时，上下滚动绑定的功能
+#   数组两项分别对应向上滚动、向下滚动
+WHEEL_FUNCTION = ["zoomIn", "zoomOut"]
+
+# 当鼠标位于图片时，ctrl + 上下滚动绑定的功能
+#   数组两项分别对应向上滚动、向下滚动
+CTRL_WHEEL_FUNCTION = ["rotateRight", "rotateLeft"]
+
+# 当鼠标位于图片时，shift + 上下滚动绑定的功能
+#   数组两项分别对应向上滚动、向下滚动
+SHIFT_WHEEL_FUNCTION = ["incHSkew", "decHSkew"]
+
+# 当鼠标位于图片时，alt + 上下滚动绑定的功能
+#   数组两项分别对应向上滚动、向下滚动
+ALT_WHEEL_FUNCTION = ["incVSkew", "decVSkew"]
+
+# ------------------- 快捷键 -------------------
+# 快捷键配置 (仅在进入查看器后可用)
+#   数组每一项都为一个二元数组，第一项为快捷键，第二项为绑定的功能
+HOTKEY_FUNCTION = [
+    # 基础
+    { hotkey = "j", fn = "nextImage" },
+    { hotkey = "k", fn = "previousImage" },
+    { hotkey = "=", fn = "nextImage" },
+    { hotkey = "-", fn = "previousImage" },
+    { hotkey = "shift+j", fn = "lastImage" },
+    { hotkey = "shift+k", fn = "firstImage" },
+    { hotkey = "l", fn = "scroll" },
+    { hotkey = "q", fn = "close" },
+    { hotkey = "escape", fn = "close" },
+    { hotkey = " ", fn = "play" },
+    # 翻转
+    { hotkey = "h", fn = "hFlip" },
+    { hotkey = "v", fn = "vFlip" },
+    # 旋转
+    { hotkey = "r", fn = "rotateRight" },
+    { hotkey = "shift+r", fn = "rotateLeft" },
+    # 移动
+    { hotkey = "ArrowUp", fn = "translateUp" },
+    { hotkey = "ArrowDown", fn = "translateDown" },
+    { hotkey = "ArrowLeft", fn = "translateLeft" },
+    { hotkey = "ArrowRight", fn = "translateRight" },
+    { hotkey = "w", fn = "translateUp" },
+    { hotkey = "s", fn = "translateDown" },
+    { hotkey = "a", fn = "translateLeft" },
+    { hotkey = "d", fn = "translateRight" },
+    # 大小
+    { hotkey = "z", fn = "originSize" },
+    { hotkey = "x", fn = "zoomIn" },
+    { hotkey = "c", fn = "zoomOut" },
+    { hotkey = "shift++", fn = "zoomIn" },
+    { hotkey = "shift+_", fn = "zoomOut" },
+]
+
+
 ################### truncate_text ###################
 [truncate_text]
 # ------------------- 基础 -------------------
@@ -2371,6 +2596,7 @@ LIST = [
     "ripgrep",
     "article_uploader",
     "bookmark",
+    "image_viewer",
     "preferences",
 ]
 [[right_click_menu.MENUS]]
@@ -2434,7 +2660,7 @@ BUTTONS = [
     { ICON = "fa fa-sitemap", CALLBACK = "markmap.toggle_toc" },
     { ICON = "fa fa-font", CALLBACK = "text_stylize" },
     { ICON = "fa fa-search", CALLBACK = "search_multi" },
-    { ICON = "fa fa-image", CALLBACK = "imageReviewer" },
+    { ICON = "fa fa-image", CALLBACK = "image_viewer" },
     { ICON = "fa fa-filter", CALLBACK = "resource_manager" },
     { ICON = "fa fa-wrench", CALLBACK = "preferences" },
     { ICON = "fa fa-bookmark", CALLBACK = "bookmark" },

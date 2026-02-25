@@ -52,7 +52,7 @@
 | 33   | chat                | 聊天                                       |          |
 | 34   | file_counter        | 显示目录下的文件数                         |          |
 | 35   | auto_number         | 章节、表格、图片、代码块等自动编号         |          |
-| 36   | imageReviewer       | 图片查看器                                 |          |
+| 36   | image_viewer        | 图片查看器                                 |          |
 | 37   | cjk_symbol_pairing  | 中文符号配对                               |          |
 | 38   | resize_table        | 调整表格行高列宽                           |          |
 | 39   | resize_image        | 调整图片显示大小                           |          |
@@ -514,14 +514,14 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 
 
 
-### imageReviewer：图片查看器
+### image_viewer：图片查看器
 
 功能：一站式图片查看，并且提供简单图片编辑。
 
 使用方式：
 
 - 方式一：点击右下角【查看图片】按钮
-- 方式二：右键菜单 -> 常用插件 ->  二级插件 -> 图片查看器
+- 方式二：右键菜单 -> 少用插件 -> 图片查看器
 
 ![image-reviewer](./assets/image-reviewer.png)
 

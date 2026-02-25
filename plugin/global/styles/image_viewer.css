@@ -1,4 +1,4 @@
-.plugin-cover-content {
+.plugin-viewer-cover {
     position: fixed;
     top: 0;
     right: 0;
@@ -8,12 +8,12 @@
     z-index: 99997;
 }
 
-#plugin-image-reviewer .review-mask {
-    background-color: rgba(0, 0, 0, ${this.config.mask_background_opacity});
+#plugin-image-viewer .viewer-mask {
+    background-color: rgba(0, 0, 0, ${this.config.MASK_BACKGROUND_OPACITY});
     backdrop-filter: blur(${blurLevel});
 }
 
-#plugin-image-reviewer .review-image {
+#plugin-image-viewer .viewer-image {
     position: fixed;
     z-index: 99998;
     height: auto;
@@ -23,7 +23,7 @@
     transition: transform 0.2s ease 0s;
 }
 
-#plugin-image-reviewer .review-item {
+#plugin-image-viewer .viewer-item {
     position: absolute;
     z-index: 99999;
     top: 50%;
@@ -41,21 +41,21 @@
     cursor: pointer;
 }
 
-#plugin-image-reviewer .review-item:hover {
+#plugin-image-viewer .viewer-item:hover {
     background-color: rgba(64, 64, 64, .7);
 }
 
-#plugin-image-reviewer .review-item[action="previousImage"] {
+#plugin-image-viewer .viewer-item[action="previousImage"] {
     left: 24px;
 }
 
-#plugin-image-reviewer .review-item[action="nextImage"] {
+#plugin-image-viewer .viewer-item[action="nextImage"] {
     right: 24px;
 }
 
-#plugin-image-reviewer .review-nav {
-    --review-thumbnail-width: ${this.config.thumbnail_height};
-    --review-thumbnail-padding-count: ${this.config.thumbnail_scroll_padding_count};
+#plugin-image-viewer .viewer-nav {
+    --viewer-thumbnail-width: ${this.config.THUMBNAIL_HEIGHT};
+    --viewer-thumbnail-padding-count: ${this.config.THUMBNAIL_SCROLL_PADDING_COUNT};
 
     position: fixed;
     display: inline-flex;
@@ -65,29 +65,29 @@
     overflow: hidden;
     background-color: rgba(0, 0, 0, 0.5);
     padding: 0 5px;
-    height: var(--review-thumbnail-width);
-    scroll-padding: calc(var(--review-thumbnail-width) * var(--review-thumbnail-padding-count));
+    height: var(--viewer-thumbnail-width);
+    scroll-padding: calc(var(--viewer-thumbnail-width) * var(--viewer-thumbnail-padding-count));
 }
 
-#plugin-image-reviewer .review-nav .review-thumbnail {
-    width: var(--review-thumbnail-width);
-    height: var(--review-thumbnail-width);
-    object-fit: ${this.config.thumbnail_object_fit};
+#plugin-image-viewer .viewer-nav .viewer-thumbnail {
+    width: var(--viewer-thumbnail-width);
+    height: var(--viewer-thumbnail-width);
+    object-fit: ${this.config.THUMBNAIL_OBJECT_FIT};
     padding: 4px 2px;
     cursor: pointer;
     opacity: 0.35;
 }
 
-#plugin-image-reviewer .review-nav .review-thumbnail:hover,
-#plugin-image-reviewer .review-nav .review-thumbnail.select {
+#plugin-image-viewer .viewer-nav .viewer-thumbnail:hover,
+#plugin-image-viewer .viewer-nav .viewer-thumbnail.select {
     opacity: 1;
 }
 
-#plugin-image-reviewer .review-nav .review-thumbnail.select {
+#plugin-image-viewer .viewer-nav .viewer-thumbnail.select {
     box-shadow: inset 0 0 0 2px #FF7B00;
 }
 
-#plugin-image-reviewer .review-tool {
+#plugin-image-viewer .viewer-tool {
     position: fixed;
     z-index: 99999;
     height: 40px;
@@ -102,25 +102,25 @@
     color: #ffffff;
 }
 
-#plugin-image-reviewer .review-message {
+#plugin-image-viewer .viewer-message {
     display: flex;
     place-items: center;
 }
 
-#plugin-image-reviewer .review-message > div {
+#plugin-image-viewer .viewer-message > div {
     margin-right: 1em;
 }
 
-#plugin-image-reviewer .review-title {
+#plugin-image-viewer .viewer-title {
     font-weight: bolder;
 }
 
-#plugin-image-reviewer .review-size {
+#plugin-image-viewer .viewer-size {
     font-size: 0.8em;
     color: #919191;
 }
 
-#plugin-image-reviewer .review-options {
+#plugin-image-viewer .viewer-options {
     display: grid;
     gap: 1em;
     place-items: center;
@@ -128,16 +128,16 @@
     font-size: large;
 }
 
-#plugin-image-reviewer .review-options > i {
+#plugin-image-viewer .viewer-options > i {
     cursor: pointer;
 }
 
-#plugin-image-reviewer .review-options > i.active,
-#plugin-image-reviewer .review-options > i:hover {
+#plugin-image-viewer .viewer-options > i.active,
+#plugin-image-viewer .viewer-options > i:hover {
     color: chartreuse;
 }
 
-#plugin-image-reviewer .review-water-fall {
+#plugin-image-viewer .viewer-water-fall {
     position: fixed;
     width: 100vw;
     height: 100vh;
@@ -145,17 +145,17 @@
     overflow-y: auto;
 }
 
-#plugin-image-reviewer .review-water-fall-container {
+#plugin-image-viewer .viewer-water-fall-container {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
     padding: 10px;
 }
 
-#plugin-image-reviewer .review-water-fall-col {
+#plugin-image-viewer .viewer-water-fall-col {
     margin: 3px
 }
 
-#plugin-image-reviewer .review-water-fall-item {
+#plugin-image-viewer .viewer-water-fall-item {
     margin-bottom: 12px;
 }

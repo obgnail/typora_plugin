@@ -410,21 +410,20 @@ class ModeTool extends BaseTool {
             { fixedName: "sourceMode", callback: () => File.toggleSourceMode() },
             { fixedName: "focusMode", callback: () => File.editor.toggleFocusMode() },
             { fixedName: "typewriterMode", callback: () => File.editor.toggleTypeWriterMode() },
+            { fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools") },
         ]
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            const readonly = this.utils.getBasePlugin("read_only")
-            const blur = this.utils.getBasePlugin("blur")
-            const dark = this.utils.getBasePlugin("dark")
-            const noImage = this.utils.getBasePlugin("no_image")
-            const image = this.utils.getCustomPlugin("imageReviewer")
-
-            if (readonly) this.modes.push({ fixedName: "readOnlyMode", callback: () => readonly.call() })
-            if (blur) this.modes.push({ fixedName: "blurMode", callback: () => blur.call() })
-            if (dark) this.modes.push({ fixedName: "dark", callback: () => dark.call() })
-            if (image) this.modes.push({ fixedName: "imageReviewer", callback: () => image.callback() })
-            if (noImage) this.modes.push({ fixedName: "no_image", callback: () => noImage.call() })
-            this.modes.push({ fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools") })
-
+            const pluginConfig = [
+                { name: "read_only", fixedName: "readOnlyMode" },
+                { name: "blur", fixedName: "blurMode" },
+                { name: "dark", fixedName: "dark" },
+                { name: "image_viewer", fixedName: "image_viewer" },
+                { name: "no_image", fixedName: "no_image" },
+            ]
+            pluginConfig.forEach(({ name, fixedName }) => {
+                const plugin = this.utils.getBasePlugin(name)
+                if (plugin) this.modes.push({ fixedName, callback: () => plugin.call() })
+            })
             this.modes.forEach(mode => {
                 const name = this.i18n.t("tool.mode." + mode.fixedName)
                 mode.showName = `${name} - ${mode.fixedName}`
