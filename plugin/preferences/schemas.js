@@ -1957,29 +1957,29 @@ const schema_markdownlint = [
     box_settingHandler,
 ]
 
-const schema_quickButton = [
-    box_customPluginFull,
+const schema_action_buttons = [
+    box_basePluginFull,
     TitledBox(
         "buttonStyle",
-        Text("button_size"),
-        Text("button_icon_size"),
-        Text("button_border_radius"),
-        Text("button_box_shadow"),
-        Text("button_box_shadow_on_hover"),
+        Text("BUTTON_SIZE"),
+        Text("BUTTON_ICON_SIZE"),
+        Text("BUTTON_BORDER_RADIUS"),
+        Text("BUTTON_BOX_SHADOW"),
+        Text("BUTTON_BOX_SHADOW_ON_HOVER"),
         Divider("layout"),
-        Text("button_gap"),
-        Text("position_right"),
-        Text("position_bottom"),
+        Text("BUTTON_GAP"),
+        Text("POSITION_RIGHT"),
+        Text("POSITION_BOTTOM"),
         Divider("interaction"),
-        Switch("support_right_click"),
-        Switch("hide_button_hint"),
+        Switch("SUPPORT_RIGHT_CLICK"),
+        Switch("HIDE_BUTTON_HINT"),
     ),
     TableBox(
-        "buttons",
+        "BUTTONS",
         ["coordinate", "icon"],
         [
             UntitledBox(
-                Switch("disable"),
+                Switch("enable"),
                 Integer("coordinate.0", { tooltip: "coord0", min: 0 }),
                 Integer("coordinate.1", { tooltip: "coord1", min: 0 }),
                 Icon("icon"),
@@ -1992,7 +1992,7 @@ const schema_quickButton = [
             CodeBox("evil", { placeholder: "customCallback", dependencies: Dep.bool("callback", false) }),
         ],
         {
-            disable: false,
+            enable: true,
             coordinate: [0, 0],
             icon: "fa fa-bomb",
             size: "17px",
@@ -2036,6 +2036,7 @@ const schemas = {
     resource_manager: schema_resource_manager,
     easy_modify: schema_easy_modify,
     custom: schema_custom,
+    action_buttons: schema_action_buttons,
     slash_commands: schema_slash_commands,
     cjk_symbol_pairing: schema_cjk_symbol_pairing,
     right_click_menu: schema_right_click_menu,
@@ -2067,7 +2068,6 @@ const schemas = {
     callouts: schema_callouts,
     templater: schema_templater,
     toc: schema_toc,
-    quickButton: schema_quickButton,
 }
 
 const i18n = (

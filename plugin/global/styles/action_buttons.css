@@ -1,0 +1,48 @@
+.ty-footer {
+    z-index: 9999 !important;
+}
+
+#plugin-action-buttons {
+    position: fixed;
+    display: grid;
+    z-index: 9991;
+    text-align: center;
+    pointer-events: none;
+    grid-template-columns: repeat(${colCount}, 1fr);
+    grid-template-rows: repeat(${rowCount}, 1fr);
+    gap: ${this.config.BUTTON_GAP};
+    right: ${this.config.POSITION_RIGHT};
+    bottom: ${this.config.POSITION_BOTTOM};
+}
+
+#plugin-action-buttons .action-item {
+    cursor: pointer;
+    transition: all 50ms ease-in 0s;
+    pointer-events: auto;
+    width: ${this.config.BUTTON_SIZE};
+    height: ${this.config.BUTTON_SIZE};
+    line-height: ${this.config.BUTTON_SIZE};
+    font-size: ${this.config.BUTTON_ICON_SIZE};
+    box-shadow: ${this.config.BUTTON_BOX_SHADOW};
+    border-radius: ${this.config.BUTTON_BORDER_RADIUS};
+    color: ${buttonColor};
+    background-color: ${buttonBgColor};
+}
+
+#plugin-action-buttons .action-item:hover {
+    transform: translateY(-2px);
+    box-shadow: ${this.config.BUTTON_BOX_SHADOW_ON_HOVER};
+}
+
+#plugin-action-buttons .action-item:active {
+    transform: scale(0.95);
+}
+
+#plugin-action-buttons .action-item i {
+    opacity: 0.8;
+}
+
+#plugin-action-buttons .plu-hidden,
+#plugin-action-buttons .plu-unused {
+    visibility: hidden;
+}

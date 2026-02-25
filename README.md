@@ -75,7 +75,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 56   | static_markers      | Static Markers                                               | ×                  |
 | 57   | custom              | Open platform for user-defined plugins (advanced)            |                    |
 | 58   | hotkeys             | Hotkey registration center (advanced)                        |                    |
-| 59   | quickButton         | Add function buttons in the lower right corner (advanced)    |                    |
+| 59   | action_buttons      | Add function buttons in the lower right corner (advanced)    |                    |
 | 60   | json_rpc            | External control of Typora (advanced)                        | ×                  |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
@@ -145,7 +145,7 @@ All plugins provide four usage methods:
   - Shortcut keys (see `hotkeys` plugin)
 - Mouse enthusiasts:
   - Right-click in the main text area (see `right_click_menu` plugin)
-  - Quick buttons (see `quickButton` plugin)
+  - Quick buttons (see `action_buttons` plugin)
 
 
 ### window_tab: Window Tab Bar
@@ -619,7 +619,7 @@ This plugin disables the auto-hiding feature for syntax markers in WYSIWYG mode.
 
 Function: Bind hotkeys to [any plugin system function] or [any custom function] in a declarative form.
 
-### quickButton: Add Function Buttons to the Bottom Right Corner (Advanced)
+### action_buttons: Add Function Buttons to the Bottom Right Corner (Advanced)
 
 > This plugin is an advanced plugin, only available to users with a JavaScript background.
 

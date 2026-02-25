@@ -271,7 +271,7 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
             slash_commands: ["$label.COMMANDS.callback"],
             hotkeys: ["$label.CUSTOM_HOTKEYS.evil"],
             markdownlint: ["$label.invokeMarkdownlintSettings"],
-            quickButton: ["$label.buttons.evil"],
+            action_buttons: ["$label.buttons.evil"],
         }
         Object.entries(allowedUnusedKeys).forEach(([fixedName, keys]) => {
             keys.forEach(key => allI18NKeys[fixedName].delete(key))

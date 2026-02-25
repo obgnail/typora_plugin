@@ -1,14 +1,14 @@
-class QuickButtonPlugin extends BaseCustomPlugin {
-    html = () => '<div id="plugin-quick-button"></div>'
+class ActionButtonsPlugin extends BasePlugin {
+    html = () => '<div id="plugin-action-buttons"></div>'
 
-    hotkey = () => [this.config.hotkey]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
         this.buttons = new Map()
-        this.buttonGroup = document.querySelector("#plugin-quick-button")
+        this.buttonGroup = document.querySelector("#plugin-action-buttons")
     }
 
-    callback = anchorNode => this.toggle()
+    call = anchorNode => this.toggle()
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, this.toggle)
@@ -32,7 +32,7 @@ class QuickButtonPlugin extends BaseCustomPlugin {
             if (!target) return
             ev.stopPropagation()
             ev.preventDefault()
-            if (ev.button === 2 && this.config.support_right_click) {
+            if (ev.button === 2 && this.config.SUPPORT_RIGHT_CLICK) {
                 [...this.buttonGroup.children]
                     .filter(e => e !== target)
                     .forEach(e => e.classList.toggle("plu-hidden"))
@@ -47,9 +47,9 @@ class QuickButtonPlugin extends BaseCustomPlugin {
     }
 
     registerButtons = () => {
-        this.config.buttons.forEach((btn = {}, idx) => {
-            const { disable = true, coordinate = [], hint, icon, size, color, bgColor, callback = "", evil } = btn
-            if (disable) return
+        this.config.BUTTONS.forEach((btn = {}, idx) => {
+            const { enable, coordinate = [], hint, icon, size, color, bgColor, callback = "", evil } = btn
+            if (!enable) return
 
             const [x, y] = coordinate
             const cb = evil
@@ -80,18 +80,12 @@ class QuickButtonPlugin extends BaseCustomPlugin {
                         i.className = btn.icon
                         item.appendChild(i)
                     }
-                    if (!this.config.hide_button_hint && btn.hint) {
+                    if (!this.config.HIDE_BUTTON_HINT && btn.hint) {
                         item.setAttribute("ty-hint", btn.hint)
                     }
-                    if (btn.size) {
-                        item.style.fontSize = btn.size
-                    }
-                    if (btn.color) {
-                        item.style.color = btn.color
-                    }
-                    if (btn.bgColor) {
-                        item.style.backgroundColor = btn.bgColor
-                    }
+                    if (btn.size) item.style.fontSize = btn.size
+                    if (btn.color) item.style.color = btn.color
+                    if (btn.bgColor) item.style.backgroundColor = btn.bgColor
                 } else {
                     item.classList.add("plu-unused")
                 }
@@ -105,5 +99,5 @@ class QuickButtonPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: QuickButtonPlugin
+    plugin: ActionButtonsPlugin
 }

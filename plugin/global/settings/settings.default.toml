@@ -2305,6 +2305,101 @@ NAME = ""
 HIDE_DISABLE_PLUGINS = false
 
 
+################### action_buttons ###################
+[action_buttons]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+# ------------------- 快捷键 -------------------
+# 切换按钮显示状态的快捷键
+#   留空表示不设置快捷键
+HOTKEY = ""
+
+# ------------------- 按钮动作 -------------------
+# 是否支持右键点击按钮后，其他按钮将被隐藏
+#   true:  支持右键点击隐藏其他按钮
+#   false: 不支持右键点击隐藏其他按钮
+SUPPORT_RIGHT_CLICK = true
+
+# ------------------- 按钮样式 -------------------
+# 按钮的尺寸，例如："35px"、"40px" 等
+BUTTON_SIZE = "35px"
+
+# 按钮图标的尺寸
+BUTTON_ICON_SIZE = "17px"
+
+# 按钮的圆角半径，例如："4px"、"5px" 等
+BUTTON_BORDER_RADIUS = "4px"
+
+# 按钮的阴影效果，使用 CSS box-shadow 语法
+BUTTON_BOX_SHADOW = "0 1px 20px 0 rgba(0, 0, 0, 0.1), inset 0 -1px 0 0 rgba(0, 0, 0, 0.1)"
+
+# 悬停时的按钮的阴影
+BUTTON_BOX_SHADOW_ON_HOVER = "0 2px 10px 3px rgba(0, 0, 0, .15)"
+
+# 按钮之间的间隔，例如："10px"、"15px" 等
+BUTTON_GAP = "10px"
+
+# 按钮距离右边框的距离，例如："30px"、"40px" 等
+POSITION_RIGHT = "30px"
+
+# 按钮距离底边框的距离，例如："50px"、"60px" 等
+POSITION_BOTTOM = "50px"
+
+# 是否隐藏按钮的 hint（提示信息）
+#   true:  隐藏所有按钮的 hint。此时，下面 buttons 配置中的 hint 选项将失效
+#   false: 显示按钮的 hint
+HIDE_BUTTON_HINT = false
+
+# ------------------- 按钮列表 -------------------
+# 添加的按钮列表
+#   enable: 是否启用此按钮
+#   coordinate: 按钮坐标
+#       数组，[行号, 列号]，从 0 开始计数
+#       往上为 y 轴正方向，往左为 x 轴正方向
+#   icon: 按钮图标的 CSS class
+#       支持 font-awesome-4.1.0 和 ionicons-2.0.1 图标库
+#       所有图标及其对应的 CSS class 请参考
+#           https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
+#           https://ionic.io/ionicons/v2
+#   size(可选): 按钮图标大小，例如："17px"、"20px"。默认值：17px
+#   color(可选): 按钮图标颜色，例如："#FFFFFF"、"red"。默认值：跟随当前主题的配色方案
+#   bgColor(可选): 按钮图标背景颜色，例如："#000000"、"blue"。默认值：跟随当前主题的配色方案
+#   hint(可选): 按钮的提示信息，鼠标悬停在按钮上时显示
+#   callback: 按钮的回调函数
+#       格式: "pluginName.MethodName"
+#       pluginName: 插件名
+#       MethodName: 方法名，请通过阅读插件源码查找
+#       如果不懂代码，可尝试：在【右键菜单 -> 常用插件 -> 二级插件】中的插件，其 MethodName 基本都是 "callback"；其余插件的 MethodName 基本都是 "call"
+#   evil(危险): 自定义回调函数，功能同 hotkeys 插件的 evil 参数
+#       这里的文本内容会被 eval() 执行，具有潜在的安全风险
+#       如果设置了此参数，callback 参数将会失效
+BUTTONS = [
+    { enable = true, coordinate = [0, 0], size = "24px", icon = "fa fa-caret-down", evil = "() => this.utils.jumpToEdge(false)" },
+    { enable = true, coordinate = [1, 0], size = "24px", icon = "fa fa-caret-up", evil = "() => this.utils.jumpToEdge(true)" },
+    { enable = true, coordinate = [2, 0], size = "17px", icon = "fa fa-font", callback = "text_stylize.call" },
+    { enable = true, coordinate = [3, 0], size = "17px", icon = "fa fa-indent", callback = "md_padding.call" },
+    { enable = true, coordinate = [4, 0], size = "17px", icon = "fa fa-gear", callback = "preferences.call" },
+    { enable = true, coordinate = [0, 1], size = "17px", icon = "fa fa-sitemap fa-rotate-270", callback = "markmap.onButtonClick" },
+    { enable = true, coordinate = [1, 1], size = "17px", icon = "fa fa-image", callback = "image_viewer.call" },
+    { enable = true, coordinate = [2, 1], size = "17px", icon = "fa fa-th-list", callback = "toc.callback" },
+    { enable = true, coordinate = [3, 1], size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
+    # evil 使用示例
+    #   弹窗提示
+    { enable = false, coordinate = [4, 0], size = "17px", icon = "ion-asterisk", color = "#F0F8FF", bgColor = "#FF4500", evil = "() => window.confirm('this is message')" },
+    #   在光标处插入 javascript 代码块
+    { enable = false, coordinate = [4, 1], size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertFence("javascript")' },
+    #   打开 Windows 计算器
+    { enable = false, coordinate = [5, 0], size = "17px", icon = "ion-bug", evil = "() => require('child_process').exec('cmd /C calc')" },
+    #   打开网址
+    { enable = false, coordinate = [5, 1], size = "17px", icon = "ion-alert", evil = "() => this.utils.openUrl('https://github.com/obgnail/typora_plugin')" },
+]
+
+
 ################### slash_commands ###################
 [slash_commands]
 # ------------------- 基础 -------------------

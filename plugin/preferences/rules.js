@@ -183,14 +183,14 @@ module.exports = {
         ERROR_COLOR: required,
         CUSTOM_RULE_FILES: each([required, path]),
     },
-    quickButton: {
-        button_size: required,
-        button_icon_size: required,
-        button_border_radius: required,
-        button_box_shadow: required,
-        button_box_shadow_on_hover: required,
-        button_gap: required,
-        position_right: required,
-        position_bottom: required,
+    action_buttons: {
+        BUTTON_SIZE: required,
+        BUTTON_ICON_SIZE: required,
+        BUTTON_BORDER_RADIUS: required,
+        BUTTON_BOX_SHADOW: required,
+        BUTTON_BOX_SHADOW_ON_HOVER: required,
+        BUTTON_GAP: required,
+        POSITION_RIGHT: required,
+        POSITION_BOTTOM: required,
     },
 }
