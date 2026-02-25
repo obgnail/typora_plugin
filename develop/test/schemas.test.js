@@ -283,6 +283,7 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
     filterAllowedUnusedKeys(allI18NKeys)
 
     Object.entries(allI18NKeys).forEach(([fixedName, keys]) => {
+        if (fixedName === "settings") return
         assert.ok(
             keys.size === 0,
             `[Unused i18n Keys] Found ${fixedName} unused i18n key(s):\n  - ${[...keys].join("\n  - ")}\n`

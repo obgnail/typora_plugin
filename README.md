@@ -234,7 +234,7 @@ Supports:
 
 Function: Similar to Obsidian's file template function, quickly create files based on templates.
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary Plugins -> File Templates.
+Usage: Right-click menu -> Often Used Plugins -> File Templates.
 
 ![templater](assets/templater.gif)
 

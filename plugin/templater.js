@@ -1,43 +1,43 @@
-class TemplaterPlugin extends BaseCustomPlugin {
+class TemplaterPlugin extends BasePlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
 
     hint = isDisable => isDisable ? this.i18n.t("error.onBlankPage") : undefined
 
-    hotkey = () => [this.config.hotkey]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            const { template_folders, template } = this.config
+            const { TEMPLATE_FOLDERS, TEMPLATE } = this.config
             const { Path: { extname }, FsExtra: { readFile } } = this.utils.Package
 
-            if (!template_folders || template_folders.length === 0) return
+            if (!TEMPLATE_FOLDERS || TEMPLATE_FOLDERS.length === 0) return
 
             const maxDepth = 3  // Only recursively search for 3 sub depths
             const signal = AbortSignal.timeout(30 * 1000)
             const fileFilter = (name) => extname(name).toLowerCase() === ".md"
             const fileParamsGetter = async (path, file) => ({ file, content: await readFile(path, "utf-8") })
-            const onFile = ({ file, content }) => template.push({ name: file.replace(/\.md$/i, ""), text: content })
-            template_folders.forEach(folder => this.utils.walkDir({ dir: this.utils.resolvePath(folder), fileFilter, fileParamsGetter, onFile, maxDepth, signal }))
+            const onFile = ({ file, content }) => TEMPLATE.push({ name: file.replace(/\.md$/i, ""), text: content })
+            TEMPLATE_FOLDERS.forEach(folder => this.utils.walkDir({ dir: this.utils.resolvePath(folder), fileFilter, fileParamsGetter, onFile, maxDepth, signal }))
         })
     }
 
-    callback = async anchorNode => {
-        const templates = this.config.template.map(tpl => tpl.name)
-        const defaultTpl = this.config.template[0]
-        const getTplCnt = (name) => this.config.template.find(tpl => tpl.name === name)?.text ?? ""
+    call = async anchorNode => {
+        const templates = this.config.TEMPLATE.map(tpl => tpl.name)
+        const defaultTpl = this.config.TEMPLATE[0]
+        const getTplCnt = (name) => this.config.TEMPLATE.find(tpl => tpl.name === name)?.text ?? ""
         const op = {
             title: this.pluginName,
             schema: ({ Group, Controls }) => [
                 Group(
-                    Controls.Select("template").Label(this.i18n.t("$label.template.text")).Options(templates),
+                    Controls.Select("template").Label(this.i18n.t("$label.TEMPLATE.text")).Options(templates),
                     Controls.Text("filename").Label(this.i18n.t("filename")).Placeholder(this.i18n.t("createCopyIfEmpty")),
-                    Controls.Switch("autoOpen").Label(this.i18n.t("$label.auto_open")),
+                    Controls.Switch("autoOpen").Label(this.i18n.t("$label.AUTO_OPEN")),
                 ),
                 Controls.Textarea("preview").Label(this.i18n.t("preview")).Rows(8),
             ],
             data: {
                 filename: "",
-                autoOpen: this.config.auto_open,
+                autoOpen: this.config.AUTO_OPEN,
                 template: defaultTpl.name,
                 preview: defaultTpl.text,
             },
@@ -53,13 +53,13 @@ class TemplaterPlugin extends BaseCustomPlugin {
         }
     }
 
-    _writeFile = async (filename, template, autoOpen) => {
+    _writeFile = async (filename, tpl, autoOpen) => {
         if (filename && !filename.endsWith(".md")) {
             filename += ".md"
         }
         filename = await this.utils.newFilePath(filename)
         const title = this.utils.Package.Path.basename(filename)
-        const content = this._parseTemplate(template, title)
+        const content = this._parseTemplate(tpl, title)
         const ok = await this.utils.writeFile(filename, content)
         if (!ok) return
         if (autoOpen) {
@@ -67,7 +67,7 @@ class TemplaterPlugin extends BaseCustomPlugin {
         }
     }
 
-    _parseTemplate = (template, title) => {
+    _parseTemplate = (tpl, title) => {
         const _date = new Date()
         const _title = title.substring(0, title.lastIndexOf("."))
 
@@ -92,7 +92,7 @@ class TemplaterPlugin extends BaseCustomPlugin {
             yesterday: (format, locale) => fns.dateOffset(-1, format, locale),
             tomorrow: (format, locale) => fns.dateOffset(1, format, locale),
         }
-        this.config.template_variables.forEach(({ enable, name, callback }) => {
+        this.config.TEMPLATE_VARIABLES.forEach(({ enable, name, callback }) => {
             if (!enable) return
             const fn = eval(callback)
             if (typeof fn === "function") {
@@ -101,7 +101,7 @@ class TemplaterPlugin extends BaseCustomPlugin {
         })
 
         const regex = /\{\{\s*([a-zA-Z0-9_$]+)(?:\((.*?)\))?\s*\}\}/g
-        return template.replace(regex, (origin, fnName, argsStr) => {
+        return tpl.replace(regex, (origin, fnName, argsStr) => {
             const fn = fns[fnName]
             if (typeof fn !== "function") return origin
             try {

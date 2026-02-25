@@ -242,7 +242,7 @@ yay -S typora-plugin
 
 功能：类似于 obsidian 的文件模板功能，根据模板快速创建文件。
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 文件模板。
+使用方式：右键菜单 -> 常用插件 -> 文件模板。
 
 ![templater](assets/templater.gif)
 

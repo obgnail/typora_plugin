@@ -169,7 +169,7 @@ module.exports = {
         template: required,
     },
     templater: {
-        template_folders: each([required, path]),
+        TEMPLATE_FOLDERS: each([required, path]),
     },
     image_viewer: {
         THUMBNAIL_HEIGHT: required,

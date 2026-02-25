@@ -1771,8 +1771,8 @@ const schema_callouts = [
     ),
     TitledBox(
         "defaultOptions",
-        Text("default_background_color"),
-        Text("default_left_line_color"),
+        Color("default_background_color"),
+        Color("default_left_line_color"),
         Text("default_icon"),
     ),
     TableBox(
@@ -1782,8 +1782,8 @@ const schema_callouts = [
             UntitledBox(
                 Text("type"),
                 Text("icon"),
-                Text("background_color"),
-                Text("left_line_color"),
+                Color("background_color"),
+                Color("left_line_color"),
             ),
         ],
         {
@@ -1798,12 +1798,12 @@ const schema_callouts = [
 ]
 
 const schema_templater = [
-    box_customPluginFull,
+    box_basePluginFull,
     UntitledBox(
-        Switch("auto_open"),
+        Switch("AUTO_OPEN"),
     ),
     TableBox(
-        "template_variables",
+        "TEMPLATE_VARIABLES",
         ["name", "callback"],
         [
             UntitledBox(
@@ -1819,7 +1819,7 @@ const schema_templater = [
         },
     ),
     TableBox(
-        "template",
+        "TEMPLATE",
         ["name", "text"],
         [
             UntitledBox(
@@ -1832,7 +1832,7 @@ const schema_templater = [
             text: "",
         },
     ),
-    ArrayBox("template_folders"),
+    ArrayBox("TEMPLATE_FOLDERS"),
     box_settingHandler,
 ]
 
@@ -2046,6 +2046,7 @@ const schemas = {
     hotkeys: schema_hotkeys,
     asset_root_redirect: schema_asset_root_redirect,
     bookmark: schema_bookmark,
+    templater: schema_templater,
     editor_width_slider: schema_editor_width_slider,
     article_uploader: schema_article_uploader,
     ripgrep: schema_ripgrep,
@@ -2067,7 +2068,6 @@ const schemas = {
     plantUML: schema_plantUML,
     marp: schema_marp,
     callouts: schema_callouts,
-    templater: schema_templater,
 }
 
 const i18n = (
