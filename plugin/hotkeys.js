@@ -1,5 +1,5 @@
 class HotkeysPlugin extends BasePlugin {
-    hotkey = () => [this.config.HOTKEY]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     process = () => {
         const toHotkey = setting => {

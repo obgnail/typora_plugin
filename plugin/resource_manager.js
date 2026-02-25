@@ -1,7 +1,7 @@
 class ResourceManagerPlugin extends BasePlugin {
     styleTemplate = () => true
 
-    hotkey = () => [this.config.HOTKEY]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     html = () => `
         <fast-window

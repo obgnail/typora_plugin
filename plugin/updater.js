@@ -1,5 +1,5 @@
 class UpdaterPlugin extends BasePlugin {
-    hotkey = () => [this.config.HOTKEY]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     process = () => {
         if (!this.config.AUTO_UPDATE) return

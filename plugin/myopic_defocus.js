@@ -4,7 +4,7 @@ class MyopicDefocusPlugin extends BasePlugin {
         this.inDefocusMode = this.config.DEFAULT_DEFOCUS_MODE
     }
 
-    hotkey = () => [this.config.HOTKEY]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     enableDefocusMode = () => {
         this.myopicDefocus.applyEffect({

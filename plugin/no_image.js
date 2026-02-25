@@ -3,7 +3,7 @@ class NoImageModePlugin extends BasePlugin {
         this.isNoImageMode = this.config.DEFAULT_NO_IMAGE_MODE
     }
 
-    hotkey = () => [this.config.HOTKEY]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     enableNoImageMode = async () => {
         const renderArg = {

@@ -6,7 +6,7 @@ class DarkModePlugin extends BasePlugin {
         this.isDarkMode = this.config.DARK_DEFAULT
     }
 
-    hotkey = () => [this.config.HOTKEY]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     enableDarkMode = () => this._toggleDarkMode(true)
 

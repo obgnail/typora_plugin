@@ -3,7 +3,7 @@ class BookmarkPlugin extends BasePlugin {
 
     html = () => `<fast-window id="plugin-bookmark" window-title="${this.pluginName}" window-buttons="close|fa-times" hidden><div class="plugin-bookmark-list"></div></fast-window>`
 
-    hotkey = () => [this.config.HOTKEY]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
         this.recordSelector = "#write [cid]"
