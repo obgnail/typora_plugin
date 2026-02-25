@@ -486,8 +486,8 @@ const OPTIONS = createOptions({
     plantUML: {
         OUTPUT_FORMAT: ["svg", "png", "txt"],
     },
-    toc: {
-        title_bar_buttons: ["header", "image", "table", "fence", "link", "math"],
+    right_outline: {
+        TITLE_BAR_BUTTONS: ["header", "image", "table", "fence", "link", "math"],
     },
     image_viewer: {
         operations: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterFall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fixScreen", "autoSize", "restore", "info", "dummy"],
@@ -1836,23 +1836,23 @@ const schema_templater = [
     box_settingHandler,
 ]
 
-const schema_toc = [
-    box_customPluginFull,
+const schema_right_outline = [
+    box_basePluginFull,
     UntitledBox(
-        Switch("default_show_toc"),
-        Switch("remove_header_styles"),
-        Switch("sortable"),
-        Switch("right_click_outline_button_to_toggle"),
-        Range("width_percent_when_pin_right", prop_percent),
+        Switch("DEFAULT_SHOW_OUTLINE"),
+        Switch("REMOVE_HEADER_STYLES"),
+        Switch("SORTABLE"),
+        Switch("RIGHT_CLICK_OUTLINE_BUTTON_TO_TOGGLE"),
+        Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", prop_percent),
     ),
-    TransferBox("title_bar_buttons", OPTIONS.toc.title_bar_buttons),
+    TransferBox("TITLE_BAR_BUTTONS", OPTIONS.right_outline.TITLE_BAR_BUTTONS),
     TitledBox(
         "displayHeader",
-        Switch("include_headings.image", { dependencies: Dep.contains("title_bar_buttons", "image") }),
-        Switch("include_headings.table", { dependencies: Dep.contains("title_bar_buttons", "table") }),
-        Switch("include_headings.fence", { dependencies: Dep.contains("title_bar_buttons", "fence") }),
-        Switch("include_headings.link", { dependencies: Dep.contains("title_bar_buttons", "link") }),
-        Switch("include_headings.math", { dependencies: Dep.contains("title_bar_buttons", "math") }),
+        Switch("INCLUDE_HEADINGS.image", { dependencies: Dep.contains("TITLE_BAR_BUTTONS", "image") }),
+        Switch("INCLUDE_HEADINGS.table", { dependencies: Dep.contains("TITLE_BAR_BUTTONS", "table") }),
+        Switch("INCLUDE_HEADINGS.fence", { dependencies: Dep.contains("TITLE_BAR_BUTTONS", "fence") }),
+        Switch("INCLUDE_HEADINGS.link", { dependencies: Dep.contains("TITLE_BAR_BUTTONS", "link") }),
+        Switch("INCLUDE_HEADINGS.math", { dependencies: Dep.contains("TITLE_BAR_BUTTONS", "math") }),
     ),
     box_settingHandler,
 ]
@@ -2039,6 +2039,7 @@ const schemas = {
     action_buttons: schema_action_buttons,
     slash_commands: schema_slash_commands,
     cjk_symbol_pairing: schema_cjk_symbol_pairing,
+    right_outline: schema_right_outline,
     right_click_menu: schema_right_click_menu,
     pie_menu: schema_pie_menu,
     preferences: schema_preferences,
@@ -2067,7 +2068,6 @@ const schemas = {
     marp: schema_marp,
     callouts: schema_callouts,
     templater: schema_templater,
-    toc: schema_toc,
 }
 
 const i18n = (

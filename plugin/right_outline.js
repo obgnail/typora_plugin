@@ -1,34 +1,34 @@
-class TOCPlugin extends BaseCustomPlugin {
+class RightOutlinePlugin extends BasePlugin {
     styleTemplate = () => true
 
     html = () => {
         const ICONS = { header: "fa-header", image: "fa-image", table: "fa-table", fence: "fa-code", link: "fa-link", math: "fa-dollar" }
-        const buttons = this.config.title_bar_buttons.map(btn => {
+        const buttons = this.config.TITLE_BAR_BUTTONS.map(btn => {
             const icon = `<div class="fa ${ICONS[btn]}"></div>`
-            const hint = this.i18n.t(`$option.title_bar_buttons.${btn}`)
-            return `<div class="plugin-toc-icon" data-type="${btn}" ty-hint="${hint}">${icon}</div>`
+            const hint = this.i18n.t(`$option.TITLE_BAR_BUTTONS.${btn}`)
+            return `<div class="plugin-right-outline-icon" data-type="${btn}" ty-hint="${hint}">${icon}</div>`
         })
-        const cls = buttons.length > 1 ? "plugin-toc-header" : "plugin-toc-header plugin-common-hidden"
+        const cls = buttons.length > 1 ? "plugin-right-outline-header" : "plugin-right-outline-header plugin-common-hidden"
         return `
-            <div id="plugin-toc" class="plugin-common-modal plugin-common-hidden">
+            <div id="plugin-right-outline" class="plugin-common-modal plugin-common-hidden">
                 <div class="grip-right"></div>
-                <div class="plugin-toc-wrap">
+                <div class="plugin-right-outline-wrap">
                     <div class="${cls}">${buttons.join("")}</div>
-                    <div class="plugin-toc-list"></div>
+                    <div class="plugin-right-outline-list"></div>
                 </div>
             </div>`
     }
 
-    hotkey = () => [this.config.hotkey]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
         this.diaplayNameFn = this._getDisplayNameFn()
         this.entities = {
             content: this.utils.entities.eContent,
-            modal: document.querySelector("#plugin-toc"),
-            grip: document.querySelector("#plugin-toc .grip-right"),
-            list: document.querySelector("#plugin-toc .plugin-toc-list"),
-            header: document.querySelector("#plugin-toc .plugin-toc-header"),
+            modal: document.querySelector("#plugin-right-outline"),
+            grip: document.querySelector("#plugin-right-outline .grip-right"),
+            list: document.querySelector("#plugin-right-outline .plugin-right-outline-list"),
+            header: document.querySelector("#plugin-right-outline .plugin-right-outline-header"),
         }
     }
 
@@ -46,7 +46,7 @@ class TOCPlugin extends BaseCustomPlugin {
             }
             eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition)
             eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition)
-            if (this.config.default_show_toc) {
+            if (this.config.DEFAULT_SHOW_OUTLINE) {
                 eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, this.toggleModal)
             }
         }
@@ -65,11 +65,11 @@ class TOCPlugin extends BaseCustomPlugin {
                     return
                 }
 
-                const type = ev.target.closest(".plugin-toc-icon")?.dataset.type
+                const type = ev.target.closest(".plugin-right-outline-icon")?.dataset.type
                 if (type) this.refreshModal(type)
             })
 
-            if (this.config.right_click_outline_button_to_toggle) {
+            if (this.config.RIGHT_CLICK_OUTLINE_BUTTON_TO_TOGGLE) {
                 const panelTitle = document.querySelector("#info-panel-tab-outline .info-panel-tab-title")
                 panelTitle?.addEventListener("mousedown", ev => ev.button === 2 && this.toggleModal())
             }
@@ -109,13 +109,13 @@ class TOCPlugin extends BaseCustomPlugin {
             })
         }
         const onDrag = () => {
-            if (!this.config.sortable) return
+            if (!this.config.SORTABLE) return
 
             let dragItem
             const that = this
-            const classAbove = "plugin-toc-drag-above"
-            const classBelow = "plugin-toc-drag-below"
-            const classSource = "plugin-toc-drag-source"
+            const classAbove = "plugin-right-outline-drag-above"
+            const classBelow = "plugin-right-outline-drag-below"
+            const classSource = "plugin-right-outline-drag-source"
             const isAncestorOf = (ancestor, descendant) => ancestor.parentElement.contains(descendant)
             const isPreceding = (el, otherEl) => el.compareDocumentPosition(otherEl) === document.DOCUMENT_POSITION_PRECEDING
             const setStyle = function (ev) {
@@ -196,7 +196,7 @@ class TOCPlugin extends BaseCustomPlugin {
         onDrag()
     }
 
-    callback = anchorNode => this.toggleModal()
+    call = anchorNode => this.toggleModal()
 
     isModalShown = () => this.utils.isShown(this.entities.modal)
 
@@ -212,7 +212,7 @@ class TOCPlugin extends BaseCustomPlugin {
     showModal = (forceRefresh = true) => {
         this.utils.show(this.entities.modal)
         const { width } = this.entities.content.getBoundingClientRect()
-        const modalWidth = width * this.config.width_percent_when_pin_right / 100
+        const modalWidth = width * this.config.WIDTH_PERCENT_WHEN_PIN_RIGHT / 100
         this.entities.modal.style.width = modalWidth + "px"
         this.entities.content.style.width = `${width - modalWidth}px`
         this.utils.entities.eWrite.style.width = "initial"
@@ -226,7 +226,7 @@ class TOCPlugin extends BaseCustomPlugin {
     _refreshModal = (type = this._getCurrentType()) => {
         this._activeIcon(type)
         const root = this._getRoot(type)
-        const sortable = this.config.sortable && type === "header"
+        const sortable = this.config.SORTABLE && type === "header"
         this.entities.list.innerHTML = this._getRootHTML(root, sortable)
         this._highlightVisibleHeader()
     }
@@ -285,7 +285,7 @@ class TOCPlugin extends BaseCustomPlugin {
     _getRoot = type => (type === "header") ? this.utils.getTocTree(this.config.remove_header_styles) : this._getKindRoot([type])
 
     _getKindRoot = types => {
-        const includeHeadings = types.some(type => this.config.include_headings[type])
+        const includeHeadings = types.some(type => this.config.INCLUDE_HEADINGS[type])
         if (includeHeadings) {
             types.push("h1", "h2")
         }
@@ -369,5 +369,5 @@ class TOCPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: TOCPlugin
+    plugin: RightOutlinePlugin
 }

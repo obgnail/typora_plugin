@@ -27,7 +27,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 8    | templater           | File Templater                                               |                    |
 | 9    | resource_manager    | Resource Management                                          |                    |
 | 10   | fence_enhance       | Enhance Fence                                                |                    |
-| 11   | toc                 | TOC                                                          |                    |
+| 11   | right_outline       | Right Outline                                                          |                    |
 | 12   | commander           | Commander                                                    |                    |
 | 13   | toolbar             | Multi-Purpose Searcher                                       |                    |
 | 14   | right_click_menu    | Right-Click Menu                                             |                    |
@@ -251,13 +251,13 @@ Usage: Right-click menu -> Less Used Plugins -> Resource Management
 ![fence_enhance](assets/fence_enhance.png)
 
 
-### toc: Generate Outline on the Right
+### right_outline: Generate Outline on the Right
 
 Function: Typora's sidebar cannot display both [File] and [Outline] simultaneously. To solve this problem, this plugin adds an [Outline] on the right.
 
 Usage:
 
-- Method 1: Often Used Plugins -> Secondary Plugins -> Outline
+- Method 1: Less Used Plugins -> Outline
 - Method 2: Right-click the [Outline] button on the sidebar
 
 

@@ -68,7 +68,7 @@ class CollapseParagraphPlugin extends BasePlugin {
             })
     }
 
-    callbackOtherPlugin = () => this.utils.callPluginFunction("toc", "refresh")
+    callbackOtherPlugin = () => this.utils.callPluginFunction("right_outline", "refresh")
 
     trigger = (node, collapsed) => {
         const _trigger = (node, display) => {
