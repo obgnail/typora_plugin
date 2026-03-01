@@ -29,8 +29,9 @@ class CalendarPlugin extends BasePlugin {
     }
 
     create = ($wrap, content) => {
+        const container = $wrap[0]
         const Calendar = this.Calendar
-        const calendar = new this.Calendar($wrap[0])
+        const calendar = new Calendar(container)
         let option = {}
         eval(content)
         calendar.setOptions(option)
@@ -46,8 +47,7 @@ class CalendarPlugin extends BasePlugin {
 
     lazyLoad = () => {
         this.utils.insertStyleFile("plugin-calendar-style", "./plugin/calendar/toastui-calendar.min.css")
-        const { Calendar } = require("./toastui-calendar.min.js")
-        this.Calendar = Calendar
+        this.Calendar = require("./toastui-calendar.min.js")
     }
 
     getStyleContent = () => {

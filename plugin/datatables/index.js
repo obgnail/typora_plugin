@@ -48,8 +48,8 @@ class DataTablesPlugin extends BasePlugin {
     lazyLoad = async () => {
         if ($?.fn?.dataTable) return
         this.initDataTablesConfig()
-        await this.utils.insertScript("./plugin/datatables/resource/datatables.min.js")
-        this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/datatables.min.css")
+        await this.utils.insertScript("./plugin/datatables/resource/js/datatables.min.js")
+        this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/css/datatables.min.css")
         await this.utils.styleTemplater.register(this.fixedName)
     }
 

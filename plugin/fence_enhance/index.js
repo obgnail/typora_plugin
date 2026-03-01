@@ -633,13 +633,11 @@ class HighlightHelper {
 // doc: https://codemirror.net/5/demo/folding.html
 const foldLanguage = async ({ utils }) => {
     const requireModules = async () => {
-        const resourcePath = "./plugin/fence_enhance/resource/"
-        utils.insertStyleFile("plugin-fence-enhance-fold-style", resourcePath + "foldgutter.css")
-        require("./resource/foldcode")
-        require("./resource/foldgutter")
-        const files = await utils.Package.FsExtra.readdir(utils.joinPath(resourcePath))
-        const modules = files.filter(f => f.endsWith("-fold.js"))
-        modules.forEach(f => require(utils.joinPath(resourcePath, f)))
+        const foldPath = "./plugin/fence_enhance/resource/fold/"
+        utils.insertStyleFile("plugin-fence-enhance-fold-style", foldPath + "foldgutter.css")
+        const modules = (await utils.Package.FsExtra.readdir(utils.joinPath(foldPath))).filter(f => f.endsWith("-fold.js"))
+        const vendors = ["foldcode.js", "foldgutter.js", ...modules]
+        vendors.map(f => utils.joinPath(foldPath, f)).forEach(require)
         console.debug(`[ CodeMirror folding module ] [ ${modules.length} ]:`, modules)
     }
 
