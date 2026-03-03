@@ -1131,7 +1131,7 @@
     "$label.SERVER_OPTIONS.port": "Port",
     "$label.SERVER_OPTIONS.path": "Path",
     "$title.rpcServer": "RPC Server",
-    "$tooltip.viewJsonRPCReadme": "Install RPC Server"
+    "$tooltip.viewJsonRPCReadme": "Connect to RPC Server"
   },
   "updater": {
     "pluginName": "Updater",

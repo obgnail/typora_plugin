@@ -77,14 +77,14 @@
     "success.restoreAll": "已恢複所有默認",
     "error.timeout": "執行超時",
     "error.IncorrectFormatContent": "內容必須爲正確的 {{format}} 格式",
-    "error.required": "欄位不可爲空",
+    "error.required": "不可爲空",
     "error.pattern": "格式不符合要求",
     "error.isNaN": "非數值",
     "error.integer": "僅限整數",
     "error.invalidURL": "非法 URL",
     "error.invalid": "非法值：{{value}}",
-    "error.min": "數值不能小於 {{min}}",
-    "error.max": "數值不能大於 {{max}}",
+    "error.min": "不能小於 {{min}}",
+    "error.max": "不能大於 {{max}}",
     "error.minItems": "至少選擇 {{minItems}} 項",
     "error.maxItems": "至多選擇 {{maxItems}} 項",
     "error.atLine": "第 {{errorLine}} 行發生錯誤",
@@ -117,7 +117,7 @@
     "$option.LOCALE.zh-TW": "繁體中文",
     "$option.EXIT_INTERACTIVE_MODE.click_exit_button": "點擊按鈕",
     "$option.EXIT_INTERACTIVE_MODE.ctrl_click_fence": "Ctrl+Click",
-    "$tooltip.neverGonnaTellALie": "插件文檔",
+    "$tooltip.neverGonnaTellALie": "插件教程",
     "$tooltip.toggleDevTools": "開發人員工具"
   },
   "window_tab": {
@@ -1119,7 +1119,7 @@
     "$tooltip.canCollapseOutlinePanel": "需啟用 Typora 設定「允許展開/折疊側邊欄大綱」"
   },
   "cursor_history": {
-    "pluginName": "光標跳轉",
+    "pluginName": "光標曆史",
     "$label.HOTKEY_GO_FORWARD": "光標前進",
     "$label.HOTKEY_GO_BACK": "光標後退",
     "$label.MAX_HISTORY_ENTRIES": "最大曆史記錄數"
@@ -1131,7 +1131,7 @@
     "$label.SERVER_OPTIONS.port": "埠號",
     "$label.SERVER_OPTIONS.path": "路徑",
     "$title.rpcServer": "RPC 伺服器",
-    "$tooltip.viewJsonRPCReadme": "安裝 RPC 服務"
+    "$tooltip.viewJsonRPCReadme": "連接 RPC 服務"
   },
   "updater": {
     "pluginName": "升級插件",

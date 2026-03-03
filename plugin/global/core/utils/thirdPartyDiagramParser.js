@@ -5,9 +5,8 @@ class ThirdPartyDiagramParser {
     constructor(utils) {
         this.utils = utils
         this.parsers = new Map()
-        this.defaultHeight = "230px"
-        this.defaultBackgroundColor = "#F8F8F8"
-        this.regexp = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/
+        this.DEFAYLT_CSS = { height: "230px", backgroundColor: "#F8F8F8" }
+        this.regex = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/
     }
 
     /**
@@ -144,7 +143,7 @@ class ThirdPartyDiagramParser {
         const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"))
         for (let line of lines) {
             line = line.replace(/\s/g, "").replace(/['`]/g, `"`)
-            const { groups } = line.match(this.regexp) || {}
+            const { groups } = line.match(this.regex) || {}
             if (groups) {
                 return { height: groups.height, width: groups.width }
             }
@@ -152,25 +151,28 @@ class ThirdPartyDiagramParser {
         return { height: "", width: "" }
     }
 
-    applyFenceStyles = ($pre, $wrap, userSize = {}, defaultCss = {}) => {
-        const { height: customH, width: customW, "background-color": customBackgroundColor, ...rest } = defaultCss
+    applyFenceStyles = ($pre, $wrap, css) => {
+        const { width, height, "background-color": bgc, ...rest } = css
         $wrap.css({
-            width: userSize.width || customW || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            height: userSize.height || customH || this.defaultHeight,
-            "background-color": customBackgroundColor || this.defaultBackgroundColor,
+            width: width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
+            height: height || this.DEFAYLT_CSS.height,
+            "background-color": bgc || this.DEFAYLT_CSS.backgroundColor,
             ...rest,
         })
     }
 
     STYLE_SETTER = css => {
-        return ($pre, $wrap, content) => {
-            const userSize = this.getFenceUserSize(content)
-            const defaultCss = (typeof css === "function") ? css($pre, $wrap, content) : css
-            this.applyFenceStyles($pre, $wrap, userSize, defaultCss)
+        return ($pre, $wrap, content, meta) => {
+            const sizeCss = this.getFenceUserSize(content)
+            const userCss = (typeof css === "function") ? css($pre, $wrap, content, meta) : css
+            this.applyFenceStyles($pre, $wrap, { ...userCss, ...sizeCss })
         }
     }
     STYLE_SETTER_SIMPLE = css => {
-        return ($pre, $wrap, content) => this.applyFenceStyles($pre, $wrap, {}, css)
+        return ($pre, $wrap, content, meta) => {
+            const userCss = (typeof css === "function") ? css($pre, $wrap, content, meta) : css
+            this.applyFenceStyles($pre, $wrap, userCss)
+        }
     }
 
     SVG_PRINT_STYLE_FIXER = (lang, selector) => () => `

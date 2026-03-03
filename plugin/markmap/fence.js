@@ -9,7 +9,8 @@ class FenceMarkmap {
     hotkey = () => [{ hotkey: this.config.FENCE_HOTKEY, callback: this.callback }]
 
     process = () => {
-        this.utils.thirdPartyDiagramParser.register({
+        const parser = this.utils.thirdPartyDiagramParser
+        parser.register({
             lang: this.config.FENCE_LANGUAGE,
             mappingLang: "markdown",
             destroyWhenUpdate: false,
@@ -18,7 +19,7 @@ class FenceMarkmap {
             wrapElement: '<svg class="plugin-fence-markmap-svg"></svg>',
             lazyLoadFunc: this.plugin.lazyLoad,
             beforeRenderFunc: this.beforeRender,
-            setStyleFunc: this.setStyle,
+            setStyleFunc: parser.STYLE_SETTER_SIMPLE(this.fenceStyleGetter),
             createFunc: this.create,
             updateFunc: this.update,
             destroyFunc: this.destroy,
@@ -31,33 +32,23 @@ class FenceMarkmap {
 
     callback = type => {
         const empty = "# empty"
-        const backQuote = "```"
-        const frontMatter = `---\nmarkmap:\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n\n`
-        const fence = type === "draw_fence_template"
-            ? this.config.FENCE_TEMPLATE
-            : `${backQuote}${this.config.FENCE_LANGUAGE}\n${frontMatter}${this.plugin.getToc() || empty}\n${backQuote}`
-        this.utils.insertText(null, fence)
+        const frontMatter = `---\nmarkmap:\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n`
+        const content = type === "draw_fence_template" ? this.config.FENCE_TEMPLATE : `${frontMatter}\n${this.plugin.getToc() || empty}`
+        this.utils.insertBlockCode(null, this.config.FENCE_LANGUAGE, content)
     }
 
     // Get options in fence front-matter
     beforeRender = (cid, content) => {
         const defaultOptions = this.config.DEFAULT_FENCE_OPTIONS || {}
         const { yamlObject } = this.utils.splitFrontMatter(content)
-        if (!yamlObject) {
-            return defaultOptions
-        }
-        const fenceOptions = yamlObject.markmap ? yamlObject.markmap : yamlObject
+        const fenceOptions = yamlObject?.markmap ?? yamlObject ?? {}
         return { ...defaultOptions, ...fenceOptions }
     }
 
-    setStyle = ($pre, $wrap, content, options) => {
-        const panelWidth = $pre.find(".md-diagram-panel").css("width")
-        $wrap.css({
-            width: parseFloat(panelWidth) - 10 + "px",
-            height: options.height || this.config.DEFAULT_FENCE_HEIGHT,
-            "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
-        })
-    }
+    fenceStyleGetter = ($pre, $wrap, content, options) => ({
+        height: options.height || this.config.DEFAULT_FENCE_HEIGHT,
+        "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+    })
 
     create = ($wrap, content, options) => {
         const { root } = this.Lib.transformer.transform(content)
@@ -77,14 +68,9 @@ class FenceMarkmap {
     getVersion = () => this.Lib.transformerVersions["markmap-lib"]
 
     getStyleContent = () => `
-        .md-diagram-panel .plugin-fence-markmap-svg {
-            line-height: initial !important;
-            user-select: none;
-        }
-        .plugin-fence-markmap-svg table {
-            margin: 0;
-            padding: 0;
-        }`
+        .md-diagram-panel .plugin-fence-markmap-svg { line-height: initial !important; user-select: none; }
+        .plugin-fence-markmap-svg table { margin: 0; padding: 0; }
+    `
 }
 
 module.exports = FenceMarkmap

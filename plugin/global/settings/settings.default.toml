@@ -956,7 +956,7 @@ DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialSca
 # 插入的 Markmap 代码块模板
 #   此模板定义了插入的 Markmap 代码块的初始内容和配置
 #   请确保此处的代码块语言与 LANGUAGE 配置一致
-FENCE_TEMPLATE = """```markmap
+FENCE_TEMPLATE = """
 ---
 title: markmap
 markmap:
@@ -1001,9 +1001,7 @@ Note that if blocks and lists appear at the same level, the lists will be ignore
 | Products | Price |
 |-|-|
 | Apple | 4 |
-| Banana | 2 |
-```
-"""
+| Banana | 2 |"""
 
 
 ######################################
