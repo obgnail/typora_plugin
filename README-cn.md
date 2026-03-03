@@ -50,33 +50,32 @@
 | 31   | kanban              | 看板                                       |          |
 | 32   | timeline            | 时间线                                     |          |
 | 33   | chat                | 聊天                                       |          |
-| 34   | file_counter        | 显示目录下的文件数                         |          |
-| 35   | auto_number         | 章节、表格、图片、代码块等自动编号         |          |
-| 36   | image_viewer        | 图片查看器                                 |          |
-| 37   | cjk_symbol_pairing  | 中文符号配对                               |          |
-| 38   | resize_table        | 调整表格行高列宽                           |          |
-| 39   | resize_image        | 调整图片显示大小                           |          |
-| 40   | export_enhance      | 导出 HTML 时避免图片丢失                   |          |
-| 41   | sidebar_enhance     | 显示其他扩展名文件、记忆折叠状态、拖拽排序 |          |
-| 42   | markdownlint        | markdown 格式检查                          |          |
-| 43   | truncate_text       | 暂时隐藏内容，提高大文件渲染性能           | ×        |
-| 44   | dark                | 夜间模式                                   |          |
-| 45   | no_image            | 无图模式                                   |          |
-| 46   | myopic_defocus      | 离焦视力舒缓                               |          |
-| 47   | updater             | 一键升级插件                               |          |
-| 48   | easy_modify         | 编辑工具                                   |          |
-| 49   | editor_width_slider | 写作区宽度调整                             |          |
-| 50   | asset_root_redirect | 重定向本地资源根目录                       | ×        |
-| 51   | bookmark            | 书签管理器                                 | ×        |
-| 52   | cipher              | 加密文件                                   | ×        |
-| 53   | ripgrep             | 使用 ripgrep 搜索文件                      | ×        |
-| 54   | article_uploader    | 一键上传博客到支持的所有平台               | ×        |
-| 55   | cursor_history      | 光标跳转                                   | ×        |
-| 56   | static_markers      | Markdown 标记常显                          | ×        |
-| 57   | custom              | 开放平台，用户自定义插件（高级）           |          |
-| 58   | hotkeys             | 快捷键注册中心（高级）                     |          |
-| 59   | action_buttons      | 于右下角添加功能按钮（高级）               |          |
-| 60   | json_rpc            | 外部操纵 Typora（高级）                    | ×        |
+| 34   | auto_number         | 章节、表格、图片、代码块等自动编号         |          |
+| 35   | image_viewer        | 图片查看器                                 |          |
+| 36   | cjk_symbol_pairing  | 中文符号配对                               |          |
+| 37   | resize_table        | 调整表格行高列宽                           |          |
+| 38   | resize_image        | 调整图片显示大小                           |          |
+| 39   | export_enhance      | 导出 HTML 时避免图片丢失                   |          |
+| 40   | sidebar_enhance     | 显示其他扩展名文件、记忆折叠状态、拖拽排序 |          |
+| 41   | markdownlint        | markdown 格式检查                          |          |
+| 42   | truncate_text       | 暂时隐藏内容，提高大文件渲染性能           | ×        |
+| 43   | dark                | 夜间模式                                   |          |
+| 44   | no_image            | 无图模式                                   |          |
+| 45   | myopic_defocus      | 离焦视力舒缓                               |          |
+| 46   | updater             | 一键升级插件                               |          |
+| 47   | easy_modify         | 编辑工具                                   |          |
+| 48   | editor_width_slider | 写作区宽度调整                             |          |
+| 49   | asset_root_redirect | 重定向本地资源根目录                       | ×        |
+| 50   | bookmark            | 书签管理器                                 | ×        |
+| 51   | cipher              | 加密文件                                   | ×        |
+| 52   | ripgrep             | 使用 ripgrep 搜索文件                      | ×        |
+| 53   | article_uploader    | 一键上传博客到支持的所有平台               | ×        |
+| 54   | cursor_history      | 光标跳转                                   | ×        |
+| 55   | static_markers      | Markdown 标记常显                          | ×        |
+| 56   | custom              | 开放平台，用户自定义插件（高级）           |          |
+| 57   | hotkeys             | 快捷键注册中心（高级）                     |          |
+| 58   | action_buttons      | 于右下角添加功能按钮（高级）               |          |
+| 59   | json_rpc            | 外部操纵 Typora（高级）                    | ×        |
 
 > 如果有需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果觉得本项目对您有帮助，请不吝点亮一个 Star ⭐！
 
@@ -500,12 +499,6 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 
 
 
-### file_counter：显示文件数
-
-![file_count](assets/file_counter.png)
-
-
-
 ### auto_number：自动编号
 
 ![auto_number](assets/auto_number.png)
@@ -571,6 +564,7 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 - 目录树显示其他扩展名文件
 - 记忆大纲折叠状态
 - 定制侧边栏文件图标
+- 显示目录下的文件数
 
 
 

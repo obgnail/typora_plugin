@@ -27,7 +27,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 8    | templater           | File Templater                                               |                    |
 | 9    | resource_manager    | Resource Management                                          |                    |
 | 10   | fence_enhance       | Enhance Fence                                                |                    |
-| 11   | right_outline       | Right Outline                                                          |                    |
+| 11   | right_outline       | Right Outline                                                |                    |
 | 12   | commander           | Commander                                                    |                    |
 | 13   | toolbar             | Multi-Purpose Searcher                                       |                    |
 | 14   | right_click_menu    | Right-Click Menu                                             |                    |
@@ -50,33 +50,32 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 31   | kanban              | Kanban                                                       |                    |
 | 32   | timeline            | Timeline                                                     |                    |
 | 33   | chat                | Chat                                                         |                    |
-| 34   | file_counter        | Show file count in directory                                 |                    |
-| 35   | auto_number         | Auto Numbering                                               |                    |
-| 36   | image_viewer        | Image reviewer                                               |                    |
-| 37   | cjk_symbol_pairing  | Automatic completion of CJK symbols                          |                    |
-| 38   | resize_table        | Adjust table row height and column width                     |                    |
-| 39   | resize_image        | Adjust image display size                                    |                    |
-| 40   | export_enhance      | Avoid image loss when exporting to HTML                      |                    |
-| 41   | sidebar_enhance     | Drag & drop to rearrange、Display non-Markdown files、Keep Fold State |                    |
-| 42   | markdownlint        | Markdown Lint Check                                          |                    |
-| 43   | truncate_text       | Hide content to improve performance for large files          | ×                  |
-| 44   | dark                | Dark mode                                                    |                    |
-| 45   | no_image            | No image mode                                                |                    |
-| 46   | myopic_defocus      | Defocus Comfort Mode                                         |                    |
-| 47   | updater             | One-click plugin update                                      |                    |
-| 48   | easy_modify         | Editing tools                                                |                    |
-| 49   | editor_width_slider | Adjust writing area width                                    |                    |
-| 50   | asset_root_redirect | Redirect local resource root directory                       | ×                  |
-| 51   | bookmark            | Bookmark manager                                             | ×                  |
-| 52   | cipher              | Encrypt files                                                | ×                  |
-| 53   | ripgrep             | Search files using ripgrep                                   | ×                  |
-| 54   | article_uploader    | One-click upload blog to supported platforms                 | ×                  |
-| 55   | cursor_history      | Cursor History                                               | ×                  |
-| 56   | static_markers      | Static Markers                                               | ×                  |
-| 57   | custom              | Open platform for user-defined plugins (advanced)            |                    |
-| 58   | hotkeys             | Hotkey registration center (advanced)                        |                    |
-| 59   | action_buttons      | Add function buttons in the lower right corner (advanced)    |                    |
-| 60   | json_rpc            | External control of Typora (advanced)                        | ×                  |
+| 34   | auto_number         | Auto Numbering                                               |                    |
+| 35   | image_viewer        | Image reviewer                                               |                    |
+| 36   | cjk_symbol_pairing  | Automatic completion of CJK symbols                          |                    |
+| 37   | resize_table        | Adjust table row height and column width                     |                    |
+| 38   | resize_image        | Adjust image display size                                    |                    |
+| 39   | export_enhance      | Avoid image loss when exporting to HTML                      |                    |
+| 40   | sidebar_enhance     | Drag & drop to rearrange、Display non-Markdown files、Keep Fold State |                    |
+| 41   | markdownlint        | Markdown Lint Check                                          |                    |
+| 42   | truncate_text       | Hide content to improve performance for large files          | ×                  |
+| 43   | dark                | Dark mode                                                    |                    |
+| 44   | no_image            | No image mode                                                |                    |
+| 45   | myopic_defocus      | Defocus Comfort Mode                                         |                    |
+| 46   | updater             | One-click plugin update                                      |                    |
+| 47   | easy_modify         | Editing tools                                                |                    |
+| 48   | editor_width_slider | Adjust writing area width                                    |                    |
+| 59   | asset_root_redirect | Redirect local resource root directory                       | ×                  |
+| 50   | bookmark            | Bookmark manager                                             | ×                  |
+| 51   | cipher              | Encrypt files                                                | ×                  |
+| 52   | ripgrep             | Search files using ripgrep                                   | ×                  |
+| 53   | article_uploader    | One-click upload blog to supported platforms                 | ×                  |
+| 54   | cursor_history      | Cursor History                                               | ×                  |
+| 55   | static_markers      | Static Markers                                               | ×                  |
+| 56   | custom              | Open platform for user-defined plugins (advanced)            |                    |
+| 57   | hotkeys             | Hotkey registration center (advanced)                        |                    |
+| 58   | action_buttons      | Add function buttons in the lower right corner (advanced)    |                    |
+| 59   | json_rpc            | External control of Typora (advanced)                        | ×                  |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
@@ -450,10 +449,6 @@ Usage: Right-click menu -> Less Used Plugins -> Blur Mode
 
 > This plugin can only be used with the official version of Typora.
 
-### file_counter: Display File Count
-
-![file_count](assets/file_counter.png)
-
 ### auto_number
 
 ![auto_number](assets/auto_number.png)
@@ -507,6 +502,7 @@ Function:
 - Display non-Markdown files in the sidebar
 - Keep Fold Outline State
 - Customize Sidebar File Icons
+- Display File Count
 
 ### dark: Dark Mode
 

@@ -88,7 +88,7 @@ class SidebarEnhancePlugin extends BasePlugin {
             hideFolders($node, info)
         })
 
-        this.utils.eventHub.once(this.utils.eventHub.eventType.fileOpened, () => File.editor.library.refreshPanelCommand())
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => File.editor.library.refreshPanelCommand())
     }
 
     _setOutlineState = () => {
@@ -97,7 +97,8 @@ class SidebarEnhancePlugin extends BasePlugin {
         const openItem = el => el.classList.add(hasOpenClass)
         const isItemOpen = el => el.classList.contains(hasOpenClass)
         switch (this.config.OUTLINE_FOLD_STATE) {
-            case "alwaysFold": return
+            case "alwaysFold":
+                return
             case "alwaysUnfold":
                 this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => {
                     this.entities.outline.querySelectorAll(`.outline-item-wrapper:not(.${singleItemClass})`).forEach(openItem)
@@ -292,7 +293,7 @@ class SidebarEnhancePlugin extends BasePlugin {
                 font-weight: ${this.config.FONT_WEIGHT};
             }`
         )
-        this.utils.eventHub.once(this.utils.eventHub.eventType.fileOpened, () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             File.editor.library.refreshPanelCommand()
             countAllDirs()
         })
