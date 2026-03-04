@@ -61,7 +61,7 @@ class ThirdPartyDiagramParser {
         lang = lang.toLowerCase()
         lazyLoadFunc = this.utils.once(lazyLoadFunc)
         const settingMsg = null
-        const metaConfigParser = this.createConfigParser(metaConfigSchema)
+        const metaConfigParser = metaConfigSchema ? this.createConfigParser(metaConfigSchema) : null
         this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg, metaConfigParser,
             checkSelector, wrapElement, lazyLoadFunc, beforeRenderFunc, renderStyleGetter,
@@ -214,12 +214,16 @@ function metaConfigParserFactory() {
     function resolveType(schemaDef = {}) {
         const rawType = schemaDef.type || "string"
         const match = String(rawType).trim().match(TYPE_REGEX)
-        return match
+        const typeInfo = match
             ? {
                 main: match[1].toLowerCase(),
                 item: match[2] ? match[2].toLowerCase() : (schemaDef.items || "string")
             }
             : { main: "string", item: "string" }
+        if (Object.hasOwn(schemaDef, "default")) {
+            typeInfo.default = schemaDef.default
+        }
+        return typeInfo
     }
 
     return function createConfigParser(schema = {}) {
@@ -243,6 +247,12 @@ function metaConfigParserFactory() {
                     }
                 } else {
                     meta[key] = castValue(val, main)
+                }
+            }
+            for (const [key, typeDef] of Object.entries(compiledSchema)) {
+                if (Object.hasOwn(typeDef, "default") && !Object.hasOwn(meta, key)) {
+                    const defaultVal = typeDef.default
+                    meta[key] = Array.isArray(defaultVal) ? [...defaultVal] : defaultVal
                 }
             }
             return meta
