@@ -8,23 +8,21 @@ class PlantUMLPlugin extends BasePlugin {
             mappingLang: null,
             destroyWhenUpdate: false,
             interactiveMode: this.config.INTERACTIVE_MODE,
+            metaConfigSchema: null,
             checkSelector: ".plugin-plantuml-content",
             wrapElement: '<div class="plugin-plantuml-content"></div>',
             lazyLoadFunc: this.lazyLoad,
             beforeRenderFunc: null,
-            setStyleFunc: parser.STYLE_SETTER_SIMPLE({
+            renderStyleGetter: parser.helpers.getRenderStyle({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
-                "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
             }),
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: null,
             beforeExportToNative: null,
             beforeExportToHTML: null,
-            extraStyleGetter: parser.SVG_PRINT_STYLE_FIXER(
-                this.config.LANGUAGE,
-                ".plugin-plantuml-content",
-            ),
+            exportStyleGetter: parser.helpers.getSvgExportStyle,
             versionGetter: null,
         })
     }

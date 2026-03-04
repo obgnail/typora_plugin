@@ -10,20 +10,21 @@ class EchartsPlugin extends BasePlugin {
             mappingLang: "javascript",
             destroyWhenUpdate: false,
             interactiveMode: this.config.INTERACTIVE_MODE,
+            metaConfigSchema: parser.helpers.META_SCHEMA_JAVASCRIPT,
             checkSelector: ".plugin-echarts-content",
             wrapElement: '<div class="plugin-echarts-content"></div>',
             lazyLoadFunc: this.lazyLoad,
             beforeRenderFunc: null,
-            setStyleFunc: parser.STYLE_SETTER({
+            renderStyleGetter: parser.helpers.getRenderStyle({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
-                "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR
+                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
             }),
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: this.destroy,
             beforeExportToNative: null,
             beforeExportToHTML: this.beforeExportToHTML,
-            extraStyleGetter: null,
+            exportStyleGetter: null,
             versionGetter: this.getVersion,
         })
     }

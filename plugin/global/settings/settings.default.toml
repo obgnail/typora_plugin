@@ -2729,10 +2729,11 @@ LIST = [
     "chart",
     "echarts",
     "calendar",
-    "marp",
     "wavedrom",
     "drawIO",
     "plantUML",
+    "marp",
+    "---",
     "callouts",
 ]
 [[right_click_menu.MENUS]]
@@ -3646,15 +3647,19 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """
+// ==BlockCodeConfig==
+// @width            auto
+// @height           300px
+// @backgroundColor  #FFFFFF
+// ==/BlockCodeConfig==
+
 // Built-in variables:
 //   1. myChart: ECharts instance
 //   2. echarts: ECharts module
 //   3. option:  ECharts option object
 //   4. this:    ECharts plugin instance
-// More examples: https://echarts.apache.org/examples/en/index.html#chart-type-line
-// All code within this block will be evaluated (eval). Exercise caution.
-// Use the following comment to set chart dimensions (otherwise defaults apply):
-// {height: "300px", width: ""}
+// Note:     All code within this block will be evaluated (eval). Exercise caution.
+// Examples: https://echarts.apache.org/examples/en/index.html#chart-type-line
 
 option = {
     tooltip: { trigger: 'item' },
@@ -3707,14 +3712,18 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """
+// ==BlockCodeConfig==
+// @width            auto
+// @height           300px
+// @backgroundColor  #FFFFFF
+// ==/BlockCodeConfig==
+
 // Built-in variables:
 //   1. Chart:   chart Class
 //   2. config:  chart option object
 //   3. this:    chart plugin instance
-// API: https://chart.nodejs.cn/docs/latest/configuration/
-// All code within this block will be evaluated (eval). Exercise caution.
-// Use the following comment to set chart dimensions (otherwise defaults apply):
-// {height: "300px", width: ""}
+// API:  https://chart.nodejs.cn/docs/latest/configuration/
+// Note: All code within this block will be evaluated (eval). Exercise caution.
 
 config = {
   type: "bar",
@@ -3776,8 +3785,14 @@ SKIN_FILES = ["plugin/wavedrom/narrow.js"]
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """
-// tutorial: https://wavedrom.com/tutorial.html
-// All code within this block will be evaluated (eval). Exercise caution.
+// ==BlockCodeConfig==
+// @width            auto
+// @height           auto
+// @backgroundColor  #FFFFFF
+// ==/BlockCodeConfig==
+
+// Tutorial: https://wavedrom.com/tutorial.html
+// Note:     All code within this block will be evaluated (eval). Exercise caution.
 {
     signal: [
         { name: "pclk", wave: 'p.......' },
@@ -3824,16 +3839,20 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """
+// ==BlockCodeConfig==
+// @width            auto
+// @height           800px
+// @backgroundColor  #FFFFFF
+// ==/BlockCodeConfig==
+
 // Built-in variables:
 //   1. calendar: calendar instance
 //   2. Calendar: Calendar class
 //   3. option:   calendar option object
 //   4. this:     calendar plugin instance
-// example: https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
-// API: https://github.com/nhn/tui.calendar/blob/main/docs/en/apis/options.md
-// All code within this block will be evaluated (eval). Exercise caution.
-// Use the following comment to set chart dimensions (otherwise defaults apply):
-// {height: "800px", width: ""}
+// Examples: https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
+// API:      https://github.com/nhn/tui.calendar/blob/main/docs/en/apis/options.md
+// Note:     All code within this block will be evaluated (eval). Exercise caution.
 
 const today = new Date();
 const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
@@ -3940,6 +3959,12 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """
+// ==BlockCodeConfig==
+// @width            auto
+// @height           auto
+// @backgroundColor  #FFFFFF
+// ==/BlockCodeConfig==
+
 /**
  * Official documentation recommends CDN dependencies due to frequent .drawio format updates.
  * This plugin defaults to remote fetching. Modify configuration for local storage if preferred.

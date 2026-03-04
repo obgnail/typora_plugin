@@ -19,7 +19,7 @@ class KanbanPlugin extends BasePlugin {
             renderFunc: this.render,
             cancelFunc: null,
             destroyAllFunc: null,
-            extraStyleGetter: this.getStyleContent,
+            exportStyleGetter: this.getStyleContent,
             interactiveMode: this.config.INTERACTIVE_MODE
         })
 

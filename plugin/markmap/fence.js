@@ -15,17 +15,21 @@ class FenceMarkmap {
             mappingLang: "markdown",
             destroyWhenUpdate: false,
             interactiveMode: this.config.INTERACTIVE_MODE,
+            metaConfigSchema: null,
             checkSelector: ".plugin-fence-markmap-svg",
             wrapElement: '<svg class="plugin-fence-markmap-svg"></svg>',
             lazyLoadFunc: this.plugin.lazyLoad,
             beforeRenderFunc: this.beforeRender,
-            setStyleFunc: parser.STYLE_SETTER_SIMPLE(this.fenceStyleGetter),
+            renderStyleGetter: parser.helpers.getRenderStyle({
+                height: this.config.DEFAULT_FENCE_HEIGHT,
+                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+            }),
             createFunc: this.create,
             updateFunc: this.update,
             destroyFunc: this.destroy,
             beforeExportToNative: null,
             beforeExportToHTML: null,
-            extraStyleGetter: this.getStyleContent,
+            exportStyleGetter: this.getStyleContent,
             versionGetter: this.getVersion,
         })
     }
@@ -44,11 +48,6 @@ class FenceMarkmap {
         const fenceOptions = yamlObject?.markmap ?? yamlObject ?? {}
         return { ...defaultOptions, ...fenceOptions }
     }
-
-    fenceStyleGetter = ($pre, $wrap, content, options) => ({
-        height: options.height || this.config.DEFAULT_FENCE_HEIGHT,
-        "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
-    })
 
     create = ($wrap, content, options) => {
         const { root } = this.Lib.transformer.transform(content)

@@ -21,17 +21,17 @@ class DiagramParser {
      * @param {function(cid, content, $pre): Promise<null>} renderFunc: Renders based on the content. 1)cid: CID of the current code block. 2)content: content of the code block. 3) $pre: jQuery element of the code block.
      * @param {function(cid): null} cancelFunc: Cancel function, triggered when: 1) modified to another lang 2) the code block content is cleared 3) the code block content does not conform to the syntax
      * @param {function(): null} destroyAllFunc: When switching documents, all charts need to be destroyed (Note: cannot be an AsyncFunction, to prevent the fileOpened event from triggering renderFunc at the same time as destroyAll)
-     * @param {function(): string} extraStyleGetter: Used to add CSS when exporting
+     * @param {function(lang): string} exportStyleGetter: Used to add CSS when exporting
      * @param {boolean} interactiveMode: In interactive mode, the code block will not automatically expand
      */
     register = ({
                     lang, mappingLang, destroyWhenUpdate = false,
-                    renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true
+                    renderFunc, cancelFunc = null, destroyAllFunc = null, exportStyleGetter = null, interactiveMode = true
                 }) => {
         lang = lang.toLowerCase()
         mappingLang = mappingLang ? mappingLang.toLowerCase() : lang
         this.langMapping.set(lang, { name: mappingLang, [this.enableMappingSym]: true })
-        this.parsers.set(lang, { lang, mappingLang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode })
+        this.parsers.set(lang, { lang, mappingLang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, exportStyleGetter, interactiveMode })
     }
 
     unregister = lang => this.parsers.delete(lang)
@@ -264,8 +264,8 @@ class DiagramParser {
                 const extraCSSs = []
                 this.parsers.forEach((parser, lang) => {
                     this.renderAllLangFence(lang)
-                    if (typeof parser.extraStyleGetter === "function" && !!this.utils.entities.querySelectorInWrite(`.md-fences[lang="${lang}"]`)) {
-                        extraCSSs.push(parser.extraStyleGetter())
+                    if (typeof parser.exportStyleGetter === "function" && !!this.utils.entities.querySelectorInWrite(`.md-fences[lang="${lang}"]`)) {
+                        extraCSSs.push(parser.exportStyleGetter(lang))
                     }
                 })
                 if (extraCSSs.length) {

@@ -10,20 +10,21 @@ class ABCPlugin extends BasePlugin {
             mappingLang: this.config.LANGUAGE,
             destroyWhenUpdate: false,
             interactiveMode: this.config.INTERACTIVE_MODE,
+            metaConfigSchema: null,
             checkSelector: ".plugin-notation-content",
             wrapElement: '<div class="plugin-notation-content"></div>',
             lazyLoadFunc: this.lazyLoad,
             beforeRenderFunc: null,
-            setStyleFunc: parser.STYLE_SETTER_SIMPLE({
+            renderStyleGetter: parser.helpers.getRenderStyle({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
-                "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR
+                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
             }),
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: null,
             beforeExportToNative: null,
             beforeExportToHTML: null,
-            extraStyleGetter: null,
+            exportStyleGetter: null,
             versionGetter: this.getVersion,
         })
     }
