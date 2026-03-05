@@ -1207,17 +1207,27 @@
   },
   "echarts": {
     "pluginName": "Echarts",
+    "$label.THEME": "主题",
+    "$label.LOCALE": "语言环境",
+    "$label.RENDERER": "渲染器",
+    "$label.EXPORT_TYPE": "导出格式",
+    "$option.THEME.light": "Light",
+    "$option.THEME.dark": "Dark",
+    "$option.LOCALE.en": "EN",
+    "$option.LOCALE.zh": "ZH",
     "$option.RENDERER.canvas": "Canvas",
     "$option.RENDERER.svg": "SVG",
     "$option.EXPORT_TYPE.png": "PNG（依赖 Canvas 渲染器）",
     "$option.EXPORT_TYPE.jpg": "JPG（依赖 Canvas 渲染器）",
     "$option.EXPORT_TYPE.svg": "SVG（依赖 SVG 渲染器）",
-    "$label.RENDERER": "渲染器",
-    "$label.EXPORT_TYPE": "导出格式",
     "$tooltip.chooseEchartsRenderer": "Typora 对 SVG 的支持更好"
   },
   "chart": {
-    "pluginName": "Chart"
+    "pluginName": "Chart",
+    "$label.CHART_ALIGN": "图表对齐",
+    "$option.CHART_ALIGN.left": "左对齐",
+    "$option.CHART_ALIGN.center": "居中对齐",
+    "$option.CHART_ALIGN.right": "右对齐"
   },
   "wavedrom": {
     "pluginName": "WaveDrom",

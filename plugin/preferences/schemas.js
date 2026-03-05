@@ -472,7 +472,12 @@ const OPTIONS = createOptions({
     static_markers: {
         STATIC_MARKERS: ["strong", "em", "del", "underline", "superscript", "subscript", "code", "image", "link", "footnote", "highlight", "emoji", "inlineMath", "inlineHTML"],
     },
+    chart: {
+        CHART_ALIGN: ["left", "center", "right"],
+    },
     echarts: {
+        LOCALE: ["en", "zh"],
+        THEME: ["light", "dark"],
         RENDERER: ["svg", "canvas"],
         EXPORT_TYPE: ["svg", "png", "jpg"],
     },
@@ -1658,6 +1663,8 @@ const schema_echarts = [
     CodeBox("TEMPLATE"),
     TitledBox(
         "advanced",
+        Select("LOCALE", OPTIONS.echarts.LOCALE),
+        Select("THEME", OPTIONS.echarts.THEME),
         Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: Tip.action("chooseEchartsRenderer") }),
         Select("EXPORT_TYPE", OPTIONS.echarts.EXPORT_TYPE),
     ),
@@ -1667,7 +1674,12 @@ const schema_echarts = [
 const schema_chart = [
     box_pluginLite,
     box_langMode,
-    box_chartStyle,
+    TitledBox(
+        "diagramStyle",
+        Select("CHART_ALIGN", OPTIONS.chart.CHART_ALIGN),
+        Text("DEFAULT_FENCE_HEIGHT"),
+        Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
+    ),
     CodeBox("TEMPLATE"),
     box_settingHandler,
 ]

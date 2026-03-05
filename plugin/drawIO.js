@@ -2,7 +2,15 @@ class DrawIOPlugin extends BasePlugin {
     styleTemplate = () => true
 
     init = () => {
-        this.defaultConfig = this._getDefaultConfig()
+        this.INTERACTION_TYPE = {
+            default: {},
+            showOnly: { highlight: "#0000ff", nav: false, resize: false, edit: null, editable: false, lightbox: false, zoom: "1", toolbar: null, "toolbar-nohide": true },
+            clickable: { highlight: "#0000ff", nav: false, resize: true, edit: null, editable: false, toolbar: null, "toolbar-nohide": true },
+            showToolbar: {
+                highlight: "#0000ff", nav: true, resize: true, edit: null, editable: true, lightbox: false,
+                zoom: "1", toolbar: "zoom lightbox layers", "toolbar-position": "inline", "toolbar-nohide": true,
+            },
+        }
         this._memorizedFetch = this.utils.memoizeLimited(async url => {
             const resp = await this.utils.fetch(url, { timeout: this.config.SERVER_TIMEOUT, proxy: this.config.PROXY })
             return resp.text()
@@ -18,15 +26,18 @@ class DrawIOPlugin extends BasePlugin {
             mappingLang: "javascript",
             destroyWhenUpdate: false,
             interactiveMode: this.config.INTERACTIVE_MODE,
-            metaConfigSchema: parser.helpers.META_SCHEMA_JAVASCRIPT,
+            metaConfigSchema: {
+                ...parser.helpers.styleMetaConfigSchema.wrapDefaultStyle({
+                    height: this.config.DEFAULT_FENCE_HEIGHT,
+                    backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+                }),
+                interaction: { type: "string", enum: ["default", "showOnly", "clickable", "showToolbar"], default: "showOnly" },
+            },
             checkSelector: ".plugin-drawio-content",
             wrapElement: '<div class="plugin-drawio-content"></div>',
             lazyLoadFunc: this.lazyLoad,
             beforeRenderFunc: null,
-            renderStyleGetter: parser.helpers.getRenderStyle({
-                height: this.config.DEFAULT_FENCE_HEIGHT,
-                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
-            }),
+            renderStyleGetter: parser.helpers.renderStyle.base,
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: null,
@@ -37,63 +48,51 @@ class DrawIOPlugin extends BasePlugin {
         })
     }
 
-    create = async ($wrap, content) => {
+    create = async ($wrap, content, meta) => {
         const graphConfig = this.utils.safeEval(content)
         if (!graphConfig.source && !graphConfig.xml) {
             throw new Error(this.i18n.t("error.messingSource"))
         }
-        await this._setXML(graphConfig)
-        $wrap[0].innerHTML = this._toElement(graphConfig)
-        this._refresh()
-        return $wrap[0]
+        if (!graphConfig.xml) {
+            graphConfig.xml = await this._getResource(
+                graphConfig.source,
+                async (source) => {
+                    $wrap[0].innerHTML = "Fetching Network Resource..."
+                    return this._memorizedFetch(source)
+                },
+                async (source) => {
+                    // $wrap[0].innerHTML = "Fetching Local Resource..."
+                    const dir = this.utils.getLocalRootUrl()
+                    const path = this.utils.Package.Path.resolve(dir, source)
+                    return this.utils.Package.FsExtra.readFile(path, "utf-8")
+                }
+            )
+        }
+
+        const presetConfig = this.INTERACTION_TYPE[meta.interaction]
+        const mxGraphData = { ...presetConfig, ...graphConfig }
+        return this._render($wrap[0], mxGraphData)
     }
 
-    _setXML = async graphConfig => {
-        if (graphConfig.xml) return
-
-        let { source } = graphConfig
+    _getResource = async (source, onRemote, onLocal) => {
         const isNetwork = this.utils.isNetworkURI(source)
         try {
-            if (isNetwork) {
-                graphConfig.xml = await this._memorizedFetch(source)
-            } else {
-                const dir = this.utils.getLocalRootUrl()
-                source = this.utils.Package.Path.resolve(dir, source)
-                graphConfig.xml = await this.utils.Package.FsExtra.readFile(source, "utf-8")
-            }
+            const fetchFn = isNetwork ? onRemote : onLocal
+            return fetchFn(source)
         } catch (e) {
             const msg = this.i18n.t(isNetwork ? "error.getFileFailedFromNetwork" : "error.getFileFailedFromLocal")
             throw new Error(`${msg}: ${source}\n\n${e}`)
         }
     }
 
-    _toElement = graphConfig => {
-        const mxGraphData = { ...this.defaultConfig, ...graphConfig }
-        const jsonString = JSON.stringify(mxGraphData)
-        const escaped = this.utils.escape(jsonString)
-        return `<div class="mxgraph" style="max-width:100%; margin: 26px auto 0;" data-mxgraph="${escaped}"></div>`
-    }
-
     _refresh = this.utils.debounce(() => window.GraphViewer.processElements(), 100)
 
-    _getDefaultConfig = (type = "showOnly") => {
-        const config = {
-            showOnly: { highlight: "#0000ff", nav: false, resize: false, edit: null, editable: true, lightbox: false, zoom: "1", toolbar: null, "toolbar-nohide": true, },
-            editable: { highlight: "#0000ff", nav: false, resize: true, edit: null, editable: false, toolbar: null, "toolbar-nohide": true, },
-            showToolbar: {
-                highlight: "#0000ff",
-                nav: true,
-                resize: true,
-                edit: null,
-                editable: true,
-                lightbox: false,
-                zoom: "1",
-                toolbar: "zoom lightbox layers",
-                "toolbar-position": "inline",
-                "toolbar-nohide": true,
-            },
-        }
-        return config[type]
+    _render = (container, mxGraphData) => {
+        const jsonStr = JSON.stringify(mxGraphData)
+        const escaped = this.utils.escape(jsonStr)
+        container.innerHTML = `<div class="mxgraph" style="max-width:100%; margin: 26px auto 0;" data-mxgraph="${escaped}"></div>`
+        this._refresh()
+        return container
     }
 
     lazyLoad = async () => {

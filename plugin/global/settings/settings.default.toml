@@ -3534,7 +3534,7 @@ me: Supports basic Markdown syntax: **bold**, *italic*, `code`, ~~strikethrough~
 
 senderB: You can use YAML front matter to modify the configuration. \\n\\nThe `avatars` option sets user avatars, If not configured, The first letter of the user name is used as the avatar. \\n\\nTry adding `./assets/senderB.jpg` to current directory to see the user senderB's avatar change.
 
-Note: Supports exporting to HTML, PDF, etc. This syntax is plugin-specific and not universal."""
+NOTE: Supports exporting to HTML, PDF, etc. This syntax is plugin-specific and not universal."""
 
 
 ######################################
@@ -3638,6 +3638,16 @@ RENDERER = "svg"
 EXPORT_TYPE = "svg"
 
 # ------------------- 图表显示 -------------------
+# 图形主题
+#   light: 亮色
+#   dark:  暗色
+THEME = "light"
+
+# 语言环境
+#   en: 英文
+#   zh: 中文
+LOCALE = "en"
+
 # 图表默认高度，填入 CSS 高度值（例如：200px）
 DEFAULT_FENCE_HEIGHT = "300px"
 
@@ -3648,9 +3658,12 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """
 // ==BlockCodeConfig==
+// @locale           en
+// @theme            light
+// @renderer         svg
 // @width            auto
 // @height           300px
-// @backgroundColor  #FFFFFF
+// @backgroundColor  transparent
 // ==/BlockCodeConfig==
 
 // Built-in variables:
@@ -3658,8 +3671,8 @@ TEMPLATE = """
 //   2. echarts: ECharts module
 //   3. option:  ECharts option object
 //   4. this:    ECharts plugin instance
-// Note:     All code within this block will be evaluated (eval). Exercise caution.
 // Examples: https://echarts.apache.org/examples/en/index.html#chart-type-line
+// NOTE:     Code within this block will be evaluated. Exercise caution.
 
 option = {
     tooltip: { trigger: 'item' },
@@ -3677,8 +3690,8 @@ option = {
             {value: 735, name: 'Direct'},
             {value: 580, name: 'Email'},
             {value: 484, name: 'Union Ads'},
-            {value: 310, name: 'Video Ads'}
-        ]
+            {value: 310, name: 'Video Ads'},
+        ],
     }]
 }"""
 
@@ -3703,6 +3716,12 @@ LANGUAGE = "chart"
 INTERACTIVE_MODE = true
 
 # ------------------- 图表显示 -------------------
+# 图表默认对齐方式
+#   - left:   左对齐
+#   - center: 居中对齐
+#   - right:  右对齐
+CHART_ALIGN = "left"
+
 # 图表默认高度，填入 CSS 高度值（例如：200px）
 DEFAULT_FENCE_HEIGHT = "300px"
 
@@ -3713,9 +3732,10 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """
 // ==BlockCodeConfig==
+// @align            left
 // @width            auto
 // @height           300px
-// @backgroundColor  #FFFFFF
+// @backgroundColor  transparent
 // ==/BlockCodeConfig==
 
 // Built-in variables:
@@ -3723,7 +3743,7 @@ TEMPLATE = """
 //   2. config:  chart option object
 //   3. this:    chart plugin instance
 // API:  https://chart.nodejs.cn/docs/latest/configuration/
-// Note: All code within this block will be evaluated (eval). Exercise caution.
+// NOTE: Code within this block will be evaluated. Exercise caution.
 
 config = {
   type: "bar",
@@ -3788,11 +3808,11 @@ TEMPLATE = """
 // ==BlockCodeConfig==
 // @width            auto
 // @height           auto
-// @backgroundColor  #FFFFFF
+// @backgroundColor  transparent
 // ==/BlockCodeConfig==
 
 // Tutorial: https://wavedrom.com/tutorial.html
-// Note:     All code within this block will be evaluated (eval). Exercise caution.
+// NOTE:     Code within this block will be evaluated. Exercise caution.
 {
     signal: [
         { name: "pclk", wave: 'p.......' },
@@ -3842,7 +3862,7 @@ TEMPLATE = """
 // ==BlockCodeConfig==
 // @width            auto
 // @height           800px
-// @backgroundColor  #FFFFFF
+// @backgroundColor  transparent
 // ==/BlockCodeConfig==
 
 // Built-in variables:
@@ -3852,17 +3872,17 @@ TEMPLATE = """
 //   4. this:     calendar plugin instance
 // Examples: https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
 // API:      https://github.com/nhn/tui.calendar/blob/main/docs/en/apis/options.md
-// Note:     All code within this block will be evaluated (eval). Exercise caution.
+// NOTE:     Code within this block will be evaluated. Exercise caution.
 
-const today = new Date();
-const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+const today = new Date()
+const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
+const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
 
-option = {defaultView: 'week'};
+option = {defaultView: 'week'}
 calendar.createEvents([
     {id: 'event1', calendarId: 'cal2', title: 'meeting', start: yesterday, end: today},
     {id: 'event2', calendarId: 'cal1', title: 'appointment', start: yesterday, end: nextMonth},
-]);"""
+])"""
 
 
 ######################################
@@ -3960,25 +3980,22 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时会使用此模板
 TEMPLATE = """
 // ==BlockCodeConfig==
+// @interaction      showOnly
 // @width            auto
 // @height           auto
-// @backgroundColor  #FFFFFF
+// @backgroundColor  transparent
 // ==/BlockCodeConfig==
 
-/**
- * Official documentation recommends CDN dependencies due to frequent .drawio format updates.
- * This plugin defaults to remote fetching. Modify configuration for local storage if preferred.
- *
- * Supported options: allow-zoom-in, allow-zoom-out, auto-crop, auto-fit, auto-origin, border, center, check-visible-state, dark-mode, edit, editable, forceCenter, highlight, layerIds, layers, lightbox, max-height, move, nav, page, pageId, resize, responsive, source, target, title, titleTooltip, toolbar, toolbar-buttons, toolbar-nohide, toolbar-position, tooltips, xml, zoom.
- *
- * Refer to: https://github.com/jgraph/drawio/blob/f7158bfb/src/main/webapp/js/diagramly/GraphViewer.js#L118
- */
-graphConfig = {
-    // Local or remote path to the .drawio file.
-    // Example: "./assets/example.drawio" or "D:\\\\tmp\\\\example.drawio" or "http://localhost:8000/example.drawio"
-    source: "https://cdn.jsdelivr.net/gh/obgnail/typora_images@master/image/example.drawio",
+// graphConfig:
+//   - source: URL or local path to the ".drawio" file. eg:
+//      - http://localhost:8000/example.drawio
+//      - ./assets/example.drawio
+//      - D:\\\\tmp\\\\example.drawio
+//   - page: Zero-based index to switch pages
+//   - MORE: https://github.com/jgraph/drawio/blob/f7158bfb/src/main/webapp/js/diagramly/GraphViewer.js#L118
 
-    // Zero-based index to switch between multiple pages.
+graphConfig = {
+    source: "https://cdn.jsdelivr.net/gh/obgnail/typora_images@master/image/example.drawio",
     page: 0,
 }"""
 

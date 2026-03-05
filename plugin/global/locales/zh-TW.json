@@ -1207,17 +1207,27 @@
   },
   "echarts": {
     "pluginName": "Echarts",
+    "$label.THEME": "主題",
+    "$label.LOCALE": "語言環境",
+    "$label.RENDERER": "渲染器",
+    "$label.EXPORT_TYPE": "匯出格式",
+    "$option.THEME.light": "Light",
+    "$option.THEME.dark": "Dark",
+    "$option.LOCALE.en": "EN",
+    "$option.LOCALE.zh": "ZH",
     "$option.RENDERER.canvas": "Canvas",
     "$option.RENDERER.svg": "SVG",
     "$option.EXPORT_TYPE.png": "PNG（依賴 Canvas 渲染器）",
     "$option.EXPORT_TYPE.jpg": "JPG（依賴 Canvas 渲染器）",
     "$option.EXPORT_TYPE.svg": "SVG（依賴 SVG 渲染器）",
-    "$label.RENDERER": "渲染器",
-    "$label.EXPORT_TYPE": "匯出格式",
     "$tooltip.chooseEchartsRenderer": "Typora 對 SVG 的支援更好"
   },
   "chart": {
-    "pluginName": "Chart"
+    "pluginName": "Chart",
+    "$label.CHART_ALIGN": "圖表對齊",
+    "$option.CHART_ALIGN.left": "左對齊",
+    "$option.CHART_ALIGN.center": "居中對齊",
+    "$option.CHART_ALIGN.right": "右對齊"
   },
   "wavedrom": {
     "pluginName": "WaveDrom",

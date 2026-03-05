@@ -47,21 +47,21 @@ class WavedromPlugin extends BasePlugin {
             mappingLang: "javascript",
             destroyWhenUpdate: false,
             interactiveMode: this.config.INTERACTIVE_MODE,
-            metaConfigSchema: parser.helpers.META_SCHEMA_JAVASCRIPT,
+            metaConfigSchema: parser.helpers.styleMetaConfigSchema.wrapDefaultStyle({
+                height: this.config.DEFAULT_FENCE_HEIGHT,
+                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+            }),
             checkSelector: ".plugin-wavedrom-content",
             wrapElement: () => `<div class="plugin-wavedrom-content" id="${this.prefix + ++idx}"></div>`,
             lazyLoadFunc: this.lazyLoad,
             beforeRenderFunc: null,
-            renderStyleGetter: parser.helpers.getRenderStyle({
-                height: this.config.DEFAULT_FENCE_HEIGHT,
-                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
-            }),
+            renderStyleGetter: parser.helpers.renderStyle.base,
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: null,
             beforeExportToNative: null,
             beforeExportToHTML: null,
-            exportStyleGetter: parser.helpers.getSvgExportStyle,
+            exportStyleGetter: parser.helpers.exportStyle.svg,
             versionGetter: this.getVersion,
         })
     }

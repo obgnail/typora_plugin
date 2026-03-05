@@ -10,15 +10,20 @@ class EchartsPlugin extends BasePlugin {
             mappingLang: "javascript",
             destroyWhenUpdate: false,
             interactiveMode: this.config.INTERACTIVE_MODE,
-            metaConfigSchema: parser.helpers.META_SCHEMA_JAVASCRIPT,
+            metaConfigSchema: {
+                ...parser.helpers.styleMetaConfigSchema.wrapDefaultStyle({
+                    height: this.config.DEFAULT_FENCE_HEIGHT,
+                    backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+                }),
+                locale: { type: "string", enum: ["en", "zh"], default: this.config.LOCALE },
+                theme: { type: "string", enum: ["light", "dark"], default: this.config.THEME },
+                renderer: { type: "string", enum: ["svg", "canvas"], default: this.config.RENDERER },
+            },
             checkSelector: ".plugin-echarts-content",
             wrapElement: '<div class="plugin-echarts-content"></div>',
             lazyLoadFunc: this.lazyLoad,
             beforeRenderFunc: null,
-            renderStyleGetter: parser.helpers.getRenderStyle({
-                height: this.config.DEFAULT_FENCE_HEIGHT,
-                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
-            }),
+            renderStyleGetter: parser.helpers.renderStyle.base,
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: this.destroy,
@@ -29,8 +34,9 @@ class EchartsPlugin extends BasePlugin {
         })
     }
 
-    create = ($wrap, content) => {
-        const myChart = this.echartsPkg.init($wrap[0], null, { renderer: this.config.RENDERER })
+    create = ($wrap, content, meta) => {
+        const { theme, locale, renderer } = meta
+        const myChart = this.echartsPkg.init($wrap[0], theme, { locale, renderer })
         this.drawChart(myChart, content)
         return myChart
     }

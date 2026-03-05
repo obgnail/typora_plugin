@@ -15,7 +15,7 @@ class ABCPlugin extends BasePlugin {
             wrapElement: '<div class="plugin-notation-content"></div>',
             lazyLoadFunc: this.lazyLoad,
             beforeRenderFunc: null,
-            renderStyleGetter: parser.helpers.getRenderStyle({
+            renderStyleGetter: parser.helpers.renderStyle.wrapDefault({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
                 backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
             }),

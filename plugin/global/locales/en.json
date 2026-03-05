@@ -1207,17 +1207,27 @@
   },
   "echarts": {
     "pluginName": "Echarts",
+    "$label.THEME": "Theme",
+    "$label.LOCALE": "Locale",
+    "$label.RENDERER": "Renderer",
+    "$label.EXPORT_TYPE": "Export Type",
+    "$option.THEME.light": "Light",
+    "$option.THEME.dark": "Dark",
+    "$option.LOCALE.en": "EN",
+    "$option.LOCALE.zh": "ZH",
     "$option.RENDERER.canvas": "Canvas",
     "$option.RENDERER.svg": "SVG",
     "$option.EXPORT_TYPE.png": "PNG (requires Canvas renderer) ",
     "$option.EXPORT_TYPE.jpg": "JPG (requires Canvas renderer) ",
     "$option.EXPORT_TYPE.svg": "SVG (requires SVG renderer) ",
-    "$label.RENDERER": "Renderer",
-    "$label.EXPORT_TYPE": "Export Type",
     "$tooltip.chooseEchartsRenderer": "SVG is more Typora-friendly"
   },
   "chart": {
-    "pluginName": "Chart"
+    "pluginName": "Chart",
+    "$label.CHART_ALIGN": "Chart Align",
+    "$option.CHART_ALIGN.left": "Left",
+    "$option.CHART_ALIGN.center": "Center",
+    "$option.CHART_ALIGN.right": "Right"
   },
   "wavedrom": {
     "pluginName": "WaveDrom",

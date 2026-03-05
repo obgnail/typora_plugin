@@ -20,7 +20,7 @@ class FenceMarkmap {
             wrapElement: '<svg class="plugin-fence-markmap-svg"></svg>',
             lazyLoadFunc: this.plugin.lazyLoad,
             beforeRenderFunc: this.beforeRender,
-            renderStyleGetter: parser.helpers.getRenderStyle({
+            renderStyleGetter: parser.helpers.renderStyle.wrapDefault({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
                 backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
             }),

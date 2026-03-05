@@ -5,33 +5,9 @@ class ThirdPartyDiagramParser {
     constructor(utils) {
         this.utils = utils
         this.parsers = new Map()
-        this.DEFAYLT_CSS = { width: "100%", height: "230px", backgroundColor: "#F8F8F8" }
+        this.DEFAULT_CSS = { width: "calc(100% - 4px)", height: "300px", backgroundColor: "transparent" }
         this.createConfigParser = metaConfigParserFactory()
-        this.helpers = {
-            META_SCHEMA_JAVASCRIPT: {
-                width: { type: "string" },
-                height: { type: "string" },
-                backgroundColor: { type: "string" },
-            },
-            META_PROPS_STYLE: ["width", "height", "backgroundColor"],
-            getFenceWidth: ($pre) => parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            getRenderStyle: (defaultCss) => {
-                return ($pre, $wrap, content, meta) => {
-                    const metaStyle = this.utils.pick(meta, this.helpers.META_PROPS_STYLE)
-                    const extraStyle = metaStyle.width === "auto" ? { width: this.helpers.getFenceWidth($pre) } : {}
-                    return { ...defaultCss, ...metaStyle, ...extraStyle }
-                }
-            },
-            getSvgExportStyle: (lang) => {
-                const selector = this.parsers.get(lang)?.checkSelector
-                return selector
-                    ? `@media print {
-                        .md-diagram-panel[lang="${lang}"] ${selector} { max-width: 100% !important; width: 100% !important; overflow: visible !important; }
-                        .md-diagram-panel[lang="${lang}"] svg { width: 100% !important; max-width: 100% !important; height: auto !important; }
-                    }`
-                    : ""
-            }
-        }
+        this.helpers = this.getHelpers()
     }
 
     /**
@@ -63,7 +39,7 @@ class ThirdPartyDiagramParser {
         const settingMsg = null
         const metaConfigParser = metaConfigSchema ? this.createConfigParser(metaConfigSchema) : null
         this.parsers.set(lang, {
-            lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg, metaConfigParser,
+            lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg, metaConfigSchema, metaConfigParser,
             checkSelector, wrapElement, lazyLoadFunc, beforeRenderFunc, renderStyleGetter,
             createFunc, updateFunc, destroyFunc, beforeExportToNative, beforeExportToHTML,
             versionGetter, instanceMap: new Map(),
@@ -90,8 +66,8 @@ class ThirdPartyDiagramParser {
             const extractedMeta = typeof parser.metaConfigParser === "function" ? parser.metaConfigParser(content) : {}
             const meta = { ...rawMeta, ...extractedMeta }
             if (typeof parser.renderStyleGetter === "function") {
-                const css = parser.renderStyleGetter($pre, $wrap, content, meta)
-                this.applyFenceStyles($pre, $wrap, css)
+                const userCss = parser.renderStyleGetter($pre, $wrap, content, meta)
+                $wrap.css({ ...this.DEFAULT_CSS, ...userCss })
             }
             let instance = this.createOrUpdate(parser, cid, content, $wrap, lang, meta)
             // Q: Why not use `await this.createOrUpdate` instead of `isPromise`?
@@ -166,16 +142,6 @@ class ThirdPartyDiagramParser {
         }
     }
 
-    applyFenceStyles = ($pre, $wrap, css) => {
-        const { width, height, "background-color": bgc1, backgroundColor: bgc2, ...rest } = css
-        $wrap.css({
-            width: width || this.DEFAYLT_CSS.width,
-            height: height || this.DEFAYLT_CSS.height,
-            "background-color": bgc1 || bgc2 || this.DEFAYLT_CSS.backgroundColor,
-            ...rest,
-        })
-    }
-
     process = () => {
         const getLifeCycleFn = (fnName) => () => {
             for (const parser of this.parsers.values()) {
@@ -191,69 +157,170 @@ class ThirdPartyDiagramParser {
         this.utils.exportHelper.register("third-party-diagram-parser", getLifeCycleFn("beforeExportToHTML"))
         this.utils.exportHelper.registerNative("third-party-diagram-parser", getLifeCycleFn("beforeExportToNative"))
     }
+
+    getHelpers = () => {
+        const DEFAULT_CSS = this.DEFAULT_CSS
+        const getFenceWidth = ($pre) => parseFloat($pre.find(".md-diagram-panel").css("width"))
+        const styleMetaConfigSchema = {
+            wrapDefaultStyle: (defaultStyleVal = {}) => ({
+                width: { type: "string", default: defaultStyleVal.width || DEFAULT_CSS.width, valueAliases: { auto: DEFAULT_CSS.width } },
+                height: { type: "string", default: defaultStyleVal.height || DEFAULT_CSS.height },
+                backgroundColor: { type: "string", default: defaultStyleVal.backgroundColor || DEFAULT_CSS.backgroundColor, aliases: ["gbc", "background-color"] },
+            }),
+        }
+        const renderStyle = {
+            base: ($pre, $wrap, content, meta) => meta ? this.utils.pick(meta, Object.keys(DEFAULT_CSS)) : {},
+            wrapDefault: (defaultStyle = {}) => {
+                return ($pre, $wrap, content, meta) => ({ ...defaultStyle, ...renderStyle.base($pre, $wrap, content, meta) })
+            },
+            wrapMeta: (metaToStyle) => {
+                return ($pre, $wrap, content, meta) => ({ ...metaToStyle(meta), ...renderStyle.base($pre, $wrap, content, meta) })
+            },
+        }
+        const exportStyle = {
+            svg: (lang) => {
+                const selector = this.parsers.get(lang)?.checkSelector
+                return selector
+                    ? `@media print {
+                        .md-diagram-panel[lang="${lang}"] ${selector} { max-width: 100% !important; width: 100% !important; overflow: visible !important; }
+                        .md-diagram-panel[lang="${lang}"] svg { width: 100% !important; max-width: 100% !important; height: auto !important; }
+                    }`
+                    : ""
+            },
+        }
+        return { DEFAULT_CSS, styleMetaConfigSchema, renderStyle, exportStyle, getFenceWidth }
+    }
 }
 
-function metaConfigParserFactory() {
+function metaConfigParserFactory(customCasters = {}) {
     const BLOCK_REGEX = /^(?:\u00EF\u00BB\u00BF)?\s*\/\/ ==BlockCodeConfig==([\s\S]*?)^\/\/ ==\/BlockCodeConfig==/im
     const KV_REGEX = /^\s*\/\/\s+@([a-zA-Z0-9_\-$]+)(?:\s+(.*))?$/gm
-    const TYPE_REGEX = /^([a-z]+)(?:<([a-z]+)>)?$/i
 
-    const fallbackType = { main: "string", item: "string" }
-
-    function castValue(val, type) {
-        if (type === "number") {
-            const num = Number(val)
-            return (val === "" || Number.isNaN(num)) ? val : num
-        }
-        if (type === "boolean") {
-            return val.toLowerCase() !== "false" && val !== "0"
-        }
-        return val
+    const CASTERS = {
+        string: String,
+        number: (v) => isNaN(v) ? v : Number(v),
+        boolean: (v) => v.toLowerCase() !== "false" && v !== "0",
+        ...customCasters
     }
 
-    function resolveType(schemaDef = {}) {
-        const rawType = schemaDef.type || "string"
-        const match = String(rawType).trim().match(TYPE_REGEX)
-        const typeInfo = match
-            ? {
-                main: match[1].toLowerCase(),
-                item: match[2] ? match[2].toLowerCase() : (schemaDef.items || "string")
-            }
-            : { main: "string", item: "string" }
-        if (Object.hasOwn(schemaDef, "default")) {
-            typeInfo.default = schemaDef.default
+    function getLiteralFallback(type) {
+        if (type === "array") return []
+        if (type === "number") return 0
+        if (type === "boolean") return false
+        return ""
+    }
+
+    function normalizeRule(def) {
+        const rule = typeof def === "string" ? { type: def } : { ...def }
+        return {
+            type: rule.type || "string",
+            items: rule.items || "string",
+            default: rule.default,
+            required: Object.hasOwn(rule, "default") ? false : (rule.required ?? false),
+            enum: Array.isArray(rule.enum) ? rule.enum : null,
+            aliases: Array.isArray(rule.aliases) ? rule.aliases : null,
+            valueAliases: (rule.valueAliases && typeof rule.valueAliases === "object") ? rule.valueAliases : null,
+            pattern: rule.pattern instanceof RegExp ? rule.pattern : null,
+            minItems: typeof rule.minItems === "number" ? Math.max(0, Math.floor(rule.minItems)) : null,
+            maxItems: typeof rule.maxItems === "number" ? Math.max(0, Math.floor(rule.maxItems)) : null,
+            transform: typeof rule.transform === "function" ? rule.transform : null,
+            validator: typeof rule.validator === "function" ? rule.validator : null,
         }
-        return typeInfo
     }
 
     return function createConfigParser(schema = {}) {
         const compiledSchema = Object.create(null)
+        const keyAliases = Object.create(null)
         for (const [key, def] of Object.entries(schema)) {
-            compiledSchema[key] = resolveType(def)
-        }
-        return function parse(code) {
-            const blockText = code?.match(BLOCK_REGEX)?.[1]
-            if (!blockText) return null
-            const meta = {}
-            for (const [, key, rawVal] of blockText.matchAll(KV_REGEX)) {
-                const val = (rawVal || "").trim()
-                const { main, item } = compiledSchema[key] || fallbackType
-                if (main === "array") {
-                    if (!Array.isArray(meta[key])) {
-                        meta[key] = []
-                    }
-                    if (val !== "") {
-                        meta[key].push(castValue(val, item))
-                    }
-                } else {
-                    meta[key] = castValue(val, main)
+            const rule = normalizeRule(def)
+            compiledSchema[key] = rule
+            if (rule.aliases) {
+                for (const alias of rule.aliases) {
+                    keyAliases[alias] = key
                 }
             }
-            for (const [key, typeDef] of Object.entries(compiledSchema)) {
-                if (Object.hasOwn(typeDef, "default") && !Object.hasOwn(meta, key)) {
-                    const defaultVal = typeDef.default
-                    meta[key] = Array.isArray(defaultVal) ? [...defaultVal] : defaultVal
+        }
+
+        return function parse(code) {
+            const rawData = Object.create(null)
+            const blockText = code?.match(BLOCK_REGEX)?.[1] || ""
+            if (blockText) {
+                for (const [, rawKey, rawVal] of blockText.matchAll(KV_REGEX)) {
+                    const val = (rawVal || "").trim()
+                    if (val === "") continue
+                    const key = keyAliases[rawKey] || rawKey
+                    if (!rawData[key]) rawData[key] = []
+                    rawData[key].push(val)
                 }
+            }
+
+            const meta = {}
+            const errors = []
+            for (const [key, rule] of Object.entries(compiledSchema)) {
+                const rawValues = rawData[key] || []
+                const isArray = rule.type === "array"
+                const itemType = isArray ? rule.items : rule.type
+                const castFn = CASTERS[itemType] || CASTERS.string
+
+                let processedValues = rawValues.map(v => (rule.valueAliases && Object.hasOwn(rule.valueAliases, v)) ? rule.valueAliases[v] : v).map(castFn)
+                if (rule.transform) {
+                    processedValues = processedValues.flatMap(v => rule.transform(v))
+                }
+
+                const validValues = []
+                for (const v of processedValues) {
+                    let isValid = true
+                    if (rule.pattern && !rule.pattern.test(String(v))) {
+                        errors.push(`[Pattern Error] @${key}: "${v}" does not match pattern ${rule.pattern}`)
+                        isValid = false
+                    }
+                    else if (rule.enum && !rule.enum.includes(v)) {
+                        errors.push(`[Enum Error] @${key}: "${v}" is not in allowed list [${rule.enum.join(", ")}]`)
+                        isValid = false
+                    }
+                    else if (rule.validator && !rule.validator(v)) {
+                        errors.push(`[Validation Error] @${key}: "${v}" failed custom validator`)
+                        isValid = false
+                    }
+                    if (isValid) {
+                        validValues.push(v)
+                    }
+                }
+
+                if (isArray && rawValues.length > 0) {
+                    const count = validValues.length
+                    if (rule.maxItems !== null && count > rule.maxItems) {
+                        errors.push(`[Collection Error] @${key}: Exceeds maximum of ${rule.maxItems} valid items (found ${count})`)
+                        validValues.length = 0
+                    }
+                    else if (rule.minItems !== null && count < rule.minItems) {
+                        errors.push(`[Collection Error] @${key}: Requires at least ${rule.minItems} valid items (found ${count})`)
+                        validValues.length = 0
+                    }
+                }
+
+                if (validValues.length > 0) {
+                    meta[key] = isArray ? validValues : validValues.at(-1)
+                } else {
+                    if (Object.hasOwn(rule, "default")) {
+                        meta[key] = Array.isArray(rule.default) ? [...rule.default] : rule.default
+                    } else {
+                        meta[key] = getLiteralFallback(rule.type)
+                        if (rule.required && rawValues.length === 0) {
+                            errors.push(`[Missing Required] @${key}: Field is required`)
+                        }
+                    }
+                }
+            }
+
+            // Handle undefined header keys
+            for (const [key, rawValues] of Object.entries(rawData)) {
+                if (Object.hasOwn(compiledSchema, key)) continue
+                meta[key] = rawValues.length === 1 ? rawValues[0] : rawValues
+            }
+
+            if (errors.length > 0) {
+                throw new Error("Meta Config Validation Failed:\n- " + [...new Set(errors)].join("\n- "))
             }
             return meta
         }
