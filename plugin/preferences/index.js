@@ -127,7 +127,7 @@ class PreferencesPlugin extends BasePlugin {
     showDialog = async (fixedName) => {
         const plugins = this._getAllPlugins()
         this._fillMenu(plugins)
-        const menu = plugins.hasOwnProperty(fixedName) ? fixedName : this.fallbackMenu
+        const menu = Object.hasOwn(plugins, fixedName) ? fixedName : this.fallbackMenu
         await this.switchMenu(menu, true)
     }
 
@@ -196,7 +196,7 @@ class PreferencesPlugin extends BasePlugin {
         const basePlugins = Object.keys(this.utils.getAllBasePluginSettings())
         const customPlugins = Object.keys(this.utils.getAllCustomPluginSettings())
         const plugins = ["global", ...basePlugins, ...customPlugins]
-            .filter(name => this.SCHEMAS.hasOwnProperty(name))
+            .filter(name => Object.hasOwn(this.SCHEMAS, name))
             .map(name => {
                 const pluginName = this.utils.tryGetPlugin(name)?.pluginName ?? this.i18n._t(name, "pluginName")
                 return [name, pluginName]

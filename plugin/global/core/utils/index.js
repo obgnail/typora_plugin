@@ -621,7 +621,7 @@ class utils {
                 return false
             }
             return key.split(".").every(k => {
-                if (obj && typeof obj === "object" && obj.hasOwnProperty(k)) {
+                if (obj && typeof obj === "object" && Object.hasOwn(obj, k)) {
                     obj = obj[k]
                     return true
                 }
@@ -634,7 +634,7 @@ class utils {
             const targetKey = keys.pop()
             let keyContainer = obj
             for (const k of keys) {
-                if (keyContainer && typeof keyContainer === "object" && keyContainer.hasOwnProperty(k)) {
+                if (keyContainer && typeof keyContainer === "object" && Object.hasOwn(keyContainer, k)) {
                     keyContainer = keyContainer[k]
                 } else {
                     throw new Error(`Object has no such nested property: ${key}`)

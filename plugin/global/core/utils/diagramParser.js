@@ -370,7 +370,7 @@ class DiagramParser {
         const after = (origin, mode) => {
             if (origin === true) return true
             if (!mode) return false
-            if (mode.hasOwnProperty(this.enableMappingSym)) return true
+            if (Object.hasOwn(mode, this.enableMappingSym)) return true
 
             const t = typeof mode
             if (t === "object" && mode.name) {

@@ -28,7 +28,7 @@ class TextStylizePlugin extends BasePlugin {
         }
         const hints = this.i18n.entries(Object.keys(SVGs), "$option.TOOLS.")
         const tools = this.config.TOOLS
-            .filter(name => SVGs.hasOwnProperty(name))
+            .filter(name => Object.hasOwn(SVGs, name))
             .map(name => {
                 const style = name === "blank" ? 'style="visibility: hidden"' : ""
                 return `<div action="${name}" ty-hint="${hints[name]}" ${style}>${SVGs[name]}</div>`

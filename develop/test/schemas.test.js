@@ -14,13 +14,13 @@ const hasNestedProperty = (obj, key) => {
     if (key == null || typeof obj !== "object" || obj === null) {
         return false
     }
-    if (obj.hasOwnProperty(key)) {
+    if (Object.hasOwn(obj, key)) {
         return true
     }
 
     let current = obj
     for (const k of key.split(".")) {
-        if (current === null || typeof current !== "object" || !current.hasOwnProperty(k)) {
+        if (current === null || typeof current !== "object" || !Object.hasOwn(current, k)) {
             return false
         }
         current = current[k]
@@ -335,7 +335,7 @@ test("Action Consistency Check: Defined vs Used", t => {
 test("Schema rules and Settings Key Synchronization", t => {
     Object.entries(rulesMap).forEach(([fixedName, rules]) => {
         assert.ok(
-            settings.hasOwnProperty(fixedName),
+            Object.hasOwn(settings, fixedName),
             `[Schema rules -> Settings] Schema rules key "${fixedName}" was NOT found in the corresponding settings object.`
         )
         Object.keys(rules).forEach(key => {
@@ -351,7 +351,7 @@ test("Schema preprocessors and Settings Key Synchronization", t => {
     delete preprocessorMap?.global?.pluginVersion
     Object.entries(preprocessorMap).forEach(([fixedName, preprocessors]) => {
         assert.ok(
-            settings.hasOwnProperty(fixedName),
+            Object.hasOwn(settings, fixedName),
             `[Schema preprocessors -> Settings] Schema preprocessors key "${fixedName}" was NOT found in the corresponding settings object.`
         )
 
@@ -367,7 +367,7 @@ test("Schema preprocessors and Settings Key Synchronization", t => {
 test("Schema watchers and Settings Key Synchronization", t => {
     Object.keys(watcherMap).forEach((fixedName) => {
         assert.ok(
-            settings.hasOwnProperty(fixedName),
+            Object.hasOwn(settings, fixedName),
             `[Schema watchers -> Settings] Schema watchers key "${fixedName}" was NOT found in the corresponding settings object.`
         )
     })

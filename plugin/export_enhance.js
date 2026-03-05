@@ -26,7 +26,7 @@ class ExportEnhancePlugin extends BasePlugin {
                 }
                 let imagePath
                 if (this.utils.isNetworkImage(src)) {
-                    if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) {
+                    if (!this.config.DOWNLOAD_NETWORK_IMAGE || !Object.hasOwn(imageMap, src)) {
                         return origin
                     }
                     imagePath = imageMap[src]
@@ -51,7 +51,7 @@ class ExportEnhancePlugin extends BasePlugin {
         const chunks = this.utils.chunk(srcList, this.config.DOWNLOAD_THREADS)
         for (const chunk of chunks) {
             const promises = chunk.map(async src => {
-                if (imageMap.hasOwnProperty(src)) return
+                if (Object.hasOwn(imageMap, src)) return
                 try {
                     const { ok, filepath } = await this.utils.downloadImage(src)
                     if (ok) {

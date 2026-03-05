@@ -62,7 +62,7 @@ module.exports = (plugin) => {
                 }
             },
             PRELOAD_ALL_FENCES: (field, data) => {
-                if (!File.hasOwnProperty("loadFile")) {
+                if (!Object.hasOwn(File, "loadFile")) {
                     _disableSwitch(field, data)
                 }
             },
@@ -88,7 +88,7 @@ module.exports = (plugin) => {
                 }
             },
             OUTLINE_FOLD_STATE: (field) => {
-                if (!File.option.hasOwnProperty("canCollapseOutlinePanel")) {
+                if (!Object.hasOwn(File.option, "canCollapseOutlinePanel")) {
                     _disableControl(field)
                 } else if (!File.option.canCollapseOutlinePanel) {
                     const text = i18n._t("sidebar_enhance", "$tooltip.canCollapseOutlinePanel")

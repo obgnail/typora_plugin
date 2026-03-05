@@ -19,7 +19,7 @@ class FastForm extends HTMLElement {
             getNestedSchemas: { type: "function" },
             controlOptions: { type: "plainObject" },
         })
-        if (this.controls.hasOwnProperty(name)) {
+        if (Object.hasOwn(this.controls, name)) {
             console.warn(`FastForm Warning: Overwriting control for '${name}'.`)
         }
         this.controls[name] = definition
@@ -32,7 +32,7 @@ class FastForm extends HTMLElement {
             compile: { type: "function" },
             featureOptions: { type: "plainObject" },
         })
-        if (this.features.hasOwnProperty(name)) {
+        if (Object.hasOwn(this.features, name)) {
             console.warn(`FastForm Warning: Overwriting feature for '${name}'.`)
         }
         this.features[name] = definition
@@ -45,7 +45,7 @@ class FastForm extends HTMLElement {
         if (!definition || typeof definition !== "object") {
             throw new TypeError("Layout definition must be an object.")
         }
-        if (this.layouts.hasOwnProperty(name)) {
+        if (Object.hasOwn(this.layouts, name)) {
             console.warn(`FastForm Warning: Overwriting layout for '${name}'.`)
         }
         this.layouts[name] = definition
@@ -416,7 +416,7 @@ class FastForm extends HTMLElement {
                     return state
                 },
             }
-            if (options._instanceFeatures.hasOwnProperty(name) && typeof feature.install === "function") {
+            if (Object.hasOwn(options._instanceFeatures, name) && typeof feature.install === "function") {
                 console.warn(`FastForm Warning: The 'install' method of the feature '${name}' will be ignored. For instance-specific logic, use 'configure'.`)
             }
             if (typeof feature.configure === "function") {
@@ -619,7 +619,7 @@ function validateDefinition(name, definition, checks, options = {}) {
         if (rule.required && (value === undefined || value === null)) {
             throw new TypeError(`'${name}' must have a '${key}' of type '${rule.type}'.`)
         }
-        if (definition.hasOwnProperty(key)) {
+        if (Object.hasOwn(definition, key)) {
             if (rule.type === "function" && typeof value !== "function") {
                 throw new TypeError(`The '${key}' property for '${name}' must be a function.`)
             }
@@ -1232,7 +1232,7 @@ const Feature_Watchers = (() => {
         userWatchers.forEach((watcher, index) => {
             if (!watcher) return
             const key = watcher.key || watcher.name || `anonymous_watcher_${index}`
-            if (normalized.hasOwnProperty(key)) {
+            if (Object.hasOwn(normalized, key)) {
                 console.warn(`FastForm Warning: Duplicate watcher key detected: '${key}'.`)
             }
             normalized[key] = watcher
@@ -1331,9 +1331,9 @@ const Feature_Watchers = (() => {
 
         const uiBehaviors = {
             visibility: (el, actions, ctx) => {
-                if (actions.hasOwnProperty("$toggle")) {
+                if (Object.hasOwn(actions, "$toggle")) {
                     utils.toggleInvisible(el)
-                } else if (actions.hasOwnProperty("$set")) {
+                } else if (Object.hasOwn(actions, "$set")) {
                     utils.toggleInvisible(el, actions.$set === "hidden")
                 } else {
                     console.warn("FastForm Warning: Invalid action for '$visibility' effect. Use '$set' or '$toggle'.", actions)
@@ -1391,7 +1391,7 @@ const Feature_Watchers = (() => {
                 addKey: (key) => keys.add(key),
             }
             for (const [name, handler] of Object.entries(form.options.conditionEvaluators)) {
-                if (condition.hasOwnProperty(name)) {
+                if (Object.hasOwn(condition, name)) {
                     let value = condition[name]
                     if (typeof handler.beforeEvaluate === "function") value = handler.beforeEvaluate(value, context)
                     handler.collectTriggers(value, context)
@@ -1479,7 +1479,7 @@ const Feature_Watchers = (() => {
 
             // Handle logical evaluators like $and, $or
             for (const [name, handler] of Object.entries(context.conditionEvaluators)) {
-                if (condition.hasOwnProperty(name)) {
+                if (Object.hasOwn(condition, name)) {
                     let value = condition[name]
                     if (typeof handler.beforeEvaluate === "function") {
                         value = handler.beforeEvaluate(value, context)
@@ -1728,25 +1728,25 @@ const Feature_Watchers = (() => {
             FastFormClass.registerMeta = (name, getterFn) => {
                 if (typeof name !== "string" || !name) throw new TypeError("Meta name must be a non-empty string.")
                 if (typeof getterFn !== "function") throw new TypeError("Meta getter must be a function.")
-                if (Registries.meta.hasOwnProperty(name)) console.warn(`FastForm Warning: Overwriting meta '${name}'.`)
+                if (Object.hasOwn(Registries.meta, name)) console.warn(`FastForm Warning: Overwriting meta '${name}'.`)
                 Registries.meta[name] = getterFn
             }
             FastFormClass.registerConditionEvaluator = (name, definition) => {
                 const checks = { evaluate: { required: true, type: "function" }, collectTriggers: { required: true, type: "function" }, beforeEvaluate: { type: "function" } }
                 validateDefinition(name, definition, checks, validationOptions)
-                if (Registries.conditionEvaluators.hasOwnProperty(name)) console.warn(`FastForm Warning: Overwriting Condition Evaluator for '${name}'.`)
+                if (Object.hasOwn(Registries.conditionEvaluators, name)) console.warn(`FastForm Warning: Overwriting Condition Evaluator for '${name}'.`)
                 Registries.conditionEvaluators[name] = definition
             }
             FastFormClass.registerComparisonEvaluator = (name, definition) => {
                 const checks = { evaluate: { required: true, type: "function" }, beforeEvaluate: { type: "function" } }
                 validateDefinition(name, definition, checks, validationOptions)
-                if (Registries.comparisonEvaluators.hasOwnProperty(name)) console.warn(`FastForm Warning: Overwriting Comparison Evaluator for '${name}'.`)
+                if (Object.hasOwn(Registries.comparisonEvaluators, name)) console.warn(`FastForm Warning: Overwriting Comparison Evaluator for '${name}'.`)
                 Registries.comparisonEvaluators[name] = definition
             }
             FastFormClass.registerEffectHandler = (name, definition) => {
                 const checks = { collectAffects: { required: true, type: "function" }, execute: { required: true, type: "function" } }
                 validateDefinition(name, definition, checks, validationOptions)
-                if (Registries.effectHandlers.hasOwnProperty(name)) console.warn(`FastForm Warning: Overwriting Effect Handler for '${name}'.`)
+                if (Object.hasOwn(Registries.effectHandlers, name)) console.warn(`FastForm Warning: Overwriting Effect Handler for '${name}'.`)
                 Registries.effectHandlers[name] = definition
             }
         },
@@ -1915,7 +1915,7 @@ const Feature_Validation = {
                 if (typeof definition !== "function") {
                     throw new TypeError(`Validator Error: validator '${name}' must be a function.`)
                 }
-                if (Feature_Validation._validators.hasOwnProperty(name)) {
+                if (Object.hasOwn(Feature_Validation._validators, name)) {
                     console.warn(`FastForm Warning: Overwriting validator for '${name}'.`)
                 }
                 Feature_Validation._validators[name] = definition
@@ -1980,7 +1980,7 @@ const Feature_Validation = {
 }
 
 function normalizeWatcherOptions(rule) {
-    const isFullDefinition = ["when", "triggers"].some(key => rule.hasOwnProperty(key))
+    const isFullDefinition = ["when", "triggers"].some(key => Object.hasOwn(rule, key))
     let when, triggers
     if (isFullDefinition) {
         when = rule.when
@@ -2001,7 +2001,7 @@ const Feature_FieldDependencies = {
         const allDependencies = { ...options.fieldDependencies }
         form.traverseFields(field => {
             if (!field.dependencies) return
-            if (allDependencies.hasOwnProperty(field.key)) {
+            if (Object.hasOwn(allDependencies, field.key)) {
                 console.warn(`FastForm Warning: Dependency for '${field.key}' is defined both inline and in top-level options. The inline definition will be used.`)
             }
             allDependencies[field.key] = field.dependencies
@@ -2070,7 +2070,7 @@ const Feature_BoxDependencies = {
         form.traverseBoxes((box) => {
             allBoxes[box.id] = box
             if (box.dependencies) {
-                if (allRules.hasOwnProperty(box.id)) {
+                if (Object.hasOwn(allRules, box.id)) {
                     console.warn(`FastForm Warning: Box for '${box.id}' is defined both inline and in top-level options. The inline definition will be used.`)
                 }
                 allRules[box.id] = box.dependencies
@@ -2141,7 +2141,7 @@ const Feature_Cascades = {
         const { register } = form.getApi("watchers")
         Object.entries(options.cascades).forEach(([cascadeKey, rule]) => {
             const watcherKey = `_cascade_${cascadeKey}`
-            if (!rule || !rule.hasOwnProperty("target") || !rule.hasOwnProperty("value")) {
+            if (!rule || !Object.hasOwn(rule, "target") || !Object.hasOwn(rule, "value")) {
                 console.warn(`FastForm Warning: Cascade rule "${cascadeKey}" is missing a "target" or "value".`)
                 return
             }
@@ -2363,7 +2363,7 @@ function normalizeOptionsAttr(field) {
 }
 
 function defaultBlockLayout(field) {
-    if (!field.hasOwnProperty("isBlockLayout")) {
+    if (!Object.hasOwn(field, "isBlockLayout")) {
         field.isBlockLayout = true
     }
 }

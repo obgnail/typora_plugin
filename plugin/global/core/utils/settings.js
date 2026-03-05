@@ -98,8 +98,8 @@ class Settings {
         const basePlugins = this.utils.getAllBasePluginSettings()
         const isObject = x => x != null && !Array.isArray(x) && typeof x === "object"
         const settingFiles = {
-            "settings.user.toml": this.utils.pickBy(settings, (obj, key) => isObject(obj) && basePlugins.hasOwnProperty(key)),
-            "custom_plugin.user.toml": this.utils.pickBy(settings, (obj, key) => isObject(obj) && !basePlugins.hasOwnProperty(key)),
+            "settings.user.toml": this.utils.pickBy(settings, (obj, key) => isObject(obj) && Object.hasOwn(basePlugins, key)),
+            "custom_plugin.user.toml": this.utils.pickBy(settings, (obj, key) => isObject(obj) && !Object.hasOwn(basePlugins, key)),
         }
         const promises = Object.entries(settingFiles).map(async ([file, setting]) => {
             const path = await this.getActualPath(file)

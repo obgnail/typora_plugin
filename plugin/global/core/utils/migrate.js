@@ -51,11 +51,11 @@ class Migrate {
     cleanPluginsAndKeys = (files) => {
         files.forEach(({ configDefault, configUser }) => {
             Object.keys(configUser)
-                .filter(fixedName => configDefault.hasOwnProperty(fixedName))
+                .filter(fixedName => Object.hasOwn(configDefault, fixedName))
                 .map(fixedName => {
                     const pluginUser = configUser[fixedName]
                     const pluginDefault = configDefault[fixedName]
-                    const toDeleteKeys = Object.keys(pluginUser).filter(key => !pluginDefault.hasOwnProperty(key) || this.utils.deepEqual(pluginDefault[key], pluginUser[key]))
+                    const toDeleteKeys = Object.keys(pluginUser).filter(key => !Object.hasOwn(pluginDefault, key) || this.utils.deepEqual(pluginDefault[key], pluginUser[key]))
                     return [pluginUser, toDeleteKeys]
                 })
                 .forEach(([plugin, toDeleteKeys]) => toDeleteKeys.forEach(key => delete plugin[key]))

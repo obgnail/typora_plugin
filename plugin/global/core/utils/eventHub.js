@@ -64,14 +64,14 @@ class EventHub {
     }
 
     _checkType = type => {
-        if (!this.eventType.hasOwnProperty(type)) {
-            throw new Error(`do not support event type: ${type}`)
+        if (!Object.hasOwn(this.eventType, type)) {
+            throw new Error(`Do not support event type: ${type}`)
         }
     }
 
     _checkListener = listener => {
         if (typeof listener !== "function") {
-            throw new Error(`listener is not function: ${listener}`)
+            throw new Error(`Listener is not function: ${listener}`)
         }
     }
 

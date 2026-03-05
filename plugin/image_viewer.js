@@ -88,7 +88,7 @@ class ImageViewerPlugin extends BasePlugin {
         const columns = '<div class="viewer-water-fall-col"></div>'.repeat(this.config.WATER_FALL_COLUMNS)
         const messageList = this.config.SHOW_MESSAGE.map(m => `<div class="viewer-${m}"></div>`)
         const operationList = this.config.TOOL_FUNCTION
-            .filter(option => opEntities.hasOwnProperty(option))
+            .filter(option => Object.hasOwn(opEntities, option))
             .map(option => {
                 const { hint, icon } = opEntities[option]
                 return `<i class="${icon}" option="${option}" title="${hint}"></i>`

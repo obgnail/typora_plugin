@@ -65,7 +65,7 @@ const LoadPlugin = async (fixedName, setting, isBasePlugin) => {
 }
 
 const LoadPlugins = async (settings, logging = true) => {
-    const isBase = settings.hasOwnProperty("global")
+    const isBase = Object.hasOwn(settings, "global")
     const plugins = { enable: {}, disable: {}, stop: {}, error: {}, nosetting: {} }
     const promises = Object.entries(settings).map(async ([fixedName, setting]) => {
         if (!setting) {
