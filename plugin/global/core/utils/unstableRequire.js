@@ -14,14 +14,10 @@ class UnstableRequire {
         this.registerMods({
             "chokidar": "chokidar",
             "fs-extra": "fs-extra",
-            "getos": "getos",  // New version only
             "hjson": "hjson",
             "iconv-lite": "iconv-lite",
             "jschardet": "jschardet",
-            "native-reg": "native-reg",  // New version only
-            "node-machine-id": "node-machine-id",  // New version only
             "spellchecker": "spellchecker",
-            "electron-fetch": "electron-fetch",  // New version only
 
             "extract-zip": "extract-zip",
             "yauzl": "extract-zip/node_modules/yauzl",
@@ -37,15 +33,21 @@ class UnstableRequire {
             "lodash": "lowdb/node_modules/lodash",
 
             "vscode-ripgrep": "vscode-ripgrep",
-            "debug": "vscode-ripgrep/node_modules/debug",  // New version only
             "ms": "vscode-ripgrep/node_modules/ms",
-            "https-proxy-agent": "vscode-ripgrep/node_modules/https-proxy-agent",  // New version only
 
             "md5": "raven/node_modules/md5",
             "uuid": "raven/node_modules/uuid",
 
             "jimp": this.utils.joinPath(libBase, "jimp/browser/lib/jimp.min.js"),
             "pdf-lib": this.utils.joinPath(libBase, "pdf/pdf-lib.min.js"),
+
+            // New version only
+            "getos": "getos",
+            "native-reg": "native-reg",
+            "electron-fetch": "electron-fetch",
+            "node-machine-id": "node-machine-id",
+            "debug": "vscode-ripgrep/node_modules/debug",
+            "https-proxy-agent": "vscode-ripgrep/node_modules/https-proxy-agent",
         })
     }
 

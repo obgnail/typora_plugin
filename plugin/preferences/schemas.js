@@ -409,7 +409,7 @@ const createOptions = (definitions) => {
 const OPTIONS = createOptions({
     global: {
         LOCALE: ["auto", "en", "zh-CN", "zh-TW"],
-        EXIT_INTERACTIVE_MODE: ["click_exit_button", "ctrl_click_fence"],
+        EXIT_CHART_INTERACTION: ["click_exit_button", "ctrl_click_fence"],
     },
     window_tab: {
         CONTEXT_MENU: ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"],
@@ -481,6 +481,9 @@ const OPTIONS = createOptions({
         RENDERER: ["svg", "canvas"],
         EXPORT_TYPE: ["svg", "png", "jpg"],
     },
+    wavedrom: {
+        CHART_ALIGN: ["left", "center", "right"],
+    },
     plantUML: {
         OUTPUT_FORMAT: ["svg", "png", "txt"],
     },
@@ -507,12 +510,15 @@ const schema_global = [
     UntitledBox(
         Switch("ENABLE", prop_protected),
         Select("LOCALE", OPTIONS.global.LOCALE),
-        Select("EXIT_INTERACTIVE_MODE", OPTIONS.global.EXIT_INTERACTIVE_MODE, { minItems: 1 }),
+    ),
+    UntitledBox(
+        Switch("BATCH_RENDER_CHARTS"),
+        Select("EXIT_CHART_INTERACTION", OPTIONS.global.EXIT_CHART_INTERACTION, { minItems: 1 }),
     ),
     UntitledBox(
         Action("runtimeSettings"),
         Action("restoreSettings"),
-        Action("restoreAllSettings"),
+        Action("restoreAllSettings", { tooltip: [Tip.action("inspectDefaultSettings", "fa fa-codepen"), Tip.action("inspectDefaultSettingsInExternalEditor", "fa fa-external-link-square")] }),
         Action("exportSettings"),
         Action("importSettings"),
     ),
@@ -1692,7 +1698,12 @@ const schema_wavedrom = [
         Switch("INTERACTIVE_MODE"),
         Switch("SAFE_MODE"),
     ),
-    box_chartStyle,
+    TitledBox(
+        "diagramStyle",
+        Select("CHART_ALIGN", OPTIONS.wavedrom.CHART_ALIGN),
+        Text("DEFAULT_FENCE_HEIGHT"),
+        Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
+    ),
     CodeBox("TEMPLATE"),
     ArrayBox("SKIN_FILES", { tooltip: Tip.action("downloadWaveDromSkins", "fa fa-download") }),
     box_settingHandler,

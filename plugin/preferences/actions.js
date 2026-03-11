@@ -62,11 +62,25 @@ module.exports = (plugin) => {
         runtimeSettings: async () => {
             const { settings } = await plugin.getCurrent()
             const op = {
-                title: i18n._t("settings", "$label.runtimeSettings") + `（${i18n.t("readonly")}）`,
+                title: i18n._t("settings", "$label.runtimeSettings"),
                 schema: [{ fields: [{ key: "runtimeSettings", type: "code", readonly: true }] }],
                 data: { runtimeSettings: JSON.stringify(settings, null, "\t") },
             }
             await utils.formDialog.modal(op)
+        },
+        inspectDefaultSettings: async () => {
+            const path = await utils.settings.getActualPath("settings.default.toml")
+            const content = await utils.Package.FsExtra.readFile(path, "utf-8")
+            const op = {
+                title: i18n.t("$tooltip.inspectDefaultSettings"),
+                schema: [{ fields: [{ key: "allDefaultSettings", type: "code", readonly: true }] }],
+                data: { allDefaultSettings: content },
+            }
+            await utils.formDialog.modal(op)
+        },
+        inspectDefaultSettingsInExternalEditor: async () => {
+            const path = await utils.settings.getActualPath("settings.default.toml")
+            utils.openPath(path)
         },
         invokeMarkdownlintSettings: async () => utils.callPluginFunction("markdownlint", "settings"),
         installPlantUMLServer: async () => {

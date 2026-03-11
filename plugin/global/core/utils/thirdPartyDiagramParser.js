@@ -106,6 +106,7 @@ class ThirdPartyDiagramParser {
                 interactiveMode: parser.interactiveMode,
                 destroyWhenUpdate: parser.destroyWhenUpdate,
                 containerElement: parser.wrapElement,
+                metaConfigSchema: JSON.stringify(parser.metaConfigSchema),
             }
             parser.settingMsg = Object.entries(settings).map(([k, v]) => `    ${k}: ${v}`).join("\n")
         }
@@ -273,12 +274,10 @@ function metaConfigParserFactory(customCasters = {}) {
                     if (rule.pattern && !rule.pattern.test(String(v))) {
                         errors.push(`[Pattern Error] @${key}: "${v}" does not match pattern ${rule.pattern}`)
                         isValid = false
-                    }
-                    else if (rule.enum && !rule.enum.includes(v)) {
+                    } else if (rule.enum && !rule.enum.includes(v)) {
                         errors.push(`[Enum Error] @${key}: "${v}" is not in allowed list [${rule.enum.join(", ")}]`)
                         isValid = false
-                    }
-                    else if (rule.validator && !rule.validator(v)) {
+                    } else if (rule.validator && !rule.validator(v)) {
                         errors.push(`[Validation Error] @${key}: "${v}" failed custom validator`)
                         isValid = false
                     }
@@ -292,8 +291,7 @@ function metaConfigParserFactory(customCasters = {}) {
                     if (rule.maxItems !== null && count > rule.maxItems) {
                         errors.push(`[Collection Error] @${key}: Exceeds maximum of ${rule.maxItems} valid items (found ${count})`)
                         validValues.length = 0
-                    }
-                    else if (rule.minItems !== null && count < rule.minItems) {
+                    } else if (rule.minItems !== null && count < rule.minItems) {
                         errors.push(`[Collection Error] @${key}: Requires at least ${rule.minItems} valid items (found ${count})`)
                         validValues.length = 0
                     }

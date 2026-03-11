@@ -2923,7 +2923,7 @@ const Control_Object = {
                 parsedValue = serializer.parse(textarea.value || "{}")
             } catch (e) {
                 console.error(e)
-                const msg = i18n.t("global", "error.IncorrectFormatContent", { format: controlOptions.format })
+                const msg = i18n.t("global", "error.incorrectFormat", { format: controlOptions.format })
                 utils.notification.show(msg, "error")
                 return
             }

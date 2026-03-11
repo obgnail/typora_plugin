@@ -122,6 +122,11 @@ module.exports = (plugin) => {
                     subField.options = allBasePlugins
                 }
             },
+            SHOW_PLUGIN_HOTKEY: (field, data) => {
+                if (!document.querySelector(".ty-menu-shortcut")) {
+                    _disableSwitch(field, data)
+                }
+            },
         },
         preferences: {
             DEFAULT_MENU: (field) => {

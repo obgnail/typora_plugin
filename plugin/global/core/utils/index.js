@@ -58,7 +58,7 @@ class utils {
     static getCustomPlugin = fixedName => this.container.getCustomPlugin(fixedName)
     static getAllBasePluginSettings = () => this.container.getAllBasePluginSettings()
     static getAllCustomPluginSettings = () => this.container.getAllCustomPluginSettings()
-    static getGlobalSetting = fixedName => this.container.getGlobalSetting(fixedName)
+    static getGlobalSetting = () => this.container.getGlobalSetting()
     static getBasePluginSetting = fixedName => this.container.getBasePluginSetting(fixedName)
     static getCustomPluginSetting = fixedName => this.container.getCustomPluginSetting(fixedName)
     static tryGetPlugin = fixedName => this.container.tryGetPlugin(fixedName)

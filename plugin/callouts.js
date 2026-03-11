@@ -40,9 +40,9 @@ class CalloutsPlugin extends BasePlugin {
     call = () => this.utils.insertText(null, this.config.TEMPLATE)
 
     check = args => {
-        const isIgnoreType = args?.[0]?.type === "html-plain"
-        const hasCallout = this.utils.entities.querySelectorInWrite(".plugin-callout")
-        return !isIgnoreType && hasCallout
+        const isIgnoredExportType = args?.[0]?.type === "html-plain"
+        const hasCallouts = this.utils.entities.querySelectorInWrite(".plugin-callout")
+        return !isIgnoredExportType && hasCallouts
     }
 
     beforeExport = (...args) => {

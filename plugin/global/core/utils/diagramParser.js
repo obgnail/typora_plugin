@@ -10,8 +10,9 @@ class DiagramParser {
         this.exitInteractiveStrategies = ["click_exit_button"]
         this.parsers = new Map()     // map[lang]parser
         this.langMapping = new Map() // map[lang]mappingLang
-        // this.pending = new Set()     // cid
-        // this.timeout = 300
+
+        this.scheduled = new Set()     // cid
+        this.timeout = 300
     }
 
     /**
@@ -39,6 +40,7 @@ class DiagramParser {
     process = async () => {
         if (this.parsers.size === 0) return
         await this.polyfillStyle()
+        this.setRenderTiming()
         this.fixInteractiveMode()
         this.registerLangTooltip()
         this.registerLangModeMapping()
@@ -75,9 +77,16 @@ class DiagramParser {
         }
     }
 
-    /** If the fenceEnhance plugin is disabled and EXIT_INTERACTIVE_MODE === click_exit_button, then force all charts to disable interactive mode. */
+    // Q: When the user is continuously typing, how to reduce rendering frequency while ensuring interactive experience?
+    // A: Render immediately when the user types for the first time, then render once every X milliseconds, and finally render again based on the final input string.
+    setRenderTiming = () => {
+        const batch = this.utils.getGlobalSetting()?.BATCH_RENDER_CHARTS
+        this.renderDiagram = batch ? this._batchRenderDiagram : this._doRenderDiagram
+    }
+
+    /** If the fenceEnhance plugin is disabled and EXIT_CHART_INTERACTION === click_exit_button, then force all charts to disable interactive mode. */
     fixInteractiveMode = () => {
-        const cfg = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE")
+        const cfg = this.utils.getGlobalSetting()?.EXIT_CHART_INTERACTION
         if (Array.isArray(cfg)) {
             const arr = cfg.filter(e => e === "ctrl_click_fence" || e === "click_exit_button")
             if (arr.length) {
@@ -206,7 +215,7 @@ class DiagramParser {
         }
     }
 
-    renderDiagram = async cid => {
+    _doRenderDiagram = async cid => {
         const $pre = File.editor.findElemById(cid)
         const lang = $pre.attr("lang")?.trim().toLowerCase()
         if (lang === undefined) return
@@ -232,17 +241,17 @@ class DiagramParser {
         }
     }
 
-    // // When the user is continuously typing, how to reduce rendering frequency while ensuring interactive experience?
-    // // A: Render immediately when the user types for the first time, then render once every X milliseconds, and finally render again based on the final input string.
-    // renderDiagram = async cid => {
-    //     if (this.pending.has(cid)) return
-    //
-    //     this.pending.add(cid)
-    //     await this._renderDiagram(cid)
-    //     await this.utils.sleep(this.timeout)
-    //     this.pending.delete(cid)
-    //     await this._renderDiagram(cid)
-    // }
+    _batchRenderDiagram = async cid => {
+        if (this.scheduled.has(cid)) return
+        try {
+            this.scheduled.add(cid)
+            await this._doRenderDiagram(cid)
+            await this.utils.sleep(this.timeout)
+        } finally {
+            this.scheduled.delete(cid)
+            await this._doRenderDiagram(cid)
+        }
+    }
 
     onAddCodeBlock = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.renderDiagram)
 
