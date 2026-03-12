@@ -51,7 +51,7 @@
 | 32   | timeline            | 时间线                                     |          |
 | 33   | chat                | 聊天                                       |          |
 | 34   | auto_number         | 章节、表格、图片、代码块等自动编号         |          |
-| 35   | image_viewer        | 图片查看器                                 |          |
+| 35   | image_see           | 双击图片查看器                              |          |
 | 36   | cjk_symbol_pairing  | 中文符号配对                               |          |
 | 37   | resize_table        | 调整表格行高列宽                           |          |
 | 38   | resize_image        | 调整图片显示大小                           |          |
@@ -76,6 +76,7 @@
 | 57   | hotkeys             | 快捷键注册中心（高级）                     |          |
 | 58   | action_buttons      | 于右下角添加功能按钮（高级）               |          |
 | 59   | json_rpc            | 外部操纵 Typora（高级）                    | ×        |
+| 60   | image_viewer        | 多图片查看器                                |          |
 
 > 如果有需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果觉得本项目对您有帮助，请不吝点亮一个 Star ⭐！
 
@@ -507,7 +508,24 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 
 
 
-### image_viewer：图片查看器
+### image_see：双击图片查看器
+
+功能：鼠标左键双击查看图片，并支持缩放、拖动。
+
+使用方式：
+
+- 查看：鼠标左键双击已被渲染的img图片，即可弹出图片。
+- 缩放：图片弹出后，可通过鼠标滚轮进行缩放。
+- 拖动：图片弹出后，可按住鼠标左键然后拖动图片，即查看各处细节。
+- 关闭：图片弹出后，可点击右上角的X或按Esc，即可关闭查看图片。
+
+![image-see-default](./assets/image-see-default.png)
+![image-see-scale](./assets/image-see-scale.png)
+![image-see-drag](./assets/image-see-drag.png)
+
+
+
+### image_viewer：多图片查看器
 
 功能：一站式图片查看，并且提供简单图片编辑。
 
