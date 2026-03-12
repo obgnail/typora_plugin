@@ -75,7 +75,7 @@ class UpdaterPlugin extends BasePlugin {
 
         const op = {
             title: this.pluginName,
-            schema: [{ fields: [{ type: "textarea", key: "detail", rows: 14 }] }],
+            schema: [{ fields: [{ type: "code", key: "detail" }] }],
             data: { detail },
         }
         await this.utils.formDialog.modal(op)

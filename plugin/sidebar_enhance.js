@@ -244,7 +244,7 @@ class SidebarEnhancePlugin extends BasePlugin {
                 fileFilter: (name, filepath, stat) => verifySize(stat) && verifyExt(name),
                 dirFilter: name => !this.config.IGNORE_FOLDERS.includes(name),
                 fileParamsGetter: this.utils.identity,
-                maxStats: this.config.MAX_STATS,
+                maxEntities: this.config.MAX_ENTITIES,
                 semaphore: this.config.CONCURRENCY_LIMIT,
                 followSymlinks: this.config.FOLLOW_SYMBOLIC_LINKS,
                 signal: abortController.signal,
@@ -268,7 +268,7 @@ class SidebarEnhancePlugin extends BasePlugin {
             let fileCount = 0
             await this.utils.walkDir({ ...walkOptions, dir: node.dataset.path, onFile: () => fileCount++ })
             const displayEl = node.querySelector(":scope > .file-node-content")
-            if (fileCount <= this.config.IGNORE_MIN_NUM) {
+            if (fileCount <= this.config.MIN_FILES_TO_DISPLAY) {
                 displayEl.removeAttribute("data-count")
             } else {
                 displayEl.setAttribute("data-count", fileCount)

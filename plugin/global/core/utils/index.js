@@ -832,12 +832,12 @@ class utils {
             fileFilter = (name, path, stats) => true,
             dirFilter = (name, path, stats) => true,
             fileParamsGetter = (path, file, dir, stats) => ({ path, file, dir, stats }),
-            onStat = null,
+            onEntity = null,
             onNonFatalError = (path, err) => console.error(`Error processing path ${path}:`, err),
             onFinished = null,
             semaphore = 20,
             maxDepth = -1,
-            maxStats = -1,
+            maxEntities = -1,
             strategy = "bfs", // bfs | dfs
             followSymlinks = false,
             stopOnNonFatalError = false,
@@ -855,12 +855,12 @@ class utils {
         const { join, dirname, basename } = PATH
         const statFn = followSymlinks ? stat : lstat
         const dequeueFn = strategy === "dfs" ? "pop" : "shift"
-        const needCheckStats = maxStats > 0
+        const needCheckEntities = maxEntities > 0
         const noNeedCheckDepth = maxDepth < 0
 
         let fatalError
         let aborted = false
-        let statsCount = 0
+        let entityCount = 0
         let runningTasks = 0  // The number of currently executing tasks, limited by the `semaphore`
         let pendingPaths = 0  // The number of discovered paths that are not yet processed
         const taskQueue = []
@@ -908,14 +908,14 @@ class utils {
                 const stats = await statFn(currentPath)
                 if (aborted) return
 
-                if (needCheckStats) {
-                    statsCount++
-                    if (statsCount > maxStats) {
+                if (needCheckEntities) {
+                    entityCount++
+                    if (entityCount > maxEntities) {
                         rejectAndStop(new DOMException("Stats Count Exceeded", "QuotaExceededError"))
                         return
                     }
                 }
-                onStat?.(stats)
+                onEntity?.(stats)
                 if (stats.isDirectory()) {
                     if (dirFilter(fileName, currentPath, stats) && (noNeedCheckDepth || depth < maxDepth)) {
                         const shouldProcessChildren = !(onDir && await onDir(fileName, currentPath, stats) === false)

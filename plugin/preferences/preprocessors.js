@@ -100,7 +100,7 @@ module.exports = (plugin) => {
             },
         },
         markmap: {
-            AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: (field, data) => {
+            AUTO_COLLAPSE_PARAGRAPH_ON_FOLD: (field, data) => {
                 if (!utils.getBasePlugin("collapse_paragraph")) {
                     _disableSwitch(field, data, i18n._t("markmap", "$tooltip.experimental"))
                 } else {

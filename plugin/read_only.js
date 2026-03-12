@@ -54,7 +54,7 @@ class ReadOnlyPlugin extends BasePlugin {
             if (!isInline(ev.target)) $(".md-expand").removeClass("md-expand")
         }
         const openHyperlink = ev => {
-            if (this.config.NO_EXPAND_WHEN_READ_ONLY && isInline(ev.target)) {
+            if (this.config.DISABLE_EXPAND_WHEN_READ_ONLY && isInline(ev.target)) {
                 ev.stopPropagation()
                 ev.preventDefault()
                 return
@@ -68,10 +68,10 @@ class ReadOnlyPlugin extends BasePlugin {
         }
 
         const handlers = { keydown: stopForbiddenKey, compositionstart: stopEvent, compositionend: stopEvent, paste: stopEvent }
-        if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY || this.config.NO_EXPAND_WHEN_READ_ONLY) {
+        if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY || this.config.DISABLE_EXPAND_WHEN_READ_ONLY) {
             handlers.click = openHyperlink
         }
-        if (this.config.REMOVE_EXPAND_WHEN_READ_ONLY) {
+        if (this.config.AUTO_COLLAPSE_WHEN_READ_ONLY) {
             handlers.mousedown = recoverExpand
         }
         return handlers

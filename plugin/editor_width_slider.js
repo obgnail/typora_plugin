@@ -1,4 +1,6 @@
 class EditorWidthSliderPlugin extends BasePlugin {
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
+
     process = async () => {
         await this._setWidth(this.config.WIDTH_RATIO)
     }

@@ -32,7 +32,7 @@
     width: ${this.config.BUTTON_WIDTH};
     height: ${this.config.BUTTON_HEIGHT};
     border-radius: ${this.config.BUTTON_BORDER_RADIUS};
-    background-color: ${this.config.PASS_COLOR};
+    background-color: ${this.config.BUTTON_PASS_COLOR};
     opacity: ${this.config.BUTTON_OPACITY};
     cursor: pointer;
     transition: background-color 0.1s ease 0s;
@@ -40,5 +40,5 @@
 }
 
 #plugin-markdownlint-button[lint-check-failed] {
-    background-color: ${this.config.ERROR_COLOR};
+    background-color: ${this.config.BUTTON_ERROR_COLOR};
 }

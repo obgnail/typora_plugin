@@ -41,7 +41,7 @@ module.exports = {
         ALLOW_EXT: each(fileExt),
         IGNORE_FOLDERS: each(required),
         TIMEOUT: notZero,
-        MAX_STATS: notZero,
+        MAX_ENTITIES: notZero,
         MAX_DEPTH: notZero,
     },
     md_padding: {
@@ -91,7 +91,7 @@ module.exports = {
         TRIGGER_REGEXP: [required, regex]
     },
     resource_manager: {
-        MAX_STATS: notZero,
+        MAX_ENTITIES: notZero,
         MAX_DEPTH: notZero,
         IGNORE_FOLDERS: each(required),
     },
@@ -179,8 +179,8 @@ module.exports = {
         BUTTON_HEIGHT: required,
         BUTTON_RIGHT: required,
         BUTTON_BORDER_RADIUS: required,
-        PASS_COLOR: required,
-        ERROR_COLOR: required,
+        BUTTON_PASS_COLOR: required,
+        BUTTON_ERROR_COLOR: required,
         CUSTOM_RULE_FILES: each([required, path]),
     },
     action_buttons: {

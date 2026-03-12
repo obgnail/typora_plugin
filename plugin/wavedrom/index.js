@@ -37,6 +37,8 @@ class WavedromPlugin extends BasePlugin {
         this.evalFunc = this.config.SAFE_MODE ? this.utils.safeEval : this.utils.unsafeEval
     }
 
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
+
     call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     process = () => {

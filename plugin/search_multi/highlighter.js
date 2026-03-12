@@ -365,7 +365,7 @@ class Highlighter {
         }
     }
 
-    _checkHits = () => this.searchStatus.hits.length <= this.config.MAX_HITS
+    _checkHits = () => this.searchStatus.hits.length <= this.config.MAX_HIGHLIGHTS
 
     _polyfill = () => {
         if (!global.NodeDef) {

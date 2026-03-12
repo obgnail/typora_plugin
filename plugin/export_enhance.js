@@ -18,7 +18,7 @@ class ExportEnhancePlugin extends BasePlugin {
         }
 
         const dirname = this.utils.getCurrentDirPath()
-        const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? (await this.downloadAllImage(html)) : {}
+        const imageMap = this.config.EMBED_NETWORK_IMAGES ? (await this.downloadAllImage(html)) : {}
         return this.utils.asyncReplaceAll(html, this.regexp, async (origin, src) => {
             try {
                 if (this.utils.isSpecialImage(src)) {
@@ -26,7 +26,7 @@ class ExportEnhancePlugin extends BasePlugin {
                 }
                 let imagePath
                 if (this.utils.isNetworkImage(src)) {
-                    if (!this.config.DOWNLOAD_NETWORK_IMAGE || !Object.hasOwn(imageMap, src)) {
+                    if (!this.config.EMBED_NETWORK_IMAGES || !Object.hasOwn(imageMap, src)) {
                         return origin
                     }
                     imagePath = imageMap[src]
@@ -69,12 +69,12 @@ class ExportEnhancePlugin extends BasePlugin {
 
     getDynamicActions = () => this.i18n.fillActions([
         { act_value: "toggle_enable", act_state: this.enable },
-        { act_value: "toggle_download", act_state: this.config.DOWNLOAD_NETWORK_IMAGE },
+        { act_value: "toggle_download", act_state: this.config.EMBED_NETWORK_IMAGES },
     ])
 
     call = action => {
         if (action === "toggle_download") {
-            this.config.DOWNLOAD_NETWORK_IMAGE = !this.config.DOWNLOAD_NETWORK_IMAGE
+            this.config.EMBED_NETWORK_IMAGES = !this.config.EMBED_NETWORK_IMAGES
         } else if (action === "toggle_enable") {
             this.enable = !this.enable
         }

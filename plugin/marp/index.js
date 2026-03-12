@@ -3,6 +3,8 @@ class MarpPlugin extends BasePlugin {
 
     init = () => this.marp = null
 
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
+
     call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     process = () => {

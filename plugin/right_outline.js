@@ -212,7 +212,7 @@ class RightOutlinePlugin extends BasePlugin {
     showModal = (forceRefresh = true) => {
         this.utils.show(this.entities.modal)
         const { width } = this.entities.content.getBoundingClientRect()
-        const modalWidth = width * this.config.WIDTH_PERCENT_WHEN_PIN_RIGHT / 100
+        const modalWidth = width * this.config.DEFAULT_WIDTH_PERCENT / 100
         this.entities.modal.style.width = modalWidth + "px"
         this.entities.content.style.width = `${width - modalWidth}px`
         this.utils.entities.eWrite.style.width = "initial"

@@ -423,7 +423,7 @@ class WindowTabPlugin extends BasePlugin {
         if (this.config.MIDDLE_CLICK_TO_CLOSE) {
             handleMiddleClick()
         }
-        if (this.config.REOPEN_CLOSED_TABS_WHEN_INIT) {
+        if (this.config.REOPEN_TABS_ON_STARTUP) {
             reopenTabsWhenInit()
         }
         if (this.config.CONTEXT_MENU.length) {
@@ -611,7 +611,7 @@ class WindowTabPlugin extends BasePlugin {
     }
 
     _insertTabDiv = (filePath, showName, idx) => {
-        const title = this.config.SHOW_FULL_PATH_WHEN_HOVER ? `title="${filePath}"` : ""
+        const title = this.config.SHOW_FULL_PATH_ON_HOVER ? `title="${filePath}"` : ""
         const btn = this.config.SHOW_TAB_CLOSE_BUTTON ? `<span class="close-button"><div class="close-icon"></div></span>` : ""
         const tabDiv = `
             <div class="tab-container" data-idx="${idx}" draggable="true" ${title}>
@@ -625,7 +625,7 @@ class WindowTabPlugin extends BasePlugin {
     _updateTabDiv = (tabDiv, filePath, showName, idx) => {
         tabDiv.dataset.idx = idx
         tabDiv.querySelector(".window-tab-name").innerText = showName
-        if (this.config.SHOW_FULL_PATH_WHEN_HOVER) {
+        if (this.config.SHOW_FULL_PATH_ON_HOVER) {
             tabDiv.setAttribute("title", filePath)
         } else {
             tabDiv.removeAttribute("title")

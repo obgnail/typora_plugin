@@ -22,7 +22,7 @@ class BlurPlugin extends BasePlugin {
             : [`filter: blur(${this.config.BLUR_LEVEL}px);`, "filter: initial;"]
 
         let css = `${selector} { ${effect} }`
-        if (this.config.RESTORE_WHEN_HOVER) {
+        if (this.config.RESTORE_ON_HOVER) {
             css += `${selector}:hover { ${restore} }`
         }
         return css

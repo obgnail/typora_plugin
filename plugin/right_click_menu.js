@@ -10,7 +10,7 @@ class RightClickMenuPlugin extends BasePlugin {
         this.dividerValue = "---"
         this.unavailableActValue = "__not_available__"
         this.unavailableActName = this.i18n.t("act.disabled")
-        this.defaultDisableHint = this.i18n.t("achHint.disabled")
+        this.defaultDisableHint = this.i18n.t("actHint.disabled")
         this.supportShortcut = !!document.querySelector(".ty-menu-shortcut")
     }
 

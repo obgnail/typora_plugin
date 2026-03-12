@@ -94,7 +94,7 @@ class TOCMarkmap {
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => {
                 if (!this.utils.isShown(modal)) return
                 this.draw()
-                if (this.config.AUTO_FIT_WHEN_UPDATE) {
+                if (this.config.AUTO_FIT_ON_UPDATE) {
                     this.fit()
                 }
             })
@@ -240,7 +240,7 @@ class TOCMarkmap {
 
                 const circle = ev.target.closest("circle")
                 if (circle) {
-                    if (this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD) {
+                    if (this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD) {
                         const head = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`)
                         const isFold = node.classList.contains("markmap-fold")
                         this.utils.callPluginFunction("collapse_paragraph", "trigger", head, !isFold)
@@ -249,10 +249,10 @@ class TOCMarkmap {
                         this.fit()
                     }
                 } else {
-                    if (this.config.CLICK_TO_POSITIONING) {
+                    if (this.config.CLICK_TO_POSITION) {
                         const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect()
                         const height = contentHeight * this.config.POSITIONING_VIEWPORT_HEIGHT + contentTop
-                        const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD
+                        const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD
                         this.utils.scrollByCid(cid, height, true, showHiddenElement)
                     }
                 }
@@ -310,8 +310,8 @@ class TOCMarkmap {
     settings = async () => {
         const attrsToSave = [
             "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
-            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITIONING",
-            "USE_CONTEXT_MENU", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_FOLD", "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
+            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITION",
+            "USE_CONTEXT_MENU", "AUTO_FIT_ON_UPDATE", "AUTO_FIT_WHEN_FOLD", "RETAIN_FOLD_STATE_ON_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_ON_FOLD",
         ]
         const arr2Str = arr => arr.join("_")
         const str2Arr = str => str.split("_")
@@ -369,19 +369,19 @@ class TOCMarkmap {
                     field("DEFAULT_TOC_OPTIONS.zoom", "switch"),
                     field("DEFAULT_TOC_OPTIONS.pan", "switch"),
                     field("DEFAULT_TOC_OPTIONS.toggleRecursively", "switch"),
-                    field("CLICK_TO_POSITIONING", "switch"),
+                    field("CLICK_TO_POSITION", "switch"),
                     field("POSITIONING_VIEWPORT_HEIGHT", "range", {
-                        tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01, dependencies: { CLICK_TO_POSITIONING: true },
+                        tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01, dependencies: { CLICK_TO_POSITION: true },
                     }),
                 ),
                 titledBox(
                     "title.behavior",
                     field("FIX_SKIPPED_LEVEL_HEADERS", "switch"),
                     field("REMOVE_HEADER_STYLES", "switch"),
-                    field("KEEP_FOLD_STATE_WHEN_UPDATE", "switch"),
-                    field("AUTO_FIT_WHEN_UPDATE", "switch"),
+                    field("RETAIN_FOLD_STATE_ON_UPDATE", "switch"),
+                    field("AUTO_FIT_ON_UPDATE", "switch"),
                     field("AUTO_FIT_WHEN_FOLD", "switch"),
-                    field("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "switch", { tooltip: "experimental", disabled: !pluginEnabled, readonly: pluginEnabled }),
+                    field("AUTO_COLLAPSE_PARAGRAPH_ON_FOLD", "switch", { tooltip: "experimental", disabled: !pluginEnabled, readonly: pluginEnabled }),
                 ),
                 titledBox(
                     "title.download",
@@ -615,7 +615,7 @@ class TOCMarkmap {
     }
 
     _setFoldNode = newRoot => {
-        if (!this.config.KEEP_FOLD_STATE_WHEN_UPDATE) return
+        if (!this.config.RETAIN_FOLD_STATE_ON_UPDATE) return
 
         const needFold = new Set()
         const { data: oldRoot } = this.mm.state || {}

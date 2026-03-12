@@ -7,7 +7,7 @@ class EasyModifyPlugin extends BasePlugin {
         { hotkey: this.config.HOTKEY_CONVERT_LF_TO_CRLF, callback: () => this.call("convert_lf_to_crlf") },
         { hotkey: this.config.HOTKEY_FILTER_INVISIBLE_CHARACTERS, callback: () => this.call("filter_invisible_characters") },
         { hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, callback: () => this.call("trailing_white_space") },
-        { hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE, callback: () => this.dynamicCall("extract_rang_to_new_file") },
+        { hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE, callback: () => this.dynamicCall("extract_range_to_new_file") },
         { hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, callback: () => this.dynamicCall("insert_mermaid_mindmap") },
         { hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, callback: () => this.dynamicCall("insert_mermaid_graph") },
         { hotkey: this.config.HOTKEY_CONVERT_IMAGE_TO_BASE64, callback: () => this.dynamicCall("convert_image_to_base64") },
@@ -36,13 +36,13 @@ class EasyModifyPlugin extends BasePlugin {
 
     getDynamicActions = (anchorNode, meta) => {
         const I18N = {
-            noSelection: this.i18n.t("act.extract_rang_to_new_file.noSelection"),
-            positionEmptyLine: this.i18n.t("act.extract_rang_to_new_file.positionEmptyLine")
+            noSelection: this.i18n.t("act.extract_range_to_new_file.noSelection"),
+            positionEmptyLine: this.i18n.t("act.extract_range_to_new_file.positionEmptyLine")
         }
 
         meta.range = window.getSelection().getRangeAt(0)
         const extract = {
-            act_value: "extract_rang_to_new_file",
+            act_value: "extract_range_to_new_file",
             act_disabled: meta.range.collapsed,
             ...this._getActionParts("HOTKEY_EXTRACT_RANGE_TO_NEW_FILE"),
         }
@@ -77,7 +77,7 @@ class EasyModifyPlugin extends BasePlugin {
             copy_full_path: () => this.copyFullPath(meta.outermostAnchor),
             insert_mermaid_mindmap: () => this.insertMindmap("mindmap", meta.insertAnchor),
             insert_mermaid_graph: () => this.insertMindmap("graph", meta.insertAnchor),
-            extract_rang_to_new_file: async () => this.extractRangeToNewFile(meta.range),
+            extract_range_to_new_file: async () => this.extractRangeToNewFile(meta.range),
             trailing_white_space: this.trailingWhiteSpace,
             convert_crlf_to_lf: this.convertCRLF2LF,
             convert_lf_to_crlf: this.convertLF2CRLF,
@@ -173,8 +173,8 @@ class EasyModifyPlugin extends BasePlugin {
         const op = {
             title: this.i18n.t("$label.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE"),
             schema: ({ Group, Controls }) => Group(
-                Controls.Text("filename").Label(this.i18n.t("act.extract_rang_to_new_file.filename")).Placeholder(this.i18n.t("act.extract_rang_to_new_file.filenameHint")),
-                Controls.Switch("autoOpen").Label(this.i18n.t("act.extract_rang_to_new_file.autoOpenFile")),
+                Controls.Text("filename").Label(this.i18n.t("act.extract_range_to_new_file.filename")).Placeholder(this.i18n.t("act.extract_range_to_new_file.filenameHint")),
+                Controls.Switch("autoOpen").Label(this.i18n.t("act.extract_range_to_new_file.autoOpenFile")),
             ),
             data: { filename: "", autoOpen: true },
         }

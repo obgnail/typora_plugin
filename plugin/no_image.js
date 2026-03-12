@@ -1,6 +1,6 @@
 class NoImageModePlugin extends BasePlugin {
     init = () => {
-        this.isNoImageMode = this.config.DEFAULT_NO_IMAGE_MODE
+        this.isNoImageMode = this.config.NO_IMAGE_DEFAULT
     }
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -9,7 +9,7 @@ class NoImageModePlugin extends BasePlugin {
         const renderArg = {
             transition_duration: this.config.TRANSITION_DURATION,
             transition_delay: this.config.TRANSITION_DELAY,
-            opacity_on_hover: this.config.RESHOW_WHEN_HOVER ? "100%" : "0",
+            opacity_on_hover: this.config.SHOW_ON_HOVER ? "100%" : "0",
         }
         await this.utils.styleTemplater.register(this.fixedName, renderArg)
         this.isNoImageMode = true

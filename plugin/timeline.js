@@ -1,6 +1,8 @@
 class TimelinePlugin extends BasePlugin {
     styleTemplate = () => true
 
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
+
     process = () => {
         this.utils.diagramParser.register({
             lang: this.config.LANGUAGE,

@@ -73,7 +73,7 @@ class FenceEnhancePlugin extends BasePlugin {
             const _showIconFeedback = (btnEl, feedbackClass, originalClass) => {
                 const icon = btnEl.firstElementChild
                 icon.className = feedbackClass
-                setTimeout(() => icon.className = originalClass, this.config.WAIT_RECOVER_INTERVAL)
+                setTimeout(() => icon.className = originalClass, this.config.HINT_DURATION)
             }
             const _getFenceHeight = (cm, retainedLines) => {
                 const textHeight = cm.display.cachedTextHeight || cm.defaultTextHeight()
@@ -214,7 +214,7 @@ class FenceEnhancePlugin extends BasePlugin {
                     const btnEl = document.createElement("div")
                     btnEl.classList.add("enhance-btn")
                     btnEl.setAttribute("action", btn.action)
-                    if (!this.config.REMOVE_BUTTON_HINT && btn.hint) {
+                    if (!this.config.HIDE_BUTTON_HINT && btn.hint) {
                         btnEl.setAttribute("ty-hint", btn.hint)
                     }
                     if (!btn.enable) {

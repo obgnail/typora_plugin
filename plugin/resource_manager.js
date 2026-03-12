@@ -234,7 +234,7 @@ const findResources = async (plugin, searchDir) => {
     await utils.walkDir({
         dir,
         semaphore: config.CONCURRENCY_LIMIT,
-        maxStats: config.MAX_STATS,
+        maxEntities: config.MAX_ENTITIES,
         maxDepth: config.MAX_DEPTH,
         followSymlinks: config.FOLLOW_SYMBOLIC_LINKS,
         strategy: config.TRAVERSE_STRATEGY,

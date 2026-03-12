@@ -46,16 +46,17 @@ class TextStylizePlugin extends BasePlugin {
     }
 
     hotkey = () => {
+        const showModalHotkey = { hotkey: this.config.HOTKEY, callback: this.call }
         const hotkeys = this.config.ACTION_HOTKEYS.map(({ hotkey, action }) => {
             const callback = () => {
-                const color = (action === "foregroundColor" || action === "backgroundColor" || action === "borderColor")
+                const color = ["foregroundColor", "backgroundColor", "borderColor"].includes(action)
                     ? this.entities.toolbar.querySelector(`[action=${action}]`).getAttribute("last-color")
                     : undefined
                 this.onAction(action, color)
             }
             return { hotkey, callback }
         })
-        return [{ hotkey: this.config.SHOW_MODAL_HOTKEY, callback: this.call }, ...hotkeys]
+        return [showModalHotkey, ...hotkeys]
     }
 
     init = () => {

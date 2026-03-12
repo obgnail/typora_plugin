@@ -1,4 +1,6 @@
 class PlantUMLPlugin extends BasePlugin {
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
+
     call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
     process = () => {
@@ -54,7 +56,7 @@ class PlantUMLPlugin extends BasePlugin {
                 contentType: resp.headers.get("content-type") || "Unknown",
                 buffer: Buffer.from(await resp.arrayBuffer()),
             }
-        }, this.config.MEMORIZED_URL_COUNT)
+        }, this.config.CACHED_URL_COUNT)
     }
 }
 

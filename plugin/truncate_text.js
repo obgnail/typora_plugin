@@ -2,7 +2,7 @@ class TruncateTextPlugin extends BasePlugin {
     beforeProcess = () => {
         this.className = "plugin-truncate-text"
         this.staticActions = this.i18n.fillActions([
-            { act_name: this.i18n.t("act.hide_front", { remain: this.config.REMAIN_LENGTH }), act_value: "hide_front", act_hotkey: this.config.HIDE_FRONT_HOTKEY },
+            { act_name: this.i18n.t("act.hide_front", { remain: this.config.RETAIN_LENGTH }), act_value: "hide_front", act_hotkey: this.config.HIDE_FRONT_HOTKEY },
             { act_value: "show_all", act_hotkey: this.config.SHOW_ALL_HOTKEY },
             { act_value: "hide_base_view", act_hotkey: this.config.HIDE_BASE_VIEW_HOTKEY },
         ])
@@ -21,8 +21,8 @@ class TruncateTextPlugin extends BasePlugin {
     hideFront = () => {
         const write = this.utils.entities.eWrite
         const length = write.children.length
-        if (length > this.config.REMAIN_LENGTH) {
-            for (let i = 0; i <= length - this.config.REMAIN_LENGTH; i++) {
+        if (length > this.config.RETAIN_LENGTH) {
+            for (let i = 0; i <= length - this.config.RETAIN_LENGTH; i++) {
                 const el = write.children[i]
                 el.classList.add(this.className)
                 el.style.display = "none"
@@ -47,7 +47,7 @@ class TruncateTextPlugin extends BasePlugin {
             }
         })
 
-        const halfLength = this.config.REMAIN_LENGTH / 2
+        const halfLength = this.config.RETAIN_LENGTH / 2
         start = Math.max(start - halfLength, 0)
         end = Math.min(end + halfLength, write.children.length)
 

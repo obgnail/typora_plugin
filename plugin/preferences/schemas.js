@@ -371,8 +371,9 @@ const field_HOTKEY = Hotkey("HOTKEY")
 const box_pluginLite = UntitledBox(field_ENABLE, field_NAME)
 const box_pluginFull = UntitledBox(field_ENABLE, field_NAME, field_HOTKEY)
 const box_settingHandler = UntitledBox(Action("runtimeSettings"), Action("restoreSettings"))
-const box_langMode = TitledBox("fenceLanguageMode", Text("LANGUAGE", prop_protected), Switch("INTERACTIVE_MODE"))
+const box_langMode = TitledBox("languageMode", Text("LANGUAGE", prop_protected), Switch("INTERACTIVE_MODE"))
 const box_chartStyle = TitledBox("diagramStyle", Text("DEFAULT_FENCE_HEIGHT"), Text("DEFAULT_FENCE_BACKGROUND_COLOR"))
+const box_TEMPLATE = CodeBox("TEMPLATE")
 
 /******** Prop Unit (for Number_/Integer/Float only) ********/
 const UNITS = {
@@ -491,7 +492,7 @@ const OPTIONS = createOptions({
         TITLE_BAR_BUTTONS: ["header", "image", "table", "fence", "link", "math"],
     },
     image_viewer: {
-        operations: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterFall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fixScreen", "autoSize", "restore", "info", "dummy"],
+        operations: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterfall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fitScreen", "autoSize", "restore", "info", "dummy"],
         TOOL_POSITION: ["bottom", "top"],
         SHOW_MESSAGE: ["index", "title", "size"],
         FIRST_IMAGE_STRATEGIES: ["inViewBoxImage", "closestViewBoxImage", "firstImage"],
@@ -523,9 +524,8 @@ const schema_global = [
         Action("importSettings"),
     ),
     UntitledBox(
-        Action("visitRepo"),
+        Action("visitRepo", { tooltip: Tip.action("openPluginFolder", "fa fa-folder-open") }),
         Action("viewDeepWiki", { tooltip: Tip.action("neverGonnaTellALie", "fa fa-book") }),
-        Action("openPluginFolder"),
         Action("editStyles"),
         Action("developPlugins"),
         Action("viewGithubImageBed"),
@@ -553,7 +553,7 @@ const schema_window_tab = [
     ),
     TitledBox(
         "behavior",
-        Switch("REOPEN_CLOSED_TABS_WHEN_INIT"),
+        Switch("REOPEN_TABS_ON_STARTUP"),
         Select("NEW_TAB_POSITION", OPTIONS.window_tab.NEW_TAB_POSITION),
         Select("TAB_SWITCH_ON_CLOSE", OPTIONS.window_tab.TAB_SWITCH_ON_CLOSE),
         Select("LAST_TAB_CLOSE_ACTION", OPTIONS.window_tab.LAST_TAB_CLOSE_ACTION),
@@ -564,7 +564,7 @@ const schema_window_tab = [
         Switch("MIDDLE_CLICK_TO_CLOSE"),
         Switch("CTRL_WHEEL_TO_SWITCH"),
         Switch("WHEEL_TO_SCROLL_TAB_BAR"),
-        Switch("SHOW_FULL_PATH_WHEN_HOVER"),
+        Switch("SHOW_FULL_PATH_ON_HOVER"),
     ),
     TitledBox(
         "drag",
@@ -603,8 +603,8 @@ const schema_search_multi = [
         Switch("RELATIVE_PATH"),
         Switch("SHOW_EXT"),
         Switch("SHOW_MTIME"),
-        Switch("REMOVE_BUTTON_HINT"),
-        Integer("MAX_HITS", { min: 1, max: 5000 }),
+        Switch("HIDE_BUTTON_HINT"),
+        Integer("MAX_HIGHLIGHTS", { min: 1, max: 5000 }),
         Palette("HIGHLIGHT_COLORS"),
     ),
     TitledBox(
@@ -619,7 +619,7 @@ const schema_search_multi = [
         Select("TRAVERSE_STRATEGY", OPTIONS.search_multi.TRAVERSE_STRATEGY),
         Integer("TIMEOUT", { ...prop_minusOne, unit: UNITS.millisecond }),
         Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
-        Integer("MAX_STATS", prop_minusOne),
+        Integer("MAX_ENTITIES", prop_minusOne),
         Integer("MAX_DEPTH", prop_minusOne),
         Integer("CONCURRENCY_LIMIT", { min: 1 }),
     ),
@@ -670,8 +670,8 @@ const schema_read_only = [
     UntitledBox(
         Switch("READ_ONLY_DEFAULT"),
         Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
-        Switch("NO_EXPAND_WHEN_READ_ONLY"),
-        Switch("REMOVE_EXPAND_WHEN_READ_ONLY", { dependencies: Dep.false("NO_EXPAND_WHEN_READ_ONLY") }),
+        Switch("DISABLE_EXPAND_WHEN_READ_ONLY"),
+        Switch("AUTO_COLLAPSE_WHEN_READ_ONLY", { dependencies: Dep.false("DISABLE_EXPAND_WHEN_READ_ONLY") }),
         Text("SHOW_TEXT"),
     ),
     TitledBox(
@@ -686,7 +686,7 @@ const schema_blur = [
     box_pluginFull,
     UntitledBox(
         Switch("BLUR_DEFAULT"),
-        Switch("RESTORE_WHEN_HOVER"),
+        Switch("RESTORE_ON_HOVER"),
         Select("BLUR_TYPE", OPTIONS.blur.BLUR_TYPE),
         Integer("BLUR_LEVEL", { unit: UNITS.pixel, min: 1, dependencies: Dep.eq("BLUR_TYPE", "blur") }),
     ),
@@ -704,8 +704,8 @@ const schema_dark = [
 const schema_no_image = [
     box_pluginFull,
     UntitledBox(
-        Switch("DEFAULT_NO_IMAGE_MODE"),
-        Switch("RESHOW_WHEN_HOVER"),
+        Switch("NO_IMAGE_DEFAULT"),
+        Switch("SHOW_ON_HOVER"),
         Integer("TRANSITION_DURATION", { unit: UNITS.millisecond, min: 0 }),
         Integer("TRANSITION_DELAY", { unit: UNITS.millisecond, min: 0 }),
     ),
@@ -718,7 +718,7 @@ const schema_myopic_defocus = [
         Action("myopicDefocusEffectDemo", { explain: "enableMyopicDefocus" }),
     ),
     UntitledBox(
-        Switch("DEFAULT_DEFOCUS_MODE"),
+        Switch("DEFOCUS_DEFAULT"),
         Range("EFFECT_STRENGTH", { unit: UNITS.percent, min: 1, max: 35 }),
         Float("SCREEN_SIZE", { unit: UNITS.inch, min: 1 }),
         Integer("SCREEN_RESOLUTION_X", { unit: UNITS.pixel, min: 1 }),
@@ -794,12 +794,12 @@ const schema_markmap = [
         Hotkey("TOC_HOTKEY", dep_markmapToc),
         Switch("FIX_SKIPPED_LEVEL_HEADERS", dep_markmapToc),
         Switch("REMOVE_HEADER_STYLES", dep_markmapToc),
-        Switch("AUTO_FIT_WHEN_UPDATE", dep_markmapToc),
+        Switch("AUTO_FIT_ON_UPDATE", dep_markmapToc),
         Switch("AUTO_FIT_WHEN_FOLD", dep_markmapToc),
-        Switch("KEEP_FOLD_STATE_WHEN_UPDATE", dep_markmapToc),
+        Switch("RETAIN_FOLD_STATE_ON_UPDATE", dep_markmapToc),
         Switch("USE_CONTEXT_MENU", dep_markmapToc),
-        Switch("CLICK_TO_POSITIONING", dep_markmapToc),
-        Switch("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", { tooltip: "experimental", ...dep_markmapToc }),
+        Switch("CLICK_TO_POSITION", dep_markmapToc),
+        Switch("AUTO_COLLAPSE_PARAGRAPH_ON_FOLD", { tooltip: "experimental", ...dep_markmapToc }),
         Range("POSITIONING_VIEWPORT_HEIGHT", { tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01, ...dep_markmapToc }),
         Range("WIDTH_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
         Range("HEIGHT_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
@@ -968,7 +968,7 @@ const schema_fence_enhance = [
         "buttonGeneral",
         Switch("ENABLE_BUTTON"),
         Switch("AUTO_HIDE", dep_fenceEnhanceButton),
-        Switch("REMOVE_BUTTON_HINT", dep_fenceEnhanceButton),
+        Switch("HIDE_BUTTON_HINT", dep_fenceEnhanceButton),
         Range("BUTTON_OPACITY", { min: 0, max: 1, step: 0.05, ...dep_fenceEnhanceButton }),
         Range("BUTTON_OPACITY_HOVER", { min: 0, max: 1, step: 0.05, ...dep_fenceEnhanceButton }),
         Text("BUTTON_SIZE", dep_fenceEnhanceButton),
@@ -976,7 +976,7 @@ const schema_fence_enhance = [
         Text("BUTTON_PADDING", dep_fenceEnhanceButton),
         Text("BUTTON_TOP", dep_fenceEnhanceButton),
         Text("BUTTON_RIGHT", dep_fenceEnhanceButton),
-        Integer("WAIT_RECOVER_INTERVAL", { unit: UNITS.millisecond, min: 500, step: 100, ...dep_fenceEnhanceButton }),
+        Integer("HINT_DURATION", { unit: UNITS.millisecond, min: 500, step: 100, ...dep_fenceEnhanceButton }),
     ),
     TitledBox(
         "functionButtons",
@@ -1014,9 +1014,9 @@ const schema_fence_enhance = [
             DISABLE: false,
             ICON: "fa fa-bomb",
             HINT: "",
-            ON_INIT: "plu => console.log('Button initialized')",
-            ON_RENDER: "({ btn, fence, cid, enhance }) => console.log('Button rendered')",
-            ON_CLICK: "({ ev, btn, cont, fence, cm, cid, plu }) => console.log('Button has been clicked')",
+            ON_INIT: "plu => console.log('Initialized')",
+            ON_RENDER: "({ btn, fence, cid, enhance }) => console.log('Rendered')",
+            ON_CLICK: "({ ev, btn, cont, fence, cm, cid, plu }) => console.log('Clicked')",
         },
         dep_fenceEnhanceButton,
     ),
@@ -1043,7 +1043,7 @@ const schema_fence_enhance = [
         {
             DISABLE: false,
             HOTKEY: "",
-            CALLBACK: "({ pre, cid, cm, cursor, lineNum, lastNum, separator }) => console.log('callback')",
+            CALLBACK: "({ pre, cid, cm, cursor, lineNum, lastNum, separator }) => console.log('Callback')",
         },
         dep_fenceEnhanceHotkey,
     ),
@@ -1116,7 +1116,7 @@ const schema_truncate_text = [
         Hotkey("HIDE_FRONT_HOTKEY"),
         Hotkey("HIDE_BASE_VIEW_HOTKEY"),
         Hotkey("SHOW_ALL_HOTKEY"),
-        Integer("REMAIN_LENGTH", { min: 1, dependencies: Dep.or(Dep.bool("HIDE_FRONT_HOTKEY", true), Dep.bool("HIDE_BASE_VIEW_HOTKEY", true)) }),
+        Integer("RETAIN_LENGTH", { min: 1, dependencies: Dep.or(Dep.bool("HIDE_FRONT_HOTKEY", true), Dep.bool("HIDE_BASE_VIEW_HOTKEY", true)) }),
     ),
     box_settingHandler,
 ]
@@ -1124,18 +1124,14 @@ const schema_truncate_text = [
 const schema_export_enhance = [
     box_pluginLite,
     UntitledBox(
-        Switch("DOWNLOAD_NETWORK_IMAGE"),
-        Integer("DOWNLOAD_THREADS", { min: 1, dependencies: Dep.true("DOWNLOAD_NETWORK_IMAGE") }),
+        Switch("EMBED_NETWORK_IMAGES"),
+        Integer("DOWNLOAD_THREADS", { min: 1, dependencies: Dep.true("EMBED_NETWORK_IMAGES") }),
     ),
     box_settingHandler,
 ]
 
 const schema_text_stylize = [
-    UntitledBox(
-        field_ENABLE,
-        field_NAME,
-        Hotkey("SHOW_MODAL_HOTKEY"),
-    ),
+    box_pluginFull,
     TransferBox("TOOLS", OPTIONS.text_stylize.TOOLS, { minItems: 1 }),
     TableBox(
         "ACTION_HOTKEYS",
@@ -1193,7 +1189,7 @@ const schema_resource_manager = [
         Select("TRAVERSE_STRATEGY", OPTIONS.resource_manager.TRAVERSE_STRATEGY),
         Switch("FOLLOW_SYMBOLIC_LINKS"),
         Integer("TIMEOUT", { unit: UNITS.millisecond, min: 1 }),
-        Integer("MAX_STATS", prop_minusOne),
+        Integer("MAX_ENTITIES", prop_minusOne),
         Integer("MAX_DEPTH", prop_minusOne),
         Integer("CONCURRENCY_LIMIT", { min: 1 }),
     ),
@@ -1405,7 +1401,7 @@ const schema_hotkeys = [
             plugin: "",
             function: "",
             closestSelector: "",
-            evil: "(anchorNode) => console.log(`invoke with anchor: ${anchorNode}`)",
+            evil: "(anchorNode) => console.log(`Invoke with anchor: ${anchorNode}`)",
         },
     ),
     box_settingHandler,
@@ -1430,7 +1426,7 @@ const schema_bookmark = [
 ]
 
 const schema_editor_width_slider = [
-    box_pluginLite,
+    box_pluginFull,
     UntitledBox(
         Integer("WIDTH_RATIO", { tooltip: "minusOneMeansDisable", unit: UNITS.percent, min: -1, max: 100, step: 1 }),
     ),
@@ -1516,9 +1512,9 @@ const schema_sidebar_enhance = [
         Array_("IGNORE_FOLDERS", dep_countFile),
         Divider(),
         Switch("FOLLOW_SYMBOLIC_LINKS", dep_countFile),
-        Integer("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1, ...dep_countFile }),
+        Integer("MIN_FILES_TO_DISPLAY", { tooltip: "ignoreMinNum", min: 1, ...dep_countFile }),
         Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000, ...dep_countFile }),
-        Integer("MAX_STATS", { min: 100, ...dep_countFile }),
+        Integer("MAX_ENTITIES", { min: 100, ...dep_countFile }),
         Integer("CONCURRENCY_LIMIT", { min: 1, ...dep_countFile }),
     ),
     UntitledBox(
@@ -1598,7 +1594,7 @@ const schema_test = [
 ]
 
 const schema_kanban = [
-    box_pluginLite,
+    box_pluginFull,
     TitledBox(
         "fence",
         Text("LANGUAGE", prop_protected),
@@ -1617,12 +1613,12 @@ const schema_kanban = [
         Palette("KANBAN_COLOR"),
         Palette("TASK_COLOR"),
     ),
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     box_settingHandler,
 ]
 
 const schema_chat = [
-    box_pluginLite,
+    box_pluginFull,
     TitledBox(
         "fence",
         Text("LANGUAGE", prop_protected),
@@ -1638,12 +1634,12 @@ const schema_chat = [
         Text("DEFAULT_OPTIONS.senderNickname"),
         Text("DEFAULT_OPTIONS.timeNickname"),
     ),
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     box_settingHandler,
 ]
 
 const schema_timeline = [
-    box_pluginLite,
+    box_pluginFull,
     box_langMode,
     TitledBox(
         "diagramStyle",
@@ -1658,15 +1654,15 @@ const schema_timeline = [
         Text("TIME_COLOR"),
         Text("CIRCLE_TOP"),
     ),
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     box_settingHandler,
 ]
 
 const schema_echarts = [
-    box_pluginLite,
+    box_pluginFull,
     box_langMode,
     box_chartStyle,
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     TitledBox(
         "advanced",
         Select("LOCALE", OPTIONS.echarts.LOCALE),
@@ -1678,7 +1674,7 @@ const schema_echarts = [
 ]
 
 const schema_chart = [
-    box_pluginLite,
+    box_pluginFull,
     box_langMode,
     TitledBox(
         "diagramStyle",
@@ -1686,14 +1682,14 @@ const schema_chart = [
         Text("DEFAULT_FENCE_HEIGHT"),
         Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
     ),
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     box_settingHandler,
 ]
 
 const schema_wavedrom = [
-    box_pluginLite,
+    box_pluginFull,
     TitledBox(
-        "fenceLanguageMode",
+        "languageMode",
         Text("LANGUAGE", prop_protected),
         Switch("INTERACTIVE_MODE"),
         Switch("SAFE_MODE"),
@@ -1704,39 +1700,39 @@ const schema_wavedrom = [
         Text("DEFAULT_FENCE_HEIGHT"),
         Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
     ),
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     ArrayBox("SKIN_FILES", { tooltip: Tip.action("downloadWaveDromSkins", "fa fa-download") }),
     box_settingHandler,
 ]
 
 const schema_calendar = [
-    box_pluginLite,
+    box_pluginFull,
     box_langMode,
     box_chartStyle,
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     box_settingHandler,
 ]
 
 const schema_abc = [
-    box_pluginLite,
+    box_pluginFull,
     box_langMode,
     box_chartStyle,
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     DictBox("VISUAL_OPTIONS", null, { tooltip: Tip.action("viewAbcVisualOptionsManual") }),
     box_settingHandler,
 ]
 
 const schema_drawIO = [
-    box_pluginLite,
+    box_pluginFull,
     box_langMode,
     box_chartStyle,
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     TitledBox(
         "advanced",
         Text("RESOURCE_URI"),
         Text("PROXY"),
         Integer("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
-        Integer("MEMORIZED_URL_COUNT", { min: 1 }),
+        Integer("CACHED_URL_COUNT", { min: 1 }),
     ),
     box_settingHandler,
 ]
@@ -1745,29 +1741,30 @@ const schema_plantUML = [
     UntitledBox(
         Switch("ENABLE", { tooltip: Tip.action("installPlantUMLServer", "fa fa-flask") }),
         field_NAME,
+        field_HOTKEY,
     ),
     UntitledBox(
         Text("SERVER_URL"),
         Integer("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
-        Integer("MEMORIZED_URL_COUNT", { min: 1 }),
+        Integer("CACHED_URL_COUNT", { min: 1 }),
         Select("OUTPUT_FORMAT", OPTIONS.plantUML.OUTPUT_FORMAT),
     ),
     box_langMode,
     box_chartStyle,
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     box_settingHandler,
 ]
 
 const schema_marp = [
-    box_pluginLite,
+    box_pluginFull,
     box_langMode,
     DictBox("MARP_CORE_OPTIONS", null, { tooltip: Tip.action("viewMarpOptions") }),
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     box_settingHandler,
 ]
 
 const schema_callouts = [
-    box_pluginLite,
+    box_pluginFull,
     TitledBox(
         "style",
         Switch("SET_TITLE_COLOR"),
@@ -1780,7 +1777,7 @@ const schema_callouts = [
     TitledBox(
         "fontFamily",
         Text("FONT_FAMILY"),
-        Switch("USE_NETWORK_ICON_WHEN_EXPORTING", { tooltip: "messingFont" }),
+        Switch("USE_NETWORK_ICON_WHEN_EXPORTING", { tooltip: "missingFont" }),
         Text("NETWORK_ICON_URL", { dependencies: Dep.true("USE_NETWORK_ICON_WHEN_EXPORTING") }),
     ),
     TitledBox(
@@ -1807,7 +1804,7 @@ const schema_callouts = [
             left_line_color: "",
         },
     ),
-    CodeBox("TEMPLATE"),
+    box_TEMPLATE,
     box_settingHandler,
 ]
 
@@ -1829,7 +1826,7 @@ const schema_templater = [
         {
             enable: true,
             name: "",
-            callback: "(...args) => console.log(`invoke with params: ${args}`)",
+            callback: "(...args) => console.log(`Invoke with params: ${args}`)",
         },
     ),
     TableBox(
@@ -1857,7 +1854,7 @@ const schema_right_outline = [
         Switch("REMOVE_HEADER_STYLES"),
         Switch("SORTABLE"),
         Switch("RIGHT_CLICK_OUTLINE_BUTTON_TO_TOGGLE"),
-        Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", prop_percent),
+        Range("DEFAULT_WIDTH_PERCENT", prop_percent),
     ),
     TransferBox("TITLE_BAR_BUTTONS", OPTIONS.right_outline.TITLE_BAR_BUTTONS),
     TitledBox(
@@ -1880,8 +1877,8 @@ const schema_image_viewer = [
         Range("IMAGE_MAX_HEIGHT", prop_percent),
         Text("THUMBNAIL_HEIGHT"),
         Integer("BLUR_LEVEL", { unit: UNITS.pixel, min: 1 }),
-        Integer("THUMBNAIL_SCROLL_PADDING_COUNT", { min: 0 }),
-        Integer("WATER_FALL_COLUMNS", { min: 0 }),
+        Integer("PRELOAD_THUMBNAIL_COUNT", { min: 0 }),
+        Integer("WATERFALL_COLUMNS", { min: 0 }),
     ),
     TitledBox(
         "component",
@@ -1892,10 +1889,10 @@ const schema_image_viewer = [
     TransferBox("TOOL_FUNCTION", OPTIONS.image_viewer.operations, { minItems: 1 }),
     TitledBox(
         "behavior",
-        Switch("FILTER_ERROR_IMAGE"),
+        Switch("SKIP_BROKEN_IMAGES"),
         Select("FIRST_IMAGE_STRATEGIES", OPTIONS.image_viewer.FIRST_IMAGE_STRATEGIES, { minItems: 1 }),
         Select("THUMBNAIL_OBJECT_FIT", OPTIONS.image_viewer.THUMBNAIL_OBJECT_FIT),
-        Integer("PLAY_SECONDS", { unit: UNITS.second, min: 1 }),
+        Integer("AUTO_PLAY_INTERVAL", { unit: UNITS.second, min: 1 }),
     ),
     TitledBox(
         "adjustScale",
@@ -1956,15 +1953,15 @@ const schema_markdownlint = [
     ),
     TitledBox(
         "indicator",
-        Switch("USE_BUTTON"),
-        Switch("RIGHT_CLICK_BUTTON_TO_FIX", { dependencies: Dep.true("USE_BUTTON") }),
-        Text("BUTTON_WIDTH", { dependencies: Dep.true("USE_BUTTON") }),
-        Text("BUTTON_HEIGHT", { dependencies: Dep.true("USE_BUTTON") }),
-        Text("BUTTON_RIGHT", { dependencies: Dep.true("USE_BUTTON") }),
-        Text("BUTTON_BORDER_RADIUS", { dependencies: Dep.true("USE_BUTTON") }),
-        Range("BUTTON_OPACITY", { min: 0, max: 1, step: 0.05, dependencies: Dep.true("USE_BUTTON") }),
-        Color("PASS_COLOR", { dependencies: Dep.true("USE_BUTTON") }),
-        Color("ERROR_COLOR", { dependencies: Dep.true("USE_BUTTON") }),
+        Switch("USE_INDICATOR_BUTTON"),
+        Switch("RIGHT_CLICK_BUTTON_TO_FIX", { dependencies: Dep.true("USE_INDICATOR_BUTTON") }),
+        Text("BUTTON_WIDTH", { dependencies: Dep.true("USE_INDICATOR_BUTTON") }),
+        Text("BUTTON_HEIGHT", { dependencies: Dep.true("USE_INDICATOR_BUTTON") }),
+        Text("BUTTON_RIGHT", { dependencies: Dep.true("USE_INDICATOR_BUTTON") }),
+        Text("BUTTON_BORDER_RADIUS", { dependencies: Dep.true("USE_INDICATOR_BUTTON") }),
+        Range("BUTTON_OPACITY", { min: 0, max: 1, step: 0.05, dependencies: Dep.true("USE_INDICATOR_BUTTON") }),
+        Color("BUTTON_PASS_COLOR", { dependencies: Dep.true("USE_INDICATOR_BUTTON") }),
+        Color("BUTTON_ERROR_COLOR", { dependencies: Dep.true("USE_INDICATOR_BUTTON") }),
     ),
     DictBox("RULE_CONFIG", null, { tooltip: Tip.action("viewMarkdownlintRules") }),
     ArrayBox("CUSTOM_RULE_FILES"),

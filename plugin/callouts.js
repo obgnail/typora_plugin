@@ -15,6 +15,8 @@ class CalloutsPlugin extends BasePlugin {
         return { callouts, hover, color }
     }
 
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
+
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => setTimeout(this.setCallouts, 100))
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.setCallouts)

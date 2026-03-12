@@ -129,7 +129,7 @@ class SearchMultiPlugin extends BasePlugin {
                 const item = document.createElement("div")
                 item.className = `plugin-highlight-item ${cls}`
                 item.dataset.pos = -1
-                if (!this.config.REMOVE_BUTTON_HINT) {
+                if (!this.config.HIDE_BUTTON_HINT) {
                     item.setAttribute("ty-hint", hint)
                 }
                 item.appendChild(document.createTextNode(`${name} (${hits.length})`))
@@ -149,7 +149,7 @@ class SearchMultiPlugin extends BasePlugin {
         this.entities.counter.textContent = 0
         this.entities.files.innerHTML = ""
 
-        const { MAX_SIZE, MAX_DEPTH, MAX_STATS, TIMEOUT, TRAVERSE_STRATEGY, CONCURRENCY_LIMIT, IGNORE_FOLDERS, FOLLOW_SYMBOLIC_LINKS, STOP_SEARCHING_ON_HIDING } = this.config
+        const { MAX_SIZE, MAX_DEPTH, MAX_ENTITIES, TIMEOUT, TRAVERSE_STRATEGY, CONCURRENCY_LIMIT, IGNORE_FOLDERS, FOLLOW_SYMBOLIC_LINKS, STOP_SEARCHING_ON_HIDING } = this.config
         const { Path: { extname }, FsExtra: { readFile } } = this.utils.Package
 
         const getFileFilter = () => {
@@ -200,7 +200,7 @@ class SearchMultiPlugin extends BasePlugin {
             onFile: getOnFile(),
             signal: getSignal(),
             semaphore: CONCURRENCY_LIMIT,
-            maxStats: MAX_STATS,
+            maxEntities: MAX_ENTITIES,
             maxDepth: MAX_DEPTH,
             strategy: TRAVERSE_STRATEGY,
             followSymlinks: FOLLOW_SYMBOLIC_LINKS,

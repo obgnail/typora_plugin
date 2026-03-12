@@ -13,7 +13,7 @@ class ImageViewerPlugin extends BasePlugin {
             dummy: "",
             info: "fa fa-info-circle",
             thumbnailNav: "fa fa-caret-square-o-down",
-            waterFall: "fa fa-list",
+            waterfall: "fa fa-list",
             close: "fa fa-times",
             download: "fa fa-download",
             scroll: "fa fa-crosshairs",
@@ -38,7 +38,7 @@ class ImageViewerPlugin extends BasePlugin {
             incVSkew: "fa fa-toggle-up",
             decVSkew: "fa fa-toggle-down",
             originSize: "fa fa-clock-o",
-            fixScreen: "fa fa-codepen",
+            fitScreen: "fa fa-codepen",
             autoSize: "fa fa-search-plus",
             restore: "fa fa-history",
         }
@@ -85,7 +85,7 @@ class ImageViewerPlugin extends BasePlugin {
 
         opEntities.info.hint = getInfoHint()
 
-        const columns = '<div class="viewer-water-fall-col"></div>'.repeat(this.config.WATER_FALL_COLUMNS)
+        const columns = '<div class="viewer-waterfall-col"></div>'.repeat(this.config.WATERFALL_COLUMNS)
         const messageList = this.config.SHOW_MESSAGE.map(m => `<div class="viewer-${m}"></div>`)
         const operationList = this.config.TOOL_FUNCTION
             .filter(option => Object.hasOwn(opEntities, option))
@@ -100,7 +100,7 @@ class ImageViewerPlugin extends BasePlugin {
                     <div class="viewer-message">${messageList.join("")}</div>
                     <div class="viewer-options">${operationList.join("")}</div>
                 </div>
-                <div class="viewer-water-fall plugin-common-hidden"><div class="viewer-water-fall-container">${columns}</div></div>
+                <div class="viewer-waterfall plugin-common-hidden"><div class="viewer-waterfall-container">${columns}</div></div>
                 <div class="viewer-nav ${class_}"></div>
                 <img class="viewer-image" alt=""/>
                 <div class="viewer-item" action="previousImage"><i class="fa fa-angle-left"></i></div>
@@ -125,7 +125,7 @@ class ImageViewerPlugin extends BasePlugin {
         this.entities = {
             viewer: document.getElementById("plugin-image-viewer"),
             mask: document.querySelector("#plugin-image-viewer .viewer-mask"),
-            waterFall: document.querySelector("#plugin-image-viewer .viewer-water-fall"),
+            waterfall: document.querySelector("#plugin-image-viewer .viewer-waterfall"),
             nav: document.querySelector("#plugin-image-viewer .viewer-nav"),
             image: document.querySelector("#plugin-image-viewer .viewer-image"),
             msg: document.querySelector("#plugin-image-viewer .viewer-message"),
@@ -146,7 +146,7 @@ class ImageViewerPlugin extends BasePlugin {
             })
         })
         this.entities.viewer.addEventListener("wheel", ev => {
-            if (this.utils.isShown(this.entities.waterFall)) return
+            if (this.utils.isShown(this.entities.waterfall)) return
             ev.preventDefault()
             const list = this.getFnList(ev, "WHEEL")
             const fn = list[ev.deltaY > 0 ? 1 : 0]
@@ -168,9 +168,9 @@ class ImageViewerPlugin extends BasePlugin {
             const target = ev.target.closest(".viewer-thumbnail")
             if (target) this.dumpIndex(parseInt(target.dataset.idx))
         })
-        this.entities.waterFall.addEventListener("click", ev => {
-            const target = ev.target.closest(".viewer-water-fall-item")
-            this.waterFall()
+        this.entities.waterfall.addEventListener("click", ev => {
+            const target = ev.target.closest(".viewer-waterfall-item")
+            this.waterfall()
             if (target) this.dumpIndex(parseInt(target.dataset.idx))
         })
         this.entities.nav.addEventListener("wheel", ev => {
@@ -269,12 +269,12 @@ class ImageViewerPlugin extends BasePlugin {
         return this.dumpImage("next", img => img.idx === Math.min(targetIdx, img.total - 1))
     }
 
-    waterFall = () => {
-        const columns = [...this.entities.waterFall.querySelectorAll(".viewer-water-fall-col")]
+    waterfall = () => {
+        const columns = [...this.entities.waterfall.querySelectorAll(".viewer-waterfall-col")]
 
         const toggleComponent = hide => {
             [...this.entities.viewer.children]
-                .filter(el => !el.classList.contains("viewer-water-fall") && !el.classList.contains("viewer-mask"))
+                .filter(el => !el.classList.contains("viewer-waterfall") && !el.classList.contains("viewer-mask"))
                 .forEach(el => this.utils.toggleInvisible(el, hide))
         }
 
@@ -287,32 +287,32 @@ class ImageViewerPlugin extends BasePlugin {
             [...this.entities.nav.children]
                 .map(img => {
                     img.classList.remove("viewer-thumbnail")
-                    img.classList.add("viewer-water-fall-item")
+                    img.classList.add("viewer-waterfall-item")
                     return img
                 })
                 .forEach(img => getMinHeightColumn().appendChild(img))
         }
 
         const waterFall2Nav = () => {
-            const fallChildren = [...this.entities.waterFall.querySelectorAll(".viewer-water-fall-item")]
+            const fallChildren = [...this.entities.waterfall.querySelectorAll(".viewer-waterfall-item")]
                 .sort((a, b) => parseInt(a.dataset.idx) - parseInt(b.dataset.idx))
                 .map(img => {
-                    img.classList.remove("viewer-water-fall-item")
+                    img.classList.remove("viewer-waterfall-item")
                     img.classList.add("viewer-thumbnail")
                     return img
                 })
             this.entities.nav.append(...fallChildren)
         }
 
-        this.utils.toggleInvisible(this.entities.waterFall)
-        if (this.utils.isHidden(this.entities.waterFall)) {
+        this.utils.toggleInvisible(this.entities.waterfall)
+        if (this.utils.isHidden(this.entities.waterfall)) {
             waterFall2Nav()
             toggleComponent(false)
         } else {
             columns.forEach(e => e.innerHTML = "")
             toggleComponent(true)
             nav2WaterFall()
-            this.entities.waterFall.querySelector(".viewer-water-fall-item.select")?.scrollIntoView()
+            this.entities.waterfall.querySelector(".viewer-waterfall-item.select")?.scrollIntoView()
         }
     }
 
@@ -353,7 +353,7 @@ class ImageViewerPlugin extends BasePlugin {
 
     _collectImage = () => {
         let images = [...this.utils.entities.querySelectorAllInWrite("img")]
-        if (this.config.FILTER_ERROR_IMAGE) {
+        if (this.config.SKIP_BROKEN_IMAGES) {
             images = images.filter(this.utils.isImgEmbed)
         }
         return images
@@ -453,7 +453,7 @@ class ImageViewerPlugin extends BasePlugin {
         const btn = this.entities.ops.querySelector(`[option="play"]`)
         if (!btn) return
         if (!stop && !this.playTimer) {
-            this.playTimer = setInterval(this.nextImage, this.config.PLAY_SECONDS * 1000)
+            this.playTimer = setInterval(this.nextImage, this.config.AUTO_PLAY_INTERVAL * 1000)
             btn.classList.add("active")
         } else {
             btn.classList.remove("active")
@@ -534,7 +534,7 @@ class ImageViewerPlugin extends BasePlugin {
     translateUp = translateScale => this.translate(true, "Y", null, translateScale)
     translateDown = translateScale => this.translate(false, "Y", null, translateScale)
     originSize = () => this.changeSize(true)
-    fixScreen = () => this.changeSize(false)
+    fitScreen = () => this.changeSize(false)
     autoSize = () => this.changeSize(this.entities.image.style.maxWidth !== "initial")
 }
 

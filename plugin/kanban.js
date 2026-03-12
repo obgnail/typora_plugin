@@ -6,6 +6,8 @@ class KanbanPlugin extends BasePlugin {
         wrap: this.config.WRAP ? "wrap" : "initial",
     })
 
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
+
     init = () => {
         this.STRICT_MODE_STR = "use strict"
         this.fenceStrictMode = false  // Is a single fence using strict mode

@@ -55,7 +55,7 @@
 
 #plugin-image-viewer .viewer-nav {
     --viewer-thumbnail-width: ${this.config.THUMBNAIL_HEIGHT};
-    --viewer-thumbnail-padding-count: ${this.config.THUMBNAIL_SCROLL_PADDING_COUNT};
+    --viewer-thumbnail-padding-count: ${this.config.PRELOAD_THUMBNAIL_COUNT};
 
     position: fixed;
     display: inline-flex;
@@ -137,7 +137,7 @@
     color: chartreuse;
 }
 
-#plugin-image-viewer .viewer-water-fall {
+#plugin-image-viewer .viewer-waterfall {
     position: fixed;
     width: 100vw;
     height: 100vh;
@@ -145,17 +145,17 @@
     overflow-y: auto;
 }
 
-#plugin-image-viewer .viewer-water-fall-container {
+#plugin-image-viewer .viewer-waterfall-container {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
     padding: 10px;
 }
 
-#plugin-image-viewer .viewer-water-fall-col {
+#plugin-image-viewer .viewer-waterfall-col {
     margin: 3px
 }
 
-#plugin-image-viewer .viewer-water-fall-item {
+#plugin-image-viewer .viewer-waterfall-item {
     margin-bottom: 12px;
 }

@@ -27,7 +27,7 @@ class MarkdownlintPlugin extends BasePlugin {
             <fast-window id="plugin-markdownlint" window-title="${this.pluginName}" window-buttons="${buttons}" hidden>
                 <div class="plugin-markdownlint-table-wrap"><fast-table class="plugin-markdownlint-table"></fast-table></div>
             </fast-window>
-            ${this.config.USE_BUTTON ? `<div id="plugin-markdownlint-button"></div>` : ""}
+            ${this.config.USE_INDICATOR_BUTTON ? `<div id="plugin-markdownlint-button"></div>` : ""}
         `
     }
 

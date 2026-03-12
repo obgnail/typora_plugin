@@ -14,8 +14,10 @@ class DrawIOPlugin extends BasePlugin {
         this._memorizedFetch = this.utils.memoizeLimited(async url => {
             const resp = await this.utils.fetch(url, { timeout: this.config.SERVER_TIMEOUT, proxy: this.config.PROXY })
             return resp.text()
-        }, this.config.MEMORIZED_URL_COUNT)
+        }, this.config.CACHED_URL_COUNT)
     }
+
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
@@ -51,7 +53,7 @@ class DrawIOPlugin extends BasePlugin {
     create = async ($wrap, content, meta) => {
         const graphConfig = this.utils.safeEval(content)
         if (!graphConfig.source && !graphConfig.xml) {
-            throw new Error(this.i18n.t("error.messingSource"))
+            throw new Error(this.i18n.t("error.missingSource"))
         }
         if (!graphConfig.xml) {
             graphConfig.xml = await this._getResource(
