@@ -4000,6 +4000,15 @@ DEFAULT_ICON = "\\f075"
 TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
 
 
+[image_see]
+# ------------------- 基础 -------------------
+# 启用插件
+ENABLE = true
+
+# 插件名称（为空则使用默认名）
+NAME = ""
+
+
 [test]
 # =========== [ 基础 ] ===========
 # 启用插件
