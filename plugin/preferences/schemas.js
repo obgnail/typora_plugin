@@ -351,30 +351,6 @@ const Tip = {
     action: (action, icon = "fa fa-link", text = undefined) => ({ action, icon, text }),
 }
 
-/******** Common Props ********/
-const prop_percent = { min: 0, max: 100, step: 1 }
-const prop_protected = { tooltip: Tip.action("openSettingsFolder", "fa fa-gear", "protected"), disabled: true }
-const prop_minusOne = { tooltip: "minusOneMeansUnlimited", min: -1 }
-
-const dep_markmapToc = { dependencies: Dep.true("ENABLE_TOC_MARKMAP") }
-const dep_markmapFence = { dependencies: Dep.true("ENABLE_FENCE_MARKMAP") }
-const dep_fenceEnhanceButton = { dependencies: Dep.true("ENABLE_BUTTON") }
-const dep_fenceEnhanceHotkey = { dependencies: Dep.true("ENABLE_HOTKEY") }
-const dep_countFile = { dependencies: Dep.true("ENABLE_FILE_COUNT") }
-
-/******** Common Fields ********/
-const field_ENABLE = Switch("ENABLE")
-const field_NAME = Text("NAME", { placeholder: "defaultIfEmpty" })
-const field_HOTKEY = Hotkey("HOTKEY")
-
-/******** Common Boxes ********/
-const box_pluginLite = UntitledBox(field_ENABLE, field_NAME)
-const box_pluginFull = UntitledBox(field_ENABLE, field_NAME, field_HOTKEY)
-const box_settingHandler = UntitledBox(Action("runtimeSettings"), Action("restoreSettings"))
-const box_langMode = TitledBox("languageMode", Text("LANGUAGE", prop_protected), Switch("INTERACTIVE_MODE"))
-const box_chartStyle = TitledBox("diagramStyle", Text("DEFAULT_FENCE_HEIGHT"), Text("DEFAULT_FENCE_BACKGROUND_COLOR"))
-const box_TEMPLATE = CodeBox("TEMPLATE")
-
 /******** Prop Unit (for Number_/Integer/Float only) ********/
 const UNITS = {
     byte: "byte",
@@ -390,21 +366,61 @@ const UNITS = {
     em: "em",
 }
 
+const TITLES = {
+    languageMode: "languageMode",
+    diagramStyle: "diagramStyle",
+    hotkey: "hotkey",
+    style: "style",
+    advanced: "advanced",
+}
+
+/******** Common ********/
+const PROPS = {
+    percent: { min: 0, max: 100, step: 1 },
+    protected: { tooltip: Tip.action("openSettingsFolder", "fa fa-gear", "protected"), disabled: true },
+    minusOne: { tooltip: "minusOneMeansUnlimited", min: -1 },
+}
+
+const DEPS = {
+    markmapToc: { dependencies: Dep.true("ENABLE_TOC_MARKMAP") },
+    markmapFence: { dependencies: Dep.true("ENABLE_FENCE_MARKMAP") },
+    fenceEnhanceButton: { dependencies: Dep.true("ENABLE_BUTTON") },
+    fenceEnhanceHotkey: { dependencies: Dep.true("ENABLE_HOTKEY") },
+    countFile: { dependencies: Dep.true("ENABLE_FILE_COUNT") },
+}
+
+const FIELDS = {
+    ENABLE: Switch("ENABLE"),
+    NAME: Text("NAME", { placeholder: "defaultIfEmpty" }),
+    HOTKEY: Hotkey("HOTKEY"),
+    LANGUAGE: Text("LANGUAGE", PROPS.protected),
+    INTERACTIVE_MODE: Switch("INTERACTIVE_MODE"),
+    DEFAULT_FENCE_HEIGHT: Text("DEFAULT_FENCE_HEIGHT"),
+    DEFAULT_FENCE_BACKGROUND_COLOR: Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
+}
+
+const BOXES = {
+    pluginLite: UntitledBox(FIELDS.ENABLE, FIELDS.NAME),
+    pluginFull: UntitledBox(FIELDS.ENABLE, FIELDS.NAME, FIELDS.HOTKEY),
+    settingHandler: UntitledBox(Action("runtimeSettings"), Action("restoreSettings")),
+    langMode: TitledBox(TITLES.languageMode, FIELDS.LANGUAGE, FIELDS.INTERACTIVE_MODE),
+    chartStyle: TitledBox(TITLES.diagramStyle, FIELDS.DEFAULT_FENCE_HEIGHT, FIELDS.DEFAULT_FENCE_BACKGROUND_COLOR),
+    TEMPLATE: CodeBox("TEMPLATE"),
+}
+
 /******** Prop Options (for Select/Transfer/Checkbox only) ********/
 const createOptions = (definitions) => {
-    return Object.freeze(Object.fromEntries(
+    return Object.fromEntries(
         Object.entries(definitions).map(([name, fields]) => {
-            const ret = Object.freeze(Object.fromEntries(
+            const ret = Object.fromEntries(
                 Object.entries(fields).map(([key, options]) => {
-                    const opts = Object.freeze(Object.fromEntries(
-                        options.map(opt => [opt, `${key}.${opt}`]))
-                    )
+                    const opts = Object.fromEntries(options.map(opt => [opt, `${key}.${opt}`]))
                     return [key, opts]
                 })
-            ))
+            )
             return [name, ret]
         })
-    ))
+    )
 }
 
 const OPTIONS = createOptions({
@@ -509,7 +525,7 @@ const OPTIONS = createOptions({
 /******** Schemas ********/
 const schema_global = [
     UntitledBox(
-        Switch("ENABLE", prop_protected),
+        Switch("ENABLE", PROPS.protected),
         Select("LOCALE", OPTIONS.global.LOCALE),
     ),
     UntitledBox(
@@ -540,7 +556,7 @@ const schema_global = [
 ]
 
 const schema_window_tab = [
-    box_pluginLite,
+    BOXES.pluginLite,
     TitledBox(
         "appearance",
         Switch("SHOW_TAB_CLOSE_BUTTON"),
@@ -549,7 +565,7 @@ const schema_window_tab = [
         Switch("HIDE_WINDOW_TITLE_BAR"),
         Text("TAB_MIN_WIDTH"),
         Text("TAB_MAX_WIDTH"),
-        Integer("MAX_TAB_NUM", prop_minusOne),
+        Integer("MAX_TAB_NUM", PROPS.minusOne),
     ),
     TitledBox(
         "behavior",
@@ -578,7 +594,7 @@ const schema_window_tab = [
     ),
     TransferBox("CONTEXT_MENU", OPTIONS.window_tab.CONTEXT_MENU),
     TitledBox(
-        "hotkey",
+        TITLES.hotkey,
         Array_("CLOSE_HOTKEY"),
         Array_("SWITCH_PREVIOUS_TAB_HOTKEY"),
         Array_("SWITCH_NEXT_TAB_HOTKEY"),
@@ -587,11 +603,11 @@ const schema_window_tab = [
         Array_("COPY_PATH_HOTKEY"),
         Array_("TOGGLE_TAB_BAR_HOTKEY"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_search_multi = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
         "search",
         Switch("CASE_SENSITIVE"),
@@ -614,20 +630,20 @@ const schema_search_multi = [
     ArrayBox("ALLOW_EXT"),
     ArrayBox("IGNORE_FOLDERS"),
     TitledBox(
-        "advanced",
+        TITLES.advanced,
         Switch("FOLLOW_SYMBOLIC_LINKS"),
         Select("TRAVERSE_STRATEGY", OPTIONS.search_multi.TRAVERSE_STRATEGY),
-        Integer("TIMEOUT", { ...prop_minusOne, unit: UNITS.millisecond }),
+        Integer("TIMEOUT", { ...PROPS.minusOne, unit: UNITS.millisecond }),
         Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
-        Integer("MAX_ENTITIES", prop_minusOne),
-        Integer("MAX_DEPTH", prop_minusOne),
+        Integer("MAX_ENTITIES", PROPS.minusOne),
+        Integer("MAX_DEPTH", PROPS.minusOne),
         Integer("CONCURRENCY_LIMIT", { min: 1 }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_commander = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
         "cmdDisplay",
         Select("QUICK_RUN_DISPLAY", OPTIONS.commander.QUICK_RUN_DISPLAY),
@@ -655,18 +671,18 @@ const schema_commander = [
             cmd: "",
         },
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_md_padding = [
-    box_pluginFull,
+    BOXES.pluginFull,
     ArrayBox("IGNORE_WORDS"),
     ArrayBox("IGNORE_PATTERNS"),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_read_only = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Switch("READ_ONLY_DEFAULT"),
         Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
@@ -675,45 +691,45 @@ const schema_read_only = [
         Text("SHOW_TEXT"),
     ),
     TitledBox(
-        "advanced",
+        TITLES.advanced,
         Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
         Select("REMAIN_AVAILABLE_MENU_KEY", null, { dependencies: Dep.true("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY") }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_blur = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Switch("BLUR_DEFAULT"),
         Switch("RESTORE_ON_HOVER"),
         Select("BLUR_TYPE", OPTIONS.blur.BLUR_TYPE),
         Integer("BLUR_LEVEL", { unit: UNITS.pixel, min: 1, dependencies: Dep.eq("BLUR_TYPE", "blur") }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_dark = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Switch("DARK_DEFAULT"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_no_image = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Switch("NO_IMAGE_DEFAULT"),
         Switch("SHOW_ON_HOVER"),
         Integer("TRANSITION_DURATION", { unit: UNITS.millisecond, min: 0 }),
         Integer("TRANSITION_DELAY", { unit: UNITS.millisecond, min: 0 }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_myopic_defocus = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Action("myopicDefocusEffectDemo", { explain: "enableMyopicDefocus" }),
     ),
@@ -725,15 +741,15 @@ const schema_myopic_defocus = [
         Integer("SCREEN_RESOLUTION_Y", { unit: UNITS.pixel, min: 1 }),
         Float("SCREEN_DISTANCE", { unit: UNITS.centimeter, min: 1 }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_toolbar = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
         "searchBarPosition",
-        Range("TOOLBAR_TOP_PERCENT", prop_percent),
-        Range("TOOLBAR_WIDTH_PERCENT", prop_percent),
+        Range("TOOLBAR_TOP_PERCENT", PROPS.percent),
+        Range("TOOLBAR_WIDTH_PERCENT", PROPS.percent),
     ),
     TitledBox(
         "input",
@@ -742,11 +758,11 @@ const schema_toolbar = [
         Switch("BACKSPACE_TO_HIDE"),
         Integer("DEBOUNCE_INTERVAL", { unit: UNITS.millisecond, min: 10 }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_resize_image = [
-    box_pluginLite,
+    BOXES.pluginLite,
     TitledBox(
         "image",
         Switch("RECORD_RESIZE"),
@@ -758,21 +774,21 @@ const schema_resize_image = [
         Hotkey("MODIFIER_KEY.TEMPORARY", { tooltip: "modifyKeyExample" }),
         Hotkey("MODIFIER_KEY.PERSISTENT"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_resize_table = [
-    box_pluginLite,
+    BOXES.pluginLite,
     UntitledBox(
         Switch("RECORD_RESIZE"),
         Switch("REMOVE_MIN_CELL_WIDTH"),
         Integer("DRAG_THRESHOLD", { unit: UNITS.pixel, min: 1 }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_datatables = [
-    box_pluginLite,
+    BOXES.pluginLite,
     UntitledBox(
         Switch("ORDERING"),
         Switch("DEFAULT_ORDER"),
@@ -783,99 +799,99 @@ const schema_datatables = [
         Switch("PAGING"),
         Integer("PAGE_LENGTH", { unit: UNITS.item, min: 1 }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_markmap = [
-    box_pluginLite,
+    BOXES.pluginLite,
     TitledBox(
         "mindmapDiagram",
         Switch("ENABLE_TOC_MARKMAP"),
-        Hotkey("TOC_HOTKEY", dep_markmapToc),
-        Switch("FIX_SKIPPED_LEVEL_HEADERS", dep_markmapToc),
-        Switch("REMOVE_HEADER_STYLES", dep_markmapToc),
-        Switch("AUTO_FIT_ON_UPDATE", dep_markmapToc),
-        Switch("AUTO_FIT_WHEN_FOLD", dep_markmapToc),
-        Switch("RETAIN_FOLD_STATE_ON_UPDATE", dep_markmapToc),
-        Switch("USE_CONTEXT_MENU", dep_markmapToc),
-        Switch("CLICK_TO_POSITION", dep_markmapToc),
-        Switch("AUTO_COLLAPSE_PARAGRAPH_ON_FOLD", { tooltip: "experimental", ...dep_markmapToc }),
-        Range("POSITIONING_VIEWPORT_HEIGHT", { tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01, ...dep_markmapToc }),
-        Range("WIDTH_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
-        Range("HEIGHT_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
-        Range("HEIGHT_PERCENT_WHEN_PIN_TOP", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
-        Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", { min: 20, max: 95, step: 1, ...dep_markmapToc }),
+        Hotkey("TOC_HOTKEY", DEPS.markmapToc),
+        Switch("FIX_SKIPPED_LEVEL_HEADERS", DEPS.markmapToc),
+        Switch("REMOVE_HEADER_STYLES", DEPS.markmapToc),
+        Switch("AUTO_FIT_ON_UPDATE", DEPS.markmapToc),
+        Switch("AUTO_FIT_WHEN_FOLD", DEPS.markmapToc),
+        Switch("RETAIN_FOLD_STATE_ON_UPDATE", DEPS.markmapToc),
+        Switch("USE_CONTEXT_MENU", DEPS.markmapToc),
+        Switch("CLICK_TO_POSITION", DEPS.markmapToc),
+        Switch("AUTO_COLLAPSE_PARAGRAPH_ON_FOLD", { tooltip: "experimental", ...DEPS.markmapToc }),
+        Range("POSITIONING_VIEWPORT_HEIGHT", { tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01, ...DEPS.markmapToc }),
+        Range("WIDTH_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1, ...DEPS.markmapToc }),
+        Range("HEIGHT_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1, ...DEPS.markmapToc }),
+        Range("HEIGHT_PERCENT_WHEN_PIN_TOP", { min: 20, max: 95, step: 1, ...DEPS.markmapToc }),
+        Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", { min: 20, max: 95, step: 1, ...DEPS.markmapToc }),
     ),
-    TransferBox("TITLE_BAR_BUTTONS", OPTIONS.markmap.TITLE_BAR_BUTTONS, { minItems: 1, ...dep_markmapToc }),
+    TransferBox("TITLE_BAR_BUTTONS", OPTIONS.markmap.TITLE_BAR_BUTTONS, { minItems: 1, ...DEPS.markmapToc }),
     TitledBox(
         "mindmapDiagramDefaultOptions",
-        Switch("DEFAULT_TOC_OPTIONS.zoom", dep_markmapToc),
-        Switch("DEFAULT_TOC_OPTIONS.pan", dep_markmapToc),
-        Switch("DEFAULT_TOC_OPTIONS.toggleRecursively", dep_markmapToc),
-        Range("DEFAULT_TOC_OPTIONS.initialExpandLevel", { min: 1, max: 7, step: 1, ...dep_markmapToc }),
-        Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel", { min: 1, max: 7, step: 1, ...dep_markmapToc }),
-        Range("DEFAULT_TOC_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01, ...dep_markmapToc }),
-        Range("DEFAULT_TOC_OPTIONS.maxInitialScale", { min: 0.5, max: 5, step: 0.25, ...dep_markmapToc }),
-        Integer("DEFAULT_TOC_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
-        Integer("DEFAULT_TOC_OPTIONS.nodeMinHeight", { unit: UNITS.pixel, min: 5, max: 50, step: 1, ...dep_markmapToc }),
-        Integer("DEFAULT_TOC_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
-        Integer("DEFAULT_TOC_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
-        Integer("DEFAULT_TOC_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...dep_markmapToc }),
-        Integer("DEFAULT_TOC_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...dep_markmapToc }),
-        Palette("DEFAULT_TOC_OPTIONS.color", dep_markmapToc),
+        Switch("DEFAULT_TOC_OPTIONS.zoom", DEPS.markmapToc),
+        Switch("DEFAULT_TOC_OPTIONS.pan", DEPS.markmapToc),
+        Switch("DEFAULT_TOC_OPTIONS.toggleRecursively", DEPS.markmapToc),
+        Range("DEFAULT_TOC_OPTIONS.initialExpandLevel", { min: 1, max: 7, step: 1, ...DEPS.markmapToc }),
+        Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel", { min: 1, max: 7, step: 1, ...DEPS.markmapToc }),
+        Range("DEFAULT_TOC_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01, ...DEPS.markmapToc }),
+        Range("DEFAULT_TOC_OPTIONS.maxInitialScale", { min: 0.5, max: 5, step: 0.25, ...DEPS.markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 100, step: 5, ...DEPS.markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.nodeMinHeight", { unit: UNITS.pixel, min: 5, max: 50, step: 1, ...DEPS.markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...DEPS.markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...DEPS.markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...DEPS.markmapToc }),
+        Integer("DEFAULT_TOC_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...DEPS.markmapToc }),
+        Palette("DEFAULT_TOC_OPTIONS.color", DEPS.markmapToc),
     ),
-    PaletteBox("CANDIDATE_COLOR_SCHEMES", { dimensions: 2, ...dep_markmapToc }),
+    PaletteBox("CANDIDATE_COLOR_SCHEMES", { dimensions: 2, ...DEPS.markmapToc }),
     TitledBox(
         "mindmapDiagramExport",
-        Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL", dep_markmapToc),
-        Switch("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES", dep_markmapToc),
-        Switch("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", { tooltip: "removeForeignObj", ...dep_markmapToc }),
-        Switch("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG", dep_markmapToc),
-        Switch("DOWNLOAD_OPTIONS.SHOW_IN_FINDER", dep_markmapToc),
-        Range("DOWNLOAD_OPTIONS.IMAGE_QUALITY", { tooltip: "pixelImagesOnly", min: 0.01, max: 1, step: 0.01, ...dep_markmapToc }),
-        Integer("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", { unit: UNITS.pixel, min: 1, step: 1, ...dep_markmapToc }),
-        Integer("DOWNLOAD_OPTIONS.PADDING_VERTICAL", { unit: UNITS.pixel, min: 1, step: 1, ...dep_markmapToc }),
-        Float("DOWNLOAD_OPTIONS.IMAGE_SCALE", { min: 0.1, step: 0.1, ...dep_markmapToc }),
-        Text("DOWNLOAD_OPTIONS.FILENAME", dep_markmapToc),
-        Text("DOWNLOAD_OPTIONS.FOLDER", { tooltip: "tempDir", ...dep_markmapToc }),
-        Text("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", { tooltip: "jpgFormatOnly", ...dep_markmapToc }),
-        Text("DOWNLOAD_OPTIONS.TEXT_COLOR", dep_markmapToc),
-        Text("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", dep_markmapToc),
+        Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL", DEPS.markmapToc),
+        Switch("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES", DEPS.markmapToc),
+        Switch("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", { tooltip: "removeForeignObj", ...DEPS.markmapToc }),
+        Switch("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG", DEPS.markmapToc),
+        Switch("DOWNLOAD_OPTIONS.SHOW_IN_FINDER", DEPS.markmapToc),
+        Range("DOWNLOAD_OPTIONS.IMAGE_QUALITY", { tooltip: "pixelImagesOnly", min: 0.01, max: 1, step: 0.01, ...DEPS.markmapToc }),
+        Integer("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", { unit: UNITS.pixel, min: 1, step: 1, ...DEPS.markmapToc }),
+        Integer("DOWNLOAD_OPTIONS.PADDING_VERTICAL", { unit: UNITS.pixel, min: 1, step: 1, ...DEPS.markmapToc }),
+        Float("DOWNLOAD_OPTIONS.IMAGE_SCALE", { min: 0.1, step: 0.1, ...DEPS.markmapToc }),
+        Text("DOWNLOAD_OPTIONS.FILENAME", DEPS.markmapToc),
+        Text("DOWNLOAD_OPTIONS.FOLDER", { tooltip: "tempDir", ...DEPS.markmapToc }),
+        Text("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", { tooltip: "jpgFormatOnly", ...DEPS.markmapToc }),
+        Text("DOWNLOAD_OPTIONS.TEXT_COLOR", DEPS.markmapToc),
+        Text("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", DEPS.markmapToc),
     ),
     TitledBox(
         "fence",
         Switch("ENABLE_FENCE_MARKMAP"),
-        Switch("INTERACTIVE_MODE", dep_markmapFence),
-        Hotkey("FENCE_HOTKEY", dep_markmapFence),
-        Text("FENCE_LANGUAGE", { ...prop_protected, ...dep_markmapFence }),
-        Text("DEFAULT_FENCE_HEIGHT", dep_markmapFence),
-        Text("DEFAULT_FENCE_BACKGROUND_COLOR", dep_markmapFence),
+        Switch("INTERACTIVE_MODE", DEPS.markmapFence),
+        Hotkey("FENCE_HOTKEY", DEPS.markmapFence),
+        Text("FENCE_LANGUAGE", { ...PROPS.protected, ...DEPS.markmapFence }),
+        Text("DEFAULT_FENCE_HEIGHT", DEPS.markmapFence),
+        Text("DEFAULT_FENCE_BACKGROUND_COLOR", DEPS.markmapFence),
     ),
     TitledBox(
         "fenceDiagramDefaultOptions",
-        Switch("DEFAULT_FENCE_OPTIONS.zoom", dep_markmapFence),
-        Switch("DEFAULT_FENCE_OPTIONS.pan", dep_markmapFence),
-        Switch("DEFAULT_FENCE_OPTIONS.toggleRecursively", dep_markmapFence),
-        Range("DEFAULT_FENCE_OPTIONS.initialExpandLevel", { min: 1, max: 7, step: 1, ...dep_markmapFence }),
-        Range("DEFAULT_FENCE_OPTIONS.colorFreezeLevel", { min: 1, max: 7, step: 1, ...dep_markmapFence }),
-        Range("DEFAULT_FENCE_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01, ...dep_markmapFence }),
-        Range("DEFAULT_FENCE_OPTIONS.maxInitialScale", { min: 0.5, max: 5, step: 0.25, ...dep_markmapFence }),
-        Integer("DEFAULT_FENCE_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 1000, step: 10, ...dep_markmapFence }),
-        Integer("DEFAULT_FENCE_OPTIONS.nodeMinHeight", { unit: UNITS.pixel, min: 5, max: 50, step: 1, ...dep_markmapFence }),
-        Integer("DEFAULT_FENCE_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 200, step: 1, ...dep_markmapFence }),
-        Integer("DEFAULT_FENCE_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 200, step: 1, ...dep_markmapFence }),
-        Integer("DEFAULT_FENCE_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 1, ...dep_markmapFence }),
-        Integer("DEFAULT_FENCE_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...dep_markmapFence }),
-        Text("DEFAULT_FENCE_OPTIONS.height", dep_markmapFence),
-        Text("DEFAULT_FENCE_OPTIONS.backgroundColor", dep_markmapFence),
-        Palette("DEFAULT_FENCE_OPTIONS.color", dep_markmapFence),
+        Switch("DEFAULT_FENCE_OPTIONS.zoom", DEPS.markmapFence),
+        Switch("DEFAULT_FENCE_OPTIONS.pan", DEPS.markmapFence),
+        Switch("DEFAULT_FENCE_OPTIONS.toggleRecursively", DEPS.markmapFence),
+        Range("DEFAULT_FENCE_OPTIONS.initialExpandLevel", { min: 1, max: 7, step: 1, ...DEPS.markmapFence }),
+        Range("DEFAULT_FENCE_OPTIONS.colorFreezeLevel", { min: 1, max: 7, step: 1, ...DEPS.markmapFence }),
+        Range("DEFAULT_FENCE_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01, ...DEPS.markmapFence }),
+        Range("DEFAULT_FENCE_OPTIONS.maxInitialScale", { min: 0.5, max: 5, step: 0.25, ...DEPS.markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 1000, step: 10, ...DEPS.markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.nodeMinHeight", { unit: UNITS.pixel, min: 5, max: 50, step: 1, ...DEPS.markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 200, step: 1, ...DEPS.markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 200, step: 1, ...DEPS.markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 1, ...DEPS.markmapFence }),
+        Integer("DEFAULT_FENCE_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...DEPS.markmapFence }),
+        Text("DEFAULT_FENCE_OPTIONS.height", DEPS.markmapFence),
+        Text("DEFAULT_FENCE_OPTIONS.backgroundColor", DEPS.markmapFence),
+        Palette("DEFAULT_FENCE_OPTIONS.color", DEPS.markmapFence),
     ),
-    CodeBox("FENCE_TEMPLATE", dep_markmapFence),
-    box_settingHandler,
+    CodeBox("FENCE_TEMPLATE", DEPS.markmapFence),
+    BOXES.settingHandler,
 ]
 
 const schema_auto_number = [
-    box_pluginLite,
+    BOXES.pluginLite,
     TitledBox(
         "autoNumbering",
         Switch("ENABLE_OUTLINE"),
@@ -886,7 +902,7 @@ const schema_auto_number = [
         Switch("ENABLE_FENCE"),
     ),
     TitledBox(
-        "style",
+        TITLES.style,
         Text("FONT_FAMILY"),
         Switch("SHOW_IMAGE_NAME", { dependencies: Dep.true("ENABLE_IMAGE") }),
         Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, { dependencies: Dep.true("ENABLE_TABLE") }),
@@ -959,36 +975,36 @@ const schema_auto_number = [
         Switch("ENABLE_WHEN_EXPORT"),
     ),
     CodeBox("APPLY_EXPORT_HEADER_NUMBERING", { tooltip: "expertsOnly", dependencies: Dep.true("ENABLE_WHEN_EXPORT") }),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_fence_enhance = [
-    box_pluginLite,
+    BOXES.pluginLite,
     TitledBox(
         "buttonGeneral",
         Switch("ENABLE_BUTTON"),
-        Switch("AUTO_HIDE", dep_fenceEnhanceButton),
-        Switch("HIDE_BUTTON_HINT", dep_fenceEnhanceButton),
-        Range("BUTTON_OPACITY", { min: 0, max: 1, step: 0.05, ...dep_fenceEnhanceButton }),
-        Range("BUTTON_OPACITY_HOVER", { min: 0, max: 1, step: 0.05, ...dep_fenceEnhanceButton }),
-        Text("BUTTON_SIZE", dep_fenceEnhanceButton),
-        Text("BUTTON_COLOR", dep_fenceEnhanceButton),
-        Text("BUTTON_PADDING", dep_fenceEnhanceButton),
-        Text("BUTTON_TOP", dep_fenceEnhanceButton),
-        Text("BUTTON_RIGHT", dep_fenceEnhanceButton),
-        Integer("HINT_DURATION", { unit: UNITS.millisecond, min: 500, step: 100, ...dep_fenceEnhanceButton }),
+        Switch("AUTO_HIDE", DEPS.fenceEnhanceButton),
+        Switch("HIDE_BUTTON_HINT", DEPS.fenceEnhanceButton),
+        Range("BUTTON_OPACITY", { min: 0, max: 1, step: 0.05, ...DEPS.fenceEnhanceButton }),
+        Range("BUTTON_OPACITY_HOVER", { min: 0, max: 1, step: 0.05, ...DEPS.fenceEnhanceButton }),
+        Text("BUTTON_SIZE", DEPS.fenceEnhanceButton),
+        Text("BUTTON_COLOR", DEPS.fenceEnhanceButton),
+        Text("BUTTON_PADDING", DEPS.fenceEnhanceButton),
+        Text("BUTTON_TOP", DEPS.fenceEnhanceButton),
+        Text("BUTTON_RIGHT", DEPS.fenceEnhanceButton),
+        Integer("HINT_DURATION", { unit: UNITS.millisecond, min: 500, step: 100, ...DEPS.fenceEnhanceButton }),
     ),
     TitledBox(
         "functionButtons",
-        Switch("ENABLE_COPY", dep_fenceEnhanceButton),
+        Switch("ENABLE_COPY", DEPS.fenceEnhanceButton),
         Switch("TRIM_WHITESPACE_ON_COPY", { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_COPY")) }),
         Switch("COPY_AS_MARKDOWN", { dependencies: Dep.follow("TRIM_WHITESPACE_ON_COPY") }),
         Select("LINE_BREAKS_ON_COPY", OPTIONS.fence_enhance.LINE_BREAKS_ON_COPY, { dependencies: Dep.follow("TRIM_WHITESPACE_ON_COPY") }),
         Divider(),
-        Switch("ENABLE_INDENT", dep_fenceEnhanceButton),
+        Switch("ENABLE_INDENT", DEPS.fenceEnhanceButton),
         Array_("EXCLUDE_LANGUAGE_ON_INDENT", { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_INDENT")) }),
         Divider(),
-        Switch("ENABLE_FOLD", dep_fenceEnhanceButton),
+        Switch("ENABLE_FOLD", DEPS.fenceEnhanceButton),
         Select("FOLD_OVERFLOW", OPTIONS.fence_enhance.FOLD_OVERFLOW, { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_FOLD")) }),
         Integer("MANUAL_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: Dep.follow("FOLD_OVERFLOW") }),
         Switch("DEFAULT_FOLD", { dependencies: Dep.follow("FOLD_OVERFLOW") }),
@@ -1018,17 +1034,17 @@ const schema_fence_enhance = [
             ON_RENDER: "({ btn, fence, cid, enhance }) => console.log('Rendered')",
             ON_CLICK: "({ ev, btn, cont, fence, cm, cid, plu }) => console.log('Clicked')",
         },
-        dep_fenceEnhanceButton,
+        DEPS.fenceEnhanceButton,
     ),
     TitledBox(
         "buttonHotkeys",
         Switch("ENABLE_HOTKEY", { tooltip: Tip.action("viewCodeMirrorKeymapsManual") }),
-        Text("SWAP_PREVIOUS_LINE", dep_fenceEnhanceHotkey),
-        Text("SWAP_NEXT_LINE", dep_fenceEnhanceHotkey),
-        Text("COPY_PREVIOUS_LINE", dep_fenceEnhanceHotkey),
-        Text("COPY_NEXT_LINE", dep_fenceEnhanceHotkey),
-        Text("INSERT_LINE_PREVIOUS", dep_fenceEnhanceHotkey),
-        Text("INSERT_LINE_NEXT", dep_fenceEnhanceHotkey),
+        Text("SWAP_PREVIOUS_LINE", DEPS.fenceEnhanceHotkey),
+        Text("SWAP_NEXT_LINE", DEPS.fenceEnhanceHotkey),
+        Text("COPY_PREVIOUS_LINE", DEPS.fenceEnhanceHotkey),
+        Text("COPY_NEXT_LINE", DEPS.fenceEnhanceHotkey),
+        Text("INSERT_LINE_PREVIOUS", DEPS.fenceEnhanceHotkey),
+        Text("INSERT_LINE_NEXT", DEPS.fenceEnhanceHotkey),
     ),
     TableBox(
         "CUSTOM_HOTKEYS",
@@ -1045,7 +1061,7 @@ const schema_fence_enhance = [
             HOTKEY: "",
             CALLBACK: "({ pre, cid, cm, cursor, lineNum, lastNum, separator }) => console.log('Callback')",
         },
-        dep_fenceEnhanceHotkey,
+        DEPS.fenceEnhanceHotkey,
     ),
     TitledBox(
         "lineHighlighting",
@@ -1061,20 +1077,20 @@ const schema_fence_enhance = [
         Text("HIGHLIGHT_LINE_COLOR_ON_HOVER", { dependencies: Dep.true("HIGHLIGHT_ON_HOVER") }),
     ),
     TitledBox(
-        "advanced",
+        TITLES.advanced,
         Switch("SIDE_BY_SIDE_VIEW", { tooltip: [Tip.info("stylisticConfusion"), Tip.action("viewSideBySideEffect")] }),
         Switch("VISIBLE_TABS", { tooltip: Tip.action("viewVisibleTabsEffect") }),
         Switch("ENABLE_LANGUAGE_FOLD", { tooltip: Tip.action("viewCodeFoldingEffect") }),
         Switch("INDENTED_WRAPPED_LINE", { tooltip: Tip.action("viewIndentedWrappedLineEffect") }),
         Switch("PRELOAD_ALL_FENCES", { tooltip: "dangerous" }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_collapse_paragraph = [
     UntitledBox(
         Switch("ENABLE", { tooltip: "ConflictWithOptionExpandSimpleBlock" }),
-        field_NAME,
+        FIELDS.NAME,
     ),
     TitledBox(
         "mode",
@@ -1089,49 +1105,49 @@ const schema_collapse_paragraph = [
         Hotkey("MODIFIER_KEY.COLLAPSE_ALL_SIBLINGS"),
         Hotkey("MODIFIER_KEY.COLLAPSE_RECURSIVE"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_collapse_list = [
-    box_pluginLite,
+    BOXES.pluginLite,
     UntitledBox(
         Switch("RECORD_COLLAPSE"),
         Text("TRIANGLE_COLOR"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_collapse_table = [
-    box_pluginLite,
+    BOXES.pluginLite,
     UntitledBox(
         Switch("RECORD_COLLAPSE"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_truncate_text = [
-    box_pluginLite,
+    BOXES.pluginLite,
     TitledBox(
-        "hotkey",
+        TITLES.hotkey,
         Hotkey("HIDE_FRONT_HOTKEY"),
         Hotkey("HIDE_BASE_VIEW_HOTKEY"),
         Hotkey("SHOW_ALL_HOTKEY"),
         Integer("RETAIN_LENGTH", { min: 1, dependencies: Dep.or(Dep.bool("HIDE_FRONT_HOTKEY", true), Dep.bool("HIDE_BASE_VIEW_HOTKEY", true)) }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_export_enhance = [
-    box_pluginLite,
+    BOXES.pluginLite,
     UntitledBox(
         Switch("EMBED_NETWORK_IMAGES"),
         Integer("DOWNLOAD_THREADS", { min: 1, dependencies: Dep.true("EMBED_NETWORK_IMAGES") }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_text_stylize = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TransferBox("TOOLS", OPTIONS.text_stylize.TOOLS, { minItems: 1 }),
     TableBox(
         "ACTION_HOTKEYS",
@@ -1155,51 +1171,51 @@ const schema_text_stylize = [
         Text("DEFAULT_FORMAT_BRUSH", { tooltip: "brushExample" }),
     ),
     PaletteBox("COLOR_TABLE", { dimensions: 2, allowJagged: false }),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_cipher = [
-    box_pluginLite,
+    BOXES.pluginLite,
     UntitledBox(
         Switch("SHOW_HINT_MODAL"),
-        Password("SECRET_KEY", prop_protected),
+        Password("SECRET_KEY", PROPS.protected),
     ),
     TitledBox(
-        "hotkey",
+        TITLES.hotkey,
         Hotkey("ENCRYPT_HOTKEY"),
         Hotkey("DECRYPT_HOTKEY"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_resource_manager = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
         "windowPosition",
-        Range("MODAL_LEFT_PERCENT", prop_percent),
-        Range("MODAL_WIDTH_PERCENT", prop_percent),
-        Range("MODAL_HEIGHT_PERCENT", prop_percent),
+        Range("MODAL_LEFT_PERCENT", PROPS.percent),
+        Range("MODAL_WIDTH_PERCENT", PROPS.percent),
+        Range("MODAL_HEIGHT_PERCENT", PROPS.percent),
     ),
     ArrayBox("RESOURCE_EXT"),
     ArrayBox("MARKDOWN_EXT"),
     ArrayBox("IGNORE_FOLDERS"),
     TitledBox(
-        "advanced",
+        TITLES.advanced,
         Select("RESOURCE_GRAMMARS", OPTIONS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
         Select("TRAVERSE_STRATEGY", OPTIONS.resource_manager.TRAVERSE_STRATEGY),
         Switch("FOLLOW_SYMBOLIC_LINKS"),
         Integer("TIMEOUT", { unit: UNITS.millisecond, min: 1 }),
-        Integer("MAX_ENTITIES", prop_minusOne),
-        Integer("MAX_DEPTH", prop_minusOne),
+        Integer("MAX_ENTITIES", PROPS.minusOne),
+        Integer("MAX_DEPTH", PROPS.minusOne),
         Integer("CONCURRENCY_LIMIT", { min: 1 }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_easy_modify = [
-    box_pluginLite,
+    BOXES.pluginLite,
     TitledBox(
-        "hotkey",
+        TITLES.hotkey,
         Hotkey("HOTKEY_COPY_FULL_PATH"),
         Hotkey("HOTKEY_INCREASE_HEADERS_LEVEL"),
         Hotkey("HOTKEY_DECREASE_HEADERS_LEVEL"),
@@ -1214,26 +1230,26 @@ const schema_easy_modify = [
         Hotkey("HOTKEY_CONVERT_IMAGE_TO_BASE64"),
         Hotkey("HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_custom = [
     UntitledBox(
-        Switch("ENABLE", prop_protected),
-        field_NAME,
+        Switch("ENABLE", PROPS.protected),
+        FIELDS.NAME,
     ),
     UntitledBox(
         Switch("HIDE_DISABLE_PLUGINS"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_slash_commands = [
-    box_pluginLite,
+    BOXES.pluginLite,
     TitledBox(
         "trigger",
         Text("TRIGGER_REGEXP"),
-        Text("FUNC_PARAM_SEPARATOR", prop_protected),
+        Text("FUNC_PARAM_SEPARATOR", PROPS.protected),
         Select("SUGGESTION_TIMING", OPTIONS.slash_commands.SUGGESTION_TIMING),
         Select("MATCH_STRATEGY", OPTIONS.slash_commands.MATCH_STRATEGY),
         Select("ORDER_STRATEGY", OPTIONS.slash_commands.ORDER_STRATEGY),
@@ -1265,11 +1281,11 @@ const schema_slash_commands = [
             callback: "",
         },
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_cjk_symbol_pairing = [
-    box_pluginLite,
+    BOXES.pluginLite,
     UntitledBox(
         Switch("AUTO_SKIP_PAIR"),
         Switch("AUTO_DELETE_PAIR"),
@@ -1301,16 +1317,16 @@ const schema_cjk_symbol_pairing = [
         { enable: true, input: "", output: "" },
         { dependencies: Dep.true("AUTO_CONVERT_FULL_TO_HALF") },
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_right_click_menu = [
     UntitledBox(
-        Switch("ENABLE", prop_protected),
-        field_NAME,
+        Switch("ENABLE", PROPS.protected),
+        FIELDS.NAME,
     ),
     TitledBox(
-        "style",
+        TITLES.style,
         Switch("SHOW_PLUGIN_HOTKEY"),
         Switch("SHOW_ACTION_OPTIONS_ICON"),
         Switch("DO_NOT_HIDE"),
@@ -1332,14 +1348,14 @@ const schema_right_click_menu = [
         },
     ),
     TitledBox(
-        "advanced",
+        TITLES.advanced,
         Switch("FIND_LOST_PLUGINS"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_pie_menu = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Hotkey("MODIFIER_KEY", { tooltip: "example" }),
     ),
@@ -1357,14 +1373,14 @@ const schema_pie_menu = [
             CALLBACK: "",
         },
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_preferences = [
     UntitledBox(
-        Switch("ENABLE", prop_protected),
-        field_NAME,
-        field_HOTKEY,
+        Switch("ENABLE", PROPS.protected),
+        FIELDS.NAME,
+        FIELDS.HOTKEY,
     ),
     UntitledBox(
         Switch("SEARCH_PLUGIN_FIXEDNAME"),
@@ -1375,11 +1391,11 @@ const schema_preferences = [
         Select("HIDE_MENUS"),
     ),
     CodeBox("FORM_RENDERING_HOOK", { tooltip: "expertsOnly" }),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_hotkeys = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TableBox(
         "CUSTOM_HOTKEYS",
         ["hotkey", "desc"],
@@ -1404,45 +1420,45 @@ const schema_hotkeys = [
             evil: "(anchorNode) => console.log(`Invoke with anchor: ${anchorNode}`)",
         },
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_asset_root_redirect = [
-    box_pluginLite,
+    BOXES.pluginLite,
     UntitledBox(
         Text("ROOT_PATH"),
     ),
     ArrayBox("IGNORE_GLOB_FILES", { tooltip: Tip.action("viewGlobPattern") }),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_bookmark = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Hotkey("MODIFIER_KEY", { tooltip: "modifierKeyExample" }),
         Switch("AUTO_POPUP_WINDOW"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_editor_width_slider = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Integer("WIDTH_RATIO", { tooltip: "minusOneMeansDisable", unit: UNITS.percent, min: -1, max: 100, step: 1 }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_article_uploader = [
     UntitledBox(
         Switch("ENABLE", { tooltip: Tip.action("viewArticleUploaderReadme", "fa fa-flask") }),
-        field_NAME,
+        FIELDS.NAME,
     ),
     UntitledBox(
         Switch("HIDE"),
     ),
     TitledBox(
-        "hotkey",
+        TITLES.hotkey,
         Hotkey("UPLOAD_ALL_HOTKEY", { dependencies: Dep.or(Dep.true("upload.cnblog.enabled"), Dep.true("upload.wordpress.enabled"), Dep.true("upload.csdn.enabled")) }),
         Hotkey("UPLOAD_CNBLOG_HOTKEY", { dependencies: Dep.true("upload.cnblog.enabled") }),
         Hotkey("UPLOAD_WORDPRESS_HOTKEY", { dependencies: Dep.true("upload.wordpress.enabled") }),
@@ -1472,31 +1488,31 @@ const schema_article_uploader = [
         Switch("upload.csdn.enabled"),
         Text("upload.csdn.cookie", { dependencies: Dep.true("upload.csdn.enabled") }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_ripgrep = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
         "windowPosition",
-        Range("TOP_PERCENT", prop_percent),
-        Range("WIDTH_PERCENT", prop_percent),
+        Range("TOP_PERCENT", PROPS.percent),
+        Range("WIDTH_PERCENT", PROPS.percent),
     ),
     TitledBox(
         "interaction",
         Switch("BACKSPACE_TO_HIDE"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_static_markers = [
-    box_pluginFull,
+    BOXES.pluginFull,
     CheckboxBox("STATIC_MARKERS", OPTIONS.static_markers.STATIC_MARKERS, { columns: 4 }),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_sidebar_enhance = [
-    box_pluginLite,
+    BOXES.pluginLite,
     UntitledBox(
         Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR"),
         Switch("SORTABLE_OUTLINE"),
@@ -1504,18 +1520,18 @@ const schema_sidebar_enhance = [
     ),
     UntitledBox(
         Switch("ENABLE_FILE_COUNT"),
-        Text("FONT_WEIGHT", dep_countFile),
-        Text("TEXT_COLOR", dep_countFile),
-        Text("BACKGROUND_COLOR", dep_countFile),
+        Text("FONT_WEIGHT", DEPS.countFile),
+        Text("TEXT_COLOR", DEPS.countFile),
+        Text("BACKGROUND_COLOR", DEPS.countFile),
         Divider(),
-        Array_("COUNT_EXT", dep_countFile),
-        Array_("IGNORE_FOLDERS", dep_countFile),
+        Array_("COUNT_EXT", DEPS.countFile),
+        Array_("IGNORE_FOLDERS", DEPS.countFile),
         Divider(),
-        Switch("FOLLOW_SYMBOLIC_LINKS", dep_countFile),
-        Integer("MIN_FILES_TO_DISPLAY", { tooltip: "ignoreMinNum", min: 1, ...dep_countFile }),
-        Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000, ...dep_countFile }),
-        Integer("MAX_ENTITIES", { min: 100, ...dep_countFile }),
-        Integer("CONCURRENCY_LIMIT", { min: 1, ...dep_countFile }),
+        Switch("FOLLOW_SYMBOLIC_LINKS", DEPS.countFile),
+        Integer("MIN_FILES_TO_DISPLAY", { tooltip: "ignoreMinNum", min: 1, ...DEPS.countFile }),
+        Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000, ...DEPS.countFile }),
+        Integer("MAX_ENTITIES", { min: 100, ...DEPS.countFile }),
+        Integer("CONCURRENCY_LIMIT", { min: 1, ...DEPS.countFile }),
     ),
     UntitledBox(
         Array_("HIDDEN_NODE_PATTERNS"),
@@ -1542,26 +1558,26 @@ const schema_sidebar_enhance = [
         },
         { dependencies: Dep.and(Dep.true("CUSTOMIZE_SIDEBAR_ICONS"), Dep.follow("CUSTOMIZE_SIDEBAR_ICONS")) },
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_cursor_history = [
-    box_pluginLite,
+    BOXES.pluginLite,
     TitledBox(
-        "hotkey",
+        TITLES.hotkey,
         Hotkey("HOTKEY_GO_FORWARD"),
         Hotkey("HOTKEY_GO_BACK"),
     ),
     UntitledBox(
         Integer("MAX_HISTORY_ENTRIES", { min: 1, step: 1 }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_json_rpc = [
     UntitledBox(
         Switch("ENABLE", { tooltip: Tip.action("viewJsonRPCReadme", "fa fa-flask") }),
-        field_NAME,
+        FIELDS.NAME,
     ),
     TitledBox(
         "rpcServer",
@@ -1570,11 +1586,11 @@ const schema_json_rpc = [
         Integer("SERVER_OPTIONS.port", { min: 0, max: 65535, step: 1 }),
         Text("SERVER_OPTIONS.path"),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_updater = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Integer("NETWORK_REQUEST_TIMEOUT", { unit: UNITS.millisecond, min: 30000 }),
         Text("PROXY"),
@@ -1585,20 +1601,20 @@ const schema_updater = [
         Integer("UPDATE_LOOP_INTERVAL", { tooltip: "loopInterval", unit: UNITS.millisecond, min: -1, dependencies: Dep.true("AUTO_UPDATE") }),
         Integer("START_UPDATE_INTERVAL", { tooltip: "waitInterval", unit: UNITS.millisecond, min: -1, dependencies: Dep.true("AUTO_UPDATE") }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_test = [
-    box_pluginLite,
-    box_settingHandler,
+    BOXES.pluginLite,
+    BOXES.settingHandler,
 ]
 
 const schema_kanban = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
         "fence",
-        Text("LANGUAGE", prop_protected),
-        Switch("INTERACTIVE_MODE"),
+        FIELDS.LANGUAGE,
+        FIELDS.INTERACTIVE_MODE,
         Switch("STRICT_MODE"),
     ),
     TitledBox(
@@ -1613,16 +1629,16 @@ const schema_kanban = [
         Palette("KANBAN_COLOR"),
         Palette("TASK_COLOR"),
     ),
-    box_TEMPLATE,
-    box_settingHandler,
+    BOXES.TEMPLATE,
+    BOXES.settingHandler,
 ]
 
 const schema_chat = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
         "fence",
-        Text("LANGUAGE", prop_protected),
-        Switch("INTERACTIVE_MODE"),
+        FIELDS.LANGUAGE,
+        FIELDS.INTERACTIVE_MODE,
         Switch("DEFAULT_OPTIONS.useStrict"),
     ),
     TitledBox(
@@ -1634,15 +1650,15 @@ const schema_chat = [
         Text("DEFAULT_OPTIONS.senderNickname"),
         Text("DEFAULT_OPTIONS.timeNickname"),
     ),
-    box_TEMPLATE,
-    box_settingHandler,
+    BOXES.TEMPLATE,
+    BOXES.settingHandler,
 ]
 
 const schema_timeline = [
-    box_pluginFull,
-    box_langMode,
+    BOXES.pluginFull,
+    BOXES.langMode,
     TitledBox(
-        "diagramStyle",
+        TITLES.diagramStyle,
         Text("BACKGROUND_COLOR"),
         Text("TITLE_COLOR"),
         Text("TITLE_FONT_SIZE"),
@@ -1654,94 +1670,94 @@ const schema_timeline = [
         Text("TIME_COLOR"),
         Text("CIRCLE_TOP"),
     ),
-    box_TEMPLATE,
-    box_settingHandler,
+    BOXES.TEMPLATE,
+    BOXES.settingHandler,
 ]
 
 const schema_echarts = [
-    box_pluginFull,
-    box_langMode,
-    box_chartStyle,
-    box_TEMPLATE,
+    BOXES.pluginFull,
+    BOXES.langMode,
+    BOXES.chartStyle,
+    BOXES.TEMPLATE,
     TitledBox(
-        "advanced",
+        TITLES.advanced,
         Select("LOCALE", OPTIONS.echarts.LOCALE),
         Select("THEME", OPTIONS.echarts.THEME),
         Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: Tip.action("chooseEchartsRenderer") }),
         Select("EXPORT_TYPE", OPTIONS.echarts.EXPORT_TYPE),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_chart = [
-    box_pluginFull,
-    box_langMode,
+    BOXES.pluginFull,
+    BOXES.langMode,
     TitledBox(
-        "diagramStyle",
+        TITLES.diagramStyle,
         Select("CHART_ALIGN", OPTIONS.chart.CHART_ALIGN),
-        Text("DEFAULT_FENCE_HEIGHT"),
-        Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
+        FIELDS.DEFAULT_FENCE_HEIGHT,
+        FIELDS.DEFAULT_FENCE_BACKGROUND_COLOR,
     ),
-    box_TEMPLATE,
-    box_settingHandler,
+    BOXES.TEMPLATE,
+    BOXES.settingHandler,
 ]
 
 const schema_wavedrom = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
-        "languageMode",
-        Text("LANGUAGE", prop_protected),
-        Switch("INTERACTIVE_MODE"),
+        TITLES.languageMode,
+        FIELDS.LANGUAGE,
+        FIELDS.INTERACTIVE_MODE,
         Switch("SAFE_MODE"),
     ),
     TitledBox(
-        "diagramStyle",
+        TITLES.diagramStyle,
         Select("CHART_ALIGN", OPTIONS.wavedrom.CHART_ALIGN),
-        Text("DEFAULT_FENCE_HEIGHT"),
-        Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
+        FIELDS.DEFAULT_FENCE_HEIGHT,
+        FIELDS.DEFAULT_FENCE_BACKGROUND_COLOR,
     ),
-    box_TEMPLATE,
+    BOXES.TEMPLATE,
     ArrayBox("SKIN_FILES", { tooltip: Tip.action("downloadWaveDromSkins", "fa fa-download") }),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_calendar = [
-    box_pluginFull,
-    box_langMode,
-    box_chartStyle,
-    box_TEMPLATE,
-    box_settingHandler,
+    BOXES.pluginFull,
+    BOXES.langMode,
+    BOXES.chartStyle,
+    BOXES.TEMPLATE,
+    BOXES.settingHandler,
 ]
 
 const schema_abc = [
-    box_pluginFull,
-    box_langMode,
-    box_chartStyle,
-    box_TEMPLATE,
+    BOXES.pluginFull,
+    BOXES.langMode,
+    BOXES.chartStyle,
+    BOXES.TEMPLATE,
     DictBox("VISUAL_OPTIONS", null, { tooltip: Tip.action("viewAbcVisualOptionsManual") }),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_drawIO = [
-    box_pluginFull,
-    box_langMode,
-    box_chartStyle,
-    box_TEMPLATE,
+    BOXES.pluginFull,
+    BOXES.langMode,
+    BOXES.chartStyle,
+    BOXES.TEMPLATE,
     TitledBox(
-        "advanced",
+        TITLES.advanced,
         Text("RESOURCE_URI"),
         Text("PROXY"),
         Integer("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
         Integer("CACHED_URL_COUNT", { min: 1 }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_plantUML = [
     UntitledBox(
         Switch("ENABLE", { tooltip: Tip.action("installPlantUMLServer", "fa fa-flask") }),
-        field_NAME,
-        field_HOTKEY,
+        FIELDS.NAME,
+        FIELDS.HOTKEY,
     ),
     UntitledBox(
         Text("SERVER_URL"),
@@ -1749,24 +1765,24 @@ const schema_plantUML = [
         Integer("CACHED_URL_COUNT", { min: 1 }),
         Select("OUTPUT_FORMAT", OPTIONS.plantUML.OUTPUT_FORMAT),
     ),
-    box_langMode,
-    box_chartStyle,
-    box_TEMPLATE,
-    box_settingHandler,
+    BOXES.langMode,
+    BOXES.chartStyle,
+    BOXES.TEMPLATE,
+    BOXES.settingHandler,
 ]
 
 const schema_marp = [
-    box_pluginFull,
-    box_langMode,
+    BOXES.pluginFull,
+    BOXES.langMode,
     DictBox("MARP_CORE_OPTIONS", null, { tooltip: Tip.action("viewMarpOptions") }),
-    box_TEMPLATE,
-    box_settingHandler,
+    BOXES.TEMPLATE,
+    BOXES.settingHandler,
 ]
 
 const schema_callouts = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
-        "style",
+        TITLES.style,
         Switch("SET_TITLE_COLOR"),
         Text("BOX_SHADOW"),
     ),
@@ -1804,12 +1820,12 @@ const schema_callouts = [
             left_line_color: "",
         },
     ),
-    box_TEMPLATE,
-    box_settingHandler,
+    BOXES.TEMPLATE,
+    BOXES.settingHandler,
 ]
 
 const schema_templater = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Switch("AUTO_OPEN"),
     ),
@@ -1844,17 +1860,17 @@ const schema_templater = [
         },
     ),
     ArrayBox("TEMPLATE_FOLDERS"),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_right_outline = [
-    box_pluginFull,
+    BOXES.pluginFull,
     UntitledBox(
         Switch("DEFAULT_SHOW_OUTLINE"),
         Switch("REMOVE_HEADER_STYLES"),
         Switch("SORTABLE"),
         Switch("RIGHT_CLICK_OUTLINE_BUTTON_TO_TOGGLE"),
-        Range("DEFAULT_WIDTH_PERCENT", prop_percent),
+        Range("DEFAULT_WIDTH_PERCENT", PROPS.percent),
     ),
     TransferBox("TITLE_BAR_BUTTONS", OPTIONS.right_outline.TITLE_BAR_BUTTONS),
     TitledBox(
@@ -1865,16 +1881,16 @@ const schema_right_outline = [
         Switch("INCLUDE_HEADINGS.link", { dependencies: Dep.contains("TITLE_BAR_BUTTONS", "link") }),
         Switch("INCLUDE_HEADINGS.math", { dependencies: Dep.contains("TITLE_BAR_BUTTONS", "math") }),
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_image_viewer = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
-        "style",
+        TITLES.style,
         Range("MASK_BACKGROUND_OPACITY", { min: 0, max: 1, step: 0.05 }),
-        Range("IMAGE_MAX_WIDTH", prop_percent),
-        Range("IMAGE_MAX_HEIGHT", prop_percent),
+        Range("IMAGE_MAX_WIDTH", PROPS.percent),
+        Range("IMAGE_MAX_HEIGHT", PROPS.percent),
         Text("THUMBNAIL_HEIGHT"),
         Integer("BLUR_LEVEL", { unit: UNITS.pixel, min: 1 }),
         Integer("PRELOAD_THUMBNAIL_COUNT", { min: 0 }),
@@ -1936,11 +1952,11 @@ const schema_image_viewer = [
         ],
         { hotkey: "", fn: "nextImage" },
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_markdownlint = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
         "detectAndFix",
         Switch("TRANSLATE"),
@@ -1965,11 +1981,11 @@ const schema_markdownlint = [
     ),
     DictBox("RULE_CONFIG", null, { tooltip: Tip.action("viewMarkdownlintRules") }),
     ArrayBox("CUSTOM_RULE_FILES"),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schema_action_buttons = [
-    box_pluginFull,
+    BOXES.pluginFull,
     TitledBox(
         "buttonStyle",
         Text("BUTTON_SIZE"),
@@ -2014,7 +2030,7 @@ const schema_action_buttons = [
             evil: "",
         },
     ),
-    box_settingHandler,
+    BOXES.settingHandler,
 ]
 
 const schemas = {

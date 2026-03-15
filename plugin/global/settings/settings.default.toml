@@ -8,250 +8,250 @@
 # =====================================================================
 
 [global]
-# =========== [ 基础 ] ===========
-# 启用插件（总开关）
+# =========== [ Basic ] ===========
+# Master switch. Enables or disables the plugin system
 ENABLE = true
 
-# 语言
-#   auto : 自动检测
+# Locale
+#   auto : System default
 #   en   : English
 #   zh-CN: 简体中文
 #   zh-TW: 繁體中文
 LOCALE = "auto"
 
-# =========== [ 图表交互 ] ===========
-# 退出图表交互模式：使用图表插件（如 kanban, markmap 等）并开启交互模式时，定义退出状态的方式
-# 至少填写一个退出方式，否则陷入交互模式无法退出
-#   click_exit_button: 点击图表区域右上角的【编辑】按钮退出
-#   ctrl_click_fence : 按住 Ctrl 键并点击图表区域退出
+# =========== [ Chart Interaction ] ===========
+# Exit methods for chart interaction mode (e.g., kanban, markmap)
+# Note: At least one exit method must be specified to prevent lock-in
+#   click_exit_button: Click the [Edit] button in the top right corner of the chart area
+#   ctrl_click_fence : Ctrl+Click the chart area
 EXIT_CHART_INTERACTION = ["click_exit_button"]
 
-# 合并渲染图形代码块
-#   true : 合并渲染，提升渲染性能
-#   false: 立即渲染，无延迟
+# Batch render charts strategy
+#   true : Batch render to improve performance
+#   false: Render immediately without delay
 BATCH_RENDER_CHARTS = false
 
 
 [window_tab]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 标签页外观与交互 ] ===========
-# 隐藏文件扩展名：标签标题仅显示文件名 (如: filename.md 显示为 filename)
+# =========== [ Appearance & Interaction ] ===========
+# Trim file extension: Display only the filename on the tab (e.g., 'filename' instead of 'filename.md')
 TRIM_FILE_EXT = true
 
-# 同名文件显示目录：打开多个同名文件时，显示文件的父目录以便区分 (如: filename.md 显示为 dir/filename.md)
+# Show directory on duplicate: Display the parent directory on the tab when multiple open files share the same name (e.g., 'dir/filename.md')
 SHOW_DIR_ON_DUPLICATE = true
 
-# Hover 显示文件路径：鼠标悬停在标签页上时，显示完整的文件路径
+# Show full path on hover: Display the complete file path in a tooltip when hovering over the tab
 SHOW_FULL_PATH_ON_HOVER = true
 
-# 显示关闭按钮：在标签页右侧显示关闭 (x) 按钮
+# Show tab close button: Display the close (x) button on the right side of the tab
 SHOW_TAB_CLOSE_BUTTON = true
 
-# 隐藏窗口标题栏：当 Typora 使用一体化窗口样式时生效
+# Hide window title bar: Applies only when Typora uses the unibody window style
 HIDE_WINDOW_TITLE_BAR = false
 
-# 标签页最小宽度：最大限制 400px，支持 CSS 单位 (如 "100px", "12em")
+# Min tab width: Min limit is 400px. Supports CSS units (e.g., "100px", "12em")
 TAB_MIN_WIDTH = "100px"
 
-# 标签页最大宽度：最大限制 400px，支持 CSS 单位 ("none" 表示不限制)
+# Max tab width: Max limit is 400px. Supports CSS units. Set to "none" for unlimited width
 TAB_MAX_WIDTH = "200px"
 
-# =========== [ 标签页拖拽与分离 ] ===========
-# 标签页拖拽风格
-#   JetBrains: 灵活调整顺序，支持分离模式
-#   VSCode   : 简单直接的拖拽方式
+# =========== [ Drag & Detachment ] ===========
+# Drag style
+#   JetBrains: Flexible reordering with detachment support
+#   VSCode   : Simple and direct drag-and-drop
 DRAG_STYLE = "JetBrains"
 
-# 标签页分离行为：仅当拖拽风格为 JetBrains 时生效
-#  free        : 自由拖拽无限制
-#  resistant   : 存在拖动阻力
-#  lockVertical: 禁止竖直移动
+# Tab detachment mode (Requires DRAG_STYLE = "JetBrains")
+#  free        : Unrestricted dragging
+#  resistant   : Dragging with visual resistance
+#  lockVertical: Prohibit vertical dragging
 TAB_DETACHMENT = "resistant"
 
-# 分离阈值：拖拽垂直距离少于 X 倍标签页高度时，视为无垂直移动 (推荐 0.5 ~ 1.5)
+# Detachment threshold: Vertical drag distance less than X times the tab height is considered no vertical movement (Recommended: 0.5 ~ 1.5)
 DETACHMENT_THRESHOLD = 1
 
-# 新建窗口阈值：向下拖拽标签页垂直距离超过其高度的 X 倍时，在新窗口中打开 (-1 表示不启用此功能)
+# Drag threshold for new window: Vertical drag distance beyond X times the tab height opens it in a new window. Set to -1 to disable
 DRAG_NEW_WINDOW_THRESHOLD = -1
 
-# =========== [ 标签页行为与鼠标交互 ] ===========
-# Ctrl+Click：按住 Ctrl 并点击标签页，在新窗口中打开该文件
+# =========== [ Behavior & Mouse Interaction ] ===========
+# Ctrl+Click: Open the file in a new window via Ctrl+Click on its tab
 CTRL_CLICK_TO_NEW_WINDOW = true
 
-# Wheel 滚动标签栏：支持鼠标滚轮在标签栏上横向滚动
+# Wheel to scroll tab bar: Enable horizontal scrolling on the tab bar using the mouse wheel
 WHEEL_TO_SCROLL_TAB_BAR = true
 
-# Ctrl+Wheel 切换标签页：支持通过组合键快速切换激活的标签页
+# Ctrl+Wheel to switch tabs: Quickly switch active tabs using Ctrl+Wheel
 CTRL_WHEEL_TO_SWITCH = false
 
-# Middle Click 关闭标签页：支持通过鼠标中键直接关闭标签页
+# Middle click to close tab: Close tabs using the middle mouse button
 MIDDLE_CLICK_TO_CLOSE = true
 
-# 标签页最大数量：超出时自动关闭最左侧标签页 (-1 表示无限制)
+# Max tab number: Auto-close the leftmost tab when exceeding this limit. Set to -1 for unlimited
 MAX_TAB_NUM = -1
 
-# 新建标签页位置
-#   start: 标签栏最左侧
-#   end  : 标签栏最右侧
-#   left : 当前标签页左侧
-#   right: 当前标签页右侧
+# New tab insertion position
+#   start: Leftmost of the tab bar
+#   end  : Rightmost of the tab bar
+#   left : To the left of the current tab
+#   right: To the right of the current tab
 NEW_TAB_POSITION = "right"
 
-# 关闭标签页后激活位置
-#   left  : 激活左侧标签页
-#   right : 激活右侧标签页
-#   latest: 激活最近浏览的标签页
+# Tab to activate after closing the current one
+#   left  : Activate the left tab
+#   right : Activate the right tab
+#   latest: Activate the most recently viewed tab
 TAB_SWITCH_ON_CLOSE = "right"
 
-# 关闭最后的标签页后的行为
-#   blankPage: 显示空白页 (低版本 Typora 回退到 reconfirm)
-#   reconfirm: 弹出确认退出对话框
-#   exit     : 直接退出 Typora
+# Behavior when closing the last tab
+#   blankPage: Display a blank page (Falls back to 'reconfirm' on older Typora versions)
+#   reconfirm: Prompt exit confirmation dialog
+#   exit     : Exit Typora immediately
 LAST_TAB_CLOSE_ACTION = "blankPage"
 
-# 启动时恢复未关闭标签页：仅在双击 typora.exe 启动，且原生配置为“打开指定目录/重新打开上次使用的目录”时生效
+# Reopen unclosed tabs on startup: Restores tabs on next launch. Requires Typora's native setting "Open specific folder/Reopen last directory" to be enabled
 REOPEN_TABS_ON_STARTUP = false
 
-# =========== [ 快捷键 ] ===========
-# 关闭当前标签页
+# =========== [ Hotkeys ] ===========
+# Close current tab
 CLOSE_HOTKEY = ["ctrl+w"]
-# 切换到下一个标签页
+# Switch to next tab
 SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
-# 切换到上一个标签页
+# Switch to previous tab
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
-# 切换到上一个活动标签页
+# Switch to last active tab
 SWITCH_LAST_ACTIVE_TAB_HOTKEY = []
-# 按照文件名对标签页进行排序
+# Sort tabs by filename
 SORT_TABS_HOTKEY = []
-# 临时显示/隐藏标签栏
+# Temporarily show/hide tab bar
 TOGGLE_TAB_BAR_HOTKEY = []
-# 复制当前文件路径
+# Copy current file path
 COPY_PATH_HOTKEY = []
 
-# =========== [ 右键菜单 ] ===========
-# 标签页右键菜单选项列表 (置为空数组 [] 则禁用右键菜单)
-#   closeTab       : 关闭标签页
-#   closeOtherTabs : 关闭其他标签页
-#   closeLeftTabs  : 关闭当前标签页左侧的所有标签页
-#   closeRightTabs : 关闭当前标签页右侧的所有标签页
-#   copyPath       : 复制当前文件路径
-#   showInFinder   : 在文件资源管理器中打开文件所在位置
-#   openInNewWindow: 在新窗口中打开当前文件
-#   sortTabs       : 按照文件名排序标签页
+# =========== [ Context Menu ] ===========
+# Context menu options for tabs. Set to [] to disable
+#   closeTab       : Close tab
+#   closeOtherTabs : Close other tabs
+#   closeLeftTabs  : Close all tabs to the left
+#   closeRightTabs : Close all tabs to the right
+#   copyPath       : Copy current file path
+#   showInFinder   : Show in File Explorer
+#   openInNewWindow: Open in a new window
+#   sortTabs       : Sort tabs by filename
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
 
 
 [search_multi]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = "ctrl+shift+p"
 
-# =========== [ 窗口交互 ] ===========
-# 输入框为空，且键入 Backspace 时，隐藏窗口
+# =========== [ Window Interaction ] ===========
+# Hide window when pressing Backspace on an empty input
 BACKSPACE_TO_HIDE = false
 
-# =========== [ 搜索 ] ===========
-# 搜索区分大小写
+# =========== [ Search ] ===========
+# Case sensitive search
 CASE_SENSITIVE = false
 
-# 最大子目录深度：遍历文件夹时的层级限制 (-1 表示无限制)
+# Max directory traversal depth. Set to -1 for unlimited
 MAX_DEPTH = -1
 
-# 最大同时处理任务数：控制并发，防止过多文件句柄导致 EMFILE 错误
+# Max concurrent search tasks: Prevents file handle exhaustion (EMFILE errors)
 CONCURRENCY_LIMIT = 20
 
-# 跟随符号链接：若开启需注意闭环目录导致的无限循环问题
+# Follow symbolic links during traversal. Note: High risk of infinite loops with circular symlinks
 FOLLOW_SYMBOLIC_LINKS = false
 
-# 隐藏窗口后立即停止搜索：避免后台持续消耗系统资源
+# Stop searching on hiding window: Terminate active searches when the window is hidden to save resources
 STOP_SEARCHING_ON_HIDING = true
 
-# 最大执行时间 (毫秒)：防止搜索死锁 (-1 表示不限制)
+# Max execution time (ms): Prevents search deadlocks. Set to -1 for unlimited
 TIMEOUT = 60000
 
-# 文件遍历策略
-#   bfs: 广度优先
-#   dfs: 深度优先
+# Traverse strategy
+#   bfs: Breadth-First Search
+#   dfs: Depth-First Search
 TRAVERSE_STRATEGY = "bfs"
 
-# 最大文件数量：超出数量时搜索自动停止 (-1 表示无限制)
+# Max entities: Automatically halt search after finding this number of items. Set to -1 for unlimited
 MAX_ENTITIES = -1
 
-# 最大文件大小 (字节)：大于此值的文件将被忽略 (Typora 上限为 2,000,000 字节，-1 表示不限制)
+# Max file size (bytes): Ignore files larger than this threshold. Typora limit is 2,000,000. Set to -1 for unlimited
 MAX_SIZE = 2000000
 
-# 允许搜索的文件扩展名：默认为 Typora 支持的所有扩展名，不推荐随意增加
+# Allowed file extensions: Defaults to Typora's supported formats. Modifying is not recommended
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 
-# 忽略搜索的文件夹：直接排除常见的编译、缓存及配置目录
+# Ignored folders
 IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 
-# =========== [ 结果展示与高亮 ] ===========
-# 使用相对路径：在搜索列表中显示相对路径而非绝对路径
+# =========== [ Result Display ] ===========
+# Use relative path: Show relative paths instead of absolute paths in the search list
 RELATIVE_PATH = true
 
-# 显示文件扩展名：在文件标题后展示如 .md 等后缀
+# Show file extension: Display extensions (e.g., .md) after file titles
 SHOW_EXT = true
 
-# 显示文件修改时间：鼠标悬停在搜索结果项上时显示
+# Show modified time: Display the modification time on hover
 SHOW_MTIME = false
 
-# 关键字高亮色：数组按顺序匹配多个关键字的底色展示
+# Highlight colors: Background colors for keywords
 HIGHLIGHT_COLORS = [
     "#BBEEFF", "#FFBBCC", "#88EE88", "#CCBBFF", "#FFEE88", "#FFFFA0", "#88CCCC", "#FFBB88", "#CCCCCC", "#FFAABB",
     "#99CCFF", "#FF99CC", "#66CC66", "#CC99FF", "#FFCC66", "#FFFF80", "#DD9966", "#AAAAAA", "#66AAAA", "#DD6699",
 ]
 
-# 高亮最大数量：渲染过多 HTML 会影响性能
+# Max highlights: Limit HTML rendering to preserve performance
 MAX_HIGHLIGHTS = 5000
 
-# 隐藏按钮提示：去掉鼠标悬停在工具按钮上时弹出的文字提示
+# Hide button hint: Remove tooltip text when hovering over tool buttons
 HIDE_BUTTON_HINT = false
 
-# =========== [ 高级 ] ===========
-# 搜索优化 (AST Reordering)：自动重组搜索条件，利用短路求值将低开销查询 (如 size, mtime) 前置，高开销查询 (如 h1, content) 后置
-# 注意开启后可能改变关键字的高亮颜色分配顺序
+# =========== [ Advanced ] ===========
+# Optimize Search (AST Reordering): Reorder search conditions using short-circuit evaluation. Prioritizes low-cost queries (e.g., size, mtime) over high-cost queries (e.g., content, h1)
+# Note: Enabling this may alter the highlight color assignment order of keywords
 OPTIMIZE_SEARCH = false
 
 
 [commander]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 窗口行为 ] ===========
-# 输入框为空，且键入 Backspace 时，隐藏窗口
+# =========== [ Window Interaction ] ===========
+# Hide window when pressing Backspace on an empty input
 BACKSPACE_TO_HIDE = false
 
-# =========== [ 命令显示 ] ===========
-# 快捷方式执行命令的回显方式 (通过菜单/快捷键直接执行的命令)
-#   always: 执行结束后弹窗并显示输出
-#   error : 仅在错误时弹窗并显示输出
-#   silent: 静默执行，不显示任何输出
-#   echo  : 立即弹窗并回显输出 (适合耗时/流式任务)
+# =========== [ Command Display ] ===========
+# Output display mode for shortcut-triggered commands
+#   always: Always show output modal after execution
+#   error : Show output modal only on error
+#   silent: Silent execution, hide output
+#   echo  : Stream output immediately (Ideal for long-running/streaming tasks)
 QUICK_RUN_DISPLAY = "error"
 
-# 命令框执行命令的回显方式 (通过输入框回车执行的命令)
-#   always: 执行结束后显示输出
-#   echo  : 立即回显输出
+# Output display mode for panel-triggered commands
+#   always: Show output modal after completion
+#   echo  : Stream output immediately
 COMMIT_RUN_DISPLAY = "echo"
 
-# =========== [ 预设命令列表 ] ===========
-# 预设的常用命令列表，每个命令项包含以下属性
-#   name   : 命令的显示名称，必须唯一，用于在插件菜单中标识此命令
-#   disable: 是否禁用此命令，true 为禁用，false 为启用
-#   shell  : 指定命令执行的 shell 环境，支持 "cmd/bash", "powershell", "gitbash", "wsl"
-#   hotkey : (可选) 为此命令设置的快捷键，用于快速执行此命令
-#   cmd    : 实际要执行的命令
-# 内置环境变量
-#   $f: 当前编辑文件的完整路径
-#   $d: 当前编辑文件所在的目录路径
-#   $m: 当前 Typora 侧边栏的挂载根目录
+# =========== [ Built-in Commands ] ===========
+# Predefined command list
+#   name   : Unique identifier for the plugin menu
+#   disable: Master switch for this specific command
+#   shell  : Target shell (Supported: "cmd/bash", "powershell", "gitbash", "wsl")
+#   hotkey : (Optional) Execution shortcut
+#   cmd    : Execution string
+# Built-in environment variables:
+#   $f: Absolute path of the current file
+#   $d: Directory of the current file
+#   $m: Current mount directory in Typora's sidebar
 BUILTIN = [
     { name = "Default", disable = false, shell = "cmd/bash", cmd = "" },
     { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $d" },
@@ -263,315 +263,316 @@ BUILTIN = [
 
 
 [md_padding]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = "ctrl+shift+b"
 
-# =========== [ 忽略词组与正则过滤 ] ===========
-# 忽略词组：指定的词组内部及前后不添加多余空格 (如 ["word1", "词组1"])
+# =========== [ Ignore ] ===========
+# Ignored words: Exact words where internal/adjacent padding spaces are bypassed (e.g., ["word1", "word2"])
 IGNORE_WORDS = []
 
-# 忽略正则表达式：匹配的模式内部及前后不处理
+# Ignored patterns: Regex where matched content bypasses padding spaces
 IGNORE_PATTERNS = [':[0-9a-z_\-]+?:', '<br\s*?/?>', '<u>.+?</u>', '<span style=".+?">.+?</span>']
 
 
 [read_only]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = "ctrl+shift+r"
 
-# =========== [ 交互控制与外观 ] ===========
-# 默认开启：启动 Typora 时自动进入只读模式
+# =========== [ Mode Toggle ] ===========
+# Enter read-only mode automatically on Typora startup
 READ_ONLY_DEFAULT = false
 
-# 禁用单击展开：只读模式下，禁止通过点击图片和行内公式自动放大
+# =========== [ Interaction & Appearance ] ===========
+# Disable expand on click: Prevent images and inline formulas from expanding on click
 DISABLE_EXPAND_WHEN_READ_ONLY = true
 
-# 自动收缩：只读模式下，点击页面其他区域自动将已展开的图片/公式收回
-# 当 DISABLE_EXPAND_WHEN_READ_ONLY 为 true 时失效
+# Auto collapse: Automatically collapse expanded images/formulas when clicking elsewhere
+# Disabled if DISABLE_EXPAND_WHEN_READ_ONLY is true
 AUTO_COLLAPSE_WHEN_READ_ONLY = true
 
-# 单击跳转超链接：开启后，左键单击即可打开网址 (普通模式需按住 Ctrl 点击)
+# Directly open URLs via click (Standard mode requires Ctrl+Click)
 CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY = false
 
-# 禁用右键菜单：只读模式下精简右键菜单选项以防误操作
+# Disable context menu: Simplify context menu options to prevent misoperations
 DISABLE_CONTEXT_MENU_WHEN_READ_ONLY = true
 
-# 保持可用的菜单：禁用右键菜单时，保留在页面上的核心菜单功能 Key 列表
-# 可选值需打开调试工具查找 data-key 属性
-# REMAIN_AVAILABLE_MENU_KEY 为 false 时失效
+# Remain available menu keys: Core menu options to retain when the context menu is disabled (Use dev tools to find data-key attributes)
+# Disabled if DISABLE_CONTEXT_MENU_WHEN_READ_ONLY is false
 REMAIN_AVAILABLE_MENU_KEY = ["typora-plugin", "dev-tool", "copy-img"]
 
-# 状态指示提示：右下角数字统计区域显示的提示字眼
+# Hint text: Status indicator displayed in the bottom right word count area
 SHOW_TEXT = "ReadOnly"
 
 
 [blur]
-# =========== [ 基础 ] ===========
-# 注意：此插件无法在低版本 Typora 上使用
+# =========== [ Basic ] ===========
+# Note: This feature is unavailable on older versions of Typora
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 插件默认行为 ] ===========
-# 默认开启：启动 Typora 时自动进入模糊模式
+# =========== [ Mode Toggle ] ===========
+# Enter blur mode automatically on Typora startup
 BLUR_DEFAULT = false
 
-# =========== [ 模糊效果 ] ===========
-# 模糊类型
-#   blur: 未聚焦的组件表现为高斯模糊
-#   hide: 未聚焦的组件直接隐藏
+# =========== [ Blur Effects ] ===========
+# Blur type
+#   blur: Apply Gaussian blur to unfocused components
+#   hide: Directly hide unfocused components
 BLUR_TYPE = "blur"
 
-# 悬停恢复可见：鼠标移动到未聚焦组件上时自动展示其内容 (BLUR_TYPE 为 hide 时失效)
+# Restore visibility on hover: Auto-focus components on mouse hover (Disabled if BLUR_TYPE is "hide")
 RESTORE_ON_HOVER = true
 
-# 模糊等级：px 像素值，数值越大模糊越深 (BLUR_TYPE 为 hide 时失效)
+# Blur level (px, Disabled if BLUR_TYPE is "hide")
 BLUR_LEVEL = 10
 
 
 [dark]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 夜间模式切换 ] ===========
-# 默认开启：启动 Typora 时自动进入夜间模式
+# =========== [ Mode Toggle ] ===========
+# Enter dark mode automatically on Typora startup
 DARK_DEFAULT = false
 
 
 [no_image]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 无图模式切换 ] ===========
-# 默认开启：启动 Typora 时自动进入无图模式
+# =========== [ Mode Toggle ] ===========
+# Enter no-image mode automatically on Typora startup
 NO_IMAGE_DEFAULT = false
 
-# =========== [ 动画与显示控制 ] ===========
-# 悬停恢复可见：鼠标滑过隐藏的图片区域时临时显示图片
+# =========== [ Animation & Display ] ===========
+# Restore visibility on hover: Temporarily reveal hidden images on mouse hover
 SHOW_ON_HOVER = true
 
-# 过渡动画时间：图片淡入淡出动画的持续时间 (毫秒)
+# Duration of image fade-in/out animations (ms)
 TRANSITION_DURATION = 300
 
-# 过渡动画延迟：图片触发显隐操作前的等待时间 (毫秒)
+# Wait time before triggering image visibility animations (ms)
 TRANSITION_DELAY = 0
 
 
 [myopic_defocus]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 屏幕参数与效果配置 ] ===========
-# 默认开启：启动 Typora 时即启动近视离焦舒缓滤镜
+# =========== [ Mode Toggle ] ===========
+# Enter myopic defocus mode automatically on Typora startup
 DEFOCUS_DEFAULT = false
 
-# 屏幕尺寸：物理对角线尺寸 (英寸)
+# =========== [ Defoucs Parameters ] ===========
+# Screen size: Physical diagonal size in inches
 SCREEN_SIZE = 14
 
-# 水平分辨率 (px)
+# Screen horizontal resolution (px)
 SCREEN_RESOLUTION_X = 1920
 
-# 垂直分辨率 (px)
+# Screen vertical resolution (px)
 SCREEN_RESOLUTION_Y = 1080
 
-# 观看距离：人眼到屏幕的物理距离 (厘米)
+# Screen distance: Physical distance from the eye to the screen (cm)
 SCREEN_DISTANCE = 40
 
-# 效果强度：百分比，推荐 10% ~ 35%
+# Effect strength: Percentage ratio. Recommended: 10% ~ 35%
 EFFECT_STRENGTH = 10
 
 
 [toolbar]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = "ctrl+j"
 
-# =========== [ 窗口外观与交互 ] ===========
-# 输入框为空且键入退格键 (Backspace) 时，自动隐藏搜索栏
+# =========== [ Window Appearance & Interaction ] ===========
+# Hide window when pressing Backspace on an empty input
 BACKSPACE_TO_HIDE = true
 
-# 垂直定位：搜索栏距离页面顶部的百分比位置 (0~100)
+# Vertical position: Distance from the top of the page (0~100%)
 TOOLBAR_TOP_PERCENT = 20
 
-# 宽度：搜索栏占据页面宽度的百分比尺寸 (0~100)
+# Width relative to the page (0~100%)
 TOOLBAR_WIDTH_PERCENT = 80
 
-# =========== [ 搜索策略控制 ] ===========
-# 输入防抖时间 (毫秒)：停止输入多少毫秒后触发检索 (内存级检索推荐短时间)
+# =========== [ Search Strategy ] ===========
+# Wait time after typing stops before triggering a search (ms, Short intervals recommended for memory-level search)
 DEBOUNCE_INTERVAL = 70
 
-# 默认搜索工具：无匹配前缀时的回退检索器
-#   ""   : 不使用默认工具，只显示匹配的搜索工具
-#   plu  : 插件搜索 (搜索已安装的插件)
-#   tab  : 当前标签页搜索 (搜索当前打开的文件标签页)
-#   his  : 最近文件搜索 (搜索最近打开过的文件)
-#   ops  : 常用操作搜索 (搜索 Typora 的常用操作命令)
-#   mode : 切换文件模式搜索 (搜索 Typora 的文件模式，如源码模式、专注模式)
-#   theme: 切换主题搜索 (搜索 Typora 的主题)
-#   out  : 文档大纲搜索 (搜索当前文档的大纲)
-#   func : 功能列表搜索 (搜索 Typora 的所有功能)
-#   all  : 混合搜索 (搜索所有可用项目，包括以上所有工具)
+# Default search tool: Fallback searcher when no matching prefix is detected
+#   ""   : Disable default tool; requires explicit prefix matching
+#   plu  : Search enabled plugins
+#   tab  : Search currently open file tabs
+#   his  : Search recently opened files
+#   ops  : Search Typora's common operation commands
+#   mode : Switch file modes (e.g., Source Code, Focus Mode)
+#   theme: Search and change Typora themes
+#   out  : Search current document outline
+#   func : Search Typora functions
+#   all  : Mixed search across all tools
 DEFAULT_TOOL = "func"
 
-# 启用负向查询
-#   true : 启用负向查询，使用 "-" 前缀表示排除关键字
-#   false: 禁用负向查询，所有关键字都视为包含关系
-# 例1：`plu multi -search`
-#   true : 查找插件，要求插件名【包含multi，但不包含search】
-#   false: 查找插件，要求插件名【包含multi和-search】
-# 例2：`his close -win -mark 标签`
-#   true : 查找近期文件，要求文件名【包含close、标签，但不包含win、mark】
-#   false: 查找近期文件，要求文件名【包含close、-win、-mark、标签】
+# Enable negative search
+#   true : Enable negative queries. The "-" prefix excludes a keyword
+#   false: Disable negative queries. All keywords are inclusive
+# Example 1: `plu multi -search`
+#   true : Find plugins containing "multi", but EXCLUDING "search"
+#   false: Find plugins containing BOTH "multi" and "-search"
+# Example 2: `his close -win -mark label`
+#   true : Find recent files containing "close" AND "label", but EXCLUDING "win" AND "mark"
+#   false: Find recent files containing "close", "-win", "-mark", AND "label"
 USE_NEGATIVE_SEARCH = true
 
 
 [resize_image]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 缩放修饰键 ] ===========
-# 缩放功能修饰键
-#   TEMPORARY : 临时修改图片大小。例如填入 "alt"，按住 Alt 滚动滚轮仅在当前视图临时调整
-#   PERSISTENT: 永久修改图片大小。例如填入 "ctrl"，缩放时自动将 Markdown 图片转换为 HTML 并持久化写入尺寸参数
+# =========== [ Modifier Keys ] ===========
+# Mouse wheel modifier keys
+#   TEMPORARY : Temporarily scale image size in the current view (e.g., "alt" = Alt+Wheel)
+#   PERSISTENT: Persistently scale image size by converting Markdown images to HTML with explicit dimensions (e.g., "ctrl" = Ctrl+Wheel)
 MODIFIER_KEY = { TEMPORARY = "alt", PERSISTENT = "" }
 
-# =========== [ 边界与对齐配置 ] ===========
-# 允许超出边界：图片放大时允许突破父容器或屏幕视口的宽度限制
+# =========== [ Boundaries & Alignment ] ===========
+# Allow exceed limit: Permit images to scale beyond the parent container or screen viewport width
 ALLOW_EXCEED_LIMIT = true
 
-# 图片对齐方式
-#   center: 居中对齐
-#   left  : 左对齐
-#   right : 右对齐
+# Image alignment
+#   center: Align center
+#   left  : Align left
+#   right : Align right
 IMAGE_ALIGN = "center"
 
-# 记忆放缩状态：不退出 Typora 的前提下，跨文档切换时记住已设定的图片尺寸比例
+# Remember resize state: Retain proportional image sizing across document switches within the same Typora session
 RECORD_RESIZE = true
 
 
 [resize_table]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 表格调整 ] ===========
-# 移除单元格最小宽度限制：支持表格列宽度被极度压缩
+# =========== [ Table Resizing ] ===========
+# Remove minimum cell width limit: Allow extreme compression of table column widths
 REMOVE_MIN_CELL_WIDTH = true
 
-# 可拖拽识别范围 (px)：鼠标需在此像素距离内拖动才会被判定为触发表格边界调整
+# Drag threshold (px): Minimum mouse drag distance required to trigger table boundary adjustments
 DRAG_THRESHOLD = 20
 
-# 记忆放缩状态：直至关闭 Typora 前记住表格的拖拽变形状态
+# Remember resize state: Retain table deformation state within the same Typora session
 RECORD_RESIZE = true
 
 
 [datatables]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 
-# =========== [ 分页与排序 ] ===========
-# 启用分页：对超大表格数据进行分页展示
+# =========== [ Paging & Sorting ] ===========
+# Enable paging: Paginate oversized table data
 PAGING = true
 
-# 单页数据量：分页模式下每页包含的行数
+# Page length: Default number of rows per page in paging mode
 PAGE_LENGTH = 25
 
-# 允许表格减少高度：数据较少时表格容器高度随之收缩
+# Allow table to collapse height: Auto-shrink table container height when data rows are sparse
 SCROLL_COLLAPSE = true
 
-# 启用排序：支持点击表头按照列内数据进行升降序排列
+# Enable ordering: Support ascending/descending data sorting via clicking table headers
 ORDERING = true
 
-# 默认排序：初始化渲染时即应用第一列的默认排序
+# Default order: Automatically apply sorting to the first column on initialization
 DEFAULT_ORDER = false
 
-# =========== [ 搜索与过滤控制 ] ===========
-# 启用搜索：在表格顶部提供即时内容过滤检索框
+# =========== [ Searching & Filtering ] ===========
+# Enable searching: Display an instant content filter search box above the table
 SEARCHING = true
 
-# 搜索区分大小写：false 即为忽略大小写匹配
+# Case insensitive search
 CASE_INSENSITIVE = true
 
-# 启用正则表达式搜索：支持搜索框内使用高级正则表达式规则
+# Enable regex search: Support advanced regex rules within the search box
 REGEX = false
 
 
 [markmap]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ TOC 思维导图配置 (浮窗版) ] ===========
-# 启用功能 (为 false 则以下 TOC 相关配置全部失效)
+# =========== [ TOC MindMap (Popup) ] ===========
+# Enable TOC Markmap (If false, all TOC-related configurations below are disabled)
 ENABLE_TOC_MARKMAP = true
 
-# 唤起弹窗快捷键
+# Hotkey to trigger the TOC MindMap popup window
 TOC_HOTKEY = ""
 
-# 使用右键菜单
+# Enable context menu within the MindMap popup window
 USE_CONTEXT_MENU = true
 
-# 弹窗标题栏控制按钮集合
-#   download: 导出
-#   settings: 设置
-#   pinRight: 固定到右侧
-#   pinTop  : 固定到顶部
-#   fit     : 图形适配窗口
-#   unfold  : 展开图形
-#   expand  : 全屏
-#   close   : 关闭
+# Title bar buttons
+#   download: Download
+#   settings: Open settings
+#   pinRight: Pin to right screen edge
+#   pinTop  : Pin to top screen edge
+#   fit     : Fit graphic to window
+#   unfold  : Unfold graphic
+#   expand  : Expand window
+#   close   : Close window
 TITLE_BAR_BUTTONS = ["close", "expand", "pinTop", "pinRight", "fit", "unfold", "settings", "download"]
 
-# 节点跳转：点击导图节点立刻平滑滚动到文档的对应标题区域
+# Click node to position: Smoothly scroll the Markdown document to the clicked header node
 CLICK_TO_POSITION = true
 
-# 节点跳转视口高度：定位时，标题停留在屏幕的百分比高度 (0.2 表示停留在屏幕靠上 20% 处)
-# 仅当 CLICK_TO_POSITION 为 true 时生效
+# Viewport position ratio where the scrolled header stops (e.g., 0.2 means top 20% of the screen)
+# Requires CLICK_TO_POSITION = true
 POSITIONING_VIEWPORT_HEIGHT = 0.2
 
-# 兼容跳级标题：过滤或补全非 MD 规范(如 H1 直接接 H3) 的乱序节点
+# Filter or auto-complete out-of-order nodes that violate Markdown specs (e.g., H1 followed directly by H3)
 FIX_SKIPPED_LEVEL_HEADERS = true
 
-# 移除标题样式：在导图中擦除 **加粗** 或 `代码` 等视觉样式标识
+# Strip visual styling markers (e.g., **bold**, `code`) from MindMap nodes
 REMOVE_HEADER_STYLES = true
 
-# 数据更新时自动适配宽高比例
+# Auto fit window size: Triggered on diagram data updates
 AUTO_FIT_ON_UPDATE = true
 
-# 节点折叠时自动适配宽高比例
+# Auto fit window size: Triggered on node fold/expand actions
 AUTO_FIT_WHEN_FOLD = true
 
-# 数据更新重绘时记忆历史的折叠展开状态
+# Preserve user fold states during diagram update/redraws
 RETAIN_FOLD_STATE_ON_UPDATE = true
 
-# (实验性) 折叠节点时同步折叠正文内容的标题块 (依赖章节折叠插件)
+# (Experimental) Auto collapse paragraph: Synchronously fold document paragraph content when folding nodes (Requires 'collapse_paragraph' plugin)
 AUTO_COLLAPSE_PARAGRAPH_ON_FOLD = false
 
-# 浮窗初始宽度占比 (%)
+# Initial window width (%)
 WIDTH_PERCENT_WHEN_INIT = 90
 
-# 浮窗初始高度占比 (%)
+# Initial window height (%)
 HEIGHT_PERCENT_WHEN_INIT = 35
 
-# 固定在顶部时的屏幕高度占比 (%)
+# Pinned top window height (%)
 HEIGHT_PERCENT_WHEN_PIN_TOP = 30
 
-# 固定在右侧时的屏幕宽度占比 (%)
+# Pinned right window width (%)
 WIDTH_PERCENT_WHEN_PIN_RIGHT = 50
 
-# 内置节点线条着色方案合集
+# Preset color scheme arrays for rendering branches
 CANDIDATE_COLOR_SCHEMES = [
     ["#B3E2CD", "#FDCDAC", "#CBD5E8", "#F4CAE4", "#E6F5C9", "#FFF2AE", "#F1E2CC", "#CCCCCC"],
     ["#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3"],
@@ -585,90 +586,73 @@ CANDIDATE_COLOR_SCHEMES = [
     ["#8DD3C7", "#FFFFB3", "#BEBADA", "#FB8072", "#80B1D3", "#FDB462", "#B3DE69", "#FCCDE5", "#D9D9D9", "#BC80BD", "#CCEBC5", "#FFED6F"],
 ]
 
-# TOC 图形默认选项：自定义 TOC 图形外观和行为
-#   duration          : 折叠/展开节点时，图形变换动画的持续时间 (单位：毫秒)
-#   initialExpandLevel: 首次渲染时要展开多少级分支 (-1 则展开全部)
-#   colorFreezeLevel  : 从多少级开始固定分支颜色
-#   maxInitialScale   : 首次渲染时最大放缩比例
-#   zoom              : 是否允许用户缩放图形
-#   pan               : 是否允许用户平移图形
-#   toggleRecursively : 递归折叠/展开节点
-#   color             : 配色方案 (填入颜色数组，例如 ["#1F77B4", "#17BECF"])
-#   maxWidth          : 节点最大长度 (0 则无长度限制)
-#   nodeMinHeight     : 节点最小高度
-#   spacingHorizontal : 节点水平间距
-#   spacingVertical   : 节点垂直间距
-#   paddingX          : 节点内部边距
-#   fitRatio          : 图形的窗口填充率
+# Default TOC Options: Customize TOC diagram appearance and behavior
+#   duration          : Node folding/expanding animation duration (ms)
+#   initialExpandLevel: Render depth on initialization (-1 to expand all)
+#   colorFreezeLevel  : Node depth where branch colors stop generating new variations
+#   maxInitialScale   : Max scaling ratio on first render
+#   zoom              : Allow manual zooming
+#   pan               : Allow manual panning
+#   toggleRecursively : Toggle nodes recursively
+#   color             : Active color scheme array (e.g., ["#1F77B4", "#17BECF"])
+#   maxWidth          : Max node width (0 means unlimited)
+#   nodeMinHeight     : Min node height
+#   spacingHorizontal : Horizontal node spacing
+#   spacingVertical   : Vertical node spacing
+#   paddingX          : Node internal padding
+#   fitRatio          : Window fill ratio margin
 DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialScale = 2, maxWidth = 0, nodeMinHeight = 16, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 7, zoom = true, pan = true, toggleRecursively = false, color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
 
-# 导出选项：自定义导出图形和导出行为
-#   FILENAME: 文件名格式。支持以下占位符
-#     {{filename}} : 当前 Markdown 文件名
-#     {{timestamp}}: 当前时间戳
-#     {{random}}   : 英文和数字的随机组合
-#   FOLDER: 目录路径，为空表示使用系统临时目录
-#     支持绝对路径，例如 "D:\\tmp\\img"
-#   REMOVE_USELESS_CLASSES: 删除无用类名以减小文件体积
-#     true : 删除无用类名，减小 SVG 文件体积
-#     false: 保留所有类名，不优化
-#   REMOVE_FOREIGN_OBJECT: 移除 foreignObject 标签并替换为 <text> 标签
-#     true : 移除 foreignObject 标签，提高 SVG 兼容性，可能丢失样式
-#     false: 保留 foreignObject 标签，保留更多样式，可能导致部分应用无法正确处理 SVG
-#     注意：若不了解 SVG，保持默认值 false
-#   PADDING_HORIZONTAL: 图形的水平内边距
-#   PADDING_VERTICAL: 图形的垂直内边距
-#   IMAGE_SCALE: 图片放缩比例
-#   IMAGE_QUALITY: 导出 JPG/WebP 格式图片时的质量（取值范围：0 到 1）
-#   KEEP_ALPHA_CHANNEL: 导出带透明通道的图片格式 (如 PNG、WEBP) 时保留透明通道
-#     true : 保留透明通道，导出带透明背景的图片
-#     false: 不保留透明通道，使用 BACKGROUND_COLOR 设置背景颜色
-#   BACKGROUND_COLOR: 导出像素图片格式 (如 JPG、PNG、WEBP) 时的背景颜色
-#   TEXT_COLOR: 字体颜色
-#   OPEN_CIRCLE_COLOR: 展开节点的颜色
-#   SHOW_PATH_INQUIRY_DIALOG: 导出前显示文件保存路径选择对话框
-#   SHOW_IN_FINDER: 导出完成后自动打开文件所在目录
+# Customize exported SVG/Image settings
+#   FILENAME: Output filename format. Supported placeholders
+#     {{filename}} : Current Markdown filename
+#     {{timestamp}}: Current timestamp
+#     {{random}}   : Random alphanumeric string
+#   FOLDER: Output directory path. Leave blank to use system TEMP directory. Supports absolute paths (e.g., "D:\\tmp\\img")
+#   REMOVE_USELESS_CLASSES: Strip useless CSS classes to reduce SVG file size
+#   REMOVE_FOREIGN_OBJECT: Replace <foreignObject> tags with <text>
+#     true : Improves SVG compatibility across renderers, but may lose advanced styling
+#     false: Preserves <foreignObject> for perfect styling, but may cause rendering issues in third-party viewers (Default recommended)
+#   PADDING_HORIZONTAL: Graphic horizontal padding
+#   PADDING_VERTICAL: Graphic vertical padding
+#   IMAGE_SCALE: Export resolution scale multiplier
+#   IMAGE_QUALITY: JPG/WebP export quality (0.0 ~ 1.0)
+#   KEEP_ALPHA_CHANNEL: Preserve transparent background channel for PNG/WEBP exports
+#     true : Export with transparent background
+#     false: Fill background using BACKGROUND_COLOR
+#   BACKGROUND_COLOR: Fallback background color for pixel exports
+#   TEXT_COLOR: Node font color
+#   OPEN_CIRCLE_COLOR: Color of expanded node indicators
+#   SHOW_PATH_INQUIRY_DIALOG: Prompt directory selection dialog before saving
+#   SHOW_IN_FINDER: Automatically open the output directory after saving
 DOWNLOAD_OPTIONS = { FILENAME = "{{filename}}_{{timestamp}}.svg", FOLDER = "", REMOVE_USELESS_CLASSES = true, REMOVE_FOREIGN_OBJECT = false, PADDING_HORIZONTAL = 25, PADDING_VERTICAL = 25, IMAGE_SCALE = 2, IMAGE_QUALITY = 0.92, KEEP_ALPHA_CHANNEL = true, BACKGROUND_COLOR = "#FFFFFF", TEXT_COLOR = "#333333", OPEN_CIRCLE_COLOR = "#FFFFFF", SHOW_PATH_INQUIRY_DIALOG = true, SHOW_IN_FINDER = true }
 
-# =========== [ Fence 代码块级导图配置 ] ===========
-# 启用代码块级导图功能 (为 false 则以下 Fence 相关配置全部失效)
+# =========== [ Fence MindMap (Code Block) ] ===========
+# Enable Fence Markmap (If false, all Fence-related configurations below are disabled)
 ENABLE_FENCE_MARKMAP = true
 
-# 插入代码块快捷键
+# Hotkey to rapidly insert a Markmap code block
 FENCE_HOTKEY = ""
 
-# 代码块使用的语言
+# Designated language alias for Markmap code block
 FENCE_LANGUAGE = "markmap"
 
-# 默认进入防误触交互模式
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# 图表默认高度
+# Default structural height for the Fence Diagram
 DEFAULT_FENCE_HEIGHT = "300px"
 
-# 图表默认背景颜色
+# Default background color for the Fence Diagram
 DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
-# 代码块图形默认选项：自定义代码块图形外观和行为
-#   duration          : 折叠/展开节点时，图形变换动画的持续时间 (单位：毫秒)
-#   initialExpandLevel: 首次渲染时要展开多少级分支 (-1 则展开全部)
-#   colorFreezeLevel  : 从多少级开始固定分支颜色
-#   maxInitialScale   : 首次渲染时最大放缩比例
-#   zoom              : 允许缩放图形
-#   pan               : 允许平移图形
-#   toggleRecursively : 递归折叠/展开节点
-#   height            : 图形高度
-#   color             : 配色方案（填入颜色数组，例如 ["#1F77B4", "#17BECF"]）
-#   backgroundColor   : 背景颜色
-#   maxWidth          : 节点最大长度 (0 则无长度限制)
-#   nodeMinHeight     : 节点最小高度
-#   spacingHorizontal : 节点水平间距
-#   spacingVertical   : 节点垂直间距
-#   paddingX          : 节点内部边距
-#   fitRatio          : 图形的窗口填充率
+# Default Fence Options: Customize appearance and behavior
+#   height         : structural height for the Fence Diagram
+#   backgroundColor: background color for the Fence Diagram
+#   Other Keys mirror DEFAULT_TOC_OPTIONS
 DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialScale = 2, colorFreezeLevel = 7, zoom = false, pan = false, toggleRecursively = false, maxWidth = 0, nodeMinHeight = 16, spacingHorizontal = 80, spacingVertical = 5, paddingX = 8, fitRatio = 0.95, height = "300px", backgroundColor = "#F8F8F8", color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
 
-# 生成代码块时的初始化模板注入内容
+# Template content injection when generating code blocks
 FENCE_TEMPLATE = """
 ---
 title: markmap
@@ -698,7 +682,7 @@ markmap:
 
 ## Features
 
-Note that if blocks and lists appear at the same level, the lists will be ignored.
+Note that if blocks and lists appear at the same level, the lists will be ignored
 
 ### Lists
 
@@ -718,44 +702,44 @@ Note that if blocks and lists appear at the same level, the lists will be ignore
 
 
 [auto_number]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 编号生效范围 ] ===========
-# 支持在以下层级中注入递增数字规则标识
-ENABLE_OUTLINE = true # 侧边大纲树
-ENABLE_CONTENT = true # 正文标题
-ENABLE_TOC = false    # 正文的目录模块 (TOC)
-ENABLE_TABLE = false  # 表格描述
-ENABLE_IMAGE = false  # 图注描述
-ENABLE_FENCE = false  # 代码块标注
+# =========== [ Scope ] ===========
+# Master switches for injecting incremental numbers into specific UI/Document levels
+ENABLE_OUTLINE = true # Sidebar outline tree
+ENABLE_CONTENT = true # Document content headings
+ENABLE_TOC = false    # Document TOC module
+ENABLE_TABLE = false  # Table captions
+ENABLE_IMAGE = false  # Image captions
+ENABLE_FENCE = false  # Code block captions
 
-# =========== [ 样式与对齐位置 ] ===========
-# 图片编号同时展示原始文件名 (损耗性能，慎重开启)
-# 仅当 ENABLE_IMAGE 为 true 时此选项有效
+# =========== [ Styling & Alignment ] ===========
+# Show image file alias alongside image numbers (Performance intensive; use with caution)
+# Requires ENABLE_IMAGE = true
 SHOW_IMAGE_NAME = false
 
-# 下标渲染字体 (推荐等宽字体，规避长短不一)
+# Subscript rendering font
 FONT_FAMILY = "monospace"
 
-# 编号下标位置：编号下标相对于元素的对齐方式
-#   left  : 编号显示在元素的左侧
-#   right : 编号显示在元素的右侧
-#   center: 编号显示在元素的中间
+# Subscript alignment relative to the element
+#   left  : Align Left
+#   right : Align Right
+#   center: Align Center
 ALIGN = "center"
 
-# 表格编号位置
-#   before: 表格上方
-#   after : 表格下方
+# Table numbering injection position
+#   before: Above the table
+#   after : Below the table
 POSITION_TABLE = "after"
 
-# =========== [ 导出 ] ===========
-# 导出时运用样式：在导出为 HTML/PDF 时保留自动编号样式
+# =========== [ Export ] ===========
+# Retain injected numbering styling when exporting to HTML/PDF
 ENABLE_WHEN_EXPORT = true
 
-# 导出时对标题应用编号的劫持钩子（高级配置，需了解 JavaScript）
-# 若 ENABLE_WHEN_EXPORT 为 false，则此选项失效
+# Hijacking hook to apply numbering logic directly to headers during export (Advanced JS Config)
+# Requires ENABLE_WHEN_EXPORT = true
 APPLY_EXPORT_HEADER_NUMBERING = """
 (headers) => {
     const counters = Array(7).fill(0)
@@ -770,60 +754,50 @@ APPLY_EXPORT_HEADER_NUMBERING = """
 }
 """
 
-# =========== [ 编号格式与布局设定 ] ===========
-# 编号格式定义。支持自定义不同元素的编号格式，包含的元素类型
-#   content-h1 ~ content-h6:  正文内容的一至六级标题
-#   outline-h1 ~ outline-h6:  大纲视图的一至六级标题
-#   toc-h1 ~ toc-h6        :  TOC 的一至六级标题
-#   table                  :  表格
-#   image                  :  图片
-#   fence                  :  代码块
+# =========== [ Layouts ] ===========
+# Customize explicit format rules for different numbering scopes
+# Scopes: content-h1 ~ content-h6, outline-h1 ~ outline-h6, toc-h1 ~ toc-h6, table, image, fence
 #
-# 编号格式语法: 借鉴 Python f-string 语法
-#   格式: "前缀{计数器名称:计数样式}后缀"
-#   示例: image = "图{i:cjk}"
-#   结果: 图一, 图二, 图三... ("图"为前缀，{i:cjk}为编号核心，后缀为空)
+# Syntax Schema (Inspired by Python f-strings):
+#   Format: "Prefix{CounterName:CounterStyle}Suffix"
+#   Example: image = "Figure {i:cjk}" -> Figure 一, Figure 二..
 #
-# 组合多个计数器
-#   示例：content-h4 = "{c2:ua}-{c3:cjk}.{c4:ur}"
-#   结果：当前为第 2 个二级标题，第 5 个三级标题，第 3 个四级标题，结果为 B-五.III
+# Multi-Counter Combination:
+#   Example: content-h4 = "{c2:ua}-{c3:cjk}.{c4:ur}" -> B-五.III
 #
-# 计数器名称
-#   c1 ~ c6: 正文 1~6 级标题
-#   o1 ~ o6: 大纲 1~6 级标题
-#   t1 ~ t6: 目录 1~6 级标题
-#   t      : 表格
-#   i      : 图片
-#   f      : 代码块
+# Counter Names:
+#   c1~c6: Content H1~H6
+#   o1~o6: Outline H1~H6
+#   t1~t6: TOC H1~H6
+#   t    : Table
+#   i    : Image
+#   f    : Code block
 #
-# 可用计数样式
-#   d  : 阿拉伯数字 (1, 2, 3...)        *默认值。{c2:d} 可省略为 {c2}*
-#   dlz: 前导零阿拉伯数字 (01, 02, 03...)
-#   lr : 小写罗马数字 (i, ii, iii...)
-#   ur : 大写罗马数字 (I, II, III...)
-#   la : 小写英文字母 (a, b, c...)
-#   ua : 大写英文字母 (A, B, C...)
-#   lg : 小写希腊字母 (α, β, γ...)
-#   hs : 天干 (甲, 乙, 丙...)
-#   eb : 地支 (子, 丑, 寅...)
-#   cjk: 汉字数字 (一, 二, 三...)
-#   scf: 简体中文大写数字 (壹, 贰, 叁...)  *仅新版 Typora 支持*
-#   tcf: 繁体中文大写数字 (壹, 贰, 參...)  *仅新版 Typora 支持*
-#   jf : 日文汉字大写数字 (壱, 弐, 参...)  *仅新版 Typora 支持*
-#   hi : 平假名 (あ, い, う...)          *仅新版 Typora 支持*
-#   ka : 片假名 (ア, イ, ウ...)          *仅新版 Typora 支持*
-#   di : 实心圆点 (●)
-#   ci : 空心圆点 (○)
-#   sq : 实心方块 (■)
-#   no : 无 (不显示编号)
+# Counter Styles:
+#   d  : Decimal numbers (1, 2, 3...)  *Default. '{c2:d}' equals '{c2}'*
+#   dlz: Decimal leading zero (01, 02, 03...)
+#   lr : Lower Roman (i, ii, iii...)
+#   ur : Upper Roman (I, II, III...)
+#   la : Lower Alpha (a, b, c...)
+#   ua : Upper Alpha (A, B, C...)
+#   lg : Lower Greek (α, β, γ...)
+#   hs : Heavenly Stem (甲, 乙, 丙...)
+#   eb : Earthly Branch (子, 丑, 寅...)
+#   cjk: CJK Ideographs (一, 二, 三...)
+#   scf: Simplified Chinese Formal (壹, 贰, 叁...)  *Newer Typora only*
+#   tcf: Traditional Chinese Formal (壹, 贰, 參...)  *Newer Typora only*
+#   jf : Japanese Formal (壱, 弐, 参...)  *Newer Typora only*
+#   hi : Hiragana (あ, い, う...)  *Newer Typora only*
+#   ka : Katakana (ア, イ, ウ...)  *Newer Typora only*
+#   di : Disc (●)
+#   ci : Circle (○)
+#   sq : Square (■)
+#   no : None (Hides numbering)
 
-# 布局
-#   定义多个布局，并选择一个作为当前使用布局
-#   每个布局包含完整的编号格式定义。若某一元素无需编号，置为 ""
-# 布局配置
-#   name    : 布局名称，标识不同布局
-#   selected: 选中状态。true 表示应用此布局编号格式
-#   layout  : 布局具体设置
+# Layout Config Definitions
+#   name    : Unique layout identifier
+#   selected: Set to `true` to apply this specific layout
+#   layout  : Explicit rule mapping. Empty strings ("") bypass numbering for that scope
 [[auto_number.LAYOUTS]]
 name = "Layout::Decimal-H1"
 selected = false
@@ -956,113 +930,110 @@ fence = ""
 
 
 [fence_enhance]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 右上角按钮功能设定 ] ===========
-# 全局开关：代码块右上角功能组注入 (为 false 则以下按钮相关配置全部失效)
+# =========== [ Buttons ] ===========
+# Master switch: Inject floating utility buttons into the top-right corner of code blocks
 ENABLE_BUTTON = true
 
-# 按钮大小
+# Button size
 BUTTON_SIZE = "1.2em"
 
-# 按钮颜色
+# Button color
 BUTTON_COLOR = "currentColor"
 
-# 按钮内边距
+# Button padding
 BUTTON_PADDING = "0.2em"
 
-# 按钮距离代码块顶部距离
+# Button distance from top edge
 BUTTON_TOP = "0.3em"
 
-# 按钮距离代码块右侧距离
+# Button distance from right edge
 BUTTON_RIGHT = "0.5em"
 
-# 按钮初始不透明度，取值范围 0 到 1
+# Button initial opacity (0.0 ~ 1.0)
 BUTTON_OPACITY = 0.5
 
-# 鼠标悬停时按钮不透明度，取值范围 0 到 1
+# Button hover opacity (0.0 ~ 1.0)
 BUTTON_OPACITY_HOVER = 0.8
 
-# 悬浮提示：隐藏工具按钮悬浮 tooltip 提示
+# Disable tooltip hint text on hover
 HIDE_BUTTON_HINT = false
 
-# 自动隐藏：仅鼠标移入代码块展示工具按钮 (处于折叠状态始终常驻提示)
+# Show buttons exclusively when the cursor enters the code block bounds
 AUTO_HIDE = false
 
-# =========== [ 复制/缩进/折叠 ] ===========
-# 启用复制代码功能
-# 若置为 false，则选项 TRIM_WHITESPACE_ON_COPY、LINE_BREAKS_ON_COPY、COPY_AS_MARKDOWN 失效
+# =========== [ Copy / Indent / Fold ] ===========
+# Enable [Copy] button (Requires ENABLE_BUTTON = true)
+# If false, TRIM_WHITESPACE_ON_COPY, LINE_BREAKS_ON_COPY, COPY_AS_MARKDOWN are disabled
 ENABLE_COPY = true
 
-# 复制时移除首尾空白
+# Strip trailing and leading whitespace on copy
 TRIM_WHITESPACE_ON_COPY = false
 
-# 执行复制时换行符操作
-#   lf      : 转为 LF
-#   crlf    : 转为 CRLF
-#   preserve: 保持原状
+# Line break normalization on copy
+#   lf      : Convert to LF
+#   crlf    : Convert to CRLF
+#   preserve: Keep as is
 LINE_BREAKS_ON_COPY = "preserve"
 
-# 是否复制为 Markdown
-#   true:  复制为 Markdown
-#   false: 复制为纯文本
+# Copy format toggle
+#   true : Copy as Markdown
+#   false: Copy as plain text
 COPY_AS_MARKDOWN = false
 
-# 缩进按钮增强：一键格式化缩进层级 (低版本 Typora 兼容不佳)
-# 若置为 false，则选项 EXCLUDE_LANGUAGE_ON_INDENT 失效
+# Enable [Indent] button: One-click hierarchical auto-formatting (Note: Poor compatibility on older Typora versions)
 ENABLE_INDENT = true
 
-# 调整缩进时忽略处理的语言
+# Bypass auto-formatting logic for specific code languages to prevent syntax breakage
 EXCLUDE_LANGUAGE_ON_INDENT = ["python", "ruby", "yaml", "yml"]
 
-# 启用折叠代码功能
+# Enable [Fold] button
 ENABLE_FOLD = true
 
-# 手动折叠保留行数
+# Manual fold retained lines: Visible preview lines when explicitly collapsed
 MANUAL_FOLD_LINES = 5
 
-# 自动折叠保留行数
+# Auto fold retained lines: Visible preview lines when automatically collapsed
 AUTO_FOLD_LINES = 5
 
-# 折叠截断模式
-#   hidden: 隐藏
-#   scroll: 滚动条
+# Fold overflow behavior
+#   hidden: Truncate hidden content completely
+#   scroll: Append internal scrollbar for remaining content
 FOLD_OVERFLOW = "scroll"
 
-# 加载时默认折叠代码块
-# 若置为 false，则选项 DEFAULT_FOLD_THRESHOLD、EXPAND_ON_FOCUS、FOLD_ON_BLUR 失效
+# Auto-collapse code blocks immediately on render
+# If false, DEFAULT_FOLD_THRESHOLD, EXPAND_ON_FOCUS, FOLD_ON_BLUR are disabled
 DEFAULT_FOLD = false
 
-# 折叠阈值：开启默认折叠后，超越该行数自动隐匿 (0 为全折叠)
+# Default fold threshold: Code blocks exceeding this line count will trigger auto-collapse (0 means fold all)
 DEFAULT_FOLD_THRESHOLD = 10
 
-# 聚焦代码块时展开已折叠的代码块
-# 注意：受 DEFAULT_FOLD_THRESHOLD 影响，未达到阈值不折叠
+# Expand on focus: Temporarily auto-unfold code block when it receives cursor focus
+# Note: Affected by DEFAULT_FOLD_THRESHOLD; will not fold if the threshold is not reached
 EXPAND_ON_FOCUS = false
 
-# 失焦代码块时折叠已展开的代码块
+# Fold on blur: Auto-collapse expanded code blocks when losing cursor focus
 FOLD_ON_BLUR = false
 
-# 状态还原：反馈提示图层（如“打钩”）驻留时间 (毫秒)
+# Feedback overlay retention time (ms) for success visual cues (e.g., check mark after copying)
 HINT_DURATION = 1000
 
-# =========== [ 高级自定义按钮 ] ===========
-# 自定义按钮：支持添加自定义按钮到代码块（高级配置，需了解 JavaScript）
-#   DISABLE  : 是否禁用此按钮
-#   ICON     : 按钮图标 CSS class (Font Awesome 4.1.0 图标库)
-#   HINT     : 鼠标悬停在按钮上时显示的功能提示
-#   ON_INIT  : 初始化函数字符串，此函数仅在插件初始化时执行一次，不需要则置为空 ""。示例: plu => console.log('initialized')
-#   ON_RENDER: 渲染后回调函数字符串，每次页面渲染代码块执行此函数，不需要则置为空 ""。示例: ({ btn, fence, cid, enhance }) => console.log('rendered')
-#   ON_CLICK : 点击按钮时的回调函数字符串，必填。示例: ({ ev, btn, cont, fence, cm, cid, plu }) => console.log('clicked')
+# =========== [ Custom Buttons ] ===========
+# Register custom buttons on code blocks (Advanced JS Config)
+#   DISABLE  : Master switch to disable
+#   ICON     : FontAwesome CSS class
+#   HINT     : Hover tooltip text
+#   ON_INIT  : Init function evaluated once per plugin load. Empty "" if not needed. Example: plu => console.log('initialized')
+#   ON_RENDER: Render function evaluated on every code block render. Empty "" if not needed. Example: ({ btn, fence, cid, enhance }) => console.log('rendered')
+#   ON_CLICK : Callback logic executed on click (Required). Example: ({ ev, btn, cont, fence, cm, cid, plu }) => console.log('clicked')
 CUSTOM_BUTTONS = []
 
-# =========== [ 快捷键设定 ] ===========
-# 启用基于 CodeMirror 内置派发的快捷键接管
-# 参考: https://codemirror.net/5/doc/manual.html#keymaps
-# 置为 false 时以下配置全部失效
-# 注意勿于现有快捷键冲突
+# =========== [ Hotkeys ] ===========
+# Takeover code block hotkeys via CodeMirror built-in dispatcher
+# Requires careful conflict checks against built-in hotkeys below
 #   Ctrl-A        : selectAll
 #   Ctrl-Up       : goDocStart
 #   Ctrl-Down     : goDocEnd
@@ -1079,363 +1050,358 @@ CUSTOM_BUTTONS = []
 #   Alt-U         : redoSelection
 ENABLE_HOTKEY = true
 
-# 与上一行互换
+# Swap line with previous line
 SWAP_PREVIOUS_LINE = "Shift-Alt-Up"
 
-# 与下一行互换
+# Swap line with next line
 SWAP_NEXT_LINE = "Shift-Alt-Down"
 
-# 复制到上一行
+# Duplicate and copy to previous line
 COPY_PREVIOUS_LINE = "Ctrl-Alt-Up"
 
-# 复制到下一行
+# Duplicate and copy to next line
 COPY_NEXT_LINE = "Ctrl-Alt-Down"
 
-# 在上方插入一行
+# Insert blank line above current cursor
 INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
-# 在下方插入一行
+# Insert blank line below current cursor
 INSERT_LINE_NEXT = "Ctrl-Enter"
 
-# 高级快捷键绑定注入：支持添加自定义代码块快捷键（高级配置，需了解 JavaScript）
-#   DISABLE: 禁用快捷键
-#   HOTKEY: 快捷键组合 (例如 Shift-Ctrl-K)
-#   CALLBACK: 快捷键回调函数 (必填)
-#     参数: { pre, cid, cm, cursor, lineNum, lastNum, separator }
-#     示例: ({ pre, cid, cm, cursor, lineNum, lastNum, separator }) => console.log('callback')
+# Custom hotkey payload mappings (Advanced JS Config)
+#   DISABLE : Master switch to disable
+#   HOTKEY  : CodeMirror shortcut format
+#   CALLBACK: Execution logic function. Example: ({ pre, cid, cm, cursor, lineNum, lastNum, separator }) => console.log('callback')
 CUSTOM_HOTKEYS = []
 
-# =========== [ 代码折叠与高亮配置 ] ===========
-# 根据语言特征自动注入代码层级折叠符号
+# =========== [ Code Folding & Highlighting ] ===========
+# Auto-inject code level fold symbols based on language features
 ENABLE_LANGUAGE_FOLD = true
 
-# 代码行高亮：基于 Vitepress 行高亮语法动态赋色
-# 举例：```js{2, 5-8, 10-12}``` 表示高亮 js 代码块对应行
-# 详见：https://vitepress.dev/guide/markdown#line-highlighting-in-code-blocks
+# Support VitePress-style inline line highlight syntax
+# Example: ```js{2, 5-8} will highlight specific lines dynamically
+# See: https://vitepress.dev/guide/markdown#line-highlighting-in-code-blocks
 HIGHLIGHT_BY_LANGUAGE = false
 
-# 行号基准
-#   1-based: 从 1 开始
-#   0-based: 从 0 开始
+# Line numbering base
+#   1-based: Starts from 1
+#   0-based: Starts from 0
 NUMBERING_BASE = "1-based"
 
-# 行高亮格式
+# Highlight metadata regex capture pattern
 HIGHLIGHT_PATTERN = '^(?<lang>[^{}]+){(?<line>[\d\s,-]+)}$'
 
-# 高亮行背景色设定 (由代码块语言参数触发)
+# Render background color for language-based line highlights
 HIGHLIGHT_LINE_COLOR_BY_LANGUAGE = "rgba(142, 150, 170, 0.14)"
 
-# 高亮鼠标悬停代码行
+# Highlight code line on hover
 HIGHLIGHT_ON_HOVER = false
 
-# 鼠标悬停代码行背景色
+# Highlight line background color on hover
 HIGHLIGHT_LINE_COLOR_ON_HOVER = "rgba(142, 150, 170, 0.14)"
 
-# 高亮光标聚焦代码行
+# Highlight code line on cursor focus
 HIGHLIGHT_ON_FOCUS = false
 
-# 光标聚焦代码行背景色
+# Highlight line background color on cursor focus
 HIGHLIGHT_LINE_COLOR_ON_FOCUS = "rgba(142, 150, 170, 0.14)"
 
-# =========== [ 其他高级选项 ] ===========
-# 自动缩进对齐：规避长文本换行后缩进被打乱 (损耗渲染性能)
-# 详见：https://github.com/codemirror/codemirror5/issues/2085
+# =========== [ Advanced ] ===========
+# Auto-align wrapped lines: Maintain proper indentation for long, wrapped text lines. Note: High rendering performance cost
+# See: https://github.com/codemirror/codemirror5/issues/2085
 INDENTED_WRAPPED_LINE = false
 
-# 提前加载全部代码块：慎重启用，资源消耗大易致软件卡顿
+# Force immediate rendering of all code blocks regardless of viewport. Use with extreme caution (Induces heavy lag)
 PRELOAD_ALL_FENCES = false
 
-# 双栏视图：(依赖 CSS 注入，易与第三方 Theme 发生冲突)
+# Splices code output. Note: Relies on CSS injection, prone to conflict with third-party themes
 SIDE_BY_SIDE_VIEW = false
 
-# Tab 制表符可视渲染
+# Inject visual glyphs for tabular indents
 VISIBLE_TABS = false
 
 
 [collapse_paragraph]
-# =========== [ 基础 ] ===========
-# 此插件与 Typora 原生配置【显示当前块元素的 Markdown 源码】冲突。开启此插件将自动关闭该原生配置
+# =========== [ Basic ] ===========
+# Warning: This plugin natively conflicts with Typora's "Show Markdown Source for Current Block". Enabling this overrides that native setting
 ENABLE = false
 NAME = ""
 
-# =========== [ 严格模式 ] ===========
-# 严格模式：仅明确点击或作用于 H1~H6 组件时触发；非严格会向上自动溯源找最近父级标题
+# =========== [ Strict Mode ] ===========
+# Strict Mode: Limit folding trigger exclusively to explicit clicks on H1~H6 components
+# If false, clicking anywhere near the heading boundary auto-traces up to the nearest parent heading
 STRICT_MODE = true
 
-# =========== [ 右键菜单严格模式 ] ===========
-# 右键菜单严格模式：菜单仅在真正位于标题层时允许调用
+# The "Fold" right-click menu option is permitted only when directly positioned over a heading block
 STRICT_MODE_IN_CONTEXT_MENU = false
 
-# =========== [ 状态记忆 ] ===========
-# 运行期间在内存池跨标签保存被折叠段落历史
+# =========== [ State Record ] ===========
+# Remember collapsed paragraph history in memory across tabs during runtime
 RECORD_COLLAPSE = true
 
-# =========== [ 修饰键组合设定 ] ===========
-# Ctrl/Alt/Shift 键混搭鼠标左击行为，为不同折叠/展开功能设置修饰键
-#   1. 支持任意组合，如 "shift+alt", "ctrl+shift"
-#   2. 避免 "alt"（被书签插件占用）和 "shift"（被系统框选占用）
-#   3. 为空表示不启用
-#   4. 示例：COLLAPSE_SIBLINGS = "ctrl+alt"，按住 Ctrl+Alt 点击标题折叠/展开同级章节
-# 功能映射
-#   COLLAPSE_SINGLE       : 折叠/展开 单个章节
-#   COLLAPSE_SIBLINGS     : 折叠/展开 父章节下所有同级的章节
-#   COLLAPSE_ALL_SIBLINGS : 折叠/展开 当前文件所有同级的章节
-#   COLLAPSE_RECURSIVE    : 递归折叠/展开 当前章节
+# =========== [ Modifier Key Combos ] ===========
+# Bind modifier keys (Ctrl/Alt/Shift) + LClick to dedicated folding mechanisms. Leave empty to disable
+# Example: "ctrl+alt". Hold Ctrl+Alt and click a heading to collapse its siblings
+#   COLLAPSE_SINGLE       : Fold/Expand single section
+#   COLLAPSE_SIBLINGS     : Fold/Expand all sibling sections under parent
+#   COLLAPSE_ALL_SIBLINGS : Fold/Expand all sibling sections in current file
+#   COLLAPSE_RECURSIVE    : Recursively fold/expand current section
+# Avoid "alt" (used by Bookmark plugin) and "shift" (used by OS selection)
 MODIFIER_KEY = { COLLAPSE_SINGLE = "ctrl", COLLAPSE_SIBLINGS = "ctrl+alt", COLLAPSE_ALL_SIBLINGS = "ctrl+shift+alt", COLLAPSE_RECURSIVE = "" }
 
 
 [collapse_list]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 
-# =========== [ 外观与记忆设定 ] ===========
-# 自定义列表头部渲染的三角形翻转标志原色，为空则应用系统默认主色调
+# =========== [ Appearance & Record ] ===========
+# Expansion triangle icon color. Leave empty to fallback to system theme's primary color
 TRIANGLE_COLOR = ""
 
-# 运行期间跨文件保持记录
+# Keep record across files during runtime
 RECORD_COLLAPSE = true
 
 
 [collapse_table]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 
-# =========== [ 记忆设定 ] ===========
-# 运行期间跨文件保持记录
+# =========== [ Record ] ===========
+# Keep record across files during runtime
 RECORD_COLLAPSE = true
 
 
 [markdownlint]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
-# 快捷键：弹窗
+# Hotkey: Popup
 HOTKEY = ""
-# 快捷键：尽力修复
+# Hotkey: Fix
 HOTKEY_FIX_LINT = ""
 
-# =========== [ 自定义规则加载 ] ===========
-# 自定义检测规则（填入文件路径，必须位于 plugin 目录下）
-# 参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/CustomRules.md
+# =========== [ Custom Rules ] ===========
+# Array of paths linking to custom lint rule JS modules (Relative to plugin directory)
+# See: https://github.com/DavidAnson/markdownlint/blob/main/doc/CustomRules.md
 CUSTOM_RULE_FILES = [
     "plugin/markdownlint/custom-rules.js",
 ]
 
-# 检测规则配置
-# 参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+# Lint rules
+# See: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
 RULE_CONFIG = { default = true, MD010 = { code_blocks = false }, MD012 = { maximum = 3 }, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false, MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "Python", "Rust", "SQL", "TypeScript"] }, MD060 = false }
 
-# =========== [ 界面元素与样式 ] ===========
-# 翻译英文规则文本
+# =========== [ UI Elements & Styling ] ===========
+# Translate English rule text to target locale
 TRANSLATE = true
 
-# 顶栏快捷行为工具栏分布
-#   settings        : 设置
-#   detailAll       : 详细信息
-#   fixAll          : 修复
-#   toggleSourceMode: 源码模式
-#   refresh         : 刷新
-#   close           : 关闭
+# Toolbar rapid-action buttons
+#   settings        : Open Rule Settings
+#   detailAll       : Display verbose details
+#   fixAll          : Batch Fix Errors
+#   toggleSourceMode: Toggle Source Mode
+#   refresh         : Manual Force Refresh
+#   close           : Close Modal
 TITLE_BAR_BUTTONS = ["settings", "fixAll", "toggleSourceMode", "refresh", "close"]
 
-# 主清单表格展现字段列
-#   idx : 序号
-#   line: 行
-#   rule: 规则
-#   desc: 说明
-#   ops : 操作
+# Master list table columns to display
+#   idx : Index
+#   line: Line Number
+#   rule: Rule Name
+#   desc: Description
+#   ops : Operations
 COLUMNS = ["line", "rule", "desc", "ops"]
 
-# 单项后的可执行动作
-#   info  : 检测信息
-#   locate: 定位
-#   fix   : 修复
+# Executable actions for individual error row items
+#   info  : View Lint Doc
+#   locate: Scroll to Line
+#   fix   : Fix Error
 TOOLS = ["info", "locate", "fix"]
 
-# 检测结果排序规则
-#   idx       : 序号
-#   lineNumber: 行
-#   ruleName  : 规则名
-#   ruleDesc  : 规则描述
+# Default result sorting rule
+#   idx       : Sort by index
+#   lineNumber: Sort by document line
+#   ruleName  : Sort by Rule Name
+#   ruleDesc  : Sort by Rule Description
 RESULT_ORDER_BY = "lineNumber"
 
-# =========== [ UI 状态指示器 ] ===========
-# 在右上角添加显示全局检查状态的方块。置为 false 时以下配置失效
+# =========== [ Status Indicator ] ===========
+# Enable floating indicator button in top-right corner (Set false to disable all configs below)
 USE_INDICATOR_BUTTON = true
 
-# 方块宽度
+# Button width
 BUTTON_WIDTH = "16px"
 
-# 方块高度
+# Button height
 BUTTON_HEIGHT = "16px"
 
-# 方块圆角
+# Button border radius
 BUTTON_BORDER_RADIUS = "50%"
 
-# 方块到右边框距离
+# Button distance from the right window edge
 BUTTON_RIGHT = "11px"
 
-# 方块不透明度
+# Button opacity (0.0 ~ 1.0)
 BUTTON_OPACITY = 1
 
-# 格式检测通过时方块颜色
+# Button background color when all checks pass
 BUTTON_PASS_COLOR = "#92C498"
 
-# 格式检测未通过时方块颜色
+# Button background color when errors are detected
 BUTTON_ERROR_COLOR = "#d8bd74"
 
-# =========== [ 右键快捷操作 ] ===========
-# 右击表格切换源码模式
+# =========== [ Shortcuts ] ===========
+# Right-click in the results table to toggle Source Mode
 RIGHT_CLICK_TABLE_TO_TOGGLE_SOURCE_MODE = true
 
-# 右击方块修复错误
+# Right-click the indicator button to fix all errors
 RIGHT_CLICK_BUTTON_TO_FIX = true
 
 
 [image_viewer]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 界面与工具栏控制 ] ===========
-# 点击黑色遮罩自动退出大图展示模式
+# =========== [ UI & Toolbar ] ===========
+# Click mask to exit image viewing mode
 CLICK_MASK_TO_EXIT = true
 
-# 加载图库时静默忽略损坏与无效图片
+# Silently ignore broken/invalid images
 SKIP_BROKEN_IMAGES = true
 
-# 画框底部显示缩略图导航列表
+# Display the thumbnail navigation strip at the bottom of the viewport
 SHOW_THUMBNAIL_NAV = true
 
-# 工具栏位置
-#   bottom: 底部
-#   top   : 顶部
+# Toolbar position
+#   bottom: Bottom
+#   top   : Top
 TOOL_POSITION = "top"
 
-# 画廊初始化定位策略 (优先寻找当前光标所在的视图流)
-#   inViewBoxImage     : 视图里第一张图片
-#   closestViewBoxImage: 距离视图中心最近的一张图片
-#   firstImage         : 整篇文档的第一张图片
+# Initial image selection strategy when opening the gallery
+#   inViewBoxImage     : First image within the current viewport
+#   closestViewBoxImage: Image closest to the center of the viewport
+#   firstImage         : First image in the entire document
 FIRST_IMAGE_STRATEGIES = ["inViewBoxImage", "firstImage"]
 
-# 工具栏左侧展示图片信息配置
-#   index: 图片索引
-#   title: 图片名称
-#   size : 图片大小
+# Image information displayed on the left side of the toolbar
+#   index: Image Index
+#   title: Image Title
+#   size : Image Size
 SHOW_MESSAGE = ["index", "title", "size"]
 
-# =========== [ 图片操作 ] ===========
-# 每次缩放比率 (例如：0.1 表示 10%)
+# =========== [ Image Operations ] ===========
+# Zoom scale per action (E.g., 0.1 means 10%)
 ZOOM_SCALE = 0.1
 
-# 每次旋转角度 (单位：度)
+# Rotation angle per action (Degrees)
 ROTATE_SCALE = 10
 
-# 每次倾斜角度 (单位：度)
+# Skew angle per action (Degrees)
 SKEW_SCALE = 1
 
-# 每次移动像素值
+# Translation distance per action (px)
 TRANSLATE_SCALE = 10
 
-# 轮播图片停留时间 (单位：秒)
+# Auto-play carousel interval (Seconds)
 AUTO_PLAY_INTERVAL = 3
 
-# =========== [ 视觉效果 ] ===========
-# 遮罩层不透明度，范围 0~1
+# =========== [ Visual Effects ] ===========
+# Opacity of the background mask layer (0.0 to 1.0)
 MASK_BACKGROUND_OPACITY = 0.6
 
-# 图片最大宽度占页面宽度百分比
+# Max image width relative to the screen bounding box (%)
 IMAGE_MAX_WIDTH = 80
 
-# 图片最大高度占页面高度百分比
+# Max image height relative to the screen bounding box (%)
 IMAGE_MAX_HEIGHT = 70
 
-# 背景模糊像素量
+# Intensity of the viewer's background blur (px)
 BLUR_LEVEL = 6
 
-# =========== [ 缩略图与瀑布流配置 ] ===========
-# 缩略图列表高度
+# =========== [ Thumbnails & Waterfall ] ===========
+# Height of the thumbnail navigation strip
 THUMBNAIL_HEIGHT = "80px"
 
-# 缩略图额外预览数量
+# Extra thumbnail preload count
 PRELOAD_THUMBNAIL_COUNT = 3
 
-# 微缩图片排布方案：缩略图适配容器尺寸策略
-#   fill      : 拉伸适配，可能导致变形
-#   contain   : 等比例缩放，保证完整显示
-#   cover     : 保持原有尺寸，裁剪超出部分
-#   scale-down: 类似 contain，小于容器尺寸时不放大
+# Thumbnail object fit strategy: Adjust image sizing in thumbnail container
+#   fill      : Stretch to fit, may cause distortion
+#   contain   : Scale proportionally to guarantee full display
+#   cover     : Maintain original size, crop overflow
+#   scale-down: Similar to 'contain', but will not upscale if smaller than container
 THUMBNAIL_OBJECT_FIT = "scale-down"
 
-# 瀑布流墙面矩阵列数
+# Waterfall wall matrix column count
 WATERFALL_COLUMNS = 5
 
-# =========== [ 工具栏与交互动作定义 ] ===========
-# 预设图片操作功能
-#  dummy         : 无功能
-#  close         : 关闭
-#  download      : 下载网络图片
-#  scroll        : 定位到文档
-#  play          : 轮播
-#  location      : 打开图片路径
-#  nextImage     : 下一张
-#  previousImage : 上一张
-#  firstImage    : 第一张
-#  lastImage     : 最后一张
-#  thumbnailNav  : 显示/隐藏缩略图
-#  waterfall     : 显示/隐藏瀑布流
-#  zoomIn        : 放大
-#  zoomOut       : 缩小
-#  rotateLeft    : 左旋
-#  rotateRight   : 右旋
-#  hFlip         : 水平翻转
-#  vFlip         : 垂直翻转
-#  translateLeft : 左移
-#  translateRight: 右移
-#  translateUp   : 上移
-#  translateDown : 下移
-#  incHSkew      : 增大水平倾斜
-#  decHSkew      : 减小水平倾斜
-#  incVSkew      : 增大垂直倾斜
-#  decVSkew      : 减小垂直倾斜
-#  originSize    : 还原原始尺寸
-#  fitScreen     : 适配屏幕
-#  autoSize      : 切换原尺寸/适配屏幕
-#  restore       : 恢复初始状态
+# =========== [ Toolbar & Interaction ] ===========
+# Available functions for the viewer toolbar and interactions
+#  dummy         : No Function
+#  close         : Close
+#  download      : Download online image
+#  scroll        : Scroll to document location
+#  play          : Play Carousel
+#  location      : Open image path
+#  nextImage     : Next Image
+#  previousImage : Previous Image
+#  firstImage    : First Image
+#  lastImage     : Last Image
+#  thumbnailNav  : Show/Hide Thumbnail Navigation
+#  waterfall     : Show/Hide Waterfall
+#  zoomIn        : Zoom In
+#  zoomOut       : Zoom Out
+#  rotateLeft    : Rotate Left
+#  rotateRight   : Rotate Right
+#  hFlip         : Flip Horizontally
+#  vFlip         : Flip Vertically
+#  translateLeft : Move Left
+#  translateRight: Move Right
+#  translateUp   : Move Up
+#  translateDown : Move Down
+#  incHSkew      : Increase Horizontal Skew
+#  decHSkew      : Decrease Horizontal Skew
+#  incVSkew      : Increase Vertical Skew
+#  decVSkew      : Decrease Vertical Skew
+#  originSize    : Restore Original Size
+#  fitScreen     : Fit to Screen
+#  autoSize      : Toggle between Original and Screen Size
+#  restore       : Restore Initial State
 
-# 工具栏展示的内置控制组件 (本地图片自动隐藏 download)
-# 可选项比上面的功能多了一个 info，用于提示
+# Built-in control buttons displayed on the toolbar (Local images automatically hide 'download')
+# Includes an additional 'info' option for displaying function tooltips
 TOOL_FUNCTION = ["info", "waterfall", "thumbnailNav", "download", "play", "firstImage", "lastImage", "restore", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
 
-# 鼠标左中右键点击绑定的功能 [左键, 中键, 右键]
+# Mouse click bindings. Array index maps to: [Left Click, Middle Click, Right Click]
 MOUSEDOWN_FUNCTION = ["nextImage", "close", "previousImage"]
 
-# Ctrl + 鼠标左中右键点击绑定的功能
+# Ctrl + Mouse click bindings
 CTRL_MOUSEDOWN_FUNCTION = ["hFlip", "dummy", "vFlip"]
 
-# Shift + 鼠标左中右键点击绑定的功能
+# Shift + Mouse click bindings
 SHIFT_MOUSEDOWN_FUNCTION = ["autoSize", "dummy", "dummy"]
 
-# Alt + 鼠标左中右键点击绑定的功能
+# Alt + Mouse click bindings
 ALT_MOUSEDOWN_FUNCTION = ["restore", "location", "dummy"]
 
-# 滚轮上下滚动绑定功能 [上滚, 下滚]
+# Scroll wheel bindings. Array index maps to: [Wheel Up, Wheel Down]
 WHEEL_FUNCTION = ["zoomIn", "zoomOut"]
 
-# Ctrl + 滚轮上下滚动绑定功能
+# Ctrl + Scroll wheel bindings
 CTRL_WHEEL_FUNCTION = ["rotateRight", "rotateLeft"]
 
-# Shift + 滚轮上下滚动绑定功能
+# Shift + Scroll wheel bindings
 SHIFT_WHEEL_FUNCTION = ["incHSkew", "decHSkew"]
 
-# Alt + 滚轮上下滚动绑定功能
+# Alt + Scroll wheel bindings
 ALT_WHEEL_FUNCTION = ["incVSkew", "decVSkew"]
 
-# =========== [ 快捷键 ] ===========
-# 快捷键配置 (仅查看器内可用)
+# =========== [ Hotkeys ] ===========
+# Hotkey (Only available within the viewer)
 HOTKEY_FUNCTION = [
     { hotkey = "j", fn = "nextImage" },
     { hotkey = "k", fn = "previousImage" },
@@ -1468,71 +1434,71 @@ HOTKEY_FUNCTION = [
 
 
 [truncate_text]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 
-# =========== [ 快捷键 ] ===========
-# 隐藏当前选中文本段之前所有文本
+# =========== [ Hotkeys ] ===========
+# Hide all content situated before the current cursor
 HIDE_FRONT_HOTKEY = ""
 
-# 恢复默认内容显示
+# Show all content (Revert truncation)
 SHOW_ALL_HOTKEY = ""
 
-# 将当前视图外内容隐藏，聚焦当前部分
+# Hide all content outside the current viewport
 HIDE_BASE_VIEW_HOTKEY = ""
 
-# =========== [ 截断保留长度 ] ===========
-# 触发隐藏动作时保留不剪切的文字段落数，保证前后文连贯
+# =========== [ Truncation ] ===========
+# Number of text paragraphs to retain without truncating
 RETAIN_LENGTH = 80
 
 
 [export_enhance]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 网络图片处理策略 ] ===========
-# 导出 PDF/HTML 时将网络图片转化为 Base64 内嵌，解决断网不显示
+# =========== [ Network Image ] ===========
+# When exporting to PDF/HTML, embed network images via inline Base64 to prevent loss
 EMBED_NETWORK_IMAGES = false
 
-# 下载网络图片并发量 (EMBED_NETWORK_IMAGES 为 true 时生效)
+# Download thread concurrency limit (Applies when EMBED_NETWORK_IMAGES = true)
 DOWNLOAD_THREADS = 10
 
 
 [sidebar_enhance]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 交互与状态控制 ] ===========
-# Ctrl+Wheel：横向滚动长文件名树
+# =========== [ Interaction & State ] ===========
+# Ctrl+Wheel: Scroll sidebar horizontally
 CTRL_WHEEL_TO_SCROLL_SIDEBAR = true
 
-# 记忆大纲缩放层级状态
-#   alwaysUnfold: 总是展开
-#   alwaysFold  : 总是折叠
-#   remember    : 记忆状态
+# Memory strategy for Outline fold state
+#   alwaysUnfold: Always unfold all nodes
+#   alwaysFold  : Always fold all nodes
+#   remember    : Remember the previous fold state
 OUTLINE_FOLD_STATE = "remember"
 
-# 支持拖拽大纲调整 Markdown 正文结构
+# Allow drag-and-drop outline headers to rearrange Markdown document structure
 SORTABLE_OUTLINE = true
 
-# =========== [ 侧边栏文件过滤与图标自定义 ] ===========
-# 在侧边栏列表隐藏指定文件或目录 (正则表达式)
+# =========== [ Sidebar File Filter & Icon Customization ] ===========
+# Hide specific files or directories in the sidebar (Regex)
 HIDDEN_NODE_PATTERNS = []
 
-# 支持文件树显示非 Markdown 文件
-# 置为 false 时，DISPLAY_NON_MARKDOWN_FILES 相关的后缀及图标定制功能失效
+# Display non-Markdown files in the file tree
+# If set to false, suffix and icon customization features below are disabled
 DISPLAY_NON_MARKDOWN_FILES = false
 
-# 侧边栏展示并使用系统默认应用打开的后缀
+# Extensions for files displayed in the sidebar that should open via system default applications
 OPEN_BY_SYSTEM_EXT = ["pdf", "html", "htm", "csv", "docx", "pptx", "xlsx", "doc", "ppt", "xls"]
 
-# 侧边栏展示并使用 Typora 打开的后缀
+# Extensions for files displayed in the sidebar that should open internally via Typora
 OPEN_BY_TYPORA_EXT = ["log"]
 
-# 定制侧边栏文件图标 (置为 false 时 SIDEBAR_ICONS 失效)
+# Customize sidebar file icons (If set to false, SIDEBAR_ICONS is disabled)
 CUSTOMIZE_SIDEBAR_ICONS = false
 SIDEBAR_ICONS = [
     { enable = true, extensions = ["jpg", "jpeg", "png", "svg", "gif", "webp", "bmp"], icon = "ty-file-icon ty-fi-image" },
@@ -1545,93 +1511,93 @@ SIDEBAR_ICONS = [
     { enable = true, extensions = ["css"], icon = "ty-file-icon ty-fi-css" },
 ]
 
-# =========== [ 文件计数 ] ===========
-# 文件夹节点右侧实时显示子项数量统计 (置为 false 以下选项失效)
+# =========== [ File Count ] ===========
+# Display file count badges on folder nodes (If set to false, all options below are disabled)
 ENABLE_FILE_COUNT = true
 
-# 统计数字字重 ("initial" 使用默认字重)
+# Font weight for the count badge ("initial" means default weight)
 FONT_WEIGHT = "bold"
 
-# 统计文本字体颜色 ("" 使用默认颜色)
+# Text color for the count badge (Empty string means default color)
 TEXT_COLOR = ""
 
-# 统计文本背景色 ("" 使用默认背景色)
+# Background color for the count badge (Empty string means default background)
 BACKGROUND_COLOR = ""
 
-# 忽略少于配置数量的目录显示
+# Ignore directories containing fewer than this number of files
 MIN_FILES_TO_DISPLAY = 0
 
-# 最大文件大小 (字节)：忽略大于此值的文件 (Typora 限制 2,000,000)
+# Max file size (in bytes) to count (Typora limit: 2,000,000 bytes)
 MAX_SIZE = 2000000
 
-# 最大文件数量：发现超量即停止搜索 (-1 表示无限制)
+# Max number of entities to process before halting the search (-1 means no limit)
 MAX_ENTITIES = 10000
 
-# 并发数：控制内存与句柄使用
+# Concurrency limit for file counting tasks
 CONCURRENCY_LIMIT = 20
 
-# 跟随符号链接：若开启需注意闭环目录可能导致无限循环
+# Follow symbolic links: If enabled, note the risk of infinite loops caused by closed-loop directories
 FOLLOW_SYMBOLIC_LINKS = false
 
-# 纳入统计的文件扩展名列表
+# Allowed file extensions to be included in the count statistics
 COUNT_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 
-# 忽略统计的目录
+# Ignored directories for count statistics
 IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 
 
 [text_stylize]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 工具栏 ] ===========
-# 工具栏面板显示的按钮及其顺序
-#   weight               : 加粗
-#   italic               : 斜体
-#   underline            : 下划线
-#   throughline          : 中划线
-#   overline             : 上划线
-#   superScript          : 上标
-#   subScript            : 下标
-#   emphasis             : 强调符号
-#   blur                 : 模糊
-#   title                : 标题尺寸
-#   increaseSize         : 增大字号
-#   decreaseSize         : 减小字号
-#   increaseLetterSpacing: 增大字符间距
-#   decreaseLetterSpacing: 减小字符间距
-#   family               : 字体
-#   foregroundColor      : 前景色
-#   backgroundColor      : 背景色
-#   borderColor          : 边框颜色
-#   erase                : 移除格式
-#   blank                : 占位 (无功能分隔按钮)
-#   setBrush             : 设置格式刷
-#   useBrush             : 使用格式刷
+# =========== [ Toolbar ] ===========
+# Buttons available on the stylization toolbar
+#   weight               : Bold
+#   italic               : Italic
+#   underline            : Underline
+#   throughline          : Strikethrough
+#   overline             : Overline
+#   superScript          : Superscript
+#   subScript            : Subscript
+#   emphasis             : Emphasis mark
+#   blur                 : Blur
+#   title                : Title Size
+#   increaseSize         : Increase Font Size
+#   decreaseSize         : Decrease Font Size
+#   increaseLetterSpacing: Increase Letter Spacing
+#   decreaseLetterSpacing: Decrease Letter Spacing
+#   family               : Font
+#   foregroundColor      : Foreground Color
+#   backgroundColor      : Background Color
+#   borderColor          : Border Color
+#   erase                : Remove Formatting
+#   blank                : Placeholder (Divider with no function)
+#   setBrush             : Set Format Brush
+#   useBrush             : Use Format Brush
 TOOLS = [
     "weight", "italic", "underline", "throughline", "overline", "title", "superScript", "subScript",
     "emphasis", "blur", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
     "foregroundColor", "backgroundColor", "borderColor", "blank", "setBrush", "useBrush", "erase",
 ]
 
-# 默认格式刷 (填入 CSS 表达式。如: "color:#FF0000; text-decoration:line-through;")
+# Default Format Brush defined via CSS expressions (e.g., "color:#FF0000; text-decoration:line-through;")
 DEFAULT_FORMAT_BRUSH = ""
 
-# =========== [ 快捷键 ] ===========
-# 样式动作快捷键映射
-#   hotkey: 快捷键组合 (为空禁用)
-#   action: 工具栏动作名称
-# 举例
+# =========== [ Hotkeys ] ===========
+# Preset Hotkeys for Style Actions
+#   hotkey: Hotkey (Empty to disable)
+#   action: Target action name
+# Example:
 #   ACTION_HOTKEYS = [
 #       { hotkey = "ctrl+shift+d", action = "foregroundColor" },
 #       { hotkey = "ctrl+shift+e", action = "backgroundColor" },
 #   ]
 ACTION_HOTKEYS = []
 
-# =========== [ 颜色 ] ===========
-# 文字前色、背色、边框调色板 (十六进制 RGB)
+# =========== [ Colors ] ===========
+# Color palette (Hex codes)
 COLOR_TABLE = [
     ["#330000", "#331900", "#333300", "#193300", "#003300", "#003319", "#003333", "#001933", "#000033", "#190033", "#330033", "#330019", "#000000"],
     ["#660000", "#663300", "#666600", "#336600", "#006600", "#006633", "#006666", "#003366", "#000066", "#330066", "#660066", "#660033", "#202020"],
@@ -1644,139 +1610,139 @@ COLOR_TABLE = [
     ["#FFCCCC", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFCC", "#CCFFE5", "#CCFFFF", "#CCE5FF", "#CCCCFF", "#E5CCFF", "#FFCCFF", "#FFCCE5", "#FFFFFF"],
 ]
 
-# 默认颜色
-#   FOREGROUND: 默认前景色
-#   BACKGROUND: 默认背景色
-#   BORDER    : 默认边框颜色
+# Default colors
+#   FOREGROUND: Default foreground color
+#   BACKGROUND: Default background color
+#   BORDER    : Default border color
 DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#330000" }
 
 
 [cipher]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 
-# =========== [ 快捷键 ] ===========
-# 加密文件
+# =========== [ Hotkeys ] ===========
+# Encrypt the current file
 ENCRYPT_HOTKEY = ""
 
-# 解密文件
+# Decrypt the current file
 DECRYPT_HOTKEY = ""
 
-# =========== [ 密钥 ] ===========
-# 密钥参数 (警告：修改此项会导致旧密钥加密文件不可解，谨慎操作)
+# =========== [ Secret Key ] ===========
+# Secret Key (Warning: Modifying this renders files encrypted with previous keys un-decryptable)
 SECRET_KEY = "n0hLis5FjgQxa3f31sSa2wm37J81g3upTlq9it9WlfK"
 
-# =========== [ 交互行为 ] ===========
-# 加解密后弹出结果提示窗口
+# =========== [ Interaction ] ===========
+# Display a confirmation modal after encryption/decryption
 SHOW_HINT_MODAL = true
 
 
 [easy_modify]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 快捷键 ] ===========
-# 复制当前光标所在标题路径
+# =========== [ Hotkeys ] ===========
+# Copy the full title path at the current cursor location
 HOTKEY_COPY_FULL_PATH = "ctrl+shift+y"
 
-# 提升选中文段标题等级
+# Increase the heading level of the selected text
 HOTKEY_INCREASE_HEADERS_LEVEL = ""
 
-# 降低选中文段标题等级
+# Decrease the heading level of the selected text
 HOTKEY_DECREASE_HEADERS_LEVEL = ""
 
-# 移除外层区块 (减少嵌套层级)
+# Unwrap the outermost block (Reduces nesting level)
 HOTKEY_UNWRAP_OUTERMOST_BLOCK = ""
 
-# 提取选区文字到新文件
+# Extract the selected text range into a new file
 HOTKEY_EXTRACT_RANGE_TO_NEW_FILE = ""
 
-# 插入思维导图 mindmap 组件
+# Insert a Mermaid mindmap block
 HOTKEY_INSERT_MERMAID_MINDMAP = ""
 
-# 插入思维导图 graph 组件
+# Insert a Mermaid graph block
 HOTKEY_INSERT_MERMAID_GRAPH = ""
 
-# 换行符 CRLF 替换为 LF
+# Convert CRLF to LF
 HOTKEY_CONVERT_CRLF_TO_LF = ""
 
-# 换行符 LF 替换为 CRLF
+# Convert LF to CRLF
 HOTKEY_CONVERT_LF_TO_CRLF = ""
 
-# 移除不可见字符
+# Remove invisible characters
 HOTKEY_FILTER_INVISIBLE_CHARACTERS = ""
 
-# 添加结尾空格 (表示换行)
+# Add trailing whitespace to indicate a hard line break
 HOTKEY_TRAILING_WHITE_SPACE = ""
 
-# 图片转 Base64 编码
+# Convert selected image to Base64 encoding
 HOTKEY_CONVERT_IMAGE_TO_BASE64 = ""
 
-# 全部图片转 Base64 编码
+# Convert all images in the document to Base64 encoding
 HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64 = ""
 
 
 [custom]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 隐藏插件 ] ===========
-# 隐藏右键菜单中临时不可用的二级插件
+# =========== [ Hide Plugins ] ===========
+# Hide temporarily unavailable custom plugins from the Context Menu
 HIDE_DISABLE_PLUGINS = false
 
 
 [action_buttons]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 按钮动作 ] ===========
-# 支持右键点击悬浮按钮时隐藏其他兄弟按钮
+# =========== [ Button Action ] ===========
+# Hide other buttons when a button is right-clicked
 SUPPORT_RIGHT_CLICK = true
 
-# =========== [ 按钮样式 ] ===========
-# 按钮整体外圈尺寸
+# =========== [ Button Style ] ===========
+# Button size
 BUTTON_SIZE = "35px"
 
-# 内部图标尺寸
+# Inner icon size
 BUTTON_ICON_SIZE = "17px"
 
-# 圆角半径
+# Border radius
 BUTTON_BORDER_RADIUS = "4px"
 
-# 默认状态阴影效果
+# Box shadow
 BUTTON_BOX_SHADOW = "0 1px 20px 0 rgba(0, 0, 0, 0.1), inset 0 -1px 0 0 rgba(0, 0, 0, 0.1)"
 
-# 悬停阴影效果
+# Box shadow on hover
 BUTTON_BOX_SHADOW_ON_HOVER = "0 2px 10px 3px rgba(0, 0, 0, .15)"
 
-# 悬浮按钮间距
+# Gap between buttons
 BUTTON_GAP = "10px"
 
-# 距屏幕右边缘距离
+# Margin distance from the right edge of the viewport
 POSITION_RIGHT = "30px"
 
-# 距屏幕下边缘距离
+# Margin distance from the bottom edge of the viewport
 POSITION_BOTTOM = "50px"
 
-# 隐藏功能提示文本 (屏蔽 BUTTONS 的 hint 字段)
+# Disable tooltips (Blocks the 'hint' property of BUTTONS)
 HIDE_BUTTON_HINT = false
 
-# =========== [ 预设按钮配置 ] ===========
-# 预设按钮详细属性配置
-#   enable    : 启用此按钮
-#   coordinate: 行列坐标数组 [行号, 列号] (从 0 开始，往上为 y 轴正向，往左为 x 轴正向)
-#   icon      : CSS 图标类名 (Font Awesome 4.1.0/ionicons 2.0.1)
-#   size      : (可选) 图标大小，默认 17px
-#   color     : (可选) 颜色，默认值：跟随主题
-#   bgColor   : (可选) 背景色，默认值：跟随主题
-#   hint      : (可选) 悬停提示文字
-#   callback  : (回调) 插件触发函数格式 "插件名.方法名"
-#   evil      : (危险) eval() 执行语句。配置此项会使 callback 失效
+# =========== [ Preset Buttons ] ===========
+# Matrix for preset action buttons
+#   enable    : Enable this button
+#   coordinate: Grid coordinates [row, col] (0-indexed. Positive Y is upward, positive X is leftward)
+#   icon      : CSS Icon class (Supports Font Awesome 4.1.0 & ionicons 2.0.1)
+#   size      : (Optional) Icon size (Defaults to 17px)
+#   color     : (Optional) Icon color (Defaults to current theme)
+#   bgColor   : (Optional) Background color (Defaults to current theme)
+#   hint      : (Optional) Tooltip text
+#   callback  : (System Callback) Standard format: "PluginName.MethodName"
+#   evil      : (Custom Callback) Executable eval() statement. Overrides 'callback' if configured
 BUTTONS = [
     { enable = true, coordinate = [0, 0], size = "24px", icon = "fa fa-caret-down", evil = "() => this.utils.jumpToEdge(false)" },
     { enable = true, coordinate = [1, 0], size = "24px", icon = "fa fa-caret-up", evil = "() => this.utils.jumpToEdge(true)" },
@@ -1785,7 +1751,7 @@ BUTTONS = [
     { enable = true, coordinate = [4, 0], size = "17px", icon = "fa fa-gear", callback = "preferences.call" },
     { enable = true, coordinate = [0, 1], size = "17px", icon = "fa fa-sitemap fa-rotate-270", callback = "markmap.onButtonClick" },
     { enable = true, coordinate = [1, 1], size = "17px", icon = "fa fa-image", callback = "image_viewer.call" },
-    { enable = true, coordinate = [2, 1], size = "17px", icon = "fa fa-th-list", callback = "toc.callback" },
+    { enable = true, coordinate = [2, 1], size = "17px", icon = "fa fa-th-list", callback = "right_outline.call" },
     { enable = true, coordinate = [3, 1], size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
     { enable = false, coordinate = [4, 0], size = "17px", icon = "ion-asterisk", color = "#F0F8FF", bgColor = "#FF4500", evil = "() => window.confirm('this is message')" },
     { enable = false, coordinate = [4, 1], size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertFence("javascript")' },
@@ -1795,52 +1761,53 @@ BUTTONS = [
 
 
 [slash_commands]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 触发命令候选框 ] ===========
-# 触发文本的正则表达式 (需使用命名捕获组 kw)
-#   默认值：匹配一个文本，以 / 或 \ 开头，紧跟任意数量字母/数字，且前面不能有 <
+# =========== [ Trigger ] ===========
+# Regex defining the trigger text (Must implement the named capture group 'kw')
+# Default behavior: Matches text initiated by / or \, succeeded by alphanumeric characters, and not preceded by <
 TRIGGER_REGEXP = '(?<!<)[\/\\](?<kw>\w*)$'
 
-# 键入触发文本后显示策略
-#   on_input: 立即显示
-#   debounce: 延迟防抖显示
+# Timing strategy for displaying the suggestion list after typing
+#   on_input: Display list immediately upon input
+#   debounce: Display list after a debounce delay
 SUGGESTION_TIMING = "on_input"
 
-# =========== [ 匹配与排序策略 ] ===========
-# 匹配策略
-#   prefix: 前缀匹配。需完整从头起打 (para -> Paragraph)
-#   substr: 子串匹配。中断允许匹配 (graph -> Paragraph)
-#   abbr  : 缩写匹配。抽取断续缩写验证 (pgh -> Paragraph)
+# =========== [ Match & Order ] ===========
+# Match Strategy
+#   prefix: Prefix match. Requires complete typing from start (para -> Paragraph)
+#   substr: Substring match. Interrupted matching allowed (graph -> Paragraph)
+#   abbr  : Abbreviation match. Extract discontinuous abbreviation validation (pgh -> Paragraph)
 MATCH_STRATEGY = "abbr"
 
-# 排序策略
-#   predefined   : 预定义
-#   lexicographic: 字典序
-#   length_based : 长度序
-#   earliest_hit : 最早命中
+# Command sorting order strategy
+#   predefined   : Defined array sequence
+#   lexicographic: Alphabetical sorting
+#   length_based : String length sorting
+#   earliest_hit : Earliest match sorting
 ORDER_STRATEGY = "predefined"
 
-# =========== [ 命令参数与预设 ] ===========
-# 命令分为无参和带参两种
-#   无参形式: /command
-#   带参形式: /command_param1_param2 (用下方 FUNC_PARAM_SEPARATOR 分隔)
+# =========== [ Command Parameters ] ===========
+# Commands differentiate into parameterless and parameterized types
+#   Parameterless: /command
+#   Parameterized: /command_param1_param2 (Delimited by FUNC_PARAM_SEPARATOR)
 
-# 命令参数分离标识符：强烈建议保持默认
-# 若执意修改(如改为中划线-)，必须同步修改上方 TRIGGER_REGEXP 使之支持该符号
+# Parameter separator (Recommended to retain the default value)
+# If modified (e.g., to '-'), TRIGGER_REGEXP must also be updated to capture the new symbol
 FUNC_PARAM_SEPARATOR = "_"
 
-# 预设命令：斜杠命令配置列表
-#   enable      : 启用
-#   type        : 类型 (snippet: 插入文字片段; command: 执行逻辑命令; gen-snp: 插入动态文字片段)
-#   scope       : 作用域 (plain: 普通文本区域; inline_math: 行内数学公式)
-#   icon        : 图标
-#   hint        : 提示
-#   keyword     : 关键词 (必须，仅字母数字)
-#   cursorOffset: 光标偏移量 [开始偏移量, 结束偏移量]
-#   callback    : snippet为文本；command为逻辑函数；gen-snp为文本生成函数
+# =========== [ Presets Commands ] ===========
+# Registry of preset slash commands
+#   enable      : Enable this command
+#   type        : Command category ('snippet' for Static Text, 'command' for Executable Logic, 'gen-snp' for Dynamic Text)
+#   scope       : Execution context ('plain' for Plain Text, 'inline_math' for Inline Math)
+#   icon        : Command Icon
+#   hint        : Tooltip hint
+#   keyword     : Trigger keyword (Required; restricted to alphanumeric characters)
+#   cursorOffset: Post-execution cursor position offset mapping [Start Offset, End Offset]
+#   callback    : Execution body (Text for 'snippet', Function for 'command' and 'gen-snp')
 COMMANDS = [
     { enable = true, type = "command", icon = "📝", keyword = "H1", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
     { enable = true, type = "command", icon = "📝", keyword = "H2", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
@@ -1896,55 +1863,52 @@ COMMANDS = [
     { enable = true, type = "command", icon = "🧰", keyword = "JumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
     { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineStart", callback = "() => File.editor.selection.jumpToLineStart()" },
     { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineEnd", callback = "() => File.editor.selection.jumpToLineEnd()" },
-    # 文本片段
     { enable = true, type = "snippet", icon = "🧩", keyword = "BR", callback = "<br>" },
     { enable = true, type = "snippet", icon = "🧩", keyword = "IMG", cursorOffset = [-14, -14], callback = '<img src="" alt="alt" />' },
     { enable = true, type = "snippet", icon = "🧩", keyword = "SPAN", cursorOffset = [-7, -7], callback = '<span></span>' },
     { enable = true, type = "snippet", icon = "🧩", keyword = "cursorOffsetExample", cursorOffset = [-23, -10], callback = "Enjoying Typora Plugin? Star us!" },
     { enable = true, type = "snippet", icon = "🧩", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
-    # 动态文本片段
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Datetime", callback = "() => this.utils.dateTimeFormat(new Date(), 'yyyy/MM/dd HH:mm:ss')" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", callback = "() => this.utils.dateTimeFormat(new Date(), 'yyyy/MM/dd')" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", callback = "() => this.utils.dateTimeFormat(new Date(), 'HH:mm:ss')" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Weekday", callback = "() => this.utils.dateTimeFormat(new Date(), 'dddd')" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", callback = "() => Date.now().toString()" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "UUID", callback = "() => this.utils.getUUID()" },
-    # 行内公式内才可使用
     { enable = true, type = "snippet", icon = "🧩", keyword = "alpha", hint = "α", scope = "inline_math", callback = "\\alpha " },
     { enable = true, type = "snippet", icon = "🧩", keyword = "beta", hint = "β", scope = "inline_math", callback = "\\beta " },
     { enable = true, type = "snippet", icon = "🧩", keyword = "epsilon", hint = "ε", scope = "inline_math", callback = "\\epsilon " },
     { enable = true, type = "snippet", icon = "🧩", keyword = "rightarrow", hint = "→", scope = "inline_math", callback = "\\rightarrow " },
-    # 进阶：命令参数
-    #   代码块生成器：输入 /BlockCodeGenerator_go_java_bash 即可同时插入 go、java、bash 三个代码块
+    # Advanced: Parameterized Commands
+    #   BlockCode Generator: Input /BlockCodeGenerator_go_java_bash to simultaneously generate three code blocks
     { enable = true, type = "gen-snp", icon = "🌟", keyword = "BlockCodeGenerator", callback = "(...langs) => langs.map(l => '```' + l.toLowerCase() + '\\n```').join('\\n\\n')" },
-    #   提示块生成器：输入 /CalloutGenerator_note_info_quote 即可同时插入 NOTE、INFO、QUOTE 三个 callout
+    #   Callout Generator: Input /CalloutGenerator_note_info_quote to simultaneously generate NOTE, INFO, QUOTE callout blocks
     { enable = true, type = "gen-snp", icon = "🌟", keyword = "CalloutGenerator", callback = "(...types) => types.map(t => `> [!${t.toUpperCase()}]\\n>\\n> `).join('\\n\\n')" },
-    #   表格生成器：输入 /TableGenerator_3_4 即可插入三列四行的表格
+    #   Table Generator: Input /TableGenerator_3_4 to generate a structured table with 3 columns and 4 rows
     { enable = true, type = "command", icon = "🌟", keyword = "TableGenerator", callback = "(col, row) => { col = parseInt(col); row = parseInt(row); const c = ['      ', ' ---- ', ...Array(row - 1).fill('      ')].map(e => `|${Array(col).fill(e).join('|')}|`).join('\\n'); this.utils.insertText(null, c, false) }" },
 ]
 
 
 [cjk_symbol_pairing]
-# =========== [ 基础 ] ===========
-# 注意：需启用 Typora 配置「匹配括号和引号」，否则插件失效
+# =========== [ Basic ] ===========
+# Prerequisite: Typora's native 'Auto pair brackets and quotes' setting must be enabled for this plugin to function
 ENABLE = true
 NAME = ""
 
-# =========== [ 行为控制选项 ] ===========
-# 自动跳过配对符号：打字时若遇到右侧已有补全的后括号，自动越过而非额外插入
+# =========== [ Behavior ] ===========
+# Skip paired symbols: Skip typing the symbol rather than inserting a duplicate if the matching end bracket already exists
 AUTO_SKIP_PAIR = true
 
-# 成对删除符号：删除前括号时，若紧邻对应的后括号，则一并消灭
+# Delete paired symbols: Deleting an opening symbol simultaneously deletes the adjacent closing symbol
 AUTO_DELETE_PAIR = true
 
-# 自动包裹选区：在存在高亮选区的情况下键入成对符号，会自动将选区包裹而非覆盖
+# Wrap selected text: Selecting text and typing a pair symbol wraps the text instead of overwriting it
 AUTO_SURROUND_PAIR = true
 
-# 连续全角转为半角：连续键入两个全角标点时合成一个半角标点
+# Convert to half-width: Typing two consecutive full-width punctuation marks converts them into a single half-width punctuation mark
 AUTO_CONVERT_FULL_TO_HALF = false
 
-# =========== [ 符号配对字典 ] ===========
-# 自动配对符号
+# =========== [ Symbol Pairing ] ===========
+# Definitions for symbol auto-pairing
 AUTO_PAIR_SYMBOLS = [
     { enable = true, input = "（", output = "）" },
     { enable = true, input = "《", output = "》" },
@@ -1955,7 +1919,7 @@ AUTO_PAIR_SYMBOLS = [
     { enable = true, input = "『", output = "』" },
 ]
 
-# 自动转换符号
+# Definitions for symbol auto-conversion
 AUTO_CONVERT_SYMBOLS = [
     { enable = true, input = "【", output = "[" },
     { enable = true, input = "】", output = "]" },
@@ -1974,74 +1938,74 @@ AUTO_CONVERT_SYMBOLS = [
 ]
 
 [right_outline]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 大纲内容 ] ===========
-# 移除标题样式：在导图中擦除 **加粗** 或 `代码` 等视觉样式标识
+# =========== [ Outline Content ] ===========
+# Strip styling markers (e.g., **bold** or `code`) from outline headers
 REMOVE_HEADER_STYLES = true
 
-# 显示标题：为特殊元素(如代码块、图片等)生成大纲并显示内容
+# Elements to display on the title bar
+#   header: Header
+#   image : Image
+#   table : Table
+#   fence : BlockCode
+#   link  : Link
+#   math  : Math
+TITLE_BAR_BUTTONS = ["header", "image", "table", "fence", "link", "math"]
+
+# Include H1 and H2 elements in specific elements of the outline
 INCLUDE_HEADINGS = { fence = true, image = true, table = true, link = true, math = true }
 
-# =========== [ 交互行为 ] ===========
-# 支持拖动大纲标题调整文章结构
+# =========== [ Interaction ] ===========
+# Allow drag-and-drop operations on outline titles to rearrange document structure
 SORTABLE = true
 
-# 右击侧边栏大纲按钮切换显示
+# Toggle the right-outline visibility by right-clicking the 'Outline' button in the main sidebar
 RIGHT_CLICK_OUTLINE_BUTTON_TO_TOGGLE = true
 
-# 默认开启大纲目录
+# Display the right-outline by default on startup
 DEFAULT_SHOW_OUTLINE = false
 
-# =========== [ 窗口样式与展示 ] ===========
-# 大纲面板宽度百分比
+# =========== [ Window Display ] ===========
+# Default width of the outline panel (as a percentage of the window)
 DEFAULT_WIDTH_PERCENT = 20
-
-# 标题栏控制开关展示元素
-#   header: 标题
-#   image : 图片
-#   table : 表格
-#   fence : 代码块
-#   link  : 链接
-#   math  : 公式
-TITLE_BAR_BUTTONS = ["header", "image", "table", "fence", "link", "math"]
 
 
 [right_click_menu]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 
-# =========== [ 菜单外观 ] ===========
-# 在右键选项旁显示对应快捷键提示（仅正式版 Typora 可用）
+# =========== [ Menu Appearance ] ===========
+# Display associated plugin hotkeys within menu options (Requires official Typora versions)
 SHOW_PLUGIN_HOTKEY = true
 
-# 动作选项添加 ⌘ 专属图标区分
+# Add a ⌘ icon to action options to visually distinguish them
 SHOW_ACTION_OPTIONS_ICON = true
 
-# 失焦不再自动隐藏菜单
+# Prevent the context menu from auto-hiding when it loses focus
 DO_NOT_HIDE = false
 
-# 二、三级菜单的最小宽度：控制子菜单宽度以防文字过长
-#   ""      : 保持默认宽度 (和第一级菜单相同宽度)
-#   inherit : 最小宽度根据文本长度自适应
-#   正整数   : 具体像素值
+# Min width constraint for submenus
+#   ""        : Inherits default width (aligns with first-level menu width)
+#   "inherit" : Dynamically adapts to text length
+#   integer   : Specifies a precise pixel value
 MENU_MIN_WIDTH = ""
 
-# =========== [ 菜单选项管理 ] ===========
-# 隐藏原生右键菜单里的其它非插件选项
+# =========== [ Menu Option ] ===========
+# Restrict the context menu to exclusively display plugin options
 HIDE_OTHER_OPTIONS = false
 
-# 自动寻找丢失插件追加至末尾菜单
+# Automatically locate and append unlisted plugins to the bottom of the menu
 FIND_LOST_PLUGINS = false
 
-# =========== [ 自定义右键菜单 ] ===========
-# 自定义右键菜单：`MENUS` 数组项对应所有一级菜单和二级内容。支持无限扩展及重复出现
-#   NAME: 一级菜单名
-#   LIST: 插件列表，用 `---` 表示分隔线。可以只写 pluginName，或者细分到 pluginName.action
+# =========== [ Custom Menu ] ===========
+# Custom menu
+#   NAME: First-level Menu Name
+#   LIST: Array of plugins. Use `---` as a separator line. Supports syntax: pluginName or pluginName.action
 [[right_click_menu.MENUS]]
 NAME = "__BLOCK_CODE_PLUGINS__"
 LIST = [
@@ -2110,20 +2074,22 @@ LIST = [
 
 
 [pie_menu]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 触发配置 ] ===========
-# 右键修饰键：组合触发圆盘菜单
-#   支持 ctrl / alt / shift 的任意组合 (如 "shift+alt")。例如：填入 "ctrl"，则 Ctrl+RClick 弹出菜单。若为空，则直接覆盖原右键菜单
+# =========== [ Modifier Key ] ===========
+# Modifier key mapping required to trigger the Pie Menu via right-click
+# Supports combinations of ctrl / alt / shift (e.g., "shift+alt")
+# Example: Inputting "ctrl" requires Ctrl+RightClick to open the menu
+# Leave empty to directly override the original right-click context menu
 MODIFIER_KEY = "ctrl"
 
-# =========== [ 圆盘菜单按钮 ] ===========
-# 圆盘菜单按钮：最多支持 16 个按钮（前 8 个内圈，后 8 个外圈）
-#   ICON    : 按钮图标 CSS class (如 "fa fa-book")
-#   CALLBACK: 回调对应动作 (如 "easy_modify.copy_full_path" 或单功能插件 "read_only")
+# =========== [ Buttons ] ===========
+# Pie Menu layout array. Supports up to 16 buttons (First 8 in the inner circle, last 8 in the outer circle)
+#   ICON    : CSS class (e.g., "fa fa-book")
+#   CALLBACK: Target action identifier (e.g., "easy_modify.copy_full_path" or "read_only")
 BUTTONS = [
     { ICON = "fa fa-book", CALLBACK = "read_only" },
     { ICON = "fa fa-asterisk", CALLBACK = "blur" },
@@ -2132,7 +2098,7 @@ BUTTONS = [
     { ICON = "fa fa-file-text", CALLBACK = "templater" },
     { ICON = "fa fa-align-justify", CALLBACK = "md_padding" },
     { ICON = "fa fa-paste", CALLBACK = "easy_modify.copy_full_path" },
-    { ICON = "fa fa-list", CALLBACK = "toc" },
+    { ICON = "fa fa-list", CALLBACK = "right_outline" },
     { ICON = "fa fa-sitemap", CALLBACK = "markmap.toggle_toc" },
     { ICON = "fa fa-font", CALLBACK = "text_stylize" },
     { ICON = "fa fa-search", CALLBACK = "search_multi" },
@@ -2145,52 +2111,52 @@ BUTTONS = [
 
 
 [preferences]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 界面管理 ] ===========
-# 默认配置页 (填入插件 FixedName，__LAST__ 代表上次使用的)
-DEFAULT_MENU = "global"
+# =========== [ UI ] ===========
+# The default settings tab loaded on startup (Input plugin FixedName. '__LAST__' loads the previously used tab)
+DEFAULT_MENU = "__LAST__"
 
-# 隐藏配置页(填入插件 FixedName)
+# Array of settings tabs to hide from the interface (Input plugin FixedName)
 HIDE_MENUS = []
 
-# 配置界面的模块标题折叠开关
+# Collapsible box for the modules of settings page
 COLLAPSIBLE_BOX = true
 
-# 依赖失效行为：针对某些存在关联依赖的配置，如果前置条件未满足时其表现形式
-#   readonly: 只读
-#   hide    : 隐藏
+# Dependency Failure Behavior: Determines how dependent configurations are presented when their prerequisites are not met
+#   readonly: Render as Read-Only
+#   hide    : Hide completely
 DEPENDENCIES_FAILURE_BEHAVIOR = "readonly"
 
-# 支持搜索插件英文名 (FixedName)
+# Enable search functionality via plugin FixedName
 SEARCH_PLUGIN_FIXEDNAME = false
 
-# =========== [ 数据配置 ] ===========
-# 对象类型的数据格式呈现 (JSON / TOML / YAML)
+# =========== [ Data ] ===========
+# Serialized format for object settings display (Supported: JSON / TOML / YAML)
 OBJECT_SETTINGS_FORMAT = "JSON"
 
-# 内置表单渲染钩子逻辑(面向开发人员)
+# Hook function for custom form rendering (For developers only)
 FORM_RENDERING_HOOK = "(options, fixedName) => options"
 
 
 [hotkeys]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 自定义快捷键 ] ===========
-# 为任意插件函数或自定义脚本设定快捷键
-#   enable         : 启用
-#   hotkey         : 快捷键组合
-#   desc           : 说明
-#   plugin         : 插件名
-#   function       : 插件方法名
-#   closestSelector: 适用光标的选择器
-#   evil           : 自定义执行脚本的回调，具有 `eval` 功能。启用此项则无视 plugin 和 function 配置
+# =========== [ Custom Hotkeys ] ===========
+# Map custom hotkeys to plugin functions or arbitrary executable scripts
+#   enable         : Enable this action
+#   hotkey         : Hotkey
+#   desc           : Description of the action
+#   plugin         : Target Plugin Name
+#   function       : Target Plugin Function
+#   closestSelector: CSS selector for applicable cursor contexts
+#   evil           : Executable eval() statement. Overrides 'plugin' and 'function' if configured
 CUSTOM_HOTKEYS = [
     { enable = false, hotkey = "ctrl+shift+e", desc = "Insert JavaScript BlockCode", evil = "() => this.utils.insertFence('javascript')" },
     { enable = false, hotkey = "ctrl+shift+e", desc = "Open Windows Calculator", evil = "() => require('child_process').exec('cmd /C calc')" },
@@ -2202,102 +2168,102 @@ CUSTOM_HOTKEYS = [
 
 
 [resource_manager]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 窗口位置 ] ===========
-# 弹窗左边框百分比定位
+# =========== [ Window Position ] ===========
+# Left margin percentage of the modal window
 MODAL_LEFT_PERCENT = 5
 
-# 弹窗宽度百分比
+# Width percentage of the modal window
 MODAL_WIDTH_PERCENT = 90
 
-# 弹窗高度百分比
+# Height percentage of the modal window
 MODAL_HEIGHT_PERCENT = 70
 
-# =========== [ 资源识别匹配 ] ===========
-# 识别挂载的资源语法标准
-#   markdown: 标准 `![alt](uri)`
-#   html    : `<IMG>` 标签
+# =========== [ Resource Recognition Match ] ===========
+# Grammar syntax identifiers applied when scanning for mounted resources
+#   markdown: Standard markdown syntax `![alt](uri)`
+#   html    : Standard `<IMG>` tag syntax
 RESOURCE_GRAMMARS = ["markdown", "html"]
 
-# 判别资源文件的扩展名
+# Whitelisted file extensions mapped as resources
 RESOURCE_EXT = ["", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".tiff", ".ico", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large", ".gif!small"]
 
-# 判别文档的扩展名
+# Whitelisted file extensions mapped as Markdown documents
 MARKDOWN_EXT = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]
 
-# =========== [ 遍历与控制策略 ] ===========
-# 跳过扫描目录
+# =========== [ Traverse ] ===========
+# Directories explicitly ignored during search traversal
 IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 
-# 最大子目录扫描下潜极值(小于 0 则无限制)
+# Max directory depth for scanning (-1 means no limit)
 MAX_DEPTH = -1
 
-# 最大同时处理任务数
+# Concurrency limit for scanning tasks
 CONCURRENCY_LIMIT = 20
 
-# 跟随符号链接解析(若开启需注意防死循环)
+# Follow symbolic links during traversal (Warning: Enabling this incurs the risk of infinite loops)
 FOLLOW_SYMBOLIC_LINKS = false
 
-# 搜索任务强行中断超时阈值(毫秒)
+# Max execution timeout before halting the search (ms)
 TIMEOUT = 180000
 
-# 文件遍历策略
-#   bfs: 广度优先
-#   dfs: 深度优先
+# Directory traversal strategy
+#   bfs: Breadth-First Search
+#   dfs: Depth-First Search
 TRAVERSE_STRATEGY = "bfs"
 
-# 发现超量文件自动停止阈值(-1 表示无限制)
+# Max number of matched entities to process before halting (-1 means no limit)
 MAX_ENTITIES = -1
 
 
 [asset_root_redirect]
-# =========== [ 基础 ] ===========
-# 注意：【文件 front matter 的 typora-root-url 参数】优先级高于此插件
+# =========== [ Basic ] ===========
+# Note: The 'typora-root-url' parameter defined in a file's front matter overrides this plugin's settings
 ENABLE = false
 NAME = ""
 
-# =========== [ 目录重定向设定 ] ===========
-# 本地资源路径重定向基础地址（若为空，则此插件失效）
-# 支持绝对和相对路径
+# =========== [ Redirection ] ===========
+# Redirect path for local resource roots (Supports absolute and relative paths). Disables the plugin if left empty
 ROOT_PATH = "./"
 
-# 忽略文件：命中此 Glob Pattern 表达式的文件将不会执行资源路径重定向
+# Ignore pattern: Resources matching this Glob Pattern expression bypass redirection logic
 IGNORE_GLOB_FILES = ["**/node_modules", "**/.git", "**/.idea"]
 
 
 [bookmark]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 交互控制 ] ===========
-# 左键修饰键：与鼠标左键结合触发书签标注 (如填写 "alt"，则 Alt+LClick 标注书签)
+# =========== [ Interaction ] ===========
+# Modifier key required in combination with Left Click to execute a bookmark action
+# Example: Input "alt" to require Alt+LClick
 MODIFIER_KEY = "alt"
 
-# 快捷操作时自动唤出书签列表界面
+# Automatically trigger the management pop-up window upon successful bookmarking
 AUTO_POPUP_WINDOW = true
 
 
 [templater]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 模板应用选项 ] ===========
-# 应用模板并生成新文件后，自动在编辑器中打开
+# =========== [ Template Application Options ] ===========
+# Automatically load and open the newly generated file within the editor
 AUTO_OPEN = true
 
-# =========== [ 自定义模板变量 ] ===========
-# 自定义模板变量：高级配置项，允许通过 JS 定义全新的模板渲染变量
-#   enable  : 启用
-#   name    : 变量名 (全局唯一)
-#   callback: 返回该变量结果的函数
+# =========== [ Custom Template Variables ] ===========
+# Custom Variables registry for advanced template definitions
+#   enable  : Enable this variable
+#   name    : Unique identifier for the variable
+#   callback: Function evaluating and returning the variable's value
 TEMPLATE_VARIABLES = [
     { enable = false, name = "author", callback = "() => 'obgnail'" },
     { enable = false, name = "sum", callback = "(v1 = 100, v2 = 200) => v1 + v2" },
@@ -2305,44 +2271,44 @@ TEMPLATE_VARIABLES = [
     { enable = false, name = "contact", callback = "(...args) => args.join('-')" },
 ]
 
-# =========== [ 外部模板配置 ] ===========
-# 模板文件目录：除了内置配置外，还可以指定本地目录。插件会递归最多 3 层寻找 .md 文件作为模板导入
+# =========== [ External Templates ] ===========
+# Recursively scans up to 3 levels within these specified folders to import standard .md files as templates
 TEMPLATE_FOLDERS = []
 
-# =========== [ 模板变量使用说明 ] ===========
-# 模板中使用变量与 JavaScript 函数调用基本一致，差异如下
-#   1. 前后需双大括号包裹：myFunc(arg1, arg2) => {{ myFunc(arg1, arg2) }}
-#   2. 无实参可省略小括号：{{ myFunc() }} 等同于 {{ myFunc }}
+# =========== [ Template Variables Documentation ] ===========
+# Using variables in templates strictly mirrors JavaScript function invocation, with two distinctions
+#   1. Variables must be enclosed within double braces: myFunc(arg1, arg2) -> {{ myFunc(arg1, arg2) }}
+#   2. Parentheses are optional for parameterless calls: {{ myFunc() }} equals {{ myFunc }}
 #
-# 自定义变量 TEMPLATE_VARIABLES 的调用示例 (需设置 enable = true)
-#   {{ author }}             输出 obgnail
-#   {{ sum }}                输出 300
-#   {{ sum(1, 2) }}          输出 3
-#   {{ sumList([3, 2]) }}    输出 5
-#   {{ contact("a", "b") }}  输出 a-b
+# Execution examples for TEMPLATE_VARIABLES (Requires enable = true)
+#   {{ author }}             Outputs obgnail
+#   {{ sum }}                Outputs 300
+#   {{ sum(1, 2) }}          Outputs 3
+#   {{ sumList([3, 2]) }}    Outputs 5
+#   {{ contact("a", "b") }}  Outputs a-b
 
-# =========== [ 内置的模板变量 ] ===========
-#   {{ formatDate(format, locale) }}          当前格式化日期时间
-#   {{ dateOffset(offset, format, locale) }}  指定偏移量后的日期
-#   {{ date }}                 当前日期。等同于 {{ formatDate('yyyy-MM-dd') }}
-#   {{ time }}                 当前时间。等同于 {{ formatDate('HH:mm:ss') }}
-#   {{ datetime }}             当前日期时间。等同于 {{ formatDate('yyyy-MM-dd HH:mm:ss') }}
-#   {{ weekday }}              当前周几。等同于 {{ formatDate('ddd') }}
-#   {{ yesterday }}            昨天日期。等同于 {{ dateOffset(-1) }}
-#   {{ tomorrow }}             明天日期。等同于 {{ dateOffset(1) }}
-#   {{ timestamp }}            当前时间戳 (毫秒)
-#   {{ randomInt(min, max) }}  范围内随机整数
-#   {{ randomStr(length) }}    指定长度随机字符串
-#   {{ title }}                新建文件标题
-#   {{ filepath }}             新建文件路径
-#   {{ folder }}               当前文件目录
-#   {{ mountFolder }}          当前挂载目录
+# =========== [ Built-in Template Variables ] ===========
+#   {{ formatDate(format, locale) }}          Formatted current datetime
+#   {{ dateOffset(offset, format, locale) }}  Formatted date adjusted by offset
+#   {{ date }}                 Current date. Equivalent to {{ formatDate('yyyy-MM-dd') }}
+#   {{ time }}                 Current time. Equivalent to {{ formatDate('HH:mm:ss') }}
+#   {{ datetime }}             Current datetime. Equivalent to {{ formatDate('yyyy-MM-dd HH:mm:ss') }}
+#   {{ weekday }}              Current weekday. Equivalent to {{ formatDate('ddd') }}
+#   {{ yesterday }}            Yesterday's date. Equivalent to {{ dateOffset(-1) }}
+#   {{ tomorrow }}             Tomorrow's date. Equivalent to {{ dateOffset(1) }}
+#   {{ timestamp }}            Current timestamp (ms)
+#   {{ randomInt(min, max) }}  Random integer within range
+#   {{ randomStr(length) }}    Random string of specified length
+#   {{ title }}                Title of the newly created file
+#   {{ filepath }}             Path of the newly created file
+#   {{ folder }}               Directory containing the current file
+#   {{ mountFolder }}          Current mount directory
 #   {{ uuid }}                 UUID
 
-# =========== [ 自定义模板列表 ] ===========
-# 自定义模板：配置多套文字模板
-#   name: 名称 (显示在菜单中)
-#   text: 模板本体内容 (支持调用上述的变量如 {{date}}、{{title}} 等)
+# =========== [ Custom Templates ] ===========
+# Built-in Template Registry
+#   name: Menu display identifier
+#   text: Output body content
 [[templater.TEMPLATE]]
 name = "Standard"
 text = """---
@@ -2380,205 +2346,205 @@ tags:
 
 
 [editor_width_slider]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 宽度控制 ] ===========
-# 写作区百分比宽度 (-1 不干预系统布局)
+# =========== [ Width ] ===========
+# Editor layout width ratio (-1 bypasses interference with system layout)
 WIDTH_RATIO = -1
 
 
 [article_uploader]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 
-# =========== [ 菜单隐藏 ] ===========
-# 从界面菜单中隐藏上传选项
+# =========== [ Menu Hide ] ===========
+# Hide upload options from the standard Right-Click Menu
 HIDE = false
 
-# =========== [ 快捷键 ] ===========
-# 平台上传快捷键
+# =========== [ Hotkeys ] ===========
+# Hotkey mappings for platform uploads
 UPLOAD_ALL_HOTKEY = ""
 UPLOAD_WORDPRESS_HOTKEY = ""
 UPLOAD_CNBLOG_HOTKEY = ""
 UPLOAD_CSDN_HOTKEY = ""
 
-# =========== [ 平台服务配置 ] ===========
+# =========== [ Platform Service ] ===========
 [article_uploader.upload]
-# 上传前验证确认
+# Show confirmation dialog before uploading
 reconfirm = true
 
-# 无头模式隐蔽运行
+# Selenium headless mode for covert execution
 selenium = { headless = true }
 
-# WordPress 平台上传配置参数
-#   enabled : 启用
-#   hostname: 域名/IP
-#   loginUrl: 登录 URL
-#   username: 用户名
-#   password: 密码
+# Authentication parameters for WordPress integration
+#   enabled : Enabled
+#   hostname: Target Hostname/IP
+#   loginUrl: Target Login URL
+#   username: Account Username
+#   password: Account Password
 wordpress = { enabled = true, hostname = "https://blog.bugdesigner.cn", loginUrl = "https://blog.bugdesigner.cn/superman/", username = "demo", password = "demo1" }
 
-# 博客园平台上传配置参数
-#   enabled : 启用
-#   username: 用户名
-#   password: 密码
+# Authentication parameters for CNBlog integration
+#   enabled : Enabled
+#   username: Account Username
+#   password: Account Password
 cnblog = { enabled = true, username = "demo2", password = "demo2" }
 
-# CSDN 平台上传配置参数
-#   enabled: 启用
-#   cookie : 鉴权 Cookie (需在浏览器手动抓取，通常有效时间在几周内，需定期更新)
+# Authentication parameters for CSDN integration
+#   enabled: Enabled
+#   cookie : Authentication Cookie string (Requires manual browser extraction; monitor for expiry)
 csdn = { enabled = true, cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s; log_Id_click=37......" }
 
 
 [ripgrep]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 窗口交互 ] ===========
-# 输入框为空且键入退格键时，隐藏窗口：搜索栏快速退出机制
+# =========== [ Interaction ] ===========
+# Hide window when pressing Backspace on an empty input
 BACKSPACE_TO_HIDE = true
 
-# =========== [ 窗口位置 ] ===========
-# 宽度：搜索窗口在页面中所占的宽度百分比
+# =========== [ Window Position ] ===========
+# Window width scaling (percentage relative to viewport)
 WIDTH_PERCENT = 80
 
-# 垂直定位：搜索窗口距离页面顶部的距离百分比
+# Window vertical alignment (percentage distance from viewport top)
 TOP_PERCENT = 20
 
 
 [static_markers]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 视觉增强 ] ===========
-# 静态化显示指定的 Markdown 格式结构
-#   strong     : 粗体
-#   em         : 斜体
-#   del        : 删除线
-#   underline  : 下划线
-#   highlight  : 高亮
-#   superscript: 上标
-#   subscript  : 下标
-#   code       : 代码
-#   inlineMath : 行内公式
-#   image      : 图片
-#   link       : 链接
-#   emoji      : 表情
-#   footnote   : 脚注
-#   inlineHTML : 行内 HTML
+# =========== [ Static Markers ] ===========
+# Static markers
+#   strong     : Bold
+#   em         : Italic
+#   del        : Strikethrough
+#   underline  : Underline
+#   highlight  : Highlight
+#   superscript: Superscript
+#   subscript  : Subscript
+#   code       : Code
+#   inlineMath : Inline Math
+#   image      : Image
+#   link       : Link
+#   emoji      : Emoji
+#   footnote   : Footnote
+#   inlineHTML : Inline HTML
 STATIC_MARKERS = ["strong", "em", "del", "underline", "highlight", "superscript", "subscript", "code", "inlineMath", "image", "link", "footnote"]
 
 
 [cursor_history]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 
-# =========== [ 历史跳转快捷键 ] ===========
-# 光标前进，回溯到下一步记忆的光标所在点
+# =========== [ Hotkeys ] ===========
+# Cursor Go Forward, jump to the next remembered cursor point
 HOTKEY_GO_FORWARD = "alt+ArrowRight"
 
-# 光标后退，跳转回上一步记忆的光标所在点
+# Cursor Go Back, jump to the previous remembered cursor point
 HOTKEY_GO_BACK = "alt+ArrowLeft"
 
-# =========== [ 存储与限制 ] ===========
-# 跳转记忆历史步数上限
+# =========== [ Storage Limit ] ===========
+# Max capacity limit for cursor history
 MAX_HISTORY_ENTRIES = 100
 
 
 [json_rpc]
-# =========== [ 基础 ] ===========
-# 警告：开启此功能意味着外部拥有直接控制当前系统环境权限。谨慎开启
+# =========== [ Basic ] ===========
+# Warning: Activating this grants remote execution permissions over this machine. Proceed with extreme caution
 ENABLE = false
 NAME = ""
 
-# =========== [ 服务器参数 ] ===========
-# RPC Server 配置
-#   port  : 端口
-#   host  : 主机
-#   path  : 路径
-#   strict: 严格模式
+# =========== [ Server ] ===========
+# RPC Server config
+#   port  : Listener Port
+#   host  : Bind Host
+#   path  : Route Path
+#   strict: Strict Mode
 SERVER_OPTIONS = { port = 5080, host = "127.0.0.1", path = "/", strict = false }
 
 
 [updater]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 网络连接 ] ===========
-# 代理 URL：用于加速访问 GitHub 升级包资源的 HTTP/HTTPS 代理配置 (为空则不使用)
+# =========== [ Network ] ===========
+# Proxy URL
 PROXY = ""
 
-# 请求超时容忍等待时间 (毫秒，最小 30000)
+# Network Request Timeout (ms, minimum 30000)
 NETWORK_REQUEST_TIMEOUT = 180000
 
-# =========== [ 自动升级机制 ] ===========
-# 自动升级策略总开关
+# =========== [ Auto Update ] ===========
+# Master switch for auto-update strategy
 AUTO_UPDATE = false
 
-# 等待时间：Typora 启动后等待多久触发第一次升级静默检查 (毫秒，最小 60000)
+# Startup offset interval before initiating the silent update check (ms, minimum 60000)
 START_UPDATE_INTERVAL = 300000   # 1000 * 60 * 5
 
-# 轮询时间：每隔多久循环自动检查一次更新 (毫秒，最小 3600000。-1 为不开启循环检查)
+# Looping interval frequency for periodic update checks (ms, minimum 3600000. Set to -1 to disable)
 UPDATE_LOOP_INTERVAL = -1
 
 
 [kanban]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：用于识别代码块归属看板渲染的语法标识符
+# =========== [ Language & Mode ] ===========
+# Language used to render Kanban code block
 LANGUAGE = "kanban"
 
-# 严格模式：启用后不再兼容包含语法错误的代码内容，而是直接报错。也可以在首行单独写 `use strict`
+# Strict Mode: Disables syntax error tolerance and throws exceptions for faulty code. Alternatively, declare 'use strict' on the first line of the block
 STRICT_MODE = false
 
-# 交互模式：开启可防止鼠标误触内部组件时改变编辑器的光标焦点
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# =========== [ 看板样式控制 ] ===========
-# 任务描述为空时隐藏描述框
+# =========== [ Kanban Style ] ===========
+# Hide the description box for tasks without descriptive text
 HIDE_DESC_WHEN_EMPTY = true
 
-# 看板最大高度（px，若小于0，则显示全部高度）
+# Max Height of the Kanban container (px, -1 means full dynamic height)
 KANBAN_MAX_HEIGHT = 700
 
-# 看板的宽度（px）
+# Width for Kanban column containers (px)
 KANBAN_WIDTH = 250
 
-# 看板任务描述框的最大高度（em，若小于0，则显示全部高度）
+# Max height for Task Descriptions (em, -1 means full dynamic height)
 KANBAN_TASK_DESC_MAX_HEIGHT = -1
 
-# 看板换行显示：看板过多时是否通过换行来展示，而不是依靠横向滚动条
+# Wrap Kanban: Display excessive kanbans via wrapping, instead of relying on horizontal scrollbars
 WRAP = false
 
-# Ctrl+Wheel 切换看板：允许在悬浮看板区时通过鼠标滚轮加组合键来横向滚动视图
+# Enable horizontal board scrolling via Ctrl+Wheel over the Kanban area
 CTRL_WHEEL_TO_SWITCH = false
 
-# 支持 Markdown 语法：允许任务内部使用如内联样式的高亮、加粗等标准语法
+# Support Markdown Syntax: Permit standard inline rendering (highlighting, bolding, etc.) within task bodies
 ALLOW_MARKDOWN_INLINE_STYLE = true
 
-# 看板颜色：主面板底色的循环色卡
+# Predefined background color palette for Kanban columns
 KANBAN_COLOR = ["#FFE0B2", "#DAE9F4", "#FEDCCC", "#C6E5D9", "#FFF1B9"]
 
-# 任务颜色：任务区块颜色的循环色卡（需与看板颜色的数量保持一致）
+# Predefined background color palette for Tasks
 TASK_COLOR = ["#FFFDE7", "#F8FAFF", "#FFFFF2", "#FFFCF0", "#FFFFF5"]
 
-# =========== [ 初始化模板 ] ===========
-# 模板：当通过右键菜单等方式插入看板代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 use strict
 # How to use kanban
@@ -2600,104 +2566,104 @@ use strict
 
 
 [chat]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：用于识别代码块归属对话气泡渲染的语法标识符
+# =========== [ Language & Mode ] ===========
+# Language used to render Chat code block
 LANGUAGE = "chat"
 
-# 交互模式：开启可防止鼠标误触内部组件
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# =========== [ 默认选项设定 ] ===========
-# 默认选项：对话内容的整体控制策略
-#   useStrict       : 严格模式
-#   showNickname    : 昵称是否显示
-#   showAvatar      : 头像是否显示
-#   notAllowShowTime: 不显示时间
-#   allowMarkdown   : 支持 Markdown 语法
-#   senderNickname  : 发送者(右侧)默认昵称
-#   timeNickname    : 用于特殊声明时间戳的关键词昵称
+# =========== [ Default Options ] ===========
+# Default Options: Overall control strategy for dialogue contents
+#   useStrict       : Strict Mode
+#   showNickname    : Nickname display
+#   showAvatar      : Avatar display
+#   notAllowShowTime: Hide Timestamp
+#   allowMarkdown   : Support Markdown Syntax
+#   senderNickname  : Default nickname for the sender (Right side)
+#   timeNickname    : Keyword nickname specifically used to declare timestamps
 DEFAULT_OPTIONS = { useStrict = true, showNickname = true, showAvatar = true, notAllowShowTime = false, allowMarkdown = true, senderNickname = "me", timeNickname = "time" }
 
-# =========== [ 初始化模板 ] ===========
-# 模板：插入代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 ---
-useStrict: false        # Enable strict mode (disables error tolerance).
-showNickname: true      # Display usernames.
-showAvatar: true        # Display avatars.
-notAllowShowTime: false # Disable timestamps.
-allowMarkdown: true     # Enable Markdown parsing.
-senderNickname: me      # Nickname for the sender on the right.
-timeNickname: time      # Nickname for timestamps.
-avatars:                # Avatar URLs.
+useStrict: false        # Enable strict mode (disables error tolerance)
+showNickname: true      # Display usernames
+showAvatar: true        # Display avatars
+notAllowShowTime: false # Disable timestamps
+allowMarkdown: true     # Enable Markdown parsing
+senderNickname: me      # Nickname for the sender on the right
+timeNickname: time      # Nickname for timestamps
+avatars:                # Avatar URLs
   me: https://avatars.githubusercontent.com/u/48992887?s=96&v=4
   senderB: ./assets/senderB.jpg
 ---
 
 time: Yesterday 18:21
 
-senderA: Messages are separated from usernames by a colon.
+senderA: Messages are separated from usernames by a colon
 
-me: The sender's nickname on the right is 'me', and timestamp's nickname is 'time'.
+me: The sender's nickname on the right is 'me', and timestamp's nickname is 'time'
 
 me: Supports basic Markdown syntax: **bold**, *italic*, `code`, ~~strikethrough~~, [link](https://github.com/obgnail/typora_plugin), \\n![image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
 
-senderB: You can use YAML front matter to modify the configuration. \\n\\nThe `avatars` option sets user avatars, If not configured, The first letter of the user name is used as the avatar. \\n\\nTry adding `./assets/senderB.jpg` to current directory to see the user senderB's avatar change.
+senderB: You can use YAML front matter to modify the configuration. \\n\\nThe `avatars` option sets user avatars, If not configured, The first letter of the user name is used as the avatar. \\n\\nTry adding `./assets/senderB.jpg` to current directory to see the user senderB's avatar change
 
 NOTE: Supports exporting to HTML, PDF, etc. This syntax is plugin-specific and not universal."""
 
 
 [timeline]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：用于识别代码块归属时间线渲染的语法标识符
+# =========== [ Language & Mode ] ===========
+# Language used to render Timeline code block
 LANGUAGE = "timeline"
 
-# 交互模式：开启可防止鼠标误触内部组件
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# =========== [ 时间线视觉样式 ] ===========
-# 图表背景颜色
+# =========== [ Timeline Visual Style ] ===========
+# Background Color
 BACKGROUND_COLOR = "#FAFAFA"
 
-# 标题字体颜色
+# Title Font Color
 TITLE_COLOR = "#555555"
 
-# 标题字体大小
+# Title Font Size
 TITLE_FONT_SIZE = "1.5rem"
 
-# 标题字宽
+# Title Font Weight
 TITLE_FONT_WEIGHT = "bold"
 
-# 左侧时间线颜色
+# Left Timeline Color
 LINE_COLOR = "#EEEEEE"
 
-# 左侧时间线宽度
+# Left Timeline Width
 LINE_WIDTH = "2px"
 
-# 时间圆点的颜色
+# Circle Dot Color
 CIRCLE_COLOR = "#999999"
 
-# 时间圆点直径
+# Circle Dot Diameter
 CIRCLE_DIAMETER = "0.7em"
 
-# 时间圆点顶部位置：节点偏移微调
+# Circle Dot Top Position
 CIRCLE_TOP = "0.6em"
 
-# 时间的字体颜色
+# Time Font Color
 TIME_COLOR = "#555555"
 
-# =========== [ 初始化模板 ] ===========
-# 模板：插入代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 # Timeline Title (H1)
 
@@ -2708,51 +2674,51 @@ Supports basic Markdown:
 - Unordered list item 2
 **bold**, *italic*, `code`, ~~delete~~, [link](https://github.com/obgnail/typora_plugin), ![Image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
 ---
-Code blocks are not supported (nested code blocks are discouraged).
+Code blocks are not supported (nested code blocks are discouraged)
 
 ## 2023-10-01
 Custom syntax; use with caution."""
 
 
 [echarts]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：用于识别代码块归属 Echarts 的语法标识符
+# =========== [ Language & Mode ] ===========
+# Language used to render ECharts code block
 LANGUAGE = "echarts"
 
-# 交互模式：开启可防止鼠标误触
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# 渲染器：选择核心渲染引擎 (Typora 对 SVG 的支持更好)
-#   canvas: 使用 Canvas 渲染
-#   svg   : 使用 SVG 渲染
+# Renderer: Select the core rendering engine (Typora better supports SVG)
+#   canvas: Use Canvas renderer
+#   svg   : Use SVG renderer
 RENDERER = "svg"
 
-# 导出格式：配合 Typora 导出 PDF/HTML 时图形被转化的最终图片格式
-#   png: (依赖 Canvas 渲染器)
-#   jpg: (依赖 Canvas 渲染器)
-#   svg: (依赖 SVG 渲染器)
+# Export Type: Final image format converted for the diagram when cooperating with Typora exporting to PDF/HTML
+#   png: (Requires Canvas renderer)
+#   jpg: (Requires Canvas renderer)
+#   svg: (Requires SVG renderer)
 EXPORT_TYPE = "svg"
 
-# =========== [ 全局图形默认参数 ] ===========
-# 主题：(light 代表亮色 / dark 代表暗色)
+# =========== [ Chart Default Params ] ===========
+# Theme (light / dark)
 THEME = "light"
 
-# 语言环境：(en 代表英文 / zh 代表中文)
+# Locale (en / zh)
 LOCALE = "en"
 
-# 图表默认高度：初始图表在页面中占据的空间高度
+# Default Fence Height: Spatial height the initial chart occupies in the page
 DEFAULT_FENCE_HEIGHT = "300px"
 
-# 图表背景颜色
+# Default Fence Background Color
 DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
-# =========== [ 初始化模板 ] ===========
-# 模板：插入代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 // ==BlockCodeConfig==
 // @locale           en
@@ -2769,7 +2735,7 @@ TEMPLATE = """
 //   3. option:  ECharts option object
 //   4. this:    ECharts plugin instance
 // Examples: https://echarts.apache.org/examples/en/index.html#chart-type-line
-// NOTE:     Code within this block will be evaluated. Exercise caution.
+// NOTE:     Code within this block will be evaluated. Exercise caution
 
 option = {
     tooltip: { trigger: 'item' },
@@ -2794,30 +2760,30 @@ option = {
 
 
 [chart]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：用于识别代码块归属 ChartJS 渲染的语法标识符
+# =========== [ Language & Mode ] ===========
+# Language used to render ChartJS code block
 LANGUAGE = "chart"
 
-# 交互模式：开启可防止鼠标误触
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# =========== [ 图形展现控制 ] ===========
-# 图表对齐：(left: 左侧对齐 / center: 居中对齐 / right: 右侧对齐)
+# =========== [ Chart Display ] ===========
+# Chart Align: (left / center / right)
 CHART_ALIGN = "center"
 
-# 图表默认高度
+# Default Fence Height
 DEFAULT_FENCE_HEIGHT = "300px"
 
-# 图表背景颜色
+# Default Fence Background Color
 DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
-# =========== [ 初始化模板 ] ===========
-# 模板：插入代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 // ==BlockCodeConfig==
 // @align            center
@@ -2831,7 +2797,7 @@ TEMPLATE = """
 //   2. config:  chart option object
 //   3. this:    chart plugin instance
 // API:  https://chart.nodejs.cn/docs/latest/configuration/
-// NOTE: Code within this block will be evaluated. Exercise caution.
+// NOTE: Code within this block will be evaluated. Exercise caution
 
 config = {
   type: "bar",
@@ -2855,37 +2821,37 @@ config = {
 
 
 [wavedrom]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：识别 WaveDrom 的标识符
+# =========== [ Language & Mode ] ===========
+# Language used to render WaveDrom code block
 LANGUAGE = "wavedrom"
 
-# 交互模式：开启可防止鼠标误触
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# 安全模式
+# Safe Mode
 SAFE_MODE = true
 
-# =========== [ 样式与组件选项 ] ===========
-# 图表对齐方式：(left: 左侧对齐 / center: 居中对齐 / right: 右侧对齐)
+# =========== [ Style & Skin ] ===========
+# Chart Align: (left / center / right)
 CHART_ALIGN = "center"
 
-# 图表默认高度，若为 auto 则自适应内容
+# Default Fence Height, if 'auto' it adapts to the content
 DEFAULT_FENCE_HEIGHT = "auto"
 
-# 图表背景色
+# Default Fence Background Color
 DEFAULT_FENCE_BACKGROUND_COLOR = "#FFFFFF"
 
-# 皮肤文件
-# 下载皮肤文件：https://cdnjs.com/libraries/wavedrom
+# Skin Files
+# Download Skin Files: https://cdnjs.com/libraries/wavedrom
 SKIN_FILES = ["plugin/wavedrom/narrow.js"]
 
-# =========== [ 初始化模板 ] ===========
-# 模板：插入代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 // ==BlockCodeConfig==
 // @align            center
@@ -2895,7 +2861,7 @@ TEMPLATE = """
 // ==/BlockCodeConfig==
 
 // Tutorial: https://wavedrom.com/tutorial.html
-// NOTE:     Code within this block will be evaluated. Exercise caution.
+// NOTE:     Code within this block will be evaluated. Exercise caution
 {
     signal: [
         { name: "pclk", wave: 'p.......' },
@@ -2914,27 +2880,27 @@ TEMPLATE = """
 
 
 [calendar]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：用于识别日历面板渲染的标识符
+# =========== [ Language & Mode ] ===========
+# Language used to render Calendar code block
 LANGUAGE = "calendar"
 
-# 交互模式：开启防误触
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# =========== [ 图形显示设定 ] ===========
-# 图表默认高度，若为 auto 则自适应内容
+# =========== [ Graphic Display ] ===========
+# Default Fence Height, if 'auto' it adapts to the content
 DEFAULT_FENCE_HEIGHT = "800px"
 
-# 图表背景色
+# Default Fence Background Color
 DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
-# =========== [ 初始化模板 ] ===========
-# 模板：插入代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 // ==BlockCodeConfig==
 // @width            auto
@@ -2949,7 +2915,7 @@ TEMPLATE = """
 //   4. this:     calendar plugin instance
 // Examples: https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
 // API:      https://github.com/nhn/tui.calendar/blob/main/docs/en/apis/options.md
-// NOTE:     Code within this block will be evaluated. Exercise caution.
+// NOTE:     Code within this block will be evaluated. Exercise caution
 
 const today = new Date()
 const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
@@ -2963,34 +2929,34 @@ calendar.createEvents([
 
 
 [abc]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：标识乐谱语言 abcjs
+# =========== [ Language & Mode ] ===========
+# Language used to render abcjs code block
 LANGUAGE = "abc"
 
-# 交互模式：开启防误触
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# =========== [ 渲染控制 ] ===========
-# 乐谱的可视化选项，参考：https://paulrosen.github.io/abcjs/visual/render-abc-options.html
-# 常用的配置
-#   scale     : 缩放比率
-#   staffwidth: 谱表宽度
-#   responsive: 响应式缩放动作
+# =========== [ Rendering Control ] ===========
+# Visual options for the music sheet, reference: https://paulrosen.github.io/abcjs/visual/render-abc-options.html
+# Common Configurations:
+#   scale     : Zoom scale
+#   staffwidth: Staff width
+#   responsive: Responsive resizing behavior
 VISUAL_OPTIONS = { scale = 1.0, staffwidth = 400, responsive = "resize" }
 
-# 图表默认高度，若为 auto 则自适应内容
+# Default Fence Height, if 'auto' it adapts to the content
 DEFAULT_FENCE_HEIGHT = "auto"
 
-# 图表背景色
+# Default Fence Background Color
 DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
-# =========== [ 初始化模板 ] ===========
-# 模板：插入代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 X:1
 T:Twinkle, Twinkle, Little Star
@@ -3001,43 +2967,43 @@ G2 G2|A2 A2|B2 B2|c3 z|G2 G2|A2 A2|B2 G2|c3 z||"""
 
 
 [drawIO]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 资源 ] ===========
-# 依赖资源 URI：指定 draw.io viewer 的加载路径（默认为官方 CDN 获取资源以保证兼容性，可换至本地绝对路径）
-# 此插件默认从网络拉取依赖。若你想将依赖资源保存在本地，按如下操作
-#   1. 下载并保存文件：https://viewer.diagrams.net/js/viewer-static.min.js
-#   2. 将 RESOURCE_URI 修改为本地的文件路径（如：D:\\tmp\\viewer-static.min.js）
+# =========== [ Resources ] ===========
+# Dependent Resource URI: Specify the load path of the draw.io viewer (Defaults to official CDN for compatibility, can be switched to absolute local path)
+# This plugin pulls dependencies from the network by default. If you wish to save dependencies locally, do the following:
+#   1. Download and save the script: https://viewer.diagrams.net/js/viewer-static.min.js
+#   2. Modify RESOURCE_URI to the local file path (e.g., D:\\tmp\\viewer-static.min.js)
 RESOURCE_URI = "https://viewer.diagrams.net/js/viewer-static.min.js"
 
-# 服务超时时间：网络资源等待阈值（毫秒）
+# Server Timeout: Wait threshold for network resources (ms)
 SERVER_TIMEOUT = 30000
 
-# 代理 URL
+# Proxy URL
 PROXY = ""
 
-# 缓存的 URL 数量
+# Cached URL Count
 CACHED_URL_COUNT = 20
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：用于识别代码块的语言标识符
+# =========== [ Language & Mode ] ===========
+# Language used to render drawIO code block
 LANGUAGE = "drawio"
 
-# 交互模式：开启可防止鼠标误触内部组件时改变编辑器的光标焦点
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# =========== [ 图形展现控制 ] ===========
-# 图表默认高度，若为 auto 则自适应内容
+# =========== [ Chart Display ] ===========
+# Default Fence Height, if 'auto' it adapts to the content
 DEFAULT_FENCE_HEIGHT = "auto"
 
-# 图表背景色
+# Default Fence Background Color
 DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 
-# =========== [ 初始化模板 ] ===========
-# 模板：插入代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 // ==BlockCodeConfig==
 // @interaction      showOnly
@@ -3051,8 +3017,8 @@ TEMPLATE = """
 //      - http://localhost:8000/example.drawio
 //      - ./assets/example.drawio
 //      - D:\\\\tmp\\\\example.drawio
-//   - page: Zero-based index to switch pages
-//   - MORE: https://github.com/jgraph/drawio/blob/f7158bfb/src/main/webapp/js/diagramly/GraphViewer.js#L118
+//   - page: 0-based index to switch pages
+//   See: https://github.com/jgraph/drawio/blob/f7158bfb/src/main/webapp/js/diagramly/GraphViewer.js#L118
 
 graphConfig = {
     source: "https://cdn.jsdelivr.net/gh/obgnail/typora_images@master/image/example.drawio",
@@ -3061,42 +3027,42 @@ graphConfig = {
 
 
 [plantUML]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 渲染服务 ] ===========
-# 渲染服务的URL。推荐使用 Docker 安装并启用服务
+# =========== [ Rendering Service ] ===========
+# Rendering Server URL. Recommended to install via Docker and enable the service:
 #   docker pull plantuml/plantuml-server:jetty
 #   docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 SERVER_URL = "http://localhost:8080"
 
-# 输出格式：图表生成回传的图片形式（建议 svg 获取最佳失真控制，或 png/txt）
+# Output Format: Generated image format returned (SVG recommended for best distortion control, or png/txt)
 OUTPUT_FORMAT = "svg"
 
-# 服务超时时间：向后台申请出图等待上限（毫秒）
+# Server Timeout: Max wait time requesting image generation from backend (ms)
 SERVER_TIMEOUT = 30000
 
-# 缓存的 URL 数量
+# Cached URL Count
 CACHED_URL_COUNT = 20
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：UML语言标识符
+# =========== [ Language & Mode ] ===========
+# Language used to render plantUML code Block
 LANGUAGE = "plantuml"
 
-# 交互模式：开启防误触
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# =========== [ 图形展现控制 ] ===========
-# 图表默认高度，若为 auto 则自适应内容
+# =========== [ Chart Display ] ===========
+# Default Fence Height, if 'auto' it adapts to the content
 DEFAULT_FENCE_HEIGHT = "auto"
 
-# 图表背景色
+# Default Fence Background Color
 DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 
-# =========== [ 初始化模板 ] ===========
-# 模板：插入代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 @startuml
 Bob -> Alice : hello
@@ -3104,25 +3070,25 @@ Bob -> Alice : hello
 
 
 [marp]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 语言与模式 ] ===========
-# 代码块语言：用于识别作为幻灯片解析处理的语法标记
+# =========== [ Language & Mode ] ===========
+# Language used to render Marp code block
 LANGUAGE = "marp"
 
-# 交互模式：开启防误触
+# Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# =========== [ 核心配置参数 ] ===========
-# marp-core 配置：传递给底层解析库的选项对象
-# more detail: https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options
+# =========== [ Core Config ] ===========
+# marp-core Options: Option object passed to the underlying parsing library
+# See: https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options
 MARP_CORE_OPTIONS = { html = true }
 
-# =========== [ 初始化模板 ] ===========
-# 模板：插入代码块时的默认示范填充内容
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 ---
 theme: gaia
@@ -3148,39 +3114,39 @@ Split pages by horizontal ruler (`---`). It's very simple! :satisfied:"""
 
 
 [callouts]
-# =========== [ 基础 ] ===========
+# =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
 HOTKEY = ""
 
-# =========== [ 样式与组件选项 ] ===========
-# 阴影：块级外阴影立体效果微调
+# =========== [ Style & Component ] ===========
+# Box Shadow
 BOX_SHADOW = "0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a"
 
-# 高亮标题：开启后标题色彩也将跟随分类动态变更颜色
+# Set Title Color: If enabled, title colors dynamically change to follow the category
 SET_TITLE_COLOR = true
 
-# 展开 Fold Callout：鼠标悬停在已折叠的 callout 块上时，可临时展开预览内容
+# Hover to Show Fold Callout: Hovering over a folded callout block temporarily unfolds it for preview
 HOVER_TO_SHOW_FOLD_CALLOUT = true
 
-# 字体图标名称：标识 icon 所采用的 CSS Font 家族。若修改需配合下方所有 icon 一并修正
-# 具体的 icon 值请参考
-#   旧版本 Typora: {your_typora_path}/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
-#   新版本 Typora: {your_typora_path}/resources/style/font-awesome-4.1.0/css/font-awesome.css
-#   网络下载: https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
+# Font Family: Defines the CSS font family used for icons. If modifying, all icon fields below must be adjusted correspondingly
+# Refer to specific icon values:
+#   Old Typora version: {your_typora_path}/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
+#   New Typora version: {your_typora_path}/resources/style/font-awesome-4.1.0/css/font-awesome.css
+#   Network download: https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 FONT_FAMILY = "FontAwesome"
 
-# 导出时使用网络字体图标：Typora 本地导出 PDF 时极易丢失内置字体导致方块占位。启用它可自动下载 CDN 字体包参与渲染输出
+# Use Network Icon When Exporting: Typora local PDF exports easily lose built-in fonts resulting in square placeholders. Enable this to auto-download CDN fonts to render the output
 USE_NETWORK_ICON_WHEN_EXPORTING = true
 
-# 网络字体图标的 CDN 地址：指定资源 URL
+# Network Icon URL: CDN address for network font icon
 NETWORK_ICON_URL = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/fonts/fontawesome-webfont.woff"
 
-# 预设 Callouts：定义各个支持的语义快名称及其具体色卡与图标映射表
-#   type            : 语义类型名称
-#   background_color: 底部背景色
-#   left_line_color : 左侧主边缘边线颜色
-#   icon            : 图标，Unicode 或对应转义字体代码
+# Preset Callouts: Defines each supported semantic block name and its specific color card and icon mappings
+#   type            : Semantic type name
+#   background_color: Bottom background color
+#   left_line_color : Left main edge line color
+#   icon            : Icon, Unicode or mapped escape font code
 CALLOUTS = [
     { type = "tip", background_color = "#D8F2E5", left_line_color = "#3ABD7E", icon = "\\f02c" },
     { type = "bug", background_color = "#FEEED3", left_line_color = "#E0AC00", icon = "\\f188" },
@@ -3197,21 +3163,21 @@ CALLOUTS = [
     { type = "important", background_color = "#D8E6F3", left_line_color = "#3B83C1", icon = "\\f132" },
 ]
 
-# 兜底默认值：对于不属于上述预设类型的未知标注块，将会采取以下默认视觉样式呈现
-# 背景色
+# Default Options: Fallback styles for unknown callout blocks not belonging to the presets above
+# Default Background Color
 DEFAULT_BACKGROUND_COLOR = "#FAFAFA"
-# 左边线颜色
+# Default Left Line Color
 DEFAULT_LEFT_LINE_COLOR = "#777777"
-# 图标
+# Default Icon
 DEFAULT_ICON = "\\f075"
 
-# =========== [ 初始化模板 ] ===========
-# 模板：当通过右键菜单直接插入时将采用这串声明作为占位
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
 TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
 
 
 [test]
-# =========== [ 基础 ] ===========
-# 仅用于开发阶段，请勿开启
+# =========== [ Basic ] ===========
+# Only for development, do not enable
 ENABLE = false
 NAME = ""
