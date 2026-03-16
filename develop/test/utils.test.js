@@ -3,6 +3,7 @@ const assert = require("node:assert")
 const fs = require("fs-extra")
 const path = require("path")
 const os = require("os")
+const { setTimeout: delay } = require("node:timers/promises")
 const utils = require("./mocks/utils.mock.js")
 
 describe("String, Parsing & Markdown Utilities", () => {
@@ -645,7 +646,7 @@ describe("Function, Timing & Flow Control Utilities", () => {
 
             debouncedFn()
             assert.strictEqual(count, 0, "Function should not be called immediately")
-            await new Promise(resolve => setTimeout(resolve, 60))
+            await delay(60)
             assert.strictEqual(count, 1, "Function should be called after delay")
         })
 
@@ -656,13 +657,13 @@ describe("Function, Timing & Flow Control Utilities", () => {
             debouncedFn()
             debouncedFn()
             debouncedFn()
-            await new Promise(resolve => setTimeout(resolve, 60))
+            await delay(60)
             assert.strictEqual(count, 1, "Function should only be called once")
         })
 
         it("handles async functions", async () => {
             const debouncedFn = utils.debounce(async () => {
-                await new Promise(resolve => setTimeout(resolve, 10))
+                await delay(10)
                 return 42
             }, 30)
 
@@ -682,14 +683,14 @@ describe("Function, Timing & Flow Control Utilities", () => {
             throttledFn()
             assert.strictEqual(count, 1, "Function should not be called again within delay")
 
-            await new Promise(resolve => setTimeout(resolve, 60))
+            await delay(60)
             throttledFn()
             assert.strictEqual(count, 2, "Function should be called after delay")
         })
 
         it("handles async functions", async () => {
             const throttledFn = utils.throttle(async () => {
-                await new Promise(resolve => setTimeout(resolve, 10))
+                await delay(10)
                 return 42
             }, 30)
 
@@ -867,7 +868,7 @@ describe("Function, Timing & Flow Control Utilities", () => {
             assert.strictEqual(confirmed, false)
         })
 
-        it("confirms after threshold calls within time window", () => {
+        it("confirms after threshold calls within time window", async () => {
             let confirmed = false
             const action = utils.createConsecutiveAction({
                 threshold: 3,
@@ -879,13 +880,12 @@ describe("Function, Timing & Flow Control Utilities", () => {
             action()
             action()
             assert.strictEqual(confirmed, false)
-            setTimeout(() => {
-                action()
-                assert.strictEqual(confirmed, true)
-            }, 100)
+            await delay(100)
+            action()
+            assert.strictEqual(confirmed, true)
         })
 
-        it("resets when time window expires", () => {
+        it("resets when time window expires", async () => {
             let confirmed = false
             const action = utils.createConsecutiveAction({
                 threshold: 3,
@@ -896,10 +896,9 @@ describe("Function, Timing & Flow Control Utilities", () => {
 
             action()
             action()
-            setTimeout(() => {
-                action()
-                assert.strictEqual(confirmed, false)
-            }, 150)
+            await delay(150)
+            action()
+            assert.strictEqual(confirmed, false)
         })
 
         it("respects getIdentifier for different actions", () => {
@@ -1043,24 +1042,15 @@ describe("Function, Timing & Flow Control Utilities", () => {
             assert.strictEqual(obj.myMethod.length, originalLength)
         })
 
-        it("waits for object to be available", () => {
+        it("waits for object to be available", async () => {
             let obj = null
-            setTimeout(() => {
-                obj = {
-                    method: function () {
-                        return "delayed"
-                    }
-                }
-            }, 100)
-
+            setTimeout(() => obj = { method: () => "delayed" }, 100)
             utils.decorate(() => obj, "method", null, null)
-
-            setTimeout(() => {
-                if (obj && obj.method) {
-                    const result = obj.method()
-                    assert.strictEqual(result, "delayed")
-                }
-            }, 200)
+            await delay(200)
+            if (obj && obj.method) {
+                const result = obj.method()
+                assert.strictEqual(result, "delayed")
+            }
         })
     })
 
@@ -1075,7 +1065,7 @@ describe("Function, Timing & Flow Control Utilities", () => {
             utils.pollUntil(condition, after, 10, 1000)
         })
 
-        it("timeouts and does not run after if runWhenTimeout is false", () => {
+        it("timeouts and does not run after if runWhenTimeout is false", async () => {
             let conditionCalled = false
             let afterCalled = false
             const condition = () => {
@@ -1084,20 +1074,20 @@ describe("Function, Timing & Flow Control Utilities", () => {
             }
             const after = () => afterCalled = true
             utils.pollUntil(condition, after, 10, 50, false)
-            setTimeout(() => {
-                assert.ok(conditionCalled)
-                assert.ok(!afterCalled)
-            }, 100)
+            await delay(100)
+            assert.ok(conditionCalled)
+            assert.strictEqual(afterCalled, false)
         })
 
-        it("works without after callback", () => {
+        it("works without after callback", async () => {
             let count = 0
             const condition = () => {
                 count++
                 return count >= 2
             }
             utils.pollUntil(condition, null, 10, 100)
-            setTimeout(() => assert.strictEqual(count, 2), 300)
+            await delay(300)
+            assert.strictEqual(count, 2)
         })
 
         it("runs after on timeout if runWhenTimeout is true", () => {
@@ -1125,18 +1115,21 @@ describe("Function, Timing & Flow Control Utilities", () => {
             utils.pollUntil(condition, after)
         })
 
-        it("uses default interval and timeout", () => {
+        it("uses default interval and timeout", async () => {
             let count = 0
             const startTime = Date.now()
             const condition = () => {
                 count++
                 return count >= 2
             }
-            const after = () => {
-                const elapsed = Date.now() - startTime
-                assert.ok(elapsed >= 50) // Should wait at least 2 intervals (2 * 25ms default)
-            }
-            utils.pollUntil(condition, after)
+            await new Promise((resolve) => {
+                const after = () => {
+                    const elapsed = Date.now() - startTime
+                    assert.ok(elapsed >= 50) // Should wait at least 2 intervals (2 * 25ms default)
+                    resolve()
+                }
+                utils.pollUntil(condition, after)
+            })
         })
     })
 })
@@ -1454,7 +1447,7 @@ describe("File System Utilities", () => {
                     onFile: async ({ path }) => {
                         concurrentTasks++
                         maxConcurrentTasks = Math.max(maxConcurrentTasks, concurrentTasks)
-                        await new Promise(resolve => setTimeout(resolve, 10))
+                        await delay(10)
                         visitedFiles.push(path)
                         concurrentTasks--
                     }
@@ -1615,18 +1608,17 @@ describe("File System Utilities", () => {
             const tmpDir = await createTestDir()
             try {
                 const visitedFiles = []
-                const abortController = new AbortController()
-                setTimeout(() => abortController.abort(), 50)
+                const signal = AbortSignal.timeout(50)
                 await assert.rejects(async () => {
                     await utils.walkDir({
                         dir: tmpDir,
-                        signal: abortController.signal,
+                        signal,
                         onFile: async ({ path }) => {
-                            await new Promise(resolve => setTimeout(resolve, 100))
+                            await delay(100)
                             visitedFiles.push(path)
                         }
                     })
-                }, /AbortError/)
+                }, /TimeoutError/)
                 assert.ok(visitedFiles.length < 5, "Should have been aborted before completing")
             } finally {
                 await cleanupTestDir(tmpDir)

@@ -4,7 +4,7 @@
     "build:single": "node build/index.cjs node-fetch-commonjs",
     "build:external": "node build/index.cjs markdown-it marp-core markmap",
     "build:analyze": "node build/index.cjs --analyze markmap",
-    "test": "node --test",
+    "test": "node --require ../plugin/global/core/polyfill.js --test",
     "dev": "node --env-file=.env scripts/index.js",
     "rpc": "npm run dev rpc",
     "sync": "npm run dev sync",
