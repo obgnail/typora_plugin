@@ -5,8 +5,10 @@ Object.assign(global, {
     CSS: { supports: () => true },
     File: { option: { wordsPerMinute: 300 } },
     $: () => ({}),
+    _: require("lodash"),
 })
 
 const proxyquire = require("proxyquire")
-const utils = proxyquire("../../../plugin/global/core/utils", { "fs-extra": { "@noCallThru": true } })
-module.exports = utils
+module.exports = proxyquire("../../../plugin/global/core/utils", {
+    "fs-extra": { ...require("fs-extra"), "@noCallThru": true },
+})

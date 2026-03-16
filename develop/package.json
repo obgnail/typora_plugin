@@ -40,6 +40,7 @@
     "chokidar": "^5.0.0",
     "esbuild": "^0.27.3",
     "fs-extra": "^11.3.3",
+    "lodash": "^4.17.23",
     "minimatch": "^10.2.4",
     "proxyquire": "^2.1.3"
   },

@@ -869,12 +869,13 @@ class utils {
         if (signal) {
             const onAbort = () => rejectAndStop(signal.reason ?? new DOMException("Signal Aborted", "AbortError"))
             signal.addEventListener("abort", onAbort, { once: true })
-            drainPromise.finally(() => signal.removeEventListener("abort", onAbort))
+            drainPromise.finally(() => signal.removeEventListener("abort", onAbort)).catch(() => {})
         }
         if (onFinished) {
-            drainPromise.finally(() => onFinished(fatalError))
+            drainPromise.finally(() => onFinished(fatalError)).catch(() => {})
         }
         const rejectAndStop = (err) => {
+            if (aborted) return
             aborted = true
             taskQueue.length = 0
             fatalError = err
@@ -1006,9 +1007,9 @@ class utils {
         }
         const yamlContent = content.slice(4, endDelimiterMatch.index)
         result.remainContent = content.slice(endDelimiterMatch.index + endDelimiterMatch[0].length)
-        result.yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3
+        result.yamlLineCount = (yamlContent === "" ? 0 : (yamlContent.match(/\n/g) || []).length + 1) + 2
         try {
-            result.yamlObject = this.readYaml(yamlContent)
+            result.yamlObject = this.readYaml(yamlContent) ?? {}
         } catch (e) {
             console.error(e)
         }
@@ -1125,7 +1126,7 @@ class utils {
     }
 
     static buildTable = rows => {
-        const first = rows.shift()
+        const first = rows.shift() ?? []
         const th = first.map(row => `<th>${row}</th>`).join("")
         const trs = rows.map(row => row.map(e => `<td>${e}</td>`).join(""))
         const all = [th, ...trs].map(e => `<tr>${e}</tr>`)
