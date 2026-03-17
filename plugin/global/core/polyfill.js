@@ -1,4 +1,13 @@
-const _impl = (target, attr, fn) => {
+const __POLYFILLS__ = new Map()
+
+const _record = (target, attr, fn) => {
+    if (!__POLYFILLS__.has(target)) {
+        __POLYFILLS__.set(target, {})
+    }
+    __POLYFILLS__.get(target)[attr] = fn
+}
+
+const _define = (target, attr, fn) => {
     if (target && !(attr in target)) {
         Object.defineProperty(target, attr, {
             value: fn,
@@ -7,6 +16,11 @@ const _impl = (target, attr, fn) => {
             writable: true,
         })
     }
+}
+
+const _impl = (target, attr, fn) => {
+    _record(target, attr, fn)
+    _define(target, attr, fn)
 }
 
 const _isIterable = (obj) => {
@@ -136,3 +150,5 @@ array()
 typedArray()
 promise()
 abortSignal()
+
+module.exports = __POLYFILLS__
