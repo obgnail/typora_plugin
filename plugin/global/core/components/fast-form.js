@@ -945,8 +945,13 @@ const Feature_DSLEngine = (() => {
         return input
     }
     const normalizeBoxes = (boxes) => {
-        const ret = Array.isArray(boxes) ? boxes : [boxes]
-        return ret.flat(Infinity).filter(box => box && typeof box === "object")
+        return [boxes].flat(Infinity).reduce((acc, box) => {
+            if (box && typeof box === "object") {
+                const fields = Array.isArray(box.fields) ? box.fields.filter(field => field && typeof field === "object") : []
+                acc.push({ ...box, fields })
+            }
+            return acc
+        }, [])
     }
     const applyFields = (box, items) => {
         if (!items || items.length === 0) return

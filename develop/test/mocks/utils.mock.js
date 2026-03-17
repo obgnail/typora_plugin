@@ -2,7 +2,7 @@
 Object.assign(global, {
     window: { _options: { appVersion: "1.0.0" } },
     document: { querySelector: () => undefined, querySelectorAll: () => [] },
-    CSS: { supports: () => true },
+    CSS: { supports: () => true, escape: s => s },
     File: { option: { wordsPerMinute: 300 } },
     $: () => ({}),
     _: require("lodash"),
