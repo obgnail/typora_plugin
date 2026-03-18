@@ -37,16 +37,14 @@ class SidebarEnhancePlugin extends BasePlugin {
 
         File.SupportedFiles.push(...displayExt)
 
-        // Delay decoration to ensure this beforeFn runs first, this beforeFn may return a stopCallError
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            this.utils.decorate(() => File?.editor?.library, "openFile", (toOpenFile) => {
-                const ext = this.utils.Package.Path.extname(toOpenFile)
-                if (openBySystemExt.has(ext)) {
-                    this.utils.openPath(toOpenFile)
-                    return this.utils.stopCallError
-                }
-            })
-        })
+        this.utils.decorator.preventCallIf(() => File?.editor?.library, "openFile", (toOpenFile) => {
+            const ext = this.utils.Package.Path.extname(toOpenFile)
+            if (openBySystemExt.has(ext)) {
+                this.utils.openPath(toOpenFile)
+                return true
+            }
+            return false
+        }, { priority: -100 })
     }
 
     _rerenderOutlineNode = () => {
@@ -83,7 +81,7 @@ class SidebarEnhancePlugin extends BasePlugin {
 
         const customizeFileIcons = getCustomFileIcons()
         const hideFolders = getHideFolders()
-        this.utils.decorate(() => File?.editor?.library?.fileTree, "renderNode", null, ($node, info) => {
+        this.utils.decorator.afterCall(() => File?.editor?.library?.fileTree, "renderNode", ($node, info) => {
             customizeFileIcons($node, info)
             hideFolders($node, info)
         })
@@ -131,8 +129,8 @@ class SidebarEnhancePlugin extends BasePlugin {
 
         const fresh = this.utils.debounce(() => this.entities.outline.querySelectorAll(".outline-item").forEach(e => e.draggable = true), 200)
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, fresh)
-        this.utils.decorate(() => File, "freshMenu", null, fresh)
-        this.utils.decorate(() => File?.editor?.library?.outline, "renderOutline", null, fresh)
+        this.utils.decorator.afterCall(() => File, "freshMenu", fresh)
+        this.utils.decorator.afterCall(() => File?.editor?.library?.outline, "renderOutline", fresh)
 
         let dragItem
         const isAncestorOf = (ancestor, descendant) => ancestor.parentElement.contains(descendant)

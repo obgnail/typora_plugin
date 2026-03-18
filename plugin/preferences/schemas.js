@@ -397,12 +397,14 @@ const FIELDS = {
     INTERACTIVE_MODE: Switch("INTERACTIVE_MODE"),
     DEFAULT_FENCE_HEIGHT: Text("DEFAULT_FENCE_HEIGHT"),
     DEFAULT_FENCE_BACKGROUND_COLOR: Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
+    runtimeSettings: Action("inspectRuntimeSettings", { tooltip: Tip.action("inspectDefaultSettings", "fa fa-codepen") }),
+    restoreSettings: Action("restoreSettings"),
 }
 
 const BOXES = {
     pluginLite: UntitledBox(FIELDS.ENABLE, FIELDS.NAME),
     pluginFull: UntitledBox(FIELDS.ENABLE, FIELDS.NAME, FIELDS.HOTKEY),
-    settingHandler: UntitledBox(Action("runtimeSettings"), Action("restoreSettings")),
+    settingHandler: UntitledBox(FIELDS.runtimeSettings, FIELDS.restoreSettings),
     langMode: TitledBox(TITLES.languageMode, FIELDS.LANGUAGE, FIELDS.INTERACTIVE_MODE),
     chartStyle: TitledBox(TITLES.diagramStyle, FIELDS.DEFAULT_FENCE_HEIGHT, FIELDS.DEFAULT_FENCE_BACKGROUND_COLOR),
     TEMPLATE: CodeBox("TEMPLATE"),
@@ -448,7 +450,7 @@ const OPTIONS = createOptions({
         BLUR_TYPE: ["blur", "hide"],
     },
     toolbar: {
-        DEFAULT_TOOL: ["", "plu", "tab", "his", "ops", "mode", "theme", "out", "func", "all"],
+        DEFAULT_GROUP: ["", "plu", "tab", "his", "ops", "mode", "theme", "out", "all"],
     },
     resize_image: {
         IMAGE_ALIGN: ["center", "left", "right"],
@@ -526,24 +528,31 @@ const OPTIONS = createOptions({
 const schema_global = [
     UntitledBox(
         Switch("ENABLE", PROPS.protected),
-        Select("LOCALE", OPTIONS.global.LOCALE),
+        Select("LOCALE", OPTIONS.global.LOCALE, { tooltip: Tip.action("openLocaleFolder", "fa fa-folder") }),
     ),
     UntitledBox(
         Switch("BATCH_RENDER_CHARTS"),
         Select("EXIT_CHART_INTERACTION", OPTIONS.global.EXIT_CHART_INTERACTION, { minItems: 1 }),
     ),
     UntitledBox(
-        Action("runtimeSettings"),
-        Action("restoreSettings"),
-        Action("restoreAllSettings", { tooltip: [Tip.action("inspectDefaultSettings", "fa fa-codepen"), Tip.action("inspectDefaultSettingsInExternalEditor", "fa fa-external-link-square")] }),
+        Action("inspectRuntimeSettings", {
+            tooltip: [
+                Tip.action("inspectDefaultSettings", "fa fa-codepen"),
+                Tip.action("inspectAllDefaultSettings", "fa fa-codepen"),
+                Tip.action("openSettingsDefaultTomlExternally", "fa fa-external-link-square"),
+                Tip.action("openSettingsUserTomlExternally", "fa fa-external-link-square"),
+            ]
+        }),
+        FIELDS.restoreSettings,
+        Action("restoreAllSettings"),
         Action("exportSettings"),
         Action("importSettings"),
     ),
     UntitledBox(
-        Action("visitRepo", { tooltip: Tip.action("openPluginFolder", "fa fa-folder-open") }),
+        Action("visitRepo", { tooltip: Tip.action("openPluginFolder", "fa fa-folder") }),
         Action("viewDeepWiki", { tooltip: Tip.action("neverGonnaTellALie", "fa fa-book") }),
-        Action("editStyles"),
         Action("developPlugins"),
+        Action("editStyles"),
         Action("viewGithubImageBed"),
     ),
     UntitledBox(
@@ -753,7 +762,8 @@ const schema_toolbar = [
     ),
     TitledBox(
         "input",
-        Select("DEFAULT_TOOL", OPTIONS.toolbar.DEFAULT_TOOL),
+        Switch("GROUP_SEARCH"),
+        Select("DEFAULT_GROUP", OPTIONS.toolbar.DEFAULT_GROUP, { dependencies: Dep.true("GROUP_SEARCH") }),
         Switch("USE_NEGATIVE_SEARCH"),
         Switch("BACKSPACE_TO_HIDE"),
         Integer("DEBOUNCE_INTERVAL", { unit: UNITS.millisecond, min: 10 }),

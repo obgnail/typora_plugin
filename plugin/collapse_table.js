@@ -9,7 +9,7 @@ class CollapseTablePlugin extends BasePlugin {
         this.utils.settings.autoSave(this)
         this.recordCollapseState(false)
 
-        this.utils.decorate(() => File?.editor?.tableEdit, "showTableEdit", null, (result, $figure) => {
+        this.utils.decorator.afterCall(() => File?.editor?.tableEdit, "showTableEdit", (result, $figure) => {
             if (!$figure || $figure.length === 0) return
             const $edit = $figure.find?.(".md-table-edit")
             if (!$edit || $edit.length === 0) return

@@ -2315,7 +2315,7 @@ const Validator_Regex = ({ value }) => {
 }
 
 const Validator_Path = ({ value }) => {
-    const base = utils.resolvePath(value)
+    const base = utils.resolvePluginPath(value)
     return Try(() => value && utils.Package.FsExtra.accessSync(base), () => `No such path: ${base}`)
 }
 

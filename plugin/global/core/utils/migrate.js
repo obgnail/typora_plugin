@@ -19,8 +19,8 @@ class Migrate {
             "callouts", "marp", "timeline", "chat", "kanban",
             "__modal_example",
         ]
-        const toDir = name => this.utils.joinPath("./plugin/custom/plugins", name)
-        const toFile = name => this.utils.joinPath("./plugin/custom/plugins", `${name}.js`)
+        const toDir = name => this.utils.joinPluginPath("./plugin/custom/plugins", name)
+        const toFile = name => this.utils.joinPluginPath("./plugin/custom/plugins", `${name}.js`)
         const promises = [...files.map(toFile), ...dirs.map(toDir)].map(path => this.utils.Package.FsExtra.remove(path))
         await Promise.all(promises)
     }
@@ -37,7 +37,7 @@ class Migrate {
                     `./plugin/${fixedName}/index.js`,
                 ]
                 const promises = paths
-                    .map(path => this.utils.joinPath(path))
+                    .map(path => this.utils.joinPluginPath(path))
                     .map(path => this.utils.existPath(path))
                 const candidate = await Promise.all(promises)
                 if (!candidate.some(Boolean)) {

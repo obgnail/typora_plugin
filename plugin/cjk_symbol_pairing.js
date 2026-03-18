@@ -4,9 +4,13 @@
  * You can refer to the `fence_enhance` plugin's editorHotkey for more details.
  */
 class CJKSymbolPairingPlugin extends BasePlugin {
-    // Older versions of Typora delay setting noPairingMatch.
-    // Therefore, to maintain compatibility with older versions, this configuration will be checked again later.
-    beforeProcess = () => File.option.noPairingMatch ? this.utils.stopLoadPluginError : undefined
+    beforeProcess = async () => {
+        try {
+            this.UNDO_SNAP_TYPE = await this.utils.waitUntil(() => File?.editor?.undo?.UndoManager?.SnapFlag)
+        } catch (e) {
+            return this.utils.PLUGIN_LOAD_ABORT
+        }
+    }
 
     init = () => {
         const toMap = (symbols, predicate = s => [s.input, s.output]) => new Map(symbols.filter(s => s.enable === true).map(predicate))
@@ -19,15 +23,11 @@ class CJKSymbolPairingPlugin extends BasePlugin {
         this.convertMap = toMap(this.config.AUTO_CONVERT_SYMBOLS)
         this.pairMap = toMap(this.config.AUTO_PAIR_SYMBOLS)
         this.reversePairMap = toMap(this.config.AUTO_PAIR_SYMBOLS, s => [s.output, s.input])
-
-        const until = () => File?.editor?.undo?.UndoManager?.SnapFlag
-        const after = () => this.UNDO_SNAP_TYPE = File.editor.undo.UndoManager.SnapFlag
-        this.utils.pollUntil(until, after)
     }
 
     process = () => {
         this.utils.entities.eWrite.addEventListener("input", this.utils.throttle(ev => {
-            if (File.option.noPairingMatch || document.activeElement.tagName === "TEXTAREA") return
+            if (document.activeElement.tagName === "TEXTAREA") return
 
             const inputSymbol = ev.data
             const pairSymbol = this.pairMap.get(inputSymbol)
@@ -44,7 +44,7 @@ class CJKSymbolPairingPlugin extends BasePlugin {
 
         if (this.config.AUTO_DELETE_PAIR || this.config.AUTO_SURROUND_PAIR) {
             this.utils.entities.eWrite.addEventListener("keydown", ev => {
-                if (File.option.noPairingMatch || document.activeElement.tagName === "TEXTAREA") return
+                if (document.activeElement.tagName === "TEXTAREA") return
 
                 if (this.config.AUTO_SURROUND_PAIR && this.utils.isIMEActivated(ev) && this.codeSet.has(ev.code)) {
                     this.rangyText = this.utils.getRangyText()

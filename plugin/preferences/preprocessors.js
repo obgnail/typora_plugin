@@ -19,7 +19,7 @@ module.exports = (plugin) => {
                 if (!data[field.key]) {
                     let version = "Unknown"
                     try {
-                        const file = utils.joinPath("./plugin/bin/version.json")
+                        const file = utils.joinPluginPath("./plugin/bin/version.json")
                         const json = await utils.Package.FsExtra.readJson(file)
                         version = json.tag_name
                     } catch (e) {
@@ -43,15 +43,16 @@ module.exports = (plugin) => {
         read_only: {
             REMAIN_AVAILABLE_MENU_KEY: (field) => {
                 if (!field.options) {
-                    const entries = [...document.querySelectorAll(".context-menu:not(.ext-context-menu) [data-key]")].map(op => {
-                        const key = op.dataset.key
+                    const toOptions = item => {
+                        const key = item.dataset.key
                         if (!key) return
-                        const hint = op.classList.contains("menu-style-btn")
-                            ? op.getAttribute("ty-hint")?.split("\t")[0]
-                            : op.querySelector('[data-lg="Menu"]')?.textContent.trim()
+                        const hint = item.classList.contains("menu-style-btn")
+                            ? item.getAttribute("ty-hint")?.split("\t")[0]
+                            : item.querySelector('[data-lg="Menu"]')?.textContent.trim()
                         return [key, hint || key]
-                    }).filter(Boolean)
-                    field.options = Object.fromEntries(entries)
+                    }
+                    const allItems = document.querySelectorAll(".context-menu:not(.ext-context-menu) [data-key]")
+                    field.options = Object.fromEntries([...allItems].map(toOptions).filter(Boolean))
                 }
             },
         },
@@ -138,17 +139,6 @@ module.exports = (plugin) => {
                 if (!field.options) {
                     field.options = plugin._getAllPlugins()
                     _disableOptions(field, "global", "preferences")
-                }
-            },
-        },
-        cjk_symbol_pairing: {
-            ENABLE: (field, data) => {
-                if (File.option.noPairingMatch) {
-                    const text = i18n._t("cjk_symbol_pairing", "$tooltip.enablePairing")
-                    const tooltip = { action: "togglePreferencePanel", icon: "fa fa-gear", text }
-                    _disableSwitch(field, data, tooltip)
-                } else {
-                    _enableControl(field, true)
                 }
             },
         },

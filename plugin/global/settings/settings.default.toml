@@ -148,7 +148,7 @@ CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs",
 # =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
-HOTKEY = "ctrl+shift+p"
+HOTKEY = "ctrl+alt+f"
 
 # =========== [ Window Interaction ] ===========
 # Hide window when pressing Backspace on an empty input
@@ -244,7 +244,7 @@ COMMIT_RUN_DISPLAY = "echo"
 # =========== [ Built-in Commands ] ===========
 # Predefined command list
 #   name   : Unique identifier for the plugin menu
-#   disable: Master switch for this specific command
+#   disable: Switch for this specific command
 #   shell  : Target shell (Supported: "cmd/bash", "powershell", "gitbash", "wsl")
 #   hotkey : (Optional) Execution shortcut
 #   cmd    : Execution string
@@ -395,7 +395,7 @@ EFFECT_STRENGTH = 10
 # =========== [ Basic ] ===========
 ENABLE = true
 NAME = ""
-HOTKEY = "ctrl+j"
+HOTKEY = "ctrl+shift+p"
 
 # =========== [ Window Appearance & Interaction ] ===========
 # Hide window when pressing Backspace on an empty input
@@ -411,7 +411,10 @@ TOOLBAR_WIDTH_PERCENT = 80
 # Wait time after typing stops before triggering a search (ms, Short intervals recommended for memory-level search)
 DEBOUNCE_INTERVAL = 70
 
-# Default search tool: Fallback searcher when no matching prefix is detected
+# Group search
+GROUP_SEARCH = true
+
+# Default search group: Fallback searcher when no matching prefix is detected (Disabled if GROUP_SEARCH is false)
 #   ""   : Disable default tool; requires explicit prefix matching
 #   plu  : Search enabled plugins
 #   tab  : Search currently open file tabs
@@ -420,9 +423,8 @@ DEBOUNCE_INTERVAL = 70
 #   mode : Switch file modes (e.g., Source Code, Focus Mode)
 #   theme: Search and change Typora themes
 #   out  : Search current document outline
-#   func : Search Typora functions
 #   all  : Mixed search across all tools
-DEFAULT_TOOL = "func"
+DEFAULT_GROUP = "all"
 
 # Enable negative search
 #   true : Enable negative queries. The "-" prefix excludes a keyword
@@ -710,7 +712,7 @@ NAME = ""
 # Master switches for injecting incremental numbers into specific UI/Document levels
 ENABLE_OUTLINE = true # Sidebar outline tree
 ENABLE_CONTENT = true # Document content headings
-ENABLE_TOC = false    # Document TOC module
+ENABLE_TOC = false    # Document TOC component
 ENABLE_TABLE = false  # Table captions
 ENABLE_IMAGE = false  # Image captions
 ENABLE_FENCE = false  # Code block captions
@@ -1023,7 +1025,7 @@ HINT_DURATION = 1000
 
 # =========== [ Custom Buttons ] ===========
 # Register custom buttons on code blocks (Advanced JS Config)
-#   DISABLE  : Master switch to disable
+#   DISABLE  : Switch to disable
 #   ICON     : FontAwesome CSS class
 #   HINT     : Hover tooltip text
 #   ON_INIT  : Init function evaluated once per plugin load. Empty "" if not needed. Example: plu => console.log('initialized')
@@ -1069,7 +1071,7 @@ INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 INSERT_LINE_NEXT = "Ctrl-Enter"
 
 # Custom hotkey payload mappings (Advanced JS Config)
-#   DISABLE : Master switch to disable
+#   DISABLE : Switch to disable
 #   HOTKEY  : CodeMirror shortcut format
 #   CALLBACK: Execution logic function. Example: ({ pre, cid, cm, cursor, lineNum, lastNum, separator }) => console.log('callback')
 CUSTOM_HOTKEYS = []
@@ -1890,7 +1892,6 @@ COMMANDS = [
 
 [cjk_symbol_pairing]
 # =========== [ Basic ] ===========
-# Prerequisite: Typora's native 'Auto pair brackets and quotes' setting must be enabled for this plugin to function
 ENABLE = true
 NAME = ""
 
@@ -2007,7 +2008,34 @@ FIND_LOST_PLUGINS = false
 #   NAME: First-level Menu Name
 #   LIST: Array of plugins. Use `---` as a separator line. Supports syntax: pluginName or pluginName.action
 [[right_click_menu.MENUS]]
-NAME = "__BLOCK_CODE_PLUGINS__"
+NAME = "__VISUAL_PLUGINS__"
+LIST = [
+    "static_markers",
+    "auto_number",
+    "collapse_paragraph",
+    "collapse_list",
+    "collapse_table",
+    "resize_image",
+    "resize_table",
+    "truncate_text",
+    "read_only",
+    "blur",
+    "dark",
+    "no_image",
+    "myopic_defocus",
+    "editor_width_slider",
+]
+[[right_click_menu.MENUS]]
+NAME = "__EDITING_PLUGINS__"
+LIST = [
+    "easy_modify",
+    "cipher",
+    "md_padding",
+    "text_stylize",
+    "markdownlint",
+]
+[[right_click_menu.MENUS]]
+NAME = "__COMPONENT_PLUGINS__"
 LIST = [
     "markmap",
     "kanban",
@@ -2025,51 +2053,26 @@ LIST = [
     "callouts",
 ]
 [[right_click_menu.MENUS]]
-NAME = "__LESS_USED_PLUGINS__"
+NAME = "__INTERACTIVE_PLUGINS__"
 LIST = [
     "window_tab",
     "fence_enhance",
-    "auto_number",
-    "datatables",
-    "resize_image",
-    "resize_table",
-    "collapse_list",
-    "collapse_table",
-    "truncate_text",
-    "export_enhance",
-    "cipher",
-    "static_markers",
-    "right_click_menu",
-    "---",
-    "pie_menu",
-    "resource_manager",
-    "text_stylize",
-    "hotkeys",
-    "editor_width_slider",
-    "ripgrep",
-    "right_outline",
-    "bookmark",
-    "image_viewer",
-    "article_uploader",
-    "preferences",
-]
-[[right_click_menu.MENUS]]
-NAME = "__OFTEN_USED_PLUGINS__"
-LIST = [
     "commander",
-    "collapse_paragraph",
-    "easy_modify",
+    "datatables",
+    "export_enhance",
+    "right_click_menu",
     "custom",
     "---",
-    "templater",
-    "toolbar",
     "search_multi",
-    "md_padding",
-    "read_only",
-    "blur",
-    "dark",
-    "no_image",
-    "myopic_defocus",
+    "toolbar",
+    "ripgrep",
+    "resource_manager",
+    "right_outline",
+    "pie_menu",
+    "bookmark",
+    "templater",
+    "image_viewer",
+    "preferences",
 ]
 
 

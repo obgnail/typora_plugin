@@ -1,6 +1,9 @@
 const { test, describe, before } = require("node:test")
 const assert = require("node:assert")
-const Searcher = require("../../plugin/search_multi/searcher.js")
+const proxyquire = require("proxyquire")
+const Searcher = proxyquire("../../plugin/search_multi/searcher.js", {
+    "fs-extra": { ...require("fs-extra"), "@noCallThru": true },
+})
 
 const mockPlugin = {
     utils: require("./mocks/utils.mock.js"),

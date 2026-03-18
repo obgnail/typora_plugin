@@ -83,7 +83,7 @@ class WavedromPlugin extends BasePlugin {
 
     lazyLoad = () => {
         this.wavedromPkg = require("./wavedrom.min.js")
-        const skins = this.config.SKIN_FILES.map(file => require(this.utils.resolvePath(file)))
+        const skins = this.config.SKIN_FILES.map(f => require(this.utils.resolvePluginPath(f)))
         window.WaveSkin = Object.assign(this.wavedromPkg.waveSkin, ...skins)  // renderWaveForm() will use window.WaveSkin
     }
 }

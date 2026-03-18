@@ -27,7 +27,7 @@ test.before(() => {
 test.before(async () => {
     mockUtils = {
         ...require("./mocks/utils.mock.js"),
-        joinPath: (...paths) => paths.join("/"),
+        joinPluginPath: (...paths) => paths.join("/"),
         Package: { FsExtra: { remove: async (path) => `removed:${path}` } },
         existPath: async (path) => testPluginPaths.has(path),
         settings: {

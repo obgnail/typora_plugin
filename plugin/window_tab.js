@@ -79,7 +79,7 @@ class WindowTabPlugin extends BasePlugin {
                 // Adjust the top position of the content Tag to prevent it from being obscured by the tab.
                 this._adjustContentTop()
             }, 200)
-            this.utils.pollUntil(isHeaderReady, adjustTop, 50, 1000)
+            this.utils.waitUntil(isHeaderReady, 50, 1000).catch(this.utils.noop).finally(adjustTop)
         }
         const handleClick = () => {
             this.entities.tabBar.addEventListener("click", ev => {
@@ -370,13 +370,9 @@ class WindowTabPlugin extends BasePlugin {
         const reopenTabsWhenInit = () => {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
                 // Redirection is disabled when opening specific files (isDiscardableUntitled === false).
-                this.utils.pollUntil(
-                    this.utils.isDiscardableUntitled,
-                    () => this.openSaveTabs(this.autoSaveStorage, true),
-                    50,
-                    2000,
-                    false
-                )
+                this.utils.waitUntil(this.utils.isDiscardableUntitled, 50, 2000)
+                    .then(() => this.openSaveTabs(this.autoSaveStorage, true))
+                    .catch(this.utils.noop)
                 const autoSave = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage))
                 setTimeout(autoSave, 2000)
             })
@@ -398,14 +394,15 @@ class WindowTabPlugin extends BasePlugin {
                     setCache("", "")
                 }
             })
-            this.utils.decorate(() => JSBridge, "invoke", (cmd, file, options) => {
-                if (cmd !== "app.openFileOrFolder") return
-                const { anchor } = options ?? {}
-                if (file && anchor && typeof anchor === "string" && anchor.startsWith("#")) {
+            this.utils.decorator.preventCallIf(() => JSBridge, "invoke", (cmd, file, options) => {
+                if (cmd !== "app.openFileOrFolder") return false
+                const anchor = options?.anchor
+                if (file && typeof anchor === "string" && anchor.startsWith("#")) {
                     setCache(file, anchor)
                     this.utils.openFile(file)
-                    return this.utils.stopCallError
+                    return true
                 }
+                return false
             })
         }
 

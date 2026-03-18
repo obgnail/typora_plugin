@@ -10,7 +10,7 @@ class IPlugin {
         this.i18n = i18n
     }
 
-    /** The first function executed, prepares data. If utils.stopLoadPluginError is returned, plugin loading is stopped. */
+    /** The first function executed, prepares data. If utils.PLUGIN_LOAD_ABORT is returned, plugin loading is stopped. */
     async beforeProcess() {}
     /** Import styles as a string. */
     style() {}
@@ -33,8 +33,8 @@ class BasePlugin extends IPlugin {
 }
 
 class BaseCustomPlugin extends IPlugin {
-    selector(isClick) {}
-    hint(isDisable) {}
+    selector(context) {}
+    hint(context) {}
     callback(anchorNode) {}
 }
 
@@ -46,9 +46,8 @@ const LoadPlugin = async (fixedName, setting, isBasePlugin) => {
     }
     const instance = new plugin(fixedName, setting, i18n.bind(fixedName))
     const error = await instance.beforeProcess()
-    if (error === utils.stopLoadPluginError) {
-        return
-    }
+    if (error === utils.PLUGIN_LOAD_ABORT) return
+
     utils.registerStyle(instance.fixedName, instance.style())
     const renderArgs = instance.styleTemplate()
     if (renderArgs) {

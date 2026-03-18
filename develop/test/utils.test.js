@@ -642,23 +642,11 @@ describe("Function, Timing & Flow Control Utilities", () => {
     describe("utils.debounce", () => {
         it("delays function execution", async () => {
             let count = 0
-            const debouncedFn = utils.debounce(() => count++, 50)
+            const debouncedFn = utils.debounce(() => ++count, 50)
 
-            debouncedFn()
+            const promise = debouncedFn()
             assert.strictEqual(count, 0, "Function should not be called immediately")
-            await delay(60)
-            assert.strictEqual(count, 1, "Function should be called after delay")
-        })
-
-        it("cancels previous calls", async () => {
-            let count = 0
-            const debouncedFn = utils.debounce(() => count++, 50)
-
-            debouncedFn()
-            debouncedFn()
-            debouncedFn()
-            await delay(60)
-            assert.strictEqual(count, 1, "Function should only be called once")
+            assert.strictEqual(await promise, 1, "Function should be called after delay")
         })
 
         it("handles async functions", async () => {
@@ -668,24 +656,36 @@ describe("Function, Timing & Flow Control Utilities", () => {
             }, 30)
 
             const promise = debouncedFn()
-            const value = await promise
-            assert.strictEqual(value, 42, "Should return async function result")
+            assert.strictEqual(await promise, 42, "Should return async function result")
+        })
+
+        it("cancels previous calls", async () => {
+            let count = 0
+            const debouncedFn = utils.debounce(() => ++count, 50)
+
+            const promise1 = debouncedFn()
+            const promise2 = debouncedFn()
+            const promise3 = debouncedFn()
+            assert.equal(promise1, promise2)
+            assert.equal(promise1, promise3)
+            assert.strictEqual(await promise1, 1, "Function should only be called once")
+
+            const newPromise = debouncedFn()
+            assert.notEqual(promise1, newPromise)
+            assert.strictEqual(await newPromise, 2)
         })
     })
 
     describe("utils.throttle", () => {
         it("limits function execution rate", async () => {
             let count = 0
-            const throttledFn = utils.throttle(() => count++, 50)
+            const throttledFn = utils.throttle(() => ++count, 50)
 
-            throttledFn()
-            assert.strictEqual(count, 1, "Function should be called immediately")
-            throttledFn()
-            assert.strictEqual(count, 1, "Function should not be called again within delay")
+            assert.strictEqual(throttledFn(), 1, "Function should be called immediately")
+            assert.strictEqual(throttledFn(), 1, "Function should not be called again within delay")
 
             await delay(60)
-            throttledFn()
-            assert.strictEqual(count, 2, "Function should be called after delay")
+            assert.strictEqual(throttledFn(), 2, "Function should be called after delay")
         })
 
         it("handles async functions", async () => {
@@ -694,8 +694,7 @@ describe("Function, Timing & Flow Control Utilities", () => {
                 return 42
             }, 30)
 
-            const result = await throttledFn()
-            assert.strictEqual(result, 42, "Should return async function result")
+            assert.strictEqual(await throttledFn(), 42, "Should return async function result")
         })
     })
 
@@ -977,8 +976,7 @@ describe("Function, Timing & Flow Control Utilities", () => {
                 return result + 10
             }
 
-            utils.decorate(() => obj, "method", beforeFn, afterFn, true)
-            await utils.sleep(50)
+            await utils.decorator.decorate(() => obj, "method", { before: beforeFn, after: afterFn, modifyResult: true })
 
             const result = obj.method(5)
             assert.ok(beforeCalled)
@@ -999,15 +997,14 @@ describe("Function, Timing & Flow Control Utilities", () => {
                 return [x + 5]
             }
 
-            utils.decorate(() => obj, "method", beforeFn, null, false, true)
-            await utils.sleep(50)
+            await utils.decorator.decorate(() => obj, "method", { before: beforeFn, modifyArgs: true })
 
             const result = obj.method(3)
             assert.ok(beforeCalled)
             assert.strictEqual(result, 16)
         })
 
-        it("stops execution when before returns stopCallError", async () => {
+        it("stops execution when before returns PREVENT_DEFAULT", async () => {
             let originalCalled = false
             const obj = {
                 method: function () {
@@ -1016,11 +1013,10 @@ describe("Function, Timing & Flow Control Utilities", () => {
                 }
             }
             const beforeFn = function () {
-                return utils.stopCallError
+                return utils.decorator.PREVENT_DEFAULT
             }
 
-            utils.decorate(() => obj, "method", beforeFn)
-            await utils.sleep(50)
+            await utils.decorator.decorate(() => obj, "method", { before: beforeFn })
 
             const result = obj.method()
             assert.ok(!originalCalled)
@@ -1035,8 +1031,7 @@ describe("Function, Timing & Flow Control Utilities", () => {
             }
             const originalName = obj.myMethod.name
             const originalLength = obj.myMethod.length
-            utils.decorate(() => obj, "myMethod", null, null)
-            await utils.sleep(50)
+            await utils.decorator.decorate(() => obj, "myMethod")
 
             assert.strictEqual(obj.myMethod.name, originalName)
             assert.strictEqual(obj.myMethod.length, originalLength)
@@ -1045,7 +1040,7 @@ describe("Function, Timing & Flow Control Utilities", () => {
         it("waits for object to be available", async () => {
             let obj = null
             setTimeout(() => obj = { method: () => "delayed" }, 100)
-            utils.decorate(() => obj, "method", null, null)
+            await utils.decorator.decorate(() => obj, "method")
             await delay(200)
             if (obj && obj.method) {
                 const result = obj.method()
@@ -1054,82 +1049,60 @@ describe("Function, Timing & Flow Control Utilities", () => {
         })
     })
 
-    describe("utils.pollUntil", () => {
-        it("polls until condition is true", () => {
+    describe("utils.waitUntil", () => {
+        it("polls until condition is true", async () => {
             let count = 0
-            const condition = () => {
+            const until = () => {
                 count++
                 return count >= 3
             }
-            const after = () => assert.strictEqual(count, 3)
-            utils.pollUntil(condition, after, 10, 1000)
+            await utils.waitUntil(until, 10, 1000)
+            assert.strictEqual(count, 3)
         })
 
-        it("timeouts and does not run after if runWhenTimeout is false", async () => {
+        it("does not run then on timeout", async () => {
             let conditionCalled = false
             let afterCalled = false
-            const condition = () => {
+            const until = () => {
                 conditionCalled = true
                 return false
             }
-            const after = () => afterCalled = true
-            utils.pollUntil(condition, after, 10, 50, false)
-            await delay(100)
+            await utils.waitUntil(until, 10, 50).then(() => afterCalled = true).catch(() => undefined)
             assert.ok(conditionCalled)
             assert.strictEqual(afterCalled, false)
         })
 
-        it("works without after callback", async () => {
-            let count = 0
-            const condition = () => {
-                count++
-                return count >= 2
-            }
-            utils.pollUntil(condition, null, 10, 100)
-            await delay(300)
-            assert.strictEqual(count, 2)
-        })
-
-        it("runs after on timeout if runWhenTimeout is true", () => {
+        it("runs catch on timeout", async () => {
             let conditionCalled = false
             let afterCalled = false
-            const condition = () => {
+            const until = () => {
                 conditionCalled = true
                 return false
             }
-            const after = () => afterCalled = true
-            utils.pollUntil(condition, after, 20, 50, true)
+            await utils.waitUntil(until, 20, 50).catch(() => afterCalled = true)
+            assert.ok(conditionCalled)
         })
 
-        it("handles immediate true condition", () => {
+        it("handles immediate true condition", async () => {
             let conditionCalled = false
-            let afterCalled = false
-            const condition = () => {
+            const until = () => {
                 conditionCalled = true
                 return true
             }
-            const after = () => {
-                afterCalled = true
-                assert.ok(conditionCalled)
-            }
-            utils.pollUntil(condition, after)
+            await utils.waitUntil(until)
+            assert.ok(conditionCalled)
         })
 
         it("uses default interval and timeout", async () => {
             let count = 0
             const startTime = Date.now()
-            const condition = () => {
+            const until = () => {
                 count++
                 return count >= 2
             }
-            await new Promise((resolve) => {
-                const after = () => {
-                    const elapsed = Date.now() - startTime
-                    assert.ok(elapsed >= 50) // Should wait at least 2 intervals (2 * 25ms default)
-                    resolve()
-                }
-                utils.pollUntil(condition, after)
-            })
+            await utils.waitUntil(until)
+            const elapsed = Date.now() - startTime
+            assert.ok(elapsed >= 50) // Should wait at least 2 intervals (2 * 25ms default))
         })
     })
 })

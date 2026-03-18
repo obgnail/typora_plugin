@@ -288,7 +288,7 @@ class AutoNumberPlugin extends BasePlugin {
             inExport = true
             return `body {font-variant-ligatures: no-common-ligatures;} ` + this._getCSS(true)
         })
-        this.utils.decorate(() => File?.editor?.library?.outline, "getHeaderMatrix", null, headers => {
+        this.utils.decorator.afterCall(() => File?.editor?.library?.outline, "getHeaderMatrix", headers => {
             if (inExport) {
                 inExport = false
                 applyHeaderNumbering(headers)

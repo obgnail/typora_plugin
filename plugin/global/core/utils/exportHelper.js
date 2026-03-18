@@ -21,19 +21,16 @@ class ExportHelper {
     registerNative = (name, beforeExportToNative, afterExportToNative) => this.nativeHelpers.set(name, { beforeExportToNative, afterExportToNative })
     unregisterNative = name => this.nativeHelpers.delete(name)
 
-    check = args => {
-        const { type } = args[0] || {}
-        return type === "html" || type === "html-plain" || type === "pdf" || type === "image"
-    }
+    check = args => ["html", "html-plain", "pdf", "image"].includes(args?.[0]?.type)
 
     processExportHTML = () => {
-        const beforeFn = (...args) => {
+        const before = (...args) => {
             if (!this.utils.isObject(args[0])) return
 
-            for (const h of this.htmlHelpers.values()) {
-                if (!h.beforeExportToHTML) continue
+            for (const helper of this.htmlHelpers.values()) {
+                if (!helper.beforeExportToHTML) continue
                 try {
-                    const css = h.beforeExportToHTML(...args)
+                    const css = helper.beforeExportToHTML(...args)
                     if (css && typeof css === "string") {
                         args[0].extraCss = (args[0].extraCss || "") + css
                     }
@@ -42,14 +39,14 @@ class ExportHelper {
                 }
             }
         }
-        const afterFn = async (exportResult, ...args) => {
+        const afterAsync = async (exportResult, ...args) => {
             if (!this.check(args)) return exportResult
 
             let html = await exportResult
-            for (const h of this.htmlHelpers.values()) {
-                if (!h.afterExportToHTML) continue
+            for (const helper of this.htmlHelpers.values()) {
+                if (!helper.afterExportToHTML) continue
                 try {
-                    const newHtml = await h.afterExportToHTML(html, ...args)
+                    const newHtml = await helper.afterExportToHTML(html, ...args)
                     if (newHtml && typeof newHtml === "string") {
                         html = newHtml
                     }
@@ -59,14 +56,14 @@ class ExportHelper {
             }
             return html
         }
-        const afterFnSync = (exportResult, ...args) => {
+        const afterSync = (exportResult, ...args) => {
             if (!this.check(args)) return exportResult
 
             let html = exportResult
-            for (const h of this.htmlHelpers.values()) {
-                if (!h.afterExportToHTML) continue
+            for (const helper of this.htmlHelpers.values()) {
+                if (!helper.afterExportToHTML) continue
                 try {
-                    const newHtml = h.afterExportToHTML(html, ...args)
+                    const newHtml = helper.afterExportToHTML(html, ...args)
                     if (newHtml && !this.utils.isPromise(newHtml)) {
                         html = newHtml
                     }
@@ -79,20 +76,17 @@ class ExportHelper {
 
         // The exportToHTML function in older versions of Typora is not an AsyncFunction.
         // Make every effort to be compatible with older versions.
-        this.utils.pollUntil(
-            () => File?.editor?.export?.exportToHTML,
-            () => {
-                this.isAsync = this.utils.isAsyncFunction(File.editor.export.exportToHTML)
-                const after = this.isAsync ? afterFn : afterFnSync
-                this.utils.decorate(() => File.editor.export, "exportToHTML", beforeFn, after, true)
-            }
-        )
+        this.utils.waitUntil(() => File?.editor?.export?.exportToHTML).then(fn => {
+            this.isAsync = this.utils.isAsyncFunction(fn)
+            const after = this.isAsync ? afterAsync : afterSync
+            this.utils.decorator.decorate(() => File.editor.export, "exportToHTML", { before, after, modifyResult: true })
+        })
     }
 
     processExportToNative = () => {
-        const getLifeCycleFn = fnName => (...args) => {
-            for (const h of this.nativeHelpers.values()) {
-                const fn = h[fnName]
+        const hook = fnName => (...args) => {
+            for (const helper of this.nativeHelpers.values()) {
+                const fn = helper[fnName]
                 if (!fn) continue
                 try {
                     fn(...args)
@@ -101,12 +95,9 @@ class ExportHelper {
                 }
             }
         }
-        const beforeFn = getLifeCycleFn("beforeExportToNative")
-        const afterFn = getLifeCycleFn("afterExportToNative")
-        this.utils.pollUntil(
-            () => File?.editor?.export?.exportToNative,
-            () => this.utils.decorate(() => File.editor.export, "exportToNative", beforeFn, afterFn)
-        )
+        const before = hook("beforeExportToNative")
+        const after = hook("afterExportToNative")
+        this.utils.decorator.decorate(() => File?.editor?.export, "exportToNative", { before, after })
     }
 
     process = () => {

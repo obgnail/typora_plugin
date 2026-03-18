@@ -7,9 +7,9 @@ class ReadOnlyPlugin extends BasePlugin {
         this.inReadOnlyMode = false
         this.eventHandlers = this._buildEventHandlers()
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            this.utils.decorate(() => File, "freshLock", null, this._afterFreshLock)
+            this.utils.decorator.afterCall(() => File, "freshLock", this._afterFreshLock)
             if (this.config.READ_ONLY_DEFAULT) {
-                this.utils.pollUntil(() => File?.lock, this.toggleLock)
+                this.utils.waitUntil(() => File?.lock).then(this.toggleLock)
             }
         })
     }

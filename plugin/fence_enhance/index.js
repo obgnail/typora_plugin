@@ -617,13 +617,13 @@ class HighlightHelper {
             context = null
             return mode
         }
-        this.utils.decorate(() => window, "getCodeMirrorMode", before, after, true, true)
+        this.utils.decorator.decorate(() => window, "getCodeMirrorMode", { before, after, modifyResult: true, modifyArgs: true })
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
             this._rerender(cm)
             cm.off("change", handleLineChange)
             cm.on("change", handleLineChange)
         })
-        this.utils.decorate(() => File?.editor?.fences, "tryAddLangUndo", null, (_, node) => {
+        this.utils.decorator.afterCall(() => File?.editor?.fences, "tryAddLangUndo", (_, node) => {
             const cid = node?.cid
             if (cid) this._rerender(File.editor.fences.queue[cid])
         })
@@ -635,9 +635,9 @@ const foldLanguage = async ({ utils }) => {
     const requireModules = async () => {
         const foldPath = "./plugin/fence_enhance/resource/fold/"
         utils.insertStyleFile("plugin-fence-enhance-fold-style", foldPath + "foldgutter.css")
-        const modules = (await utils.Package.FsExtra.readdir(utils.joinPath(foldPath))).filter(f => f.endsWith("-fold.js"))
+        const modules = (await utils.Package.FsExtra.readdir(utils.joinPluginPath(foldPath))).filter(f => f.endsWith("-fold.js"))
         const vendors = ["foldcode.js", "foldgutter.js", ...modules]
-        vendors.map(f => utils.joinPath(foldPath, f)).forEach(require)
+        vendors.map(f => utils.joinPluginPath(foldPath, f)).forEach(require)
         console.debug(`[ CodeMirror folding module ] [ ${modules.length} ]:`, modules)
     }
 

@@ -150,7 +150,7 @@ class SearchMultiPlugin extends BasePlugin {
         this.entities.files.innerHTML = ""
 
         const { MAX_SIZE, MAX_DEPTH, MAX_ENTITIES, TIMEOUT, TRAVERSE_STRATEGY, CONCURRENCY_LIMIT, IGNORE_FOLDERS, FOLLOW_SYMBOLIC_LINKS, STOP_SEARCHING_ON_HIDING } = this.config
-        const { Path: { extname }, FsExtra: { readFile } } = this.utils.Package
+        const { extname } = this.utils.Package.Path
 
         const getFileFilter = () => {
             const verifyExt = name => this.allowedExtensions.has(extname(name).toLowerCase())
@@ -159,12 +159,7 @@ class SearchMultiPlugin extends BasePlugin {
                 : (name, path, stat) => stat.size < MAX_SIZE && verifyExt(name)
         }
         const getDirFilter = () => name => !IGNORE_FOLDERS.includes(name)
-        const getFileParamsCreator = () => {
-            const readFileScopes = this.searcher.getReadFileScopes(ast)
-            return readFileScopes.length !== 0
-                ? async (path, file, dir, stats) => ({ path, file, stats, content: await readFile(path, "utf-8") })
-                : (path, file, dir, stats) => ({ path, file, stats })
-        }
+        const getFileParamsCreator = () => this.searcher.getParamProvider(ast)
         const getOnFile = () => {
             const matcher = this.searcher.match.bind(null, ast)
             return this._showSearchResult(rootPath, matcher)

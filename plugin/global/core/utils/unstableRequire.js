@@ -38,8 +38,8 @@ class UnstableRequire {
             "md5": "raven/node_modules/md5",
             "uuid": "raven/node_modules/uuid",
 
-            "jimp": this.utils.joinPath(libBase, "jimp/browser/lib/jimp.min.js"),
-            "pdf-lib": this.utils.joinPath(libBase, "pdf/pdf-lib.min.js"),
+            "jimp": this.utils.joinPluginPath(libBase, "jimp/browser/lib/jimp.min.js"),
+            "pdf-lib": this.utils.joinPluginPath(libBase, "pdf/pdf-lib.min.js"),
 
             // New version only
             "getos": "getos",

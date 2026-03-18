@@ -87,10 +87,10 @@ class MarkmapPlugin extends BasePlugin {
         const katexBase = "./plugin/global/core/lib/katex"
         const pluginBase = "./plugin/markmap/resource/"
         const localResources = {
-            "katex.min.js": this.utils.joinPath(katexBase, "katex.js"),
-            "katex.min.css": this.utils.joinPath(katexBase, "katex.min.css"),
-            "default.min.css": this.utils.joinPath(pluginBase, "default.min.css"),
-            "webfontloader.js": this.utils.joinPath(pluginBase, "webfontloader.js"),
+            "katex.min.js": this.utils.joinPluginPath(katexBase, "katex.js"),
+            "katex.min.css": this.utils.joinPluginPath(katexBase, "katex.min.css"),
+            "default.min.css": this.utils.joinPluginPath(pluginBase, "default.min.css"),
+            "webfontloader.js": this.utils.joinPluginPath(pluginBase, "webfontloader.js"),
         }
         const localize = (items, expectedType, urlProp) => {
             for (const item of items) {

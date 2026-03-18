@@ -54,7 +54,7 @@ class CalendarPlugin extends BasePlugin {
     }
 
     getStyleContent = () => {
-        const path = this.utils.joinPath("./plugin/calendar/toastui-calendar.min.css")
+        const path = this.utils.joinPluginPath("./plugin/calendar/toastui-calendar.min.css")
         return this.utils.Package.FsExtra.readFileSync(path, "utf-8")
     }
 }

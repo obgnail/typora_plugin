@@ -1,8 +1,12 @@
 #plugin-search-multi {
     top: 40px;
     right: 100px;
-    width: 420px;
+    width: 400px;
     min-height: initial;
+    --item-height: 40px;
+    --item-margin: 2px;
+    --item-count: 7;
+    --scroll-count: 1;
 }
 
 body.unibody-window #plugin-search-multi {
@@ -33,12 +37,11 @@ body.unibody-window #plugin-search-multi {
 
 #plugin-search-multi-form input {
     width: 100%;
-    line-height: 28px;
     font-size: 18px;
     overflow: auto;
     border: 1px solid #ddd;
     border-radius: 6px;
-    padding-left: 10px;
+    padding-left: 8px;
     padding-right: 45px;
 }
 
@@ -46,7 +49,7 @@ body.unibody-window #plugin-search-multi {
     width: 20px;
     height: 15px;
     stroke: none;
-    fill: currentColor
+    fill: currentColor;
 }
 
 #plugin-search-multi-form .plugin-search-multi-btn {
@@ -69,8 +72,8 @@ body.unibody-window #plugin-search-multi {
 .plugin-search-item {
     display: block;
     font-size: 14px;
-    height: 40px;
-    margin: 2px 0;
+    height: var(--item-height);
+    margin: var(--item-margin) 0;
     overflow: hidden;
     padding-left: 6px;
 }
@@ -87,7 +90,7 @@ body.unibody-window #plugin-search-multi {
 .plugin-search-item-title {
     line-height: 24px;
     max-height: 24px;
-    overflow: hidden
+    overflow: hidden;
 }
 
 .plugin-search-multi-result {
@@ -102,8 +105,8 @@ body.unibody-window #plugin-search-multi {
     overflow-y: auto;
     overflow-x: hidden;
     width: 100%;
-    max-height: 340px;
-    scroll-padding: 40px;
+    max-height: calc(var(--item-count) * (var(--item-height) + var(--item-margin)));
+    scroll-padding: calc(var(--scroll-count) * (var(--item-height) + var(--item-margin)));
 }
 
 .plugin-search-item-path {
@@ -114,7 +117,7 @@ body.unibody-window #plugin-search-multi {
     width: 100%;
     overflow: hidden;
     white-space: nowrap;
-    line-height: 14px
+    line-height: 14px;
 }
 
 .plugin-search-multi-searching {
@@ -136,7 +139,7 @@ ${colors_style}
 }
 
 .plugin-highlight-item {
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     font-size: 14px;
     margin: 3px;
     padding: 3px 6px;

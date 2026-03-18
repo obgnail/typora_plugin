@@ -1,5 +1,5 @@
 class BlurPlugin extends BasePlugin {
-    beforeProcess = () => this.utils.supportHasSelector ? undefined : this.utils.stopLoadPluginError
+    beforeProcess = () => this.utils.supportHasSelector ? undefined : this.utils.PLUGIN_LOAD_ABORT
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 

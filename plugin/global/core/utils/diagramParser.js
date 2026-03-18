@@ -106,7 +106,7 @@ class DiagramParser {
     registerLangTooltip = () => File.editor.fences.ALL?.push(...this.parsers.keys())
 
     registerLangModeMapping = () => {
-        const after = mode => {
+        this.utils.decorator.modifyReturn(() => window, "getCodeMirrorMode", mode => {
             if (!mode) return mode
 
             const isObj = typeof mode === "object"
@@ -115,8 +115,7 @@ class DiagramParser {
             if (!mappingLang) return mode
             if (!isObj) return mappingLang
             return { ...mode, ...mappingLang }
-        }
-        this.utils.decorate(() => window, "getCodeMirrorMode", null, after, true)
+        })
     }
 
     isDiagramType = lang => File.editor.diagrams.constructor.isDiagramType(lang)
@@ -257,7 +256,7 @@ class DiagramParser {
 
     onTryAddLangUndo = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => node && this.renderDiagram(node.cid))
 
-    onUpdateDiagram = () => this.utils.decorate(() => File?.editor?.diagrams, "updateDiagram", null, (_, cid) => this.renderDiagram(cid))
+    onUpdateDiagram = () => this.utils.decorator.afterCall(() => File?.editor?.diagrams, "updateDiagram", (_, cid) => this.renderDiagram(cid))
 
     onExport = () => {
         const afterExport = () => {
@@ -310,18 +309,16 @@ class DiagramParser {
             setTimeout(() => dontFocus = true, 200)
         }
 
-        const stopCall = (node) => {
-            if (!dontFocus || !node) return
-            const cid = ("string" == typeof node) ? node : node.id
-            if (!cid) return
+        const shouldPreventFocus = (node) => {
+            if (!dontFocus || !node) return false
+            const cid = typeof node === "string" ? node : node.id
+            if (!cid) return false
             const lang = File.editor.findElemById(cid)?.attr("lang")?.trim().toLowerCase()
-            if (lang && this.parsers.get(lang)?.interactiveMode) {
-                return this.utils.stopCallError
-            }
+            return !!(lang && this.parsers.get(lang)?.interactiveMode)
         }
 
-        this.utils.decorate(() => File?.editor?.fences, "focus", stopCall)
-        this.utils.decorate(() => File?.editor, "refocus", stopCall)
+        this.utils.decorator.preventCallIf(() => File?.editor?.fences, "focus", shouldPreventFocus)
+        this.utils.decorator.preventCallIf(() => File?.editor, "refocus", shouldPreventFocus)
 
         const useCtrlClick = this.exitInteractiveStrategies.includes("ctrl_click_fence")
         const useClickExit = this.exitInteractiveStrategies.includes("click_exit_button") && [...this.parsers.values()].some(p => p.interactiveMode)
@@ -376,7 +373,7 @@ class DiagramParser {
     }
 
     onCheckIsDiagramType = () => {
-        const after = (origin, mode) => {
+        this.utils.decorator.modifyReturn(() => File?.editor?.diagrams?.constructor, "isDiagramType", (origin, mode) => {
             if (origin === true) return true
             if (!mode) return false
             if (Object.hasOwn(mode, this.enableMappingSym)) return true
@@ -389,8 +386,7 @@ class DiagramParser {
                 return this.parsers.get(mode.toLowerCase())
             }
             return origin
-        }
-        this.utils.decorate(() => File?.editor?.diagrams?.constructor, "isDiagramType", null, after, true)
+        })
     }
 }
 

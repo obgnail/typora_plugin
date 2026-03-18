@@ -32,7 +32,6 @@ class CustomPlugin extends BasePlugin {
     getDynamicActions = (anchorNode, meta, notInContextMenu) => {
         const actHint = {
             unknown: this.i18n.t("error.unknown"),
-            disabledForever: this.i18n.t("actHint.disabledForever"),
             disabledTemp: this.i18n.t("actHint.disabledTemp")
         }
         const settings = Object.entries(this.settings).sort(([, { order: o1 = 1 }], [, { order: o2 = 1 }]) => o1 - o2)
@@ -54,18 +53,15 @@ class CustomPlugin extends BasePlugin {
                 act_hotkey: plugin.config.hotkey,
             }
             try {
-                const selector = plugin.selector(false)
-                if (selector === this.utils.disableForeverSelector) {
-                    act.act_hint = actHint.disabledForever
-                } else {
-                    act.act_disabled = selector && !anchorNode.closest(selector)
-                    act.act_hint = plugin.hint(act.act_disabled)
-                    if (act.act_disabled) {
-                        act.act_hint = act.act_hint || actHint.disabledTemp
-                    }
+                const ctx = { trigger: "menu" }
+                const selector = plugin.selector(ctx)
+                act.act_disabled = selector && !anchorNode.closest(selector)
+                act.act_hint = plugin.hint({ ...ctx, selector })
+                if (act.act_disabled && !act.act_hint) {
+                    act.act_hint = actHint.disabledTemp
                 }
             } catch (e) {
-                console.error(`Plugin ${fixedName} selector error: ${e}`)
+                console.error(`Plugin ${fixedName} error: ${e}`)
             }
 
             if (this.config.HIDE_DISABLE_PLUGINS && act.act_disabled) continue
@@ -79,7 +75,7 @@ class CustomPlugin extends BasePlugin {
         const plugin = this.plugins[fixedName]
         if (!plugin) return
         try {
-            const selector = plugin.selector(true)
+            const selector = plugin.selector({ trigger: "call" })
             const target = selector ? meta.target.closest(selector) : meta.target
             plugin.callback(target)
         } catch (e) {
@@ -95,7 +91,7 @@ class CustomPlugin extends BasePlugin {
             plugin.callback = anchorNode => {
                 if (!anchorNode) {
                     const anchor = this.utils.getAnchorNode()?.[0]
-                    const selector = plugin.selector(true)
+                    const selector = plugin.selector({ trigger: "call" })
                     anchorNode = (selector && anchor) ? anchor.closest(selector) : anchor
                 }
                 originCallback(anchorNode)

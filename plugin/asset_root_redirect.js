@@ -1,5 +1,5 @@
 class AssetRootRedirectPlugin extends BasePlugin {
-    beforeProcess = () => this.config.ROOT_PATH ? undefined : this.utils.stopLoadPluginError
+    beforeProcess = () => this.config.ROOT_PATH ? undefined : this.utils.PLUGIN_LOAD_ABORT
 
     init = () => {
         const { Minimatch } = this.utils.unstableRequire("minimatch")
@@ -7,18 +7,15 @@ class AssetRootRedirectPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.decorate(() => File?.editor?.docMenu, "getLocalRootUrl", null, this.getCurrentFileRootURL, true)
         this.utils.eventHub.once(this.utils.eventHub.eventType.fileOpened, () => File.editor.imgEdit.refreshLocalImg(true))
+        this.utils.decorator.modifyReturn(() => File?.editor?.docMenu, "getLocalRootUrl", (rootUrl) => {
+            return (rootUrl || !this.needRedirect(this.utils.getFilePath()))
+                ? rootUrl
+                : this._resolveRootURL(this.utils.getCurrentDirPath())
+        })
     }
 
     needRedirect = (mdPath) => !this.ignoreMatches.some(m => m.match(mdPath))
-
-    getCurrentFileRootURL = (rootUrl) => {
-        if (rootUrl || !this.needRedirect(this.utils.getFilePath())) {
-            return rootUrl
-        }
-        return this._resolveRootURL(this.utils.getCurrentDirPath())
-    }
 
     getRootURL = (md, mdPath, mdDir) => {
         const { yamlObject } = this.utils.splitFrontMatter(md)

@@ -9,7 +9,7 @@ class StyleTemplater {
     getID = name => `plugin-${name}-style`
 
     register = async (name, args) => {
-        const files = ["user_styles", "styles"].map(dir => this.utils.joinPath("./plugin/global", dir, name + ".css"))
+        const files = ["user_styles", "styles"].map(dir => this.utils.joinPluginPath("./plugin/global", dir, name + ".css"))
         const [userStyles, defaultStyles] = await this.utils.readFiles(files)
         const data = (userStyles || defaultStyles)?.trim()
         if (data == null) {

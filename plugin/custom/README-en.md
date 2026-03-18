@@ -52,11 +52,11 @@ Step 2: Create the file `./plugin/custom/plugins/helloWorld.js` and save the fol
 
 class helloWorld extends BaseCustomPlugin {
     // beforeProcess method is executed first to check preconditions for plugin execution
-    // If conditions are not met, it should return this.utils.stopLoadPluginError to stop plugin loading
+    // If conditions are not met, it should return this.utils.PLUGIN_LOAD_ABORT to stop plugin loading
     beforeProcess = async () => {
         // In actual development, please replace the 'false' here with meaningful condition check logic
         if (false) {
-            return this.utils.stopLoadPluginError
+            return this.utils.PLUGIN_LOAD_ABORT
         }
     }
 
@@ -290,7 +290,7 @@ module.exports = { plugin: myFullPathCopy }
 // 6. styleTemplate: Introduces the css file with the same name as the plugin in the `./plugin/global/user_styles` directory. For details, please refer to `./plugin/global/user_styles/README.md`.
 // 7. html: Used to insert HTML tags. Returns an Element type or a string representing the element.
 // 8. hotkey: Registers a shortcut key for the callback function. Returns an array of strings, or an array of objects in the format [{ hotkey: "", callback: () => console.log(123) }].
-// 9. beforeProcess: The first function to be executed, used to initialize data required by the plugin or perform pre-checks. If it returns utils.stopLoadPluginError, plugin loading is stopped.
+// 9. beforeProcess: The first function to be executed, used to initialize data required by the plugin or perform pre-checks. If it returns utils.PLUGIN_LOAD_ABORT, plugin loading is stopped.
 // 10. process: Add plugin business logic here.
 // 11. callback: The callback function called when the user clicks a right-click menu option or types a shortcut key. The anchorNode parameter represents the Element where the cursor is located.
 // 12. export: Export the plugin class as `plugin`.

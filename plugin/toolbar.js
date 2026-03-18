@@ -1,8 +1,12 @@
 class ToolbarPlugin extends BasePlugin {
     beforeProcess = () => {
         this.toolController = new ToolController(this)
-        const tools = [TabTool, PluginTool, RecentFileTool, OperationTool, ModeTool, ThemeTool, OutlineTool, FunctionTool, MixTool]
+        const tools = [TabTool, PluginTool, RecentFileTool, OperationTool, ModeTool, ThemeTool, OutlineTool, MixTool]
         tools.forEach(tool => this.toolController.register(new tool()))
+
+        if (!this.config.GROUP_SEARCH) {
+            this.config.DEFAULT_GROUP = "all"
+        }
     }
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -10,7 +14,7 @@ class ToolbarPlugin extends BasePlugin {
     styleTemplate = () => ({ topPercent: parseInt(this.config.TOOLBAR_TOP_PERCENT) + "%" })
 
     html = () => {
-        const title = [...this.toolController.tools.values()].map(t => `${t.name()}：${t.translate()}`).join("\n")
+        const title = [...this.toolController.tools.keys()].map(name => `${name}：${this.i18n.t(`$option.DEFAULT_GROUP.${name}`)}`).join("\n")
         return `
             <div id="plugin-toolbar" class="plugin-common-modal plugin-common-hidden">
                 <form id="plugin-toolbar-form"><input placeholder="plu image" title="${title}"></form>
@@ -86,22 +90,18 @@ class ToolbarPlugin extends BasePlugin {
     _callTool = (target) => {
         const { tool, value, meta } = target.dataset
         this.toolController.callback(tool, value, meta)
-        if (tool === "func") {
-            this.entities.input.focus()
-        } else {
-            this.hide()
-        }
+        this.hide()
     }
 
-    _newItems = ({ tool, matches, input }) => {
+    _newItems = ({ tool, matches, keywords }) => {
         const toolName = tool.name()
         return matches.map(match => {
             const showName = match.showName || match
             const fixedName = match.fixedName || match
             const meta = match.meta || ""
             let content = this.utils.escape(showName)
-            if (input[0]) {
-                input.forEach(part => content = content.replace(new RegExp(part, "gi"), "<b>$&</b>"))
+            if (keywords[0]) {
+                keywords.forEach(keyword => content = content.replace(new RegExp(keyword, "gi"), "<b>$&</b>"))
             }
             const metaContent = meta ? `data-meta="${meta}"` : ""
             return `<div class="plugin-toolbar-item" data-value="${fixedName}" data-tool="${toolName}" ${metaContent}>${content}</div>`
@@ -127,29 +127,12 @@ class ToolbarPlugin extends BasePlugin {
     }
 }
 
-class BaseTool {
-    name = () => ""
-    translate = () => ""
-    icon = () => "🎯"
-    init = () => null
-    search = async input => null  // Return []string or [{ showName:"", fixedName:"", meta:"" }]
-    callback = (fixedName, meta) => null
-    baseSearch = (input, list, searchFields) => {
-        if (input === "") return list
-        input = input.toLowerCase()
-        const fn = searchFields
-            ? item => searchFields.some(field => item[field].toLowerCase().indexOf(input) !== -1)
-            : item => item.toLowerCase().indexOf(input) !== -1
-        return list.filter(fn)
-    }
-}
-
 class ToolController {
     constructor(plugin) {
         this.plugin = plugin
         this.utils = plugin.utils
         this.i18n = plugin.i18n
-        this.tools = new Map()  // map[short]tool
+        this.tools = new Map()  // map[name]tool
         this.anchorNode = null
     }
 
@@ -174,8 +157,8 @@ class ToolController {
         if (arrays.length === 1) return arrays[0]
 
         const fn = (typeof arrays[0][0] === "string")
-            ? el => arrays.every(array => array.includes(el))
-            : el => arrays.every(array => array.some(item => item.showName === el.showName && item.fixedName === el.fixedName && item.meta === el.meta))
+            ? e => arrays.every(arr => arr.includes(e))
+            : e => arrays.every(arr => arr.some(item => item.showName === e.showName && item.fixedName === e.fixedName && item.meta === e.meta))
         return arrays[0].filter(fn)
     }
 
@@ -207,58 +190,58 @@ class ToolController {
         return array1.filter(item => !set.has(this.toUniqueString(item)))
     }
 
-    kind = input => {
-        const all = input.split(" ").filter(Boolean)
-        const positive = []
-        const negative = []
-        all.forEach(el => {
-            if (el.startsWith("-")) {
-                const val = el.slice(1)
-                if (val) negative.push(val)
+    parse = (input) => {
+        const keywords = input.split(" ").filter(Boolean)
+        const posKeywords = []
+        const negKeywords = []
+        keywords.forEach(keyword => {
+            if (keyword.startsWith("-")) {
+                const val = keyword.slice(1)
+                if (val) negKeywords.push(val)
             } else {
-                positive.push(el)
+                posKeywords.push(keyword)
             }
         })
-        if (positive.length === 0) positive.push("")
-        if (all.length === 0) all.push("")
-        return { all, positive, negative }
+        if (posKeywords.length === 0) posKeywords.push("")
+        if (keywords.length === 0) keywords.push("")
+        return { keywords, posKeywords, negKeywords }
     }
 
-    searchWithNeg = async (tool, positive, negative) => {
+    matchWithNeg = async (tool, posKeywords, negKeywords) => {
         const [posList, negList] = await Promise.all([
-            Promise.all(positive.map(tool.search)),
-            Promise.all(negative.map(tool.search)),
+            Promise.all(posKeywords.map(tool.search)),
+            Promise.all(negKeywords.map(tool.search)),
         ])
         const posResult = this.intersect(posList)
         const negResult = this.union(negList)
         const matches = this.difference(posResult, negResult)
-        return { inputList: positive, matches }
+        return { keywords: posKeywords, matches }
     }
 
-    searchWithoutNeg = async (tool, all) => {
-        const resultList = await Promise.all(all.map(tool.search))
-        const matches = this.intersect(resultList)
-        return { inputList: all, matches }
+    matchWithoutNeg = async (tool, keywords) => {
+        const results = await Promise.all(keywords.map(tool.search))
+        const matches = this.intersect(results)
+        return { keywords, matches }
     }
 
-    search = async (tool, input) => {
-        const { all, positive, negative } = this.kind(input)
-        if (this.plugin.config.USE_NEGATIVE_SEARCH) {
-            return this.searchWithNeg(tool, positive, negative)
-        } else {
-            return this.searchWithoutNeg(tool, all)
-        }
+    match = async (tool, input) => {
+        const { keywords, posKeywords, negKeywords } = this.parse(input)
+        return this.plugin.config.USE_NEGATIVE_SEARCH
+            ? this.matchWithNeg(tool, posKeywords, negKeywords)
+            : this.matchWithoutNeg(tool, keywords)
     }
 
     dispatch = raw => {
         raw = raw.trimLeft()
-        for (const short of this.tools.keys()) {
-            if (raw.startsWith(short + " ")) {
-                return { tool: this.tools.get(short), input: raw.slice(short.length + 1).trim() }
+        const { GROUP_SEARCH, DEFAULT_GROUP } = this.plugin.config
+        if (GROUP_SEARCH) {
+            const group = [...this.tools.keys()].find(group => raw.startsWith(group + " "))
+            if (group) {
+                return { tool: this.tools.get(group), input: raw.slice(group.length + 1).trim() }
             }
         }
-        if (this.plugin.config.DEFAULT_TOOL) {
-            return { tool: this.tools.get(this.plugin.config.DEFAULT_TOOL), input: raw.trim() }
+        if (DEFAULT_GROUP) {
+            return { tool: this.tools.get(DEFAULT_GROUP), input: raw.trim() }
         }
         return { tool: null, input: "" }
     }
@@ -268,16 +251,31 @@ class ToolController {
         let { tool, input } = this.dispatch(raw)
         if (!tool) return
 
-        const { inputList, matches } = await this.search(tool, input)
+        const { keywords, matches } = await this.match(tool, input)
         if (matches?.length) {
-            return { tool, input: inputList, matches }
+            return { tool, keywords, matches }
         }
+    }
+}
+
+class BaseTool {
+    name = () => ""
+    icon = () => "🎯"
+    init = () => null
+    search = async input => null  // Return []string or [{ showName:"", fixedName:"", meta:"" }]
+    callback = (fixedName, meta) => null
+    baseSearch = (input, candidates, searchFields) => {
+        if (input === "") return candidates
+        input = input.toLowerCase()
+        const fn = searchFields
+            ? item => searchFields.some(field => item[field].toLowerCase().includes(input))
+            : item => item.toLowerCase().includes(input)
+        return candidates.filter(fn)
     }
 }
 
 class TabTool extends BaseTool {
     name = () => "tab"
-    translate = () => this.i18n.t("tool.tab")
     icon = () => "📖"
     init = () => {
         const callback = () => this.windowTabPlugin = this.utils.getBasePlugin("window_tab")
@@ -294,7 +292,6 @@ class TabTool extends BaseTool {
 
 class PluginTool extends BaseTool {
     name = () => "plu"
-    translate = () => this.i18n.t("tool.plu")
     icon = () => "🔌"
     collectAll = () => {
         return Object.entries(this.utils.getAllBasePlugins())
@@ -326,20 +323,17 @@ class PluginTool extends BaseTool {
 
 class RecentFileTool extends BaseTool {
     name = () => "his"
-    translate = () => this.i18n.t("tool.his")
     icon = () => "🕖"
     getRecentFiles = async () => {
         if (!File.isNode) return
 
         const result = []
-        const blank = "\u00A0".repeat(3)
         const { files, folders } = await this.utils.getRecentFiles()
         const add = (entities, meta) => {
-            for (const entity of entities) {
-                if (entity.path) {
-                    const prefix = (meta === "file") ? "📄" : "📁"
-                    const item = { showName: `${prefix}${blank}${entity.path}`, fixedName: entity.path, meta: meta }
-                    result.push(item)
+            for (const ent of entities) {
+                const p = ent.path
+                if (p) {
+                    result.push({ showName: p, fixedName: p, meta })
                 }
             }
         }
@@ -352,7 +346,7 @@ class RecentFileTool extends BaseTool {
         if (!files || files.length === 0) return
 
         const current = this.utils.getFilePath()
-        files = files.filter(file => file.fixedName !== current) // remove the current file
+        files = files.filter(file => file.fixedName !== current)  // remove the current file
         return this.baseSearch(input, files, ["showName"])
     }
     callback = (fixedName, meta) => {
@@ -366,31 +360,16 @@ class RecentFileTool extends BaseTool {
 
 class OperationTool extends BaseTool {
     name = () => "ops"
-    translate = () => this.i18n.t("tool.ops")
     icon = () => "🔨"
     init = () => {
-        const explorer = () => this.utils.showInFinder(this.utils.getFilePath())
-        const copyPath = () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath())
-        const togglePreferencePanel = () => File.megaMenu.togglePreferencePanel()
-        const openSettingFolder = () => this.utils.settings.openFolder()
-        const togglePinWindow = () => {
-            const pined = document.body.classList.contains("always-on-top")
-            const fn = pined ? "unpinWindow" : "pinWindow"
-            ClientCommand[fn]()
-        }
-        const openFileInNewWindow = () => File.editor.library.openFileInNewWindow(this.utils.getFilePath(), false)
         this.ops = [
-            { fixedName: "explorer", callback: explorer },
-            { fixedName: "copyPath", callback: copyPath },
-            { fixedName: "togglePreferencePanel", callback: togglePreferencePanel },
-            { fixedName: "togglePinWindow", callback: togglePinWindow },
-            { fixedName: "openFileInNewWindow", callback: openFileInNewWindow },
-            { fixedName: "openSettingFolder", callback: openSettingFolder },
-        ]
-        this.ops.forEach(op => {
-            const name = this.i18n.t("tool.ops." + op.fixedName)
-            op.showName = `${name} - ${op.fixedName}`
-        })
+            { fixedName: "explorer", callback: () => this.utils.showInFinder(this.utils.getFilePath()) },
+            { fixedName: "copyPath", callback: () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath()) },
+            { fixedName: "togglePreferencePanel", callback: () => File.megaMenu.togglePreferencePanel() },
+            { fixedName: "togglePinWindow", callback: () => ClientCommand[document.body.classList.contains("always-on-top") ? "unpinWindow" : "pinWindow"]() },
+            { fixedName: "openFileInNewWindow", callback: () => File.editor.library.openFileInNewWindow(this.utils.getFilePath(), false) },
+            { fixedName: "openSettingFolder", callback: () => this.utils.settings.openFolder() },
+        ].map(op => ({ ...op, showName: `${this.i18n.t(`tool.ops.${op.fixedName}`)} - ${op.fixedName}` }))
     }
     search = async input => this.baseSearch(input, this.ops, ["showName"])
     callback = (fixedName, meta) => this.ops.find(el => el.fixedName === fixedName)?.callback(meta)
@@ -398,7 +377,6 @@ class OperationTool extends BaseTool {
 
 class ModeTool extends BaseTool {
     name = () => "mode"
-    translate = () => this.i18n.t("tool.mode")
     icon = () => "🌗"
     init = () => {
         const outlineView = () => {
@@ -436,7 +414,6 @@ class ModeTool extends BaseTool {
 
 class ThemeTool extends BaseTool {
     name = () => "theme"
-    translate = () => this.i18n.t("tool.theme")
     icon = () => "🎨"
     setThemeForever = theme => ClientCommand.setTheme(theme)
     // setThemeTemp = theme => File.setTheme(theme)
@@ -450,7 +427,6 @@ class ThemeTool extends BaseTool {
 
 class OutlineTool extends BaseTool {
     name = () => "out"
-    translate = () => this.i18n.t("tool.out")
     icon = () => "🧷"
     getAll = () => {
         const headers = File?.editor?.nodeMap?.toc?.headers
@@ -466,27 +442,8 @@ class OutlineTool extends BaseTool {
     callback = fixedName => this.utils.scrollByCid(fixedName)
 }
 
-class FunctionTool extends BaseTool {
-    name = () => "func"
-    translate = () => this.i18n.t("tool.func")
-    icon = () => "💡"
-    search = async input => {
-        const blank = "\u00A0".repeat(3)
-        const all = [...this.controller.tools.entries()].map(([name, tool]) => {
-            return { showName: tool.icon() + blank + name + " - " + tool.translate(), fixedName: name }
-        })
-        return this.baseSearch(input, all, ["showName"])
-    }
-    callback = fixedName => {
-        const { input } = this.controller.plugin.entities
-        input.value = fixedName + " "
-        input.dispatchEvent(new Event("input"))
-    }
-}
-
 class MixTool extends BaseTool {
     name = () => "all"
-    translate = () => this.i18n.t("tool.all")
     icon = () => "🔱"
     search = async input => {
         const toolName = this.name()
@@ -498,10 +455,11 @@ class MixTool extends BaseTool {
                 if (!result) {
                     return []
                 }
+                const icon = tool.icon()
                 return result.map(el => {
                     const meta = `${name}@${el.meta || ""}`
                     const item = typeof el === "string" ? { showName: el, fixedName: el, meta } : { ...el, meta }
-                    item.showName = `${tool.icon()}${blank}${item.showName}`
+                    item.showName = `${icon}${blank}${item.showName}`
                     return item
                 })
             })
@@ -509,9 +467,7 @@ class MixTool extends BaseTool {
         return toolResult.flat().filter(Boolean)
     }
     callback = (fixedName, meta) => {
-        const at = meta.indexOf("@")
-        const tool = meta.slice(0, at)
-        const realMeta = meta.slice(at + 1)
+        const [tool, realMeta] = meta.split("@", 2)
         this.controller.tools.get(tool)?.callback(fixedName, realMeta)
     }
 }

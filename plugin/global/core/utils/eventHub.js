@@ -77,41 +77,35 @@ class EventHub {
 
     process = () => {
         let _filepath = ""
-        this.utils.decorate(() => File?.editor?.library, "openFile",
-            (toOpenFile) => {
+        this.utils.decorator.decorate(() => File?.editor?.library, "openFile", {
+            before: (toOpenFile) => {
                 _filepath = this.utils.getFilePath()
                 this.publishEvent(this.eventType.beforeFileOpen, toOpenFile)
             },
-            (result, ...args) => {
+            after: (result, ...args) => {
                 const filepath = args[0]
                 if (filepath) this.publishEvent(this.eventType.fileOpened, filepath)
                 if (_filepath !== filepath) this.publishEvent(this.eventType.otherFileOpened, filepath)
             }
-        )
+        })
 
         const onContentLoaded = () => this.publishEvent(this.eventType.fileContentLoaded, this.utils.getFilePath())
         if (this.utils.isBetaVersion || File.onSwitchDocumentTarget) {
-            this.utils.decorate(() => File, "onSwitchDocumentTarget", null, onContentLoaded)
+            this.utils.decorator.afterCall(() => File, "onSwitchDocumentTarget", onContentLoaded)
         } else {
-            this.utils.decorate(() => File.editor.library, "doSwitchByNode", null, ret => ret.then(onContentLoaded))
+            this.utils.decorator.afterCall(() => File.editor.library, "doSwitchByNode", ret => ret.then(onContentLoaded))
         }
 
-        this.utils.decorate(() => File?.editor?.fences, "addCodeBlock",
-            (cid) => cid && this.publishEvent(this.eventType.beforeAddCodeBlock, cid),
-            (cm, cid) => cid && this.publishEvent(this.eventType.afterAddCodeBlock, cid, cm),
-        )
+        this.utils.decorator.decorate(() => File?.editor?.fences, "addCodeBlock", {
+            before: (cid) => cid && this.publishEvent(this.eventType.beforeAddCodeBlock, cid),
+            after: (cm, cid) => cid && this.publishEvent(this.eventType.afterAddCodeBlock, cid, cm),
+        })
 
-        this.utils.decorate(
-            () => File?.editor?.fences, "tryAddLangUndo", null,
-            (result, ...args) => this.publishEvent(this.eventType.afterUpdateCodeBlockLang, args)
-        )
+        this.utils.decorator.afterCall(() => File?.editor?.fences, "tryAddLangUndo", (result, ...args) => this.publishEvent(this.eventType.afterUpdateCodeBlockLang, args))
 
-        this.utils.decorate(() => File, "toggleSourceMode", () => this.publishEvent(this.eventType.beforeToggleSourceMode))
+        this.utils.decorator.beforeCall(() => File, "toggleSourceMode", () => this.publishEvent(this.eventType.beforeToggleSourceMode))
 
-        this.utils.decorate(
-            () => File?.editor?.library?.outline, "updateOutlineHtml", null,
-            () => this.publishEvent(this.eventType.outlineUpdated)
-        )
+        this.utils.decorator.afterCall(() => File?.editor?.library?.outline, "updateOutlineHtml", () => this.publishEvent(this.eventType.outlineUpdated))
 
         const _afterToggleSidebar = () => {
             const sidebar = document.querySelector("#typora-sidebar")
@@ -122,10 +116,10 @@ class EventHub {
         const afterToggleSidebar = hasTransition
             ? () => content.addEventListener("transitionend", _afterToggleSidebar, { once: true })
             : this.utils.debounce(_afterToggleSidebar, 400)
-        this.utils.decorate(() => File?.editor?.library, "toggleSidebar", null, afterToggleSidebar)
+        this.utils.decorator.afterCall(() => File?.editor?.library, "toggleSidebar", afterToggleSidebar)
 
         const afterSetSidebarWidth = this.utils.debounce(() => this.publishEvent(this.eventType.afterSetSidebarWidth), 400)
-        this.utils.decorate(() => File?.editor?.library, "setSidebarWidth", null, afterSetSidebarWidth)
+        this.utils.decorator.afterCall(() => File?.editor?.library, "setSidebarWidth", afterSetSidebarWidth)
 
         // const resizeObserver = new ResizeObserver(entries => {
         //     for (const entry of entries) {
@@ -136,10 +130,10 @@ class EventHub {
         // })
         // resizeObserver.observe(content)
 
-        this.utils.decorate(() => File?.megaMenu, "showPreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, true))
-        this.utils.decorate(() => File?.megaMenu, "closePreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, false))
-        this.utils.decorate(() => File?.megaMenu, "show", () => this.publishEvent(this.eventType.toggleSettingPage, true))
-        this.utils.decorate(() => File?.megaMenu, "hide", () => this.publishEvent(this.eventType.toggleSettingPage, false))
+        this.utils.decorator.beforeCall(() => File?.megaMenu, "showPreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, true))
+        this.utils.decorator.beforeCall(() => File?.megaMenu, "closePreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, false))
+        this.utils.decorator.beforeCall(() => File?.megaMenu, "show", () => this.publishEvent(this.eventType.toggleSettingPage, true))
+        this.utils.decorator.beforeCall(() => File?.megaMenu, "hide", () => this.publishEvent(this.eventType.toggleSettingPage, false))
 
         const debouncePublish = this.utils.debounce(() => this.publishEvent(this.eventType.fileEdited), 400)
         this.observer = new MutationObserver(mutations => {

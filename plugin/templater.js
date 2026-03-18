@@ -1,8 +1,4 @@
 class TemplaterPlugin extends BasePlugin {
-    selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
-
-    hint = isDisable => isDisable ? this.i18n.t("error.onBlankPage") : undefined
-
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     process = () => {
@@ -17,11 +13,17 @@ class TemplaterPlugin extends BasePlugin {
             const fileFilter = (name) => extname(name).toLowerCase() === ".md"
             const fileParamsGetter = async (path, file) => ({ file, content: await readFile(path, "utf-8") })
             const onFile = ({ file, content }) => TEMPLATE.push({ name: file.replace(/\.md$/i, ""), text: content })
-            TEMPLATE_FOLDERS.forEach(folder => this.utils.walkDir({ dir: this.utils.resolvePath(folder), fileFilter, fileParamsGetter, onFile, maxDepth, signal }))
+            TEMPLATE_FOLDERS.forEach(folder => this.utils.walkDir({ dir: this.utils.resolvePluginPath(folder), fileFilter, fileParamsGetter, onFile, maxDepth, signal }))
         })
     }
 
     call = async anchorNode => {
+        if (!this.utils.getMountFolder()) {
+            const message = this.i18n.t("error.onBlankPage")
+            await this.utils.showMessageBox({ type: "error", title: this.pluginName, message })
+            return
+        }
+
         const templates = this.config.TEMPLATE.map(tpl => tpl.name)
         const defaultTpl = this.config.TEMPLATE[0]
         const getTplCnt = (name) => this.config.TEMPLATE.find(tpl => tpl.name === name)?.text ?? ""

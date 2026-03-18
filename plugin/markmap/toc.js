@@ -472,7 +472,7 @@ class TOCMarkmap {
         } = this.config.DOWNLOAD_OPTIONS
         const getDownloadPath = async () => {
             if (folder) {
-                folder = this.utils.resolvePath(folder)
+                folder = this.utils.resolvePluginPath(folder)
             }
             if (!folder || !(await this.utils.existPath(folder))) {
                 folder = this.utils.tempFolder

@@ -38,7 +38,7 @@ class RightOutlinePlugin extends BasePlugin {
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.refreshModal())
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShown() && this.hideModal())
             eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.refreshModal, 300))
-            this.utils.decorate(() => File?.editor?.library?.outline, "highlightVisibleHeader", null, this._highlightVisibleHeader)
+            this.utils.decorator.afterCall(() => File?.editor?.library?.outline, "highlightVisibleHeader", this._highlightVisibleHeader)
             const resetPosition = () => {
                 const { right: contentRight } = this.entities.content.getBoundingClientRect()
                 const { right: modalRight } = this.entities.modal.getBoundingClientRect()

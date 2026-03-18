@@ -107,7 +107,7 @@ class Updater {
 
         this.paths = {
             stagingDir: "",
-            versionFile: this.utils.joinPath("./plugin/bin/version.json"),
+            versionFile: this.utils.joinPluginPath("./plugin/bin/version.json"),
             workDir: this.path.join(this.utils.tempFolder, "typora-plugin-updater"),
             backupDir: this.path.join(this.utils.tempFolder, "typora-plugin-updater-backup"),
         }
@@ -173,7 +173,7 @@ class Updater {
     async prepare() {
         console.log("[1/6] Prepare: cleaning workspace")
         await Promise.all([this.fs.emptyDir(this.paths.workDir), this.fs.remove(this.paths.backupDir)])
-        await this.chmod(this.utils.joinPath(this.relpaths.rootDir))
+        await this.chmod(this.utils.joinPluginPath(this.relpaths.rootDir))
     }
 
     async cleanup() {
@@ -243,7 +243,7 @@ class Updater {
     async migrateUserFiles() {
         console.log("[5/6] Migrating user settings...")
         const filesToMigrate = [...this.userFiles]
-        const oldCustomDir = this.utils.joinPath(this.relpaths.customPluginDir)
+        const oldCustomDir = this.utils.joinPluginPath(this.relpaths.customPluginDir)
         const newCustomDir = this.path.join(this.paths.stagingDir, this.relpaths.customPluginDir)
         const normalizeName = (dirent) => {
             const name = dirent.name
@@ -266,7 +266,7 @@ class Updater {
             }
         }
         await Promise.all(filesToMigrate.map(async fileRelPath => {
-            const oldPath = this.utils.joinPath(fileRelPath)
+            const oldPath = this.utils.joinPluginPath(fileRelPath)
             const newPath = this.path.join(this.paths.stagingDir, fileRelPath)
             if (await this.utils.existPath(oldPath)) {
                 await this.fs.copy(oldPath, newPath, { overwrite: true })
@@ -277,7 +277,7 @@ class Updater {
     async atomicSync() {
         console.log("[6/6] Syncing directories (Atomic Mode)...")
         const src = this.path.join(this.paths.stagingDir, this.relpaths.rootDir)
-        const dst = this.utils.joinPath(this.relpaths.rootDir)
+        const dst = this.utils.joinPluginPath(this.relpaths.rootDir)
         const backup = this.paths.backupDir
         if (this.latestVersionInfo) {
             await this.fs.writeJson(this.path.join(src, "bin/version.json"), this.latestVersionInfo)

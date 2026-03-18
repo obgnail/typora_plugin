@@ -8,14 +8,11 @@ class DataTablesPlugin extends BasePlugin {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.destroyAllDataTable)
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeToggleSourceMode, this.destroyAllDataTable)
 
-        this.utils.decorate(() => File?.editor?.tableEdit, "showTableEdit", (...args) => {
+        this.utils.decorator.preventCallIf(() => File?.editor?.tableEdit, "showTableEdit", (...args) => {
             const table = args[0]?.find?.("table")
-            if (!table || table.length === 0) return
+            if (!table || table.length === 0) return false
             const uuid = table.attr("table-uuid")
-            const exists = this.tableList.some(t => t.uuid === uuid)
-            if (exists) {
-                return this.utils.stopCallError
-            }
+            return this.tableList.some(t => t.uuid === uuid)
         })
     }
 
@@ -48,7 +45,7 @@ class DataTablesPlugin extends BasePlugin {
     lazyLoad = async () => {
         if ($?.fn?.dataTable) return
         this.initDataTablesConfig()
-        await this.utils.insertScript("./plugin/datatables/resource/js/datatables.min.js")
+        await $.getScript(this.utils.toProtocolUrl("plugin/datatables/resource/js/datatables.min.js"))
         this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/css/datatables.min.css")
         await this.utils.styleTemplater.register(this.fixedName)
     }

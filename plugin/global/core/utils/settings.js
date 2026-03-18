@@ -1,10 +1,10 @@
 class Settings {
     constructor(utils) {
         this.utils = utils
-        this.meta = { $id: "https://github.com/obgnail/typora_plugin", $version: "1" }
+        this.META = { $id: "https://github.com/obgnail/typora_plugin", $version: "1" }
     }
 
-    getOriginPath = file => this.utils.joinPath("./plugin/global/settings", file)
+    getOriginPath = file => this.utils.joinPluginPath("./plugin/global/settings", file)
     getHomePath = file => this.utils.Package.Path.join(this.utils.getHomeDir(), ".config", "typora_plugin", file)
     getActualPath = async file => {
         const homePath = this.getHomePath(file)
@@ -29,15 +29,8 @@ class Settings {
         return this.utils.writeFile(path, content)
     }
 
-    clear = async (fixedName) => this.handle(fixedName, (_, allSettings) => delete allSettings[fixedName])
-
-    clearAll = async () => {
-        const files = ["settings.user.toml", "custom_plugin.user.toml"]
-        const promises = files.map(async file => {
-            const path = await this.getActualPath(file)
-            return this.utils.writeFile(path, "")
-        })
-        return Promise.all(promises)
+    clear = async (fixedName) => {
+        return this.handle(fixedName, (_, allSettings) => delete allSettings[fixedName])
     }
 
     save = async (fixedName, updateObject) => {
@@ -47,51 +40,48 @@ class Settings {
     }
 
     autoSave = (plugin) => {
-        const saveSettings = this.save
+        const save = this.save
         plugin.config = new Proxy(plugin.config, {
             set(target, property, value, receiver) {
-                saveSettings(plugin.fixedName, { [property]: value })
+                save(plugin.fixedName, { [property]: value })
                 return Reflect.set(...arguments)
             }
         })
     }
 
-    getObjects = async (defaultSetting, userSetting) => {
-        const default_ = this.getOriginPath(defaultSetting)
-        const user_ = this.getOriginPath(userSetting)
-        const home_ = this.getHomePath(userSetting)
-        const contentList = await this.utils.readFiles([default_, user_, home_])
+    getObjects = async (defaultFile, userFile) => {
+        const default_ = this.getOriginPath(defaultFile)
+        const user_ = this.getOriginPath(userFile)
+        const home_ = this.getHomePath(userFile)
+        const contents = await this.utils.readFiles([default_, user_, home_])
         try {
-            return contentList.map(c => c ? this.utils.readToml(c) : {})
+            return contents.map(c => c ? this.utils.readToml(c) : {})
         } catch (e) {
-            // At this time, i18n has not been loaded yet. Using English
-            const message = `Invalid TOML document: ${userSetting}`
-            const detail = e.toString().replace("Invalid TOML document: ", "")
+            const prefix = "Invalid TOML document: "
+            const detail = e.toString().replace(prefix, "")
+            const message = prefix + userFile
             const buttons = ["Confirm", "Cancel"]
-            const op = { type: "error", title: "Typora Plugin", buttons, message, detail }
+            const op = { type: "error", buttons, message, detail }
             await this.utils.showMessageBox(op)
-            return contentList.map(() => ({}))
+            return contents.map(() => ({}))
         }
     }
 
-    read = async (defaultSetting, userSetting) => {
-        const objs = await this.getObjects(defaultSetting, userSetting)
+    read = async (defaultFile, userFile) => {
+        const objs = await this.getObjects(defaultFile, userFile)
         return objs.reduce(this.utils.merge)
     }
     readBase = async () => this.read("settings.default.toml", "settings.user.toml")
     readCustom = async () => this.read("custom_plugin.default.toml", "custom_plugin.user.toml")
 
-    export = async (exportPath, showInFinder = true) => {
+    export = async (exportPath) => {
         const [base, custom] = await Promise.all([this.readBase(), this.readCustom()])
-        await this.utils.Package.FsExtra.writeJson(exportPath, { ...this.meta, ...base, ...custom })
-        if (showInFinder) {
-            this.utils.showInFinder(exportPath)
-        }
+        await this.utils.Package.FsExtra.writeJson(exportPath, { ...this.META, ...base, ...custom })
     }
 
     import = async (importPath) => {
         const settings = await this.utils.Package.FsExtra.readJson(importPath)
-        const mismatch = [...Object.keys(this.meta)].some(key => settings[key] !== this.meta[key])
+        const mismatch = [...Object.keys(this.META)].some(key => settings[key] !== this.META[key])
         if (mismatch) {
             throw new Error(`${importPath} is not the correct settings file.`)
         }

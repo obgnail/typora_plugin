@@ -20,14 +20,14 @@ class SlashCommandsPlugin extends BasePlugin {
         this.commands = new Map(COMMANDS.filter(c => c.enable && c.keyword && /[A-Za-z0-9]+/.test(c.keyword)).map(c => [c.keyword.toLowerCase(), c]))
         this.handler = { search: this._search, render: this._render, beforeApply: this._beforeApply }
 
-        return this.commands.size ? undefined : this.utils.stopLoadPluginError
+        return this.commands.size ? undefined : this.utils.PLUGIN_LOAD_ABORT
     }
 
     styleTemplate = () => true
 
     process = () => {
         if (this.config.SUGGESTION_TIMING === "on_input") {
-            this.utils.decorate(() => File?.editor?.brush, "triggerAutoComplete", null, this._onEdit)
+            this.utils.decorator.afterCall(() => File?.editor?.brush, "triggerAutoComplete", this._onEdit)
         } else {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this._onEdit)
         }

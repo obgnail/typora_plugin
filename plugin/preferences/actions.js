@@ -2,30 +2,33 @@ module.exports = (plugin) => {
     const { utils, i18n } = plugin
     const { Path, FsExtra } = utils.Package
     const consecutive = (onConfirmed) => utils.createConsecutiveAction({ threshold: 3, timeWindow: 3000, onConfirmed })
+    const openUrl = (urlOrFn) => () => utils.openUrl(typeof urlOrFn === "function" ? urlOrFn() : urlOrFn)
+    const showPluginPath = (relPath) => () => utils.showInFinder(utils.joinPluginPath(relPath))
 
     const actions = {
-        visitRepo: () => utils.openUrl("https://github.com/obgnail/typora_plugin"),
-        viewDeepWiki: () => utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
-        viewGithubImageBed: () => utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
-        viewMarkdownlintRules: () => utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
-        viewCodeMirrorKeymapsManual: () => utils.openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
-        viewVitePressLineHighlighting: () => utils.openUrl(`https://vitepress.dev/${i18n.locale === "zh-CN" ? "zh/" : ""}guide/markdown#line-highlighting-in-code-blocks`),
-        viewFocusLineHighlightingEffect: () => utils.openUrl("https://codemirror.net/5/demo/activeline.html"),
-        viewAbcVisualOptionsManual: () => utils.openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
-        viewVisibleTabsEffect: () => utils.openUrl("https://codemirror.net/5/demo/visibletabs.html"),
-        viewCodeFoldingEffect: () => utils.openUrl("https://codemirror.net/5/demo/folding.html"),
-        viewSideBySideEffect: () => utils.openUrl("https://github.com/obgnail/typora_plugin/blob/master/assets/sideBySideView.png"),
-        viewIndentedWrappedLineEffect: () => utils.openUrl("https://codemirror.net/5/demo/indentwrap.html"),
-        viewGlobPattern: () => utils.openUrl("https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html"),
-        neverGonnaTellALie: () => utils.openUrl(i18n.locale === "zh-CN" ? "https://www.bilibili.com/video/BV1GJ411x7h7/" : "https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
-        chooseEchartsRenderer: () => utils.openUrl(`https://echarts.apache.org/handbook/${i18n.locale === "zh-CN" ? "zh" : "en"}/best-practices/canvas-vs-svg/`),
-        downloadWaveDromSkins: () => utils.openUrl("https://github.com/wavedrom/wavedrom/tree/trunk/skins"),
-        viewMarpOptions: () => utils.openUrl("https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options"),
-        viewArticleUploaderReadme: () => utils.showInFinder(utils.joinPath("./plugin/article_uploader/README.md")),
-        viewJsonRPCReadme: () => utils.showInFinder(utils.joinPath("./plugin/json_rpc/README.md")),
-        editStyles: () => utils.showInFinder(utils.joinPath("./plugin/global/user_styles/README.md")),
-        developPlugins: () => utils.showInFinder(utils.joinPath("./plugin/custom/README.md")),
-        openPluginFolder: () => utils.showInFinder(utils.joinPath("./plugin")),
+        visitRepo: openUrl("https://github.com/obgnail/typora_plugin"),
+        viewDeepWiki: openUrl("https://deepwiki.com/obgnail/typora_plugin"),
+        viewGithubImageBed: openUrl("https://github.com/obgnail/typora_image_uploader"),
+        viewMarkdownlintRules: openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+        viewCodeMirrorKeymapsManual: openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
+        viewVitePressLineHighlighting: openUrl(`https://vitepress.dev/${i18n.locale === "zh-CN" ? "zh/" : ""}guide/markdown#line-highlighting-in-code-blocks`),
+        viewFocusLineHighlightingEffect: openUrl("https://codemirror.net/5/demo/activeline.html"),
+        viewAbcVisualOptionsManual: openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
+        viewVisibleTabsEffect: openUrl("https://codemirror.net/5/demo/visibletabs.html"),
+        viewCodeFoldingEffect: openUrl("https://codemirror.net/5/demo/folding.html"),
+        viewSideBySideEffect: openUrl("https://github.com/obgnail/typora_plugin/blob/master/assets/sideBySideView.png"),
+        viewIndentedWrappedLineEffect: openUrl("https://codemirror.net/5/demo/indentwrap.html"),
+        viewGlobPattern: openUrl("https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html"),
+        neverGonnaTellALie: openUrl(i18n.locale === "zh-CN" ? "https://www.bilibili.com/video/BV1GJ411x7h7/" : "https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+        chooseEchartsRenderer: openUrl(`https://echarts.apache.org/handbook/${i18n.locale === "zh-CN" ? "zh" : "en"}/best-practices/canvas-vs-svg/`),
+        downloadWaveDromSkins: openUrl("https://github.com/wavedrom/wavedrom/tree/trunk/skins"),
+        viewMarpOptions: openUrl("https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options"),
+        viewArticleUploaderReadme: showPluginPath("./plugin/article_uploader/README.md"),
+        viewJsonRPCReadme: showPluginPath("./plugin/json_rpc/README.md"),
+        editStyles: showPluginPath("./plugin/global/user_styles/README.md"),
+        developPlugins: showPluginPath("./plugin/custom/README.md"),
+        openLocaleFolder: showPluginPath("./plugin/global/locales/en.json"),
+        openPluginFolder: showPluginPath("./plugin"),
         openSettingsFolder: async () => utils.settings.openFolder(),
         toggleDevTools: () => JSBridge.invoke("window.toggleDevTools"),
         togglePreferencePanel: () => File.megaMenu.togglePreferencePanel(),
@@ -49,6 +52,7 @@ module.exports = (plugin) => {
             })
             if (canceled || !filePath) return
             await utils.settings.export(filePath)
+            utils.showInFinder(filePath)
             utils.notification.show(i18n.t("success"))
         },
         restoreSettings: consecutive(async () => {
@@ -56,30 +60,45 @@ module.exports = (plugin) => {
             utils.notification.show(i18n.t("success.restore"))
         }),
         restoreAllSettings: consecutive(async () => {
-            await plugin.renewMenu(() => utils.settings.clearAll())
+            await plugin.renewMenu(async () => {
+                const path = await utils.settings.getActualPath("settings.user.toml")
+                await utils.writeFile(path, "")
+            })
             utils.notification.show(i18n.t("success.restoreAll"))
         }),
-        runtimeSettings: async () => {
+        inspectRuntimeSettings: async () => {
             const { settings } = await plugin.getCurrent()
-            const op = {
-                title: i18n._t("settings", "$label.runtimeSettings"),
+            await utils.formDialog.modal({
+                title: i18n._t("settings", "$label.inspectRuntimeSettings"),
                 schema: [{ fields: [{ key: "runtimeSettings", type: "code", readonly: true }] }],
                 data: { runtimeSettings: JSON.stringify(settings, null, "\t") },
-            }
-            await utils.formDialog.modal(op)
+            })
         },
         inspectDefaultSettings: async () => {
             const path = await utils.settings.getActualPath("settings.default.toml")
             const content = await utils.Package.FsExtra.readFile(path, "utf-8")
-            const op = {
-                title: i18n.t("$tooltip.inspectDefaultSettings"),
+            const settings = utils.readToml(content)?.[plugin._getCurrentPlugin()]
+            await utils.formDialog.modal({
+                title: i18n._t("settings", "$tooltip.inspectDefaultSettings"),
+                schema: [{ fields: [{ key: "defaultSettings", type: "code", readonly: true }] }],
+                data: { defaultSettings: JSON.stringify(settings, null, "\t") },
+            })
+        },
+        inspectAllDefaultSettings: async () => {
+            const path = await utils.settings.getActualPath("settings.default.toml")
+            const content = await utils.Package.FsExtra.readFile(path, "utf-8")
+            await utils.formDialog.modal({
+                title: i18n.t("$tooltip.inspectAllDefaultSettings"),
                 schema: [{ fields: [{ key: "allDefaultSettings", type: "code", readonly: true }] }],
                 data: { allDefaultSettings: content },
-            }
-            await utils.formDialog.modal(op)
+            })
         },
-        inspectDefaultSettingsInExternalEditor: async () => {
+        openSettingsDefaultTomlExternally: async () => {
             const path = await utils.settings.getActualPath("settings.default.toml")
+            utils.openPath(path)
+        },
+        openSettingsUserTomlExternally: async () => {
+            const path = await utils.settings.getActualPath("settings.user.toml")
             utils.openPath(path)
         },
         invokeMarkdownlintSettings: async () => utils.callPluginFunction("markdownlint", "settings"),
@@ -90,7 +109,7 @@ module.exports = (plugin) => {
                 { key: "viewDockerHub", type: "action", label: "Docker Hub" },
                 { key: "viewGithub", type: "action", label: "Github" },
             ]
-            const op = {
+            await utils.formDialog.modal({
                 title: i18n._t("plantUML", "$tooltip.installPlantUMLServer"),
                 schema: [{ fields: dockerFields, title: "Run the server with Docker" }, { fields: actionFields, title: "Help" }],
                 data: { dockerCommand: "docker pull plantuml/plantuml-server:jetty\ndocker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty" },
@@ -99,8 +118,7 @@ module.exports = (plugin) => {
                     viewGithub: () => utils.openUrl("https://github.com/plantuml/plantuml-server"),
                     viewWebsite: () => utils.openUrl("https://plantuml.com/en/starting"),
                 }
-            }
-            await utils.formDialog.modal(op)
+            })
         },
         myopicDefocusEffectDemo: async () => {
             const { MyopicDefocus } = require("../myopic_defocus.js")
@@ -143,13 +161,12 @@ module.exports = (plugin) => {
                 return [{ triggers: CONFIG, affects: [], effect }]
             }
 
-            const op = {
+            await utils.formDialog.modal({
                 title: t("$label.myopicDefocusEffectDemo"),
                 schema: getSchema(),
                 data: getData(),
                 watchers: getWatchers(),
-            }
-            await utils.formDialog.modal(op)
+            })
             myopicDefocus.removeEffect()
         },
         updatePlugin: async () => {
@@ -164,8 +181,8 @@ module.exports = (plugin) => {
         uninstallPlugin: async () => {
             const uninstall = async () => {
                 const remove = '<script src="./plugin/index.js" defer="defer"></script>'
-                const windowHTML = utils.joinPath("./window.html")
-                const pluginFolder = utils.joinPath("./plugin")
+                const windowHTML = utils.joinPluginPath("./window.html")
+                const pluginFolder = utils.joinPluginPath("./plugin")
                 try {
                     const content = await FsExtra.readFile(windowHTML, "utf-8")
                     const newContent = content.replace(remove, "")
@@ -177,7 +194,7 @@ module.exports = (plugin) => {
                 }
                 const message = i18n.t("success.uninstall")
                 const confirm = i18n.t("confirm")
-                const op = { type: "info", title: "Typora Plugin", message, buttons: [confirm] }
+                const op = { type: "info", message, buttons: [confirm] }
                 await utils.showMessageBox(op)
                 utils.restartTypora(false)
             }
@@ -231,10 +248,10 @@ module.exports = (plugin) => {
                 return `<div style="display: flex; flex-direction: column; align-items: center">${svg}${label}</div>`
             })
             const qrcodeCnt = `<div style="display: flex; justify-content: space-evenly; margin-top: 8px">${qrEls.join("")}</div>`
-            const backers = (await FsExtra.readFile(utils.joinPath("./plugin/preferences/backers.txt"), "utf-8"))
+            const backers = (await FsExtra.readFile(utils.joinPluginPath("./plugin/preferences/backers.txt"), "utf-8"))
                 .split("\n").filter(Boolean).map(e => `<div>${utils.escape(e)}</div>`).join("")
             const backersCnt = `<div style="text-align: center; font-weight: bold; margin-bottom: 5px;">THANK YOU TO ALL THE BACKERS</div><div style="display: grid; grid-template-columns: repeat(10, auto);">${backers}</div>`
-            const op = {
+            await utils.formDialog.modal({
                 title: i18n.t("$label.donate"),
                 schema: [
                     { fields: [{ type: "action", key: "starMe", label: "<b>Star This Project on GitHub</b>" }] },
@@ -242,8 +259,7 @@ module.exports = (plugin) => {
                     { fields: [{ type: "custom", content: backersCnt, unsafe: true }] },
                 ],
                 actions: { starMe: actions.visitRepo }
-            }
-            await utils.formDialog.modal(op)
+            })
         },
     }
     return actions

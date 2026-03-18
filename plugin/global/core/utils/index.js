@@ -18,6 +18,7 @@ const MIXINS = {
     thirdPartyDiagramParser: require("./thirdPartyDiagramParser"),
     mermaid: require("./mermaid"),
     entities: require("./entities"),
+    decorator: require("./decorator"),
     unstableRequire: require("./unstableRequire"),
 }
 
@@ -29,22 +30,18 @@ class utils {
     static isBetaVersion = this.typoraVersion[0] === "0"
 
     static separator = File.isWin ? "\\" : "/"
-    static fileProtocolUrlBase = this.isBetaVersion ? "typora://typemark" : "typora://app/typemark"
+    static protocolRoot = this.isBetaVersion ? "typora://typemark" : "typora://app/typemark"
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static tempFolder = window._options.tempPath || require("os").tmpdir()
     static Package = Object.freeze({ Path: PATH, FsExtra: FS_EXTRA })
 
-    static nonExistSelector = "__non_exist__"  // Plugin temporarily unavailable, return this.
-    static disableForeverSelector = "__disabled__"  // Plugin permanently unavailable, return this.
-    static stopLoadPluginError = Symbol("stop_loading")  // For plugin's beforeProcess method; return this to stop loading the plugin.
+    static PLUGIN_LOAD_ABORT = Symbol.for("plugin:load-abort")  // For plugin's beforeProcess method; return this to stop loading the plugin
 
     static mixins = Object.fromEntries(
         Object.entries(MIXINS).map(([name, cls]) => [[name], new cls(this, i18n)])
     )
 
-    // Do NOT manually call these variables
-    static _sentinel = Symbol()  // As a sentinel value
-    static _meta = {}            // Used to pass data in the context menu
+    static _meta = {}  // Used to pass data in the context menu
 
     ////////////////////////////// plugin //////////////////////////////
     static container = null
@@ -155,10 +152,10 @@ class utils {
     static isIMEActivated = ev => ev.key === "Process"
     static modifierKey = keyString => {
         const keys = keyString.toLowerCase().split("+").map(k => k.trim())
-        const ctrl = keys.indexOf("ctrl") !== -1
-        const shift = keys.indexOf("shift") !== -1
-        const alt = keys.indexOf("alt") !== -1
-        return ev => this.metaKeyPressed(ev) === ctrl && this.shiftKeyPressed(ev) === shift && this.altKeyPressed(ev) === alt
+        const ctrl = keys.includes("ctrl")
+        const shift = keys.includes("shift")
+        const alt = keys.includes("alt")
+        return ev => ev.shiftKey === shift && ev.altKey === alt && this.metaKeyPressed(ev) === ctrl
     }
 
 
@@ -169,83 +166,88 @@ class utils {
     static safeEval = x => new Function(`return (${x})`)()
     static unsafeEval = x => eval(`(${x})`)
 
-    /** @description param fn cannot be an ordinary function that returns promise-like objects */
+    /** @description NOT a foolproof solution. */
+    static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str)
+    /** @description NOT a foolproof solution. The Promises/A+ specification is not a part of Node.js, so there is no foolproof solution at all */
+    static isPromise = obj => this.isObject(obj) && typeof obj.then === "function"
+    /** @description NOT a foolproof solution. Determine the "true" asynchronous functions */
+    static isAsyncFunction = fn => fn.constructor.name === "AsyncFunction"
+    /** @description NOT a foolproof solution. */
+    static isObject = value => {
+        const type = typeof value
+        return value != null && (type === "object" || type === "function")
+    }
+
+    static randomString = (len = 8) => Math.random().toString(36).substring(2, 2 + len).padEnd(len, "0")
+    static randomInt = (min, max) => {
+        const ceil = Math.ceil(min)
+        const floor = Math.floor(max)
+        return Math.floor(Math.random() * (floor - ceil) + ceil)
+    }
+    static getUUID = () => {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+            const r = (Math.random() * 16) | 0
+            const v = c === "x" ? r : (r & 0x3) | 0x8
+            return v.toString(16)
+        })
+    }
+
+    static escape = html => {
+        const replacements = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "/": "&#x2F;", "`": "&#x60;", "=": "&#x3D;" }
+        return html.replace(/[&<>"'`=\/]/g, c => replacements[c])
+    }
+
     static throttle = (fn, delay) => {
-        let timer
-        const isAsync = this.isAsyncFunction(fn)
+        let timer, result
         return function (...args) {
-            if (timer) return
-            const result = isAsync
-                ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
-                : fn(...args)
-            timer = setTimeout(() => {
-                clearTimeout(timer)
-                timer = null
-            }, delay)
+            if (timer) return result
+            result = fn.apply(this, args)
+            timer = setTimeout(() => timer = null, delay)
             return result
         }
     }
 
-    /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static debounce = (fn, delay) => {
-        let timer
-        const isAsync = this.isAsyncFunction(fn)
+        let timer, deferred
         return function (...args) {
+            if (!deferred) {
+                deferred = Promise.withResolvers()
+            }
             clearTimeout(timer)
-            if (isAsync) {
-                return new Promise(resolve => timer = setTimeout(() => resolve(fn(...args)), delay)).catch(e => Promise.reject(e))
-            } else {
-                timer = setTimeout(() => fn(...args), delay)
-            }
+            timer = setTimeout(() => {
+                const { resolve, reject } = deferred
+                deferred = null
+                timer = null
+                Promise.try(() => fn.apply(this, args)).then(resolve, reject)
+            }, delay)
+            return deferred.promise
         }
     }
 
-    /** @description param fn cannot be an ordinary function that returns promise-like objects */
-    static once = fn => {
-        let cache = this._sentinel
-        const isAsync = this.isAsyncFunction(fn)
-        return function (...args) {
-            if (cache === utils._sentinel) {
-                cache = isAsync
-                    ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
-                    : fn(...args)
-            }
-            return cache
-        }
-    }
-
-    /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static memorize = fn => {
-        const cache = {}
-        const isAsync = this.isAsyncFunction(fn)
+        const cache = Object.create(null)
         return function (...args) {
             const key = JSON.stringify(args)
-            if (cache[key]) {
+            if (key in cache) {
                 return cache[key]
             }
-            const result = isAsync
-                ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
-                : fn(...args)
+            const result = fn.apply(this, args)
             cache[key] = result
             return result
         }
     }
 
-    /** @description param fn cannot be an ordinary function that returns promise-like objects */
     static memoizeLimited = (fn, cap = 100) => {
         const cache = new Map()
-        const isAsync = this.isAsyncFunction(fn)
         return function (...args) {
             const key = JSON.stringify(args)
-            const cacheEntry = cache.get(key)
-            if (cacheEntry) {
+            if (cache.has(key)) {
+                const item = cache.get(key)
                 cache.delete(key)
-                cache.set(key, cacheEntry)
-                return cacheEntry
+                cache.set(key, item)
+                return item
             }
-            const result = isAsync
-                ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
-                : fn(...args)
+            const result = fn.apply(this, args)
             cache.set(key, result)
             if (cap > 0 && cache.size > cap) {
                 cache.delete(cache.keys().next().value)
@@ -254,15 +256,286 @@ class utils {
         }
     }
 
+    static once = fn => {
+        let result
+        let called = false
+        return function (...args) {
+            if (!called) {
+                called = true
+                result = fn.apply(this, args)
+            }
+            return result
+        }
+    }
+
     static oneShot = () => {
         let shot
         const arm = fn => shot = fn
-        const fire = (...args) => {
+        const fire = function (...args) {
             const fn = shot
             shot = null
-            return fn?.(...args)
+            return fn?.apply(this, args)
         }
         return [arm, fire]
+    }
+
+    static chunk = (array, size = 10) => {
+        let index = 0
+        let result = []
+        while (index < array.length) {
+            result.push(array.slice(index, (index + size)))
+            index += size
+        }
+        return result
+    }
+
+    static zip = (...arrays) => {
+        if (arrays.length === 0) return []
+        const minLength = Math.min(...arrays.map(arr => arr.length))
+        return Array.from({ length: minLength }, (_, i) => arrays.map(arr => arr[i]))
+    }
+
+    static pick = (obj, attrs) => {
+        if (!obj || typeof obj !== "object") {
+            return {}
+        }
+        const entries = attrs
+            .map(attr => [attr, obj[attr]])
+            .filter(([_, value]) => value !== undefined)
+        return Object.fromEntries(entries)
+    }
+
+    static pickBy = (obj, predicate) => {
+        if (!obj || typeof obj !== "object" || typeof predicate !== "function") {
+            return {}
+        }
+        const entries = Object.entries(obj).filter(([key, value]) => predicate(value, key, obj))
+        return Object.fromEntries(entries)
+    }
+
+    /**
+     * @example merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
+     * @example merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
+     */
+    static merge = (source, other) => {
+        if (!this.isObject(source) || !this.isObject(other)) {
+            return other === undefined ? source : other
+        }
+        return Object.keys({ ...source, ...other }).reduce((obj, key) => {
+            obj[key] = Array.isArray(other[key]) ? other[key] : this.merge(source[key], other[key])
+            return obj
+        }, Array.isArray(source) ? [] : {})
+    }
+
+    /**
+     * only merge keys that exist in source
+     * @example update({ o: { a: [1, 2] } }, { o: { a: [3, 4] }, d: { b: 4 } }) -> { o: { a: [ 3, 4 ] } } }
+     * @example update({ o: { a: 3, c: 1 } }, { o: { a: 2 }, d: { b: 4 } }) -> { o: { a: 2, c: 1 } } }
+     */
+    static update = (source, other) => {
+        if (!this.isObject(source) || !this.isObject(other)) {
+            return other === undefined ? source : other
+        }
+        return Object.keys(source).reduce((obj, key) => {
+            if (other[key]) {
+                obj[key] = Array.isArray(other[key]) ? other[key] : this.update(source[key], other[key])
+            } else {
+                obj[key] = source[key]
+            }
+            return obj
+        }, Array.isArray(source) ? [] : {})
+    }
+
+    /**
+     * Recursively creates a minimal version of an object by removing properties that are null, empty, or deeply equal to their counterparts in a default values object.
+     * @example minimize({ o: { a: 3, b: 4 } }, { o: { a: 3 } }) -> { o: { b: 4 } }
+     */
+    static minimize = (sourceObject, defaultValues, options = {}, result = {}) => {
+        const { allowNull = false, allowUndefined = false, allowEmptyArray = false, allowEmptyObject = false } = options
+
+        for (const key of Object.keys(sourceObject)) {
+            const sourceValue = sourceObject[key]
+            const defaultValue = defaultValues ? defaultValues[key] : undefined
+
+            if (sourceValue === null && !allowNull) continue
+            if (sourceValue === undefined && !allowUndefined) continue
+            if (this.deepEqual(sourceValue, defaultValue)) continue
+
+            if (Array.isArray(sourceValue)) {
+                if (allowEmptyArray || sourceValue.length > 0) {
+                    result[key] = sourceValue
+                }
+            } else if (typeof sourceValue === "object" && sourceValue !== null) {
+                const subDefault = (typeof defaultValue === "object" && defaultValue !== null) ? defaultValue : {}
+                const minimizedSubObject = this.minimize(sourceValue, subDefault, options, {})
+                if (allowEmptyObject || Object.keys(minimizedSubObject).length > 0) {
+                    result[key] = minimizedSubObject
+                }
+            } else {
+                result[key] = sourceValue
+            }
+        }
+        return result
+    }
+
+    static cloneDeep = (obj, memo = new WeakMap()) => {
+        if (obj == null || typeof obj !== "object") {
+            return obj
+        } else if (memo.has(obj)) {
+            return memo.get(obj)
+        } else if (obj instanceof Date) {
+            return new Date(obj.getTime())
+        } else if (obj instanceof RegExp) {
+            return new RegExp(obj.source, obj.flags)
+        } else if (obj instanceof Map) {
+            const clonedMap = new Map()
+            memo.set(obj, clonedMap)
+            obj.forEach((value, key) => {
+                clonedMap.set(this.cloneDeep(key, memo), this.cloneDeep(value, memo))
+            })
+            return clonedMap
+        } else if (obj instanceof Set) {
+            const clonedSet = new Set()
+            memo.set(obj, clonedSet)
+            obj.forEach(value => {
+                clonedSet.add(this.cloneDeep(value, memo))
+            })
+            return clonedSet
+        }
+        const clone = Array.isArray(obj) ? [] : Object.create(Object.getPrototypeOf(obj))
+        memo.set(obj, clone)
+        for (const key of [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)]) {
+            clone[key] = this.cloneDeep(obj[key], memo)
+        }
+        return clone
+    }
+
+    static naiveCloneDeep = (source) => {
+        if (source == null || typeof source !== "object") {
+            return source
+        }
+        return Array.isArray(source)
+            ? source.map(this.naiveCloneDeep)
+            : Object.fromEntries(Object.entries(source).map(([key, val]) => [key, this.naiveCloneDeep(val)]))
+    }
+
+    static deepEqual = (object, other) => _.isEqual(object, other)
+
+    static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+    static waitUntil = async (conditionFn, interval = 50, timeout = 10000) => {
+        const endTime = Date.now() + timeout
+        while (Date.now() < endTime) {
+            const result = await conditionFn()
+            if (result) {
+                return result
+            }
+            await this.sleep(interval)
+        }
+        throw new Error(`Polling timed out: ${conditionFn}`)
+    }
+
+    static asyncReplaceAll = (text, regex, replaceFn) => {
+        if (!regex.global) {
+            throw Error("Called with a non-global RegExp argument")
+        }
+
+        let match
+        let lastIndex = 0
+        const reg = new RegExp(regex)  // To avoid modifying `RegExp.lastIndex`, copy a new object
+        const promises = []
+        while (match = reg.exec(text)) {
+            const args = [...match, match.index, match.input]
+            promises.push(text.slice(lastIndex, match.index), replaceFn(...args))
+            lastIndex = reg.lastIndex
+        }
+        promises.push(text.slice(lastIndex))
+        return Promise.all(promises).then(results => results.join(""))
+    }
+
+    static compareVersion = (ver1, ver2) => {
+        const arr1 = (ver1 || "").split(".")
+        const arr2 = (ver2 || "").split(".")
+        const maxLength = Math.max(arr1.length, arr2.length)
+        for (let i = 0; i < maxLength; i++) {
+            const num1 = parseInt(arr1[i] || 0, 10)
+            const num2 = parseInt(arr2[i] || 0, 10)
+            if (num1 !== num2) {
+                return Math.sign(num1 - num2)
+            }
+        }
+        return 0
+    }
+
+    static dateTimeFormat = (date = new Date(), format = "yyyy-MM-dd HH:mm:ss", locale = undefined) => {
+        const fns = {
+            yyyy: () => date.getFullYear().toString(),
+            yyy: () => (date.getFullYear() % 1000).toString().padStart(3, "0"),
+            yy: () => (date.getFullYear() % 100).toString().padStart(2, "0"),
+            MMMM: () => new Intl.DateTimeFormat(locale, { month: "long" }).format(date),
+            MMM: () => new Intl.DateTimeFormat(locale, { month: "short" }).format(date),
+            MM: () => (date.getMonth() + 1).toString().padStart(2, "0"),
+            M: () => (date.getMonth() + 1).toString(),
+            dddd: () => new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date),
+            ddd: () => new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date),
+            dd: () => date.getDate().toString().padStart(2, "0"),
+            d: () => date.getDate().toString(),
+            HH: () => date.getHours().toString().padStart(2, "0"),
+            H: () => date.getHours().toString(),
+            hh: () => ((date.getHours() % 12 || 12)).toString().padStart(2, "0"),
+            h: () => (date.getHours() % 12 || 12).toString(),
+            mm: () => date.getMinutes().toString().padStart(2, "0"),
+            m: () => date.getMinutes().toString(),
+            ss: () => date.getSeconds().toString().padStart(2, "0"),
+            s: () => date.getSeconds().toString(),
+            SSS: () => date.getMilliseconds().toString().padStart(3, "0"),
+            S: () => date.getMilliseconds().toString(),
+            a: () => new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true }).formatToParts(date).find(part => part.type === "dayPeriod")?.value || ""
+        }
+        const regex = /(yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a)/g
+        return format.replace(regex, (match) => fns[match] ? fns[match]() : match)
+    }
+
+    static nestedPropertyHelpers = {
+        has: (obj, key) => {
+            if (key == null) {
+                return false
+            }
+            return key.split(".").every(k => {
+                if (obj && typeof obj === "object" && Object.hasOwn(obj, k)) {
+                    obj = obj[k]
+                    return true
+                }
+                return false
+            })
+        },
+        dive: (obj, key) => {
+            if (key == null) return {}
+            const keys = key.split(".")
+            const targetKey = keys.pop()
+            let keyContainer = obj
+            for (const k of keys) {
+                if (keyContainer && typeof keyContainer === "object" && Object.hasOwn(keyContainer, k)) {
+                    keyContainer = keyContainer[k]
+                } else {
+                    throw new Error(`Object has no such nested property: ${key}`)
+                }
+            }
+            if (keyContainer && typeof keyContainer === "object") {
+                return { keyContainer, targetKey }
+            }
+            return {}
+        },
+        handle: (obj, key, handler) => {
+            const { keyContainer, targetKey } = this.nestedPropertyHelpers.dive(obj, key)
+            if (keyContainer && targetKey) {
+                return handler(keyContainer, targetKey)
+            }
+        },
+        get: (obj, key) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey]),
+        set: (obj, key, val) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey] = val),
+        push: (obj, key, item) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].push(item)),
+        removeIndex: (obj, key, idx) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].splice(idx, 1)),
     }
 
     /**
@@ -293,7 +566,7 @@ class utils {
         totalTimeLimit = Math.max(totalTimeLimit, 0)
         debounceDelay = Math.max(debounceDelay, 0)
 
-        const NO_IDENTIFIER = Symbol("no_identifier")
+        const NO_IDENTIFIER = Symbol("no-identifier")
         let currentCount = 0
         let lastTimestamp = 0
         let firstTimestamp = 0
@@ -379,287 +652,17 @@ class utils {
         }
     }
 
-    static chunk = (array, size = 10) => {
-        let index = 0
-        let result = []
-        while (index < array.length) {
-            result.push(array.slice(index, (index + size)))
-            index += size
-        }
-        return result
-    }
-
-    static zip = (...arrays) => {
-        if (arrays.length === 0) return []
-        const minLength = Math.min(...arrays.map(arr => arr.length))
-        return Array.from({ length: minLength }, (_, i) => arrays.map(arr => arr[i]))
-    }
-
-    static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-    /**
-     * @example merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
-     * @example merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
-     */
-    static merge = (source, other) => {
-        if (!this.isObject(source) || !this.isObject(other)) {
-            return other === undefined ? source : other
-        }
-        return Object.keys({ ...source, ...other }).reduce((obj, key) => {
-            obj[key] = Array.isArray(other[key]) ? other[key] : this.merge(source[key], other[key])
-            return obj
-        }, Array.isArray(source) ? [] : {})
-    }
-
-    /**
-     * only merge keys that exist in source
-     * @example update({ o: { a: [1, 2] } }, { o: { a: [3, 4] }, d: { b: 4 } }) -> { o: { a: [ 3, 4 ] } } }
-     * @example update({ o: { a: 3, c: 1 } }, { o: { a: 2 }, d: { b: 4 } }) -> { o: { a: 2, c: 1 } } }
-     */
-    static update = (source, other) => {
-        if (!this.isObject(source) || !this.isObject(other)) {
-            return other === undefined ? source : other
-        }
-        return Object.keys(source).reduce((obj, key) => {
-            if (other[key]) {
-                obj[key] = Array.isArray(other[key]) ? other[key] : this.update(source[key], other[key])
-            } else {
-                obj[key] = source[key]
-            }
-            return obj
-        }, Array.isArray(source) ? [] : {})
-    }
-
-    /**
-     * Recursively creates a minimal version of an object by removing properties that are null, empty, or deeply equal to their counterparts in a default values object.
-     * @example minimize({ o: { a: 3, b: 4 } }, { o: { a: 3 } }) -> { o: { b: 4 } }
-     */
-    static minimize = (sourceObject, defaultValues, options = {}, result = {}) => {
-        const { allowNull = false, allowUndefined = false, allowEmptyArray = false, allowEmptyObject = false } = options
-
-        for (const key of Object.keys(sourceObject)) {
-            const sourceValue = sourceObject[key]
-            const defaultValue = defaultValues ? defaultValues[key] : undefined
-
-            if (sourceValue === null && !allowNull) continue
-            if (sourceValue === undefined && !allowUndefined) continue
-            if (this.deepEqual(sourceValue, defaultValue)) continue
-
-            if (Array.isArray(sourceValue)) {
-                if (allowEmptyArray || sourceValue.length > 0) {
-                    result[key] = sourceValue
-                }
-            } else if (typeof sourceValue === "object" && sourceValue !== null) {
-                const subDefault = (typeof defaultValue === "object" && defaultValue !== null) ? defaultValue : {}
-                const minimizedSubObject = this.minimize(sourceValue, subDefault, options, {})
-                if (allowEmptyObject || Object.keys(minimizedSubObject).length > 0) {
-                    result[key] = minimizedSubObject
-                }
-            } else {
-                result[key] = sourceValue
-            }
-        }
-        return result
-    }
-
-    static pick = (obj, attrs) => {
-        if (!obj || typeof obj !== "object") {
-            return {}
-        }
-        const entries = attrs
-            .map(attr => [attr, obj[attr]])
-            .filter(([_, value]) => value !== undefined)
-        return Object.fromEntries(entries)
-    }
-
-    static pickBy = (obj, predicate) => {
-        if (!obj || typeof obj !== "object" || typeof predicate !== "function") {
-            return {}
-        }
-        const entries = Object.entries(obj).filter(([key, value]) => predicate(value, key, obj))
-        return Object.fromEntries(entries)
-    }
-
-    static deepEqual = (object, other) => _.isEqual(object, other)
-
-    static cloneDeep = (obj, memo = new WeakMap()) => {
-        if (obj == null || typeof obj !== "object") {
-            return obj
-        } else if (memo.has(obj)) {
-            return memo.get(obj)
-        } else if (obj instanceof Date) {
-            return new Date(obj.getTime())
-        } else if (obj instanceof RegExp) {
-            return new RegExp(obj.source, obj.flags)
-        } else if (obj instanceof Map) {
-            const clonedMap = new Map()
-            memo.set(obj, clonedMap)
-            obj.forEach((value, key) => {
-                clonedMap.set(this.cloneDeep(key, memo), this.cloneDeep(value, memo))
-            })
-            return clonedMap
-        } else if (obj instanceof Set) {
-            const clonedSet = new Set()
-            memo.set(obj, clonedSet)
-            obj.forEach(value => {
-                clonedSet.add(this.cloneDeep(value, memo))
-            })
-            return clonedSet
-        }
-        const clone = Array.isArray(obj) ? [] : Object.create(Object.getPrototypeOf(obj))
-        memo.set(obj, clone)
-        for (const key of [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)]) {
-            clone[key] = this.cloneDeep(obj[key], memo)
-        }
-        return clone
-    }
-
-    static naiveCloneDeep = (source) => {
-        if (source == null || typeof source !== "object") {
-            return source
-        }
-        return Array.isArray(source)
-            ? source.map(this.naiveCloneDeep)
-            : Object.fromEntries(Object.entries(source).map(([key, val]) => [key, this.naiveCloneDeep(val)]))
-    }
-
-    static asyncReplaceAll = (content, regexp, replaceFunc) => {
-        if (!regexp.global) {
-            throw Error("Called with a non-global RegExp argument")
-        }
-
-        let match
-        let lastIndex = 0
-        const reg = new RegExp(regexp)  // To avoid modifying `RegExp.lastIndex`, copy a new object
-        const promises = []
-        while (match = reg.exec(content)) {
-            const args = [...match, match.index, match.input]
-            promises.push(content.slice(lastIndex, match.index), replaceFunc(...args))
-            lastIndex = reg.lastIndex
-        }
-        promises.push(content.slice(lastIndex))
-        return Promise.all(promises).then(results => results.join(""))
-    }
-
-    static randomString = (len = 8) => Math.random().toString(36).substring(2, 2 + len).padEnd(len, "0")
-    static randomInt = (min, max) => {
-        const ceil = Math.ceil(min)
-        const floor = Math.floor(max)
-        return Math.floor(Math.random() * (floor - ceil) + ceil)
-    }
-    static getUUID = () => {
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
-            const r = (Math.random() * 16) | 0
-            const v = c === "x" ? r : (r & 0x3) | 0x8
-            return v.toString(16)
-        })
-    }
-
-    static dateTimeFormat = (date = new Date(), format = "yyyy-MM-dd HH:mm:ss", locale = undefined) => {
-        const fns = {
-            yyyy: () => date.getFullYear().toString(),
-            yyy: () => (date.getFullYear() % 1000).toString().padStart(3, "0"),
-            yy: () => (date.getFullYear() % 100).toString().padStart(2, "0"),
-            MMMM: () => new Intl.DateTimeFormat(locale, { month: "long" }).format(date),
-            MMM: () => new Intl.DateTimeFormat(locale, { month: "short" }).format(date),
-            MM: () => (date.getMonth() + 1).toString().padStart(2, "0"),
-            M: () => (date.getMonth() + 1).toString(),
-            dddd: () => new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date),
-            ddd: () => new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date),
-            dd: () => date.getDate().toString().padStart(2, "0"),
-            d: () => date.getDate().toString(),
-            HH: () => date.getHours().toString().padStart(2, "0"),
-            H: () => date.getHours().toString(),
-            hh: () => ((date.getHours() % 12 || 12)).toString().padStart(2, "0"),
-            h: () => (date.getHours() % 12 || 12).toString(),
-            mm: () => date.getMinutes().toString().padStart(2, "0"),
-            m: () => date.getMinutes().toString(),
-            ss: () => date.getSeconds().toString().padStart(2, "0"),
-            s: () => date.getSeconds().toString(),
-            SSS: () => date.getMilliseconds().toString().padStart(3, "0"),
-            S: () => date.getMilliseconds().toString(),
-            a: () => new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true }).formatToParts(date).find(part => part.type === "dayPeriod")?.value || ""
-        }
-        const regex = /(yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a)/g
-        return format.replace(regex, (match) => fns[match] ? fns[match]() : match)
-    }
-
-    /** @description NOT a foolproof solution. */
-    static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str)
-    /** @description NOT a foolproof solution. In fact, the Promises/A+ specification is not a part of Node.js, so there is no foolproof solution at all */
-    static isPromise = obj => this.isObject(obj) && typeof obj.then === "function"
-    /** @description NOT a foolproof solution. Can only be used to determine the "true" asynchronous functions */
-    static isAsyncFunction = fn => fn.constructor.name === "AsyncFunction"
-    /** @description NOT a foolproof solution. */
-    static isObject = value => {
-        const type = typeof value
-        return value != null && (type === "object" || type === "function")
-    }
-
-    static escape = html => {
-        const replacements = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;", "/": "&#x2F;", "`": "&#x60;", "=": "&#x3D;" }
-        return html.replace(/[&<>"'`=\/]/g, c => replacements[c])
-    }
-
-    static compareVersion = (ver1, ver2) => {
-        const arr1 = (ver1 || "").split(".")
-        const arr2 = (ver2 || "").split(".")
-        const maxLength = Math.max(arr1.length, arr2.length)
-        for (let i = 0; i < maxLength; i++) {
-            const num1 = parseInt(arr1[i] || 0, 10)
-            const num2 = parseInt(arr2[i] || 0, 10)
-            if (num1 !== num2) {
-                return Math.sign(num1 - num2)
-            }
-        }
-        return 0
-    }
-
-    static nestedPropertyHelpers = {
-        has: (obj, key) => {
-            if (key == null) {
-                return false
-            }
-            return key.split(".").every(k => {
-                if (obj && typeof obj === "object" && Object.hasOwn(obj, k)) {
-                    obj = obj[k]
-                    return true
-                }
-                return false
-            })
-        },
-        dive: (obj, key) => {
-            if (key == null) return {}
-            const keys = key.split(".")
-            const targetKey = keys.pop()
-            let keyContainer = obj
-            for (const k of keys) {
-                if (keyContainer && typeof keyContainer === "object" && Object.hasOwn(keyContainer, k)) {
-                    keyContainer = keyContainer[k]
-                } else {
-                    throw new Error(`Object has no such nested property: ${key}`)
-                }
-            }
-            if (keyContainer && typeof keyContainer === "object") {
-                return { keyContainer, targetKey }
-            }
-            return {}
-        },
-        handle: (obj, key, handler) => {
-            const { keyContainer, targetKey } = this.nestedPropertyHelpers.dive(obj, key)
-            if (keyContainer && targetKey) {
-                return handler(keyContainer, targetKey)
-            }
-        },
-        get: (obj, key) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey]),
-        set: (obj, key, val) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey] = val),
-        push: (obj, key, item) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].push(item)),
-        removeIndex: (obj, key, idx) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].splice(idx, 1)),
-    }
-
     ////////////////////////////// business file operation //////////////////////////////
     static getLocalRootUrl = () => File.editor.docMenu.getLocalRootUrl() || this.getCurrentDirPath()
-    static getFileProtocolUrl = (url) => new URL(url, this.fileProtocolUrlBase)
+    static toProtocolUrl = (path) => {
+        const segments = (typeof path === "string" ? path : "")
+            .trim()
+            .split(/[\\/]+/)
+            .filter(seg => seg && seg !== "." && seg !== "..")
+            .map(encodeURIComponent)
+            .join("/")
+        return `${this.protocolRoot}/${segments}`
+    }
 
     static getCurrentFileContent = () => File.editor.getMarkdown()
     static editCurrentFile = async (replacement, persistence = File.option.enableAutoSave) => {
@@ -712,29 +715,14 @@ class utils {
         link.id = id
         link.type = "text/css"
         link.rel = "stylesheet"
-        link.href = this.joinPath(href)
+        link.href = this.joinPluginPath(href)
         document.head.appendChild(link)
     }
-    static registerStyle = (fixedName, style) => {
-        if (!style) return
-        switch (typeof style) {
-            case "string":
-                const name = fixedName.replace(/_/g, "-")
-                this.insertStyle(`plugin-${name}-style`, style)
-                break
-            case "object":
-                const { textID, text, fileID, file } = style
-                if (fileID && file) {
-                    this.insertStyleFile(fileID, file)
-                }
-                if (textID && text) {
-                    this.insertStyle(textID, text)
-                }
-                break
+    static registerStyle = (name, style) => {
+        if (typeof style === "string") {
+            this.insertStyle(`plugin-${name}-style`, style)
         }
     }
-
-    static insertScript = filepath => $.getScript(`file:///${this.joinPath(filepath)}`)
     static removeStyle = id => this.removeElementByID(id)
 
     static newFilePath = async filename => {
@@ -778,10 +766,10 @@ class utils {
     static getFilePath = () => File.filePath || File.bundle?.filePath || ""
     static getMountFolder = () => File.getMountFolder() || ""
     static getCurrentDirPath = () => PATH.dirname(this.getFilePath())
-    static joinPath = (...paths) => PATH.join(this.getDirname(), ...paths)
-    static resolvePath = (...paths) => PATH.resolve(this.getDirname(), ...paths)
-    static require = (...paths) => require(this.joinPath(...paths))
-    static getUserSpaceFile = (file = "") => this.joinPath("./plugin/global/user_space", file)
+    static joinPluginPath = (...paths) => PATH.join(this.getDirname(), ...paths)
+    static resolvePluginPath = (...paths) => PATH.resolve(this.getDirname(), ...paths)
+    static getUserSpaceFile = (file = "") => this.joinPluginPath("./plugin/global/user_space", file)
+    static require = (...paths) => require(this.joinPluginPath(...paths))
 
     static readFiles = async files => Promise.all(files.map(file => FS_EXTRA.readFile(file, "utf-8").catch(() => undefined)))
     static existPath = async path => FS_EXTRA.access(path).then(() => true).catch(() => false)
@@ -869,10 +857,10 @@ class utils {
         if (signal) {
             const onAbort = () => rejectAndStop(signal.reason ?? new DOMException("Signal Aborted", "AbortError"))
             signal.addEventListener("abort", onAbort, { once: true })
-            drainPromise.finally(() => signal.removeEventListener("abort", onAbort)).catch(() => {})
+            drainPromise.finally(() => signal.removeEventListener("abort", onAbort)).catch(() => undefined)
         }
         if (onFinished) {
-            drainPromise.finally(() => onFinished(fatalError)).catch(() => {})
+            drainPromise.finally(() => onFinished(fatalError)).catch(() => undefined)
         }
         const rejectAndStop = (err) => {
             if (aborted) return
@@ -965,7 +953,7 @@ class utils {
     static showMessageBox = async (
         {
             type = "info",
-            title = "typora",
+            title = "Typora Plugin",
             message, detail,
             buttons = [i18n.t("global", "confirm"), i18n.t("global", "cancel")],
             defaultId = 0,
@@ -1349,62 +1337,6 @@ class utils {
         origin?.classList.toggle("active")
         active.classList.toggle("active")
         active.scrollIntoView({ block: "nearest" })
-    }
-
-    static stopCallError = Symbol("stop_calling") // For the decorate method; return this to stop executing the native function.
-    static decorate = (objGetter, attr, beforeFn, afterFn, modifyResult = false, modifyArgs = false) => {
-        const createDecorator = (originalFn, before, after) => {
-            const decoratedFn = function (...args) {
-                let executionArgs = args
-                if (before) {
-                    const beforeFnResult = before.call(this, ...args)
-                    if (beforeFnResult === utils.stopCallError) return
-                    if (modifyArgs) executionArgs = beforeFnResult
-                }
-                const result = originalFn.apply(this, executionArgs)
-                if (after) {
-                    const afterFnResult = after.call(this, result, ...executionArgs)
-                    if (modifyResult) return afterFnResult
-                }
-                return result
-            }
-            return Object.defineProperties(decoratedFn, {
-                name: { value: originalFn.name, configurable: true },
-                length: { value: originalFn.length, configurable: true },
-            })
-        }
-
-        const endTime = 10000 + Date.now()
-        const timer = setInterval(() => {
-            if (Date.now() > endTime) {
-                console.error("decorate timeout!", objGetter, attr, beforeFn, afterFn, modifyResult)
-                clearInterval(timer)
-                return
-            }
-            const obj = objGetter()
-            if (obj?.[attr]) {
-                clearInterval(timer)
-                obj[attr] = createDecorator(obj[attr], beforeFn, afterFn)
-            }
-        }, 50)
-    }
-
-    static pollUntil = (until, after, interval = 50, timeout = 10000, runWhenTimeout = true) => {
-        let run = false
-        const endTime = timeout + Date.now()
-        const timer = setInterval(() => {
-            if (Date.now() > endTime) {
-                run = runWhenTimeout
-                if (!run) {
-                    clearInterval(timer)
-                    return
-                }
-            }
-            if (until() || run) {
-                clearInterval(timer)
-                after?.()
-            }
-        }, interval)
     }
 }
 
