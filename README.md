@@ -51,7 +51,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 32   | timeline            | Timeline                                                     |                    |
 | 33   | chat                | Chat                                                         |                    |
 | 34   | auto_number         | Auto Numbering                                               |                    |
-| 35   | image_viewer        | Image reviewer                                               |                    |
+| 35   | image_viewer        | Multi-image reviewer                                               |                    |
 | 36   | cjk_symbol_pairing  | Automatic completion of CJK symbols                          |                    |
 | 37   | resize_table        | Adjust table row height and column width                     |                    |
 | 38   | resize_image        | Adjust image display size                                    |                    |
@@ -76,6 +76,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 57   | hotkeys             | Hotkey registration center (advanced)                        |                    |
 | 58   | action_buttons      | Add function buttons in the lower right corner (advanced)    |                    |
 | 59   | json_rpc            | External control of Typora (advanced)                        | ×                  |
+| 60   | image_see           | Double-click Image Viewer                                    |                    |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
@@ -467,6 +468,21 @@ Usage:
 - Method 2: Right-click menu -> Less Used Plugins -> Image Viewer
 
 ![image-reviewer](./assets/image-reviewer.png)
+
+### image_see: Double-click Image Viewer
+
+Function: Double-click with left mouse button to view images, supporting zoom and drag.
+
+Usage:
+
+- View: Double-click any rendered img image with the left mouse button to pop up the image.
+- Zoom: After the image pops up, use the mouse scroll wheel to zoom in/out.
+- Drag: After the image pops up, hold the left mouse button and drag to view details.
+- Close: After the image pops up, click the X in the top right corner or press Esc to close.
+
+![image-see-default](./assets/image-see-default.png)
+![image-see-scale](./assets/image-see-scale.png)
+![image-see-drag](./assets/image-see-drag.png)
 
 ### cjk_symbol_pairing
 
