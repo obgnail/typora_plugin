@@ -6,7 +6,7 @@ module.exports = Object.fromEntries(
         .filter(file => file.isFile() && path.extname(file.name).toLowerCase() === ".json")
         .map(file => {
             const key = file.name.replace(/\.json$/, "")
-            const p = path.join(file.path, file.name)
+            const p = path.join(file.parentPath || file.path, file.name)
             const val = {
                 name: key,
                 path: p,

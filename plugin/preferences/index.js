@@ -59,30 +59,36 @@ class PreferencesPlugin extends BasePlugin {
             })
         }
         const searchInDialog = () => {
-            let allow = true
-            const search = () => {
-                if (!allow) return
-                const query = this.entities.searchInput.value.trim().toLowerCase()
-                this.entities.menu.querySelectorAll(".plugin-preferences-menu-item").forEach((el) => {
-                    let fn = "show"
-                    if (query) {
-                        const hitShowName = el.textContent.toLowerCase().includes(query)
-                        const hitFixedName = this.config.SEARCH_PLUGIN_FIXEDNAME && el.dataset.plugin.toLowerCase().includes(query)
-                        if (!hitShowName && !hitFixedName) {
-                            fn = "hide"
+            const querySchemas = (query) => {
+                const hits = new Set()
+                if (!query) return hits
+                Object.entries(this.SCHEMAS).forEach(([pluginName, boxes]) => {
+                    boxes.forEach(box => {
+                        if (box.title?.toLowerCase().includes(query)) {
+                            hits.add(pluginName)
                         }
-                    }
-                    this.utils[fn](el)
+                        box.fields?.forEach(field => {
+                            if (field.label?.toLowerCase().includes(query)) {
+                                hits.add(pluginName)
+                            }
+                        })
+                    })
                 })
-                if (!query) {
-                    this.entities.menu.querySelector(".plugin-preferences-menu-item.active")?.scrollIntoView({ block: "center" })
-                }
+                return hits
             }
-            this.entities.searchInput.addEventListener("input", search)
-            this.entities.searchInput.addEventListener("compositionstart", () => allow = false)
-            this.entities.searchInput.addEventListener("compositionend", () => {
-                allow = true
-                search()
+            const toggleMenuItem = (query) => {
+                const hitSchemas = querySchemas(query)
+                this.entities.menu.querySelectorAll(".plugin-preferences-menu-item").forEach(el => {
+                    const hide = !!query && !hitSchemas.has(el.dataset.plugin) && !el.textContent.toLowerCase().includes(query)
+                    this.utils.toggleInvisible(el, hide)
+                })
+            }
+            const highlightForm = (query) => this.entities.form.getApi("highlight")?.highlight(query)
+            const scroll = () => this.entities.menu.querySelector(".plugin-preferences-menu-item.active")?.scrollIntoView({ block: "center" })
+            this.utils.createSmartInputHandler(this.entities.searchInput, (query) => {
+                toggleMenuItem(query)
+                highlightForm(query)
+                if (!query) scroll()
             })
         }
         const onEvents = () => {
@@ -189,6 +195,7 @@ class PreferencesPlugin extends BasePlugin {
             fieldDependencyUnmetAction: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
             boxDependencyUnmetAction: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
             collapsibleBox: this.config.COLLAPSIBLE_BOX,
+            highlight: this._getSearchValue(),
         }, fixedName)
     }
 
@@ -240,6 +247,7 @@ class PreferencesPlugin extends BasePlugin {
     _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
     _hasDialogChanged = () => this.entities.dialog.hasAttribute("has-changed")
     _getCurrentPlugin = () => this.entities.form.dataset.plugin
+    _getSearchValue = () => this.entities.searchInput.value.trim()
 }
 
 module.exports = {

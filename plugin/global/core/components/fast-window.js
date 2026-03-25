@@ -1,4 +1,5 @@
 const { sharedSheets } = require("./common")
+const utils = require("../utils")
 
 customElements.define("fast-window", class extends HTMLElement {
     static _template = `
@@ -25,9 +26,9 @@ customElements.define("fast-window", class extends HTMLElement {
             contentArea: root.querySelector(".content-area"),
         }
 
-        this._isDragging = false
         this._offsetX = 0
         this._offsetY = 0
+        this._rafManager = utils.getRafManager()
 
         this._addEventListeners()
     }
@@ -189,7 +190,6 @@ customElements.define("fast-window", class extends HTMLElement {
     _startDrag = (ev) => {
         if (ev.button !== 0 || ev.target.closest(".button")) return
 
-        this._isDragging = true
         this.style.transition = "none"
 
         const rect = this.getBoundingClientRect()
@@ -203,13 +203,13 @@ customElements.define("fast-window", class extends HTMLElement {
     }
 
     _dragging = (ev) => {
-        if (!this._isDragging) return
-
-        requestAnimationFrame(() => {
-            let newX = ev.clientX - this._offsetX
-            let newY = ev.clientY - this._offsetY
-            const maxX = window.innerWidth - this.offsetWidth
-            const maxY = window.innerHeight - this.offsetHeight
+        const currentX = ev.clientX
+        const currentY = ev.clientY
+        const maxX = window.innerWidth - this.offsetWidth
+        const maxY = window.innerHeight - this.offsetHeight
+        this._rafManager.schedule(() => {
+            let newX = currentX - this._offsetX
+            let newY = currentY - this._offsetY
             newX = Math.max(0, Math.min(newX, maxX))
             newY = Math.max(0, Math.min(newY, maxY))
             this.style.left = `${newX}px`
@@ -218,7 +218,7 @@ customElements.define("fast-window", class extends HTMLElement {
     }
 
     _endDrag = () => {
-        this._isDragging = false
+        this._rafManager.cancel()
         this.style.removeProperty("transition")
         document.removeEventListener("mousemove", this._dragging)
         document.removeEventListener("mouseup", this._endDrag)

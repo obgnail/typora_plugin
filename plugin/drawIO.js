@@ -109,7 +109,7 @@ class DrawIOPlugin extends BasePlugin {
         this._fixDiagramForExport(graph, graph.querySelector("svg"))
         if (graph) {
             graph.removeAttribute("data-mxgraph")
-            graph.querySelectorAll(":scope > *:not(svg)").forEach(this.utils.removeElement)
+            graph.querySelectorAll(":scope > *:not(svg)").forEach(el => el.remove())
         }
     }
 

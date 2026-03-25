@@ -226,7 +226,7 @@ class FenceEnhancePlugin extends BasePlugin {
                     return btnEl
                 })
                 enhance.append(...buttons)
-                fence.appendChild(enhance)
+                fence.append(enhance)
                 this.buttons.forEach((b, idx) => b.extraFunc?.({ btn: buttons[idx], cid, fence, enhance }))
             })
         }

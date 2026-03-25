@@ -528,7 +528,7 @@ const OPTIONS = createOptions({
 const schema_global = [
     UntitledBox(
         Switch("ENABLE", PROPS.protected),
-        Select("LOCALE", OPTIONS.global.LOCALE, { tooltip: Tip.action("openLocaleFolder", "fa fa-folder") }),
+        Select("LOCALE", OPTIONS.global.LOCALE, { tooltip: Tip.action("openLocaleFolder", "fa fa-language") }),
     ),
     UntitledBox(
         Switch("BATCH_RENDER_CHARTS"),
@@ -1393,7 +1393,6 @@ const schema_preferences = [
         FIELDS.HOTKEY,
     ),
     UntitledBox(
-        Switch("SEARCH_PLUGIN_FIXEDNAME"),
         Switch("COLLAPSIBLE_BOX"),
         Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR),
         Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),

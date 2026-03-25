@@ -708,7 +708,7 @@ class utils {
         const style = document.createElement("style")
         style.id = id
         style.appendChild(document.createTextNode(css))
-        document.head.appendChild(style)
+        document.head.append(style)
     }
     static insertStyleFile = (id, href) => {
         const link = document.createElement("link")
@@ -716,14 +716,14 @@ class utils {
         link.type = "text/css"
         link.rel = "stylesheet"
         link.href = this.joinPluginPath(href)
-        document.head.appendChild(link)
+        document.head.append(link)
     }
     static registerStyle = (name, style) => {
         if (typeof style === "string") {
             this.insertStyle(`plugin-${name}-style`, style)
         }
     }
-    static removeStyle = id => this.removeElementByID(id)
+    static removeStyle = id => document.getElementById(id)?.remove()
 
     static newFilePath = async filename => {
         filename = filename || File.getFileName() || Date.now() + ".md"
@@ -1068,16 +1068,11 @@ class utils {
     }
 
     ////////////////////////////// DOM Operations //////////////////////////////
-    static removeElement = el => el?.parentElement?.removeChild(el)
-    static removeElementByID = id => this.removeElement(document.getElementById(id))
-
     static isShown = el => !el.classList.contains("plugin-common-hidden")
     static isHidden = el => el.classList.contains("plugin-common-hidden")
     static hide = el => el.classList.add("plugin-common-hidden")
     static show = el => el.classList.remove("plugin-common-hidden")
     static toggleInvisible = (el, hide) => el.classList.toggle("plugin-common-hidden", hide)
-
-    static isImgEmbed = img => img.complete && img.naturalWidth !== 0 && img.naturalHeight !== 0
 
     static isInViewBox = el => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight
@@ -1097,6 +1092,8 @@ class utils {
             return 0
         }
     }
+
+    static isImgEmbed = img => img.complete && img.naturalWidth !== 0 && img.naturalHeight !== 0
 
     static markdownInlineStyleToHTML = (content, dir = this.getLocalRootUrl()) => {
         return content
@@ -1202,10 +1199,7 @@ class utils {
 
     static insertElement = elements => {
         const fragment = this.createDocumentFragment(elements)
-        if (fragment) {
-            const quickOpenNode = document.getElementById("typora-quick-open")
-            quickOpenNode.parentNode.insertBefore(fragment, quickOpenNode.nextSibling)
-        }
+        if (fragment) document.getElementById("typora-quick-open").after(fragment)
     }
 
     static findActiveNode = range => {
@@ -1234,6 +1228,8 @@ class utils {
         return el.rawText().substring(bookmark.start, bookmark.end)
     }
 
+    static getRafManager = () => new AnimationFrameManager()
+
     static resizeElement = (
         {
             targetEle,
@@ -1245,6 +1241,7 @@ class utils {
             onMouseUp = null,
         }
     ) => {
+        const rafManager = this.getRafManager()
         let startX, startY, startWidth, startHeight
         targetEle.addEventListener("mousedown", ev => {
             const { width, height } = document.defaultView.getComputedStyle(resizeEle)
@@ -1260,7 +1257,7 @@ class utils {
         }, true)
 
         function mousemove(e) {
-            requestAnimationFrame(() => {
+            rafManager.schedule(() => {
                 let deltaX = e.clientX - startX
                 let deltaY = e.clientY - startY
                 if (onMouseMove) {
@@ -1280,6 +1277,7 @@ class utils {
         function mouseup() {
             document.removeEventListener("mousemove", mousemove)
             document.removeEventListener("mouseup", mouseup)
+            rafManager.cancel()
             onMouseUp?.()
         }
     }
@@ -1294,6 +1292,7 @@ class utils {
             onMouseUp = null,
         }
     ) => {
+        const rafManager = this.getRafManager()
         targetEle.addEventListener("mousedown", ev => {
             if (onCheck && !onCheck(ev)) return
 
@@ -1306,24 +1305,26 @@ class utils {
             const _onMouseMove = ev => {
                 ev.stopPropagation()
                 ev.preventDefault()
-                requestAnimationFrame(() => {
+                const currentX = ev.clientX
+                const currentY = ev.clientY
+                rafManager.schedule(() => {
                     onMouseMove?.()
-                    moveEle.style.left = ev.clientX - shiftX + "px"
-                    moveEle.style.top = ev.clientY - shiftY + "px"
+                    moveEle.style.left = currentX - shiftX + "px"
+                    moveEle.style.top = currentY - shiftY + "px"
                 })
             }
 
             const _onMouseUp = ev => {
-                onMouseUp?.()
                 ev.stopPropagation()
                 ev.preventDefault()
+                rafManager.cancel()
+                onMouseUp?.()
                 document.removeEventListener("mousemove", _onMouseMove)
-                moveEle.onmouseup = null
                 document.removeEventListener("mouseup", _onMouseUp)
             }
 
-            document.addEventListener("mouseup", _onMouseUp)
             document.addEventListener("mousemove", _onMouseMove)
+            document.addEventListener("mouseup", _onMouseUp)
         })
         targetEle.ondragstart = () => false
     }
@@ -1337,6 +1338,110 @@ class utils {
         origin?.classList.toggle("active")
         active.classList.toggle("active")
         active.scrollIntoView({ block: "nearest" })
+    }
+
+    static createSmartInputHandler = (inputEl, callback, options = {}) => {
+        const config = {
+            immediateOnCompositionEnd: true, debounceDelay: 0, throttleDelay: 0, minInputLength: 0,
+            trimWhitespace: true, caseSensitive: false, enableIMECache: false, maxCacheSize: 10,
+            onCompositionStart: null, onCompositionEnd: null, onInput: null,
+            ...options
+        }
+
+        const buildExecutor = () => {
+            let executor = callback
+            if (config.enableIMECache) {
+                executor = this.memoizeLimited(executor, config.maxCacheSize)
+            }
+            if (config.debounceDelay > 0) {
+                executor = this.debounce(executor, config.debounceDelay)
+            } else if (config.throttleDelay > 0) {
+                executor = this.throttle(executor, config.throttleDelay)
+            }
+            return executor
+        }
+
+        let isComposing = false
+        let lastCallbackTime = 0
+        let lastEmittedValue = null
+        let finalCallback = buildExecutor()
+
+        const processValue = (val) => {
+            let processed = val || ""
+            if (config.trimWhitespace) processed = processed.trim()
+            if (!config.caseSensitive) processed = processed.toLowerCase()
+            return processed
+        }
+        const shouldExecuteCallback = (val) => config.minInputLength === 0 || val.length >= config.minInputLength
+        const execute = (val, ev) => {
+            if (!shouldExecuteCallback(val) || val === lastEmittedValue) return
+            lastCallbackTime = Date.now()
+            lastEmittedValue = val
+            const result = finalCallback(val, ev)
+            config.onInput?.(val, ev)
+            return result
+        }
+        const handleInput = (ev) => {
+            if (!isComposing) execute(processValue(ev.target.value), ev)
+        }
+        const handleCompositionStart = (ev) => {
+            isComposing = true
+            config.onCompositionStart?.(ev)
+        }
+        const handleCompositionEnd = (ev) => {
+            isComposing = false
+            config.onCompositionEnd?.(ev)
+            if (config.immediateOnCompositionEnd) {
+                execute(processValue(ev.target.value), ev)
+            }
+        }
+        const handle = (register) => {
+            const attr = register ? "addEventListener" : "removeEventListener"
+            inputEl[attr]("input", handleInput)
+            inputEl[attr]("compositionstart", handleCompositionStart)
+            inputEl[attr]("compositionend", handleCompositionEnd)
+        }
+
+        handle(true)
+
+        return {
+            updateConfig: (newConfig) => {
+                Object.assign(config, newConfig)
+                finalCallback = buildExecutor()
+            },
+            clean: () => {
+                handle(false)
+                lastEmittedValue = null
+            },
+            isComposing: () => isComposing,
+            getLastCallbackTime: () => lastCallbackTime,
+            trigger: (val) => execute(processValue(val ?? inputEl.value), null),
+        }
+    }
+}
+
+class AnimationFrameManager {
+    constructor() {
+        this.rafId = null
+    }
+
+    get isPending() {
+        return this.rafId !== null
+    }
+
+    schedule(callback) {
+        if (this.rafId) cancelAnimationFrame(this.rafId)
+        this.rafId = requestAnimationFrame(() => {
+            callback()
+            this.rafId = null
+        })
+    }
+
+    cancel() {
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId)
+            this.rafId = null
+        }
     }
 }
 

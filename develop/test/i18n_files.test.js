@@ -1,4 +1,4 @@
-const test = require("node:test")
+const { describe, it } = require("node:test")
 const assert = require("node:assert")
 const I18N_FILES = require("./fixtures/i18n_files.js")
 
@@ -42,25 +42,27 @@ function compareStructure(base, compare, paths, errors) {
     }
 }
 
-test("i18n locale file structure and key order", async (t) => {
-    const baseFile = I18N_FILES["zh-CN"] || Object.values(I18N_FILES)[0]
-    const filesToTest = Object.values(I18N_FILES).filter(file => file.name !== baseFile.name)
-    if (!baseFile) {
-        t.skip("No i18n files found in locales directory.")
-        return
-    }
-    if (filesToTest.length === 0) {
-        t.skip("Only one i18n file found. No comparisons needed.")
-        return
-    }
+describe("i18n locale files", () => {
+    it("i18n locale file structure and key order", async () => {
+        const baseFile = I18N_FILES["zh-CN"] || Object.values(I18N_FILES)[0]
+        const filesToTest = Object.values(I18N_FILES).filter(file => file.name !== baseFile.name)
+        if (!baseFile) {
+            it.skip("No i18n files found in locales directory.")
+            return
+        }
+        if (filesToTest.length === 0) {
+            t.skip("Only one i18n file found. No comparisons needed.")
+            return
+        }
 
-    const testPromises = filesToTest.map(file => {
-        return t.test(`Compare: ${file.name} (Base: ${baseFile.name})`, () => {
-            const errors = []
-            compareStructure(baseFile.obj, file.obj, [], errors)
-            const assertionMessage = `[i18n Mismatch] File "${file.name}" (vs "${baseFile.name}") has ${errors.length} error(s):\n\n  - ${errors.join("\n\n  - ")}`
-            assert.strictEqual(errors.length, 0, assertionMessage)
+        const testPromises = filesToTest.map(file => {
+            return it.test(`Compare: ${file.name} (Base: ${baseFile.name})`, () => {
+                const errors = []
+                compareStructure(baseFile.obj, file.obj, [], errors)
+                const assertionMessage = `[i18n Mismatch] File "${file.name}" (vs "${baseFile.name}") has ${errors.length} error(s):\n\n  - ${errors.join("\n\n  - ")}`
+                assert.strictEqual(errors.length, 0, assertionMessage)
+            })
         })
+        await Promise.all(testPromises)
     })
-    await Promise.all(testPromises)
 })

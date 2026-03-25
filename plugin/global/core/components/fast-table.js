@@ -60,6 +60,7 @@ customElements.define("fast-table", class extends HTMLElement {
         this._scheduleUpdate()
     }
 
+    getProcessed = () => this._process(this.data, this.schema)
     getProcessedData = () => this._process(this.data, this.schema).processedData
 
     clear = () => {
@@ -116,7 +117,7 @@ customElements.define("fast-table", class extends HTMLElement {
     _process = (data, schema) => {
         const columns = schema.columns.filter(col => col.ignore !== true)
 
-        if (data.length === 0 || columns.length === 0) {
+        if (!data || data.length === 0 || columns.length === 0) {
             return { processedData: [], processedColumns: [], isValid: false }
         }
 

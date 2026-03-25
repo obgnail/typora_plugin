@@ -225,7 +225,7 @@ class RightClickMenuPlugin extends BasePlugin {
         // Display the third level menu
         $(".plugin-menu-second").on("mouseenter", "[data-key]", function () {
             document.querySelectorAll(".plugin-menu-third").forEach(removeShow)
-            document.querySelectorAll(".plugin-dynamic-act").forEach(ele => ele.parentElement.removeChild(ele))
+            document.querySelectorAll(".plugin-dynamic-act").forEach(el => el.remove())
             const fixedName = this.dataset.key
             const third = document.querySelector(`.plugin-menu-third[data-plugin="${fixedName}"]`)
             const noStaticActions = third && third.children.length === 0

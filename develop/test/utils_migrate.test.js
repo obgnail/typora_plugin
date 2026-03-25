@@ -1,6 +1,5 @@
-const test = require("node:test")
+const { describe, it, before, mock } = require("node:test")
 const assert = require("node:assert")
-const { mock } = require("node:test")
 const Migrate = require("../../plugin/global/core/utils/migrate")
 
 function genPluginConfig(name, enabled = true, options = {}) {
@@ -16,7 +15,7 @@ const PLUGIN_FIXTURES = {
     invalidPlugins: ["orphanedConfig", "missingImplementation"],
 }
 
-test.before(() => {
+before(() => {
     testPluginPaths = new Set()
     PLUGIN_FIXTURES.existingPlugins.forEach(pluginName => {
         testPluginPaths.add(`./plugin/custom/plugins/${pluginName}.js`)
@@ -24,7 +23,7 @@ test.before(() => {
     })
 })
 
-test.before(async () => {
+before(async () => {
     mockUtils = {
         ...require("./mocks/utils.mock.js"),
         joinPluginPath: (...paths) => paths.join("/"),
@@ -61,8 +60,8 @@ test.before(async () => {
     migrate = new Migrate(mockUtils)
 })
 
-test("Migrate class functionality", async (t) => {
-    await t.test("deleteUselessPlugins should remove specified plugins and directories", async () => {
+describe("Migrate class functionality", () => {
+    it("deleteUselessPlugins should remove specified plugins and directories", async () => {
         const removeSpy = mock.method(mockUtils.Package.FsExtra, "remove")
         await migrate.deleteUselessPlugins()
         assert.ok(removeSpy.mock.callCount() > 0, "Should attempt to remove plugins")
@@ -72,7 +71,7 @@ test("Migrate class functionality", async (t) => {
         assert.ok(hasExpectedRemovals, "Should remove deprecated plugins")
     })
 
-    await t.test("cleanInvalidPlugins should preserve valid plugins and remove invalid ones", async () => {
+    it("cleanInvalidPlugins should preserve valid plugins and remove invalid ones", async () => {
         const mockFiles = [{
             configDefault: {
                 fileManager: genPluginConfig("fileManager"),
@@ -90,7 +89,7 @@ test("Migrate class functionality", async (t) => {
         assert.ok(mockFiles[0].configUser.orphanedConfig === undefined, "Should remove invalid plugin")
     })
 
-    await t.test("cleanPluginsAndKeys should remove redundant plugins and configurations", async () => {
+    it("cleanPluginsAndKeys should remove redundant plugins and configurations", async () => {
         const mockFiles = [{
             configDefault: {
                 markdownEnhancer: { ENABLE: false, MODE: "basic" },
@@ -119,7 +118,7 @@ test("Migrate class functionality", async (t) => {
         )
     })
 
-    await t.test("getConfigs should load and merge configuration files", async () => {
+    it("getConfigs should load and merge configuration files", async () => {
         const files = await migrate.getConfigs()
         assert.strictEqual(files.length, 2, "Should load both settings files")
         assert.strictEqual(files[0].file, "settings.user.toml")
@@ -130,7 +129,7 @@ test("Migrate class functionality", async (t) => {
         })
     })
 
-    await t.test("saveFiles should persist configurations", async () => {
+    it("saveFiles should persist configurations", async () => {
         const mockFiles = [{
             file: "test_settings.toml",
             configUser: { fileManager: { ENABLE: true } },
@@ -144,14 +143,14 @@ test("Migrate class functionality", async (t) => {
         assert.ok(content.includes("fileManager"))
     })
 
-    await t.test("run should execute complete migration workflow", async () => {
+    it("run should execute complete migration workflow", async () => {
         const workflowSpies = {
             deleteUselessPlugins: mock.method(migrate, "deleteUselessPlugins"),
             cleanInvalidPlugins: mock.method(migrate, "cleanInvalidPlugins"),
             cleanPluginsAndKeys: mock.method(migrate, "cleanPluginsAndKeys"),
             saveFiles: mock.method(migrate, "saveFiles")
         }
-        t.mock.method(console, "log", () => {})
+        mock.method(console, "log", () => undefined)
         await migrate.run()
         assert.strictEqual(console.log.mock.calls.length, 1)
         Object.values(workflowSpies).forEach(spy => {

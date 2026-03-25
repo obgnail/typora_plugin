@@ -30,15 +30,10 @@ class ToolbarPlugin extends BasePlugin {
             input: document.querySelector("#plugin-toolbar-form input"),
             result: document.querySelector(".plugin-toolbar-result"),
         }
-
-        this.search = this.utils.debounce(async () => {
-            const result = await this.toolController.handleInput()
-            const ok = result && result.matches && result.tool
-            this.entities.result.innerHTML = ok ? this._newItems(result).join("") : ""
-        }, this.config.DEBOUNCE_INTERVAL)
     }
 
     process = () => {
+        this.utils.createSmartInputHandler(this.entities.input, this.search, { debounceDelay: this.config.DEBOUNCE_INTERVAL })
         this.entities.form.addEventListener("submit", ev => {
             ev.preventDefault()
             const item = this.entities.result.querySelector(".plugin-toolbar-item.active") || (this.entities.result.childElementCount === 1 && this.entities.result.firstChild)
@@ -51,15 +46,6 @@ class ToolbarPlugin extends BasePlugin {
                 this.hide()
             }
         })
-
-        let canInput = true
-        this.entities.input.addEventListener("input", () => canInput && this.search())
-        this.entities.input.addEventListener("compositionstart", () => canInput = false, true)
-        this.entities.input.addEventListener("compositionend", async () => {
-            canInput = true
-            await this.search()
-        })
-
         this.entities.result.addEventListener("click", ev => {
             const target = ev.target.closest(".plugin-toolbar-item")
             if (target) this._callTool(target)
@@ -74,6 +60,12 @@ class ToolbarPlugin extends BasePlugin {
                 await this.show()
             }
         })
+    }
+
+    search = async () => {
+        const ret = await this.toolController.handleInput()
+        const ok = ret && ret.matches && ret.tool
+        this.entities.result.innerHTML = ok ? this._newItems(ret).join("") : ""
     }
 
     _registerAutoHide = () => {
@@ -284,10 +276,10 @@ class TabTool extends BaseTool {
     search = async input => {
         if (!this.windowTabPlugin) return
         const current = this.utils.getFilePath()
-        const paths = this.windowTabPlugin.tabUtil.tabs.filter(tab => tab.path !== current).map(tab => tab.path)
+        const paths = this.windowTabPlugin.tab.tabs.filter(t => t.path !== current).map(t => t.path)
         return this.baseSearch(input, paths)
     }
-    callback = fixedName => this.windowTabPlugin.switchTabByPath(fixedName)
+    callback = path => this.windowTabPlugin.tab.switchByPath(path)
 }
 
 class PluginTool extends BaseTool {

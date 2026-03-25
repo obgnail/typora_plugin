@@ -31,19 +31,23 @@ class ResizeTablePlugin extends BasePlugin {
                 this._removeStyle(tds, target, "height")
             }
 
+            const rafManager = this.utils.getRafManager()
             const onMouseMove = ev => {
                 if (!this.utils.metaKeyPressed(ev)) return
-                requestAnimationFrame(() => {
+                const currentX = ev.clientX
+                const currentY = ev.clientY
+                rafManager.schedule(() => {
                     if (direction === "right") {
-                        target.style.width = startWidth + ev.clientX - startX + "px"
+                        target.style.width = startWidth + currentX - startX + "px"
                     } else if (direction === "bottom") {
-                        target.style.height = startHeight + ev.clientY - startY + "px"
+                        target.style.height = startHeight + currentY - startY + "px"
                     }
                 })
             }
             const onMouseUp = ev => {
                 target.style.cursor = "default"
                 target.onmouseup = null
+                rafManager.cancel()
                 document.removeEventListener("mousemove", onMouseMove)
                 document.removeEventListener("mouseup", onMouseUp)
             }

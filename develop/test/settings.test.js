@@ -1,4 +1,4 @@
-const test = require("node:test")
+const { describe, it, before } = require("node:test")
 const assert = require("node:assert")
 const fs = require("fs-extra")
 const path = require("path")
@@ -27,17 +27,14 @@ const assertEvalFn = (str, errorMsg) => {
     assert.equal(typeof eval(str), "function", errorMsg)
 }
 
-test.before(async () => {
+before(async () => {
     ({ base: basePluginSettings, custom: customPluginSettings } = await require("./fixtures/settings.js").getDefaults())
     i18n = await require("./fixtures/i18n.js").get("zh-CN")
     pluginNames = [...Object.keys(basePluginSettings), ...Object.keys(customPluginSettings)]
 })
 
-// ============================================================================
-// Group 1: Plugin Core Structure
-// ============================================================================
-test("1. Plugin Core Structure", async t => {
-    await t.test("base plugins should have valid 'ENABLE' and 'NAME' attributes", () => {
+describe("Plugin Core Structure", () => {
+    it("base plugins should have valid 'ENABLE' and 'NAME' attributes", () => {
         for (const [fixedName, s] of Object.entries(basePluginSettings)) {
             assert.ok(
                 typeof s.ENABLE === "boolean" && (typeof s.NAME === "string" || fixedName === "global"),
@@ -46,7 +43,7 @@ test("1. Plugin Core Structure", async t => {
         }
     })
 
-    await t.test("custom plugins should have valid 'enable', 'name', 'hide', and 'order' attributes", () => {
+    it("custom plugins should have valid 'enable', 'name', 'hide', and 'order' attributes", () => {
         for (const [fixedName, s] of Object.entries(customPluginSettings)) {
             assert.ok(
                 typeof s.enable === "boolean" && typeof s.name === "string" && typeof s.hide === "boolean" && typeof s.order === "number",
@@ -56,11 +53,8 @@ test("1. Plugin Core Structure", async t => {
     })
 })
 
-// ============================================================================
-// Group 2: UI & Menus Configuration
-// ============================================================================
-test("2. UI & Menus Configuration", async t => {
-    await t.test("sidebar_enhance: SIDEBAR_ICONS should contain required fields and valid extensions", () => {
+describe("UI & Menus Configuration", () => {
+    it("sidebar_enhance: SIDEBAR_ICONS should contain required fields and valid extensions", () => {
         const setting = getSetting("sidebar_enhance")
         assert.ok(Array.isArray(setting.SIDEBAR_ICONS), "SIDEBAR_ICONS must be an array")
         setting.SIDEBAR_ICONS.forEach((icon, index) => {
@@ -69,7 +63,7 @@ test("2. UI & Menus Configuration", async t => {
         })
     })
 
-    await t.test("right_click_menu: MENUS should be translated and properly reference active plugins", () => {
+    it("right_click_menu: MENUS should be translated and properly reference active plugins", () => {
         const setting = getSetting("right_click_menu")
         assert.ok(Array.isArray(setting.MENUS), "MENUS must be an array")
         setting.MENUS.forEach((menu, index) => {
@@ -86,7 +80,7 @@ test("2. UI & Menus Configuration", async t => {
         })
     })
 
-    await t.test("pie_menu: BUTTONS should target valid plugin callbacks", () => {
+    it("pie_menu: BUTTONS should target valid plugin callbacks", () => {
         const setting = getSetting("pie_menu")
         assert.ok(Array.isArray(setting.BUTTONS), "BUTTONS must be an array")
         setting.BUTTONS.forEach((btn, index) => {
@@ -97,7 +91,7 @@ test("2. UI & Menus Configuration", async t => {
         })
     })
 
-    await t.test("preferences: DEFAULT_MENU and HIDE_MENUS should reference valid plugins", () => {
+    it("preferences: DEFAULT_MENU and HIDE_MENUS should reference valid plugins", () => {
         const setting = getSetting("preferences")
         assert.ok([...pluginNames, "__LAST__"].includes(setting.DEFAULT_MENU), "DEFAULT_MENU is invalid")
         assert.ok(Array.isArray(setting.HIDE_MENUS), "HIDE_MENUS must be an array")
@@ -106,7 +100,7 @@ test("2. UI & Menus Configuration", async t => {
         })
     })
 
-    await t.test("callouts: CALLOUTS should have required display properties", () => {
+    it("callouts: CALLOUTS should have required display properties", () => {
         const setting = getSetting("callouts")
         assert.ok(Array.isArray(setting.CALLOUTS), "CALLOUTS must be an array")
         setting.CALLOUTS.forEach((callout, index) => {
@@ -115,11 +109,8 @@ test("2. UI & Menus Configuration", async t => {
     })
 })
 
-// ============================================================================
-// Group 3: Text Processing & Regex matching
-// ============================================================================
-test("3. Text Processing & Regex", async t => {
-    await t.test("md_padding: IGNORE_PATTERNS should be strictly valid Regular Expressions", () => {
+describe("Text Processing & Regex", () => {
+    it("md_padding: IGNORE_PATTERNS should be strictly valid Regular Expressions", () => {
         const setting = getSetting("md_padding")
         assert.ok(Array.isArray(setting.IGNORE_PATTERNS), "IGNORE_PATTERNS must be an array")
         setting.IGNORE_PATTERNS.forEach((p, index) => {
@@ -127,19 +118,19 @@ test("3. Text Processing & Regex", async t => {
         })
     })
 
-    await t.test("fence_enhance: HIGHLIGHT_PATTERN should be a valid Regular Expression", () => {
+    it("fence_enhance: HIGHLIGHT_PATTERN should be a valid Regular Expression", () => {
         const setting = getSetting("fence_enhance")
         const p = setting.HIGHLIGHT_PATTERN
         assert.doesNotThrow(() => new RegExp(p), `HIGHLIGHT_PATTERN ('${p}') is not a valid Regex`)
     })
 
-    await t.test("slash_commands: TRIGGER_REGEXP should be a valid Regular Expression", () => {
+    it("slash_commands: TRIGGER_REGEXP should be a valid Regular Expression", () => {
         const setting = getSetting("slash_commands")
         const p = setting.TRIGGER_REGEXP
         assert.doesNotThrow(() => new RegExp(p), `TRIGGER_REGEXP ('${p}') is not a valid Regex`)
     })
 
-    await t.test("cjk_symbol_pairing: symbols should be single-character strings", () => {
+    it("cjk_symbol_pairing: symbols should be single-character strings", () => {
         const setting = getSetting("cjk_symbol_pairing")
         const requiredProps = ["enable", "input", "output"]
 
@@ -154,11 +145,8 @@ test("3. Text Processing & Regex", async t => {
     })
 })
 
-// ============================================================================
-// Group 4: Scripts, Actions & File IO
-// ============================================================================
-test("4. Scripts, Actions & File IO", async t => {
-    await t.test("commander: BUILTIN scripts should have complete definitions and valid shells", () => {
+describe("Scripts, Actions & File IO", () => {
+    it("commander: BUILTIN scripts should have complete definitions and valid shells", () => {
         const setting = getSetting("commander")
         assert.ok(Array.isArray(setting.BUILTIN), "BUILTIN must be an array")
         const validTypes = ["cmd/bash", "powershell", "gitbash", "wsl"]
@@ -168,7 +156,7 @@ test("4. Scripts, Actions & File IO", async t => {
         })
     })
 
-    await t.test("action_buttons: BUTTONS should have valid coordinates and valid executable callbacks", () => {
+    it("action_buttons: BUTTONS should have valid coordinates and valid executable callbacks", () => {
         const setting = getSetting("action_buttons")
         assert.ok(Array.isArray(setting.BUTTONS), "BUTTONS must be an array")
         setting.BUTTONS.forEach((btn, index) => {
@@ -185,7 +173,7 @@ test("4. Scripts, Actions & File IO", async t => {
         })
     })
 
-    await t.test("hotkeys & shortcuts: should correctly map custom keys to existing actions or valid eval strings", () => {
+    it("hotkeys & shortcuts: should correctly map custom keys to existing actions or valid eval strings", () => {
         const textStylize = getSetting("text_stylize")
         assert.ok(Array.isArray(textStylize.ACTION_HOTKEYS), "ACTION_HOTKEYS must be an array")
         textStylize.ACTION_HOTKEYS.forEach((hotkey, index) => {
@@ -210,7 +198,7 @@ test("4. Scripts, Actions & File IO", async t => {
         })
     })
 
-    await t.test("templater & execution: dynamic hooks and template callbacks should evaluate to valid functions", () => {
+    it("templater & execution: dynamic hooks and template callbacks should evaluate to valid functions", () => {
         const autoNumber = getSetting("auto_number")
         assertEvalFn(autoNumber.APPLY_EXPORT_HEADER_NUMBERING, "auto_number hook must be a function")
 
@@ -234,7 +222,7 @@ test("4. Scripts, Actions & File IO", async t => {
         })
     })
 
-    await t.test("templater: TEMPLATE should contain required name and text properties", () => {
+    it("templater: TEMPLATE should contain required name and text properties", () => {
         const setting = getSetting("templater")
         assert.ok(Array.isArray(setting.TEMPLATE), "TEMPLATE must be an array")
         setting.TEMPLATE.forEach((tpl, index) => {
@@ -242,7 +230,7 @@ test("4. Scripts, Actions & File IO", async t => {
         })
     })
 
-    await t.test("slash_commands: COMMANDS should specify correct scopes and actionable callbacks", () => {
+    it("slash_commands: COMMANDS should specify correct scopes and actionable callbacks", () => {
         const setting = getSetting("slash_commands")
         setting.COMMANDS.forEach((cmd, index) => {
             assertHasProps(cmd, ["enable", "type", "icon", "keyword", "callback"], `COMMANDS[${index}]`)
@@ -257,7 +245,7 @@ test("4. Scripts, Actions & File IO", async t => {
         })
     })
 
-    await t.test("file system assets: configured external files and templater folders must exist on disk", async () => {
+    it("file system assets: configured external files and templater folders must exist on disk", async () => {
         const mdLint = getSetting("markdownlint")
         assert.ok(Array.isArray(mdLint.CUSTOM_RULE_FILES), "CUSTOM_RULE_FILES must be an array")
         mdLint.CUSTOM_RULE_FILES.forEach((file, index) => {

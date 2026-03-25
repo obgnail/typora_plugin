@@ -93,7 +93,7 @@ class DataTablesPlugin extends BasePlugin {
         const table = $table.dataTable(this.dataTablesConfig)
         this.appendFilter(table.api())
         this.tableList.push({ uuid, table })
-        edit?.parentNode.removeChild(edit)
+        edit?.remove()
         return uuid
     }
 
@@ -107,7 +107,7 @@ class DataTablesPlugin extends BasePlugin {
         table.api().destroy()
         target.removeAttribute("table-uuid")
         this.tableList.splice(idx, 1)
-        target.querySelectorAll("th select").forEach(ele => ele.parentNode.removeChild(ele))
+        target.querySelectorAll("th select").forEach(el => el.remove())
         if (target) {
             const $fig = $(target.parentElement)
             File.editor.tableEdit.showTableEdit($fig)

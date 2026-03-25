@@ -1,50 +1,20 @@
 const { describe, it, mock, before, beforeEach, after, afterEach } = require("node:test")
 const assert = require("node:assert")
 const proxyquire = require("proxyquire")
-const { JSDOM } = require("jsdom")
 
 let i18n, utils
 let dom, container
 let FastForm, ff
 
-function mockUtils() {
-    return utils = {
+before(async () => {
+    i18n = await require("./fixtures/i18n.js").get("en")
+    utils = {
         ...require("./mocks/utils.mock.js"),
         notification: { show: mock.fn((msg, type) => `notification.${type}: ${msg}`) },
         hotkeyHub: { unregister: mock.fn((hotkey) => `hotkeyHub.unregister: ${hotkey}`) },
         formDialog: { modal: mock.fn(async (op) => ({ response: 1, data: op.data })) },
     }
-}
-
-async function mockI18N() {
-    return i18n = await require("./fixtures/i18n.js").get("en")
-}
-
-function mockDom() {
-    const root = `<!DOCTYPE html><html><body><div id="test-container"></div></body></html>`
-    dom = new JSDOM(root, { url: "http://localhost/", runScripts: "dangerously" })
-
-    // setupGlobalVars
-    global.window = dom.window
-    global.document = dom.window.document
-    global.navigator = { userAgent: "node.js" }
-    const globalsToForceOverwrite = ["Event", "CustomEvent", "HTMLElement", "customElements", "Node"]
-    globalsToForceOverwrite.forEach(key => {
-        global[key] = dom.window[key]
-    })
-    Object.getOwnPropertyNames(dom.window).forEach((key) => {
-        if (typeof global[key] === "undefined") {
-            global[key] = dom.window[key]
-        }
-    })
-
-    return dom
-}
-
-before(async () => {
-    await mockI18N()
-    mockUtils()
-    mockDom()
+    dom = require("./mocks/dom.mock.js")
 
     proxyquire("../../plugin/global/core/components/fast-form.js", {
         "./common": { sharedSheets: [new CSSStyleSheet()], "@noCallThru": true },
@@ -60,7 +30,7 @@ before(async () => {
 
 const flushMicrotasks = () => Promise.resolve()
 
-describe("Browser env", () => {
+describe("FastForm Browser Env", () => {
     it("FastForm has initialized", () => {
         assert.ok(typeof ff.render === "function")
         assert.ok(typeof ff.clear === "function")
@@ -275,6 +245,177 @@ describe("FastForm Registration APIs", () => {
                 FastForm.registerControl("mock_def_null", null)
             }, /must be a non-null object/, "Should reject null passed as the root definition")
         })
+    })
+})
+
+describe("FastForm Feature_Highlight", () => {
+    let originalScrollIntoView
+    let scrollIntoViewMock
+
+    beforeEach(() => {
+        ff.clear()
+        originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView
+        scrollIntoViewMock = mock.fn()
+        window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock
+    })
+
+    afterEach(() => {
+        if (originalScrollIntoView) {
+            window.HTMLElement.prototype.scrollIntoView = originalScrollIntoView
+        } else {
+            delete window.HTMLElement.prototype.scrollIntoView
+        }
+    })
+
+    it("should highlight matching string keywords case-insensitively by default during render", async () => {
+        ff.render({
+            schema: [{ title: "Test Group", fields: [{ type: "text", key: "f1", label: "testing label" }] }],
+            data: {},
+            highlight: "test" // Trigger highlight on render
+        })
+        await flushMicrotasks()
+
+        const marks = ff.form.querySelectorAll("mark.feature-highlight")
+        assert.strictEqual(marks.length, 2, "Should find 'Test' in the title and 'test' in the label")
+        assert.strictEqual(marks[0].textContent, "Test", "Should preserve the original casing of the matched text (Title)")
+        assert.strictEqual(marks[1].textContent, "test", "Should preserve the original casing of the matched text (Label)")
+    })
+
+    it("should respect the caseSensitiveOnHighlight option when highlighting strings", async () => {
+        ff.render({
+            schema: [{ title: "Apple", fields: [{ type: "text", key: "f1", label: "apple" }] }],
+            data: {},
+            highlight: "Apple",
+            caseSensitiveOnHighlight: true
+        })
+        await flushMicrotasks()
+
+        const marks = ff.form.querySelectorAll("mark.feature-highlight")
+        assert.strictEqual(marks.length, 1, "Should only match the exact case 'Apple'")
+        assert.strictEqual(marks[0].textContent, "Apple")
+    })
+
+    it("should support RegExp objects and automatically append the 'g' flag for global highlighting", async () => {
+        ff.render({
+            schema: [{ title: "Item 123", fields: [{ type: "text", key: "f1", label: "Code 456" }] }],
+            data: {}
+        })
+        await flushMicrotasks()
+
+        const api = ff.getApi("highlight")
+        // Trigger via API with a Regex matching digits (without 'g', the engine should add it)
+        api.highlight(/\d+/)
+
+        const marks = ff.form.querySelectorAll("mark.feature-highlight")
+        assert.strictEqual(marks.length, 2, "Should highlight both numeric sequences")
+        assert.strictEqual(marks[0].textContent, "123")
+        assert.strictEqual(marks[1].textContent, "456")
+    })
+
+    it("should correctly handle multiple matches within the exact same text node", async () => {
+        ff.render({
+            schema: [{ title: "banana banana", fields: [] }],
+            data: {}
+        })
+        await flushMicrotasks()
+
+        ff.getApi("highlight").highlight("na")
+        const marks = ff.form.querySelectorAll("mark")
+        assert.strictEqual(marks.length, 4, "Should successfully split and highlight all 4 occurrences of 'na' in 'banana banana'")
+    })
+
+    it("should ignore text inside nodes matching highlightIgnoreSelector (e.g., tooltips) and only target highlightTargetSelector", async () => {
+        ff.render({
+            schema: [{ title: "Target Keyword", fields: [{ type: "text", key: "f1", label: "Keyword", tooltip: "Hidden Keyword" }] }],
+            data: {}
+        })
+        await flushMicrotasks()
+
+        // 'Keyword' appears in Title, Label, and Tooltip
+        ff.getApi("highlight").highlight("Keyword")
+        const marks = ff.form.querySelectorAll("mark")
+
+        assert.strictEqual(marks.length, 2, "Should highlight the title and label, but skip the tooltip completely")
+
+        const tooltipMark = ff.form.querySelector(".tooltip mark")
+        assert.strictEqual(tooltipMark, null, "Tooltip content should not contain any highlighted marks")
+    })
+
+    it("should clear previous highlights completely, restoring normal text nodes and structure", async () => {
+        ff.render({
+            schema: [{ title: "Hello World", fields: [] }],
+            data: {}
+        })
+        await flushMicrotasks()
+
+        const api = ff.getApi("highlight")
+
+        // Highlight 1
+        api.highlight("Hello")
+        assert.strictEqual(ff.form.querySelectorAll("mark").length, 1)
+
+        // Highlight 2 (Implicit Clear)
+        api.highlight("World")
+        const marks = ff.form.querySelectorAll("mark")
+        assert.strictEqual(marks.length, 1, "Previous highlights should be cleared before applying new ones")
+        assert.strictEqual(marks[0].textContent, "World")
+
+        // Explicit Clear
+        api.clear()
+        assert.strictEqual(ff.form.querySelectorAll("mark").length, 0, "All marks should be removed")
+        assert.strictEqual(ff.form.querySelector(".title").textContent, "Hello World", "Original text and DOM structure should be fully normalized and restored")
+    })
+
+    it("should autoExpand collapsed boxes containing a match if autoExpandOnHighlight is true", async () => {
+        ff.render({
+            schema: [{ id: "box1", title: "Hidden Secret", fields: [] }],
+            data: {},
+            collapsibleBox: true
+            // autoExpandOnHighlight defaults to true
+        })
+        await flushMicrotasks()
+
+        const boxContainer = ff.form.querySelector('.box-container[data-box="box1"]')
+        boxContainer.classList.add("collapsed") // Manually collapse it for the test
+
+        ff.getApi("highlight").highlight("Secret")
+
+        assert.strictEqual(boxContainer.classList.contains("collapsed"), false, "Box should auto-expand by removing the 'collapsed' class")
+    })
+
+    it("should scroll to the first match smoothly if scrollToFirstMatchOnHighlight is true", async () => {
+        ff.render({
+            schema: [{ title: "First Match", fields: [] }, { title: "Second Match", fields: [] }],
+            data: {},
+            scrollToFirstMatchOnHighlight: true
+        })
+        await flushMicrotasks()
+
+        ff.getApi("highlight").highlight("Match")
+
+        assert.strictEqual(scrollIntoViewMock.mock.calls.length, 1, "scrollIntoView should be triggered exactly once for the first matching element")
+        const callArgs = scrollIntoViewMock.mock.calls[0].arguments
+        assert.deepStrictEqual(callArgs[0], { behavior: "smooth", block: "center" }, "Should scroll with the correct UI behavior configuration")
+    })
+
+    it("should not crash or highlight anything when passed empty strings, null, or invalid types", async () => {
+        ff.render({
+            schema: [{ title: "Safe Test", fields: [] }],
+            data: {}
+        })
+        await flushMicrotasks()
+
+        const api = ff.getApi("highlight")
+
+        assert.doesNotThrow(() => {
+            api.highlight("")
+            api.highlight(null)
+            api.highlight(undefined)
+            api.highlight(123)
+            api.highlight({ invalid: "type" })
+        }, "Should silently handle invalid input payloads without crashing the app")
+
+        assert.strictEqual(ff.form.querySelectorAll("mark").length, 0, "DOM should remain completely clean on invalid/empty inputs")
     })
 })
 

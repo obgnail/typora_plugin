@@ -135,7 +135,7 @@ class BookmarkPlugin extends BasePlugin {
         }
         while (item) {
             const next = item.nextElementSibling
-            item.parentElement.removeChild(item)
+            item.remove()
             item = next
         }
     }

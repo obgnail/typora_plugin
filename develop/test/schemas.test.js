@@ -1,9 +1,8 @@
-const test = require("node:test")
+const { describe, it, before } = require("node:test")
 const assert = require("node:assert")
 
 let settings
 let rawSchemas, filteredRawSchemas
-let i18n
 
 let actionsMap
 let rulesMap
@@ -53,17 +52,10 @@ const flattenKeys = (obj, prefix = [], result = new Set()) => {
     return result
 }
 
-test.before(async () => {
+before(async () => {
     const { base, custom } = await require("./fixtures/settings.js").getDefaults()
     settings = { ...base, ...custom }
-})
 
-test.before(async () => {
-    i18n = await require("./fixtures/i18n.js").get("zh-CN")
-})
-
-
-test.before(() => {
     rawSchemas = require("./fixtures/schemas.js").get(undefined)
     filteredRawSchemas = Object.fromEntries(
         Object.entries(rawSchemas).map(([fixedName, boxes]) => {
@@ -74,9 +66,7 @@ test.before(() => {
             return [fixedName, newBoxes]
         })
     )
-})
 
-test.before(() => {
     const mockPlugin = require("./mocks/plugin.mock.js")
     actionsMap = require("../../plugin/preferences/actions.js")(mockPlugin)
     rulesMap = require("../../plugin/preferences/rules.js")
@@ -84,8 +74,8 @@ test.before(() => {
     watcherMap = require("../../plugin/preferences/watchers.js")(mockPlugin)
 })
 
-test("Schema and Settings Key Synchronization", async t => {
-    await t.test("Schema keys should exist in Settings (Schema -> Settings)", () => {
+describe("Schema and Settings Key Synchronization", () => {
+    it("Schema keys should exist in Settings (Schema -> Settings)", () => {
         Object.entries(filteredRawSchemas).forEach(([fixedName, boxes]) => {
             const setting = settings[fixedName]
             assert.ok(
@@ -104,7 +94,7 @@ test("Schema and Settings Key Synchronization", async t => {
         })
     })
 
-    await t.test("Settings keys should exist in Schema (Settings -> Schema)", () => {
+    it("Settings keys should exist in Schema (Settings -> Schema)", () => {
         for (const [fixedName, setting] of Object.entries(settings)) {
             const boxes = filteredRawSchemas[fixedName]
             assert.ok(
@@ -133,65 +123,71 @@ test("Schema and Settings Key Synchronization", async t => {
     })
 })
 
-test("all schemas keys should be translated", async t => {
-    const boxProps = ["title", "tooltip"]
-    const baseProps = ["label", "explain", "tooltip", "placeholder", "hintHeader", "hintDetail", "divider", "unit"]
-    const specialProps = ["options", "thMap"]
-    const nestedFieldProps = ["nestedBoxes", "subSchema"]
-    const checkTranslated = (newBox, isTranslated) => {
-        boxProps.forEach(prop => {
-            if (newBox[prop]) {
-                isTranslated(newBox[prop], { property: prop, value: newBox[prop] })
-            }
-        })
-        newBox.fields.forEach(newField => {
-            baseProps.forEach(prop => {
-                if (newField[prop] != null) {
-                    isTranslated(newField[prop], { property: prop, fieldKey: newField.key })
+describe("Schemas Translate", async () => {
+    it("all schemas keys should be translated", async () => {
+        const i18n = await require("./fixtures/i18n.js").get("zh-CN")
+
+        const boxProps = ["title", "tooltip"]
+        const baseProps = ["label", "explain", "tooltip", "placeholder", "hintHeader", "hintDetail", "divider", "unit"]
+        const specialProps = ["options", "thMap"]
+        const nestedFieldProps = ["nestedBoxes", "subSchema"]
+        const checkTranslated = (newBox, isTranslated) => {
+            boxProps.forEach(prop => {
+                if (newBox[prop]) {
+                    isTranslated(newBox[prop], { property: prop, value: newBox[prop] })
                 }
             })
-            specialProps.forEach(prop => {
-                const propVal = newField[prop]
-                if (propVal != null && typeof propVal === "object" && !Array.isArray(propVal)) {
-                    Object.entries(propVal).forEach(([k, v]) => {
-                        isTranslated(v, { property: prop, optionKey: k, fieldKey: newField.key })
-                    })
-                }
+            newBox.fields.forEach(newField => {
+                baseProps.forEach(prop => {
+                    if (newField[prop] != null) {
+                        isTranslated(newField[prop], { property: prop, fieldKey: newField.key })
+                    }
+                })
+                specialProps.forEach(prop => {
+                    const propVal = newField[prop]
+                    if (propVal != null && typeof propVal === "object" && !Array.isArray(propVal)) {
+                        Object.entries(propVal).forEach(([k, v]) => {
+                            isTranslated(v, { property: prop, optionKey: k, fieldKey: newField.key })
+                        })
+                    }
+                })
+                nestedFieldProps.forEach(prop => {
+                    newField[prop]?.forEach(box => checkTranslated(box, isTranslated))
+                })
             })
-            nestedFieldProps.forEach(prop => {
-                newField[prop]?.forEach(box => checkTranslated(box, isTranslated))
-            })
-        })
-    }
-
-    Object.entries(rawSchemas).forEach(([fixedName, boxes]) => {
-        const isTranslated = (key, context) => {
-            if (Array.isArray(key)) {
-                key.forEach(k => isTranslated(k, context))
-                return
-            }
-            if (typeof key === "object" && key.text != null) {
-                key = key.text
-            }
-
-            const ok = i18n.data[fixedName]?.[key] || i18n.data.settings?.[key]
-            if (ok) return
-
-            const contextMsg = [`schema: "${fixedName}"`, `key: "${key}"`]
-            if (context.property) contextMsg.push(`property: "${context.property}"`)
-            if (context.value) contextMsg.push(`value: "${JSON.stringify(context.value)}"`)
-            if (context.fieldKey) contextMsg.push(`field: "${context.fieldKey}"`)
-            if (context.optionKey) contextMsg.push(`optionKey: "${context.optionKey}"`)
-            assert.ok(
-                ok,
-                `[Translation] Missing translation for [${contextMsg.join(", ")}]`
-            )
         }
-        boxes.forEach(box => checkTranslated(box, isTranslated))
+
+        Object.entries(rawSchemas).forEach(([fixedName, boxes]) => {
+            const isTranslated = (key, context) => {
+                if (Array.isArray(key)) {
+                    key.forEach(k => isTranslated(k, context))
+                    return
+                }
+                if (typeof key === "object" && key.text != null) {
+                    key = key.text
+                }
+
+                const ok = i18n.data[fixedName]?.[key] || i18n.data.settings?.[key]
+                if (ok) return
+
+                const contextMsg = [`schema: "${fixedName}"`, `key: "${key}"`]
+                if (context.property) contextMsg.push(`property: "${context.property}"`)
+                if (context.value) contextMsg.push(`value: "${JSON.stringify(context.value)}"`)
+                if (context.fieldKey) contextMsg.push(`field: "${context.fieldKey}"`)
+                if (context.optionKey) contextMsg.push(`optionKey: "${context.optionKey}"`)
+                assert.ok(
+                    ok,
+                    `[Translation] Missing translation for [${contextMsg.join(", ")}]`
+                )
+            }
+            boxes.forEach(box => checkTranslated(box, isTranslated))
+        })
     })
 })
 
-test("all i18n keys starting with $ should be used in schemas", async t => {
+describe("all i18n keys starting with $ should be used in schemas", async () => {
+    const i18n = await require("./fixtures/i18n.js").get("zh-CN")
+
     const getAllI18NKeys = async () => {
         return Object.fromEntries(
             Object.entries(i18n.data).map(([fixedName, data]) => {
@@ -277,97 +273,107 @@ test("all i18n keys starting with $ should be used in schemas", async t => {
         })
     }
 
-    const allI18NKeys = await getAllI18NKeys()
-    filterUsedKeys(allI18NKeys, rawSchemas)
-    filterAllowedUnusedKeys(allI18NKeys)
+    it("should not have unused i18n keys", async () => {
+        const allI18NKeys = await getAllI18NKeys()
+        filterUsedKeys(allI18NKeys, rawSchemas)
+        filterAllowedUnusedKeys(allI18NKeys)
 
-    Object.entries(allI18NKeys).forEach(([fixedName, keys]) => {
-        if (fixedName === "settings") return
-        assert.ok(
-            keys.size === 0,
-            `[Unused i18n Keys] Found ${fixedName} unused i18n key(s):\n  - ${[...keys].join("\n  - ")}\n`
+        Object.entries(allI18NKeys).forEach(([fixedName, keys]) => {
+            if (fixedName === "settings") return
+            assert.ok(
+                keys.size === 0,
+                `[Unused i18n Keys] Found ${fixedName} unused i18n key(s):\n  - ${[...keys].join("\n  - ")}\n`
+            )
+        })
+    })
+})
+
+describe("Action Consistency Check: Defined vs Used", () => {
+    it("should have consistent actions between definitions and usage", () => {
+        const definedActions = new Set(Object.keys(actionsMap))
+        const ignoredActions = new Set(["invokeMarkdownlintSettings", "togglePreferencePanel"])
+        const usedActions = new Set()
+
+        const collectFromTooltip = (tooltip) => {
+            if (!tooltip) return
+            if (Array.isArray(tooltip)) {
+                tooltip.forEach(collectFromTooltip)
+            } else if (typeof tooltip === "object" && tooltip.action) {
+                usedActions.add(tooltip.action)
+            }
+        }
+
+        Object.values(rawSchemas).forEach(boxes => {
+            boxes.forEach(box => {
+                collectFromTooltip(box.tooltip)
+                box.fields.forEach(field => {
+                    const { type, key, tooltip } = field
+                    collectFromTooltip(tooltip)
+                    if (type === "action") {
+                        usedActions.add(key)
+                    }
+                })
+            })
+        })
+
+        const undefinedUsage = [...usedActions].filter(key => !ignoredActions.has(key) && !definedActions.has(key))
+        const unusedDefinitions = [...definedActions].filter(key => !ignoredActions.has(key) && !usedActions.has(key))
+        assert.deepStrictEqual(
+            undefinedUsage,
+            [],
+            `[Action Error] Found actions used in 'schemas.js' but NOT defined in 'actions.js':`
+        )
+        assert.deepStrictEqual(
+            unusedDefinitions,
+            [],
+            `[Action Error] Found actions defined in 'actions.js' but NEVER used in 'schemas.js' (Dead code):`
         )
     })
 })
 
-test("Action Consistency Check: Defined vs Used", t => {
-    const definedActions = new Set(Object.keys(actionsMap))
-    const ignoredActions = new Set(["invokeMarkdownlintSettings", "togglePreferencePanel"])
-    const usedActions = new Set()
-
-    const collectFromTooltip = (tooltip) => {
-        if (!tooltip) return
-        if (Array.isArray(tooltip)) {
-            tooltip.forEach(collectFromTooltip)
-        } else if (typeof tooltip === "object" && tooltip.action) {
-            usedActions.add(tooltip.action)
-        }
-    }
-
-    Object.values(rawSchemas).forEach(boxes => {
-        boxes.forEach(box => {
-            collectFromTooltip(box.tooltip)
-            box.fields.forEach(field => {
-                const { type, key, tooltip } = field
-                collectFromTooltip(tooltip)
-                if (type === "action") {
-                    usedActions.add(key)
-                }
+describe("Schema rules and Settings Key Synchronization", () => {
+    it("should have synchronized schema rules with settings", () => {
+        Object.entries(rulesMap).forEach(([fixedName, rules]) => {
+            assert.ok(
+                Object.hasOwn(settings, fixedName),
+                `[Schema rules -> Settings] Schema rules key "${fixedName}" was NOT found in the corresponding settings object.`
+            )
+            Object.keys(rules).forEach(key => {
+                assert.ok(
+                    hasNestedProperty(settings, `${fixedName}.${key}`),
+                    `[Schema rules -> Settings] Schema rules key "${fixedName}.${key}" was NOT found in the corresponding settings object.`
+                )
             })
         })
     })
-
-    const undefinedUsage = [...usedActions].filter(key => !ignoredActions.has(key) && !definedActions.has(key))
-    const unusedDefinitions = [...definedActions].filter(key => !ignoredActions.has(key) && !usedActions.has(key))
-    assert.deepStrictEqual(
-        undefinedUsage,
-        [],
-        `[Action Error] Found actions used in 'schemas.js' but NOT defined in 'actions.js':`
-    )
-    assert.deepStrictEqual(
-        unusedDefinitions,
-        [],
-        `[Action Error] Found actions defined in 'actions.js' but NEVER used in 'schemas.js' (Dead code):`
-    )
 })
 
-test("Schema rules and Settings Key Synchronization", t => {
-    Object.entries(rulesMap).forEach(([fixedName, rules]) => {
-        assert.ok(
-            Object.hasOwn(settings, fixedName),
-            `[Schema rules -> Settings] Schema rules key "${fixedName}" was NOT found in the corresponding settings object.`
-        )
-        Object.keys(rules).forEach(key => {
+describe("Schema preprocessors and Settings Key Synchronization", () => {
+    it("should have synchronized schema preprocessors with settings", () => {
+        delete preprocessorMap?.global?.pluginVersion
+        Object.entries(preprocessorMap).forEach(([fixedName, preprocessors]) => {
             assert.ok(
-                hasNestedProperty(settings, `${fixedName}.${key}`),
-                `[Schema rules -> Settings] Schema rules key "${fixedName}.${key}" was NOT found in the corresponding settings object.`
+                Object.hasOwn(settings, fixedName),
+                `[Schema preprocessors -> Settings] Schema preprocessors key "${fixedName}" was NOT found in the corresponding settings object.`
             )
+
+            Object.keys(preprocessors).forEach(key => {
+                assert.ok(
+                    hasNestedProperty(settings, `${fixedName}.${key}`),
+                    `[Schema preprocessors -> Settings] Schema preprocessors key "${fixedName}.${key}" was NOT found in the corresponding settings object.`
+                )
+            })
         })
     })
 })
 
-test("Schema preprocessors and Settings Key Synchronization", t => {
-    delete preprocessorMap?.global?.pluginVersion
-    Object.entries(preprocessorMap).forEach(([fixedName, preprocessors]) => {
-        assert.ok(
-            Object.hasOwn(settings, fixedName),
-            `[Schema preprocessors -> Settings] Schema preprocessors key "${fixedName}" was NOT found in the corresponding settings object.`
-        )
-
-        Object.keys(preprocessors).forEach(key => {
+describe("Schema watchers and Settings Key Synchronization", () => {
+    it("should have synchronized schema watchers with settings", () => {
+        Object.keys(watcherMap).forEach((fixedName) => {
             assert.ok(
-                hasNestedProperty(settings, `${fixedName}.${key}`),
-                `[Schema preprocessors -> Settings] Schema preprocessors key "${fixedName}.${key}" was NOT found in the corresponding settings object.`
+                Object.hasOwn(settings, fixedName),
+                `[Schema watchers -> Settings] Schema watchers key "${fixedName}" was NOT found in the corresponding settings object.`
             )
         })
-    })
-})
-
-test("Schema watchers and Settings Key Synchronization", t => {
-    Object.keys(watcherMap).forEach((fixedName) => {
-        assert.ok(
-            Object.hasOwn(settings, fixedName),
-            `[Schema watchers -> Settings] Schema watchers key "${fixedName}" was NOT found in the corresponding settings object.`
-        )
     })
 })

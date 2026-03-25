@@ -317,6 +317,13 @@ textarea:disabled::selection,
     display: none;
 }
 
+mark.feature-highlight {
+    background-color: rgba(255, 213, 79, 0.6);
+    color: inherit;
+    border-radius: 2px;
+    line-height: 2em;
+}
+
 .explain {
     color: var(--ff-text-sub);
     font-size: 12px;

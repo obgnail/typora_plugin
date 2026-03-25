@@ -86,8 +86,8 @@ if __name__ == "__main__":
     test()
     # 切换只读模式
     invoke_plugin("read_only", "call")
-    # 切换到第一个标签页
-    invoke_plugin("window_tab", "switchTab", 0)
+    # 资源管理器打开第一个标签页
+    invoke_plugin("window_tab", "showInFinder", 0)
     # 执行alert
     eval_typora("alert('this is test')")
 ```

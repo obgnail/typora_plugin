@@ -886,6 +886,116 @@ const Feature_InteractiveTooltip = {
     }
 }
 
+const Feature_Highlight = {
+    featureOptions: {
+        highlight: "",  // string | RegExp
+        highlightTargetSelector: ".title, .control-left",
+        highlightIgnoreSelector: ".tooltip, .feature-highlight",
+        highlightClass: "feature-highlight",
+        autoExpandOnHighlight: true,
+        scrollToFirstMatchOnHighlight: false,
+        caseSensitiveOnHighlight: false,
+    },
+    configure: ({ form, registerApi, hooks, options }) => {
+        const { highlight: hl, highlightTargetSelector, highlightIgnoreSelector, highlightClass } = options
+
+        const clear = () => {
+            const formEl = form.getFormEl()
+            if (!formEl) return
+
+            formEl.querySelectorAll(`mark.${highlightClass}`).forEach(mark => {
+                const parent = mark.parentNode
+                if (!parent) return
+                mark.replaceWith(...mark.childNodes)
+                parent.normalize()
+            })
+        }
+
+        const highlight = (keyword) => {
+            clear()
+
+            if (!keyword) return
+
+            const formEl = form.getFormEl()
+            if (!formEl) return
+
+            let regex
+            if (typeof keyword === "string" && keyword.trim()) {
+                const flags = options.caseSensitiveOnHighlight ? "g" : "gi"
+                regex = new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), flags)
+            } else if (keyword instanceof RegExp) {
+                regex = new RegExp(keyword.source, keyword.flags.includes("g") ? keyword.flags : keyword.flags + "g")
+            } else {
+                return
+            }
+
+            const walker = document.createTreeWalker(formEl, NodeFilter.SHOW_TEXT, {
+                acceptNode: (node) => {
+                    const parent = node.parentElement
+                    if (!node.nodeValue.trim() || !parent) {
+                        return NodeFilter.FILTER_REJECT
+                    }
+                    if (highlightIgnoreSelector && parent.closest(highlightIgnoreSelector)) {
+                        return NodeFilter.FILTER_REJECT
+                    }
+                    if (highlightTargetSelector && parent.closest(highlightTargetSelector)) {
+                        return NodeFilter.FILTER_ACCEPT
+                    }
+                    return NodeFilter.FILTER_REJECT
+                }
+            })
+
+            const targetNodes = []
+            let node
+            while ((node = walker.nextNode())) {
+                targetNodes.push(node)
+            }
+
+            let firstMatchEl = null
+            targetNodes.forEach(textNode => {
+                const text = textNode.nodeValue
+                const matches = [...text.matchAll(regex)]
+                if (matches.length === 0) return
+
+                const parentEl = textNode.parentElement
+                const frag = document.createDocumentFragment()
+                let lastIdx = 0
+
+                matches.forEach(match => {
+                    if (!match[0]) return
+                    if (match.index > lastIdx) {
+                        frag.appendChild(document.createTextNode(text.slice(lastIdx, match.index)))
+                    }
+                    const mark = document.createElement("mark")
+                    mark.className = highlightClass
+                    mark.textContent = match[0]
+                    frag.appendChild(mark)
+                    lastIdx = match.index + match[0].length
+                })
+
+                if (lastIdx < text.length) {
+                    frag.appendChild(document.createTextNode(text.slice(lastIdx)))
+                }
+                parentEl.replaceChild(frag, textNode)
+
+                if (!firstMatchEl) {
+                    firstMatchEl = parentEl
+                }
+                if (options.autoExpandOnHighlight) {
+                    parentEl.closest(".box-container.collapsed")?.classList.remove("collapsed")
+                }
+            })
+
+            if (options.scrollToFirstMatchOnHighlight && firstMatchEl) {
+                firstMatchEl.scrollIntoView({ behavior: "smooth", block: "center" })
+            }
+        }
+
+        registerApi("highlight", { highlight, clear })
+        hooks.on("onRender", () => hl && highlight(hl))
+    }
+}
+
 /**
  * Uses PascalCase for chainable setters (e.g., `.Label()`) to prevent namespace collisions with the underlying camelCase data properties (e.g., `.label`).
  * This hybrid design allows the builder instance to serve directly as the final data object,
@@ -2172,6 +2282,7 @@ FastForm.registerFeature("eventDelegation", Feature_EventDelegation)
 FastForm.registerFeature("defaultKeybindings", Feature_DefaultKeybindings)
 FastForm.registerFeature("collapsibleBox", Feature_CollapsibleBox)
 FastForm.registerFeature("interactiveTooltip", Feature_InteractiveTooltip)
+FastForm.registerFeature("highlight", Feature_Highlight)
 FastForm.registerFeature("watchers", Feature_Watchers)
 FastForm.registerFeature("parsing", Feature_Parsing)
 FastForm.registerFeature("validation", Feature_Validation)
@@ -3313,6 +3424,7 @@ const Control_Transfer = {
         element.querySelector(".source-list").innerHTML = Control_Transfer._createItems(toSelectKeys, field.options, disabledOptions)
     },
     bindEvents: ({ form }) => {
+        const rafManager = utils.getRafManager()
         let activeDraggable = null
         let dragGhost = null
         let grabOffsetX = 0
@@ -3329,7 +3441,6 @@ const Control_Transfer = {
             return _transparentImg
         }
 
-        let rafId = null
         let lastSortTime = 0
         const SORT_THROTTLE_MS = 50
 
@@ -3355,10 +3466,7 @@ const Control_Transfer = {
         })
 
         form.onEvent("dragend", ".transfer-card", function () {
-            if (rafId) {
-                cancelAnimationFrame(rafId)
-                rafId = null
-            }
+            rafManager.cancel()
             if (!activeDraggable || !dragGhost) return
 
             const destRect = activeDraggable.getBoundingClientRect()
@@ -3390,10 +3498,11 @@ const Control_Transfer = {
 
             if (!dragGhost || !activeDraggable) return
 
-            if (rafId) cancelAnimationFrame(rafId)
-            rafId = requestAnimationFrame(() => {
-                ghostX = ev.clientX - grabOffsetX
-                ghostY = ev.clientY - grabOffsetY
+            const currentX = ev.clientX
+            const currentY = ev.clientY
+            rafManager.schedule(() => {
+                ghostX = currentX - grabOffsetX
+                ghostY = currentY - grabOffsetY
                 dragGhost.style.transform = `translate3d(${ghostX}px, ${ghostY}px, 0)`
             })
 
@@ -3430,12 +3539,16 @@ const Control_Transfer = {
             handle.classList.add("active")
 
             const onMouseMove = (moveEv) => {
-                const dy = moveEv.clientY - startY
-                const newHeight = Math.max(150, startHeight + dy)
-                container.style.height = `${newHeight}px`
+                const currentY = moveEv.clientY
+                rafManager.schedule(() => {
+                    const dy = currentY - startY
+                    const newHeight = Math.max(150, startHeight + dy)
+                    container.style.height = `${newHeight}px`
+                })
             }
             const onMouseUp = () => {
                 handle.classList.remove("active")
+                rafManager.cancel()
                 document.removeEventListener("mousemove", onMouseMove)
                 document.removeEventListener("mouseup", onMouseUp)
             }
@@ -3931,7 +4044,7 @@ const Control_Composite = {
         form.setData(field.key, fixedValue)  // Fix data
         state.set(field.key, { ...field.defaultValues, ...fixedValue })  // Set cache
 
-        Control_Composite._setCacheWatcher(options, field, state)
+        Control_Composite._setCacheWatcher(form, field, state)
         Control_Composite._setDependencies(field)
     },
     getNestedSchemas: (field) => Array.isArray(field.subSchema) ? [field.subSchema] : [],
@@ -3978,19 +4091,18 @@ const Control_Composite = {
             }
         }
     },
-    _setCacheWatcher: (options, field, state) => {
+    _setCacheWatcher: (form, field, state) => {
         const subFieldKeys = Control_Composite._collectAllKeys(field.subSchema)
         if (subFieldKeys.length === 0) return
-        if (!options.watchers) options.watchers = {}
         const watcherKey = `_composite_cache_sync_${field.key}`
-        options.watchers[watcherKey] = {
+        form.getApi("watchers")?.register(watcherKey, {
             triggers: subFieldKeys,
             when: { [field.key]: { $typeof: "object" } },
             affects: [],
             effect: (isMet, ctx) => {
                 if (isMet) state.set(field.key, { ...field.defaultValues, ...ctx.getValue(field.key) })
             }
-        }
+        })
     },
     _collectAllKeys: (schema, prefix) => {
         const keys = []

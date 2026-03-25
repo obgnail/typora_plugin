@@ -2134,9 +2134,6 @@ COLLAPSIBLE_BOX = true
 #   hide    : Hide completely
 DEPENDENCIES_FAILURE_BEHAVIOR = "readonly"
 
-# Enable search functionality via plugin FixedName
-SEARCH_PLUGIN_FIXEDNAME = false
-
 # =========== [ Data ] ===========
 # Serialized format for object settings display (Supported: JSON / TOML / YAML)
 OBJECT_SETTINGS_FORMAT = "JSON"
@@ -2163,7 +2160,7 @@ HOTKEY = ""
 CUSTOM_HOTKEYS = [
     { enable = false, hotkey = "ctrl+shift+e", desc = "Insert JavaScript BlockCode", evil = "() => this.utils.insertFence('javascript')" },
     { enable = false, hotkey = "ctrl+shift+e", desc = "Open Windows Calculator", evil = "() => require('child_process').exec('cmd /C calc')" },
-    { enable = false, hotkey = "ctrl+shift+e", desc = "Switch to the first window tab", evil = "() => this.utils.getBasePlugin('window_tab').switchTab(0)" },
+    { enable = false, hotkey = "ctrl+shift+e", desc = "Switch to the first window tab", evil = "() => this.utils.getBasePlugin('window_tab').tab.switch(0)" },
     { enable = false, hotkey = "-", desc = "Pop up a prompt window", evil = "this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, filepath => window.confirm(`You opened the file: ${filepath}`))" },
     { enable = false, hotkey = "ctrl+shift+e", desc = "Insert Kanban BlockCode", plugin = "kanban", function = "callback" },
     { enable = false, hotkey = "ctrl+[", desc = "Folding/unfolding BlockCode", plugin = "fence_enhance", function = "foldFence", closestSelector = "#write .md-fences" },
