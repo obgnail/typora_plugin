@@ -50,8 +50,11 @@ class UploadUtils {
         const parsedUrl = new URL(url);
         const _url = parsedUrl.pathname;
 
-        const ekey = "9znpamsyl2c7cdrr9sas0le9vbc3r6ba";
-        const xCaKey = "203803574";
+        const ekey = process.env.ALIBABA_CLOUD_EKEY;
+        const xCaKey = process.env.ALIBABA_CLOUD_XCA_KEY;
+        if (!ekey || !xCaKey) {
+            throw new Error("Missing Alibaba Cloud credentials. Set ALIBABA_CLOUD_EKEY and ALIBABA_CLOUD_XCA_KEY environment variables.");
+        }
         const toEnc = `POST\napplication/json, text/plain, */*\n\napplication/json;\n\nx-ca-key:${xCaKey}\nx-ca-nonce:${uuid}\n${_url}`;
         const hmac = this.CryptoJS.HmacSHA256(toEnc, ekey);
         return this.CryptoJS.enc.Base64.stringify(hmac);
