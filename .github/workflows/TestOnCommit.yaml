@@ -1,12 +1,11 @@
-name: Check On Commit
+name: Test on Commit
 
 on:
   push:
     paths:
       - 'develop/**'
-      - 'plugin/global/locales/**'
-      - 'plugin/global/settings/**'
-      - 'plugin/preferences/**'
+      - 'plugin/**'
+      - '.github/**'
 
 jobs:
   test:
