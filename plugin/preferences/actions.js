@@ -194,9 +194,8 @@ module.exports = (plugin) => {
                 }
                 const message = i18n.t("success.uninstall")
                 const confirm = i18n.t("confirm")
-                const op = { type: "info", message, buttons: [confirm] }
-                await utils.showMessageBox(op)
-                utils.restartTypora(false)
+                await utils.showMessageBox({ type: "info", message, buttons: [confirm] })
+                utils.restartTypora()
             }
 
             const title = i18n.t("$label.uninstallPlugin")

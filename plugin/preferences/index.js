@@ -7,7 +7,7 @@ class PreferencesPlugin extends BasePlugin {
         <div class="plugin-preferences-dialog plugin-common-hidden">
             <div class="plugin-preferences-content">
                 <div class="plugin-preferences-left">
-                    <div class="plugin-preferences-search"><input type="text" placeholder="${this.i18n.t("search")}"></div>
+                    <div class="plugin-preferences-search"><input type="text" placeholder="${this.i18n.t("search")}"><i class="ion-close-round"></i></div>
                     <div class="plugin-preferences-menu"></div>
                 </div>
                 <div class="plugin-preferences-right">
@@ -30,7 +30,8 @@ class PreferencesPlugin extends BasePlugin {
             form: document.querySelector(".plugin-preferences-form"),
             main: document.querySelector(".plugin-preferences-main"),
             searchInput: document.querySelector(".plugin-preferences-search input"),
-            closeButton: document.querySelector(".plugin-preferences-close"),
+            searchClose: document.querySelector(".plugin-preferences-search i"),
+            close: document.querySelector(".plugin-preferences-close"),
         }
         this.RULES = require("./rules.js")
         this.WATCHERS = require("./watchers.js")(this)
@@ -90,9 +91,15 @@ class PreferencesPlugin extends BasePlugin {
                 highlightForm(query)
                 if (!query) scroll()
             })
+            this.entities.searchClose.addEventListener("click", () => {
+                const inputEl = this.entities.searchInput
+                inputEl.value = ""
+                inputEl.dispatchEvent(new Event("input", { bubbles: true }))
+                inputEl.focus()
+            })
         }
         const onEvents = () => {
-            this.entities.closeButton.addEventListener("click", () => this.call())
+            this.entities.close.addEventListener("click", () => this.call())
             this.entities.menu.addEventListener("click", async ev => {
                 const menu = ev.target.closest(".plugin-preferences-menu-item")?.dataset.plugin
                 if (menu) await this.switchMenu(menu)

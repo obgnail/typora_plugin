@@ -61,21 +61,37 @@
 }
 
 .plugin-preferences-search {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
     height: 52px;
-    padding: 8px 12px;
+    padding: 10px 12px;
 }
 
 .plugin-preferences-search input {
-    height: 30px;
-    top: 50%;
-    transform: translate(0, -50%);
+    height: 100%;
     margin: 0;
-    padding: 1px 8px;
-    position: relative;
+    padding: 2px 26px 2px 8px;
     border: 1px solid rgba(150, 162, 170, 0.4);
     border-radius: 4px;
     background: transparent;
     width: 100%;
+}
+
+.plugin-preferences-search i {
+    display: none;
+    position: absolute;
+    right: 18px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 10px;
+    text-align: center;
+    color: #7d7d7d;
+}
+
+.plugin-preferences-search > input:not(:placeholder-shown) + i {
+    display: block;
 }
 
 .plugin-preferences-menu {

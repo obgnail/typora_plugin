@@ -1120,8 +1120,6 @@ class utils {
         return `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`
     }
 
-    static moveCursor = $target => File.editor.selection.jumpIntoElemEnd($target)
-
     static jumpToEdge = (toTop = true) => {
         const fn = toTop ? "jumpTop" : "jumpBottom"
         File.editor.selection[fn]()
@@ -1138,7 +1136,7 @@ class utils {
         }
         File.editor.focusAndRestorePos()
         if (moveCursor) {
-            this.moveCursor($target)
+            File.editor.selection.jumpIntoElemEnd($target)
         }
         if (showHiddenElement) {
             this.showHiddenElementByPlugin($target[0])
