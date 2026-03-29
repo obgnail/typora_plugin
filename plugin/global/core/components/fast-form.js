@@ -762,7 +762,7 @@ const Feature_EventDelegation = {
 
             let events, selector, data, handler, options
 
-            const lastArg = args[args.length - 1]
+            const lastArg = args.at(-1)
             if (lastArg == null || typeof lastArg === "boolean" || typeof lastArg === "object") {
                 options = args.pop() // The last parameter is `options`
             }
@@ -3959,17 +3959,9 @@ const Control_Table = {
         return `<div class="table" ${key}>${table}</div>`
     },
     update: ({ element, value, field }) => {
-        const tableEl = element.querySelector("table")
-        if (!tableEl) return
-
-        let tbody = tableEl.querySelector("tbody")
-        if (tbody) {
-            tbody.innerHTML = ""
-        } else {
-            tbody = document.createElement("tbody")
-            tableEl.appendChild(tbody)
-        }
-        tbody.innerHTML = (value || [])
+        const tbodyEl = element.querySelector("tbody")
+        if (!tbodyEl) return
+        tbodyEl.innerHTML = (value || [])
             .map(item => `<tr>${Control_Table._createTableRow(field.thMap, item).map(e => `<td>${e}</td>`).join("")}</tr>`)
             .join("")
     },

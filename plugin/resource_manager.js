@@ -121,16 +121,11 @@ class ResourceManagerPlugin extends BasePlugin {
         const format = this.utils.Package.Path.extname(filePath).toLowerCase().replace(/^\./, "")
         const fileContent = getOutput(format)
         const ok = await this.utils.writeFile(filePath, fileContent)
-        if (ok) {
-            this.utils.showInFinder(filePath)
-        }
+        if (ok) this.utils.showInFinder(filePath)
     }
 
     _runWithProgressBar = async (dir) => {
-        return this.utils.progressBar.fake({
-            task: () => findResources(this, dir),
-            timeout: this.config.TIMEOUT,
-        })
+        return this.utils.runWithFakeProgressBar(() => findResources(this, dir), this.config.TIMEOUT)
     }
 
     _initModalRect = (resetLeft = true) => {

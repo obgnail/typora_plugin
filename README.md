@@ -29,7 +29,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 10   | fence_enhance       | Enhance Fence                                                |                    |
 | 11   | right_outline       | Right Outline                                                |                    |
 | 12   | commander           | Commander                                                    |                    |
-| 13   | toolbar             | Multi-Purpose Searcher                                       |                    |
+| 13   | command_palette     | Command Palette                                              |                    |
 | 14   | right_click_menu    | Right-Click Menu                                             |                    |
 | 15   | pie_menu            | Pie menu                                                     | ×                  |
 | 16   | datatables          | Enhance Table                                                | ×                  |
@@ -85,7 +85,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 
 - **Is my Typora supported?** Typora's version should be ≥ 0.9.98 (the last free version).
 - **How to modify plugin configurations?** Right-click menu -> Interactive Plugins -> Preferences. **Respect all user choices**. Any plugin or feature can be permanently enabled/disabled.
-- **How to upgrade plugins?** Right-click menu -> Interactive Plugins -> Upgrade Plugins.
+- **How to upgrade plugins?** Right-click menu -> Interactive Plugins -> Preferences -> Check for Updates.
 - **How to uninstall plugins?** Right-click menu -> Interactive Plugins -> Preferences -> Uninstall Plugins.
 - **How to develop plugins?** No Build Time, No need to install development environment. Please refer to [Readme](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README-en.md) for details.
 - **Does it support Typora for Mac?** I don't have a Mac device, so I haven't tested it.
@@ -140,7 +140,7 @@ yay -S typora-plugin
 All plugins provide four usage methods:
 
 - Keyboard enthusiasts:
-  - `Ctrl+J` to bring up the plugin list (see `toolbar` plugin)
+  - Command Palette (see `command_palette` plugin)
   - Shortcut keys (see `hotkeys` plugin)
 - Mouse enthusiasts:
   - Right-click in the main text area (see `right_click_menu` plugin)
@@ -154,7 +154,7 @@ All plugins provide four usage methods:
 
 ### search_multi
 
-Function: Search through a combination of different conditions to accurately find files.
+Search through a combination of different conditions to accurately find files.
 
 
 Usage example: The search syntax is similar to Google search syntax and supports regular expressions.
@@ -181,47 +181,38 @@ Usage example: The search syntax is similar to Google search syntax and supports
 
 ### collapse_list
 
-Function: Fold/expand unordered lists, ordered lists, task lists.
+Fold/expand unordered lists, ordered lists, task lists.
 
 
 ### collapse_table
 
-Function: Fold/expand tables.
+Fold/expand tables.
 
 
 ### md_padding
 
-Function: Add spaces between Chinese and English, Chinese and numbers when mixed.
-
-Shortcut: ctrl + shift + B
+Add spaces between Chinese and English, Chinese and numbers when mixed.
 
 ![md_padding](assets/md_padding.gif)
 
 
 ### slash_commands
 
-Function: Similar to Notion's slash command.
-
-Supports:
-
-- Insert text snippets (snippet)
-- Insert components
-- Edit styles
-- Execute arbitrary logic
+Similar to Notion's slash command.
 
 ![slash_commands](assets/slash_commands.gif)
 
 
 ### templater
 
-Function: Similar to Obsidian's file template function, quickly create files based on templates.
+Similar to Obsidian's file template function, quickly create files based on templates.
 
 ![templater](assets/templater.gif)
 
 
 ### resource_manager
 
-Function: Resource management, cleanup of unused images
+Resource management, cleanup of unused images
 
 
 ### fence_enhance
@@ -231,7 +222,7 @@ Function: Resource management, cleanup of unused images
 
 ### right_outline
 
-Function: Typora's sidebar cannot display both [File] and [Outline] simultaneously. To solve this problem, this plugin adds an [Outline] on the right.
+Typora's sidebar cannot display both [File] and [Outline] simultaneously. To solve this problem, this plugin adds an [Outline] on the right.
 
 
 ### commander
@@ -244,50 +235,23 @@ Function: Typora's sidebar cannot display both [File] and [Outline] simultaneous
 ![markmap](assets/markmap.gif)
 
 
-### toolbar
+### command_palette
 
-Function: Similar to VSCode's ctrl + shift + p function
-
-Supports search:
-
-- `his`: Recently opened files
-- `plu`: Plugins
-- `tab`: Open tabs
-- `ops`: Common operations
-- `out`: Document outline
-- `mode`: Switch file mode
-- `theme`: Temporarily switch theme
-- `func`: Function list
-- `all`: Mixed search (search all items mixed together)
-
-Input content description:
-
-- Input content = search tool name + space + search content
-- Supports `intersection queries`, `difference queries`, and can be freely combined (similar to Google's positive and negative queries)
-
-Examples:
-
-- `his node learn`: Find recently opened files that have titles containing both node and learn keywords
-- `plu multi -search`: Find plugins whose names contain the multi keyword but do not contain the search keyword
-- `tab -messing`: Find all open tabs whose names do not contain the messing keyword
-- `his close -win -mark tab`: Find recently opened files whose titles contain close and tab keywords, but do not contain win and mark keywords
-
-![toolbar](assets/toolbar.gif)
+Similar to VSCode's command palette (Ctrl+Shift+P)
 
 
 ### right_click_menu
 
 All plugins support direct invocation through the right-click menu. Mouse enthusiasts can use the right-click menu as the main way to call all plugins.
 
-
 ### pie_menu
 
-Usage:
+Pie Menu. Usage:
 
 - `Open circular menu`: Ctrl + right mouse button
 - `Rotate circular menu`: Middle mouse button
-- `Pin the circular menu, so it doesn't automatically disappear`: Left mouse button on the center of the circle
-- `Expand the circular menu, so it doesn't automatically collapse`: Right mouse button on the center of the circle
+- `Pin the circular menu, so it doesn't automatically disappear`: Left mouse button in the middle of the circle
+- `Expand the circular menu, so it doesn't automatically collapse`: Right mouse button in the middle of the circle
 
 ### preferences
 
@@ -299,8 +263,6 @@ Preferences
 
 ### chart
 
-Usage: Right-click menu -> Language plugins -> Chart
-
 ![chart](./assets/chart.png)
 
 ### drawIO
@@ -309,35 +271,25 @@ Usage: Right-click menu -> Language plugins -> Chart
 
 ### abc
 
-Usage: Right-click menu -> Language plugins -> ABC
-
 ![abcjs](./assets/abcjs.png)
 
 ### calendar
-
-Usage: Right-click menu -> Language plugins -> Calendar
 
 ![calendar](./assets/calendar.png)
 
 ### wavedrom
 
-Usage: Right-click menu -> Language plugins -> Wavedrom
-
 ![wavedrom](./assets/wavedrom.png)
 
 ### marp
 
-Function: Use markdown to create PPT.
-
-Usage: Right-click menu -> Language plugins -> Marp
+Use markdown to create PPT.
 
 ### plantUML
 
-Usage: Right-click menu -> Language plugins -> PlantUML
-
 ![plantUML](./assets/plantUML.png)
 
-Due to the B/S architecture of plantUML, users are required to provide a rendering server. Suggest using Docker to install rendering server:
+Due to the B/S architecture of plantUML, a rendering server is required. Suggest using Docker to install:
 
 ```bash
 docker pull plantuml/plantuml-server:jetty
@@ -348,41 +300,29 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 
 ![callouts](./assets/callouts.png)
 
-The quantity, type, color, and icon can all be defined by yourself. Please modify the configuration.
-
 ### kanban
-
-Extend the code syntax to add Kanban functionality.
 
 ![kanban](assets/kanban.png)
 
 ### timeline
 
-Extend the code syntax to add timeline functionality.
-
 ![timeline](./assets/timeline.png)
 
 ### chat
-
-Extend the code syntax to add chat functionality.
 
 ![chat](./assets/chat.png)
 
 ### text_stylize
 
-Function: Convert text to HTML format, changing the text style.
-
 ![text_stylize](./assets/text_stylize.gif)
 
 ### read_only
 
-Function: In read-only mode, the document cannot be edited (after enabling, the bottom right corner of the statistics area will show `ReadOnly`).
-
-Shortcut: ctrl+shift+R
+In read-only mode, the document cannot be edited (after enabling, the bottom right corner of the statistics area will show `ReadOnly`).
 
 ### blur
 
-Function: After enabling, only the currently focused component is visible, the rest are blurred. It can be used to prevent peeking.
+After enabling, only the currently focused component is visible, the rest are blurred. It can be used to prevent peeking.
 
 > This plugin can only be used with the official version of Typora.
 
@@ -396,17 +336,17 @@ Unlike other implementations using theme CSS, this plugin perfectly solves the p
 
 ### image_viewer
 
-Function: One-stop image viewing, and provides simple image editing.
+One-stop image viewing, and provides simple image editing.
 
 ![image-reviewer](./assets/image-reviewer.png)
 
 ### cjk_symbol_pairing
 
-Function: Automatically pair symbols when typing `《 【 （ ‘ “ 「`.
+Automatically pair symbols when typing `《 【 （ ‘ “ 「`.
 
 ### datatables
 
-Function: Enhance tables. Provides functions such as search, filter, pagination, and sorting.
+Enhance tables. Provides functions such as search, filter, pagination, and sorting.
 
 Usage: Place the cursor on the table -> Right-click menu -> Interactive Plugins -> Table Enhancement.
 
@@ -414,21 +354,21 @@ Usage: Place the cursor on the table -> Right-click menu -> Interactive Plugins 
 
 ### resize_table
 
-Function: `ctrl + mouse drag`: Modify the row height and column width of the table.
+`ctrl + mouse drag`: Modify the row height and column width of the table.
 
 ![resize_table](assets/resize_table.gif)
 
 ### resize_image
 
-Function: `alt + mouse scroll`: Adjust the image size.
+`alt + mouse scroll`: Adjust the image size.
 
 ### export_enhance
 
-Function: When exporting HTML, convert images to base64 to avoid image loss.
+When exporting HTML, convert images to base64 to avoid image loss.
 
 ### sidebar_enhance
 
-Function: 
+
 
 - Drag & drop outline to rearrange
 - Display non-Markdown files in the sidebar
@@ -450,15 +390,11 @@ Defocus Comfort Mode
 
 ### markdownlint
 
-Function: Check whether the current file complies with the markdown best practices.
-
-Usage:Click the small square in the top right corner
+Check whether the current file complies with the markdown best practices.
 
 ### updater
 
-Upgrade Plugin
-
-> As we all know, some users cannot download the latest plugin directly from GitHub, so a proxy setting function is provided (default is system proxy).
+Upgrade Plugin.
 
 ### easy_modify
 
@@ -477,11 +413,11 @@ This plugin is a collection of commonly used editing tools, currently including:
 
 ### editor_width_slider
 
-Function: Adjust the width of the writing area.
+Adjust the width of the writing area.
 
 ### asset_root_redirect
 
-Function: If you mainly use Obsidian or Joplin to manage files and occasionally use Typora to open files, you will encounter a problem: both Obsidian and Joplin put local resources in the same directory, but Typora defaults to using relative paths to reference local resources.
+If you mainly use Obsidian or Joplin to manage files and occasionally use Typora to open files, you will encounter a problem: both Obsidian and Joplin put local resources in the same directory, but Typora defaults to using relative paths to reference local resources.
 
 > This plugin is disabled by default and needs to be manually enabled.
 
@@ -498,7 +434,7 @@ Encrypt File.
 
 ### truncate_text
 
-Function: The rendering performance of large files in Typora is very poor. Use this plugin to temporarily hide content (just hide the display, not modify the file) to improve rendering performance. It can also be used to prevent peeking.
+The rendering performance of large files in Typora is very poor. Use this plugin to temporarily hide content (just hide the display, not modify the file) to improve rendering performance. It can also be used to prevent peeking.
 
 > Principle: By setting the display style of DOM elements to none, elements are hidden so that they do not occupy a position in the rendering tree, and operations on hidden elements do not cause reflow of other elements.
 
@@ -529,25 +465,25 @@ This plugin disables the auto-hiding feature for syntax markers in WYSIWYG mode.
 
 > This plugin is an advanced plugin, only available to users with a JavaScript background.
 
-Function: Bind hotkeys to [any plugin system function] or [any custom function] in a declarative form.
+Bind hotkeys to [any plugin system function] or [any custom function] in a declarative form.
 
 ### action_buttons
 
 > This plugin is an advanced plugin, only available to users with a JavaScript background.
 
-Function: Similar to hotkeys, set function buttons for [any plugin system function] in a declarative form.
+Similar to hotkeys, set function buttons for [any plugin system function] in a declarative form.
 
 ### custom
 
 > This plugin is an advanced plugin, only available to users with a JavaScript background.
 
-Function: Provide open capabilities, support users to write their own plugins.
+Provide open capabilities, support users to write their own plugins.
 
 For specific usage, please refer to [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README.md).
 
 ### json_rpc
 
-Function: Expose all capabilities including the typora-plugin in the form of `json-rpc` for external manipulation of Typora.
+Expose all capabilities including the typora-plugin in the form of `json-rpc` for external manipulation of Typora.
 
 For specific usage, please refer to [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/json_rpc/README.md).
 
@@ -555,7 +491,7 @@ For specific usage, please refer to [README.md](https://github.com/obgnail/typor
 
 ### article_uploader
 
-Function: The user clicks or uses a shortcut key to trigger the automatic publishing function of the current article. The program automatically publishes blog articles to major platforms according to user configuration.
+The user clicks or uses a shortcut key to trigger the automatic publishing function of the current article. The program automatically publishes blog articles to major platforms according to user configuration.
 
 For specific usage, refer to: [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/article_uploader/README.md). Taking uploading to CSDN as an example, the GIF is as follows:
 

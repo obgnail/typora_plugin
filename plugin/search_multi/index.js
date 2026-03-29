@@ -83,6 +83,7 @@ class SearchMultiPlugin extends BasePlugin {
         })
         this.entities.input.addEventListener("keydown", ev => {
             if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
+                ev.preventDefault()
                 this.utils.scrollActiveItem(this.entities.files, ".plugin-search-item.active", ev.key === "ArrowDown")
             } else if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
                 this.hide()

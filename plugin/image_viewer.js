@@ -498,7 +498,7 @@ class ImageViewerPlugin extends BasePlugin {
         const idx = parseInt(this.entities.image.dataset.idx)
         const image = this._collectImage()[idx]
         this.close()
-        if (image) this.utils.scroll(image, 30)
+        if (image) this.utils.scroll(image, { height: 30 })
     }
     show = () => {
         document.activeElement.blur()

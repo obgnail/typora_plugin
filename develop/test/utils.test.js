@@ -1250,8 +1250,8 @@ describe("Formatting & Presentation Utilities", () => {
             const rows = []
             const result = utils.buildTable(rows)
             assert.ok(result.includes("<table>"))
-            assert.ok(result.includes("<thead>"))
-            assert.ok(result.includes("<tbody>"))
+            assert.ok(!result.includes("<thead>"))
+            assert.ok(!result.includes("<tbody>"))
         })
 
         it("handles numeric values", () => {

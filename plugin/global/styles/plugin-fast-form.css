@@ -44,9 +44,9 @@
     --ff-shadow-base: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
 }
 
-/* ==========================================================================
+/* ========================
    Global & Utilities
-   ========================================================================== */
+   ======================== */
 .plugin-common-hidden {
     display: none !important;
 }
@@ -172,9 +172,9 @@
     background-color: var(--ff-warn-bg) !important;
 }
 
-/* ==========================================================================
+/* ========================
    Grid System
-   ========================================================================== */
+   ======================== */
 .ff-row {
     display: flex;
     flex-wrap: wrap;
@@ -249,9 +249,9 @@
     --ff-col: 12;
 }
 
-/* ==========================================================================
+/* ========================
    Selection
-   ========================================================================== */
+   ======================== */
 ::selection {
     background-color: var(--ff-bg-selection);
 }
@@ -262,9 +262,9 @@ textarea:disabled::selection,
     background-color: var(--ff-bg-selection-disabled);
 }
 
-/* ==========================================================================
+/* ========================
    Layout Containers
-   ========================================================================== */
+   ======================== */
 .box-container {
     padding-top: 5px;
     padding-bottom: 5px;
@@ -278,11 +278,11 @@ textarea:disabled::selection,
 }
 
 .title {
-    font-weight: bold;
-    display: flex;
-    align-items: center;
+    /*display: flex;*/
+    /*align-items: center;*/
     height: 42px;
     line-height: 42px;
+    font-weight: bold;
     user-select: none;
     color: var(--ff-text-main);
 }
@@ -369,7 +369,7 @@ mark.feature-highlight {
     margin-top: 10px;
     background-color: rgba(0, 0, 0, 0.85);
     color: var(--ff-bg-white);
-    padding: 8px 12px;
+    padding: 8px 10px;
     border-radius: var(--ff-radius);
     font-size: 12px;
     line-height: 1.5;
@@ -420,9 +420,9 @@ mark.feature-highlight {
     background-color: var(--ff-focus-ring);
 }
 
-/* ==========================================================================
+/* ========================
    Controls Base
-   ========================================================================== */
+   ======================== */
 .control {
     display: flex;
     align-items: center;
@@ -457,9 +457,9 @@ mark.feature-highlight {
     flex: 42;
 }
 
-/* ==========================================================================
+/* ========================
    Standard Inputs
-   ========================================================================== */
+   ======================== */
 input[type="text"],
 input[type="number"],
 input[type="password"],
@@ -515,9 +515,9 @@ textarea:disabled {
     color: var(--ff-text-sub);
 }
 
-/* ==========================================================================
+/* ========================
    Specific Components
-   ========================================================================== */
+   ======================== */
 
 /* Switch */
 .switch-input {

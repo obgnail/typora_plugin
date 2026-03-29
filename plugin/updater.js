@@ -165,8 +165,7 @@ class Updater {
     }
 
     async runWithProgressBar() {
-        const op = { task: this.run.bind(this), timeout: this.requestOption.timeout }
-        const result = await this.utils.progressBar.fake(op)
+        const result = await this.utils.runWithFakeProgressBar(() => this.run(), this.requestOption.timeout)
         return { state: result, info: this.latestVersionInfo }
     }
 

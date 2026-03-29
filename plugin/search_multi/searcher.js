@@ -401,7 +401,7 @@ class Searcher {
             infoAndContent: node => `${node.info}\n${node.content}`,
             attrAndContent: node => {
                 const attrs = node.attrs || []
-                const attrContent = attrs.map(l => l[l.length - 1]).join(" ")
+                const attrContent = attrs.map(attr => attr.at(-1)).join(" ")
                 return `${attrContent}${node.content}`
             },
             regexpContent: regex => {
@@ -920,7 +920,7 @@ class Searcher {
         const _toGraph = async ({ expression, optimize, translate, textStyle, direction }) => {
             return _to(expression, optimize, async ast => {
                 const definition = this.toMermaid(ast, translate, textStyle, direction)
-                const svg = await this.utils.mermaid.render(definition)
+                const svg = await this.utils.renderMermaid(definition)
                 return `<div style="font-size:initial; line-height: initial; text-align:center;">${svg}</div>`
             })
         }

@@ -9,8 +9,6 @@ class TestPlugin extends BasePlugin {
         // Expose require
         global.__require__ = require
         global.__module__ = module
-        // const Module = require("module")
-        // Module.globalPaths.push(this.utils.joinPluginPath("plugin"))
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.test)
     }

@@ -47,7 +47,7 @@ class PlantUMLPlugin extends BasePlugin {
 
         this._memorizedRender = this.utils.memoizeLimited(async content => {
             const url = `${this.config.SERVER_URL}/${this.config.OUTPUT_FORMAT}/${encode(content)}`
-            const resp = await this.utils.fetch(url, { timeout: this.config.SERVER_TIMEOUT })
+            const resp = await this.utils.fetch(url, { timeout: this.config.SERVER_TIMEOUT, proxy: this.config.SERVER_PROXY })
             if (!resp.ok) {
                 const errorText = await resp.text()
                 return new Error(`${resp.status} ${resp.statusText}\n${errorText}`)

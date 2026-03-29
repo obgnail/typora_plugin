@@ -61,7 +61,7 @@ class RightOutlinePlugin extends BasePlugin {
                 const ref = ev.target.closest(".toc-node")?.dataset.ref
                 if (ref) {
                     if (File.editor.sourceView.inSourceMode) File.toggleSourceMode()
-                    this.utils.scrollByCid(ref, -1, true)
+                    this.utils.scroll(ref, { moveCursor: true })
                     return
                 }
 
@@ -238,6 +238,12 @@ class RightOutlinePlugin extends BasePlugin {
 
     _activeIcon = type => this.entities.header.children.forEach(el => el.classList.toggle("select", el.dataset.type === type))
 
+    _compareScrollTop = (el, scrollTop) => {
+        if (el.offsetTop < scrollTop) return -1
+        if (el.offsetTop > scrollTop + window.innerHeight) return 1
+        return 0
+    }
+
     _highlightVisibleHeader = (_, $header, targetIdx) => {
         if (!this.isModalShown() || this._getCurrentType() !== "header") return
 
@@ -245,11 +251,9 @@ class RightOutlinePlugin extends BasePlugin {
         if (!headers.length) return
 
         const contentScrollTop = this.utils.entities.$eContent.scrollTop()
-        const isBelowViewBox = 1 === this.utils.compareScrollPosition(headers[headers.length - 1], contentScrollTop)
+        const isBelowViewBox = 1 === this._compareScrollTop(headers[headers.length - 1], contentScrollTop)
         const findActiveIndex = index => {
-            for (index--; headers[index] && this.utils.compareScrollPosition(headers[index], contentScrollTop) === 0;) {
-                index--
-            }
+            for (index--; headers[index] && this._compareScrollTop(headers[index], contentScrollTop) === 0;) index--
             return index + 1
         }
 
@@ -259,10 +263,10 @@ class RightOutlinePlugin extends BasePlugin {
 
         while (1 < end - start && activeIndex === undefined) {
             let middleIndex = Math.floor((start + end) / 2)
-            let scrollPosition = this.utils.compareScrollPosition(headers[middleIndex], contentScrollTop)
-            if (scrollPosition === 1) {
+            let position = this._compareScrollTop(headers[middleIndex], contentScrollTop)
+            if (position === 1) {
                 end = middleIndex
-            } else if (scrollPosition === -1) {
+            } else if (position === -1) {
                 start = middleIndex
             } else {
                 activeIndex = findActiveIndex(middleIndex)

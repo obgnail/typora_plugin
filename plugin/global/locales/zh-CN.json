@@ -335,7 +335,6 @@
     "$tooltip.breakOrder": "重组搜索条件",
     "$title.searchResult": "搜索结果",
     "$title.search": "搜索",
-    "$title.windowInteraction": "窗口交互",
     "$option.TRAVERSE_STRATEGY.bfs": "广度优先",
     "$option.TRAVERSE_STRATEGY.dfs": "深度优先"
   },
@@ -362,7 +361,6 @@
     "$label.BUILTIN.shell": "Shell",
     "$label.BUILTIN.cmd": "命令",
     "$title.cmdDisplay": "命令显示方式",
-    "$title.windowInteraction": "窗口交互",
     "$placeholder.envInfo": "环境变量:\n$f 当前文件路径\n$d 当前文件目录\n$m 当前挂载目录"
   },
   "md_padding": {
@@ -423,42 +421,10 @@
     "$label.EFFECT_STRENGTH": "效果强度",
     "$explain.enableMyopicDefocus": "模拟近视离焦图像，缓解用眼屈光紧张。开启后，轮廓边缘会呈现色彩变化，会降低渲染性能。"
   },
-  "toolbar": {
-    "pluginName": "多功能搜索",
-    "tool.ops.explorer": "在资源管理器中打开",
-    "tool.ops.copyPath": "复制文件路径",
-    "tool.ops.togglePreferencePanel": "偏好设置",
-    "tool.ops.togglePinWindow": "窗口置顶",
-    "tool.ops.openFileInNewWindow": "新窗口中打开",
-    "tool.ops.openSettingFolder": "修改插件配置",
-    "tool.mode.outlineView": "大纲视图",
-    "tool.mode.sourceMode": "源代码模式",
-    "tool.mode.focusMode": "专注模式",
-    "tool.mode.typewriterMode": "打字机模式",
-    "tool.mode.readOnlyMode": "只读模式",
-    "tool.mode.blurMode": "模糊模式",
-    "tool.mode.dark": "夜间模式",
-    "tool.mode.image_viewer": "看图模式",
-    "tool.mode.no_image": "无图模式",
-    "tool.mode.debugMode": "调试模式",
-    "$option.DEFAULT_GROUP.": "无",
-    "$option.DEFAULT_GROUP.plu": "插件",
-    "$option.DEFAULT_GROUP.tab": "标签",
-    "$option.DEFAULT_GROUP.his": "最近文件",
-    "$option.DEFAULT_GROUP.ops": "常用操作",
-    "$option.DEFAULT_GROUP.mode": "文件模式",
-    "$option.DEFAULT_GROUP.theme": "主题",
-    "$option.DEFAULT_GROUP.out": "文档大纲",
-    "$option.DEFAULT_GROUP.all": "混合查找",
-    "$label.TOOLBAR_TOP_PERCENT": "垂直定位",
-    "$label.TOOLBAR_WIDTH_PERCENT": "宽度",
+  "command_palette": {
+    "pluginName": "命令面板",
     "$label.BACKSPACE_TO_HIDE": "清空并按退格键隐藏窗口",
-    "$label.GROUP_SEARCH": "分组搜索",
-    "$label.DEFAULT_GROUP": "默认分组",
-    "$label.USE_NEGATIVE_SEARCH": "负向查询",
-    "$label.DEBOUNCE_INTERVAL": "输入防抖",
-    "$title.searchBarPosition": "搜索栏位置",
-    "$title.input": "输入"
+    "$label.DEBOUNCE_INTERVAL": "输入防抖"
   },
   "resize_image": {
     "pluginName": "图片调整",
@@ -1065,15 +1031,12 @@
   },
   "ripgrep": {
     "pluginName": "Ripgrep",
-    "$label.TOP_PERCENT": "垂直定位",
-    "$label.WIDTH_PERCENT": "宽度",
-    "$label.BACKSPACE_TO_HIDE": "清空并按退格键隐藏窗口",
-    "$title.windowPosition": "窗口位置",
-    "$title.interaction": "交互"
+    "$label.BACKSPACE_TO_HIDE": "清空并按退格键隐藏窗口"
   },
   "static_markers": {
     "pluginName": "标记常显",
     "act.toggle_state": "启用标记常显",
+    "$label.STATIC_DEFAULT": "默认开启",
     "$label.STATIC_MARKERS": "常显标记",
     "$option.STATIC_MARKERS.strong": "粗体",
     "$option.STATIC_MARKERS.em": "斜体",
@@ -1254,6 +1217,7 @@
     "$label.SERVER_URL": "渲染服务 URL",
     "$label.OUTPUT_FORMAT": "输出格式",
     "$label.SERVER_TIMEOUT": "服务超时时间",
+    "$label.SERVER_PROXY": "代理 URL",
     "$label.CACHED_URL_COUNT": "缓存数量",
     "$option.OUTPUT_FORMAT.svg": "SVG",
     "$option.OUTPUT_FORMAT.png": "PNG",
@@ -1262,7 +1226,7 @@
   },
   "marp": {
     "pluginName": "Marp",
-    "$label.MARP_CORE_OPTIONS": "marp-core 配置",
+    "$label.MARP_CORE_OPTIONS": "Marp Core 配置",
     "$tooltip.viewMarpOptions": "选项文档"
   },
   "callouts": {

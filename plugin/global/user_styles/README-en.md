@@ -18,15 +18,7 @@ When the plugin system loads styles, files located in the `./plugin/global/user_
 
 ## Render Variables
 
-In the CSS files within the `styles` and `user_styles` directories, the syntax `${variable}` is supported for render variables, similar to `@` variables in Less. These variables will be replaced with specific values during the style loading process. For example:
-
-```css
-/* styles/toolbar.css */
-#plugin-toolbar {
-    /* ${topPercent} will be replaced with a specific value when loaded */
-    top: ${topPercent};
-}
-```
+In the CSS files within the `styles` and `user_styles` directories, the syntax `${variable}` is supported for render variables, similar to `@` variables in Less. These variables will be replaced with specific values during the style loading process.
 
 
 

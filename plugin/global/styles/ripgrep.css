@@ -1,5 +1,9 @@
 #plugin-ripgrep {
-    top: ${topPercent};
+    position: absolute;
+    top: 20vh;
+    width: 80vw;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .plugin-ripgrep-prefix {

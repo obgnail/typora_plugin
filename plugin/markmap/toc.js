@@ -224,9 +224,8 @@ class TOCMarkmap {
                 if (!node) return
                 const headers = File.editor.nodeMap.toc.headers
                 if (!headers || headers.length === 0) return
-                const list = node.getAttribute("data-path").split(".")
-                if (!list) return
-                const nodeIdx = list[list.length - 1]
+                const nodeIdx = node.getAttribute("data-path")?.split(".").at(-1)
+                if (nodeIdx === undefined) return
                 let tocIdx = parseInt(nodeIdx - 1) // Markmap node indices start from 1, so subtract 1.
                 if (this.mm.state.data.content === "" && headers[0].getText() !== "") {
                     tocIdx-- // If the first(root) node of the markmap is an empty node, subtract 1 again.
@@ -250,10 +249,12 @@ class TOCMarkmap {
                     }
                 } else {
                     if (this.config.CLICK_TO_POSITION) {
-                        const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect()
-                        const height = contentHeight * this.config.POSITIONING_VIEWPORT_HEIGHT + contentTop
-                        const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD
-                        this.utils.scrollByCid(cid, height, true, showHiddenElement)
+                        const { height, top } = this.entities.content.getBoundingClientRect()
+                        this.utils.scroll(cid, {
+                            height: height * this.config.POSITIONING_VIEWPORT_HEIGHT + top,
+                            showHiddenEls: !this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD,
+                            moveCursor: true,
+                        })
                     }
                 }
             })

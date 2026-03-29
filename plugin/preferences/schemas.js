@@ -425,7 +425,7 @@ const createOptions = (definitions) => {
     )
 }
 
-const OPTIONS = createOptions({
+const OPTS = createOptions({
     global: {
         LOCALE: ["auto", "en", "zh-CN", "zh-TW"],
         EXIT_CHART_INTERACTION: ["click_exit_button", "ctrl_click_fence"],
@@ -448,9 +448,6 @@ const OPTIONS = createOptions({
     },
     blur: {
         BLUR_TYPE: ["blur", "hide"],
-    },
-    toolbar: {
-        DEFAULT_GROUP: ["", "plu", "tab", "his", "ops", "mode", "theme", "out", "all"],
     },
     resize_image: {
         IMAGE_ALIGN: ["center", "left", "right"],
@@ -528,11 +525,11 @@ const OPTIONS = createOptions({
 const schema_global = [
     UntitledBox(
         Switch("ENABLE", PROPS.protected),
-        Select("LOCALE", OPTIONS.global.LOCALE, { tooltip: Tip.action("openLocaleFolder", "fa fa-language") }),
+        Select("LOCALE", OPTS.global.LOCALE, { tooltip: Tip.action("openLocaleFolder", "fa fa-language") }),
     ),
     UntitledBox(
         Switch("BATCH_RENDER_CHARTS"),
-        Select("EXIT_CHART_INTERACTION", OPTIONS.global.EXIT_CHART_INTERACTION, { minItems: 1 }),
+        Select("EXIT_CHART_INTERACTION", OPTS.global.EXIT_CHART_INTERACTION, { minItems: 1 }),
     ),
     UntitledBox(
         Action("inspectRuntimeSettings", {
@@ -579,9 +576,9 @@ const schema_window_tab = [
     TitledBox(
         "behavior",
         Switch("REOPEN_TABS_ON_STARTUP"),
-        Select("NEW_TAB_POSITION", OPTIONS.window_tab.NEW_TAB_POSITION),
-        Select("TAB_SWITCH_ON_CLOSE", OPTIONS.window_tab.TAB_SWITCH_ON_CLOSE),
-        Select("LAST_TAB_CLOSE_ACTION", OPTIONS.window_tab.LAST_TAB_CLOSE_ACTION),
+        Select("NEW_TAB_POSITION", OPTS.window_tab.NEW_TAB_POSITION),
+        Select("TAB_SWITCH_ON_CLOSE", OPTS.window_tab.TAB_SWITCH_ON_CLOSE),
+        Select("LAST_TAB_CLOSE_ACTION", OPTS.window_tab.LAST_TAB_CLOSE_ACTION),
     ),
     TitledBox(
         "mouseInteraction",
@@ -593,15 +590,15 @@ const schema_window_tab = [
     ),
     TitledBox(
         "drag",
-        Select("DRAG_STYLE", OPTIONS.window_tab.DRAG_STYLE),
-        Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: Dep.eq("DRAG_STYLE", "JetBrains") }),
+        Select("DRAG_STYLE", OPTS.window_tab.DRAG_STYLE),
+        Select("TAB_DETACHMENT", OPTS.window_tab.TAB_DETACHMENT, { dependencies: Dep.eq("DRAG_STYLE", "JetBrains") }),
         Float("DETACHMENT_THRESHOLD", {
             tooltip: "detachThreshold", min: 0.1, step: 0.1,
             dependencies: Dep.and(Dep.eq("DRAG_STYLE", "JetBrains"), Dep.eq("TAB_DETACHMENT", "resistant"))
         }),
         Float("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1, step: 0.5, dependencies: Dep.ne("TAB_DETACHMENT", "lockVertical") }),
     ),
-    TransferBox("CONTEXT_MENU", OPTIONS.window_tab.CONTEXT_MENU),
+    TransferBox("CONTEXT_MENU", OPTS.window_tab.CONTEXT_MENU),
     TitledBox(
         TITLES.hotkey,
         Array_("CLOSE_HOTKEY"),
@@ -622,6 +619,7 @@ const schema_search_multi = [
         Switch("CASE_SENSITIVE"),
         Switch("OPTIMIZE_SEARCH", { tooltip: "breakOrder" }),
         Switch("STOP_SEARCHING_ON_HIDING"),
+        Switch("BACKSPACE_TO_HIDE"),
     ),
     TitledBox(
         "searchResult",
@@ -632,16 +630,12 @@ const schema_search_multi = [
         Integer("MAX_HIGHLIGHTS", { min: 1, max: 5000 }),
         Palette("HIGHLIGHT_COLORS"),
     ),
-    TitledBox(
-        "windowInteraction",
-        Switch("BACKSPACE_TO_HIDE"),
-    ),
     ArrayBox("ALLOW_EXT"),
     ArrayBox("IGNORE_FOLDERS"),
     TitledBox(
         TITLES.advanced,
         Switch("FOLLOW_SYMBOLIC_LINKS"),
-        Select("TRAVERSE_STRATEGY", OPTIONS.search_multi.TRAVERSE_STRATEGY),
+        Select("TRAVERSE_STRATEGY", OPTS.search_multi.TRAVERSE_STRATEGY),
         Integer("TIMEOUT", { ...PROPS.minusOne, unit: UNITS.millisecond }),
         Integer("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
         Integer("MAX_ENTITIES", PROPS.minusOne),
@@ -653,14 +647,13 @@ const schema_search_multi = [
 
 const schema_commander = [
     BOXES.pluginFull,
-    TitledBox(
-        "cmdDisplay",
-        Select("QUICK_RUN_DISPLAY", OPTIONS.commander.QUICK_RUN_DISPLAY),
-        Select("COMMIT_RUN_DISPLAY", OPTIONS.commander.COMMIT_RUN_DISPLAY),
+    UntitledBox(
+        Switch("BACKSPACE_TO_HIDE"),
     ),
     TitledBox(
-        "windowInteraction",
-        Switch("BACKSPACE_TO_HIDE"),
+        "cmdDisplay",
+        Select("QUICK_RUN_DISPLAY", OPTS.commander.QUICK_RUN_DISPLAY),
+        Select("COMMIT_RUN_DISPLAY", OPTS.commander.COMMIT_RUN_DISPLAY),
     ),
     TableBox(
         "BUILTIN",
@@ -668,7 +661,7 @@ const schema_commander = [
         [
             UntitledBox(
                 Switch("disable"),
-                Select("shell", OPTIONS.commander["BUILTIN.shell"]),
+                Select("shell", OPTS.commander["BUILTIN.shell"]),
                 Text("name"),
             ),
             TextareaBox("cmd", { rows: 5, placeholder: "envInfo" }),
@@ -712,7 +705,7 @@ const schema_blur = [
     UntitledBox(
         Switch("BLUR_DEFAULT"),
         Switch("RESTORE_ON_HOVER"),
-        Select("BLUR_TYPE", OPTIONS.blur.BLUR_TYPE),
+        Select("BLUR_TYPE", OPTS.blur.BLUR_TYPE),
         Integer("BLUR_LEVEL", { unit: UNITS.pixel, min: 1, dependencies: Dep.eq("BLUR_TYPE", "blur") }),
     ),
     BOXES.settingHandler,
@@ -753,18 +746,9 @@ const schema_myopic_defocus = [
     BOXES.settingHandler,
 ]
 
-const schema_toolbar = [
+const schema_command_palette = [
     BOXES.pluginFull,
-    TitledBox(
-        "searchBarPosition",
-        Range("TOOLBAR_TOP_PERCENT", PROPS.percent),
-        Range("TOOLBAR_WIDTH_PERCENT", PROPS.percent),
-    ),
-    TitledBox(
-        "input",
-        Switch("GROUP_SEARCH"),
-        Select("DEFAULT_GROUP", OPTIONS.toolbar.DEFAULT_GROUP, { dependencies: Dep.true("GROUP_SEARCH") }),
-        Switch("USE_NEGATIVE_SEARCH"),
+    UntitledBox(
         Switch("BACKSPACE_TO_HIDE"),
         Integer("DEBOUNCE_INTERVAL", { unit: UNITS.millisecond, min: 10 }),
     ),
@@ -777,7 +761,7 @@ const schema_resize_image = [
         "image",
         Switch("RECORD_RESIZE"),
         Switch("ALLOW_EXCEED_LIMIT"),
-        Select("IMAGE_ALIGN", OPTIONS.resize_image.IMAGE_ALIGN),
+        Select("IMAGE_ALIGN", OPTS.resize_image.IMAGE_ALIGN),
     ),
     TitledBox(
         "modifierKeys",
@@ -832,7 +816,7 @@ const schema_markmap = [
         Range("HEIGHT_PERCENT_WHEN_PIN_TOP", { min: 20, max: 95, step: 1, ...DEPS.markmapToc }),
         Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", { min: 20, max: 95, step: 1, ...DEPS.markmapToc }),
     ),
-    TransferBox("TITLE_BAR_BUTTONS", OPTIONS.markmap.TITLE_BAR_BUTTONS, { minItems: 1, ...DEPS.markmapToc }),
+    TransferBox("TITLE_BAR_BUTTONS", OPTS.markmap.TITLE_BAR_BUTTONS, { minItems: 1, ...DEPS.markmapToc }),
     TitledBox(
         "mindmapDiagramDefaultOptions",
         Switch("DEFAULT_TOC_OPTIONS.zoom", DEPS.markmapToc),
@@ -915,8 +899,8 @@ const schema_auto_number = [
         TITLES.style,
         Text("FONT_FAMILY"),
         Switch("SHOW_IMAGE_NAME", { dependencies: Dep.true("ENABLE_IMAGE") }),
-        Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, { dependencies: Dep.true("ENABLE_TABLE") }),
-        Select("ALIGN", OPTIONS.auto_number.ALIGN, { dependencies: Dep.or(Dep.true("ENABLE_IMAGE"), Dep.true("ENABLE_TABLE"), Dep.true("ENABLE_FENCE")) }),
+        Select("POSITION_TABLE", OPTS.auto_number.POSITION_TABLE, { dependencies: Dep.true("ENABLE_TABLE") }),
+        Select("ALIGN", OPTS.auto_number.ALIGN, { dependencies: Dep.or(Dep.true("ENABLE_IMAGE"), Dep.true("ENABLE_TABLE"), Dep.true("ENABLE_FENCE")) }),
     ),
     TableBox(
         "LAYOUTS",
@@ -1009,13 +993,13 @@ const schema_fence_enhance = [
         Switch("ENABLE_COPY", DEPS.fenceEnhanceButton),
         Switch("TRIM_WHITESPACE_ON_COPY", { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_COPY")) }),
         Switch("COPY_AS_MARKDOWN", { dependencies: Dep.follow("TRIM_WHITESPACE_ON_COPY") }),
-        Select("LINE_BREAKS_ON_COPY", OPTIONS.fence_enhance.LINE_BREAKS_ON_COPY, { dependencies: Dep.follow("TRIM_WHITESPACE_ON_COPY") }),
+        Select("LINE_BREAKS_ON_COPY", OPTS.fence_enhance.LINE_BREAKS_ON_COPY, { dependencies: Dep.follow("TRIM_WHITESPACE_ON_COPY") }),
         Divider(),
         Switch("ENABLE_INDENT", DEPS.fenceEnhanceButton),
         Array_("EXCLUDE_LANGUAGE_ON_INDENT", { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_INDENT")) }),
         Divider(),
         Switch("ENABLE_FOLD", DEPS.fenceEnhanceButton),
-        Select("FOLD_OVERFLOW", OPTIONS.fence_enhance.FOLD_OVERFLOW, { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_FOLD")) }),
+        Select("FOLD_OVERFLOW", OPTS.fence_enhance.FOLD_OVERFLOW, { dependencies: Dep.and(Dep.true("ENABLE_BUTTON"), Dep.true("ENABLE_FOLD")) }),
         Integer("MANUAL_FOLD_LINES", { unit: UNITS.line, min: 1, step: 1, dependencies: Dep.follow("FOLD_OVERFLOW") }),
         Switch("DEFAULT_FOLD", { dependencies: Dep.follow("FOLD_OVERFLOW") }),
         Switch("EXPAND_ON_FOCUS", { dependencies: Dep.follow("DEFAULT_FOLD_THRESHOLD") }),
@@ -1076,7 +1060,7 @@ const schema_fence_enhance = [
     TitledBox(
         "lineHighlighting",
         Switch("HIGHLIGHT_BY_LANGUAGE", { tooltip: Tip.action("viewVitePressLineHighlighting") }),
-        Select("NUMBERING_BASE", OPTIONS.fence_enhance.NUMBERING_BASE, { dependencies: Dep.true("HIGHLIGHT_BY_LANGUAGE") }),
+        Select("NUMBERING_BASE", OPTS.fence_enhance.NUMBERING_BASE, { dependencies: Dep.true("HIGHLIGHT_BY_LANGUAGE") }),
         Text("HIGHLIGHT_PATTERN", { dependencies: Dep.follow("NUMBERING_BASE") }),
         Text("HIGHLIGHT_LINE_COLOR_BY_LANGUAGE", { dependencies: Dep.follow("NUMBERING_BASE") }),
         Divider(),
@@ -1158,13 +1142,13 @@ const schema_export_enhance = [
 
 const schema_text_stylize = [
     BOXES.pluginFull,
-    TransferBox("TOOLS", OPTIONS.text_stylize.TOOLS, { minItems: 1 }),
+    TransferBox("TOOLS", OPTS.text_stylize.TOOLS, { minItems: 1 }),
     TableBox(
         "ACTION_HOTKEYS",
         ["hotkey", "action"],
         [
             UntitledBox(
-                Select("action", OPTIONS.text_stylize.TOOLS),
+                Select("action", OPTS.text_stylize.TOOLS),
                 Hotkey("hotkey"),
             ),
         ],
@@ -1211,8 +1195,8 @@ const schema_resource_manager = [
     ArrayBox("IGNORE_FOLDERS"),
     TitledBox(
         TITLES.advanced,
-        Select("RESOURCE_GRAMMARS", OPTIONS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
-        Select("TRAVERSE_STRATEGY", OPTIONS.resource_manager.TRAVERSE_STRATEGY),
+        Select("RESOURCE_GRAMMARS", OPTS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
+        Select("TRAVERSE_STRATEGY", OPTS.resource_manager.TRAVERSE_STRATEGY),
         Switch("FOLLOW_SYMBOLIC_LINKS"),
         Integer("TIMEOUT", { unit: UNITS.millisecond, min: 1 }),
         Integer("MAX_ENTITIES", PROPS.minusOne),
@@ -1260,9 +1244,9 @@ const schema_slash_commands = [
         "trigger",
         Text("TRIGGER_REGEXP"),
         Text("FUNC_PARAM_SEPARATOR", PROPS.protected),
-        Select("SUGGESTION_TIMING", OPTIONS.slash_commands.SUGGESTION_TIMING),
-        Select("MATCH_STRATEGY", OPTIONS.slash_commands.MATCH_STRATEGY),
-        Select("ORDER_STRATEGY", OPTIONS.slash_commands.ORDER_STRATEGY),
+        Select("SUGGESTION_TIMING", OPTS.slash_commands.SUGGESTION_TIMING),
+        Select("MATCH_STRATEGY", OPTS.slash_commands.MATCH_STRATEGY),
+        Select("ORDER_STRATEGY", OPTS.slash_commands.ORDER_STRATEGY),
     ),
     TableBox(
         "COMMANDS",
@@ -1270,8 +1254,8 @@ const schema_slash_commands = [
         [
             UntitledBox(
                 Switch("enable"),
-                Select("type", OPTIONS.slash_commands["COMMANDS.type"]),
-                Select("scope", OPTIONS.slash_commands["COMMANDS.scope"]),
+                Select("type", OPTS.slash_commands["COMMANDS.type"]),
+                Select("scope", OPTS.slash_commands["COMMANDS.scope"]),
                 Text("keyword", { placeholder: "LettersAndNumbersOnly" }),
                 Text("icon", { placeholder: "emojiOnly" }),
                 Text("hint"),
@@ -1394,8 +1378,8 @@ const schema_preferences = [
     ),
     UntitledBox(
         Switch("COLLAPSIBLE_BOX"),
-        Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTIONS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR),
-        Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
+        Select("DEPENDENCIES_FAILURE_BEHAVIOR", OPTS.preferences.DEPENDENCIES_FAILURE_BEHAVIOR),
+        Select("OBJECT_SETTINGS_FORMAT", OPTS.preferences.OBJECT_SETTINGS_FORMAT),
         Select("DEFAULT_MENU"),
         Select("HIDE_MENUS"),
     ),
@@ -1502,13 +1486,7 @@ const schema_article_uploader = [
 
 const schema_ripgrep = [
     BOXES.pluginFull,
-    TitledBox(
-        "windowPosition",
-        Range("TOP_PERCENT", PROPS.percent),
-        Range("WIDTH_PERCENT", PROPS.percent),
-    ),
-    TitledBox(
-        "interaction",
+    UntitledBox(
         Switch("BACKSPACE_TO_HIDE"),
     ),
     BOXES.settingHandler,
@@ -1516,7 +1494,10 @@ const schema_ripgrep = [
 
 const schema_static_markers = [
     BOXES.pluginFull,
-    CheckboxBox("STATIC_MARKERS", OPTIONS.static_markers.STATIC_MARKERS, { columns: 4 }),
+    UntitledBox(
+        Switch("STATIC_DEFAULT"),
+    ),
+    CheckboxBox("STATIC_MARKERS", OPTS.static_markers.STATIC_MARKERS, { columns: 4 }),
     BOXES.settingHandler,
 ]
 
@@ -1525,7 +1506,7 @@ const schema_sidebar_enhance = [
     UntitledBox(
         Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR"),
         Switch("SORTABLE_OUTLINE"),
-        Select("OUTLINE_FOLD_STATE", OPTIONS.sidebar_enhance.OUTLINE_FOLD_STATE),
+        Select("OUTLINE_FOLD_STATE", OPTS.sidebar_enhance.OUTLINE_FOLD_STATE),
     ),
     UntitledBox(
         Switch("ENABLE_FILE_COUNT"),
@@ -1690,10 +1671,10 @@ const schema_echarts = [
     BOXES.TEMPLATE,
     TitledBox(
         TITLES.advanced,
-        Select("LOCALE", OPTIONS.echarts.LOCALE),
-        Select("THEME", OPTIONS.echarts.THEME),
-        Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: Tip.action("chooseEchartsRenderer") }),
-        Select("EXPORT_TYPE", OPTIONS.echarts.EXPORT_TYPE),
+        Select("LOCALE", OPTS.echarts.LOCALE),
+        Select("THEME", OPTS.echarts.THEME),
+        Select("RENDERER", OPTS.echarts.RENDERER, { tooltip: Tip.action("chooseEchartsRenderer") }),
+        Select("EXPORT_TYPE", OPTS.echarts.EXPORT_TYPE),
     ),
     BOXES.settingHandler,
 ]
@@ -1703,7 +1684,7 @@ const schema_chart = [
     BOXES.langMode,
     TitledBox(
         TITLES.diagramStyle,
-        Select("CHART_ALIGN", OPTIONS.chart.CHART_ALIGN),
+        Select("CHART_ALIGN", OPTS.chart.CHART_ALIGN),
         FIELDS.DEFAULT_FENCE_HEIGHT,
         FIELDS.DEFAULT_FENCE_BACKGROUND_COLOR,
     ),
@@ -1721,7 +1702,7 @@ const schema_wavedrom = [
     ),
     TitledBox(
         TITLES.diagramStyle,
-        Select("CHART_ALIGN", OPTIONS.wavedrom.CHART_ALIGN),
+        Select("CHART_ALIGN", OPTS.wavedrom.CHART_ALIGN),
         FIELDS.DEFAULT_FENCE_HEIGHT,
         FIELDS.DEFAULT_FENCE_BACKGROUND_COLOR,
     ),
@@ -1771,8 +1752,9 @@ const schema_plantUML = [
     UntitledBox(
         Text("SERVER_URL"),
         Integer("SERVER_TIMEOUT", { unit: UNITS.millisecond, min: 1000 }),
+        Text("SERVER_PROXY"),
         Integer("CACHED_URL_COUNT", { min: 1 }),
-        Select("OUTPUT_FORMAT", OPTIONS.plantUML.OUTPUT_FORMAT),
+        Select("OUTPUT_FORMAT", OPTS.plantUML.OUTPUT_FORMAT),
     ),
     BOXES.langMode,
     BOXES.chartStyle,
@@ -1881,7 +1863,7 @@ const schema_right_outline = [
         Switch("RIGHT_CLICK_OUTLINE_BUTTON_TO_TOGGLE"),
         Range("DEFAULT_WIDTH_PERCENT", PROPS.percent),
     ),
-    TransferBox("TITLE_BAR_BUTTONS", OPTIONS.right_outline.TITLE_BAR_BUTTONS),
+    TransferBox("TITLE_BAR_BUTTONS", OPTS.right_outline.TITLE_BAR_BUTTONS),
     TitledBox(
         "displayHeader",
         Switch("INCLUDE_HEADINGS.image", { dependencies: Dep.contains("TITLE_BAR_BUTTONS", "image") }),
@@ -1908,15 +1890,15 @@ const schema_image_viewer = [
     TitledBox(
         "component",
         Switch("SHOW_THUMBNAIL_NAV"),
-        Select("TOOL_POSITION", OPTIONS.image_viewer.TOOL_POSITION),
+        Select("TOOL_POSITION", OPTS.image_viewer.TOOL_POSITION),
     ),
-    TransferBox("SHOW_MESSAGE", OPTIONS.image_viewer.SHOW_MESSAGE),
-    TransferBox("TOOL_FUNCTION", OPTIONS.image_viewer.operations, { minItems: 1 }),
+    TransferBox("SHOW_MESSAGE", OPTS.image_viewer.SHOW_MESSAGE),
+    TransferBox("TOOL_FUNCTION", OPTS.image_viewer.operations, { minItems: 1 }),
     TitledBox(
         "behavior",
         Switch("SKIP_BROKEN_IMAGES"),
-        Select("FIRST_IMAGE_STRATEGIES", OPTIONS.image_viewer.FIRST_IMAGE_STRATEGIES, { minItems: 1 }),
-        Select("THUMBNAIL_OBJECT_FIT", OPTIONS.image_viewer.THUMBNAIL_OBJECT_FIT),
+        Select("FIRST_IMAGE_STRATEGIES", OPTS.image_viewer.FIRST_IMAGE_STRATEGIES, { minItems: 1 }),
+        Select("THUMBNAIL_OBJECT_FIT", OPTS.image_viewer.THUMBNAIL_OBJECT_FIT),
         Integer("AUTO_PLAY_INTERVAL", { unit: UNITS.second, min: 1 }),
     ),
     TitledBox(
@@ -1929,33 +1911,33 @@ const schema_image_viewer = [
     TitledBox(
         "mouseEvent",
         Switch("CLICK_MASK_TO_EXIT"),
-        Select("MOUSEDOWN_FUNCTION.0", OPTIONS.image_viewer.operations),
-        Select("MOUSEDOWN_FUNCTION.1", OPTIONS.image_viewer.operations),
-        Select("MOUSEDOWN_FUNCTION.2", OPTIONS.image_viewer.operations),
-        Select("CTRL_MOUSEDOWN_FUNCTION.0", OPTIONS.image_viewer.operations),
-        Select("CTRL_MOUSEDOWN_FUNCTION.1", OPTIONS.image_viewer.operations),
-        Select("CTRL_MOUSEDOWN_FUNCTION.2", OPTIONS.image_viewer.operations),
-        Select("SHIFT_MOUSEDOWN_FUNCTION.0", OPTIONS.image_viewer.operations),
-        Select("SHIFT_MOUSEDOWN_FUNCTION.1", OPTIONS.image_viewer.operations),
-        Select("SHIFT_MOUSEDOWN_FUNCTION.2", OPTIONS.image_viewer.operations),
-        Select("ALT_MOUSEDOWN_FUNCTION.0", OPTIONS.image_viewer.operations),
-        Select("ALT_MOUSEDOWN_FUNCTION.1", OPTIONS.image_viewer.operations),
-        Select("ALT_MOUSEDOWN_FUNCTION.2", OPTIONS.image_viewer.operations),
-        Select("WHEEL_FUNCTION.0", OPTIONS.image_viewer.operations),
-        Select("WHEEL_FUNCTION.1", OPTIONS.image_viewer.operations),
-        Select("CTRL_WHEEL_FUNCTION.0", OPTIONS.image_viewer.operations),
-        Select("CTRL_WHEEL_FUNCTION.1", OPTIONS.image_viewer.operations),
-        Select("SHIFT_WHEEL_FUNCTION.0", OPTIONS.image_viewer.operations),
-        Select("SHIFT_WHEEL_FUNCTION.1", OPTIONS.image_viewer.operations),
-        Select("ALT_WHEEL_FUNCTION.0", OPTIONS.image_viewer.operations),
-        Select("ALT_WHEEL_FUNCTION.1", OPTIONS.image_viewer.operations),
+        Select("MOUSEDOWN_FUNCTION.0", OPTS.image_viewer.operations),
+        Select("MOUSEDOWN_FUNCTION.1", OPTS.image_viewer.operations),
+        Select("MOUSEDOWN_FUNCTION.2", OPTS.image_viewer.operations),
+        Select("CTRL_MOUSEDOWN_FUNCTION.0", OPTS.image_viewer.operations),
+        Select("CTRL_MOUSEDOWN_FUNCTION.1", OPTS.image_viewer.operations),
+        Select("CTRL_MOUSEDOWN_FUNCTION.2", OPTS.image_viewer.operations),
+        Select("SHIFT_MOUSEDOWN_FUNCTION.0", OPTS.image_viewer.operations),
+        Select("SHIFT_MOUSEDOWN_FUNCTION.1", OPTS.image_viewer.operations),
+        Select("SHIFT_MOUSEDOWN_FUNCTION.2", OPTS.image_viewer.operations),
+        Select("ALT_MOUSEDOWN_FUNCTION.0", OPTS.image_viewer.operations),
+        Select("ALT_MOUSEDOWN_FUNCTION.1", OPTS.image_viewer.operations),
+        Select("ALT_MOUSEDOWN_FUNCTION.2", OPTS.image_viewer.operations),
+        Select("WHEEL_FUNCTION.0", OPTS.image_viewer.operations),
+        Select("WHEEL_FUNCTION.1", OPTS.image_viewer.operations),
+        Select("CTRL_WHEEL_FUNCTION.0", OPTS.image_viewer.operations),
+        Select("CTRL_WHEEL_FUNCTION.1", OPTS.image_viewer.operations),
+        Select("SHIFT_WHEEL_FUNCTION.0", OPTS.image_viewer.operations),
+        Select("SHIFT_WHEEL_FUNCTION.1", OPTS.image_viewer.operations),
+        Select("ALT_WHEEL_FUNCTION.0", OPTS.image_viewer.operations),
+        Select("ALT_WHEEL_FUNCTION.1", OPTS.image_viewer.operations),
     ),
     TableBox(
         "HOTKEY_FUNCTION",
         ["hotkey", "fn"],
         [
             UntitledBox(
-                Select("fn", OPTIONS.image_viewer.operations),
+                Select("fn", OPTS.image_viewer.operations),
                 Hotkey("hotkey"),
             ),
         ],
@@ -1970,10 +1952,10 @@ const schema_markdownlint = [
         "detectAndFix",
         Switch("TRANSLATE"),
         Switch("RIGHT_CLICK_TABLE_TO_TOGGLE_SOURCE_MODE"),
-        Select("TITLE_BAR_BUTTONS", OPTIONS.markdownlint.TITLE_BAR_BUTTONS),
-        Select("COLUMNS", OPTIONS.markdownlint.COLUMNS, { minItems: 1 }),
-        Select("RESULT_ORDER_BY", OPTIONS.markdownlint.RESULT_ORDER_BY),
-        Select("TOOLS", OPTIONS.markdownlint.TOOLS, { minItems: 1 }),
+        Select("TITLE_BAR_BUTTONS", OPTS.markdownlint.TITLE_BAR_BUTTONS),
+        Select("COLUMNS", OPTS.markdownlint.COLUMNS, { minItems: 1 }),
+        Select("RESULT_ORDER_BY", OPTS.markdownlint.RESULT_ORDER_BY),
+        Select("TOOLS", OPTS.markdownlint.TOOLS, { minItems: 1 }),
         Hotkey("HOTKEY_FIX_LINT"),
     ),
     TitledBox(
@@ -2052,8 +2034,9 @@ const schemas = {
     blur: schema_blur,
     dark: schema_dark,
     no_image: schema_no_image,
+    static_markers: schema_static_markers,
     myopic_defocus: schema_myopic_defocus,
-    toolbar: schema_toolbar,
+    command_palette: schema_command_palette,
     resize_image: schema_resize_image,
     resize_table: schema_resize_table,
     datatables: schema_datatables,
@@ -2086,7 +2069,6 @@ const schemas = {
     editor_width_slider: schema_editor_width_slider,
     article_uploader: schema_article_uploader,
     ripgrep: schema_ripgrep,
-    static_markers: schema_static_markers,
     sidebar_enhance: schema_sidebar_enhance,
     cursor_history: schema_cursor_history,
     json_rpc: schema_json_rpc,

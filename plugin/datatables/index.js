@@ -32,11 +32,11 @@ class DataTablesPlugin extends BasePlugin {
 
     appendFilter = dataTable => {
         dataTable.columns().flatten().each(function (colIdx) {
-            const select = $("<select />").appendTo(dataTable.column(colIdx).header()).on("change", function () {
-                dataTable.column(colIdx).search($(this).val()).draw()
-            }).on("click", function () {
-                return false
-            })
+            const select = $("<select />").appendTo(dataTable.column(colIdx).header())
+                .on("change", function () {
+                    dataTable.column(colIdx).search($(this).val()).draw()
+                })
+                .on("click", () => false)
             select.append($(`<option value=""></option>>`))
             dataTable.column(colIdx).cache("search").sort().unique().each(d => select.append($(`<option value="${d}">${d}</option>>`)))
         })
@@ -45,9 +45,11 @@ class DataTablesPlugin extends BasePlugin {
     lazyLoad = async () => {
         if ($?.fn?.dataTable) return
         this.initDataTablesConfig()
-        await $.getScript(this.utils.toProtocolUrl("plugin/datatables/resource/js/datatables.min.js"))
-        this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/css/datatables.min.css")
-        await this.utils.styleTemplater.register(this.fixedName)
+        await Promise.all([
+            $.getScript(this.utils.toProtocolUrl("plugin/datatables/resource/js/datatables.min.js")),
+            this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/css/datatables.min.css"),
+            this.utils.styleTemplater.register(this.fixedName),
+        ])
     }
 
     initDataTablesConfig = () => {
@@ -119,13 +121,10 @@ class DataTablesPlugin extends BasePlugin {
         const uuid = table?.getAttribute("table-uuid")
         meta.uuid = uuid
         meta.target = table
-
-        const hint = this.i18n.t("actHint.positioningTable")
-        const act_name = this.i18n.t(uuid ? "act.revert_table" : "act.enhance_table")
         const act = {
-            act_name,
+            act_name: this.i18n.t(uuid ? "act.revert_table" : "act.enhance_table"),
             act_value: uuid ? "revert_table" : "enhance_table",
-            act_hint: !table ? hint : "",
+            act_hint: !table ? this.i18n.t("actHint.positioningTable") : "",
             act_disabled: !table,
         }
         return [act]

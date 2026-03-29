@@ -92,8 +92,7 @@ class Downloader {
                 // TODO: handle math
                 const katex = foreign.querySelector(".katex")
                 if (katex) {
-                    const base = katex.querySelector(".katex-html")
-                    katex.innerHTML = base ? base.textContent : ""
+                    katex.innerHTML = katex.querySelector(".katex-html")?.textContent ?? ""
                 }
 
                 text.textContent = foreign.textContent
@@ -108,12 +107,9 @@ class Downloader {
         const clonedSVG = svg.cloneNode(true)
         setAttrs(svg, clonedSVG)
         fixStyles(clonedSVG)
-        if (options.removeForeignObject) {
-            removeForeignObject(clonedSVG)
-        }
-        if (options.removeUselessClasses) {
-            removeUselessClasses(clonedSVG)
-        }
+        if (options.removeForeignObject) removeForeignObject(clonedSVG)
+        if (options.removeUselessClasses) removeUselessClasses(clonedSVG)
+
         return clonedSVG
     }
 

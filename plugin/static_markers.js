@@ -1,6 +1,6 @@
 class StaticMarkersPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.enabled = this.config.ENABLE
+        this.enabled = this.config.STATIC_DEFAULT
         this.SELECTORS = {
             strong: '.md-pair-s[md-inline="strong"] .md-meta',
             em: '.md-pair-s[md-inline="em"] .md-meta',
@@ -24,24 +24,27 @@ class StaticMarkersPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     getDynamicActions = () => {
-        const general = { act_value: "ENABLE", act_state: this.enabled, act_name: this.i18n.t("act.toggle_state") }
-        const specific = Object.keys(this.SELECTORS).map(s => {
-            const act_name = this.i18n.t(`$option.STATIC_MARKERS.${s}`)
-            const act_state = this.config.STATIC_MARKERS.includes(s)
-            return { act_value: s, act_name, act_state }
-        })
+        const general = { act_value: "toggle_state", act_state: this.enabled, act_name: this.i18n.t("act.toggle_state") }
+        const specific = Object.keys(this.SELECTORS).map(s => ({
+            act_value: s,
+            act_name: this.i18n.t(`$option.STATIC_MARKERS.${s}`),
+            act_state: this.config.STATIC_MARKERS.includes(s),
+        }))
         return this.enabled ? [general, ...specific] : [general]
     }
 
     call = async (action, meta) => {
-        if (action === "ENABLE") {
+        let toSave
+        if (action === "toggle_state") {
             this.enabled = !this.enabled
+            toSave = { STATIC_DEFAULT: this.enabled }
         } else {
             const set = new Set(this.config.STATIC_MARKERS)
             set.has(action) ? set.delete(action) : set.add(action)
             this.config.STATIC_MARKERS = [...set]
-            await this.utils.settings.save(this.fixedName, { STATIC_MARKERS: this.config.STATIC_MARKERS })
+            toSave = { STATIC_MARKERS: this.config.STATIC_MARKERS }
         }
+        await this.utils.settings.save(this.fixedName, toSave)
         this._reloadCSS()
     }
 

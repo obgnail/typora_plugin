@@ -18,16 +18,7 @@
 
 ## 渲染变量
 
-在 `styles` 和 `user_styles` 目录下的 CSS 文件中，支持使用 `${变量}` 的语法来表示渲染变量，类似于 Less 中的 `@` 变量。这些变量在样式加载过程中会被替换为具体数值。例如：
-
-```css
-/* styles/toolbar.css */
-#plugin-toolbar {
-    /* 加载时 ${topPercent} 会被替换为具体数值 */
-    top: ${topPercent};
-}
-```
-
+在 `styles` 和 `user_styles` 目录下的 CSS 文件中，支持使用 `${变量}` 的语法来表示渲染变量，类似于 Less 中的 `@` 变量。这些变量在样式加载过程中会被替换为具体数值。
 
 
 ## 重要提示：开发者建议

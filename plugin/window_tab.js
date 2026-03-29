@@ -677,26 +677,20 @@ class WindowTabPlugin extends BasePlugin {
             })
         }
 
-        // Typora version 1.1 and later supports using anchor links to jump to local files
-        // Intercept internal and local file links, and change the jump behavior to open in a new tab
         const interceptLink = () => {
-            const cache = { file: "", anchor: "" }
-            const setCache = (file, anchor) => Object.assign(cache, { file, anchor })
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
-                if (cache.file && cache.anchor.startsWith("#")) {
-                    const $target = File.editor.EditHelper.findAnchorElem(cache.anchor)
-                    this.utils.scroll($target, 10)
-                    setCache("", "")
-                }
-            })
+            let context = {}
             this.utils.decorator.preventCallIf(() => JSBridge, "invoke", (cmd, file, options) => {
-                if (cmd !== "app.openFileOrFolder") return false
-                if (file && typeof options?.anchor === "string") {
-                    setCache(file, options.anchor)
-                    this.utils.openFile(file)
-                    return true
+                if (cmd !== "app.openFileOrFolder" || !file || typeof options?.anchor !== "string") return false
+                context = { ...options }
+                this.utils.openFile(file)
+                return true
+            })
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
+                if (context.anchor?.startsWith("#")) {
+                    const $target = File.editor.EditHelper.findAnchorElem(context.anchor)
+                    this.utils.scroll($target, { height: 10 })
+                    context = {}
                 }
-                return false
             })
         }
 
@@ -707,7 +701,7 @@ class WindowTabPlugin extends BasePlugin {
         handleRename()
         handleFocusChange()
         adjustQuickOpen()
-        interceptLink()
+        if (this.utils.compareVersion(this.utils.typoraVersion, "1.1.0") >= 0) interceptLink()
         if (this.config.WHEEL_TO_SCROLL_TAB_BAR || this.config.CTRL_WHEEL_TO_SWITCH) handleWheel()
         if (this.config.MIDDLE_CLICK_TO_CLOSE) handleMiddleClick()
         if (this.config.REOPEN_TABS_ON_STARTUP) reopenTabsWhenInit()

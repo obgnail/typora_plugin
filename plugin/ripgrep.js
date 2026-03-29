@@ -1,5 +1,5 @@
 class RipgrepPlugin extends BasePlugin {
-    styleTemplate = () => ({ topPercent: parseInt(this.config.TOP_PERCENT) + "%" })
+    styleTemplate = () => true
 
     html = () => `
         <div id="plugin-ripgrep" class="plugin-common-modal plugin-common-hidden"> 
@@ -14,7 +14,6 @@ class RipgrepPlugin extends BasePlugin {
 
     init = () => {
         this.entities = {
-            content: this.utils.entities.eContent,
             modal: document.getElementById("plugin-ripgrep"),
             form: document.getElementById("plugin-ripgrep-form"),
             input: document.querySelector("#plugin-ripgrep-form input"),
@@ -26,55 +25,44 @@ class RipgrepPlugin extends BasePlugin {
     process = () => {
         this.entities.form.addEventListener("submit", ev => {
             ev.preventDefault()
-            this.ripgrep(this.entities.input.value)
+            this.ripgrep()
         })
         this.entities.form.addEventListener("keydown", ev => {
-            const wantHide = ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value)
-            if (wantHide) {
-                this.utils.hide(this.entities.modal)
-            }
+            const toHide = ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value)
+            if (toHide) this.call()
         })
     }
 
     call = () => {
         const { modal, input } = this.entities
-        if (this.utils.isShown(modal)) {
-            this.utils.hide(modal)
-        } else {
-            const widthRatio = this.config.WIDTH_PERCENT / 100
-            const { width, left } = this.entities.content.getBoundingClientRect()
-            this.entities.modal.style.width = width * widthRatio + "px"
-            this.entities.modal.style.left = left + width * (1 - widthRatio) / 2 + "px"
-            this.utils.show(modal)
-            input.select()
-        }
+        this.utils.toggleInvisible(modal)
+        if (this.utils.isShown(modal)) input.select()
     }
 
-    resetOutput = () => {
-        this.entities.pre.textContent = ""
-        this.entities.pre.classList.remove("error")
-        this.utils.show(this.entities.output)
-    }
-
-    ripgrep = (args, callback) => {
-        const argsList = this._parseCommandLineArgs(args)
-        const addErrorClass = this.utils.once(() => this.entities.pre.classList.add("error"))
+    ripgrep = (rawInput = this.entities.input.value, callback = this.utils.noop) => {
+        const cmdArgs = this._parseCommandLineArgs(rawInput)
+        const addErrClass = this.utils.once(() => this.entities.pre.classList.add("error"))
         const onData = data => {
             if (data) this.entities.pre.textContent += data.toString()
         }
-        const onError = data => {
+        const onErr = data => {
             onData(data)
-            addErrorClass()
+            addErrClass()
         }
-        const onClose = callback || this.utils.noop
-        this.resetOutput()
-        this._ripgrep(argsList, onData, onError, onClose)
+        this._resetOutput()
+        this._ripgrep(cmdArgs, onData, onErr, callback)
+    }
+
+    _resetOutput = () => {
+        const { pre, output } = this.entities
+        pre.textContent = ""
+        pre.classList.remove("error")
+        this.utils.show(output)
     }
 
     /**
-     * Repo: https://github.com/microsoft/vscode-ripgrep
-     * Note: ripgrep built in Typora, is written in rust, so if the search folder is very large, CPU may skyrocket during queries
-     * Eg:
+     * @repo: https://github.com/microsoft/vscode-ripgrep
+     * @example:
      *   _ripgrep(
      *       ["--max-filesize", "2M", "-g", "*.md", "XXX"],
      *       data => console.log(data),

@@ -335,7 +335,6 @@
     "$tooltip.breakOrder": "Recombine Search Conditions",
     "$title.searchResult": "Search Result",
     "$title.search": "Search",
-    "$title.windowInteraction": "Window Interaction",
     "$option.TRAVERSE_STRATEGY.bfs": "Breadth First",
     "$option.TRAVERSE_STRATEGY.dfs": "Depth First"
   },
@@ -362,7 +361,6 @@
     "$label.BUILTIN.shell": "Shell",
     "$label.BUILTIN.cmd": "Command",
     "$title.cmdDisplay": "Execution Display Mode",
-    "$title.windowInteraction": "Window Interaction",
     "$placeholder.envInfo": "Environment variables:\n$f: Current file path\n$d: Directory of the current file\n$m: Current mount directory"
   },
   "md_padding": {
@@ -423,42 +421,10 @@
     "$label.EFFECT_STRENGTH": "Effect Strength",
     "$explain.enableMyopicDefocus": "Simulates myopic defocus to alleviate refractive stress. Enabling this will cause color fringing on edges and may impact rendering performance."
   },
-  "toolbar": {
-    "pluginName": "Multi-Purpose Searcher",
-    "tool.ops.explorer": "Open in Explorer",
-    "tool.ops.copyPath": "Copy File Path",
-    "tool.ops.togglePreferencePanel": "Preferences",
-    "tool.ops.togglePinWindow": "Pin Window",
-    "tool.ops.openFileInNewWindow": "Open in New Window",
-    "tool.ops.openSettingFolder": "Open Plugin Settings Folder",
-    "tool.mode.outlineView": "Outline View",
-    "tool.mode.sourceMode": "Source Code Mode",
-    "tool.mode.focusMode": "Focus Mode",
-    "tool.mode.typewriterMode": "Typewriter Mode",
-    "tool.mode.readOnlyMode": "Read-Only Mode",
-    "tool.mode.blurMode": "Blur Mode",
-    "tool.mode.dark": "Dark Mode",
-    "tool.mode.image_viewer": "Image Viewer Mode",
-    "tool.mode.no_image": "No Image Mode",
-    "tool.mode.debugMode": "Debug Mode",
-    "$option.DEFAULT_GROUP.": "None",
-    "$option.DEFAULT_GROUP.plu": "Plugins",
-    "$option.DEFAULT_GROUP.tab": "Tabs",
-    "$option.DEFAULT_GROUP.his": "Recent Files",
-    "$option.DEFAULT_GROUP.ops": "Common Operations",
-    "$option.DEFAULT_GROUP.mode": "File Modes",
-    "$option.DEFAULT_GROUP.theme": "Themes",
-    "$option.DEFAULT_GROUP.out": "Outline",
-    "$option.DEFAULT_GROUP.all": "Mixed Search",
-    "$label.TOOLBAR_TOP_PERCENT": "Vertical Position",
-    "$label.TOOLBAR_WIDTH_PERCENT": "Width",
+  "command_palette": {
+    "pluginName": "Command Palette",
     "$label.BACKSPACE_TO_HIDE": "Hide Window on Empty and Backspace",
-    "$label.GROUP_SEARCH": "Group Search",
-    "$label.DEFAULT_GROUP": "Default Group",
-    "$label.USE_NEGATIVE_SEARCH": "Negative Search",
-    "$label.DEBOUNCE_INTERVAL": "Debounce Interval",
-    "$title.searchBarPosition": "Search Bar Position",
-    "$title.input": "Input"
+    "$label.DEBOUNCE_INTERVAL": "Debounce Interval"
   },
   "resize_image": {
     "pluginName": "Image Resizer",
@@ -1065,15 +1031,12 @@
   },
   "ripgrep": {
     "pluginName": "Ripgrep",
-    "$label.TOP_PERCENT": "Vertical Position",
-    "$label.WIDTH_PERCENT": "Width",
-    "$label.BACKSPACE_TO_HIDE": "Hide window when input is empty and backspace is pressed",
-    "$title.windowPosition": "Window Position",
-    "$title.interaction": "Interaction"
+    "$label.BACKSPACE_TO_HIDE": "Hide Window on Empty and Backspace"
   },
   "static_markers": {
     "pluginName": "Static Markers",
     "act.toggle_state": "Enable Static Markers",
+    "$label.STATIC_DEFAULT": "Enable by Default",
     "$label.STATIC_MARKERS": "Static Markers",
     "$option.STATIC_MARKERS.strong": "Strong",
     "$option.STATIC_MARKERS.em": "Emphasis",
@@ -1254,6 +1217,7 @@
     "$label.SERVER_URL": "Server URL",
     "$label.OUTPUT_FORMAT": "Output Format",
     "$label.SERVER_TIMEOUT": "Timeout",
+    "$label.SERVER_PROXY": "Proxy URL",
     "$label.CACHED_URL_COUNT": "Cached URL Count",
     "$option.OUTPUT_FORMAT.svg": "SVG",
     "$option.OUTPUT_FORMAT.png": "PNG",
@@ -1262,7 +1226,7 @@
   },
   "marp": {
     "pluginName": "Marp",
-    "$label.MARP_CORE_OPTIONS": "marp-core Options",
+    "$label.MARP_CORE_OPTIONS": "Marp Core Options",
     "$tooltip.viewMarpOptions": "Options Docs"
   },
   "callouts": {

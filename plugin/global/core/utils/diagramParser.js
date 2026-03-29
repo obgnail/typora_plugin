@@ -37,9 +37,9 @@ class DiagramParser {
 
     unregister = lang => this.parsers.delete(lang)
 
-    process = async () => {
+    process = () => {
         if (this.parsers.size === 0) return
-        await this.polyfillStyle()
+        this.polyfill()
         this.setRenderTiming()
         this.fixInteractiveMode()
         this.registerLangTooltip()
@@ -51,10 +51,8 @@ class DiagramParser {
         this.onFocus()                  // When focusing
         this.onChangeFile()             // When switching files
         this.onCheckIsDiagramType()     // When determining whether it is a Diagram
-        this.log()
+        console.debug(`[ Diagram Parser ] [ ${this.parsers.size} ]:`, this.parsers)
     }
-
-    log = () => console.debug(`[ diagram parser ] [ ${this.parsers.size} ]:`, this.parsers)
 
     renderAllLangFence = lang => {
         document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
@@ -71,9 +69,9 @@ class DiagramParser {
         })
     }
 
-    polyfillStyle = async () => {
+    polyfill = () => {
         if (this.utils.isBetaVersion) {
-            await this.utils.styleTemplater.register("plugin-diagram-parser")
+            this.utils.insertStyle("plugin-diagram-parser-style", ".md-fences-advanced:not(.md-focus) .CodeMirror { display: none }")
         }
     }
 
@@ -143,7 +141,7 @@ class DiagramParser {
         return msg || this.utils.escape(error.toString())
     }
 
-    whenCannotDraw = async (cid, lang, $pre, content, error) => {
+    onRenderFailed = async (cid, lang, $pre, content, error) => {
         if (!error) {
             $pre.removeClass("md-fences-advanced")
             $pre.children(".md-diagram-panel").remove()
@@ -152,23 +150,23 @@ class DiagramParser {
             $pre.find(".md-diagram-panel-preview").text(this.i18n.t("global", "error.drawingFailed"))
             $pre.find(".md-diagram-panel-error").html(`<pre>${this.getErrorMessage(error)}</pre>`)
         }
-        await this.noticeRollback(cid)
+        await this.onCancel(cid)
     }
 
-    whenEmptyContent = async (cid, lang, $pre) => {
+    onEmptyContent = async (cid, lang, $pre) => {
         $pre.find(".md-diagram-panel-header").text("")
         $pre.find(".md-diagram-panel-preview").text(this.i18n.t("global", "empty"))
         $pre.find(".md-diagram-panel-error").html("")
-        await this.noticeRollback(cid)
+        await this.onCancel(cid)
     }
 
-    noticeRollback = async cid => {
+    onCancel = async cid => {
         for (const [lang, parser] of this.parsers.entries()) {
             if (!parser.cancelFunc) continue
             try {
                 parser.cancelFunc(cid, lang)
             } catch (e) {
-                console.error("call cancel func error:", e)
+                console.error("Func cancel error:", e)
             }
         }
     }
@@ -202,7 +200,7 @@ class DiagramParser {
         this.appendPanelIfNeed($pre)
 
         if (!content) {
-            await this.whenEmptyContent(cid, lang, $pre)
+            await this.onEmptyContent(cid, lang, $pre)
             return
         }
 
@@ -210,7 +208,7 @@ class DiagramParser {
         try {
             await parser.renderFunc(cid, content, $pre, lang)
         } catch (error) {
-            await this.whenCannotDraw(cid, lang, $pre, content, error)
+            await this.onRenderFailed(cid, lang, $pre, content, error)
         }
     }
 
@@ -223,7 +221,7 @@ class DiagramParser {
         if (!this.isDiagramType(lang)) {
             $pre.children(".fence-enhance").show()
             $pre.removeClass("md-fences-advanced md-fences-interactive plugin-custom-diagram")
-            await this.noticeRollback(cid)
+            await this.onCancel(cid)
         } else {
             // If it is Diagram, but not a custom type, do not show the enhancement button and return directly.
             $pre.children(".fence-enhance").hide()
@@ -235,7 +233,7 @@ class DiagramParser {
                 await this.renderCustomDiagram(cid, lang, $pre)
             } else {
                 $pre.removeClass("md-fences-interactive plugin-custom-diagram")
-                await this.noticeRollback(cid)
+                await this.onCancel(cid)
             }
         }
     }

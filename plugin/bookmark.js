@@ -15,7 +15,7 @@ class BookmarkPlugin extends BasePlugin {
             getEl: (idx) => [...document.querySelectorAll(this.recordSelector)][idx],
             scroll: (idx) => {
                 const el = this.locateUtils.getEl(idx)
-                if (el) this.utils.scroll(el, 20, true)
+                if (el) this.utils.scroll(el, { height: 20, moveCursor: true })
             }
         }
         this.recorder = {
@@ -83,9 +83,7 @@ class BookmarkPlugin extends BasePlugin {
         })
 
         this.entities.window.addEventListener("btn-click", ev => {
-            if (ev.detail.action === "close") {
-                this.entities.window.hide()
-            }
+            if (ev.detail.action === "close") this.entities.window.hide()
         })
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
@@ -103,9 +101,7 @@ class BookmarkPlugin extends BasePlugin {
 
     refresh = () => {
         this.recorder.collect()
-        if (!this.entities.window.hidden) {
-            this._updateModal()
-        }
+        if (!this.entities.window.hidden) this._updateModal()
     }
 
     _updateModal = () => {

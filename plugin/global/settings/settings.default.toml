@@ -123,7 +123,7 @@ SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 # Switch to previous tab
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
 # Switch to last active tab
-SWITCH_LAST_ACTIVE_TAB_HOTKEY = []
+SWITCH_LAST_ACTIVE_TAB_HOTKEY = ["ctrl+`"]
 # Sort tabs by filename
 SORT_TABS_HOTKEY = []
 # Temporarily show/hide tab bar
@@ -202,8 +202,8 @@ SHOW_MTIME = false
 
 # Highlight colors: Background colors for keywords
 HIGHLIGHT_COLORS = [
-    "#BBEEFF", "#FFBBCC", "#88EE88", "#CCBBFF", "#FFEE88", "#FFFFA0", "#88CCCC", "#FFBB88", "#CCCCCC", "#FFAABB",
-    "#99CCFF", "#FF99CC", "#66CC66", "#CC99FF", "#FFCC66", "#FFFF80", "#DD9966", "#AAAAAA", "#66AAAA", "#DD6699",
+  "#BBEEFF", "#FFBBCC", "#88EE88", "#CCBBFF", "#FFEE88", "#FFFFA0", "#88CCCC", "#FFBB88", "#CCCCCC", "#FFAABB",
+  "#99CCFF", "#FF99CC", "#66CC66", "#CC99FF", "#FFCC66", "#FFFF80", "#DD9966", "#AAAAAA", "#66AAAA", "#DD6699",
 ]
 
 # Max highlights: Limit HTML rendering to preserve performance
@@ -253,13 +253,152 @@ COMMIT_RUN_DISPLAY = "echo"
 #   $d: Directory of the current file
 #   $m: Current mount directory in Typora's sidebar
 BUILTIN = [
-    { name = "Default", disable = false, shell = "cmd/bash", cmd = "" },
-    { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $d" },
-    { name = "VScode", disable = false, shell = "cmd/bash", cmd = "code $f" },
-    { name = "Windows Terminal", disable = false, shell = "cmd/bash", cmd = "cd $d && wt" },
-    { name = "Git Commit", disable = false, shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
-    { name = "TotalCommander", disable = true, shell = "cmd/bash", cmd = "D:\\software\\TotalCMD_64bit_11.03\\TOTALCMD64.EXE /O /T /P=L /L=$f" },
+  { name = "Default", disable = false, shell = "cmd/bash", cmd = "" },
+  { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $d" },
+  { name = "VScode", disable = false, shell = "cmd/bash", cmd = "code $f" },
+  { name = "Windows Terminal", disable = false, shell = "cmd/bash", cmd = "cd $d && wt" },
+  { name = "Git Commit", disable = false, shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
+  { name = "TotalCommander", disable = true, shell = "cmd/bash", cmd = "D:\\software\\TotalCMD_64bit_11.03\\TOTALCMD64.EXE /O /T /P=L /L=$f" },
 ]
+
+
+[command_palette]
+# =========== [ Basic ] ===========
+ENABLE = true
+NAME = ""
+HOTKEY = "ctrl+shift+p"
+
+# =========== [ Window Appearance & Interaction ] ===========
+# Hide window when pressing Backspace on an empty input
+BACKSPACE_TO_HIDE = true
+
+# =========== [ Search Strategy ] ===========
+# Wait time after typing stops before triggering a search (ms, Short intervals recommended for memory-level search)
+DEBOUNCE_INTERVAL = 70
+
+
+[right_outline]
+# =========== [ Basic ] ===========
+ENABLE = true
+NAME = ""
+HOTKEY = ""
+
+# =========== [ Outline Content ] ===========
+# Strip styling markers (e.g., **bold** or `code`) from outline headers
+REMOVE_HEADER_STYLES = true
+
+# Elements to display on the title bar
+#   header: Header
+#   image : Image
+#   table : Table
+#   fence : BlockCode
+#   link  : Link
+#   math  : Math
+TITLE_BAR_BUTTONS = ["header", "image", "table", "fence", "link", "math"]
+
+# Include H1 and H2 elements in specific elements of the outline
+INCLUDE_HEADINGS = { fence = true, image = true, table = true, link = true, math = true }
+
+# =========== [ Interaction ] ===========
+# Allow drag-and-drop operations on outline titles to rearrange document structure
+SORTABLE = true
+
+# Toggle the right-outline visibility by right-clicking the 'Outline' button in the main sidebar
+RIGHT_CLICK_OUTLINE_BUTTON_TO_TOGGLE = true
+
+# Display the right-outline by default on startup
+DEFAULT_SHOW_OUTLINE = false
+
+# =========== [ Window Display ] ===========
+# Default width of the outline panel (as a percentage of the window)
+DEFAULT_WIDTH_PERCENT = 20
+
+
+[markdownlint]
+# =========== [ Basic ] ===========
+ENABLE = true
+NAME = ""
+# Hotkey: Popup
+HOTKEY = ""
+# Hotkey: Fix
+HOTKEY_FIX_LINT = ""
+
+# =========== [ Custom Rules ] ===========
+# Array of paths linking to custom lint rule JS modules (Relative to plugin directory)
+# See: https://github.com/DavidAnson/markdownlint/blob/main/doc/CustomRules.md
+CUSTOM_RULE_FILES = [
+  "plugin/markdownlint/custom-rules.js",
+]
+
+# Lint rules
+# See: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+RULE_CONFIG = { default = true, MD010 = { code_blocks = false }, MD012 = { maximum = 3 }, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false, MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "Python", "Rust", "SQL", "TypeScript"] }, MD060 = false }
+
+# =========== [ UI Elements & Styling ] ===========
+# Translate English rule text to target locale
+TRANSLATE = true
+
+# Toolbar rapid-action buttons
+#   settings        : Open Rule Settings
+#   detailAll       : Display verbose details
+#   fixAll          : Batch Fix Errors
+#   toggleSourceMode: Toggle Source Mode
+#   refresh         : Manual Force Refresh
+#   close           : Close Modal
+TITLE_BAR_BUTTONS = ["settings", "fixAll", "toggleSourceMode", "refresh", "close"]
+
+# Master list table columns to display
+#   idx : Index
+#   line: Line Number
+#   rule: Rule Name
+#   desc: Description
+#   ops : Operations
+COLUMNS = ["line", "rule", "desc", "ops"]
+
+# Executable actions for individual error row items
+#   info  : View Lint Doc
+#   locate: Scroll to Line
+#   fix   : Fix Error
+TOOLS = ["info", "locate", "fix"]
+
+# Default result sorting rule
+#   idx       : Sort by index
+#   lineNumber: Sort by document line
+#   ruleName  : Sort by Rule Name
+#   ruleDesc  : Sort by Rule Description
+RESULT_ORDER_BY = "lineNumber"
+
+# =========== [ Status Indicator ] ===========
+# Enable floating indicator button in top-right corner (Set false to disable all configs below)
+USE_INDICATOR_BUTTON = true
+
+# Button width
+BUTTON_WIDTH = "16px"
+
+# Button height
+BUTTON_HEIGHT = "16px"
+
+# Button border radius
+BUTTON_BORDER_RADIUS = "50%"
+
+# Button distance from the right window edge
+BUTTON_RIGHT = "11px"
+
+# Button opacity (0.0 ~ 1.0)
+BUTTON_OPACITY = 1
+
+# Button background color when all checks pass
+BUTTON_PASS_COLOR = "#92C498"
+
+# Button background color when errors are detected
+BUTTON_ERROR_COLOR = "#d8bd74"
+
+# =========== [ Shortcuts ] ===========
+# Right-click in the results table to toggle Source Mode
+RIGHT_CLICK_TABLE_TO_TOGGLE_SOURCE_MODE = true
+
+# Right-click the indicator button to fix all errors
+RIGHT_CLICK_BUTTON_TO_FIX = true
 
 
 [md_padding]
@@ -364,6 +503,35 @@ TRANSITION_DURATION = 300
 TRANSITION_DELAY = 0
 
 
+[static_markers]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+HOTKEY = ""
+
+# =========== [ Mode Toggle ] ===========
+# Enter Static Markers mode automatically on Typora startup
+STATIC_DEFAULT = true
+
+# =========== [ Static Markers ] ===========
+# Static markers
+#   strong     : Bold
+#   em         : Italic
+#   del        : Strikethrough
+#   underline  : Underline
+#   highlight  : Highlight
+#   superscript: Superscript
+#   subscript  : Subscript
+#   code       : Code
+#   inlineMath : Inline Math
+#   image      : Image
+#   link       : Link
+#   emoji      : Emoji
+#   footnote   : Footnote
+#   inlineHTML : Inline HTML
+STATIC_MARKERS = ["strong", "em", "del", "underline", "highlight", "superscript", "subscript", "code", "inlineMath", "image", "link", "footnote"]
+
+
 [myopic_defocus]
 # =========== [ Basic ] ===========
 ENABLE = true
@@ -389,53 +557,6 @@ SCREEN_DISTANCE = 40
 
 # Effect strength: Percentage ratio. Recommended: 10% ~ 35%
 EFFECT_STRENGTH = 10
-
-
-[toolbar]
-# =========== [ Basic ] ===========
-ENABLE = true
-NAME = ""
-HOTKEY = "ctrl+shift+p"
-
-# =========== [ Window Appearance & Interaction ] ===========
-# Hide window when pressing Backspace on an empty input
-BACKSPACE_TO_HIDE = true
-
-# Vertical position: Distance from the top of the page (0~100%)
-TOOLBAR_TOP_PERCENT = 20
-
-# Width relative to the page (0~100%)
-TOOLBAR_WIDTH_PERCENT = 80
-
-# =========== [ Search Strategy ] ===========
-# Wait time after typing stops before triggering a search (ms, Short intervals recommended for memory-level search)
-DEBOUNCE_INTERVAL = 70
-
-# Group search
-GROUP_SEARCH = true
-
-# Default search group: Fallback searcher when no matching prefix is detected (Disabled if GROUP_SEARCH is false)
-#   ""   : Disable default tool; requires explicit prefix matching
-#   plu  : Search enabled plugins
-#   tab  : Search currently open file tabs
-#   his  : Search recently opened files
-#   ops  : Search Typora's common operation commands
-#   mode : Switch file modes (e.g., Source Code, Focus Mode)
-#   theme: Search and change Typora themes
-#   out  : Search current document outline
-#   all  : Mixed search across all tools
-DEFAULT_GROUP = "all"
-
-# Enable negative search
-#   true : Enable negative queries. The "-" prefix excludes a keyword
-#   false: Disable negative queries. All keywords are inclusive
-# Example 1: `plu multi -search`
-#   true : Find plugins containing "multi", but EXCLUDING "search"
-#   false: Find plugins containing BOTH "multi" and "-search"
-# Example 2: `his close -win -mark label`
-#   true : Find recent files containing "close" AND "label", but EXCLUDING "win" AND "mark"
-#   false: Find recent files containing "close", "-win", "-mark", AND "label"
-USE_NEGATIVE_SEARCH = true
 
 
 [resize_image]
@@ -576,16 +697,16 @@ WIDTH_PERCENT_WHEN_PIN_RIGHT = 50
 
 # Preset color scheme arrays for rendering branches
 CANDIDATE_COLOR_SCHEMES = [
-    ["#B3E2CD", "#FDCDAC", "#CBD5E8", "#F4CAE4", "#E6F5C9", "#FFF2AE", "#F1E2CC", "#CCCCCC"],
-    ["#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3"],
-    ["#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D", "#666666"],
-    ["#7FC97F", "#BEAED4", "#FDC086", "#FFFF99", "#386CB0", "#F0027F", "#BF5B17", "#666666"],
-    ["#FBB4AE", "#B3CDE3", "#CCEBC5", "#DECBE4", "#FED9A6", "#FFFFCC", "#E5D8BD", "#FDDAEC", "#F2F2F2"],
-    ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"],
-    ["#4E79A7", "#F28E2C", "#E15759", "#76B7B2", "#59A14F", "#EDC949", "#AF7AA1", "#FF9DA7", "#9C755F", "#BAB0AB"],
-    ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"],
-    ["#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "#B15928"],
-    ["#8DD3C7", "#FFFFB3", "#BEBADA", "#FB8072", "#80B1D3", "#FDB462", "#B3DE69", "#FCCDE5", "#D9D9D9", "#BC80BD", "#CCEBC5", "#FFED6F"],
+  ["#B3E2CD", "#FDCDAC", "#CBD5E8", "#F4CAE4", "#E6F5C9", "#FFF2AE", "#F1E2CC", "#CCCCCC"],
+  ["#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3"],
+  ["#1B9E77", "#D95F02", "#7570B3", "#E7298A", "#66A61E", "#E6AB02", "#A6761D", "#666666"],
+  ["#7FC97F", "#BEAED4", "#FDC086", "#FFFF99", "#386CB0", "#F0027F", "#BF5B17", "#666666"],
+  ["#FBB4AE", "#B3CDE3", "#CCEBC5", "#DECBE4", "#FED9A6", "#FFFFCC", "#E5D8BD", "#FDDAEC", "#F2F2F2"],
+  ["#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999"],
+  ["#4E79A7", "#F28E2C", "#E15759", "#76B7B2", "#59A14F", "#EDC949", "#AF7AA1", "#FF9DA7", "#9C755F", "#BAB0AB"],
+  ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"],
+  ["#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "#B15928"],
+  ["#8DD3C7", "#FFFFB3", "#BEBADA", "#FB8072", "#80B1D3", "#FDB462", "#B3DE69", "#FCCDE5", "#D9D9D9", "#BC80BD", "#CCEBC5", "#FFED6F"],
 ]
 
 # Default TOC Options: Customize TOC diagram appearance and behavior
@@ -1175,93 +1296,6 @@ NAME = ""
 RECORD_COLLAPSE = true
 
 
-[markdownlint]
-# =========== [ Basic ] ===========
-ENABLE = true
-NAME = ""
-# Hotkey: Popup
-HOTKEY = ""
-# Hotkey: Fix
-HOTKEY_FIX_LINT = ""
-
-# =========== [ Custom Rules ] ===========
-# Array of paths linking to custom lint rule JS modules (Relative to plugin directory)
-# See: https://github.com/DavidAnson/markdownlint/blob/main/doc/CustomRules.md
-CUSTOM_RULE_FILES = [
-    "plugin/markdownlint/custom-rules.js",
-]
-
-# Lint rules
-# See: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
-RULE_CONFIG = { default = true, MD010 = { code_blocks = false }, MD012 = { maximum = 3 }, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false, MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "Python", "Rust", "SQL", "TypeScript"] }, MD060 = false }
-
-# =========== [ UI Elements & Styling ] ===========
-# Translate English rule text to target locale
-TRANSLATE = true
-
-# Toolbar rapid-action buttons
-#   settings        : Open Rule Settings
-#   detailAll       : Display verbose details
-#   fixAll          : Batch Fix Errors
-#   toggleSourceMode: Toggle Source Mode
-#   refresh         : Manual Force Refresh
-#   close           : Close Modal
-TITLE_BAR_BUTTONS = ["settings", "fixAll", "toggleSourceMode", "refresh", "close"]
-
-# Master list table columns to display
-#   idx : Index
-#   line: Line Number
-#   rule: Rule Name
-#   desc: Description
-#   ops : Operations
-COLUMNS = ["line", "rule", "desc", "ops"]
-
-# Executable actions for individual error row items
-#   info  : View Lint Doc
-#   locate: Scroll to Line
-#   fix   : Fix Error
-TOOLS = ["info", "locate", "fix"]
-
-# Default result sorting rule
-#   idx       : Sort by index
-#   lineNumber: Sort by document line
-#   ruleName  : Sort by Rule Name
-#   ruleDesc  : Sort by Rule Description
-RESULT_ORDER_BY = "lineNumber"
-
-# =========== [ Status Indicator ] ===========
-# Enable floating indicator button in top-right corner (Set false to disable all configs below)
-USE_INDICATOR_BUTTON = true
-
-# Button width
-BUTTON_WIDTH = "16px"
-
-# Button height
-BUTTON_HEIGHT = "16px"
-
-# Button border radius
-BUTTON_BORDER_RADIUS = "50%"
-
-# Button distance from the right window edge
-BUTTON_RIGHT = "11px"
-
-# Button opacity (0.0 ~ 1.0)
-BUTTON_OPACITY = 1
-
-# Button background color when all checks pass
-BUTTON_PASS_COLOR = "#92C498"
-
-# Button background color when errors are detected
-BUTTON_ERROR_COLOR = "#d8bd74"
-
-# =========== [ Shortcuts ] ===========
-# Right-click in the results table to toggle Source Mode
-RIGHT_CLICK_TABLE_TO_TOGGLE_SOURCE_MODE = true
-
-# Right-click the indicator button to fix all errors
-RIGHT_CLICK_BUTTON_TO_FIX = true
-
-
 [image_viewer]
 # =========== [ Basic ] ===========
 ENABLE = true
@@ -1405,33 +1439,33 @@ ALT_WHEEL_FUNCTION = ["incVSkew", "decVSkew"]
 # =========== [ Hotkeys ] ===========
 # Hotkey (Only available within the viewer)
 HOTKEY_FUNCTION = [
-    { hotkey = "j", fn = "nextImage" },
-    { hotkey = "k", fn = "previousImage" },
-    { hotkey = "=", fn = "nextImage" },
-    { hotkey = "-", fn = "previousImage" },
-    { hotkey = "shift+j", fn = "lastImage" },
-    { hotkey = "shift+k", fn = "firstImage" },
-    { hotkey = "l", fn = "scroll" },
-    { hotkey = "q", fn = "close" },
-    { hotkey = "escape", fn = "close" },
-    { hotkey = " ", fn = "play" },
-    { hotkey = "h", fn = "hFlip" },
-    { hotkey = "v", fn = "vFlip" },
-    { hotkey = "r", fn = "rotateRight" },
-    { hotkey = "shift+r", fn = "rotateLeft" },
-    { hotkey = "ArrowUp", fn = "translateUp" },
-    { hotkey = "ArrowDown", fn = "translateDown" },
-    { hotkey = "ArrowLeft", fn = "translateLeft" },
-    { hotkey = "ArrowRight", fn = "translateRight" },
-    { hotkey = "w", fn = "translateUp" },
-    { hotkey = "s", fn = "translateDown" },
-    { hotkey = "a", fn = "translateLeft" },
-    { hotkey = "d", fn = "translateRight" },
-    { hotkey = "z", fn = "originSize" },
-    { hotkey = "x", fn = "zoomIn" },
-    { hotkey = "c", fn = "zoomOut" },
-    { hotkey = "shift++", fn = "zoomIn" },
-    { hotkey = "shift+_", fn = "zoomOut" },
+  { hotkey = "j", fn = "nextImage" },
+  { hotkey = "k", fn = "previousImage" },
+  { hotkey = "=", fn = "nextImage" },
+  { hotkey = "-", fn = "previousImage" },
+  { hotkey = "shift+j", fn = "lastImage" },
+  { hotkey = "shift+k", fn = "firstImage" },
+  { hotkey = "l", fn = "scroll" },
+  { hotkey = "q", fn = "close" },
+  { hotkey = "escape", fn = "close" },
+  { hotkey = " ", fn = "play" },
+  { hotkey = "h", fn = "hFlip" },
+  { hotkey = "v", fn = "vFlip" },
+  { hotkey = "r", fn = "rotateRight" },
+  { hotkey = "shift+r", fn = "rotateLeft" },
+  { hotkey = "ArrowUp", fn = "translateUp" },
+  { hotkey = "ArrowDown", fn = "translateDown" },
+  { hotkey = "ArrowLeft", fn = "translateLeft" },
+  { hotkey = "ArrowRight", fn = "translateRight" },
+  { hotkey = "w", fn = "translateUp" },
+  { hotkey = "s", fn = "translateDown" },
+  { hotkey = "a", fn = "translateLeft" },
+  { hotkey = "d", fn = "translateRight" },
+  { hotkey = "z", fn = "originSize" },
+  { hotkey = "x", fn = "zoomIn" },
+  { hotkey = "c", fn = "zoomOut" },
+  { hotkey = "shift++", fn = "zoomIn" },
+  { hotkey = "shift+_", fn = "zoomOut" },
 ]
 
 
@@ -1503,14 +1537,14 @@ OPEN_BY_TYPORA_EXT = ["log"]
 # Customize sidebar file icons (If set to false, SIDEBAR_ICONS is disabled)
 CUSTOMIZE_SIDEBAR_ICONS = false
 SIDEBAR_ICONS = [
-    { enable = true, extensions = ["jpg", "jpeg", "png", "svg", "gif", "webp", "bmp"], icon = "ty-file-icon ty-fi-image" },
-    { enable = true, extensions = ["pdf"], icon = "ty-file-icon ty-fi-pdf" },
-    { enable = true, extensions = ["md", "rmd", "mdtxt", "mdtext"], icon = "ty-file-icon ty-fi-markdown" },
-    { enable = true, extensions = ["html", "htm"], icon = "ty-file-icon ty-fi-html" },
-    { enable = true, extensions = ["pptx", "ppt"], icon = "ty-file-icon ty-fi-powerpoint" },
-    { enable = true, extensions = ["docx", "doc"], icon = "ty-file-icon ty-fi-word" },
-    { enable = true, extensions = ["zip", "7z", "rar"], icon = "ty-file-icon ty-fi-zip" },
-    { enable = true, extensions = ["css"], icon = "ty-file-icon ty-fi-css" },
+  { enable = true, extensions = ["jpg", "jpeg", "png", "svg", "gif", "webp", "bmp"], icon = "ty-file-icon ty-fi-image" },
+  { enable = true, extensions = ["pdf"], icon = "ty-file-icon ty-fi-pdf" },
+  { enable = true, extensions = ["md", "rmd", "mdtxt", "mdtext"], icon = "ty-file-icon ty-fi-markdown" },
+  { enable = true, extensions = ["html", "htm"], icon = "ty-file-icon ty-fi-html" },
+  { enable = true, extensions = ["pptx", "ppt"], icon = "ty-file-icon ty-fi-powerpoint" },
+  { enable = true, extensions = ["docx", "doc"], icon = "ty-file-icon ty-fi-word" },
+  { enable = true, extensions = ["zip", "7z", "rar"], icon = "ty-file-icon ty-fi-zip" },
+  { enable = true, extensions = ["css"], icon = "ty-file-icon ty-fi-css" },
 ]
 
 # =========== [ File Count ] ===========
@@ -1579,9 +1613,9 @@ HOTKEY = ""
 #   setBrush             : Set Format Brush
 #   useBrush             : Use Format Brush
 TOOLS = [
-    "weight", "italic", "underline", "throughline", "overline", "title", "superScript", "subScript",
-    "emphasis", "blur", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
-    "foregroundColor", "backgroundColor", "borderColor", "blank", "setBrush", "useBrush", "erase",
+  "weight", "italic", "underline", "throughline", "overline", "title", "superScript", "subScript",
+  "emphasis", "blur", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
+  "foregroundColor", "backgroundColor", "borderColor", "blank", "setBrush", "useBrush", "erase",
 ]
 
 # Default Format Brush defined via CSS expressions (e.g., "color:#FF0000; text-decoration:line-through;")
@@ -1601,15 +1635,15 @@ ACTION_HOTKEYS = []
 # =========== [ Colors ] ===========
 # Color palette (Hex codes)
 COLOR_TABLE = [
-    ["#330000", "#331900", "#333300", "#193300", "#003300", "#003319", "#003333", "#001933", "#000033", "#190033", "#330033", "#330019", "#000000"],
-    ["#660000", "#663300", "#666600", "#336600", "#006600", "#006633", "#006666", "#003366", "#000066", "#330066", "#660066", "#660033", "#202020"],
-    ["#990000", "#994C00", "#999900", "#4C9900", "#009900", "#00994C", "#009999", "#004C99", "#000099", "#4C0099", "#990099", "#99004C", "#404040"],
-    ["#CC0000", "#CC6600", "#CCCC00", "#66CC00", "#00CC00", "#00CC66", "#00CCCC", "#0066CC", "#0000CC", "#6600CC", "#CC00CC", "#CC0066", "#606060"],
-    ["#FF0000", "#FF8000", "#FFFF00", "#80FF00", "#00FF00", "#00FF80", "#00FFFF", "#0080FF", "#0000FF", "#7F00FF", "#FF00FF", "#FF007F", "#808080"],
-    ["#FF3333", "#FF9933", "#FFFF33", "#99FF33", "#33FF33", "#33FF99", "#33FFFF", "#3399FF", "#3333FF", "#9933FF", "#FF33FF", "#FF3399", "#A0A0A0"],
-    ["#FF6666", "#FFB266", "#FFFF66", "#B2FF66", "#66FF66", "#66FFB2", "#66FFFF", "#66B2FF", "#6666FF", "#B266FF", "#FF66FF", "#FF66B2", "#C0C0C0"],
-    ["#FF9999", "#FFCC99", "#FFFF99", "#CCFF99", "#99FF99", "#99FFCC", "#99FFFF", "#99CCFF", "#9999FF", "#CC99FF", "#FF99FF", "#FF99CC", "#E0E0E0"],
-    ["#FFCCCC", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFCC", "#CCFFE5", "#CCFFFF", "#CCE5FF", "#CCCCFF", "#E5CCFF", "#FFCCFF", "#FFCCE5", "#FFFFFF"],
+  ["#330000", "#331900", "#333300", "#193300", "#003300", "#003319", "#003333", "#001933", "#000033", "#190033", "#330033", "#330019", "#000000"],
+  ["#660000", "#663300", "#666600", "#336600", "#006600", "#006633", "#006666", "#003366", "#000066", "#330066", "#660066", "#660033", "#202020"],
+  ["#990000", "#994C00", "#999900", "#4C9900", "#009900", "#00994C", "#009999", "#004C99", "#000099", "#4C0099", "#990099", "#99004C", "#404040"],
+  ["#CC0000", "#CC6600", "#CCCC00", "#66CC00", "#00CC00", "#00CC66", "#00CCCC", "#0066CC", "#0000CC", "#6600CC", "#CC00CC", "#CC0066", "#606060"],
+  ["#FF0000", "#FF8000", "#FFFF00", "#80FF00", "#00FF00", "#00FF80", "#00FFFF", "#0080FF", "#0000FF", "#7F00FF", "#FF00FF", "#FF007F", "#808080"],
+  ["#FF3333", "#FF9933", "#FFFF33", "#99FF33", "#33FF33", "#33FF99", "#33FFFF", "#3399FF", "#3333FF", "#9933FF", "#FF33FF", "#FF3399", "#A0A0A0"],
+  ["#FF6666", "#FFB266", "#FFFF66", "#B2FF66", "#66FF66", "#66FFB2", "#66FFFF", "#66B2FF", "#6666FF", "#B266FF", "#FF66FF", "#FF66B2", "#C0C0C0"],
+  ["#FF9999", "#FFCC99", "#FFFF99", "#CCFF99", "#99FF99", "#99FFCC", "#99FFFF", "#99CCFF", "#9999FF", "#CC99FF", "#FF99FF", "#FF99CC", "#E0E0E0"],
+  ["#FFCCCC", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFCC", "#CCFFE5", "#CCFFFF", "#CCE5FF", "#CCCCFF", "#E5CCFF", "#FFCCFF", "#FFCCE5", "#FFFFFF"],
 ]
 
 # Default colors
@@ -1746,19 +1780,19 @@ HIDE_BUTTON_HINT = false
 #   callback  : (System Callback) Standard format: "PluginName.MethodName"
 #   evil      : (Custom Callback) Executable eval() statement. Overrides 'callback' if configured
 BUTTONS = [
-    { enable = true, coordinate = [0, 0], size = "24px", icon = "fa fa-caret-down", evil = "() => this.utils.jumpToEdge(false)" },
-    { enable = true, coordinate = [1, 0], size = "24px", icon = "fa fa-caret-up", evil = "() => this.utils.jumpToEdge(true)" },
-    { enable = true, coordinate = [2, 0], size = "17px", icon = "fa fa-font", callback = "text_stylize.call" },
-    { enable = true, coordinate = [3, 0], size = "17px", icon = "fa fa-indent", callback = "md_padding.call" },
-    { enable = true, coordinate = [4, 0], size = "17px", icon = "fa fa-gear", callback = "preferences.call" },
-    { enable = true, coordinate = [0, 1], size = "17px", icon = "fa fa-sitemap fa-rotate-270", callback = "markmap.onButtonClick" },
-    { enable = true, coordinate = [1, 1], size = "17px", icon = "fa fa-image", callback = "image_viewer.call" },
-    { enable = true, coordinate = [2, 1], size = "17px", icon = "fa fa-th-list", callback = "right_outline.call" },
-    { enable = true, coordinate = [3, 1], size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
-    { enable = false, coordinate = [4, 0], size = "17px", icon = "ion-asterisk", color = "#F0F8FF", bgColor = "#FF4500", evil = "() => window.confirm('this is message')" },
-    { enable = false, coordinate = [4, 1], size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertFence("javascript")' },
-    { enable = false, coordinate = [5, 0], size = "17px", icon = "ion-bug", evil = "() => require('child_process').exec('cmd /C calc')" },
-    { enable = false, coordinate = [5, 1], size = "17px", icon = "ion-alert", evil = "() => this.utils.openUrl('https://github.com/obgnail/typora_plugin')" },
+  { enable = true, coordinate = [0, 0], size = "24px", icon = "fa fa-caret-down", evil = "() => this.utils.jumpToEdge(false)" },
+  { enable = true, coordinate = [1, 0], size = "24px", icon = "fa fa-caret-up", evil = "() => this.utils.jumpToEdge(true)" },
+  { enable = true, coordinate = [2, 0], size = "17px", icon = "fa fa-font", callback = "text_stylize.call" },
+  { enable = true, coordinate = [3, 0], size = "17px", icon = "fa fa-indent", callback = "md_padding.call" },
+  { enable = true, coordinate = [4, 0], size = "17px", icon = "fa fa-gear", callback = "preferences.call" },
+  { enable = true, coordinate = [0, 1], size = "17px", icon = "fa fa-sitemap fa-rotate-270", callback = "markmap.onButtonClick" },
+  { enable = true, coordinate = [1, 1], size = "17px", icon = "fa fa-image", callback = "image_viewer.call" },
+  { enable = true, coordinate = [2, 1], size = "17px", icon = "fa fa-th-list", callback = "right_outline.call" },
+  { enable = true, coordinate = [3, 1], size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
+  { enable = false, coordinate = [4, 0], size = "17px", icon = "ion-asterisk", color = "#F0F8FF", bgColor = "#FF4500", evil = "() => window.confirm('this is message')" },
+  { enable = false, coordinate = [4, 1], size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertFence("javascript")' },
+  { enable = false, coordinate = [5, 0], size = "17px", icon = "ion-bug", evil = "() => require('child_process').exec('cmd /C calc')" },
+  { enable = false, coordinate = [5, 1], size = "17px", icon = "ion-alert", evil = "() => this.utils.openUrl('https://github.com/obgnail/typora_plugin')" },
 ]
 
 
@@ -1811,82 +1845,82 @@ FUNC_PARAM_SEPARATOR = "_"
 #   cursorOffset: Post-execution cursor position offset mapping [Start Offset, End Offset]
 #   callback    : Execution body (Text for 'snippet', Function for 'command' and 'gen-snp')
 COMMANDS = [
-    { enable = true, type = "command", icon = "📝", keyword = "H1", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "H2", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "H3", callback = "() => File.editor.stylize.changeBlock('header3', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "H4", callback = "() => File.editor.stylize.changeBlock('header4', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "H5", callback = "() => File.editor.stylize.changeBlock('header5', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "H6", callback = "() => File.editor.stylize.changeBlock('header6', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "Paragraph", callback = "() => File.editor.stylize.changeBlock('paragraph')" },
-    { enable = true, type = "command", icon = "📝", keyword = "IncreaseHeaderLevel", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
-    { enable = true, type = "command", icon = "📝", keyword = "DecreaseHeaderLevel", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
-    { enable = true, type = "command", icon = "📝", keyword = "Table", callback = "() => File.editor.tableEdit.insertTable()" },
-    { enable = true, type = "command", icon = "📝", keyword = "BlockCode", callback = "() => File.editor.stylize.toggleFences()" },
-    { enable = true, type = "command", icon = "📝", keyword = "BlockMath", callback = "() => File.editor.stylize.toggleMathBlock()" },
-    { enable = true, type = "command", icon = "📝", keyword = "BlockQuote", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
-    { enable = true, type = "command", icon = "📝", keyword = "Callouts", callback = "() => File.editor.stylize.insertAlert('NOTE')" },
-    { enable = true, type = "command", icon = "📝", keyword = "OrderedList", callback = "() => File.editor.stylize.toggleIndent('ol')" },
-    { enable = true, type = "command", icon = "📝", keyword = "UnorderedList", callback = "() => File.editor.stylize.toggleIndent('ul')" },
-    { enable = true, type = "command", icon = "📝", keyword = "TaskList", callback = "() => File.editor.stylize.toggleIndent('tasklist')" },
-    { enable = true, type = "command", icon = "📝", keyword = "ListMoreIndent", callback = "() => File.editor.UserOp.moreIndent(File.editor)" },
-    { enable = true, type = "command", icon = "📝", keyword = "ListLessIndent", callback = "() => File.editor.UserOp.lessIndent(File.editor)" },
-    { enable = true, type = "command", icon = "📝", keyword = "InsertParagraphAbove", callback = "() => File.editor.UserOp.insertParagraph(true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "InsertParagraphBelow", callback = "() => File.editor.UserOp.insertParagraph(false)" },
-    { enable = true, type = "command", icon = "📝", keyword = "LinkReference", callback = "() => File.editor.stylize.insertBlock('def_link')" },
-    { enable = true, type = "command", icon = "📝", keyword = "FootnoteReference", callback = "() => File.editor.stylize.insertBlock('def_footnote')" },
-    { enable = true, type = "command", icon = "📝", keyword = "HorizontalLine", callback = "() => File.editor.stylize.insertBlock('hr')" },
-    { enable = true, type = "command", icon = "📝", keyword = "TOC", callback = "() => File.editor.stylize.insertBlock('toc')" },
-    { enable = true, type = "command", icon = "📝", keyword = "FrontMatter", callback = "() => File.editor.stylize.insertMetaBlock()" },
-    { enable = true, type = "command", icon = "👕", keyword = "Strong", callback = "() => File.editor.stylize.toggleStyle('strong')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Em", callback = "() => File.editor.stylize.toggleStyle('em')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Underline", callback = "() => File.editor.stylize.toggleStyle('underline')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Code", callback = "() => File.editor.stylize.toggleStyle('code')" },
-    { enable = true, type = "command", icon = "👕", keyword = "InlineMath", callback = "() => File.editor.stylize.toggleStyle('inline_math')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Delete", callback = "() => File.editor.stylize.toggleStyle('del')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Highlight", callback = "() => File.editor.stylize.toggleStyle('highlight')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Superscript", callback = "() => File.editor.stylize.toggleStyle('superscript')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Subscript", callback = "() => File.editor.stylize.toggleStyle('subscript')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Footnote", callback = "() => File.editor.stylize.toggleStyle('footnote')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Comment", callback = "() => File.editor.stylize.toggleStyle('comment')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Link", callback = "() => File.editor.stylize.toggleStyle('link')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Image", callback = "() => File.editor.stylize.toggleStyle('image')" },
-    { enable = true, type = "command", icon = "👕", keyword = "ClearStyle", callback = "() => File.editor.stylize.clearStyle()" },
-    { enable = true, type = "command", icon = "💻", keyword = "Golang", callback = "() => this.utils.insertFence('go')" },
-    { enable = true, type = "command", icon = "💻", keyword = "Python", callback = "() => this.utils.insertFence('python')" },
-    { enable = true, type = "command", icon = "💻", keyword = "Bash", callback = "() => this.utils.insertFence('bash')" },
-    { enable = true, type = "command", icon = "💻", keyword = "Java", callback = "() => this.utils.insertFence('java')" },
-    { enable = true, type = "command", icon = "💻", keyword = "HTML", callback = "() => this.utils.insertFence('html')" },
-    { enable = true, type = "command", icon = "💻", keyword = "SQL", callback = "() => this.utils.insertFence('sql')" },
-    { enable = true, type = "command", icon = "💻", keyword = "CSS", callback = "() => this.utils.insertFence('css')" },
-    { enable = true, type = "command", icon = "💻", keyword = "Mermaid", callback = "() => this.utils.insertFence('mermaid')" },
-    { enable = true, type = "command", icon = "💻", keyword = "JavaScript", callback = "() => this.utils.insertFence('javascript')" },
-    { enable = true, type = "command", icon = "💻", keyword = "TypeScript", callback = "() => this.utils.insertFence('typescript')" },
-    { enable = true, type = "command", icon = "🧰", keyword = "JumpTop", callback = "() => File.editor.selection.jumpTop()" },
-    { enable = true, type = "command", icon = "🧰", keyword = "JumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
-    { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineStart", callback = "() => File.editor.selection.jumpToLineStart()" },
-    { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineEnd", callback = "() => File.editor.selection.jumpToLineEnd()" },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "BR", callback = "<br>" },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "IMG", cursorOffset = [-14, -14], callback = '<img src="" alt="alt" />' },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "SPAN", cursorOffset = [-7, -7], callback = '<span></span>' },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "cursorOffsetExample", cursorOffset = [-23, -10], callback = "Enjoying Typora Plugin? Star us!" },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Datetime", callback = "() => this.utils.dateTimeFormat(new Date(), 'yyyy/MM/dd HH:mm:ss')" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", callback = "() => this.utils.dateTimeFormat(new Date(), 'yyyy/MM/dd')" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", callback = "() => this.utils.dateTimeFormat(new Date(), 'HH:mm:ss')" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Weekday", callback = "() => this.utils.dateTimeFormat(new Date(), 'dddd')" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", callback = "() => Date.now().toString()" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "UUID", callback = "() => this.utils.getUUID()" },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "alpha", hint = "α", scope = "inline_math", callback = "\\alpha " },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "beta", hint = "β", scope = "inline_math", callback = "\\beta " },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "epsilon", hint = "ε", scope = "inline_math", callback = "\\epsilon " },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "rightarrow", hint = "→", scope = "inline_math", callback = "\\rightarrow " },
-    # Advanced: Parameterized Commands
-    #   BlockCode Generator: Input /BlockCodeGenerator_go_java_bash to simultaneously generate three code blocks
-    { enable = true, type = "gen-snp", icon = "🌟", keyword = "BlockCodeGenerator", callback = "(...langs) => langs.map(l => '```' + l.toLowerCase() + '\\n```').join('\\n\\n')" },
-    #   Callout Generator: Input /CalloutGenerator_note_info_quote to simultaneously generate NOTE, INFO, QUOTE callout blocks
-    { enable = true, type = "gen-snp", icon = "🌟", keyword = "CalloutGenerator", callback = "(...types) => types.map(t => `> [!${t.toUpperCase()}]\\n>\\n> `).join('\\n\\n')" },
-    #   Table Generator: Input /TableGenerator_3_4 to generate a structured table with 3 columns and 4 rows
-    { enable = true, type = "command", icon = "🌟", keyword = "TableGenerator", callback = "(col, row) => { col = parseInt(col); row = parseInt(row); const c = ['      ', ' ---- ', ...Array(row - 1).fill('      ')].map(e => `|${Array(col).fill(e).join('|')}|`).join('\\n'); this.utils.insertText(null, c, false) }" },
+  { enable = true, type = "command", icon = "📝", keyword = "H1", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
+  { enable = true, type = "command", icon = "📝", keyword = "H2", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
+  { enable = true, type = "command", icon = "📝", keyword = "H3", callback = "() => File.editor.stylize.changeBlock('header3', undefined, true)" },
+  { enable = true, type = "command", icon = "📝", keyword = "H4", callback = "() => File.editor.stylize.changeBlock('header4', undefined, true)" },
+  { enable = true, type = "command", icon = "📝", keyword = "H5", callback = "() => File.editor.stylize.changeBlock('header5', undefined, true)" },
+  { enable = true, type = "command", icon = "📝", keyword = "H6", callback = "() => File.editor.stylize.changeBlock('header6', undefined, true)" },
+  { enable = true, type = "command", icon = "📝", keyword = "Paragraph", callback = "() => File.editor.stylize.changeBlock('paragraph')" },
+  { enable = true, type = "command", icon = "📝", keyword = "IncreaseHeaderLevel", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
+  { enable = true, type = "command", icon = "📝", keyword = "DecreaseHeaderLevel", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
+  { enable = true, type = "command", icon = "📝", keyword = "Table", callback = "() => File.editor.tableEdit.insertTable()" },
+  { enable = true, type = "command", icon = "📝", keyword = "BlockCode", callback = "() => File.editor.stylize.toggleFences()" },
+  { enable = true, type = "command", icon = "📝", keyword = "BlockMath", callback = "() => File.editor.stylize.toggleMathBlock()" },
+  { enable = true, type = "command", icon = "📝", keyword = "BlockQuote", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
+  { enable = true, type = "command", icon = "📝", keyword = "Callouts", callback = "() => File.editor.stylize.insertAlert('NOTE')" },
+  { enable = true, type = "command", icon = "📝", keyword = "OrderedList", callback = "() => File.editor.stylize.toggleIndent('ol')" },
+  { enable = true, type = "command", icon = "📝", keyword = "UnorderedList", callback = "() => File.editor.stylize.toggleIndent('ul')" },
+  { enable = true, type = "command", icon = "📝", keyword = "TaskList", callback = "() => File.editor.stylize.toggleIndent('tasklist')" },
+  { enable = true, type = "command", icon = "📝", keyword = "ListMoreIndent", callback = "() => File.editor.UserOp.moreIndent(File.editor)" },
+  { enable = true, type = "command", icon = "📝", keyword = "ListLessIndent", callback = "() => File.editor.UserOp.lessIndent(File.editor)" },
+  { enable = true, type = "command", icon = "📝", keyword = "InsertParagraphAbove", callback = "() => File.editor.UserOp.insertParagraph(true)" },
+  { enable = true, type = "command", icon = "📝", keyword = "InsertParagraphBelow", callback = "() => File.editor.UserOp.insertParagraph(false)" },
+  { enable = true, type = "command", icon = "📝", keyword = "LinkReference", callback = "() => File.editor.stylize.insertBlock('def_link')" },
+  { enable = true, type = "command", icon = "📝", keyword = "FootnoteReference", callback = "() => File.editor.stylize.insertBlock('def_footnote')" },
+  { enable = true, type = "command", icon = "📝", keyword = "HorizontalLine", callback = "() => File.editor.stylize.insertBlock('hr')" },
+  { enable = true, type = "command", icon = "📝", keyword = "TOC", callback = "() => File.editor.stylize.insertBlock('toc')" },
+  { enable = true, type = "command", icon = "📝", keyword = "FrontMatter", callback = "() => File.editor.stylize.insertMetaBlock()" },
+  { enable = true, type = "command", icon = "👕", keyword = "Strong", callback = "() => File.editor.stylize.toggleStyle('strong')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Em", callback = "() => File.editor.stylize.toggleStyle('em')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Underline", callback = "() => File.editor.stylize.toggleStyle('underline')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Code", callback = "() => File.editor.stylize.toggleStyle('code')" },
+  { enable = true, type = "command", icon = "👕", keyword = "InlineMath", callback = "() => File.editor.stylize.toggleStyle('inline_math')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Delete", callback = "() => File.editor.stylize.toggleStyle('del')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Highlight", callback = "() => File.editor.stylize.toggleStyle('highlight')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Superscript", callback = "() => File.editor.stylize.toggleStyle('superscript')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Subscript", callback = "() => File.editor.stylize.toggleStyle('subscript')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Footnote", callback = "() => File.editor.stylize.toggleStyle('footnote')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Comment", callback = "() => File.editor.stylize.toggleStyle('comment')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Link", callback = "() => File.editor.stylize.toggleStyle('link')" },
+  { enable = true, type = "command", icon = "👕", keyword = "Image", callback = "() => File.editor.stylize.toggleStyle('image')" },
+  { enable = true, type = "command", icon = "👕", keyword = "ClearStyle", callback = "() => File.editor.stylize.clearStyle()" },
+  { enable = true, type = "command", icon = "💻", keyword = "Golang", callback = "() => this.utils.insertFence('go')" },
+  { enable = true, type = "command", icon = "💻", keyword = "Python", callback = "() => this.utils.insertFence('python')" },
+  { enable = true, type = "command", icon = "💻", keyword = "Bash", callback = "() => this.utils.insertFence('bash')" },
+  { enable = true, type = "command", icon = "💻", keyword = "Java", callback = "() => this.utils.insertFence('java')" },
+  { enable = true, type = "command", icon = "💻", keyword = "HTML", callback = "() => this.utils.insertFence('html')" },
+  { enable = true, type = "command", icon = "💻", keyword = "SQL", callback = "() => this.utils.insertFence('sql')" },
+  { enable = true, type = "command", icon = "💻", keyword = "CSS", callback = "() => this.utils.insertFence('css')" },
+  { enable = true, type = "command", icon = "💻", keyword = "Mermaid", callback = "() => this.utils.insertFence('mermaid')" },
+  { enable = true, type = "command", icon = "💻", keyword = "JavaScript", callback = "() => this.utils.insertFence('javascript')" },
+  { enable = true, type = "command", icon = "💻", keyword = "TypeScript", callback = "() => this.utils.insertFence('typescript')" },
+  { enable = true, type = "command", icon = "🧰", keyword = "JumpTop", callback = "() => File.editor.selection.jumpTop()" },
+  { enable = true, type = "command", icon = "🧰", keyword = "JumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
+  { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineStart", callback = "() => File.editor.selection.jumpToLineStart()" },
+  { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineEnd", callback = "() => File.editor.selection.jumpToLineEnd()" },
+  { enable = true, type = "snippet", icon = "🧩", keyword = "BR", callback = "<br>" },
+  { enable = true, type = "snippet", icon = "🧩", keyword = "IMG", cursorOffset = [-14, -14], callback = '<img src="" alt="alt" />' },
+  { enable = true, type = "snippet", icon = "🧩", keyword = "SPAN", cursorOffset = [-7, -7], callback = '<span></span>' },
+  { enable = true, type = "snippet", icon = "🧩", keyword = "cursorOffsetExample", cursorOffset = [-23, -10], callback = "Enjoying Typora Plugin? Star us!" },
+  { enable = true, type = "snippet", icon = "🧩", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
+  { enable = true, type = "gen-snp", icon = "🧩", keyword = "Datetime", callback = "() => this.utils.dateTimeFormat(new Date(), 'yyyy/MM/dd HH:mm:ss')" },
+  { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", callback = "() => this.utils.dateTimeFormat(new Date(), 'yyyy/MM/dd')" },
+  { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", callback = "() => this.utils.dateTimeFormat(new Date(), 'HH:mm:ss')" },
+  { enable = true, type = "gen-snp", icon = "🧩", keyword = "Weekday", callback = "() => this.utils.dateTimeFormat(new Date(), 'dddd')" },
+  { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", callback = "() => Date.now().toString()" },
+  { enable = true, type = "gen-snp", icon = "🧩", keyword = "UUID", callback = "() => this.utils.getUUID()" },
+  { enable = true, type = "snippet", icon = "🧩", keyword = "alpha", hint = "α", scope = "inline_math", callback = "\\alpha " },
+  { enable = true, type = "snippet", icon = "🧩", keyword = "beta", hint = "β", scope = "inline_math", callback = "\\beta " },
+  { enable = true, type = "snippet", icon = "🧩", keyword = "epsilon", hint = "ε", scope = "inline_math", callback = "\\epsilon " },
+  { enable = true, type = "snippet", icon = "🧩", keyword = "rightarrow", hint = "→", scope = "inline_math", callback = "\\rightarrow " },
+  # Advanced: Parameterized Commands
+  #   BlockCode Generator: Input /BlockCodeGenerator_go_java_bash to simultaneously generate three code blocks
+  { enable = true, type = "gen-snp", icon = "🌟", keyword = "BlockCodeGenerator", callback = "(...langs) => langs.map(l => '```' + l.toLowerCase() + '\\n```').join('\\n\\n')" },
+  #   Callout Generator: Input /CalloutGenerator_note_info_quote to simultaneously generate NOTE, INFO, QUOTE callout blocks
+  { enable = true, type = "gen-snp", icon = "🌟", keyword = "CalloutGenerator", callback = "(...types) => types.map(t => `> [!${t.toUpperCase()}]\\n>\\n> `).join('\\n\\n')" },
+  #   Table Generator: Input /TableGenerator_3_4 to generate a structured table with 3 columns and 4 rows
+  { enable = true, type = "command", icon = "🌟", keyword = "TableGenerator", callback = "(col, row) => { col = parseInt(col); row = parseInt(row); const c = ['      ', ' ---- ', ...Array(row - 1).fill('      ')].map(e => `|${Array(col).fill(e).join('|')}|`).join('\\n'); this.utils.insertText(null, c, false) }" },
 ]
 
 
@@ -1911,68 +1945,32 @@ AUTO_CONVERT_FULL_TO_HALF = false
 # =========== [ Symbol Pairing ] ===========
 # Definitions for symbol auto-pairing
 AUTO_PAIR_SYMBOLS = [
-    { enable = true, input = "（", output = "）" },
-    { enable = true, input = "《", output = "》" },
-    { enable = true, input = "‘", output = "’" },
-    { enable = true, input = "“", output = "”" },
-    { enable = true, input = "【", output = "】" },
-    { enable = true, input = "「", output = "」" },
-    { enable = true, input = "『", output = "』" },
+  { enable = true, input = "（", output = "）" },
+  { enable = true, input = "《", output = "》" },
+  { enable = true, input = "‘", output = "’" },
+  { enable = true, input = "“", output = "”" },
+  { enable = true, input = "【", output = "】" },
+  { enable = true, input = "「", output = "」" },
+  { enable = true, input = "『", output = "』" },
 ]
 
 # Definitions for symbol auto-conversion
 AUTO_CONVERT_SYMBOLS = [
-    { enable = true, input = "【", output = "[" },
-    { enable = true, input = "】", output = "]" },
-    { enable = true, input = "（", output = "(" },
-    { enable = true, input = "）", output = ")" },
-    { enable = true, input = "《", output = "<" },
-    { enable = true, input = "》", output = ">" },
-    { enable = true, input = "！", output = "!" },
-    { enable = true, input = "；", output = ";" },
-    { enable = true, input = "：", output = ":" },
-    { enable = true, input = "，", output = "," },
-    { enable = true, input = "。", output = "." },
-    { enable = true, input = "？", output = "?" },
-    { enable = true, input = "·", output = "`" },
-    { enable = true, input = "￥", output = "$" },
+  { enable = true, input = "【", output = "[" },
+  { enable = true, input = "】", output = "]" },
+  { enable = true, input = "（", output = "(" },
+  { enable = true, input = "）", output = ")" },
+  { enable = true, input = "《", output = "<" },
+  { enable = true, input = "》", output = ">" },
+  { enable = true, input = "！", output = "!" },
+  { enable = true, input = "；", output = ";" },
+  { enable = true, input = "：", output = ":" },
+  { enable = true, input = "，", output = "," },
+  { enable = true, input = "。", output = "." },
+  { enable = true, input = "？", output = "?" },
+  { enable = true, input = "·", output = "`" },
+  { enable = true, input = "￥", output = "$" },
 ]
-
-[right_outline]
-# =========== [ Basic ] ===========
-ENABLE = true
-NAME = ""
-HOTKEY = ""
-
-# =========== [ Outline Content ] ===========
-# Strip styling markers (e.g., **bold** or `code`) from outline headers
-REMOVE_HEADER_STYLES = true
-
-# Elements to display on the title bar
-#   header: Header
-#   image : Image
-#   table : Table
-#   fence : BlockCode
-#   link  : Link
-#   math  : Math
-TITLE_BAR_BUTTONS = ["header", "image", "table", "fence", "link", "math"]
-
-# Include H1 and H2 elements in specific elements of the outline
-INCLUDE_HEADINGS = { fence = true, image = true, table = true, link = true, math = true }
-
-# =========== [ Interaction ] ===========
-# Allow drag-and-drop operations on outline titles to rearrange document structure
-SORTABLE = true
-
-# Toggle the right-outline visibility by right-clicking the 'Outline' button in the main sidebar
-RIGHT_CLICK_OUTLINE_BUTTON_TO_TOGGLE = true
-
-# Display the right-outline by default on startup
-DEFAULT_SHOW_OUTLINE = false
-
-# =========== [ Window Display ] ===========
-# Default width of the outline panel (as a percentage of the window)
-DEFAULT_WIDTH_PERCENT = 20
 
 
 [right_click_menu]
@@ -2010,69 +2008,69 @@ FIND_LOST_PLUGINS = false
 [[right_click_menu.MENUS]]
 NAME = "__VISUAL_PLUGINS__"
 LIST = [
-    "static_markers",
-    "auto_number",
-    "collapse_paragraph",
-    "collapse_list",
-    "collapse_table",
-    "resize_image",
-    "resize_table",
-    "truncate_text",
-    "read_only",
-    "blur",
-    "dark",
-    "no_image",
-    "myopic_defocus",
-    "editor_width_slider",
+  "static_markers",
+  "auto_number",
+  "collapse_paragraph",
+  "collapse_list",
+  "collapse_table",
+  "resize_image",
+  "resize_table",
+  "truncate_text",
+  "read_only",
+  "blur",
+  "dark",
+  "no_image",
+  "myopic_defocus",
+  "editor_width_slider",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__EDITING_PLUGINS__"
 LIST = [
-    "easy_modify",
-    "cipher",
-    "md_padding",
-    "text_stylize",
-    "markdownlint",
+  "easy_modify",
+  "cipher",
+  "md_padding",
+  "text_stylize",
+  "markdownlint",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__COMPONENT_PLUGINS__"
 LIST = [
-    "markmap",
-    "kanban",
-    "timeline",
-    "chat",
-    "abc",
-    "chart",
-    "echarts",
-    "calendar",
-    "wavedrom",
-    "drawIO",
-    "plantUML",
-    "marp",
-    "---",
-    "callouts",
+  "markmap",
+  "kanban",
+  "timeline",
+  "chat",
+  "abc",
+  "chart",
+  "echarts",
+  "calendar",
+  "wavedrom",
+  "drawIO",
+  "plantUML",
+  "marp",
+  "---",
+  "callouts",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__INTERACTIVE_PLUGINS__"
 LIST = [
-    "window_tab",
-    "fence_enhance",
-    "commander",
-    "datatables",
-    "export_enhance",
-    "right_click_menu",
-    "custom",
-    "---",
-    "search_multi",
-    "toolbar",
-    "ripgrep",
-    "resource_manager",
-    "right_outline",
-    "pie_menu",
-    "bookmark",
-    "templater",
-    "image_viewer",
-    "preferences",
+  "window_tab",
+  "fence_enhance",
+  "commander",
+  "datatables",
+  "export_enhance",
+  "right_click_menu",
+  "custom",
+  "---",
+  "search_multi",
+  "command_palette",
+  "ripgrep",
+  "resource_manager",
+  "right_outline",
+  "pie_menu",
+  "bookmark",
+  "templater",
+  "image_viewer",
+  "preferences",
 ]
 
 
@@ -2094,22 +2092,22 @@ MODIFIER_KEY = "ctrl"
 #   ICON    : CSS class (e.g., "fa fa-book")
 #   CALLBACK: Target action identifier (e.g., "easy_modify.copy_full_path" or "read_only")
 BUTTONS = [
-    { ICON = "fa fa-book", CALLBACK = "read_only" },
-    { ICON = "fa fa-asterisk", CALLBACK = "blur" },
-    { ICON = "fa fa-eye", CALLBACK = "no_image" },
-    { ICON = "fa fa-adjust", CALLBACK = "dark" },
-    { ICON = "fa fa-file-text", CALLBACK = "templater" },
-    { ICON = "fa fa-align-justify", CALLBACK = "md_padding" },
-    { ICON = "fa fa-paste", CALLBACK = "easy_modify.copy_full_path" },
-    { ICON = "fa fa-list", CALLBACK = "right_outline" },
-    { ICON = "fa fa-sitemap", CALLBACK = "markmap.toggle_toc" },
-    { ICON = "fa fa-font", CALLBACK = "text_stylize" },
-    { ICON = "fa fa-search", CALLBACK = "search_multi" },
-    { ICON = "fa fa-image", CALLBACK = "image_viewer" },
-    { ICON = "fa fa-filter", CALLBACK = "resource_manager" },
-    { ICON = "fa fa-wrench", CALLBACK = "preferences" },
-    { ICON = "fa fa-bookmark", CALLBACK = "bookmark" },
-    { ICON = "fa fa-code", CALLBACK = "commander" }
+  { ICON = "fa fa-book", CALLBACK = "read_only" },
+  { ICON = "fa fa-asterisk", CALLBACK = "blur" },
+  { ICON = "fa fa-eye", CALLBACK = "no_image" },
+  { ICON = "fa fa-adjust", CALLBACK = "dark" },
+  { ICON = "fa fa-file-text", CALLBACK = "templater" },
+  { ICON = "fa fa-align-justify", CALLBACK = "md_padding" },
+  { ICON = "fa fa-paste", CALLBACK = "easy_modify.copy_full_path" },
+  { ICON = "fa fa-list", CALLBACK = "right_outline" },
+  { ICON = "fa fa-sitemap", CALLBACK = "markmap.toggle_toc" },
+  { ICON = "fa fa-font", CALLBACK = "text_stylize" },
+  { ICON = "fa fa-search", CALLBACK = "search_multi" },
+  { ICON = "fa fa-image", CALLBACK = "image_viewer" },
+  { ICON = "fa fa-filter", CALLBACK = "resource_manager" },
+  { ICON = "fa fa-wrench", CALLBACK = "preferences" },
+  { ICON = "fa fa-bookmark", CALLBACK = "bookmark" },
+  { ICON = "fa fa-code", CALLBACK = "commander" }
 ]
 
 
@@ -2158,12 +2156,12 @@ HOTKEY = ""
 #   closestSelector: CSS selector for applicable cursor contexts
 #   evil           : Executable eval() statement. Overrides 'plugin' and 'function' if configured
 CUSTOM_HOTKEYS = [
-    { enable = false, hotkey = "ctrl+shift+e", desc = "Insert JavaScript BlockCode", evil = "() => this.utils.insertFence('javascript')" },
-    { enable = false, hotkey = "ctrl+shift+e", desc = "Open Windows Calculator", evil = "() => require('child_process').exec('cmd /C calc')" },
-    { enable = false, hotkey = "ctrl+shift+e", desc = "Switch to the first window tab", evil = "() => this.utils.getBasePlugin('window_tab').tab.switch(0)" },
-    { enable = false, hotkey = "-", desc = "Pop up a prompt window", evil = "this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, filepath => window.confirm(`You opened the file: ${filepath}`))" },
-    { enable = false, hotkey = "ctrl+shift+e", desc = "Insert Kanban BlockCode", plugin = "kanban", function = "callback" },
-    { enable = false, hotkey = "ctrl+[", desc = "Folding/unfolding BlockCode", plugin = "fence_enhance", function = "foldFence", closestSelector = "#write .md-fences" },
+  { enable = false, hotkey = "ctrl+shift+e", desc = "Insert JavaScript BlockCode", evil = "() => this.utils.insertFence('javascript')" },
+  { enable = false, hotkey = "ctrl+shift+e", desc = "Open Windows Calculator", evil = "() => require('child_process').exec('cmd /C calc')" },
+  { enable = false, hotkey = "ctrl+shift+e", desc = "Switch to the first window tab", evil = "() => this.utils.getBasePlugin('window_tab').tab.switch(0)" },
+  { enable = false, hotkey = "-", desc = "Pop up a prompt window", evil = "this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, filepath => window.confirm(`You opened the file: ${filepath}`))" },
+  { enable = false, hotkey = "ctrl+shift+e", desc = "Insert Kanban BlockCode", plugin = "kanban", function = "callback" },
+  { enable = false, hotkey = "ctrl+[", desc = "Folding/unfolding BlockCode", plugin = "fence_enhance", function = "foldFence", closestSelector = "#write .md-fences" },
 ]
 
 
@@ -2265,10 +2263,10 @@ AUTO_OPEN = true
 #   name    : Unique identifier for the variable
 #   callback: Function evaluating and returning the variable's value
 TEMPLATE_VARIABLES = [
-    { enable = false, name = "author", callback = "() => 'obgnail'" },
-    { enable = false, name = "sum", callback = "(v1 = 100, v2 = 200) => v1 + v2" },
-    { enable = false, name = "sumList", callback = "args => args.reduce((x, y) => x + y, 0)" },
-    { enable = false, name = "contact", callback = "(...args) => args.join('-')" },
+  { enable = false, name = "author", callback = "() => 'obgnail'" },
+  { enable = false, name = "sum", callback = "(v1 = 100, v2 = 200) => v1 + v2" },
+  { enable = false, name = "sumList", callback = "args => args.reduce((x, y) => x + y, 0)" },
+  { enable = false, name = "contact", callback = "(...args) => args.join('-')" },
 ]
 
 # =========== [ External Templates ] ===========
@@ -2409,38 +2407,6 @@ HOTKEY = ""
 # =========== [ Interaction ] ===========
 # Hide window when pressing Backspace on an empty input
 BACKSPACE_TO_HIDE = true
-
-# =========== [ Window Position ] ===========
-# Window width scaling (percentage relative to viewport)
-WIDTH_PERCENT = 80
-
-# Window vertical alignment (percentage distance from viewport top)
-TOP_PERCENT = 20
-
-
-[static_markers]
-# =========== [ Basic ] ===========
-ENABLE = false
-NAME = ""
-HOTKEY = ""
-
-# =========== [ Static Markers ] ===========
-# Static markers
-#   strong     : Bold
-#   em         : Italic
-#   del        : Strikethrough
-#   underline  : Underline
-#   highlight  : Highlight
-#   superscript: Superscript
-#   subscript  : Subscript
-#   code       : Code
-#   inlineMath : Inline Math
-#   image      : Image
-#   link       : Link
-#   emoji      : Emoji
-#   footnote   : Footnote
-#   inlineHTML : Inline HTML
-STATIC_MARKERS = ["strong", "em", "del", "underline", "highlight", "superscript", "subscript", "code", "inlineMath", "image", "link", "footnote"]
 
 
 [cursor_history]
@@ -3044,6 +3010,9 @@ OUTPUT_FORMAT = "svg"
 # Server Timeout: Max wait time requesting image generation from backend (ms)
 SERVER_TIMEOUT = 30000
 
+# Proxy URL
+SERVER_PROXY = ""
+
 # Cached URL Count
 CACHED_URL_COUNT = 20
 
@@ -3148,19 +3117,19 @@ NETWORK_ICON_URL = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/fo
 #   left_line_color : Left main edge line color
 #   icon            : Icon, Unicode or mapped escape font code
 CALLOUTS = [
-    { type = "tip", background_color = "#D8F2E5", left_line_color = "#3ABD7E", icon = "\\f02c" },
-    { type = "bug", background_color = "#FEEED3", left_line_color = "#E0AC00", icon = "\\f188" },
-    { type = "info", background_color = "#DFF6DD", left_line_color = "#3ABD7E", icon = "\\f05a" },
-    { type = "note", background_color = "#E1D1EB", left_line_color = "#6A1B9A", icon = "\\f040" },
-    { type = "quote", background_color = "#FAFAFA", left_line_color = "#777777", icon = "\\f10d" },
-    { type = "example", background_color = "#F1EDFD", left_line_color = "#777777", icon = "\\f133" },
-    { type = "caution", background_color = "#FDE7E9", left_line_color = "#C62828", icon = "\\f024" },
-    { type = "failure", background_color = "#F4D4D4", left_line_color = "#C62828", icon = "\\f00d" },
-    { type = "warning", background_color = "#FEEED3", left_line_color = "#E0AC00", icon = "\\f071" },
-    { type = "success", background_color = "#D8F2E5", left_line_color = "#3ABD7E", icon = "\\f00c" },
-    { type = "question", background_color = "#FFF4CE", left_line_color = "#E0AC00", icon = "\\f128" },
-    { type = "abstract", background_color = "#E5F8F8", left_line_color = "#777777", icon = "\\f00b" },
-    { type = "important", background_color = "#D8E6F3", left_line_color = "#3B83C1", icon = "\\f132" },
+  { type = "tip", background_color = "#D8F2E5", left_line_color = "#3ABD7E", icon = "\\f02c" },
+  { type = "bug", background_color = "#FEEED3", left_line_color = "#E0AC00", icon = "\\f188" },
+  { type = "info", background_color = "#DFF6DD", left_line_color = "#3ABD7E", icon = "\\f05a" },
+  { type = "note", background_color = "#E1D1EB", left_line_color = "#6A1B9A", icon = "\\f040" },
+  { type = "quote", background_color = "#FAFAFA", left_line_color = "#777777", icon = "\\f10d" },
+  { type = "example", background_color = "#F1EDFD", left_line_color = "#777777", icon = "\\f133" },
+  { type = "caution", background_color = "#FDE7E9", left_line_color = "#C62828", icon = "\\f024" },
+  { type = "failure", background_color = "#F4D4D4", left_line_color = "#C62828", icon = "\\f00d" },
+  { type = "warning", background_color = "#FEEED3", left_line_color = "#E0AC00", icon = "\\f071" },
+  { type = "success", background_color = "#D8F2E5", left_line_color = "#3ABD7E", icon = "\\f00c" },
+  { type = "question", background_color = "#FFF4CE", left_line_color = "#E0AC00", icon = "\\f128" },
+  { type = "abstract", background_color = "#E5F8F8", left_line_color = "#777777", icon = "\\f00b" },
+  { type = "important", background_color = "#D8E6F3", left_line_color = "#3B83C1", icon = "\\f132" },
 ]
 
 # Default Options: Fallback styles for unknown callout blocks not belonging to the presets above

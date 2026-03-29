@@ -7,21 +7,16 @@ class ResizeImagePlugin extends BasePlugin {
 
     process = () => {
         this.utils.settings.autoSave(this)
-        this.recordResizeState(false)
-
-        this.utils.entities.eWrite.addEventListener("wheel", ev => {
-            const zoom = this.checkers.find(c => c.check(ev))
-            if (!zoom) return
-            const target = ev.target.closest("img")
-            if (!target) return
-            ev.preventDefault()
-            ev.stopPropagation()
-            const zoomFn = zoom.type === "TEMPORARY" ? this.zoomTemporary : this.zoomPersistent
-            zoomFn(target, ev.deltaY > 0)
-        }, { passive: false, capture: true })
+        this.toggleRecorder(false)
+        this.toggleResizer(true)
     }
 
-    recordResizeState = (needChange = true) => {
+    toggleResizer = (enable = true) => {
+        const fn = enable ? "addEventListener" : "removeEventListener"
+        this.utils.entities.eWrite[fn]("wheel", this.onWheel, { passive: false, capture: true })
+    }
+
+    toggleRecorder = (needChange = true) => {
         if (needChange) {
             this.config.RECORD_RESIZE = !this.config.RECORD_RESIZE
         }
@@ -35,6 +30,17 @@ class ResizeImagePlugin extends BasePlugin {
         } else {
             this.utils.stateRecorder.unregister(this.fixedName)
         }
+    }
+
+    onWheel = ev => {
+        const zoom = this.checkers.find(c => c.check(ev))
+        if (!zoom) return
+        const target = ev.target.closest("img")
+        if (!target) return
+        ev.preventDefault()
+        ev.stopPropagation()
+        const fn = zoom.type === "TEMPORARY" ? this.zoomTemporary : this.zoomPersistent
+        fn(target, ev.deltaY > 0)
     }
 
     resetImageSize = () => {
@@ -124,7 +130,7 @@ class ResizeImagePlugin extends BasePlugin {
 
     call = (action, meta) => {
         const fnMap = {
-            record_resize_state: () => this.recordResizeState(),
+            record_resize_state: () => this.toggleRecorder(),
             allow_exceed_limit: () => this.resetImageSize(),
             zoom_out_20_percent: meta => this.zoomTemporary(meta.target, true, 0.2),
             zoom_in_20_percent: meta => this.zoomTemporary(meta.target, false, 0.2),
