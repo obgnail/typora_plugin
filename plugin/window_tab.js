@@ -683,7 +683,7 @@ class WindowTabPlugin extends BasePlugin {
             const cache = { file: "", anchor: "" }
             const setCache = (file, anchor) => Object.assign(cache, { file, anchor })
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
-                if (cache.file) {
+                if (cache.file && cache.anchor.startsWith("#")) {
                     const $target = File.editor.EditHelper.findAnchorElem(cache.anchor)
                     this.utils.scroll($target, 10)
                     setCache("", "")
@@ -691,7 +691,7 @@ class WindowTabPlugin extends BasePlugin {
             })
             this.utils.decorator.preventCallIf(() => JSBridge, "invoke", (cmd, file, options) => {
                 if (cmd !== "app.openFileOrFolder") return false
-                if (file && typeof options?.anchor === "string" && options.anchor.startsWith("#")) {
+                if (file && typeof options?.anchor === "string") {
                     setCache(file, options.anchor)
                     this.utils.openFile(file)
                     return true
