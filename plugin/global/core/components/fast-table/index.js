@@ -1,11 +1,10 @@
-const { sharedSheets } = require("./common")
+const { sharedSheets } = require("../common")
 
 customElements.define("fast-table", class extends HTMLElement {
     static _template = `
-        <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-table.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="./plugin/global/core/components/fast-table/index.css" crossorigin="anonymous">
         <div class="table-wrapper"><table><thead><tr></tr></thead><tbody></tbody></table></div>
-        <div class="no-data hidden">No Data</div>
-    `
+        <div class="no-data hidden">No Data</div>`
 
     constructor() {
         super()

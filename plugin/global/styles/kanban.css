@@ -1,107 +1,107 @@
-@media print {
-    .plugin-kanban .plugin-kanban-content {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        justify-content: flex-start !important;
-        width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-    }
-
-    .plugin-kanban-content .plugin-kanban-col {
-        width: calc(33.3333% - 10px) !important;
-        flex: 0 0 calc(33.3333% - 10px) !important;
-        margin: 0 5px 10px 5px !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        box-sizing: border-box !important;
-    }
-
-    .plugin-kanban-content .plugin-kanban-col-item-list {
-        max-height: none !important;
-        overflow: visible !important;
-    }
-
-    .plugin-kanban-content .no-wrap-title,
-    .plugin-kanban-col-name b,
-    .plugin-kanban-col-item-title b {
-        white-space: normal !important;
-        word-wrap: break-word !important;
-    }
-}
-
 .plugin-kanban {
-    font-family: sans-serif;
+  font-family: sans-serif;
 }
 
 .plugin-kanban .plugin-kanban-title {
-    font-size: 1.5rem;
-    font-weight: bold;
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
 .plugin-kanban .plugin-kanban-content {
-    display: flex;
-    overflow-x: auto;
-    flex-wrap: ${wrap};
-    cursor: auto;
+  display: flex;
+  overflow-x: auto;
+  flex-wrap: ${wrap};
+  cursor: auto;
 }
 
 .plugin-kanban-content .no-wrap-title {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    text-align: left;
-    padding-left: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+  padding-left: 4px;
 }
 
 .plugin-kanban-content .kanban-box {
-    border-radius: 4px;
-    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
 }
 
 .plugin-kanban-content .kanban-item-box {
-    border-radius: 4px;
-    box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
 }
 
 .plugin-kanban-content .plugin-kanban-col {
-    width: ${kanbanWidth} !important;
-    margin: 8px 6px;
+  width: ${kanbanWidth} !important;
+  margin: 8px 6px;
 }
 
 .plugin-kanban-col p {
-    margin: 4px;
+  margin: 4px;
 }
 
 .plugin-kanban-content .plugin-kanban-col-item-list {
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    padding: 0 4px 4px 4px;
-    max-height: ${maxHeight};
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 0 4px 4px 4px;
+  max-height: ${maxHeight};
 }
 
 .plugin-kanban-content .plugin-kanban-col-name {
-    font-size: 1rem;
-    font-weight: bold;
-    border-color: rgba(0, 0, 0, 0.08);
-    border-bottom-style: solid;
-    border-width: 1px;
-    padding: 8px 8px 4px 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-color: rgba(0, 0, 0, 0.08);
+  border-bottom-style: solid;
+  border-width: 1px;
+  padding: 8px 8px 4px 10px;
 }
 
 .plugin-kanban-content .plugin-kanban-col-item {
-    margin: 4px;
-    padding: 8px;
+  margin: 4px;
+  padding: 8px;
 }
 
 .plugin-kanban-content .plugin-kanban-col-item-desc {
-    overflow: hidden;
-    margin-top: 5px;
-    height: ${taskDescMaxHeight};
-    padding-left: 4px;
-    text-align: left;
-    white-space: break-spaces;
-    word-wrap: break-word;
+  overflow: hidden;
+  margin-top: 5px;
+  height: ${taskDescMaxHeight};
+  padding-left: 4px;
+  text-align: left;
+  white-space: break-spaces;
+  word-wrap: break-word;
+}
+
+@media print {
+  .plugin-kanban .plugin-kanban-content {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .plugin-kanban-content .plugin-kanban-col {
+    width: calc(33.3333% - 10px) !important;
+    flex: 0 0 calc(33.3333% - 10px) !important;
+    margin: 0 5px 10px 5px !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    box-sizing: border-box !important;
+  }
+
+  .plugin-kanban-content .plugin-kanban-col-item-list {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .plugin-kanban-content .no-wrap-title,
+  .plugin-kanban-col-name b,
+  .plugin-kanban-col-item-title b {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+  }
 }

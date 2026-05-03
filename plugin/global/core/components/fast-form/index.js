@@ -1,9 +1,9 @@
-const { sharedSheets } = require("./common")
-const utils = require("../utils")
-const i18n = require("../i18n")
+const { sharedSheets } = require("../common")
+const utils = require("../../utils")
+const i18n = require("../../i18n")
 
 class FastForm extends HTMLElement {
-    static style = `<link rel="stylesheet" href="./plugin/global/styles/plugin-fast-form.css" crossorigin="anonymous">`
+    static style = `<link rel="stylesheet" href="./plugin/global/core/components/fast-form/index.css" crossorigin="anonymous">`
     static controls = {}
     static features = {}
     static layouts = {}
@@ -1102,6 +1102,10 @@ const Feature_DSLEngine = (() => {
                 }
             },
         },
+        NONE: {
+            assign: () => null,
+            transfer: () => null,
+        },
         MAP_KEYS: (outerKey, innerKey) => ({
             assign: (box, innerField, propKey, propVal) => box[outerKey] = propVal,
             transfer: (box, innerField) => {
@@ -1365,7 +1369,7 @@ const Feature_StandardDSL = {
         }
         const engine = form.dslEngine()
         const { createDefine, defineBox, defineField, When, PropResolvers } = engine
-        const { INNER, SCHEMA, TABS, TAB_APPEND, MERGE_INNER, FALLBACK_ON_TRANSFER, WITH_SIDE_EFFECT, TOOLTIP } = PropResolvers
+        const { INNER, SCHEMA, NONE, TABS, TAB_APPEND, MERGE_INNER, FALLBACK_ON_TRANSFER, WITH_SIDE_EFFECT, TOOLTIP } = PropResolvers
 
         const convertToUnit = WITH_SIDE_EFFECT((box, innerField) => {
             if (innerField.type === "number") innerField.type = "unit"
@@ -1412,7 +1416,7 @@ const Feature_StandardDSL = {
             Code: defineField("code", { ...BLOCK_TEXT, tabSize: INNER, lineNumbers: INNER }),
             Object: defineField("object", { ...BLOCK_TEXT, rows: INNER, noResize: INNER, format: INNER }),
             Custom: defineField("custom", { ...BLOCK, content: INNER, unsafe: INNER }),
-            Hint: defineField("hint", { ...BLOCK, hintHeader: INNER, hintDetail: INNER, unsafe: INNER }),
+            Hint: defineField("hint", { ...BLOCK, isBlockLayout: NONE, hintHeader: INNER, hintDetail: INNER, unsafe: INNER }),
             Divider: defineField("divider", { ...BLOCK, divider: INNER, position: INNER, dashed: INNER }),
             Array: defineField("array", { ...BLOCK, allowDuplicates: INNER, dataType: INNER }),
             Dict: defineField("dict", { ...BLOCK, keyPlaceholder: INNER, valuePlaceholder: INNER, allowAddItem: INNER }),
@@ -3474,22 +3478,22 @@ const Control_Segment = {
             return `<button type="button" class="${cls}" data-value="${utils.escape(String(val))}">${utils.escape(label)}</button>`
         }).join("")
         const { key } = getCommonHTMLAttrs(field)
-        return `<div class="segment" ${key}>${items}</div>`
+        return `<div class="segment-wrap" ${key}>${items}</div>`
     },
     update: ({ element, value }) => {
-        const segment = element.querySelector(".segment")
-        if (!segment) return
+        const wrap = element.querySelector(".segment-wrap")
+        if (!wrap) return
         const isMulti = Array.isArray(value)
         const selectedKeys = isMulti ? (value || []).map(String) : (value != null ? [String(value)] : [])
-        segment.querySelectorAll(".segment-item").forEach(item => {
+        wrap.querySelectorAll(".segment-item").forEach(item => {
             item.classList.toggle("active", selectedKeys.includes(item.dataset.value))
         })
     },
     bindEvents: ({ form }) => {
         form.onEvent("click", ".segment-item", function () {
             if (this.classList.contains("plugin-common-readonly")) return
-            const segment = this.closest(".segment")
-            const key = segment.dataset.key
+            const wrap = this.closest(".segment-wrap")
+            const key = wrap.dataset.key
             const clickedValue = this.dataset.value
             const currentValue = form.getData(key)
             let nextValue = clickedValue

@@ -1,44 +1,40 @@
 #plugin-markdownlint {
-    top: 10%;
-    left: calc(100vw - 625px);
-    width: 600px;
-    min-width: 380px;
-    max-height: 500px;
-    z-index: 9993;
+  top: 10%;
+  left: calc(100vw - 625px);
+  width: 600px;
+  min-width: 380px;
+  max-height: 500px;
+  z-index: 9993;
 }
 
 #plugin-markdownlint::part(content-area) {
-    padding: 0;
+  padding: 0;
 }
 
 .plugin-markdownlint-table-wrap {
-    overflow: auto;
-    flex-grow: 1;
+  flex-grow: 1;
+  padding: 8px;
 }
 
 .plugin-markdownlint-table {
-    --header-bg: transparent;
-    --row-border-color: transparent;
-    --even-row-bg: transparent;
-    --odd-row-bg: #fff;
-    --row-hover-bg: #eee;
-    --padding-vertical: 4px;
-    --header-padding-vertical: 4px;
+  --row-even-bg: transparent;
+  --row-odd-bg: #fff;
+  --cell-padding-y: 6px;
 }
 
 #plugin-markdownlint-button {
-    position: fixed;
-    right: ${this.config.BUTTON_RIGHT};
-    width: ${this.config.BUTTON_WIDTH};
-    height: ${this.config.BUTTON_HEIGHT};
-    border-radius: ${this.config.BUTTON_BORDER_RADIUS};
-    background-color: ${this.config.BUTTON_PASS_COLOR};
-    opacity: ${this.config.BUTTON_OPACITY};
-    cursor: pointer;
-    transition: background-color 0.1s ease 0s;
-    z-index: 9992;
+  position: fixed;
+  right: ${this.config.BUTTON_RIGHT};
+  width: ${this.config.BUTTON_WIDTH};
+  height: ${this.config.BUTTON_HEIGHT};
+  border-radius: ${this.config.BUTTON_BORDER_RADIUS};
+  background-color: ${this.config.BUTTON_PASS_COLOR};
+  opacity: ${this.config.BUTTON_OPACITY};
+  cursor: pointer;
+  transition: background-color 0.1s ease 0s;
+  z-index: 9992;
 }
 
 #plugin-markdownlint-button[lint-check-failed] {
-    background-color: ${this.config.BUTTON_ERROR_COLOR};
+  background-color: ${this.config.BUTTON_ERROR_COLOR};
 }

@@ -32,7 +32,7 @@ class TOCMarkmap {
             const hint = this.i18n.t(`$option.TITLE_BAR_BUTTONS.${name}`)
             return `<div class="plugin-markmap-icon" action="${name}" ty-hint="${hint}"><i class="${icons[name]}"></i></div>`
         }).join("")
-        const resizeButton = '<div class="plugin-markmap-icon" action="resize"><svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg></div>'
+        const resizeButton = `<div class="plugin-markmap-icon" action="resize"><svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg></div>`
         return `
             <div id="plugin-markmap" class="plugin-common-modal plugin-common-hidden">
                 <div class="plugin-markmap-header">${buttons}${resizeButton}</div>
@@ -53,8 +53,8 @@ class TOCMarkmap {
             gripTop: document.querySelector(".plugin-markmap-grip-top"),
             gripRight: document.querySelector(".plugin-markmap-grip-right"),
             svg: document.querySelector("#plugin-markmap-svg"),
-            resize: document.querySelector('.plugin-markmap-icon[action="resize"]'),
-            fullScreen: document.querySelector('.plugin-markmap-icon[action="expand"]'),
+            resize: document.querySelector(`.plugin-markmap-icon[action="resize"]`),
+            fullScreen: document.querySelector(`.plugin-markmap-icon[action="expand"]`),
         }
     }
 
@@ -92,12 +92,11 @@ class TOCMarkmap {
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => {
                 if (!this.utils.isShown(modal)) return
                 this.draw()
-                if (this.config.AUTO_FIT_ON_UPDATE) {
-                    this.fit()
-                }
+                if (this.config.AUTO_FIT_ON_UPDATE) this.fit()
             })
 
-            modal.addEventListener("transitionend", () => this.fit())
+            const fitDelay = this.utils.debounce(() => this.fit(), 30)
+            modal.addEventListener("transitionend", ev => ev.target === ev.currentTarget && fitDelay())
             header.addEventListener("click", ev => {
                 const action = ev.target.closest(".plugin-markmap-icon")?.getAttribute("action")
                 if (action) this.doAction(action)
@@ -110,25 +109,21 @@ class TOCMarkmap {
                 targetEle: this.entities.header,
                 moveEle: this.entities.modal,
                 onCheck: () => !this.entities.modal.classList.contains("pinned-window"),
-                onMouseDown: this._cleanTransition,
+                onMouseDown: null,
                 onMouseMove: null,
-                onMouseUp: this._rollbackTransition,
+                onMouseUp: null,
             })
         }
         const onResize = () => {
             const { minHeight, minWidth } = window.getComputedStyle(this.entities.modal)
             const modalMinHeight = parseFloat(minHeight) || 90
             const modalMinWidth = parseFloat(minWidth) || 90
-            const onMouseUp = () => {
-                this._rollbackTransition()
-                this.fit()
-            }
+            const onMouseUp = () => this.fit()
 
             const whenUnpin = () => {
                 let deltaHeight = 0
                 let deltaWidth = 0
                 const onMouseDown = (startX, startY, startWidth, startHeight) => {
-                    this._cleanTransition()
                     deltaHeight = modalMinHeight - startHeight
                     deltaWidth = modalMinWidth - startWidth
                 }
@@ -152,7 +147,6 @@ class TOCMarkmap {
                 let contentStartTop = 0
                 let contentMinTop = 0
                 const onMouseDown = () => {
-                    this._cleanTransition()
                     contentStartTop = this.entities.content.getBoundingClientRect().top
                     contentMinTop = modalMinHeight + this.entities.modal.getBoundingClientRect().top
                 }
@@ -182,7 +176,6 @@ class TOCMarkmap {
                 let modalStartLeft = 0
                 let contentMaxRight = 0
                 const onMouseDown = () => {
-                    this._cleanTransition()
                     const contentRect = this.entities.content.getBoundingClientRect()
                     contentStartRight = contentRect.right
                     contentStartWidth = contentRect.width
@@ -268,9 +261,9 @@ class TOCMarkmap {
         if (this.utils.isShown(this.entities.modal)) {
             this.close()
         } else {
-            await this.plugin.lazyLoad()
             this.utils.show(this.entities.modal)
             this._initModalRect()
+            await this.plugin.lazyLoad()
             await this.draw()
         }
     }
@@ -324,7 +317,7 @@ class TOCMarkmap {
                         .join("")
                     const label = `<div style="display: inline-flex; height: 22px;">${colors}</div>`
                     return [arr2Str(colorList), label]
-                })
+                }),
             )
 
             const field = (key, type, { tooltip, ...args } = {}) => ({
@@ -440,7 +433,7 @@ class TOCMarkmap {
                             op.data = getData()
                         })
                         _edited = true
-                    }
+                    },
                 }),
             },
             rules: {
@@ -712,9 +705,6 @@ class TOCMarkmap {
         this.utils.toggleInvisible(this.entities.header, !show)
         this.fit()
     }
-
-    _cleanTransition = () => this.entities.modal.style.transition = "none"
-    _rollbackTransition = () => this.entities.modal.style.transition = ""
 }
 
 module.exports = TOCMarkmap

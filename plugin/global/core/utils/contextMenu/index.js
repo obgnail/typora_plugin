@@ -10,7 +10,7 @@ class ContextMenu {
     }
 
     process = async () => {
-        await this.utils.styleTemplater.register("plugin-common-menu")
+        this.utils.insertStyleFile("plugin-common-menu", "./plugin/global/core/utils/contextMenu/index.css")
         this.utils.insertElement(`<div class="plugin-common-menu"></div>`)
 
         this.menuEl = document.querySelector(".plugin-common-menu")

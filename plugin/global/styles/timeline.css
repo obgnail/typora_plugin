@@ -1,65 +1,65 @@
 .plugin-timeline {
-    padding: 15px 40px 30px 40px;
-    background-color: ${this.config.BACKGROUND_COLOR};
+  padding: 15px 40px 30px 40px;
+  background-color: ${this.config.BACKGROUND_COLOR};
 }
 
 .plugin-timeline .timeline-title {
-    font-size: ${this.config.TITLE_FONT_SIZE};
-    font-weight: ${this.config.TITLE_FONT_WEIGHT};
-    color: ${this.config.TITLE_COLOR};
-    white-space: break-spaces;
-    word-break: break-word;
+  font-size: ${this.config.TITLE_FONT_SIZE};
+  font-weight: ${this.config.TITLE_FONT_WEIGHT};
+  color: ${this.config.TITLE_COLOR};
+  white-space: break-spaces;
+  word-break: break-word;
 }
 
 .plugin-timeline .timeline-content {
-    display: grid;
-    grid-template-columns: ${this.config.LINE_WIDTH} calc(100% - ${this.config.LINE_WIDTH});
+  display: grid;
+  grid-template-columns: ${this.config.LINE_WIDTH} calc(100% - ${this.config.LINE_WIDTH});
 }
 
 .plugin-timeline .timeline-line {
-    position: relative;
-    background-color: ${this.config.LINE_COLOR};
+  position: relative;
+  background-color: ${this.config.LINE_COLOR};
 }
 
 .plugin-timeline .timeline-circle {
-    position: absolute;
-    top: ${this.config.CIRCLE_TOP};
-    left: 50%;
-    width: ${this.config.CIRCLE_DIAMETER} !important;
-    height: ${this.config.CIRCLE_DIAMETER} !important;
-    border-radius: 50%;
-    background-color: ${this.config.CIRCLE_COLOR};
-    transform: translateX(-50%);
+  position: absolute;
+  top: ${this.config.CIRCLE_TOP};
+  left: 50%;
+  width: ${this.config.CIRCLE_DIAMETER} !important;
+  height: ${this.config.CIRCLE_DIAMETER} !important;
+  border-radius: 50%;
+  background-color: ${this.config.CIRCLE_COLOR};
+  transform: translateX(-50%);
 }
 
 .plugin-timeline .timeline-wrapper {
-    margin-left: 1em;
-    text-align: left;
+  margin-left: 1em;
+  text-align: left;
 }
 
 .plugin-timeline .timeline-time {
-    font-size: large;
-    font-weight: bold;
-    white-space: break-spaces;
-    word-break: break-word;
-    color: ${this.config.TIME_COLOR};
+  font-size: large;
+  font-weight: bold;
+  white-space: break-spaces;
+  word-break: break-word;
+  color: ${this.config.TIME_COLOR};
 }
 
 .plugin-timeline .timeline-event {
-    margin-top: 1em;
-    margin-bottom: 3em;
-    white-space: break-spaces;
-    word-break: break-word;
+  margin-top: 1em;
+  margin-bottom: 3em;
+  white-space: break-spaces;
+  word-break: break-word;
 }
 
 .plugin-timeline .timeline-wrapper:last-child .timeline-event {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .plugin-timeline .timeline-task-list {
-    padding-left: 10px;
+  padding-left: 10px;
 }
 
 .plugin-timeline .timeline-task-list input {
-    margin-right: .5em;
+  margin-right: .5em;
 }

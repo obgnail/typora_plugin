@@ -12,7 +12,7 @@ class Notification {
     }
 
     process = async () => {
-        await this.utils.styleTemplater.register("plugin-common-notification")
+        this.utils.insertStyleFile("plugin-common-notification", "./plugin/global/core/utils/notification/index.css")
         this.utils.insertElement(`<div class="plugin-common-notification-container"></div>`)
     }
 
@@ -26,21 +26,18 @@ class Notification {
         notification.style.setProperty("--notification-text-color", color)
         notification.innerHTML = `<span class="notification-icon ${icon}"></span><span class="notification-message">${message}</span><span class="notification-close-btn fa fa-times"></span>`
 
-        const closing = () => this.hide(notification)
-        notification.querySelector(".notification-close-btn").addEventListener("click", closing)
+        const close = () => this.hide(notification)
+        notification.querySelector(".notification-close-btn").addEventListener("click", close)
         document.querySelector(".plugin-common-notification-container").prepend(notification)
 
-        // Trigger reflow. Let the initial values of opacity and transform take effect before transitioning to the final value
-        notification.offsetWidth
+        void notification.offsetWidth  // Trigger reflow. Let the initial values of opacity and transform take effect before transitioning
         notification.classList.add("notification-show")
 
         let timer = null
-        if (duration > 0) {
-            timer = setTimeout(() => this.hide(notification), duration)
-        }
+        if (duration > 0) timer = setTimeout(close, duration)
         notification._timer = timer
 
-        return closing
+        return close
     }
 
     hide = (notification) => {
@@ -51,9 +48,7 @@ class Notification {
         }
 
         notification.addEventListener("transitionend", () => {
-            if (notification.classList.contains("notification-hide")) {
-                notification.remove()
-            }
+            if (notification.classList.contains("notification-hide")) notification.remove()
         }, { once: true })
         notification.classList.remove("notification-show")
         notification.classList.add("notification-hide")  // Hide and trigger transition

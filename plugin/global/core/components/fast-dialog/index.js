@@ -1,4 +1,4 @@
-const i18n = require("../i18n")
+const i18n = require("../../i18n")
 
 const show = (el) => el.style.display = ""
 const hide = (el) => el.style.display = "none"
@@ -6,7 +6,7 @@ const hide = (el) => el.style.display = "none"
 customElements.define("fast-dialog", class extends HTMLElement {
     static get _template() {
         return `
-            <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-dialog.css" crossorigin="anonymous">
+            <link rel="stylesheet" href="./plugin/global/core/components/fast-dialog/index.css" crossorigin="anonymous">
             <div class="overlay" style="display: none;">
                 <div class="dialog">
                     <div class="header"><div class="title">Title</div></div>

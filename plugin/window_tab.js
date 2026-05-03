@@ -624,7 +624,11 @@ class WindowTabPlugin extends BasePlugin {
             this.entities.tabBar.addEventListener("mousedown", ev => {
                 if (ev.button === 1) {
                     const idx = parseInt(ev.target.closest(".tab-container")?.dataset.idx)
-                    if (!isNaN(idx)) this.tab.close(idx)
+                    if (!isNaN(idx)) {
+                        ev.stopPropagation()
+                        ev.preventDefault()
+                        this.tab.close(idx)
+                    }
                 }
             })
         }

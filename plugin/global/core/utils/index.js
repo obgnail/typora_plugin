@@ -31,21 +31,15 @@ class utils {
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static tempFolder = window._options.tempPath || require("os").tmpdir()
     static Package = Object.freeze({ Path: PATH, FsExtra: FS_EXTRA })
-
-    static PLUGIN_LOAD_ABORT = Symbol.for("plugin:load-abort")  // For plugin's beforeProcess method; return this to stop loading the plugin
-
     static mixins = Object.fromEntries(
         Object.entries(MIXINS).map(([name, cls]) => [[name], new cls(this, i18n)]),
     )
 
-    static _meta = {}  // Used to pass data in the context menu
+    static PLUGIN_LOAD_ABORT = Symbol.for("plugin:load-abort")  // For plugin's beforeProcess method; return this to stop loading the plugin
 
     // =========== Plugin ===========
     static container = null
-    static registerContainer = container => {
-        Object.entries(this.mixins).forEach(([name, instance]) => container.registerService(name, instance))
-        this.container = container
-    }
+    static setContainer = container => this.container = container
     static getAllBasePlugins = () => this.container.getAllBasePlugins()
     static getAllCustomPlugins = () => this.container.getAllCustomPlugins()
     static getBasePlugin = fixedName => this.container.getBasePlugin(fixedName)
@@ -69,8 +63,8 @@ class utils {
 
     static isUnderMountFolder = path => {
         const mountFolder = PATH.resolve(this.getMountFolder())
-        const _path = PATH.resolve(path)
-        return _path && mountFolder && _path.startsWith(mountFolder)
+        const p = PATH.resolve(path)
+        return p && mountFolder && p.startsWith(mountFolder)
     }
     static openFile = filepath => {
         if (!filepath) return
@@ -87,8 +81,7 @@ class utils {
     }
     static reload = async () => {
         const content = await File.getContent()
-        const arg = { fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true }
-        File.reloadContent(content, arg)
+        File.reloadContent(content, { fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true })
     }
 
     static getAnchorNode = (closest) => {
@@ -96,6 +89,7 @@ class utils {
         return closest ? anchorNode.closest(closest) : anchorNode
     }
 
+    static _meta = {}  // Used to pass data in the context menu
     static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
         const plugin = this.getBasePlugin(fixedName)
         if (plugin && typeof plugin.getDynamicActions === "function") {
@@ -141,8 +135,6 @@ class utils {
 
     // =========== Event ===========
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
-    static shiftKeyPressed = ev => ev.shiftKey
-    static altKeyPressed = ev => ev.altKey
     static isIMEActivated = ev => ev.key === "Process"
     static modifierKey = keyString => {
         const keys = keyString.toLowerCase().split("+").map(k => k.trim())
@@ -178,13 +170,11 @@ class utils {
         const floor = Math.floor(max)
         return Math.floor(Math.random() * (floor - ceil) + ceil)
     }
-    static getUUID = () => {
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
-            const r = (Math.random() * 16) | 0
-            const v = c === "x" ? r : (r & 0x3) | 0x8
-            return v.toString(16)
-        })
-    }
+    static getUUID = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+        const r = (Math.random() * 16) | 0
+        const v = c === "x" ? r : (r & 0x3) | 0x8
+        return v.toString(16)
+    })
 
     static escape = html => {
         const replacements = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;", "/": "&#x2F;", "`": "&#x60;", "=": "&#x3D;" }
@@ -821,7 +811,7 @@ class utils {
         const { readdir, stat, lstat } = FS_EXTRA
         const { join, dirname, basename } = PATH
         const statFn = followSymlinks ? stat : lstat
-        const dequeueFn = strategy === "dfs" ? "pop" : "shift"
+        const nextTaskFn = strategy === "dfs" ? "pop" : "shift"
         const needCheckEntities = maxEntities > 0
         const noNeedCheckDepth = maxDepth < 0
 
@@ -856,7 +846,7 @@ class utils {
         const runNextTask = () => {
             if (aborted) return
             while (taskQueue.length > 0 && runningTasks < semaphore) {
-                const task = taskQueue[dequeueFn]()
+                const task = taskQueue[nextTaskFn]()
                 runningTasks++
                 task().finally(() => {
                     runningTasks--
@@ -995,9 +985,7 @@ class utils {
     static isNetworkImage = this.isNetworkURI
 
     static getFenceContentByCid = cid => {
-        if (!cid) return
-        const fence = File.editor.fences.queue[cid]
-        return fence?.getValue()
+        if (cid) return File.editor.fences.queue[cid]?.getValue()
     }
 
     static getTocTree = useBuiltin => {

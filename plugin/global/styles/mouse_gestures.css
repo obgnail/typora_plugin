@@ -1,39 +1,39 @@
 #plugin-mouse-gestures-visualizer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    opacity: 0;
-    visibility: hidden;
-    z-index: 99998;
-    pointer-events: none;
-    transition: visibility 0.2s ease, opacity 0.2s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 99998;
+  pointer-events: none;
+  transition: visibility 0.2s ease, opacity 0.2s ease;
 }
 
 #plugin-mouse-gestures-visualizer.active {
-    visibility: visible;
-    opacity: 1;
+  visibility: visible;
+  opacity: 1;
 }
 
 #plugin-mouse-gestures-hud {
-    position: fixed;
-    bottom: 20%;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 0 10px;
-    font-family: sans-serif;
-    font-weight: 900;
-    font-size: 50px;
-    opacity: 0;
-    visibility: hidden;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 99999;
-    pointer-events: none;
-    transition: visibility 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+  position: fixed;
+  bottom: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 10px;
+  font-family: sans-serif;
+  font-weight: 900;
+  font-size: 50px;
+  opacity: 0;
+  visibility: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99999;
+  pointer-events: none;
+  transition: visibility 0.2s ease, opacity 0.2s ease, color 0.2s ease;
 }
 
 #plugin-mouse-gestures-hud.active {
-    visibility: visible;
-    opacity: 1;
+  visibility: visible;
+  opacity: 1;
 }

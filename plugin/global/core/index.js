@@ -17,10 +17,11 @@ async function entry() {
 
     setupGlobalVars()
     serviceContainer.setSettings(settings)
-    serviceContainer.setUtils(utils)
+    serviceContainer.connect(utils)
 
     await i18n.init(settings.global.LOCALE)
     await loadPlugins(serviceContainer, settings)
+    toggleDarkMode(settings)
 }
 
 function setupGlobalVars() {
@@ -64,6 +65,10 @@ async function loadPlugins(container, settings) {
             if (filePath) File.editor.library.openFile(filePath)
         }, 80)
     }
+}
+
+function toggleDarkMode(settings) {
+    document.body.classList.toggle("plugin-dark-mode", settings.global.DARK_MODE)
 }
 
 module.exports = entry

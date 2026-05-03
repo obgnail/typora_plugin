@@ -1,17 +1,16 @@
-const { sharedSheets } = require("./common")
-const utils = require("../utils")
+const { sharedSheets } = require("../common")
+const utils = require("../../utils")
 
 customElements.define("fast-window", class extends HTMLElement {
     static _template = `
-        <link rel="stylesheet" href="./plugin/global/styles/plugin-fast-window.css" crossorigin="anonymous">
+        <link rel="stylesheet" href="./plugin/global/core/components/fast-window/index.css" crossorigin="anonymous">
         <div class="title-bar" part="title-bar">
             <div class="title-name"></div>
             <div class="title-buttons"></div>
         </div>
         <div class="content-area" part="content-area">
             <slot></slot>
-        </div>
-    `
+        </div>`
 
     constructor() {
         super()
@@ -235,11 +234,11 @@ customElements.define("fast-window", class extends HTMLElement {
     }
 
     _onAnimationEnd = (ev) => {
-        if (ev.animationName === "hideWindow" && this.classList.contains("hiding")) {
+        if (ev.animationName === "window-hide" && this.classList.contains("hiding")) {
             this.style.display = "none"
             this.hidden = true
             this.classList.remove("hiding")
-        } else if (ev.animationName === "showWindow" && this.classList.contains("showing")) {
+        } else if (ev.animationName === "window-show" && this.classList.contains("showing")) {
             this.classList.remove("showing")
         }
     }

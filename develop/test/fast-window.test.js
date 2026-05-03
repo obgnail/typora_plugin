@@ -15,9 +15,9 @@ const clean = () => {
 before(async () => {
     utils = require("./mocks/utils.mock.js")
     dom = require("./mocks/dom.mock.js")
-    proxyquire("../../plugin/global/core/components/fast-window.js", {
-        "./common": { sharedSheets: [new CSSStyleSheet()], "@noCallThru": true },
-        "../utils": { ...utils, "@noCallThru": true },
+    proxyquire("../../plugin/global/core/components/fast-window/index.js", {
+        "../common": { sharedSheets: [new CSSStyleSheet()], "@noCallThru": true },
+        "../../utils": { ...utils, "@noCallThru": true },
     })
 
     FastWindow = customElements.get("fast-window")

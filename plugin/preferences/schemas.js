@@ -1,9 +1,7 @@
 /**
- * @file Preference Form Schemas
- *
  * This file defines the UI configurations for plugin preference panels using a fluent, declarative DSL.
  *
- * === The Dual-State Builder ===
+ * The Dual-State Builder:
  * Controls in this DSL are strictly context-aware. You use the exact same syntax (e.g., `Textarea("CMD")`)
  * everywhere, and the engine automatically adapts its structure based on where you place it:
  *   1. **As an Independent Box**: When placed directly at the root of a schema or inside structural
@@ -104,6 +102,7 @@ const schema_global = () => [
     Group(
         Switch("ENABLE").Protect(),
         Select("LOCALE").Options(["auto", "en", "zh-CN", "zh-TW"]).ActionTooltip("openLocaleFolder", "fa fa-language"),
+        Switch("DARK_MODE"),
     ),
     Group(
         Switch("BATCH_RENDER_CHARTS"),
@@ -245,11 +244,11 @@ const schema_read_only = () => [
         Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
         Switch("DISABLE_EXPAND_WHEN_READ_ONLY"),
         Switch("AUTO_COLLAPSE_WHEN_READ_ONLY").ShowIf(When.false("DISABLE_EXPAND_WHEN_READ_ONLY")),
-        Text("SHOW_TEXT"),
     ),
     Group("advanced",
         Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
         Select("REMAIN_AVAILABLE_MENU_KEY").ShowIf(When.true("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY")),
+        Text("SHOW_TEXT"),
     ),
     Frag.SettingHandler(),
 ]
@@ -396,16 +395,16 @@ const schema_markmap = () => [
         Float("DOWNLOAD_OPTIONS.IMAGE_SCALE").Min(0.1).Step(0.1),
         Text("DOWNLOAD_OPTIONS.FILENAME"),
         Text("DOWNLOAD_OPTIONS.FOLDER").Tooltip("tempDir"),
-        Text("DOWNLOAD_OPTIONS.BACKGROUND_COLOR").Tooltip("jpgFormatOnly"),
-        Text("DOWNLOAD_OPTIONS.TEXT_COLOR"),
-        Text("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR"),
+        Color("DOWNLOAD_OPTIONS.BACKGROUND_COLOR").Tooltip("jpgFormatOnly"),
+        Color("DOWNLOAD_OPTIONS.TEXT_COLOR"),
+        Color("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR"),
     ).ShowIf(Deps.markmapToc),
     Group("fence",
         Switch("INTERACTIVE_MODE"),
         Hotkey("FENCE_HOTKEY"),
         Text("FENCE_LANGUAGE").Protect(),
         Text("DEFAULT_FENCE_HEIGHT"),
-        Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
+        Color("DEFAULT_FENCE_BACKGROUND_COLOR"),
     ).ShowIf(Deps.markmapFence),
     Group("fenceDiagramDefaultOptions",
         Switch("DEFAULT_FENCE_OPTIONS.zoom"),
@@ -422,7 +421,7 @@ const schema_markmap = () => [
         Integer("DEFAULT_FENCE_OPTIONS.paddingX").Unit(Units.pixel).Min(0).Max(100).Step(1),
         Integer("DEFAULT_FENCE_OPTIONS.duration").Unit(Units.millisecond).Min(0).Max(1000).Step(10),
         Text("DEFAULT_FENCE_OPTIONS.height"),
-        Text("DEFAULT_FENCE_OPTIONS.backgroundColor"),
+        Color("DEFAULT_FENCE_OPTIONS.backgroundColor"),
         Palette("DEFAULT_FENCE_OPTIONS.color"),
     ).ShowIf(Deps.markmapFence),
     Code("FENCE_TEMPLATE").ShowIf(Deps.markmapFence),
@@ -1015,12 +1014,6 @@ const schema_article_uploader = () => [
         Text("NAME").Placeholder("defaultIfEmpty"),
     ),
     Switch("HIDE"),
-    Group("hotkey",
-        Hotkey("UPLOAD_ALL_HOTKEY").ShowIf(When.or(When.true("upload.cnblog.enabled"), When.true("upload.wordpress.enabled"), When.true("upload.csdn.enabled"))),
-        Hotkey("UPLOAD_CNBLOG_HOTKEY").ShowIf(When.true("upload.cnblog.enabled")),
-        Hotkey("UPLOAD_WORDPRESS_HOTKEY").ShowIf(When.true("upload.wordpress.enabled")),
-        Hotkey("UPLOAD_CSDN_HOTKEY").ShowIf(When.true("upload.csdn.enabled")),
-    ),
     Group("upload",
         Switch("upload.reconfirm"),
         Switch("upload.selenium.headless"),
@@ -1040,6 +1033,12 @@ const schema_article_uploader = () => [
     Group("csdn",
         Switch("upload.csdn.enabled"),
         Text("upload.csdn.cookie").ShowIf(When.true("upload.csdn.enabled")),
+    ),
+    Group("hotkey",
+        Hotkey("UPLOAD_ALL_HOTKEY").ShowIf(When.or(When.true("upload.cnblog.enabled"), When.true("upload.wordpress.enabled"), When.true("upload.csdn.enabled"))),
+        Hotkey("UPLOAD_CNBLOG_HOTKEY").ShowIf(When.true("upload.cnblog.enabled")),
+        Hotkey("UPLOAD_WORDPRESS_HOTKEY").ShowIf(When.true("upload.wordpress.enabled")),
+        Hotkey("UPLOAD_CSDN_HOTKEY").ShowIf(When.true("upload.csdn.enabled")),
     ),
     Frag.SettingHandler(),
 ]

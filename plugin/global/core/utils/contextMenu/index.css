@@ -1,0 +1,72 @@
+.plugin-common-menu {
+  --menu-bg: #ffffff;
+  --menu-border: rgba(0, 0, 0, 0.06);
+  --menu-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.08);
+  --menu-text-main: #1e293b;
+  --menu-text-hover: #0f172a;
+  --menu-item-hover-bg: rgba(0, 0, 0, 0.04);
+  --menu-radius: 12px;
+  --menu-item-radius: 6px;
+
+  display: none;
+  position: fixed;
+  z-index: 99999;
+  padding: 6px;
+  min-width: 160px;
+  border-radius: var(--menu-radius);
+  background-color: var(--menu-bg);
+  box-shadow: var(--menu-shadow);
+  border: 1px solid var(--menu-border);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  color: var(--menu-text-main);
+  transform-origin: top left;
+}
+
+.plugin-common-menu.show {
+  display: block;
+  animation: menu-pop-in 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.plugin-common-menu .menu-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  margin-bottom: 2px;
+  user-select: none;
+  position: relative;
+  font-size: 14px;
+  line-height: 1.4;
+  border-radius: var(--menu-item-radius);
+  cursor: pointer;
+  color: var(--menu-text-main);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.plugin-common-menu .menu-item:last-child {
+  margin-bottom: 0;
+}
+
+.plugin-common-menu .menu-item:hover {
+  background-color: var(--menu-item-hover-bg);
+  color: var(--menu-text-hover);
+}
+
+@keyframes menu-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+body.plugin-dark-mode .plugin-common-menu {
+  --menu-bg: #252528;
+  --menu-border: rgba(255, 255, 255, 0.08);
+  --menu-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --menu-text-main: #e2e8f0;
+  --menu-text-hover: #ffffff;
+  --menu-item-hover-bg: rgba(255, 255, 255, 0.06);
+}

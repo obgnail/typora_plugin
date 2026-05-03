@@ -1,34 +1,72 @@
 #plugin-bookmark {
-    right: 25px;
+  top: 80px;
+  right: 40px;
+  width: 320px;
+  --bookmark-bg-hover: rgba(0, 0, 0, 0.04);
+  --bookmark-text-main: #1e293b;
+  --bookmark-text-sub: #475569;
+  --bookmark-radius-item: 8px;
+  --bookmark-danger-bg: rgba(239, 68, 68, 0.1);
+  --bookmark-danger-text: #ef4444;
+}
+
+.plugin-bookmark-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
 }
 
 #plugin-bookmark .bookmark-item {
-    display: flex;
-    margin: 0.3rem;
-    align-items: center;
-    padding-left: 0.5em;
-    border-radius: 5px;
-    background-color: #f8f8f8;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 8px 8px 8px 12px;
+  margin-bottom: 2px;
+  border-radius: var(--bookmark-radius-item);
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 
 #plugin-bookmark .bookmark-item:hover {
-    background-color: var(--item-hover-bg-color);
+  background-color: var(--bookmark-bg-hover);
 }
 
 #plugin-bookmark .bookmark-item-content {
-    padding-right: 10px;
-    flex: 1;
-    font-size: 15px;
-    overflow-wrap: anywhere;
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
+  padding-right: 12px;
+  color: var(--bookmark-text-main);
+  overflow-wrap: anywhere;
 }
 
 #plugin-bookmark .bookmark-btn {
-    font-size: 17px;
-    cursor: pointer;
-    padding: 4px;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 15px;
+  color: var(--bookmark-text-sub);
+  cursor: pointer;
+  opacity: 0.5;
+  transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+
+#plugin-bookmark .bookmark-item:hover .bookmark-btn {
+  opacity: 1;
 }
 
 #plugin-bookmark .bookmark-btn:hover {
-    color: #f70505;
+  background-color: var(--bookmark-danger-bg);
+  color: var(--bookmark-danger-text);
+}
+
+body.plugin-dark-mode #plugin-bookmark {
+  --bookmark-bg-hover: rgba(255, 255, 255, 0.06);
+  --bookmark-text-main: #f3f4f6;
+  --bookmark-text-sub: #9ca3af;
+  --bookmark-danger-bg: rgba(239, 68, 68, 0.2);
 }

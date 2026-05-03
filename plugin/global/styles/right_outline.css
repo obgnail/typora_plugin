@@ -1,181 +1,221 @@
 #plugin-right-outline {
-    --right-outline-font-size: 1em;
-    --right-outline-line-width: 0.05rem;
-    --right-outline-line-color: rgba(0, 0, 0, 0.1);
-    --right-outline-line-width-select: 0.1rem;
-    --right-outline-line-color-select: red;
+  --outline-bg: #f8fafc;
+  --outline-bg-hover: rgba(0, 0, 0, 0.04);
+  --outline-bg-active: rgba(66, 133, 244, 0.1);
+  --outline-border: rgba(0, 0, 0, 0.06);
+  --outline-text-main: #1e293b;
+  --outline-text-sub: #475569;
+  --outline-primary: #4285f4;
+  --outline-primary-text: #1a73e8;
+  --outline-radius-item: 8px;
+  --outline-line-width: 1px;
+  --outline-line-color: var(--outline-border);
+  --outline-line-color-select: var(--outline-primary);
 
-    height: 95%;
-    right: 0;
-    box-shadow: initial;
-    border-left: dashed 1px rgba(0, 0, 0, 0.2);
-    z-index: 9990;
+  font-size: 14px;
+  height: 100%;
+  right: 0;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.03);
+  border-left: 1px solid var(--outline-border);
+  z-index: 9990;
+  background: var(--outline-bg);
+  color: var(--outline-text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 #plugin-right-outline .grip-right {
-    position: absolute;
-    left: -5px;
-    width: 10px;
-    height: 100%;
-    cursor: ew-resize;
+  position: absolute;
+  left: -5px;
+  width: 10px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 100;
 }
 
 #plugin-right-outline .plugin-right-outline-wrap {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 #plugin-right-outline .plugin-right-outline-header {
-    display: inline-flex;
-    width: 100%;
-    padding-bottom: 0.25em;
-    border-bottom: dashed 1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  flex-shrink: 0;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--outline-border);
+  background: var(--outline-bg);
 }
 
 #plugin-right-outline .plugin-right-outline-icon {
-    opacity: .7;
-    margin: 1px 2px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 1.1em;
-    line-height: 1.6em;
-    flex-grow: 1;
-    text-align: center;
+  flex: 1;
+  height: 36px;
+  margin: 0 4px;
+  border-radius: var(--outline-radius-item);
+  cursor: pointer;
+  font-size: 1.1em;
+  color: var(--outline-text-sub);
+  transition: background 0.15s ease, color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-#plugin-right-outline .plugin-right-outline-icon.select,
 #plugin-right-outline .plugin-right-outline-icon:hover {
-    background: var(--active-file-bg-color);
-    color: var(--active-file-text-color);
-    opacity: 1;
+  background: var(--outline-bg-hover);
+  color: var(--outline-text-main);
+}
+
+#plugin-right-outline .plugin-right-outline-icon.select {
+  background: var(--outline-bg-active);
+  color: var(--outline-primary-text);
 }
 
 #plugin-right-outline .plugin-right-outline-list {
-    height: 100%;
-    overflow: scroll;
-    font-size: var(--right-outline-font-size);
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  box-sizing: border-box;
 }
 
-#plugin-right-outline .toc-root {
-    margin: 0 0.5em 4em 0.5em;
+#plugin-right-outline ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
-#plugin-right-outline .toc-header-node {
-    opacity: 0.6;
+#plugin-right-outline ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#plugin-right-outline ::-webkit-scrollbar-thumb {
+  background: var(--outline-border);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s;
+}
+
+#plugin-right-outline:hover ::-webkit-scrollbar-thumb {
+  background-color: var(--outline-text-sub);
 }
 
 #plugin-right-outline ul {
-    position: relative;
-    list-style: none;
-    padding: 0;
-    text-align: left;
+  position: relative;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
 }
 
 #plugin-right-outline li {
-    margin-bottom: 0.1em;
-    overflow-wrap: break-word;
-    list-style: none;
+  margin-bottom: 2px;
+  overflow-wrap: break-word;
+  position: relative;
 }
 
 #plugin-right-outline ul ul {
-    margin-left: 1.5em;
+  margin-left: 1.4em;
 }
 
 #plugin-right-outline .toc-node {
-    padding: 1px 5px;
-    border-radius: 4px;
-    user-select: none;
+  padding: 6px 8px;
+  border-radius: var(--outline-radius-item);
+  user-select: none;
+  display: flex;
+  align-items: flex-start;
+  color: var(--outline-text-sub);
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.5;
+}
+
+#plugin-right-outline .toc-header-node {
+  opacity: 1;
 }
 
 #plugin-right-outline .toc-node:hover {
-    cursor: pointer;
-    background-color: var(--item-hover-bg-color);
+  cursor: pointer;
+  background-color: var(--outline-bg-hover);
+  color: var(--outline-text-main);
 }
 
 #plugin-right-outline .toc-node.active {
-    font-weight: 700;
+  background: var(--outline-bg-active);
+  color: var(--outline-primary-text);
+  font-weight: 600;
 }
 
 #plugin-right-outline .toc-toggle {
-    cursor: pointer;
-    width: 16px;
-    text-align: center;
-    transition: transform 0.2s;
-    color: #666;
+  cursor: pointer;
+  width: 20px;
+  flex-shrink: 0;
+  text-align: center;
+  transition: transform 0.2s ease;
+  color: var(--outline-text-sub);
+  opacity: 0.6;
+  margin-top: 3px;
+}
+
+#plugin-right-outline .toc-node:hover .toc-toggle {
+  opacity: 1;
+  color: var(--outline-text-main);
 }
 
 #plugin-right-outline .toc-root li.collapsed > ul {
-    display: none;
+  display: none;
 }
 
 #plugin-right-outline .toc-root li.collapsed > .toc-node > .toc-toggle {
-    transform: rotate(-90deg);
+  transform: rotate(-90deg);
 }
 
 #plugin-right-outline .toc-text {
-    margin-left: 6px;
-}
-#plugin-right-outline .toc-text:hover {
-    text-decoration: underline;
+  flex-grow: 1;
+  margin-left: 4px;
 }
 
-/* drag & drop */
+#plugin-right-outline ul ul::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -0.7em;
+  width: var(--outline-line-width);
+  background: var(--outline-line-color);
+  z-index: 1;
+}
+
+#plugin-right-outline ul ul:has(.toc-node.active)::before {
+  background: var(--outline-line-color-select);
+  width: calc(var(--outline-line-width) + 1px);
+}
+
 .plugin-right-outline-drag-source {
-    opacity: 0.4;
+  opacity: 0.4;
 }
 
-.plugin-right-outline-drag-above {
-    outline: 1px dashed #000;
-    box-shadow: 0 -3px 0 #8d8df0;
+.plugin-right-outline-drag-above > .toc-node {
+  box-shadow: inset 0 2px 0 var(--outline-primary);
+  border-radius: 4px 4px 0 0;
 }
 
-.plugin-right-outline-drag-below {
-    outline: 1px dashed #000;
-    box-shadow: 0 3px 0 #8d8df0;
+.plugin-right-outline-drag-below > .toc-node {
+  box-shadow: inset 0 -2px 0 var(--outline-primary);
+  border-radius: 0 0 4px 4px;
 }
 
-/* preview-threading */
-#plugin-right-outline .plugin-right-outline-list {
-    padding-left: 0.8rem;
-}
-
-.toc-root .toc-node:before {
-    content: "";
-    display: inline-block;
-    width: .8rem;
-    height: var(--right-outline-line-width);
-    position: absolute;
-    z-index: 10;
-    left: -0.72rem;
-    margin-right: .2rem;
-    top: 1rem;
-    background: var(--right-outline-line-color);
-}
-
-/*#plugin-right-outline ul:has(.toc-node.active):after,*/
-#plugin-right-outline ul:before {
-    content: "";
-    display: inline-block;
-    width: var(--right-outline-line-width);
-    position: absolute;
-    top: -0.1rem;
-    left: -0.8rem;
-    z-index: 15;
-    margin-bottom: .8rem;
-}
-
-#plugin-right-outline ul:before {
-    height: calc(100% - 0.5rem);
-    background: var(--right-outline-line-color);
-}
-
-/*#plugin-toc ul:has(.toc-node.active):after {*/
-/*    height: calc(100% - 0.5rem);*/
-/*    background: var(--right-outline-line-color-select);*/
-/*}*/
-
-.toc-root .toc-node.active:before,
-.toc-root .toc-node:has(+ ul .toc-node.active):before {
-    background: var(--right-outline-line-color-select);
-    height: var(--right-outline-line-width-select);
+body.plugin-dark-mode #plugin-right-outline {
+  --outline-bg: #252528;
+  --outline-bg-hover: rgba(255, 255, 255, 0.06);
+  --outline-bg-active: rgba(138, 180, 248, 0.15);
+  --outline-border: rgba(255, 255, 255, 0.08);
+  --outline-text-main: #f3f4f6;
+  --outline-text-sub: #9ca3af;
+  --outline-primary: #8ab4f8;
+  --outline-primary-text: #8ab4f8;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.2);
 }

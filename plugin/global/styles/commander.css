@@ -1,68 +1,171 @@
 #plugin-commander {
-    top: 30%;
-    left: 50%;
-    width: 600px;
+  --cmd-bg-surface: #ffffff;
+  --cmd-bg-input: rgba(0, 0, 0, 0.04);
+  --cmd-bg-hover: rgba(0, 0, 0, 0.04);
+  --cmd-border: rgba(0, 0, 0, 0.06);
+  --cmd-border-focus: #4285f4;
+  --cmd-text-main: #1e293b;
+  --cmd-text-sub: #475569;
+  --cmd-text-placeholder: #94a3b8;
+  --cmd-shadow-focus: rgba(66, 133, 244, 0.15);
+  --cmd-radius-input: 8px;
+  --cmd-bg-output: #f8fafc;
+  --cmd-text-error: #ef4444;
+
+  top: 20%;
+  left: 50%;
+  width: 720px;
+  height: 480px;
 }
 
 #plugin-commander-form {
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    line-height: 25px;
-}
-
-#plugin-commander-form select,
-#plugin-commander-form input {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    height: 30px;
-    margin: 1px 0;
+  display: flex;
+  align-items: center;
+  padding-bottom: 16px;
+  flex-shrink: 0;
 }
 
 #plugin-commander-form .plugin-commander-input-wrap {
-    position: relative;
-    flex-basis: 60%;
+  position: relative;
+  flex: 1;
+  margin-right: 12px;
+}
+
+#plugin-commander-form .plugin-commander-shell {
+  width: 120px;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+#plugin-commander-form .plugin-commander-builtin {
+  width: 140px;
+  flex-shrink: 0;
+}
+
+#plugin-commander-form input,
+#plugin-commander-form select {
+  width: 100%;
+  height: 36px;
+  background: var(--cmd-bg-input);
+  border: 1px solid transparent;
+  border-radius: var(--cmd-radius-input);
+  color: var(--cmd-text-main);
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  padding: 0 12px;
+  font-family: inherit;
+  box-sizing: border-box;
 }
 
 #plugin-commander-form input {
-    width: 100%;
-    padding-right: 25px;
+  padding-right: 36px;
 }
 
-#plugin-commander-form select {
-    flex-basis: 20%;
-    margin-left: 2px;
-    padding: 1px 2px;
-}
-
-#plugin-commander-form .plugin-commander-commit {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    line-height: 80%;
-    opacity: 0.7;
-    cursor: pointer;
-}
-
-.plugin-commander-output {
-    overflow: auto;
-    height: 100%;
-}
-
-.plugin-commander-output pre {
-    display: inline-block;
-    font-size: 13px;
-    line-height: 1.2;
-    margin: 0;
-    padding: 8px;
-}
-
-.plugin-commander-output pre.error {
-    color: red;
+#plugin-commander-form input::placeholder {
+  color: var(--cmd-text-placeholder);
 }
 
 #plugin-commander-form input:focus,
-#plugin-commander-form pre:focus {
-    outline: 0
+#plugin-commander-form select:focus {
+  border-color: var(--cmd-border-focus);
+  background: var(--cmd-bg-surface);
+  box-shadow: 0 0 0 3px var(--cmd-shadow-focus);
+}
+
+#plugin-commander-form select {
+  cursor: pointer;
+  padding-right: 28px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+}
+
+#plugin-commander-form .plugin-commander-commit {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cmd-text-sub);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.2s, background-color 0.2s;
+  font-size: 14px;
+  z-index: 2;
+}
+
+#plugin-commander-form .plugin-commander-commit:hover {
+  color: var(--cmd-text-main);
+  background-color: var(--cmd-bg-hover);
+}
+
+.plugin-commander-output {
+  flex: 1;
+  overflow: auto;
+  background: var(--cmd-bg-output);
+  border: 1px solid var(--cmd-border);
+  border-radius: var(--cmd-radius-input);
+  padding: 16px;
+  min-height: 0;
+}
+
+.plugin-commander-output pre {
+  display: block;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+  color: var(--cmd-text-main);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.plugin-commander-output pre.error {
+  color: var(--cmd-text-error);
+}
+
+.plugin-commander-output::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.plugin-commander-output::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.plugin-commander-output::-webkit-scrollbar-thumb {
+  background: var(--cmd-border);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.plugin-commander-output:hover::-webkit-scrollbar-thumb {
+  background-color: var(--cmd-text-placeholder);
+}
+
+body.plugin-dark-mode #plugin-commander {
+  --cmd-bg-surface: #1e1e20;
+  --cmd-bg-input: rgba(255, 255, 255, 0.05);
+  --cmd-bg-hover: rgba(255, 255, 255, 0.06);
+  --cmd-border: rgba(255, 255, 255, 0.08);
+  --cmd-border-focus: #8ab4f8;
+  --cmd-text-main: #f3f4f6;
+  --cmd-text-sub: #9ca3af;
+  --cmd-text-placeholder: #6b7280;
+  --cmd-shadow-focus: rgba(138, 180, 248, 0.15);
+  --cmd-bg-output: #252528;
+  --cmd-text-error: #f87171;
+}
+
+body.plugin-dark-mode #plugin-commander-form select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
 }

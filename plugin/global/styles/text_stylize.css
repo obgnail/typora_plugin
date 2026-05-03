@@ -1,47 +1,126 @@
 #plugin-text-stylize {
-    top: 25%;
-    left: 100px;
-    background-color: var(--side-bar-bg-color);
-    min-height: auto;
-    overflow: visible;
+  --bg-dialog: #ffffff;
+  --bg-hover: rgba(0, 0, 0, 0.04);
+  --bg-active: rgba(66, 133, 244, 0.1);
+  --text-main: #1e293b;
+  --text-sub: #475569;
+  --primary: #4285f4;
+  --primary-text: #1a73e8;
+  --shadow-dialog: 0 20px 40px -8px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
+  --radius-dialog: 12px;
+  --radius-item: 6px;
+
+  --window-bg-main: var(--bg-dialog);
+  --window-bg-hover: var(--bg-hover);
+  --window-text-main: var(--text-main);
+  --window-text-sub: var(--text-sub);
+  --window-shadow-main: var(--shadow-dialog);
+  --window-radius-main: var(--radius-dialog);
+  --window-radius-item: var(--radius-item);
+
+  top: 25%;
+  left: 100px;
+  min-height: auto;
+  overflow: visible;
+}
+
+@keyframes stylize-palette-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#plugin-text-stylize::part(title-bar) {
+  background-color: transparent;
 }
 
 #plugin-text-stylize .stylize-tool {
-    display: flex;
-    padding: 10px;
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
 }
 
 #plugin-text-stylize .stylize-tool > [action] {
-    fill: currentColor;
-    cursor: pointer;
-    width: 25px;
-    height: 25px;
-    opacity: 0.6;
-    margin: 0 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+  color: var(--text-sub);
+  cursor: pointer;
+  border-radius: var(--radius-item);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+#plugin-text-stylize .stylize-tool > [action] + [action] {
+  margin-left: 2px;
+}
+
+#plugin-text-stylize .stylize-tool > [action]:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-main);
 }
 
 #plugin-text-stylize .stylize-tool > [action].select {
-    background: #e0e6ed;
-    border-radius: 5px;
-    color: currentColor;
-    opacity: 1;
+  background-color: var(--bg-active);
+  color: var(--primary-text);
 }
 
 #plugin-text-stylize .stylize-palette {
-    position: absolute;
-    left: 0;
-    margin: 0;
-    display: initial;
-    transform: translateY(60px);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  background: var(--bg-dialog);
+  border-radius: 8px;
+  box-shadow: var(--shadow-dialog);
+  padding: 8px;
+  border-collapse: separate;
+  border-spacing: 4px;
+  z-index: 100;
+}
+
+#plugin-text-stylize .stylize-palette:not(.plugin-common-hidden) {
+  display: table;
+  animation: stylize-palette-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 #plugin-text-stylize .stylize-palette td {
-    width: 30px;
-    height: 17px;
-    border: 1px #000 solid;
-    cursor: pointer;
+  width: 28px;
+  height: 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  transition: transform 0.1s, box-shadow 0.1s;
 }
 
 #plugin-text-stylize .stylize-palette td:hover {
-    box-shadow: inset 0 0 0 2px #fff;
+  transform: scale(1.1);
+  box-shadow: inset 0 0 0 2px var(--bg-dialog), 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+body.plugin-dark-mode #plugin-text-stylize {
+  --bg-dialog: #1e1e20;
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(138, 180, 248, 0.15);
+  --text-main: #f3f4f6;
+  --text-sub: #9ca3af;
+  --primary: #8ab4f8;
+  --primary-text: #8ab4f8;
+  --shadow-dialog: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+body.plugin-dark-mode #plugin-text-stylize .stylize-palette td {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+body.plugin-dark-mode #plugin-text-stylize .stylize-palette td:hover {
+  box-shadow: inset 0 0 0 2px var(--bg-dialog), 0 2px 4px rgba(0, 0, 0, 0.3);
 }

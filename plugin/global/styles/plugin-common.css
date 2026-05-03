@@ -1,27 +1,27 @@
 .plugin-common-modal {
-    position: fixed;
-    z-index: 9999;
-    padding: 4px;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    border-top: none;
-    border-radius: 4px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
+  position: fixed;
+  z-index: 9999;
+  padding: 4px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-top: none;
+  border-radius: 4px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
 }
 
 .plugin-common-hidden {
-    display: none !important;
+  display: none !important;
 }
 
 .dropdown-menu {
-    z-index: 9998;
+  z-index: 9998;
 }
 
 #md-searchpanel.searchpanel-replace-mode {
-    z-index: 99999 !important;
+  z-index: 99999 !important;
 }
 
 .md-notification-container {
-    z-index: 99999 !important;
-    background: var(--bg-color);
+  z-index: 99999 !important;
+  background: var(--bg-color);
 }

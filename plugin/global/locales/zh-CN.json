@@ -104,6 +104,7 @@
     "error.pluginDisabled": "插件「{{plugin}}」未开启",
     "error.incorrectCommand": "请输入正确的指令",
     "$label.LOCALE": "语言",
+    "$label.DARK_MODE": "夜间模式",
     "$label.EXIT_CHART_INTERACTION": "退出图表交互",
     "$label.BATCH_RENDER_CHARTS": "合并渲染图表",
     "$label.exportSettings": "导出配置",
@@ -443,9 +444,9 @@
     "$label.IMAGE_ALIGN": "对齐方式",
     "$label.MODIFIER_KEY.TEMPORARY": "临时修改图片大小",
     "$label.MODIFIER_KEY.PERSISTENT": "永久修改图片大小（转为 HTML 语法）",
-    "$tooltip.modifyKeyExample": "举例：填入 alt，则 Alt+Wheel 临时调整图片大小",
+    "$tooltip.modifyKeyExample": "举例：填入 Alt，则 Alt+Wheel 触发",
     "$title.image": "图片",
-    "$title.modifierKeys": "鼠标滚轮的修饰键"
+    "$title.modifierKeys": "滚轮修饰键"
   },
   "resize_table": {
     "pluginName": "表格调整",
@@ -574,7 +575,7 @@
     "$option.TITLE_BAR_BUTTONS.download": "导出",
     "$tooltip.zero": "0 表示无限制",
     "$tooltip.tempDir": "为空则使用 TEMP 目录",
-    "$tooltip.experimental": "实验性特性，仅当「章节折叠」插件开启时可用",
+    "$tooltip.experimental": "实验性特性，仅当插件「章节折叠」开启时可用",
     "$tooltip.removeForeignObj": "牺牲样式提高兼容性，导出异常时勾选",
     "$tooltip.positioningViewPort": "定位目标章节滚动到当前视口高度",
     "$tooltip.pixelImagesOnly": "适用像素图",
@@ -746,7 +747,7 @@
     "$label.MODIFIER_KEY.COLLAPSE_RECURSIVE": "递归折叠/展开当前章节",
     "$title.mode": "模式",
     "$title.modifierKey": "修饰键",
-    "$tooltip.modifierKeyExample": "举例：填入 ctrl，则 Clt+Click 将触发功能",
+    "$tooltip.modifierKeyExample": "举例：填入 Ctrl，则 Ctrl+Click 触发",
     "$tooltip.ConflictWithOptionExpandSimpleBlock": "启用后，聚焦标题将不会即时显示 # 符号"
   },
   "collapse_list": {
@@ -1014,7 +1015,7 @@
     "$label.BUTTONS": "圆盘菜单",
     "$label.BUTTONS.ICON": "图标",
     "$label.BUTTONS.CALLBACK": "回调",
-    "$tooltip.example": "举例：填入 ctrl，则 Ctrl+RClick 弹出菜单"
+    "$tooltip.example": "举例：填入 Ctrl，则 Ctrl+RClick 触发"
   },
   "preferences": {
     "pluginName": "插件配置",
@@ -1052,7 +1053,7 @@
     "pluginName": "书签管理",
     "$label.MODIFIER_KEY": "左键修饰键",
     "$label.AUTO_POPUP_WINDOW": "标注书签的同时弹出管理窗口",
-    "$tooltip.modifierKeyExample": "举例：填入 alt，则 Alt+LClick 标注书签"
+    "$tooltip.modifierKeyExample": "举例：填入 Alt，则 Alt+LClick 触发"
   },
   "editor_width_slider": {
     "pluginName": "写作区宽度调整",
@@ -1692,9 +1693,9 @@
     "$label.HIDE_BUTTON_HINT": "隐藏提示",
     "$label.BUTTONS": "预设按钮",
     "$label.BUTTONS.enable": "启用",
-    "$label.BUTTONS.coordinate": "行,列",
-    "$label.BUTTONS.coordinate.0": "行号",
-    "$label.BUTTONS.coordinate.1": "列号",
+    "$label.BUTTONS.coordinate": "坐标",
+    "$label.BUTTONS.coordinate.0": "坐标 X",
+    "$label.BUTTONS.coordinate.1": "坐标 Y",
     "$label.BUTTONS.icon": "图标",
     "$label.BUTTONS.size": "图标大小",
     "$label.BUTTONS.color": "图标颜色",

@@ -8,10 +8,10 @@ function createMockDslContext() {
         HTMLElement: class {
         },
     })
-    const FF = proxyquire("../../../plugin/global/core/components/fast-form.js", {
-        "./common": { sharedSheets: [], "@noCallThru": true },
-        "../utils": { ...require("../mocks/utils.mock.js"), "@noCallThru": true },
-        "../i18n": { t: (s) => s, "@noCallThru": true },
+    const FF = proxyquire("../../../plugin/global/core/components/fast-form/index.js", {
+        "../common": { sharedSheets: [], "@noCallThru": true },
+        "../../utils": { ...require("../mocks/utils.mock.js"), "@noCallThru": true },
+        "../../i18n": { t: (s) => s, "@noCallThru": true },
     })
 
     const mockForm = {}

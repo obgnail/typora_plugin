@@ -1,25 +1,25 @@
 .plugin-menu-second.ext-context-menu,
 .plugin-menu-third.ext-context-menu {
-    min-width: ${menu_min_width};
+  min-width: ${menu_min_width};
 }
 
 #context-menu > li:not([data-key="typora-plugin"]) {
-    display: ${menu_option_display};
+  display: ${menu_option_display};
 }
 
 .ty-menu-shortcut {
-    padding-left: 1em;
+  padding-left: 1em;
 }
 
 .context-menu .state-run:before {
-    content: '\2318';
-    margin-left: -10px;
-    margin-right: 10px;
+  content: '\2318';
+  margin-left: -10px;
+  margin-right: 10px;
 }
 
 /*.plugin-menu-second .state-off:before,*/
 /*.plugin-menu-third .state-off:before {*/
-/*    content: '\2717' !important;*/
-/*    margin-left: -10px;*/
-/*    margin-right: 10px;*/
+/*  content: '\2717' !important;*/
+/*  margin-left: -10px;*/
+/*  margin-right: 10px;*/
 /*}*/

@@ -1,46 +1,159 @@
 #plugin-ripgrep {
-    position: absolute;
-    top: 20vh;
-    width: 80vw;
-    left: 50%;
-    transform: translateX(-50%);
+  --bg-dialog: #ffffff;
+  --bg-search: rgba(0, 0, 0, 0.04);
+  --border: rgba(0, 0, 0, 0.06);
+  --text-main: #1e293b;
+  --text-sub: #475569;
+  --text-placeholder: #94a3b8;
+  --primary: #4285f4;
+  --shadow-dialog: 0 20px 40px -8px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
+  --shadow-focus: rgba(66, 133, 244, 0.15);
+  --primary-bg: rgba(66, 133, 244, 0.1);
+  --radius-dialog: 12px;
+  --radius-input: 8px;
+  --danger-text: #ef4444;
+  --danger-bg: #fef2f2;
 }
 
-.plugin-ripgrep-prefix {
-    font-size: 1.4em;
-    margin: 2px 6px;
+@keyframes ripgrep-slide-down {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.plugin-common-modal#plugin-ripgrep {
+  position: absolute;
+  top: 10vh;
+  left: 50%;
+  width: 70vw;
+  max-width: 800px;
+  transform: translateX(-50%);
+  background: var(--bg-dialog);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-dialog);
+  box-shadow: var(--shadow-dialog);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  overflow: hidden;
+}
+
+#plugin-ripgrep:not(.plugin-common-hidden) {
+  animation: ripgrep-slide-down 0.25s ease-out forwards;
 }
 
 #plugin-ripgrep-form {
-    display: flex;
-    align-items: center;
-    font-size: 14px;
-    line-height: 25px;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: transparent;
+}
+
+.plugin-ripgrep-prefix {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--primary-bg);
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-right: 12px;
+  user-select: none;
+}
+
+.plugin-ripgrep-prefix b {
+  font-weight: inherit;
 }
 
 #plugin-ripgrep-form input {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 2px;
-    padding-left: 5px;
-    padding-right: 24px;
+  flex: 1;
+  width: 100%;
+  height: 36px;
+  margin: 0;
+  padding: 0 16px;
+  background: var(--bg-search);
+  border: 1px solid transparent;
+  border-radius: var(--radius-input);
+  color: var(--text-main);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+#plugin-ripgrep-form input::placeholder {
+  color: var(--text-placeholder);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+#plugin-ripgrep-form input:focus {
+  border-color: var(--primary);
+  background: var(--bg-dialog);
+  box-shadow: 0 0 0 3px var(--shadow-focus);
 }
 
 .plugin-ripgrep-output {
-    margin-top: 0;
-    cursor: default;
-    max-height: 25em;
-    overflow-y: auto;
-    overflow-x: auto;
+  margin: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+  overflow-x: auto;
+  border-top: 1px solid var(--border);
+  background: var(--bg-dialog);
+}
+
+.plugin-ripgrep-output::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.plugin-ripgrep-output::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.plugin-ripgrep-output::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+  background-clip: padding-box;
+  transition: background-color 0.2s;
+}
+
+.plugin-ripgrep-output:hover::-webkit-scrollbar-thumb {
+  background: var(--text-placeholder);
 }
 
 .plugin-ripgrep-output pre {
-    display: inline-block;
-    font-size: 13px;
-    line-height: 1.1;
-    margin: 10px 10px 5px 5px;
+  display: block;
+  margin: 0;
+  padding: 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-sub);
+  tab-size: 4;
+  white-space: pre;
+  outline: none;
 }
 
 .plugin-ripgrep-output pre.error {
-    color: red;
+  color: var(--danger-text);
+  background: var(--danger-bg);
+}
+
+body.plugin-dark-mode #plugin-ripgrep {
+  --bg-dialog: #1e1e20;
+  --bg-search: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.08);
+  --text-main: #f3f4f6;
+  --text-sub: #9ca3af;
+  --text-placeholder: #6b7280;
+  --primary: #8ab4f8;
+  --shadow-dialog: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-focus: rgba(138, 180, 248, 0.15);
+  --primary-bg: rgba(138, 180, 248, 0.15);
+  --danger-text: #f87171;
+  --danger-bg: rgba(239, 68, 68, 0.1);
 }

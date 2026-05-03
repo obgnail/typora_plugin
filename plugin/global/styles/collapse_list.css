@@ -1,25 +1,25 @@
 #write .ul-list,
 #write .ol-list {
-    position: relative !important;
+  position: relative !important;
 }
 
 #write .ul-list:before,
 #write .ol-list:before {
-    position: absolute;
-    content: "";
-    top: ${this.triangleStyle.top}px;
-    left: ${this.triangleStyle.left}px;
-    border-left: ${this.triangleStyle.halfWidth}px solid transparent;
-    border-right: ${this.triangleStyle.halfWidth}px solid transparent;
-    border-top: ${this.triangleStyle.height}px solid ${this.triangleStyle.color};
-    transition: transform .1s ease-in-out;
-    cursor: pointer;
+  position: absolute;
+  content: "";
+  top: ${this.triangleStyle.top}px;
+  left: ${this.triangleStyle.left}px;
+  border-left: ${this.triangleStyle.halfWidth}px solid transparent;
+  border-right: ${this.triangleStyle.halfWidth}px solid transparent;
+  border-top: ${this.triangleStyle.height}px solid ${this.triangleStyle.color};
+  transition: transform .1s ease-in-out;
+  cursor: pointer;
 }
 
 #write .${this.className}:before {
-    transform: rotate(-90deg);
+  transform: rotate(-90deg);
 }
 
 #write .${this.className} > li:nth-child(n+2) {
-    display: none !important;
+  display: none !important;
 }

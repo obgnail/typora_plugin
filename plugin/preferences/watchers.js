@@ -24,7 +24,7 @@ module.exports = (plugin) => {
                     const correctedTargetValue = dir.getCorrection(sourceValue)
                     setValueDelay(context, dir.target, correctedTargetValue)
                 }
-            }
+            },
         }))
     }
 
@@ -44,10 +44,18 @@ module.exports = (plugin) => {
             if (exportType === "svg") return "svg"
             if (["png", "jpg"].includes(exportType)) return "canvas"
             return null
-        }
+        },
     })
 
     return {
+        global: [{
+            name: "previewDarkMode",
+            when: { $and: [{ DARK_MODE: { $typeof: "boolean" } }, { $meta: { $isMounting: false } }] },
+            affects: [],
+            effect: (isMet, context) => {
+                if (isMet) document.body.classList.toggle("plugin-dark-mode", context.getValue("DARK_MODE"))
+            },
+        }],
         echarts: rendererConstraints,
         plantUML: [{
             name: "showPlantUMLServerHint",
@@ -55,7 +63,7 @@ module.exports = (plugin) => {
             affects: [],
             effect: (isConditionMet, context) => {
                 if (isConditionMet) utils.notification.show(`Plugin Enabled!\nPlease ensure server ${context.getValue("SERVER_URL")} is available.`)
-            }
+            },
         }],
         json_rpc: [{
             name: "showRPCServerHint",
@@ -66,7 +74,7 @@ module.exports = (plugin) => {
                     const { host, port } = context.getValue("SERVER_OPTIONS")
                     utils.notification.show(`Plugin Enabled!\nPlease ensure server ${host}:${port} is available.`)
                 }
-            }
+            },
         }],
         article_uploader: [{
             name: "showArticleUploaderHint",
@@ -76,13 +84,13 @@ module.exports = (plugin) => {
                 if (isMet) {
                     utils.notification.show(`Plugin Enabled!\nPlease ensure uploader has been installed.`)
                 }
-            }
+            },
         }],
         sidebar_enhance: [{
             when: { $and: [{ CUSTOMIZE_SIDEBAR_ICONS: true }, { $meta: { $isMounting: false, $isBetaTypora: true } }] },
             affects: [],
             effect: (isMet) => {
-                if (isMet) utils.notification.show('The Beta version of Typora has NOT the "ty-file-icon" style.\nPlease switch to Font-Awesome or Ion-Icons')
+                if (isMet) utils.notification.show(`The Beta version of Typora has NOT the "ty-file-icon" style.\nPlease switch to Font-Awesome or Ion-Icons`)
             },
         }],
     }

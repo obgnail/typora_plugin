@@ -1,180 +1,179 @@
 #plugin-search-multi {
-    top: 40px;
-    right: 100px;
-    width: 400px;
-    min-height: initial;
-    --item-height: 40px;
-    --item-margin: 2px;
-    --item-count: 7;
-    --scroll-count: 1;
+  top: 40px;
+  right: 100px;
+  width: 400px;
+  min-height: initial;
+  --item-height: 40px;
+  --item-margin: 2px;
+  --item-count: 7;
+  --scroll-count: 1;
 }
 
 body.unibody-window #plugin-search-multi {
-    top: 65px;
+  top: 65px;
 }
 
 #plugin-search-multi::part(content-area) {
-    overflow: hidden;
+  overflow: hidden;
 }
 
 .plugin-search-multi-wrap {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 #plugin-search-multi .plugin-search-counter {
-    font-size: 10px;
-    opacity: .8;
-    line-height: 16px;
-    height: 16px;
-    padding-left: 6px;
+  font-size: 10px;
+  opacity: .8;
+  line-height: 16px;
+  height: 16px;
+  padding-left: 6px;
 }
 
 #plugin-search-multi-form {
-    position: relative;
-    margin: 6px 4px 8px;
+  position: relative;
+  margin: 6px 4px 8px;
 }
 
 #plugin-search-multi-form input {
-    width: 100%;
-    font-size: 18px;
-    overflow: auto;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding-left: 8px;
-    padding-right: 45px;
+  width: 100%;
+  font-size: 18px;
+  overflow: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding-left: 8px;
+  padding-right: 45px;
 }
 
 #plugin-search-multi-form svg {
-    width: 20px;
-    height: 15px;
-    stroke: none;
-    fill: currentColor;
+  width: 20px;
+  height: 15px;
+  stroke: none;
+  fill: currentColor;
 }
 
 #plugin-search-multi-form .plugin-search-multi-btn {
-    border-radius: 6px;
-    cursor: pointer;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    right: 10px;
-    line-height: 80%;
-    padding: 3px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 10px;
+  line-height: 80%;
+  padding: 3px 4px;
 }
 
 #plugin-search-multi-form .plugin-search-multi-btn.select,
 #plugin-search-multi-form .plugin-search-multi-btn:hover {
-    background: var(--active-file-bg-color);
-    color: var(--active-file-text-color);
+  background: var(--active-file-bg-color);
+  color: var(--active-file-text-color);
 }
 
 .plugin-search-item {
-    display: block;
-    font-size: 14px;
-    height: var(--item-height);
-    margin: var(--item-margin) 0;
-    overflow: hidden;
-    padding-left: 6px;
+  display: block;
+  font-size: 14px;
+  height: var(--item-height);
+  margin: var(--item-margin) 0;
+  overflow: hidden;
+  padding-left: 6px;
 }
 
 .plugin-search-item:hover,
 .plugin-search-item.active {
-    background-color: var(--active-file-bg-color);
-    border-color: var(--active-file-text-color);
-    color: var(--active-file-text-color);
-    cursor: pointer;
-    border-radius: 6px;
+  background-color: var(--active-file-bg-color);
+  border-color: var(--active-file-text-color);
+  color: var(--active-file-text-color);
+  cursor: pointer;
+  border-radius: 6px;
 }
 
 .plugin-search-item-title {
-    line-height: 24px;
-    max-height: 24px;
-    overflow: hidden;
+  line-height: 24px;
+  max-height: 24px;
+  overflow: hidden;
 }
 
 .plugin-search-multi-result {
-    display: flex;
-    flex-direction: column;
-    user-select: none;
-    margin-left: 6px;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  margin-left: 6px;
 }
 
 .plugin-search-multi-result .plugin-search-files {
-    position: relative;
-    overflow-y: auto;
-    overflow-x: hidden;
-    width: 100%;
-    max-height: calc(var(--item-count) * (var(--item-height) + var(--item-margin)));
-    scroll-padding: calc(var(--scroll-count) * (var(--item-height) + var(--item-margin)));
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  max-height: calc(var(--item-count) * (var(--item-height) + var(--item-margin)));
+  scroll-padding: calc(var(--scroll-count) * (var(--item-height) + var(--item-margin)));
 }
 
 .plugin-search-item-path {
-    opacity: .5;
-    font-size: 11px;
-    margin-top: -4px;
-    text-overflow: ellipsis;
-    width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    line-height: 14px;
+  opacity: .5;
+  font-size: 11px;
+  margin-top: -4px;
+  text-overflow: ellipsis;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  line-height: 14px;
 }
 
 .plugin-search-multi-searching {
-    opacity: .7;
-    font-size: 12px;
-    line-height: 40px;
-    position: relative;
-    padding-left: 20px;
+  opacity: .7;
+  font-size: 12px;
+  line-height: 40px;
+  position: relative;
+  padding-left: 20px;
 }
 
 ${colors_style}
-
 .plugin-search-highlights {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    width: 100%;
-    margin: 2px -3px 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  width: 100%;
+  margin: 2px -3px 0;
 }
 
 .plugin-highlight-item {
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    margin: 3px;
-    padding: 3px 6px;
-    border-radius: 6px;
-    color: #333333;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-    user-select: none;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  margin: 3px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  color: #333333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  user-select: none;
 }
 
 .plugin-highlight-item:hover {
-    filter: brightness(1.07);
+  filter: brightness(1.07);
 }
 
 .plugin-highlight-outline {
-    outline: 4px solid #FF7B00;
-    text-decoration: blink;
+  outline: 4px solid #FF7B00;
+  text-decoration: blink;
 }
 
 .plugin-highlight-bar {
-    display: inline;
-    position: absolute;
-    left: 0;
-    background: rgba(29, 163, 63, .3);
-    z-index: 99999;
-    animation-name: fadeit;
-    animation-duration: 3s;
+  display: inline;
+  position: absolute;
+  left: 0;
+  background: rgba(29, 163, 63, .3);
+  z-index: 99999;
+  animation-name: fadeit;
+  animation-duration: 3s;
 }
 
 @keyframes fadeit {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-    }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }

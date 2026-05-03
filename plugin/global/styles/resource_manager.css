@@ -1,24 +1,83 @@
 #plugin-resource-manager {
-    top: 40px;
+  top: 60px;
+  --rm-bg-panel: #f8fafc;
+  --rm-border: rgba(0, 0, 0, 0.06);
+  --rm-text-main: #1e293b;
+  --rm-text-sub: #475569;
+  --rm-radius: 8px;
+  --rm-primary: #4285f4;
 }
 
 .plugin-resource-manager-wrap {
-    overflow: scroll;
+  padding: 20px 24px 24px 24px;
+  display: block;
+  box-sizing: border-box;
 }
 
 .non-exist-in-file-caption,
 .non-exist-in-folder-caption,
 .resource-manager-config-caption {
-    text-align: center;
-    margin: 10px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--rm-text-main);
+  margin: 24px 0 12px 0;
+  display: flex;
+  align-items: center;
+}
+
+.non-exist-in-file-caption {
+  margin-top: 0;
+}
+
+.non-exist-in-file-caption::before,
+.non-exist-in-folder-caption::before,
+.resource-manager-config-caption::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  background-color: var(--rm-primary);
+  border-radius: 2px;
+  margin-right: 8px;
 }
 
 .non-exist-in-file,
 .non-exist-in-folder {
-    --image-max-width: 400px;
-    --image-max-hight: 400px;
+  --img-max-size: 400px;
+  display: block;
+  width: 100%;
 }
 
 #plugin-resource-manager textarea {
-    width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--rm-text-sub);
+  background-color: var(--rm-bg-panel);
+  border: 1px solid var(--rm-border);
+  border-radius: var(--rm-radius);
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  display: block;
+}
+
+#plugin-resource-manager textarea:focus {
+  border-color: var(--rm-primary);
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.15);
+}
+
+body.plugin-dark-mode #plugin-resource-manager {
+  --rm-bg-panel: #252528;
+  --rm-border: rgba(255, 255, 255, 0.08);
+  --rm-text-main: #f3f4f6;
+  --rm-text-sub: #9ca3af;
+  --rm-primary: #8ab4f8;
+}
+
+body.plugin-dark-mode #plugin-resource-manager textarea:focus {
+  box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.15);
 }

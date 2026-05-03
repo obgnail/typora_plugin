@@ -1,0 +1,208 @@
+:host {
+  display: block;
+  width: 100%;
+  min-height: 50px;
+  --bg-dialog: #ffffff;
+  --bg-header: #f8fafc;
+  --bg-hover: rgba(0, 0, 0, 0.04);
+  --bg-active: rgba(66, 133, 244, 0.1);
+  --border: rgba(0, 0, 0, 0.06);
+  --text-main: #1e293b;
+  --text-sub: #475569;
+  --text-placeholder: #94a3b8;
+  --primary: #4285f4;
+  --primary-hover: #3367d6;
+  --primary-text: #1a73e8;
+  --radius-base: 8px;
+  --radius-sm: 6px;
+  --cell-padding-y: 10px;
+  --cell-padding-x: 16px;
+  --img-max-size: 32px;
+}
+
+.table-wrapper {
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: auto;
+  background-color: var(--bg-dialog);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-base);
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+  background-clip: padding-box;
+  transition: background-color 0.2s;
+}
+
+.table-wrapper:hover::-webkit-scrollbar-thumb {
+  background-color: var(--text-placeholder);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+  color: var(--text-main);
+  margin: 0;
+}
+
+thead {
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  padding: var(--cell-padding-y) var(--cell-padding-x);
+  color: var(--text-sub);
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+thead th:first-child {
+  border-top-left-radius: calc(var(--radius-base) - 1px);
+}
+
+thead th:last-child {
+  border-top-right-radius: calc(var(--radius-base) - 1px);
+}
+
+th.sortable {
+  cursor: pointer;
+}
+
+th.sortable:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-main);
+}
+
+th.sortable i {
+  margin-left: 6px;
+  color: var(--text-placeholder);
+  font-size: 13px;
+  vertical-align: middle;
+  transition: color 0.15s ease;
+}
+
+th.sortable:hover i {
+  color: var(--text-main);
+}
+
+tbody tr {
+  background-color: transparent;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+}
+
+tbody tr:last-child {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+td {
+  padding: var(--cell-padding-y) var(--cell-padding-x);
+  vertical-align: middle;
+  word-wrap: break-word;
+  color: var(--text-main);
+}
+
+td img {
+  max-width: var(--img-max-size);
+  max-height: var(--img-max-size);
+  border-radius: 4px;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px solid var(--border);
+}
+
+td a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+td a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+td .action-icon {
+  cursor: pointer;
+  color: var(--text-sub);
+  font-size: 15px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 0;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s, color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+td .action-icon + .action-icon {
+  margin-left: 4px;
+}
+
+td .action-icon:hover {
+  color: var(--text-main);
+  background-color: var(--bg-hover);
+}
+
+td .action-icon.danger:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.no-data {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-placeholder);
+  font-size: 14px;
+  background-color: var(--bg-dialog);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-base);
+  margin-top: 8px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+:host-context(body.plugin-dark-mode) {
+  --bg-dialog: #1e1e20;
+  --bg-header: #252528;
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(138, 180, 248, 0.15);
+  --border: rgba(255, 255, 255, 0.08);
+  --text-main: #f3f4f6;
+  --text-sub: #9ca3af;
+  --text-placeholder: #6b7280;
+  --primary: #8ab4f8;
+  --primary-hover: #aecbfa;
+  --primary-text: #8ab4f8;
+}

@@ -408,8 +408,8 @@ class ImageViewerPlugin extends BasePlugin {
     getFnList = (ev, method) => {
         const modifiers = []
         if (this.utils.metaKeyPressed(ev)) modifiers.push("CTRL")
-        else if (this.utils.shiftKeyPressed(ev)) modifiers.push("SHIFT")
-        else if (this.utils.altKeyPressed(ev)) modifiers.push("ALT")
+        else if (ev.shiftKey) modifiers.push("SHIFT")
+        else if (ev.altKey) modifiers.push("ALT")
         modifiers.push(method, "FUNCTION")
         const configKey = modifiers.join("_")
         return (this.config[configKey] || []).map(fnName => this.dispatcher.getHandler(fnName))

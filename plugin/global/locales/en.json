@@ -41,7 +41,7 @@
     "$label.CHART_ALIGN": "Chart Align",
     "$placeholder.defaultIfEmpty": "Use default if empty",
     "$tooltip.protected": "Protected Setting. Editable via setting file only",
-    "$tooltip.expertsOnly": "For experts only. Risky to modify.",
+    "$tooltip.expertsOnly": "Experts only. Risky to modify",
     "$tooltip.lowVersion": "Typora version is too low. This feature is unavailable",
     "$tooltip.minusOneMeansUnlimited": "-1 means no limit",
     "$tooltip.minusOneMeansDisable": "-1 means disable",
@@ -104,6 +104,7 @@
     "error.pluginDisabled": "Plugin \"{{plugin}}\" Disabled",
     "error.incorrectCommand": "Please enter a valid command",
     "$label.LOCALE": "Language",
+    "$label.DARK_MODE": "Dark Mode",
     "$label.EXIT_CHART_INTERACTION": "Exit Chart Interaction",
     "$label.BATCH_RENDER_CHARTS": "Batch Rendering Charts",
     "$label.exportSettings": "Export Settings",
@@ -172,7 +173,7 @@
     "$label.SORT_TABS_HOTKEY": "Sort Tabs",
     "$label.COPY_PATH_HOTKEY": "Copy File Path",
     "$label.TOGGLE_TAB_BAR_HOTKEY": "Toggle Tab Bar",
-    "$label.CONTEXT_MENU": "Tab Context Menu Menu Options",
+    "$label.CONTEXT_MENU": "Tab Context Menu Options",
     "$tooltip.detachThreshold": "Vertical drag < X * tabHeight: No vertical movement",
     "$tooltip.newWindow": "Vertical drag > X * tabHeight: Creates new window",
     "$title.appearance": "Appearance",
@@ -361,7 +362,7 @@
     "$label.BUILTIN.shell": "Shell",
     "$label.BUILTIN.cmd": "Command",
     "$title.cmdDisplay": "Output Display",
-    "$placeholder.envInfo": "Environment variables:\n$f: Current file path\n$d: Directory of the current file\n$m: Current mount directory"
+    "$placeholder.envInfo": "Env variables:\n$f: Current file path\n$d: Directory of the current file\n$m: Current mount directory"
   },
   "md_padding": {
     "pluginName": "Chinese-English Text Spacer",
@@ -443,7 +444,7 @@
     "$label.IMAGE_ALIGN": "Image Align",
     "$label.MODIFIER_KEY.TEMPORARY": "Temporary Resize",
     "$label.MODIFIER_KEY.PERSISTENT": "Persistent Resize (Convert to HTML)",
-    "$tooltip.modifyKeyExample": "Example: Enter 'alt', then Alt+Wheel will trigger the function.",
+    "$tooltip.modifyKeyExample": "E.g. 'Alt' to use Alt+Wheel to trigger",
     "$title.image": "Image",
     "$title.modifierKeys": "Mouse Wheel Modifier Keys"
   },
@@ -574,7 +575,7 @@
     "$option.TITLE_BAR_BUTTONS.download": "Download",
     "$tooltip.zero": "0 indicates unlimited",
     "$tooltip.tempDir": "If empty, the TEMP directory will be used",
-    "$tooltip.experimental": "Experimental feature, only available when the 'collapse_paragraph' plugin is enabled.",
+    "$tooltip.experimental": "Experimental feature, only available when the plugin 'collapse_paragraph' is enabled",
     "$tooltip.removeForeignObj": "Sacrifices style for compatibility. If the downloaded image is abnormal, check this option",
     "$tooltip.positioningViewPort": "Position the target section to the current viewport height",
     "$tooltip.pixelImagesOnly": "For Pixel Images Only",
@@ -746,7 +747,7 @@
     "$label.MODIFIER_KEY.COLLAPSE_RECURSIVE": "Recursively Collapse/Expand Current Section",
     "$title.mode": "Mode",
     "$title.modifierKey": "Modifier Key",
-    "$tooltip.modifierKeyExample": "Example: Enter ctrl, then Ctrl+Click will trigger the function",
+    "$tooltip.modifierKeyExample": "E.g. 'Ctrl' to use Ctrl+Click to trigger",
     "$tooltip.ConflictWithOptionExpandSimpleBlock": "After enabling, Headings will not display the # symbol on focus"
   },
   "collapse_list": {
@@ -811,7 +812,7 @@
     "$label.ACTION_HOTKEYS.hotkey": "Hotkey",
     "$label.ACTION_HOTKEYS.action": "Action",
     "$title.buttonDefaultOptions": "Default Values for Buttons",
-    "$tooltip.brushExample": "Example: color:#FFF; font-weight:bold;"
+    "$tooltip.brushExample": "E.g. color:#FFF; font-weight:bold;"
   },
   "cipher": {
     "pluginName": "Cipher",
@@ -917,10 +918,10 @@
     "$option.POINTER_TYPES.mouse": "Mouse",
     "$option.POINTER_TYPES.pen": "Stylus Pen",
     "$option.POINTER_TYPES.touch": "Touch Screen",
-    "$option.TRIGGER_BUTTONS.middle": "Middle Button",
-    "$option.TRIGGER_BUTTONS.right": "Right Button",
-    "$option.TRIGGER_BUTTONS.x1": "X1 Button",
-    "$option.TRIGGER_BUTTONS.x2": "X2 Button",
+    "$option.TRIGGER_BUTTONS.middle": "Middle",
+    "$option.TRIGGER_BUTTONS.right": "Right",
+    "$option.TRIGGER_BUTTONS.x1": "X1",
+    "$option.TRIGGER_BUTTONS.x2": "X2",
     "$option.SUPPRESSION_KEY.": "NULL",
     "$option.SUPPRESSION_KEY.alt": "Alt",
     "$option.SUPPRESSION_KEY.ctrl": "Ctrl",
@@ -933,11 +934,11 @@
     "$option.GESTURES.button.x2": "X2 Button",
     "$tooltip.STRATEGY": "Adaptive: Prioritizes 8-way recognition, but automatically falls back to 4-way for complex trajectories to improve accuracy",
     "$tooltip.HYSTERESIS": "Increases turn-detection threshold to filter out jitter at boundary angles",
-    "$tooltip.START_TIMEOUT": "Anti-stagnation mechanism. If the pointer does not move within this duration after pressing the trigger, it's treated as a normal click and the gesture aborts. Set to 0 to disable.",
-    "$tooltip.IDLE_TIMEOUT": "Idle timeout mechanism. If the pointer pauses for longer than this duration mid-gesture, the current gesture will be aborted. Set to 0 to disable.",
-    "$tooltip.COOLDOWN": "Global cooldown. Sets a delay to prevent accidental rapid consecutive executions.",
-    "$tooltip.MACRO_RADIUS": "The minimum pixel distance required to register a new gesture direction. Larger values reduce accidental triggers from hand jitters but require wider hand movements.",
-    "$tooltip.TAIL_RADIUS": "The threshold used to recognize the final, brief trajectory segment upon gesture release. Usually smaller than 'Macro Sampling Radius' to maintain sensitivity at the end of the motion."
+    "$tooltip.START_TIMEOUT": "Anti-stagnation mechanism. If the pointer does not move within this duration after pressing the trigger, it's treated as a normal click and the gesture aborts. Set to 0 to disable",
+    "$tooltip.IDLE_TIMEOUT": "Idle timeout mechanism. If the pointer pauses for longer than this duration mid-gesture, the current gesture will be aborted. Set to 0 to disable",
+    "$tooltip.COOLDOWN": "Global cooldown. Sets a delay to prevent accidental rapid consecutive executions",
+    "$tooltip.MACRO_RADIUS": "The minimum pixel distance required to register a new gesture direction. Larger values reduce accidental triggers from hand jitters but require wider hand movements",
+    "$tooltip.TAIL_RADIUS": "The threshold used to recognize the final, brief trajectory segment upon gesture release. Usually smaller than 'Macro Sampling Radius' to maintain sensitivity at the end of the motion"
   },
   "slash_commands": {
     "pluginName": "Slash Commands",
@@ -1014,7 +1015,7 @@
     "$label.BUTTONS": "Pie Menu",
     "$label.BUTTONS.ICON": "Icon",
     "$label.BUTTONS.CALLBACK": "Callback",
-    "$tooltip.example": "Example: ctrl, then Ctrl+RClick shows menu"
+    "$tooltip.example": "E.g. 'Ctrl' to use Ctrl+RClick to trigger"
   },
   "preferences": {
     "pluginName": "Preferences",
@@ -1052,7 +1053,7 @@
     "pluginName": "Bookmark",
     "$label.MODIFIER_KEY": "Left Modifier Key",
     "$label.AUTO_POPUP_WINDOW": "Auto Popup Management Window",
-    "$tooltip.modifierKeyExample": "Example: Enter 'alt' to use Alt+LClick to bookmark"
+    "$tooltip.modifierKeyExample": "E.g. 'Alt' to use Alt+LClick to trigger"
   },
   "editor_width_slider": {
     "pluginName": "Editor Width Slider",
@@ -1679,7 +1680,7 @@
     "$tooltip.viewMarkdownlintRules": "Rules Document"
   },
   "action_buttons": {
-    "pluginName": "Floating Action Button",
+    "pluginName": "Floating Action Buttons",
     "$label.BUTTON_SIZE": "Size",
     "$label.BUTTON_ICON_SIZE": "Icon Size",
     "$label.BUTTON_BORDER_RADIUS": "Border Radius",
@@ -1690,11 +1691,11 @@
     "$label.POSITION_BOTTOM": "Bottom Margin",
     "$label.SUPPORT_RIGHT_CLICK": "Support Right Click",
     "$label.HIDE_BUTTON_HINT": "Hide Hint",
-    "$label.BUTTONS": "Preset Button",
+    "$label.BUTTONS": "Preset Buttons",
     "$label.BUTTONS.enable": "Enable",
-    "$label.BUTTONS.coordinate": "Row, Column",
-    "$label.BUTTONS.coordinate.0": "Row Number",
-    "$label.BUTTONS.coordinate.1": "Column Number",
+    "$label.BUTTONS.coordinate": "Coordinate",
+    "$label.BUTTONS.coordinate.0": "X-coordinate",
+    "$label.BUTTONS.coordinate.1": "Y-coordinate",
     "$label.BUTTONS.icon": "Icon",
     "$label.BUTTONS.size": "Icon Size",
     "$label.BUTTONS.color": "Icon Color",

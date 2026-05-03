@@ -1,3 +1,56 @@
+const parseCommandLineArgs = args => {
+    const result = []
+    let currentArg = ""
+    let inQuote = false
+    let escapeNextChar = false
+
+    for (let i = 0; i < args.length; i++) {
+        const char = args[i]
+
+        if (escapeNextChar) {
+            currentArg += char
+            escapeNextChar = false
+        } else if (char === "\\") {
+            escapeNextChar = true
+        } else if (char === " ") {
+            if (inQuote) {
+                currentArg += char
+            } else if (currentArg) {
+                result.push(currentArg)
+                currentArg = ""
+            }
+        } else if (char === "\"") {
+            if (inQuote) {
+                if (args[i - 1] !== "\\") {
+                    inQuote = false
+                }
+            } else {
+                inQuote = true
+            }
+        } else {
+            currentArg += char
+        }
+    }
+
+    if (currentArg) {
+        result.push(currentArg)
+    }
+
+    // Split options with values
+    const parsedResult = []
+    for (const arg of result) {
+        const equalIndex = arg.indexOf("=")
+        if (equalIndex !== -1) {
+            parsedResult.push(arg.substring(0, equalIndex))
+            parsedResult.push(arg.substring(equalIndex + 1))
+        } else {
+            parsedResult.push(arg)
+        }
+    }
+
+    return parsedResult
+}
+
 class RipgrepPlugin extends BasePlugin {
     styleTemplate = () => true
 
@@ -40,7 +93,7 @@ class RipgrepPlugin extends BasePlugin {
     }
 
     ripgrep = (rawInput = this.entities.input.value, callback = this.utils.noop) => {
-        const cmdArgs = this._parseCommandLineArgs(rawInput)
+        const cmdArgs = parseCommandLineArgs(rawInput)
         const addErrClass = this.utils.once(() => this.entities.pre.classList.add("error"))
         const onData = data => {
             if (data) this.entities.pre.textContent += data.toString()
@@ -80,61 +133,8 @@ class RipgrepPlugin extends BasePlugin {
         child.stderr.on("data", onErr)
         child.on("close", onClose)
     }
-
-    _parseCommandLineArgs = args => {
-        const result = []
-        let currentArg = ''
-        let inQuote = false
-        let escapeNextChar = false
-
-        for (let i = 0; i < args.length; i++) {
-            const char = args[i]
-
-            if (escapeNextChar) {
-                currentArg += char
-                escapeNextChar = false
-            } else if (char === '\\') {
-                escapeNextChar = true
-            } else if (char === ' ') {
-                if (inQuote) {
-                    currentArg += char
-                } else if (currentArg) {
-                    result.push(currentArg)
-                    currentArg = ''
-                }
-            } else if (char === '"') {
-                if (inQuote) {
-                    if (args[i - 1] !== '\\') {
-                        inQuote = false
-                    }
-                } else {
-                    inQuote = true
-                }
-            } else {
-                currentArg += char
-            }
-        }
-
-        if (currentArg) {
-            result.push(currentArg)
-        }
-
-        // Split options with values
-        const parsedResult = []
-        for (const arg of result) {
-            const equalIndex = arg.indexOf('=')
-            if (equalIndex !== -1) {
-                parsedResult.push(arg.substring(0, equalIndex))
-                parsedResult.push(arg.substring(equalIndex + 1))
-            } else {
-                parsedResult.push(arg)
-            }
-        }
-
-        return parsedResult
-    }
 }
 
 module.exports = {
-    plugin: RipgrepPlugin
+    plugin: RipgrepPlugin,
 }

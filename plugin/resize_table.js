@@ -1,7 +1,10 @@
 class ResizeTablePlugin extends BasePlugin {
-    styleTemplate = () => this.config.REMOVE_MIN_CELL_WIDTH
-
     process = () => {
+        if (this.config.REMOVE_MIN_CELL_WIDTH) {
+            const id = this.utils.styleTemplater.getID(this.fixedName)
+            this.utils.insertStyle(id, "table.md-table td { min-width: 1px !important; }")
+        }
+
         this.utils.settings.autoSave(this)
         this.toggleRecorder(false)
         this.toggleResizer(true)
@@ -130,5 +133,5 @@ class ResizeTablePlugin extends BasePlugin {
 }
 
 module.exports = {
-    plugin: ResizeTablePlugin
+    plugin: ResizeTablePlugin,
 }

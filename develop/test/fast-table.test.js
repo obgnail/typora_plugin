@@ -10,9 +10,9 @@ before(async () => {
     utils = require("./mocks/utils.mock.js")
     dom = require("./mocks/dom.mock.js")
 
-    proxyquire("../../plugin/global/core/components/fast-table.js", {
-        "./common": { sharedSheets: [new CSSStyleSheet()], "@noCallThru": true },
-        "../utils": { ...utils, "@noCallThru": true },
+    proxyquire("../../plugin/global/core/components/fast-table/index.js", {
+        "../common": { sharedSheets: [new CSSStyleSheet()], "@noCallThru": true },
+        "../../utils": { ...utils, "@noCallThru": true },
     })
 
     FastTable = customElements.get("fast-table")

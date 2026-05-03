@@ -1,0 +1,202 @@
+:host {
+  --dialog-width: 630px;
+  --dialog-body-min-height: 200px;
+  --dialog-body-max-height: calc(85vh - 140px);
+
+  --dialog-bg-mask: rgba(0, 0, 0, 0.5);
+  --dialog-bg-main: #ffffff;
+  --dialog-bg-hover: rgba(0, 0, 0, 0.04);
+  --dialog-border: rgba(0, 0, 0, 0.06);
+  --dialog-text-main: #1e293b;
+  --dialog-text-sub: #475569;
+  --dialog-primary: #4285f4;
+  --dialog-primary-hover: #3367d6;
+  --dialog-shadow-main: 0 20px 40px -8px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
+  --dialog-shadow-focus: rgba(66, 133, 244, 0.15);
+  --dialog-radius-main: 12px;
+  --dialog-radius-item: 8px;
+}
+
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: var(--dialog-bg-mask);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: dialog-fade-in 0.2s linear forwards;
+}
+
+.dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: var(--dialog-width);
+  max-width: 90vw;
+  border-radius: var(--dialog-radius-main);
+  color: var(--dialog-text-main);
+  background-color: var(--dialog-bg-main);
+  box-shadow: var(--dialog-shadow-main);
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  animation: dialog-slide-up 0.3s ease-out forwards;
+  overflow: hidden;
+}
+
+.header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--dialog-border);
+  user-select: none;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--dialog-text-main);
+}
+
+.body {
+  max-height: var(--dialog-body-max-height);
+  min-height: var(--dialog-body-min-height);
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: auto;
+  padding: 12px 24px;
+}
+
+.body::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.body::-webkit-scrollbar-thumb {
+  background: var(--dialog-border);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s;
+}
+
+.body:hover::-webkit-scrollbar-thumb {
+  background-color: var(--dialog-text-sub);
+}
+
+.body .form {
+  --ff-bg-surface: var(--dialog-bg-main);
+  --ff-bg-elevated: var(--dialog-bg-main);
+  --ff-bg-solid: #ffffff;
+  --ff-bg-surface-sunken: var(--dialog-bg-hover);
+  --ff-bg-surface-hover: var(--dialog-bg-hover);
+  --ff-border-base: var(--dialog-border);
+  --ff-text-primary: var(--dialog-text-main);
+  --ff-text-secondary: var(--dialog-text-sub);
+  --ff-color-primary: var(--dialog-primary);
+  --ff-color-primary-hover: var(--dialog-primary-hover);
+  --ff-color-focus-ring: var(--dialog-shadow-focus);
+  --ff-box-border-width: 1px;
+  display: block;
+  width: 100%;
+}
+
+.footer {
+  padding: 16px 28px;
+  text-align: right;
+  border-top: 1px solid var(--dialog-border);
+  user-select: none;
+  background-color: var(--dialog-bg-main);
+}
+
+.footer button {
+  cursor: pointer;
+  outline: none;
+  border: 1px solid transparent;
+  border-radius: var(--dialog-radius-item);
+  height: 36px;
+  padding: 0 16px;
+  font-weight: 500;
+  font-size: 14px;
+  min-width: 80px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.footer button + button {
+  margin-left: 12px;
+}
+
+.footer .cancel-btn {
+  background-color: transparent;
+  color: var(--dialog-text-sub);
+  border-color: var(--dialog-border);
+}
+
+.footer .cancel-btn:hover {
+  background-color: var(--dialog-bg-hover);
+  color: var(--dialog-text-main);
+}
+
+.footer .submit-btn {
+  color: #fff;
+  background-color: var(--dialog-primary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.footer .submit-btn:hover {
+  background-color: var(--dialog-primary-hover);
+}
+
+:host-context(body.plugin-dark-mode) {
+  --dialog-bg-mask: rgba(0, 0, 0, 0.8);
+  --dialog-bg-main: #1e1e20;
+  --dialog-bg-hover: rgba(255, 255, 255, 0.06);
+  --dialog-border: rgba(255, 255, 255, 0.08);
+  --dialog-text-main: #f3f4f6;
+  --dialog-text-sub: #9ca3af;
+  --dialog-primary: #8ab4f8;
+  --dialog-primary-hover: #aecbfa;
+  --dialog-shadow-main: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --dialog-shadow-focus: rgba(138, 180, 248, 0.15);
+}
+
+:host-context(body.plugin-dark-mode) .body .form {
+  --ff-bg-surface-raised: #2c2c2e;
+  --ff-bg-elevated: var(--ff-bg-surface-raised);
+  --ff-border-hover: rgba(255, 255, 255, 0.15);
+  --ff-text-inverse: #ffffff;
+  --ff-bg-solid: #1e1e20;
+}
+
+:host-context(body.plugin-dark-mode) .footer .submit-btn {
+  color: #1e1e20;
+}

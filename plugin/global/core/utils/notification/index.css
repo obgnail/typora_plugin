@@ -1,0 +1,59 @@
+.plugin-common-notification-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.plugin-common-notification {
+  min-width: 400px;
+  max-width: 700px;
+  padding: 16px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0 4px 6px -1px, rgba(0, 0, 0, 0.1) 0 2px 4px -2px;
+  border-radius: 8px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  background-color: var(--notification-bg-color);
+  color: var(--notification-text-color);
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease-out;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  --notification-bg-color: #dcfce7;
+  --notification-text-color: #166534;
+}
+
+.plugin-common-notification.notification-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.plugin-common-notification.notification-hide {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.plugin-common-notification .notification-icon {
+  font-size: 1.4em;
+  line-height: 1.2em;
+}
+
+.plugin-common-notification .notification-message {
+  flex: 1 1 0;
+  margin: 0 12px;
+  font-size: 16px;
+  white-space: break-spaces;
+  word-break: break-word;
+  font-weight: 600;
+}
+
+.plugin-common-notification .notification-close-btn {
+  font-size: 1.3em;
+  cursor: pointer;
+}

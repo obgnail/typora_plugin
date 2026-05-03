@@ -7,17 +7,21 @@ class PreferencesPlugin extends BasePlugin {
     styleTemplate = () => true
 
     html = () => `
-        <div class="plugin-preferences-dialog plugin-common-hidden">
-            <div class="plugin-preferences-content">
-                <div class="plugin-preferences-left">
-                    <div class="plugin-preferences-search"><input type="text" placeholder="${this.i18n.t("search")}"><i class="ion-close-round"></i></div>
-                    <div class="plugin-preferences-menu"></div>
-                </div>
-                <div class="plugin-preferences-right">
-                    <div class="plugin-preferences-title"></div>
-                    <div class="plugin-preferences-close ion-close-round"></div>
-                    <div class="plugin-preferences-main">
-                        <fast-form class="plugin-preferences-form" data-plugin="global"></fast-form>
+        <div class="plugin-preferences-mask plugin-common-hidden">
+            <div class="plugin-preferences-dialog">
+                <div class="plugin-preferences-content">
+                    <div class="plugin-preferences-left">
+                        <div class="plugin-preferences-search"><i class="ion-search"></i><input type="text" placeholder="${this.i18n.t("search")}"><i class="ion-close-round clear-btn"></i></div>
+                        <div class="plugin-preferences-menu"></div>
+                    </div>
+                    <div class="plugin-preferences-right">
+                        <div class="plugin-preferences-header">
+                            <div class="plugin-preferences-title"></div>
+                            <div class="plugin-preferences-close ion-close-round"></div>
+                        </div>
+                        <div class="plugin-preferences-main">
+                            <fast-form class="plugin-preferences-form" data-plugin="global"></fast-form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -25,13 +29,14 @@ class PreferencesPlugin extends BasePlugin {
 
     init = () => {
         this.entities = {
+            mask: document.querySelector(".plugin-preferences-mask"),
             dialog: document.querySelector(".plugin-preferences-dialog"),
             menu: document.querySelector(".plugin-preferences-menu"),
             title: document.querySelector(".plugin-preferences-title"),
             form: document.querySelector(".plugin-preferences-form"),
             main: document.querySelector(".plugin-preferences-main"),
             searchInput: document.querySelector(".plugin-preferences-search input"),
-            searchClose: document.querySelector(".plugin-preferences-search i"),
+            searchClear: document.querySelector(".plugin-preferences-search .clear-btn"),
             close: document.querySelector(".plugin-preferences-close"),
         }
         this.RULES = require("./rules.js")
@@ -44,21 +49,6 @@ class PreferencesPlugin extends BasePlugin {
     }
 
     process = () => {
-        const dragAndMove = () => {
-            const { dialog, title } = this.entities
-            this.utils.dragElement({
-                targetEle: title,
-                moveEle: dialog,
-                onMouseDown: () => {
-                    if (!dialog.classList.contains("is-dragged")) {
-                        const rect = dialog.getBoundingClientRect()
-                        dialog.style.left = `${Math.round(rect.left)}px`
-                        dialog.style.top = `${Math.round(rect.top)}px`
-                        dialog.classList.add("is-dragged")
-                    }
-                },
-            })
-        }
         const searchInDialog = () => {
             const querySchemas = (query) => {
                 const hits = new Set()
@@ -91,7 +81,7 @@ class PreferencesPlugin extends BasePlugin {
                 highlightForm(query)
                 if (!query) scroll()
             })
-            this.entities.searchClose.addEventListener("click", () => {
+            this.entities.searchClear.addEventListener("click", () => {
                 const inputEl = this.entities.searchInput
                 inputEl.value = ""
                 inputEl.dispatchEvent(new Event("input", { bubbles: true }))
@@ -117,15 +107,14 @@ class PreferencesPlugin extends BasePlugin {
             })
         }
 
-        dragAndMove()
         searchInDialog()
         onEvents()
     }
 
     call = async () => {
-        if (this.utils.isShown(this.entities.dialog)) {
+        if (this.utils.isShown(this.entities.mask)) {
             this.entities.searchInput.value = ""
-            this.utils.hide(this.entities.dialog)
+            this.utils.hide(this.entities.mask)
             if (this._hasDialogChanged()) {
                 this._setDialogState(false)
                 this.utils.notification.show(this.i18n.t("takesEffectAfterRestart"))
@@ -133,7 +122,7 @@ class PreferencesPlugin extends BasePlugin {
         } else {
             const menu = (this.config.DEFAULT_MENU === "__LAST__") ? this.menuStorage.get() : this.config.DEFAULT_MENU
             await this.showDialog(menu)
-            this.utils.show(this.entities.dialog)
+            this.utils.show(this.entities.mask)
         }
     }
 

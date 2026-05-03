@@ -19,6 +19,9 @@ ENABLE = true
 #   zh-TW: 繁體中文
 LOCALE = "auto"
 
+# Dark Mode
+DARK_MODE = false
+
 # =========== [ Chart Interaction ] ===========
 # Exit methods for chart interaction mode (e.g., kanban, markmap)
 # Note: At least one exit method must be specified to prevent lock-in
@@ -1744,13 +1747,13 @@ SUPPORT_RIGHT_CLICK = true
 BUTTON_SIZE = "35px"
 
 # Inner icon size
-BUTTON_ICON_SIZE = "17px"
+BUTTON_ICON_SIZE = "16px"
 
 # Border radius
-BUTTON_BORDER_RADIUS = "4px"
+BUTTON_BORDER_RADIUS = "8px"
 
 # Box shadow
-BUTTON_BOX_SHADOW = "0 1px 20px 0 rgba(0, 0, 0, 0.1), inset 0 -1px 0 0 rgba(0, 0, 0, 0.1)"
+BUTTON_BOX_SHADOW = "0 4px 12px -2px rgba(0, 0, 0, 0.15), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.05)"
 
 # Box shadow on hover
 BUTTON_BOX_SHADOW_ON_HOVER = "0 2px 10px 3px rgba(0, 0, 0, .15)"
@@ -1772,22 +1775,22 @@ HIDE_BUTTON_HINT = false
 #   enable    : Enable this button
 #   coordinate: Grid coordinates [X, Y] (0-indexed. Positive X is upward, positive Y is leftward)
 #   icon      : CSS Icon class (Supports Font Awesome 4.1.0 & ionicons 2.0.1)
-#   size      : (Optional) Icon size (Defaults to 17px)
+#   size      : (Optional) Icon size (Defaults to `BUTTON_ICON_SIZE`)
 #   color     : (Optional) Icon color (Defaults to current theme)
 #   bgColor   : (Optional) Background color (Defaults to current theme)
 #   hint      : (Optional) Tooltip text
 #   callback  : System Callback. Format: "PluginName.MethodName"
 #   evil      : Custom Callback. Executable eval() statement. Overrides 'callback' if configured
 BUTTONS = [
-  { enable = true, coordinate = [0, 0], size = "24px", icon = "fa fa-caret-down", evil = "() => this.utils.jumpToEdge(false)" },
-  { enable = true, coordinate = [1, 0], size = "24px", icon = "fa fa-caret-up", evil = "() => this.utils.jumpToEdge(true)" },
-  { enable = true, coordinate = [2, 0], size = "17px", icon = "fa fa-font", callback = "text_stylize.call" },
-  { enable = true, coordinate = [3, 0], size = "17px", icon = "fa fa-indent", callback = "md_padding.call" },
-  { enable = true, coordinate = [4, 0], size = "17px", icon = "fa fa-gear", callback = "preferences.call" },
-  { enable = true, coordinate = [0, 1], size = "17px", icon = "fa fa-sitemap fa-rotate-270", callback = "markmap.onButtonClick" },
-  { enable = true, coordinate = [1, 1], size = "17px", icon = "fa fa-image", callback = "image_viewer.call" },
-  { enable = true, coordinate = [2, 1], size = "17px", icon = "fa fa-th-list", callback = "right_outline.call" },
-  { enable = true, coordinate = [3, 1], size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
+  { enable = true, coordinate = [0, 0], size = "22px", icon = "fa fa-caret-down", evil = "() => this.utils.jumpToEdge(false)" },
+  { enable = true, coordinate = [1, 0], size = "22px", icon = "fa fa-caret-up", evil = "() => this.utils.jumpToEdge(true)" },
+  { enable = true, coordinate = [2, 0], size = "16px", icon = "fa fa-font", callback = "text_stylize.call" },
+  { enable = true, coordinate = [3, 0], size = "16px", icon = "fa fa-indent", callback = "md_padding.call" },
+  { enable = true, coordinate = [4, 0], size = "16px", icon = "fa fa-gear", callback = "preferences.call" },
+  { enable = true, coordinate = [0, 1], size = "16px", icon = "fa fa-sitemap fa-rotate-270", callback = "markmap.onButtonClick" },
+  { enable = true, coordinate = [1, 1], size = "16px", icon = "fa fa-image", callback = "image_viewer.call" },
+  { enable = true, coordinate = [2, 1], size = "16px", icon = "fa fa-th-list", callback = "right_outline.call" },
+  { enable = true, coordinate = [3, 1], size = "16px", icon = "fa fa-search", callback = "search_multi.call" },
 ]
 
 

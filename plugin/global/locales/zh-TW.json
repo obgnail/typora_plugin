@@ -104,6 +104,7 @@
     "error.pluginDisabled": "插件「{{plugin}}」未開啟",
     "error.incorrectCommand": "請輸入正確的指令",
     "$label.LOCALE": "語言",
+    "$label.DARK_MODE": "夜間模式",
     "$label.EXIT_CHART_INTERACTION": "退出圖表互動",
     "$label.BATCH_RENDER_CHARTS": "合併渲染圖表",
     "$label.exportSettings": "匯出設定",
@@ -443,9 +444,9 @@
     "$label.IMAGE_ALIGN": "對齊方式",
     "$label.MODIFIER_KEY.TEMPORARY": "臨時修改圖片大小",
     "$label.MODIFIER_KEY.PERSISTENT": "永久修改圖片大小（轉為 HTML 語法）",
-    "$tooltip.modifyKeyExample": "舉例：填入 alt，則 Alt+Wheel 臨時調整圖片大小",
+    "$tooltip.modifyKeyExample": "舉例：填入 Alt，則 Alt+Wheel 觸發",
     "$title.image": "圖片",
-    "$title.modifierKeys": "滑鼠滾輪的修飾鍵"
+    "$title.modifierKeys": "滾輪修飾鍵"
   },
   "resize_table": {
     "pluginName": "表格調整",
@@ -574,7 +575,7 @@
     "$option.TITLE_BAR_BUTTONS.download": "匯出",
     "$tooltip.zero": "0 表示無限制",
     "$tooltip.tempDir": "為空則使用 TEMP 目錄",
-    "$tooltip.experimental": "實驗性功能，僅當「章節摺疊」插件開啟時可用",
+    "$tooltip.experimental": "實驗性功能，僅當插件「章節摺疊」開啟時可用",
     "$tooltip.removeForeignObj": "犧牲樣式以提高相容性，匯出異常時勾選",
     "$tooltip.positioningViewPort": "定位目標章節滾動到目前視口高度",
     "$tooltip.pixelImagesOnly": "適用像素圖",
@@ -746,7 +747,7 @@
     "$label.MODIFIER_KEY.COLLAPSE_RECURSIVE": "遞迴摺疊/展開目前章節",
     "$title.mode": "模式",
     "$title.modifierKey": "修飾鍵",
-    "$tooltip.modifierKeyExample": "舉例：填入 ctrl，則 Clt+Click 將觸發功能",
+    "$tooltip.modifierKeyExample": "舉例：填入 Ctrl，則 Ctrl+Click 觸發",
     "$tooltip.ConflictWithOptionExpandSimpleBlock": "啟用後，聚焦標題將不會即時顯示 # 符號"
   },
   "collapse_list": {
@@ -1014,7 +1015,7 @@
     "$label.BUTTONS": "圓盤選單",
     "$label.BUTTONS.ICON": "圖示",
     "$label.BUTTONS.CALLBACK": "回呼",
-    "$tooltip.example": "舉例：填入 ctrl，則 Ctrl+RClick 彈出選單"
+    "$tooltip.example": "舉例：填入 Ctrl，則 Ctrl+RClick 觸發"
   },
   "preferences": {
     "pluginName": "插件設定",
@@ -1052,7 +1053,7 @@
     "pluginName": "書籤管理",
     "$label.MODIFIER_KEY": "左鍵修飾鍵",
     "$label.AUTO_POPUP_WINDOW": "標註書籤的同時彈出管理視窗",
-    "$tooltip.modifierKeyExample": "舉例：填入 alt，則 Alt+LClick 標註書籤"
+    "$tooltip.modifierKeyExample": "舉例：填入 Alt，則 Alt+LClick 觸發"
   },
   "editor_width_slider": {
     "pluginName": "編輯區寬度調整",
@@ -1692,9 +1693,9 @@
     "$label.HIDE_BUTTON_HINT": "隱藏提示",
     "$label.BUTTONS": "預設按鈕",
     "$label.BUTTONS.enable": "啟用",
-    "$label.BUTTONS.coordinate": "行,列",
-    "$label.BUTTONS.coordinate.0": "行號",
-    "$label.BUTTONS.coordinate.1": "列號",
+    "$label.BUTTONS.coordinate": "坐標",
+    "$label.BUTTONS.coordinate.0": "坐標 X",
+    "$label.BUTTONS.coordinate.1": "坐標 Y",
     "$label.BUTTONS.icon": "圖示",
     "$label.BUTTONS.size": "圖示大小",
     "$label.BUTTONS.color": "圖示顏色",
