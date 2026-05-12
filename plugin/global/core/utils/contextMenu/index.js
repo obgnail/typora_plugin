@@ -1,95 +1,92 @@
-/**
- * Dynamically register context menu.
- */
 class ContextMenu {
-    menus = new WeakSet()
-    _callback = null
+  menus = new WeakSet()
+  _callback = null
 
-    constructor(utils) {
-        this.utils = utils
+  constructor(utils) {
+    this.utils = utils
+  }
+
+  process = async () => {
+    this.utils.insertStyleFile("common-menu", "./plugin/global/core/utils/contextMenu/index.css")
+    this.utils.insertElements(`<div class="plugin-common-menu"></div>`)
+
+    this.menuEl = document.querySelector(".plugin-common-menu")
+    this.menuEl.addEventListener("mousedown", ev => {
+      if (!this._callback || ev.button !== 0) return
+      const target = ev.target.closest(".menu-item")
+      if (target) {
+        this._callback(ev, target.dataset.key)
+        this._hideMenu()
+      }
+    })
+  }
+
+  /**
+   * @param {Element} el: At which location right click will pop up the menu
+   * @param {function(ev): {key: value}} getMenuItems: Generates an object composed of context menu options
+   * @param {function(ev, key): null} onClickMenuItem: on click callback; the key parameter is the clicked option
+   */
+  register = (el, getMenuItems, onClickMenuItem) => {
+    if (el && !this.menus.has(el)) {
+      el.__getMenuItems = getMenuItems
+      el.__onClickMenuItem = onClickMenuItem
+      el.addEventListener("mousedown", this._handler)
+      this.menus.add(el)
+    }
+  }
+
+  unregister = el => {
+    if (this.menus.has(el)) {
+      el.__getMenuItems = undefined
+      el.__onClickMenuItem = undefined
+      el.removeEventListener("mousedown", this._handler)
+      this.menus.delete(el)
+    }
+  }
+
+  _handler = ev => {
+    if (this._callback) {
+      this._hideMenu()
     }
 
-    process = async () => {
-        this.utils.insertStyleFile("plugin-common-menu", "./plugin/global/core/utils/contextMenu/index.css")
-        this.utils.insertElement(`<div class="plugin-common-menu"></div>`)
+    if (ev.button !== 2) return
 
-        this.menuEl = document.querySelector(".plugin-common-menu")
-        this.menuEl.addEventListener("mousedown", ev => {
-            if (!this._callback || ev.button !== 0) return
-            const target = ev.target.closest(".menu-item")
-            if (target) {
-                this._callback(ev, target.dataset.key)
-                this._hideMenu()
-            }
-        })
-    }
+    const { __getMenuItems, __onClickMenuItem } = ev.currentTarget
+    if (!__getMenuItems || !__onClickMenuItem) return
 
-    /**
-     * @param {Element} el: At which location right click will pop up the menu
-     * @param {function(ev): {key: value}} getMenuItems: Generates an object composed of context menu options
-     * @param {function(ev, key): null} onClickMenuItem: on click callback; the key parameter is the clicked option
-     */
-    register = (el, getMenuItems, onClickMenuItem) => {
-        if (el && !this.menus.has(el)) {
-            el.__getMenuItems = getMenuItems
-            el.__onClickMenuItem = onClickMenuItem
-            el.addEventListener("mousedown", this._handler)
-            this.menus.add(el)
-        }
-    }
+    ev.preventDefault()
+    ev.stopPropagation()
 
-    unregister = el => {
-        if (this.menus.has(el)) {
-            el.__getMenuItems = undefined
-            el.__onClickMenuItem = undefined
-            el.removeEventListener("mousedown", this._handler)
-            this.menus.delete(el)
-        }
-    }
+    const menuItems = __getMenuItems(ev)
+    if (!menuItems || !this.utils.isObject(menuItems) || Object.keys(menuItems).length === 0) return
 
-    _handler = ev => {
-        if (this._callback) {
-            this._hideMenu()
-        }
+    this.menuEl.innerHTML = Object.entries(menuItems).map(([key, text]) => `<div class="menu-item" data-key="${key}">${text}</div>`).join("")
+    this._callback = __onClickMenuItem
+    this._showMenu(ev)
 
-        if (ev.button !== 2) return
+    document.addEventListener("mousedown", this._hideMenu, { once: true })
+  }
 
-        const { __getMenuItems, __onClickMenuItem } = ev.currentTarget
-        if (!__getMenuItems || !__onClickMenuItem) return
+  _hideMenu = () => {
+    this.menuEl.classList.remove("show")
+    this._callback = null
+  }
 
-        ev.preventDefault()
-        ev.stopPropagation()
-
-        const menuItems = __getMenuItems(ev)
-        if (!menuItems || !this.utils.isObject(menuItems) || Object.keys(menuItems).length === 0) return
-
-        this.menuEl.innerHTML = Object.entries(menuItems).map(([key, text]) => `<div class="menu-item" data-key="${key}">${text}</div>`).join("")
-        this._callback = __onClickMenuItem
-        this._showMenu(ev)
-
-        document.addEventListener("mousedown", this._hideMenu, { once: true })
-    }
-
-    _hideMenu = () => {
-        this.menuEl.classList.remove("show")
-        this._callback = null
-    }
-
-    _showMenu = ev => {
-        const $menu = $(this.menuEl)
-        $menu.addClass("show")
-        const { innerWidth, innerHeight } = window
-        const { clientX, clientY } = ev
-        let width = $menu.width() + 20
-        width = Math.min(clientX, innerWidth - width)
-        width = Math.max(0, width)
-        let height = $menu.height() + 48
-        height = clientY > innerHeight - height
-            ? innerHeight - height
-            : clientY - $("#top-titlebar").height() + 8
-        height = Math.max(0, height)
-        $menu.css({ top: height + "px", left: width + "px" })
-    }
+  _showMenu = ev => {
+    const $menu = $(this.menuEl)
+    $menu.addClass("show")
+    const { innerWidth, innerHeight } = window
+    const { clientX, clientY } = ev
+    let width = $menu.width() + 20
+    width = Math.min(clientX, innerWidth - width)
+    width = Math.max(0, width)
+    let height = $menu.height() + 48
+    height = clientY > innerHeight - height
+      ? innerHeight - height
+      : clientY - $("#top-titlebar").height() + 8
+    height = Math.max(0, height)
+    $menu.css({ top: height + "px", left: width + "px" })
+  }
 }
 
 module.exports = ContextMenu

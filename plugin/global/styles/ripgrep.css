@@ -13,20 +13,7 @@
   --radius-input: 8px;
   --danger-text: #ef4444;
   --danger-bg: #fef2f2;
-}
 
-@keyframes ripgrep-slide-down {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -16px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
-.plugin-common-modal#plugin-ripgrep {
   position: absolute;
   top: 10vh;
   left: 50%;
@@ -44,6 +31,17 @@
 
 #plugin-ripgrep:not(.plugin-common-hidden) {
   animation: ripgrep-slide-down 0.25s ease-out forwards;
+}
+
+@keyframes ripgrep-slide-down {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -16px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 #plugin-ripgrep-form {

@@ -25,8 +25,8 @@
   font-size: ${this.config.BUTTON_ICON_SIZE};
   box-shadow: ${this.config.BUTTON_BOX_SHADOW};
   border-radius: ${this.config.BUTTON_BORDER_RADIUS};
-  color: ${buttonColor};
-  background-color: ${buttonBgColor};
+  color: var(--text-color);
+  background-color: initial;
 }
 
 #plugin-action-buttons .action-item:hover {

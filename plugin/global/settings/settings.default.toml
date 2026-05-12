@@ -234,14 +234,14 @@ BACKSPACE_TO_HIDE = false
 
 # =========== [ Command Display ] ===========
 # Output display mode for shortcut-triggered commands
-#   always: Always show output modal after execution
-#   error : Show output modal only on error
+#   always: Always show output panel after execution
+#   error : Show output panel only on error
 #   silent: Silent execution, hide output
 #   echo  : Stream output immediately (Ideal for long-running/streaming tasks)
 QUICK_RUN_DISPLAY = "error"
 
 # Output display mode for panel-triggered commands
-#   always: Show output modal after completion
+#   always: Show output panel after completion
 #   echo  : Stream output immediately
 COMMIT_RUN_DISPLAY = "echo"
 
@@ -345,7 +345,7 @@ TRANSLATE = true
 #   fixAll          : Batch Fix Errors
 #   toggleSourceMode: Toggle Source Mode
 #   refresh         : Manual Force Refresh
-#   close           : Close Modal
+#   close           : Close Panel
 TITLE_BAR_BUTTONS = ["settings", "fixAll", "toggleSourceMode", "refresh", "close"]
 
 # Master list table columns to display
@@ -383,7 +383,7 @@ BUTTON_HEIGHT = "16px"
 BUTTON_BORDER_RADIUS = "50%"
 
 # Button distance from the right window edge
-BUTTON_RIGHT = "11px"
+BUTTON_RIGHT = "5px"
 
 # Button opacity (0.0 ~ 1.0)
 BUTTON_OPACITY = 1
@@ -395,11 +395,11 @@ BUTTON_PASS_COLOR = "#92C498"
 BUTTON_ERROR_COLOR = "#d8bd74"
 
 # =========== [ Shortcuts ] ===========
-# Right-click in the results table to toggle Source Mode
-RIGHT_CLICK_TABLE_TO_TOGGLE_SOURCE_MODE = true
+# Right-click the table action(Keys mirror TITLE_BAR_BUTTONS)
+RIGHT_CLICK_TABLE_ACTION = "toggleSourceMode"
 
-# Right-click the indicator button to fix all errors
-RIGHT_CLICK_BUTTON_TO_FIX = true
+# Right-click the indicator action(Keys mirror TITLE_BAR_BUTTONS)
+RIGHT_CLICK_INDICATOR_ACTION = "fixAll"
 
 
 [md_padding]
@@ -1492,7 +1492,7 @@ RETAIN_LENGTH = 80
 
 [export_enhance]
 # =========== [ Basic ] ===========
-ENABLE = true
+ENABLE = false
 NAME = ""
 
 # =========== [ Network Image ] ===========
@@ -1672,8 +1672,8 @@ DECRYPT_HOTKEY = ""
 SECRET_KEY = "n0hLis5FjgQxa3f31sSa2wm37J81g3upTlq9it9WlfK"
 
 # =========== [ Interaction ] ===========
-# Display a confirmation modal after encryption/decryption
-SHOW_HINT_MODAL = true
+# Display a confirmation dialog after encryption/decryption
+SHOW_HINT_DIALOG = true
 
 
 [easy_modify]
@@ -1766,9 +1766,6 @@ POSITION_RIGHT = "30px"
 
 # Margin distance from the bottom edge of the viewport
 POSITION_BOTTOM = "50px"
-
-# Disable tooltips (Blocks the 'hint' property of BUTTONS)
-HIDE_BUTTON_HINT = false
 
 # =========== [ Preset Buttons ] ===========
 # Matrix for preset action buttons
@@ -2149,11 +2146,11 @@ LIST = [
 NAME = "__INTERACTIVE_PLUGINS__"
 LIST = [
   "window_tab",
-  "mouse_gestures",
-  "fence_enhance",
   "commander",
+  "fence_enhance",
   "datatables",
   "export_enhance",
+  "mouse_gestures",
   "right_click_menu",
   "custom",
   "---",
@@ -2268,14 +2265,14 @@ NAME = ""
 HOTKEY = ""
 
 # =========== [ Window Position ] ===========
-# Left margin percentage of the modal window
-MODAL_LEFT_PERCENT = 5
+# Left margin percentage of the panel
+PANEL_LEFT_PERCENT = 5
 
-# Width percentage of the modal window
-MODAL_WIDTH_PERCENT = 90
+# Width percentage of the panel
+PANEL_WIDTH_PERCENT = 90
 
-# Height percentage of the modal window
-MODAL_HEIGHT_PERCENT = 70
+# Height percentage of the panel
+PANEL_HEIGHT_PERCENT = 70
 
 # =========== [ Resource Recognition Match ] ===========
 # Grammar syntax identifiers applied when scanning for mounted resources

@@ -2,262 +2,262 @@ const { sharedSheets } = require("../common")
 const utils = require("../../utils")
 
 customElements.define("fast-window", class extends HTMLElement {
-    static _template = `
-        <link rel="stylesheet" href="./plugin/global/core/components/fast-window/index.css" crossorigin="anonymous">
-        <div class="title-bar" part="title-bar">
-            <div class="title-name"></div>
-            <div class="title-buttons"></div>
-        </div>
-        <div class="content-area" part="content-area">
-            <slot></slot>
-        </div>`
+  static _template =
+    `<link rel="stylesheet" href="./plugin/global/core/components/fast-window/index.css" crossorigin="anonymous">
+    <div class="title-bar" part="title-bar">
+      <div class="title-name"></div>
+      <div class="title-buttons"></div>
+    </div>
+    <div class="content-area" part="content-area">
+      <slot></slot>
+    </div>`
 
-    constructor() {
-        super()
-        const root = this.attachShadow({ mode: "open" })
-        root.adoptedStyleSheets = sharedSheets
-        root.innerHTML = this.constructor._template
+  constructor() {
+    super()
+    const root = this.attachShadow({ mode: "open" })
+    root.adoptedStyleSheets = sharedSheets
+    root.innerHTML = this.constructor._template
 
-        this.entities = {
-            titleBar: root.querySelector(".title-bar"),
-            titleName: root.querySelector(".title-name"),
-            titleButtons: root.querySelector(".title-buttons"),
-            contentArea: root.querySelector(".content-area"),
-        }
-
-        this._offsetX = 0
-        this._offsetY = 0
-        this._rafManager = utils.getRafManager()
-
-        this._addEventListeners()
+    this.entities = {
+      titleBar: root.querySelector(".title-bar"),
+      titleName: root.querySelector(".title-name"),
+      titleButtons: root.querySelector(".title-buttons"),
+      contentArea: root.querySelector(".content-area"),
     }
 
-    connectedCallback() {
-        if (this.hasAttribute("hidden")) {
-            this.style.display = "none"
-        }
+    this._offsetX = 0
+    this._offsetY = 0
+    this._rafManager = utils.getRafManager()
+
+    this._addEventListeners()
+  }
+
+  connectedCallback() {
+    if (this.hasAttribute("hidden")) {
+      this.style.display = "none"
+    }
+    this.updateTitle()
+    this._updateButtons()
+    this._setResize()
+    this._applyInitialPosAndSize()
+  }
+
+  static get observedAttributes() {
+    return ["window-title", "window-buttons", "window-resize", "x", "y", "width", "height"]
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) return
+
+    switch (name) {
+      case "window-title":
         this.updateTitle()
+        break
+      case "window-buttons":
         this._updateButtons()
+        break
+      case "window-resize":
         this._setResize()
+        break
+      case "x":
+      case "y":
+      case "width":
+      case "height":
         this._applyInitialPosAndSize()
+        break
     }
+  }
 
-    static get observedAttributes() {
-        return ["window-title", "window-buttons", "window-resize", "x", "y", "width", "height"]
+  disconnectedCallback() {
+    this._removeEventListeners()
+  }
+
+  setContent = (content, unsafe = false) => {
+    const area = this.entities.contentArea
+    area.innerHTML = ""
+    if (typeof content === "string") {
+      if (unsafe) {
+        area.innerHTML = content
+      } else {
+        area.appendChild(document.createTextNode(content))
+      }
+    } else if (content instanceof Node) {
+      area.appendChild(content)
+    } else {
+      console.warn("Invalid content. Expected string, HTMLElement, or DocumentFragment.")
     }
+  }
 
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (oldValue === newValue) return
+  updateTitle = (title = this.getAttribute("window-title")) => {
+    this.entities.titleName.textContent = title || ""
+  }
 
-        switch (name) {
-            case "window-title":
-                this.updateTitle()
-                break
-            case "window-buttons":
-                this._updateButtons()
-                break
-            case "window-resize":
-                this._setResize()
-                break
-            case "x":
-            case "y":
-            case "width":
-            case "height":
-                this._applyInitialPosAndSize()
-                break
+  updateButtons = (updater) => {
+    const buttons = this._parseButtonConfig()
+    const _updated = updater(buttons)
+    const updated = _updated === undefined ? buttons : _updated
+    const result = updated && updated.length
+      ? updated.map(({ action, icon, hint }) => `${action}|${icon}|${hint};`).join("")
+      : ""
+    this.setAttribute("window-buttons", result)
+  }
+
+  updateButton = (action, updater) => {
+    this.updateButtons(buttons => {
+      updater(buttons.find(btn => btn.action === action))
+      return buttons
+    })
+  }
+
+  toggle = (forceHide = false) => {
+    if (forceHide || !this.hidden) {
+      this.hide()
+    } else {
+      this.show()
+    }
+  }
+
+  show = () => {
+    if (!this.hidden && !this.classList.contains("hiding")) return
+    this.hidden = false
+    this.style.removeProperty("display")
+    this.classList.remove("hiding")
+    this.classList.add("showing")
+  }
+
+  hide = () => {
+    if (this.hidden || this.classList.contains("showing")) return
+    this.classList.remove("showing")
+    this.classList.add("hiding")
+  }
+
+  _addEventListeners = () => {
+    this.entities.titleBar.addEventListener("mousedown", this._startDrag)
+    this.entities.titleButtons.addEventListener("click", this._onButtonClick)
+    this.addEventListener("animationend", this._onAnimationEnd)
+  }
+
+  _removeEventListeners = () => {
+    this.entities.titleBar.removeEventListener("mousedown", this._startDrag)
+    this.entities.titleButtons.removeEventListener("click", this._onButtonClick)
+    document.removeEventListener("mousemove", this._dragging)
+    document.removeEventListener("mouseup", this._endDrag)
+    this.removeEventListener("animationend", this._onAnimationEnd)
+  }
+
+  _updateButtons = () => {
+    this.entities.titleButtons.innerHTML = ""
+
+    const buttonEls = this._parseButtonConfig().map(({ action, icon, hint }) => {
+      const el = document.createElement("div")
+      el.className = `button fa ${icon}`
+      el.dataset.action = action
+      if (hint) {
+        el.dataset.hint = hint
+      }
+      return el
+    })
+
+    this.entities.titleButtons.append(...buttonEls)
+  }
+
+  _applyInitialPosAndSize = () => {
+    const x = this.getAttribute("x")
+    const y = this.getAttribute("y")
+    const w = this.getAttribute("width")
+    const h = this.getAttribute("height")
+
+    if (x) this.style.left = x
+    if (y) this.style.top = y
+    if (w) this.style.width = w
+    if (h) this.style.height = h
+
+    // If the element uses transform in external CSS
+    // We need to convert it back to a left/top based positioning after connecting it to DOM,
+    // so that there will be no offset when dragging.
+    const { transform } = window.getComputedStyle(this)
+    if (transform !== "none") {
+      const { left, top } = this.getBoundingClientRect()
+      this.style.left = `${left}px`
+      this.style.top = `${top}px`
+      this.style.transform = "none"
+    }
+  }
+
+  _setResize = () => this.style.setProperty("--window-resize", this.getAttribute("window-resize"))
+
+  _startDrag = (ev) => {
+    if (ev.button !== 0 || ev.target.closest(".button")) return
+
+    this.style.transition = "none"
+
+    const rect = this.getBoundingClientRect()
+    this._offsetX = ev.clientX - rect.left
+    this._offsetY = ev.clientY - rect.top
+
+    document.addEventListener("mousemove", this._dragging)
+    document.addEventListener("mouseup", this._endDrag)
+
+    ev.preventDefault()
+  }
+
+  _dragging = (ev) => {
+    const currentX = ev.clientX
+    const currentY = ev.clientY
+    const maxX = window.innerWidth - this.offsetWidth
+    const maxY = window.innerHeight - this.offsetHeight
+    this._rafManager.schedule(() => {
+      let newX = currentX - this._offsetX
+      let newY = currentY - this._offsetY
+      newX = Math.max(0, Math.min(newX, maxX))
+      newY = Math.max(0, Math.min(newY, maxY))
+      this.style.left = `${newX}px`
+      this.style.top = `${newY}px`
+    })
+  }
+
+  _endDrag = () => {
+    this._rafManager.cancel()
+    this.style.removeProperty("transition")
+    document.removeEventListener("mousemove", this._dragging)
+    document.removeEventListener("mouseup", this._endDrag)
+  }
+
+  _onButtonClick = (ev) => {
+    const target = ev.target.closest(".button")
+    if (target) {
+      ev.stopPropagation()
+      const action = target.dataset.action || ""
+      const detail = { action, target, originalEvent: ev, component: this }
+      this.dispatchEvent(new CustomEvent("btn-click", { bubbles: true, composed: true, detail }))
+    }
+  }
+
+  _onAnimationEnd = (ev) => {
+    if (ev.animationName === "window-hide" && this.classList.contains("hiding")) {
+      this.style.display = "none"
+      this.hidden = true
+      this.classList.remove("hiding")
+    } else if (ev.animationName === "window-show" && this.classList.contains("showing")) {
+      this.classList.remove("showing")
+    }
+  }
+
+  _parseButtonConfig = (config = this.getAttribute("window-buttons")) => {
+    return (config || "")
+      .split(";")
+      .filter(cfg => cfg.trim() !== "")
+      .map(cfg => {
+        const parts = cfg.split("|")
+        if (parts.length < 2 || parts.length > 3) {
+          console.warn(`Invalid button config: ${cfg}. Expected format "action:icon" or "action:icon:hint".`)
+          return
         }
-    }
-
-    disconnectedCallback() {
-        this._removeEventListeners()
-    }
-
-    setContent = (content, unsafe = false) => {
-        const area = this.entities.contentArea
-        area.innerHTML = ""
-        if (typeof content === "string") {
-            if (unsafe) {
-                area.innerHTML = content
-            } else {
-                area.appendChild(document.createTextNode(content))
-            }
-        } else if (content instanceof Node) {
-            area.appendChild(content)
-        } else {
-            console.warn("Invalid content. Expected string, HTMLElement, or DocumentFragment.")
-        }
-    }
-
-    updateTitle = (title = this.getAttribute("window-title")) => {
-        this.entities.titleName.textContent = title || ""
-    }
-
-    updateButtons = (updater) => {
-        const buttons = this._parseButtonConfig()
-        const _updated = updater(buttons)
-        const updated = _updated === undefined ? buttons : _updated
-        const result = updated && updated.length
-            ? updated.map(({ action, icon, hint }) => `${action}|${icon}|${hint};`).join("")
-            : ""
-        this.setAttribute("window-buttons", result)
-    }
-
-    updateButton = (action, updater) => {
-        this.updateButtons(buttons => {
-            updater(buttons.find(btn => btn.action === action))
-            return buttons
-        })
-    }
-
-    toggle = (forceHide = false) => {
-        if (forceHide || !this.hidden) {
-            this.hide()
-        } else {
-            this.show()
-        }
-    }
-
-    show = () => {
-        if (!this.hidden && !this.classList.contains("hiding")) return
-        this.hidden = false
-        this.style.removeProperty("display")
-        this.classList.remove("hiding")
-        this.classList.add("showing")
-    }
-
-    hide = () => {
-        if (this.hidden || this.classList.contains("showing")) return
-        this.classList.remove("showing")
-        this.classList.add("hiding")
-    }
-
-    _addEventListeners = () => {
-        this.entities.titleBar.addEventListener("mousedown", this._startDrag)
-        this.entities.titleButtons.addEventListener("click", this._onButtonClick)
-        this.addEventListener("animationend", this._onAnimationEnd)
-    }
-
-    _removeEventListeners = () => {
-        this.entities.titleBar.removeEventListener("mousedown", this._startDrag)
-        this.entities.titleButtons.removeEventListener("click", this._onButtonClick)
-        document.removeEventListener("mousemove", this._dragging)
-        document.removeEventListener("mouseup", this._endDrag)
-        this.removeEventListener("animationend", this._onAnimationEnd)
-    }
-
-    _updateButtons = () => {
-        this.entities.titleButtons.innerHTML = ""
-
-        const buttonEls = this._parseButtonConfig().map(({ action, icon, hint }) => {
-            const el = document.createElement("div")
-            el.className = `button fa ${icon}`
-            el.dataset.action = action
-            if (hint) {
-                el.dataset.hint = hint
-            }
-            return el
-        })
-
-        this.entities.titleButtons.append(...buttonEls)
-    }
-
-    _applyInitialPosAndSize = () => {
-        const x = this.getAttribute("x")
-        const y = this.getAttribute("y")
-        const w = this.getAttribute("width")
-        const h = this.getAttribute("height")
-
-        if (x) this.style.left = x
-        if (y) this.style.top = y
-        if (w) this.style.width = w
-        if (h) this.style.height = h
-
-        // If the element uses transform in external CSS
-        // We need to convert it back to a left/top based positioning after connecting it to DOM,
-        // so that there will be no offset when dragging.
-        const { transform } = window.getComputedStyle(this)
-        if (transform !== "none") {
-            const { left, top } = this.getBoundingClientRect()
-            this.style.left = `${left}px`
-            this.style.top = `${top}px`
-            this.style.transform = "none"
-        }
-    }
-
-    _setResize = () => this.style.setProperty("--window-resize", this.getAttribute("window-resize"))
-
-    _startDrag = (ev) => {
-        if (ev.button !== 0 || ev.target.closest(".button")) return
-
-        this.style.transition = "none"
-
-        const rect = this.getBoundingClientRect()
-        this._offsetX = ev.clientX - rect.left
-        this._offsetY = ev.clientY - rect.top
-
-        document.addEventListener("mousemove", this._dragging)
-        document.addEventListener("mouseup", this._endDrag)
-
-        ev.preventDefault()
-    }
-
-    _dragging = (ev) => {
-        const currentX = ev.clientX
-        const currentY = ev.clientY
-        const maxX = window.innerWidth - this.offsetWidth
-        const maxY = window.innerHeight - this.offsetHeight
-        this._rafManager.schedule(() => {
-            let newX = currentX - this._offsetX
-            let newY = currentY - this._offsetY
-            newX = Math.max(0, Math.min(newX, maxX))
-            newY = Math.max(0, Math.min(newY, maxY))
-            this.style.left = `${newX}px`
-            this.style.top = `${newY}px`
-        })
-    }
-
-    _endDrag = () => {
-        this._rafManager.cancel()
-        this.style.removeProperty("transition")
-        document.removeEventListener("mousemove", this._dragging)
-        document.removeEventListener("mouseup", this._endDrag)
-    }
-
-    _onButtonClick = (ev) => {
-        const target = ev.target.closest(".button")
-        if (target) {
-            ev.stopPropagation()
-            const action = target.dataset.action || ""
-            const detail = { action, target, originalEvent: ev, component: this }
-            this.dispatchEvent(new CustomEvent("btn-click", { bubbles: true, composed: true, detail }))
-        }
-    }
-
-    _onAnimationEnd = (ev) => {
-        if (ev.animationName === "window-hide" && this.classList.contains("hiding")) {
-            this.style.display = "none"
-            this.hidden = true
-            this.classList.remove("hiding")
-        } else if (ev.animationName === "window-show" && this.classList.contains("showing")) {
-            this.classList.remove("showing")
-        }
-    }
-
-    _parseButtonConfig = (config = this.getAttribute("window-buttons")) => {
-        return (config || "")
-            .split(";")
-            .filter(cfg => cfg.trim() !== "")
-            .map(cfg => {
-                const parts = cfg.split("|")
-                if (parts.length < 2 || parts.length > 3) {
-                    console.warn(`Invalid button config: ${cfg}. Expected format "action:icon" or "action:icon:hint".`)
-                    return
-                }
-                const action = parts[0].trim()
-                const icon = parts[1].trim()
-                const hint = parts[2] ? parts[2].trim() : ""
-                return { action, icon, hint }
-            })
-            .filter(Boolean)
-    }
+        const action = parts[0].trim()
+        const icon = parts[1].trim()
+        const hint = parts[2] ? parts[2].trim() : ""
+        return { action, icon, hint }
+      })
+      .filter(Boolean)
+  }
 })

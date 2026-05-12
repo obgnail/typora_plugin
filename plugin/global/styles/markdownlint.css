@@ -30,6 +30,7 @@
   border-radius: ${this.config.BUTTON_BORDER_RADIUS};
   background-color: ${this.config.BUTTON_PASS_COLOR};
   opacity: ${this.config.BUTTON_OPACITY};
+  margin: 7px;
   cursor: pointer;
   transition: background-color 0.1s ease 0s;
   z-index: 9992;

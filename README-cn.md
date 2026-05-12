@@ -56,7 +56,7 @@
 | 37   | cjk_symbol_pairing  | 中文符号配对                               |          |
 | 38   | resize_table        | 调整表格行高列宽                           |          |
 | 39   | resize_image        | 调整图片显示大小                           |          |
-| 40   | export_enhance      | 导出 HTML 时避免图片丢失                   |          |
+| 40   | export_enhance      | 导出 HTML/PDF 时避免图片丢失               | ×        |
 | 41   | sidebar_enhance     | 显示其他扩展名文件、记忆折叠状态、拖拽排序 |          |
 | 42   | markdownlint        | markdown 格式检查                          |          |
 | 43   | truncate_text       | 暂时隐藏内容，提高大文件渲染性能           | ×        |
@@ -426,7 +426,7 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 
 ### export_enhance
 
-导出 HTML 时，将图片转为 base64，避免图片丢失。
+导出 HTML/PDF 时，将图片转为 base64，避免图片丢失。
 
 
 

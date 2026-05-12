@@ -355,10 +355,9 @@ textarea:disabled::selection,
 }
 
 mark.feature-highlight {
-  background-color: var(--ff-color-highlight-bg);
   color: inherit;
+  background-color: var(--ff-color-highlight-bg);
   border-radius: var(--ff-radius-sm);
-  line-height: 2em;
 }
 
 .explain {
@@ -1645,6 +1644,109 @@ textarea:hover,
   box-shadow: inset 0 0 0 2px var(--ff-bg-solid);
 }
 
+/* ToggleSort */
+.togglesort-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  user-select: none;
+  position: relative;
+}
+
+.togglesort-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  background-color: var(--ff-bg-surface);
+  border: var(--ff-border-width) var(--ff-border-style) var(--ff-border-base);
+  border-radius: var(--ff-radius-base);
+  box-sizing: border-box;
+  transition: background-color var(--ff-transition-base), border-color var(--ff-transition-base), box-shadow var(--ff-transition-base);
+  max-width: 100%;
+}
+
+.togglesort-item + .togglesort-item {
+  margin-top: 6px;
+}
+
+.togglesort-item:not(.plugin-common-readonly):not(.is-ghost):hover {
+  border-color: var(--ff-border-focus);
+  box-shadow: var(--ff-shadow-base);
+  z-index: 1;
+  position: relative;
+}
+
+.togglesort-handle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  padding: 4px;
+  color: var(--ff-border-base);
+  font-size: var(--ff-font-size-xs);
+  transition: color var(--ff-transition-base);
+}
+
+.togglesort-item[draggable="true"] {
+  cursor: grab;
+}
+
+.togglesort-item[draggable="true"] .togglesort-handle {
+  color: var(--ff-text-tertiary);
+}
+
+.togglesort-item[draggable="true"]:hover .togglesort-handle {
+  color: var(--ff-text-secondary);
+}
+
+.togglesort-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 12px;
+  color: var(--ff-text-primary);
+}
+
+.togglesort-placeholder {
+  background-color: var(--ff-bg-surface-hover) !important;
+  border: var(--ff-border-width) dashed var(--ff-color-primary) !important;
+  box-shadow: none !important;
+  z-index: 0 !important;
+  opacity: 0.6 !important;
+}
+
+.togglesort-placeholder > * {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.togglesort-item.is-ghost {
+  background-color: var(--ff-bg-elevated) !important;
+  box-shadow: var(--ff-shadow-md) !important;
+  border-color: var(--ff-border-focus) !important;
+  opacity: 0.95 !important;
+  pointer-events: none !important;
+  margin: 0 !important;
+}
+
+.togglesort-item.plugin-common-readonly {
+  opacity: 0.6;
+  background-color: var(--ff-bg-surface-sunken);
+  border-color: var(--ff-border-base);
+  box-shadow: none;
+}
+
+.togglesort-item.plugin-common-readonly .togglesort-handle {
+  opacity: 0.5;
+}
+
+.togglesort-item .switch-input {
+  transform: scale(0.8);
+  transform-origin: right center;
+}
+
 /* Transfer */
 .transfer-wrap {
   flex-direction: column;
@@ -1804,6 +1906,19 @@ textarea:hover,
 .transfer-card-placeholder > * {
   opacity: 0;
   visibility: hidden;
+}
+
+.transfer-card-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0 !important;
+  z-index: 999999;
+  pointer-events: none;
+  opacity: 0.95;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  border: 1px solid var(--ff-color-primary);
+  box-sizing: border-box;
 }
 
 /* Dict */

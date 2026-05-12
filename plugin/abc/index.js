@@ -1,45 +1,45 @@
 class ABCPlugin extends BasePlugin {
-    ABCJS = null
+  ABCJS = null
 
-    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
+  hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
-    call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
+  call = () => this.utils.insertBlockCode(null, this.config.LANGUAGE, this.config.TEMPLATE)
 
-    process = () => {
-        const parser = this.utils.thirdPartyDiagramParser
-        parser.register({
-            lang: this.config.LANGUAGE,
-            mappingLang: this.config.LANGUAGE,
-            destroyWhenUpdate: false,
-            interactiveMode: this.config.INTERACTIVE_MODE,
-            metaConfigSchema: null,
-            checkSelector: ".plugin-notation-content",
-            wrapElement: '<div class="plugin-notation-content"></div>',
-            lazyLoadFunc: this.lazyLoad,
-            beforeRenderFunc: null,
-            renderStyleGetter: parser.helpers.renderStyle.wrapDefault({
-                height: this.config.DEFAULT_FENCE_HEIGHT,
-                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
-            }),
-            createFunc: this.create,
-            updateFunc: null,
-            destroyFunc: null,
-            beforeExportToNative: null,
-            beforeExportToHTML: null,
-            exportStyleGetter: null,
-            versionGetter: this.getVersion,
-        })
-    }
+  process = () => {
+    const parser = this.utils.thirdPartyDiagramParser
+    parser.register({
+      lang: this.config.LANGUAGE,
+      mappingLang: this.config.LANGUAGE,
+      destroyWhenUpdate: false,
+      interactiveMode: this.config.INTERACTIVE_MODE,
+      metaConfigSchema: null,
+      checkSelector: ".plugin-notation-content",
+      wrapElement: `<div class="plugin-notation-content"></div>`,
+      lazyLoadFunc: this.lazyLoad,
+      beforeRenderFunc: null,
+      renderStyleGetter: parser.helpers.renderStyle.wrapDefault({
+        height: this.config.DEFAULT_FENCE_HEIGHT,
+        backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+      }),
+      createFunc: this.create,
+      updateFunc: null,
+      destroyFunc: null,
+      beforeExportToNative: null,
+      beforeExportToHTML: null,
+      exportStyleGetter: null,
+      versionGetter: this.getVersion,
+    })
+  }
 
-    create = ($wrap, content) => {
-        this.ABCJS.renderAbc($wrap[0], content, this.config.VISUAL_OPTIONS)
-    }
+  create = ($wrap, content) => {
+    this.ABCJS.renderAbc($wrap[0], content, this.config.VISUAL_OPTIONS)
+  }
 
-    getVersion = () => this.ABCJS?.signature
+  getVersion = () => this.ABCJS?.signature
 
-    lazyLoad = () => this.ABCJS = require("./abcjs-basic-min.js")
+  lazyLoad = () => this.ABCJS = require("./abcjs-basic-min.js")
 }
 
 module.exports = {
-    plugin: ABCPlugin
+  plugin: ABCPlugin,
 }

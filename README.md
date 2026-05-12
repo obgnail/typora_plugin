@@ -56,7 +56,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 37   | cjk_symbol_pairing  | CJK Symbol Pairing                                           |                    |
 | 38   | resize_table        | Table Resizer                                                |                    |
 | 39   | resize_image        | Image Resizer                                                |                    |
-| 40   | export_enhance      | Avoid image loss when exporting to HTML                      |                    |
+| 40   | export_enhance      | Avoid image loss when exporting to HTML/PDF                  | ×                  |
 | 41   | sidebar_enhance     | Drag & drop to rearrange、Display non-Markdown files、Keep Fold State |                    |
 | 42   | markdownlint        | Markdownlint Check                                           |                    |
 | 43   | truncate_text       | Hide content to improve performance for large files          | ×                  |
@@ -358,11 +358,9 @@ Usage: Place the cursor on the table -> Right-click menu -> Interactive Plugins 
 
 ### export_enhance
 
-When exporting HTML, convert images to base64 to avoid image loss.
+When exporting HTML/PDF, convert images to base64 to avoid image loss.
 
 ### sidebar_enhance
-
-
 
 - Drag & drop outline to rearrange
 - Display non-Markdown files in the sidebar

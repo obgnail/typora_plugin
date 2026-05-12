@@ -1,143 +1,143 @@
 class BookmarkPlugin extends BasePlugin {
-    recordSelector = "#write [cid]"
-    className = "plu-bookmark"
-    locateUtils = {
-        file: "",
-        idx: -1,
-        time: Date.now(),
-        getEl: (idx) => [...document.querySelectorAll(this.recordSelector)][idx],
-        scroll: (idx) => {
-            const el = this.locateUtils.getEl(idx)
-            if (el) this.utils.scroll(el, { height: 20, moveCursor: true })
-        },
-    }
-    recorder = {
-        register: () => this.utils.stateRecorder.register({
-            name: this.fixedName,
-            selector: this.recordSelector,
-            stateGetter: el => el.classList.contains(this.className),
-            stateRestorer: el => el.classList.add(this.className),
-            finalFn: () => {
-                if (this.locateUtils.file && this.locateUtils.idx !== -1) {
-                    this.locateUtils.scroll(this.locateUtils.idx)
-                    this.locateUtils.file = ""
-                    this.locateUtils.idx = -1
-                }
-            },
-        }),
-        collect: () => this.utils.stateRecorder.collect(this.fixedName),
-        getState: () => this.utils.stateRecorder.getState(this.fixedName),
-    }
-
-    styleTemplate = () => true
-
-    html = () => `<fast-window id="plugin-bookmark" window-title="${this.pluginName}" window-buttons="close|fa-times" hidden><div class="plugin-bookmark-list"></div></fast-window>`
-
-    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
-
-    init = () => {
-        this.entities = {
-            write: this.utils.entities.eWrite,
-            window: document.querySelector("#plugin-bookmark"),
-            list: document.querySelector(".plugin-bookmark-list"),
+  recordSelector = "#write [cid]"
+  className = "plu-bookmark"
+  locateUtils = {
+    file: "",
+    idx: -1,
+    time: Date.now(),
+    getEl: (idx) => [...document.querySelectorAll(this.recordSelector)][idx],
+    scroll: (idx) => {
+      const el = this.locateUtils.getEl(idx)
+      if (el) this.utils.scroll(el, { height: 20, moveCursor: true })
+    },
+  }
+  recorder = {
+    register: () => this.utils.stateRecorder.register({
+      name: this.fixedName,
+      selector: this.recordSelector,
+      stateGetter: el => el.classList.contains(this.className),
+      stateRestorer: el => el.classList.add(this.className),
+      finalFn: () => {
+        if (this.locateUtils.file && this.locateUtils.idx !== -1) {
+          this.locateUtils.scroll(this.locateUtils.idx)
+          this.locateUtils.file = ""
+          this.locateUtils.idx = -1
         }
+      },
+    }),
+    collect: () => this.utils.stateRecorder.collect(this.fixedName),
+    getState: () => this.utils.stateRecorder.getState(this.fixedName),
+  }
+
+  style = () => true
+
+  html = () => `<fast-window id="plugin-bookmark" window-title="${this.pluginName}" window-buttons="close|fa-times" hidden><div class="plugin-bookmark-list"></div></fast-window>`
+
+  hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
+
+  init = () => {
+    this.entities = {
+      write: this.utils.entities.eWrite,
+      panel: document.querySelector("#plugin-bookmark"),
+      list: document.querySelector(".plugin-bookmark-list"),
     }
+  }
 
-    process = () => {
-        this.recorder.register()
+  process = () => {
+    this.recorder.register()
 
-        const isModifierKeyPressed = this.utils.modifierKey(this.config.MODIFIER_KEY)
-        this.entities.write.addEventListener("click", ev => {
-            if (!isModifierKeyPressed(ev)) return
-            const node = ev.target.closest(this.recordSelector)
-            if (!node) return
-            node.classList.add(this.className)
-            if (this.config.AUTO_POPUP_WINDOW) {
-                this.entities.window.show()
-            }
-            this.refresh()
-        })
+    const isModifierKeyPressed = this.utils.modifierKey(this.config.MODIFIER_KEY)
+    this.entities.write.addEventListener("click", ev => {
+      if (!isModifierKeyPressed(ev)) return
+      const node = ev.target.closest(this.recordSelector)
+      if (!node) return
+      node.classList.add(this.className)
+      if (this.config.AUTO_POPUP_WINDOW) {
+        this.entities.panel.show()
+      }
+      this.refresh()
+    })
 
-        this.entities.list.addEventListener("click", ev => {
-            const item = ev.target.closest(".bookmark-item")
-            if (!item) return
-            const curFile = this.utils.getFilePath()
-            const { file: targetFile, idx } = item.querySelector(".bookmark-item-content").dataset
-            const isDelete = ev.target.closest(".bookmark-btn")
-            if (isDelete) {
-                if (curFile === targetFile) {
-                    this.locateUtils.getEl(idx)?.classList.remove(this.className)
-                } else {
-                    this.recorder.getState()?.get(targetFile)?.delete(parseInt(idx))
-                }
-                this.refresh()
-            } else {
-                if (targetFile && curFile !== targetFile) {
-                    Object.assign(this.locateUtils, { file: targetFile, idx, time: Date.now() })
-                    this.utils.openFile(targetFile)
-                } else {
-                    this.locateUtils.scroll(idx)
-                }
-            }
-        })
-
-        this.entities.window.addEventListener("btn-click", ev => {
-            if (ev.detail.action === "close") this.entities.window.hide()
-        })
-
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
-            if (Date.now() > this.locateUtils.time + 2000) {
-                const needRefresh = !!this.recorder.getState()?.get(this.utils.getFilePath())?.size
-                if (needRefresh) this.refresh()
-            }
-        })
-    }
-
-    call = () => {
-        this.entities.window.toggle()
+    this.entities.list.addEventListener("click", ev => {
+      const item = ev.target.closest(".bookmark-item")
+      if (!item) return
+      const curFile = this.utils.getFilePath()
+      const { file: targetFile, idx } = item.querySelector(".bookmark-item-content").dataset
+      const isDelete = ev.target.closest(".bookmark-btn")
+      if (isDelete) {
+        if (curFile === targetFile) {
+          this.locateUtils.getEl(idx)?.classList.remove(this.className)
+        } else {
+          this.recorder.getState()?.get(targetFile)?.delete(parseInt(idx))
+        }
         this.refresh()
-    }
-
-    refresh = () => {
-        this.recorder.collect()
-        if (!this.entities.window.hidden) this._updateModal()
-    }
-
-    _updateModal = () => {
-        let item = this.entities.list.firstElementChild
-        const map = this.recorder.getState()
-        for (const [filepath, idxList] of map.entries()) {
-            for (const idx of idxList.keys()) {
-                const fileName = this.utils.getFileName(filepath)
-                const itemText = this._itemText(fileName, idx)
-                if (item) {
-                    const content = item.querySelector(".bookmark-item-content")
-                    if (content) {
-                        content.textContent = itemText
-                        content.dataset.file = filepath
-                        content.dataset.idx = idx
-                    }
-                } else {
-                    this.entities.list.insertAdjacentHTML("beforeend", `
-                        <div class="bookmark-item">
-                            <div class="bookmark-item-content" data-file="${filepath}" data-idx="${idx}">${itemText}</div>
-                            <div class="bookmark-btn fa fa-trash-o"></div>
-                        </div>`)
-                    item = this.entities.list.lastElementChild
-                }
-                item = item.nextElementSibling
-            }
+      } else {
+        if (targetFile && curFile !== targetFile) {
+          Object.assign(this.locateUtils, { file: targetFile, idx, time: Date.now() })
+          this.utils.openFile(targetFile)
+        } else {
+          this.locateUtils.scroll(idx)
         }
-        while (item) {
-            const next = item.nextElementSibling
-            item.remove()
-            item = next
-        }
-    }
+      }
+    })
 
-    _itemText = (fileName, idx) => `${fileName} - ${idx}`
+    this.entities.panel.addEventListener("btn-click", ev => {
+      if (ev.detail.action === "close") this.entities.panel.hide()
+    })
+
+    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
+      if (Date.now() > this.locateUtils.time + 2000) {
+        const needRefresh = !!this.recorder.getState()?.get(this.utils.getFilePath())?.size
+        if (needRefresh) this.refresh()
+      }
+    })
+  }
+
+  call = () => {
+    this.entities.panel.toggle()
+    this.refresh()
+  }
+
+  refresh = () => {
+    this.recorder.collect()
+    if (!this.entities.panel.hidden) this._updatePanel()
+  }
+
+  _updatePanel = () => {
+    let item = this.entities.list.firstElementChild
+    const map = this.recorder.getState()
+    for (const [filepath, idxList] of map.entries()) {
+      for (const idx of idxList.keys()) {
+        const fileName = this.utils.getFileName(filepath)
+        const itemText = this._itemText(fileName, idx)
+        if (item) {
+          const content = item.querySelector(".bookmark-item-content")
+          if (content) {
+            content.textContent = itemText
+            content.dataset.file = filepath
+            content.dataset.idx = idx
+          }
+        } else {
+          this.entities.list.insertAdjacentHTML("beforeend",
+            `<div class="bookmark-item">
+               <div class="bookmark-item-content" data-file="${filepath}" data-idx="${idx}">${itemText}</div>
+               <div class="bookmark-btn fa fa-trash-o"></div>
+            </div>`)
+          item = this.entities.list.lastElementChild
+        }
+        item = item.nextElementSibling
+      }
+    }
+    while (item) {
+      const next = item.nextElementSibling
+      item.remove()
+      item = next
+    }
+  }
+
+  _itemText = (fileName, idx) => `${fileName} - ${idx}`
 }
 
 module.exports = {
-    plugin: BookmarkPlugin,
+  plugin: BookmarkPlugin,
 }

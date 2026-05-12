@@ -9,12 +9,12 @@ global.document = dom.window.document
 global.navigator = { userAgent: "node.js" }
 const globalsToForceOverwrite = ["Event", "CustomEvent", "HTMLElement", "customElements", "Node"]
 globalsToForceOverwrite.forEach(key => {
-    global[key] = dom.window[key]
+  global[key] = dom.window[key]
 })
 Object.getOwnPropertyNames(dom.window).forEach((key) => {
-    if (typeof global[key] === "undefined") {
-        global[key] = dom.window[key]
-    }
+  if (typeof global[key] === "undefined") {
+    global[key] = dom.window[key]
+  }
 })
 
 module.exports = dom

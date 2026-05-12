@@ -5,16 +5,16 @@ import ECB from "crypto-js/mode-ecb"
 import Pkcs7 from "crypto-js/pad-pkcs7"
 
 const encrypt = (text, key) => {
-    const k = Base64.parse(key)
-    const t = Utf8.parse(text)
-    const r = AES.encrypt(t, k, { mode: ECB, padding: Pkcs7 })
-    return r.toString()
+  const k = Base64.parse(key)
+  const t = Utf8.parse(text)
+  const r = AES.encrypt(t, k, { mode: ECB, padding: Pkcs7 })
+  return r.toString()
 }
 
 const decrypt = (text, key) => {
-    const k = Base64.parse(key)
-    const r = AES.decrypt(text, k, { mode: ECB, padding: Pkcs7 })
-    return Utf8.stringify(r)
+  const k = Base64.parse(key)
+  const r = AES.decrypt(text, k, { mode: ECB, padding: Pkcs7 })
+  return Utf8.stringify(r)
 }
 
 export { encrypt, decrypt }

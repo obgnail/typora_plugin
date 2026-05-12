@@ -1,44 +1,39 @@
 class BlurPlugin extends BasePlugin {
-    isBlurMode = this.config.BLUR_DEFAULT
+  isBlurMode = this.config.BLUR_DEFAULT
 
-    beforeProcess = () => this.utils.supportHasSelector ? undefined : this.utils.PLUGIN_LOAD_ABORT
+  prepare = () => this.utils.supportHasSelector ? undefined : this.utils.PLUGIN_LOAD_ABORT
 
-    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
+  hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
-    process = () => this.run(false)
+  style = () => {
+    if (!this.isBlurMode) return
 
-    call = () => {
-        this.isBlurMode = !this.isBlurMode
-        this.run()
+    const selector = "#write > [cid]:not(.md-focus):not(:has(.md-focus)):not(:has(.md-focus-container))"
+    const [effect, restore] = (this.config.BLUR_TYPE === "hide")
+      ? ["visibility: hidden;", "visibility: visible;"]
+      : [`filter: blur(${this.config.BLUR_LEVEL}px);`, "filter: initial;"]
+
+    let css = `${selector} { ${effect} }`
+    if (this.config.RESTORE_ON_HOVER) {
+      css += `${selector}:hover { ${restore} }`
+    }
+    return css
+  }
+
+  call = () => {
+    this.isBlurMode = !this.isBlurMode
+
+    if (this.isBlurMode) {
+      this.utils.insertStyle(this.fixedName, this.style())
+    } else {
+      this.utils.removeStyle(this.fixedName)
     }
 
-    getStyleText = () => {
-        const selector = "#write > [cid]:not(.md-focus):not(:has(.md-focus)):not(:has(.md-focus-container))"
-        const [effect, restore] = (this.config.BLUR_TYPE === "hide")
-            ? ["visibility: hidden;", "visibility: visible;"]
-            : [`filter: blur(${this.config.BLUR_LEVEL}px);`, "filter: initial;"]
-
-        let css = `${selector} { ${effect} }`
-        if (this.config.RESTORE_ON_HOVER) {
-            css += `${selector}:hover { ${restore} }`
-        }
-        return css
-    }
-
-    run = (showNotification = true) => {
-        const id = this.utils.styleTemplater.getID(this.fixedName)
-        if (this.isBlurMode) {
-            this.utils.insertStyle(id, this.getStyleText())
-        } else {
-            this.utils.removeStyle(id)
-        }
-        if (showNotification) {
-            const msg = this.i18n.t(this.isBlurMode ? "modeEnabled" : "modeDisabled")
-            this.utils.notification.show(msg)
-        }
-    }
+    const msg = this.i18n.t(this.isBlurMode ? "modeEnabled" : "modeDisabled")
+    this.utils.notification.show(msg)
+  }
 }
 
 module.exports = {
-    plugin: BlurPlugin
+  plugin: BlurPlugin,
 }

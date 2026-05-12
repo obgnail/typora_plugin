@@ -4,13 +4,13 @@ const rpc = require("./rpc")
 const serve = require("./serve")
 
 function check_env() {
-    fs.accessSync(process.env.TYPORA_PATH)
+  fs.accessSync(process.env.TYPORA_PATH)
 }
 
 function run_script(script = "sync") {
-    const scripts = { sync, rpc, serve }
-    const fn = scripts[script]
-    fn?.()
+  const scripts = { sync, rpc, serve }
+  const fn = scripts[script]
+  fn?.()
 }
 
 check_env()

@@ -6,69 +6,69 @@ const serviceContainer = require("./serviceContainer")
 const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin")
 
 async function entry() {
-    const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0
-    if (incompatible) return
+  const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0
+  if (incompatible) return
 
-    const settings = await utils.settings.readBase()
-    if (!settings?.global?.ENABLE) {
-        console.warn("Typora-Plugin disabled")
-        return
-    }
+  const settings = await utils.settings.readBase()
+  if (!settings?.global?.ENABLE) {
+    console.warn("Typora-Plugin disabled")
+    return
+  }
 
-    setupGlobalVars()
-    serviceContainer.setSettings(settings)
-    serviceContainer.connect(utils)
+  setupGlobalVars()
+  serviceContainer.setSettings(settings)
+  serviceContainer.connect(utils)
 
-    await i18n.init(settings.global.LOCALE)
-    await loadPlugins(serviceContainer, settings)
-    toggleDarkMode(settings)
+  await i18n.init(settings.global.LOCALE)
+  await loadPlugins(serviceContainer, settings)
+  toggleDarkMode(settings)
 }
 
 function setupGlobalVars() {
-    global.BasePlugin = BasePlugin
-    global.BaseCustomPlugin = BaseCustomPlugin
+  global.BasePlugin = BasePlugin
+  global.BaseCustomPlugin = BaseCustomPlugin
 
-    // Convenient for debugging
-    global.__plugin_i18n__ = i18n
-    global.__plugin_utils__ = utils
-    global.__plugin_service_container__ = serviceContainer
+  // Convenient for debugging
+  global.__plugin_i18n__ = i18n
+  global.__plugin_utils__ = utils
+  global.__plugin_service_container__ = serviceContainer
 }
 
 async function loadPlugins(container, settings) {
-    const _processMixins = async (...mixins) => Promise.all(mixins.map(m => m.process?.()))
-    const _postprocessMixins = async (...mixins) => Promise.all(mixins.map(m => m.afterProcess?.()))
+  const _processMixins = async (...mixins) => Promise.all(mixins.map(m => m.process?.()))
+  const _postprocessMixins = async (...mixins) => Promise.all(mixins.map(m => m.postprocess?.()))
 
-    const {
-        unstableRequire, styleTemplater,
-        contextMenu, notification, formDialog, stateRecorder, hotkeyHub, exportHelper,
-        eventHub,
-        diagramParser, thirdPartyDiagramParser,
-    } = utils.mixins
+  const {
+    unstableRequire, styleManager,
+    contextMenu, notification, formDialog, stateRecorder, hotkeyHub, exportHelper,
+    eventHub,
+    diagramParser, thirdPartyDiagramParser,
+  } = utils.mixins
 
-    await _processMixins(unstableRequire, styleTemplater)
-    await _processMixins(contextMenu, notification, formDialog, stateRecorder, hotkeyHub, exportHelper)
+  await _processMixins(unstableRequire, styleManager)
+  await _processMixins(contextMenu, notification, formDialog, stateRecorder, hotkeyHub, exportHelper)
 
-    const { enable } = await LoadPlugins(settings)
-    container.setPlugins(enable)
+  const { enable } = await LoadPlugins(settings)
+  container.setPlugins(enable)
 
-    await _processMixins(eventHub)
-    await _processMixins(diagramParser, thirdPartyDiagramParser)
+  await _processMixins(eventHub)
+  await _processMixins(diagramParser, thirdPartyDiagramParser)
 
-    eventHub.publishEvent(eventHub.eventType.allPluginsHadInjected)
-    await _postprocessMixins(...Object.values(utils.mixins))
+  eventHub.publishEvent(eventHub.eventType.allPluginsHadInjected)
+  await _postprocessMixins(...Object.values(utils.mixins))
 
-    // Re-emit events (e.g., afterAddCodeBlock) that may have been missed due to async execution.
-    if (File.getMountFolder() != null) {
-        setTimeout(() => {
-            Object.keys(File.editor.fences.queue).forEach(cid => File.editor.fences.addCodeBlock(cid))
-            const filePath = utils.getFilePath()
-            if (filePath) File.editor.library.openFile(filePath)
-        }, 80)
-    }
+  // Re-emit events (e.g., afterAddCodeBlock) that may have been missed due to async execution.
+  if (File.getMountFolder() != null) {
+    setTimeout(() => {
+      Object.keys(File.editor.fences.queue).forEach(cid => File.editor.fences.addCodeBlock(cid))
+      const filePath = utils.getFilePath()
+      if (filePath) File.editor.library.openFile(filePath)
+    }, 80)
+  }
 }
 
 function toggleDarkMode(settings) {
-    document.body.classList.toggle("plugin-dark-mode", settings.global.DARK_MODE)
+  document.body.classList.toggle("plugin-dark-mode", settings.global.DARK_MODE)
 }
 
 module.exports = entry

@@ -35,7 +35,7 @@
   z-index: 99999;
 }
 
-.plugin-command-palette-modal {
+.plugin-command-palette-panel {
   position: absolute;
   top: 5vh;
   left: 50%;
@@ -52,7 +52,7 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 }
 
-.plugin-command-palette-overlay:not(.plugin-common-hidden) .plugin-command-palette-modal {
+.plugin-command-palette-overlay:not(.plugin-common-hidden) .plugin-command-palette-panel {
   animation: palette-slide-down 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 

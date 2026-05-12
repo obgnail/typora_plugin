@@ -51,6 +51,7 @@
     "$title.diagramStyle": "图形样式",
     "$title.hotkey": "快捷键",
     "$title.style": "样式",
+    "$title.shortcuts": "快捷方式",
     "$title.advanced": "高级",
     "$option.CHART_ALIGN.left": "靠左",
     "$option.CHART_ALIGN.center": "居中",
@@ -341,7 +342,7 @@
   },
   "commander": {
     "pluginName": "命令行环境",
-    "act.toggle_modal": "显示 / 隐藏",
+    "act.toggle_panel": "显示 / 隐藏",
     "runCommand": "运行命令",
     "$option.QUICK_RUN_DISPLAY.echo": "立即弹窗并回显输出",
     "$option.QUICK_RUN_DISPLAY.always": "执行结束后弹窗并显示输出",
@@ -428,7 +429,7 @@
     "$label.DEBOUNCE_INTERVAL": "输入防抖"
   },
   "resize_image": {
-    "pluginName": "图片调整",
+    "pluginName": "图片放缩",
     "act.zoom_out_20_percent": "缩小 20%",
     "act.zoom_in_20_percent": "放大 20%",
     "act.set_align_left": "靠左",
@@ -449,7 +450,7 @@
     "$title.modifierKeys": "滚轮修饰键"
   },
   "resize_table": {
-    "pluginName": "表格调整",
+    "pluginName": "表格放缩",
     "$label.RECORD_RESIZE": "记忆放缩状态",
     "$label.REMOVE_MIN_CELL_WIDTH": "移除单元格最小宽度限制",
     "$label.DRAG_THRESHOLD": "可拖拽识别范围"
@@ -626,11 +627,11 @@
     "$label.APPLY_EXPORT_HEADER_NUMBERING": "HTML、PDF 导出钩子",
     "$title.autoNumbering": "自动编号",
     "$hintHeader.layoutSyntax": "编号规则",
-    "$hintDetail.layoutSyntax": "使用结构 “前缀{计数器名称:计数样式}后缀” 来自定义编号格式。其中，前缀和后缀是任意文本，{} 内是计数器占位符。计数器名称指定编号对象，计数样式指定编号的显示方式。您可以自由组合文本和多个计数器。例如，“图{i:cjk}” 将生成 “图一”, “图二”。",
-    "$hintHeader.counterNames": "计数器名称",
-    "$hintDetail.counterNames": "计数器名称包括：c1~c6（正文一到六级标题），o1~o6（大纲一到六级标题），t1~t6（TOC 一到六级标题），t（表格），i（图片），以及 f（代码块）",
-    "$hintHeader.counterStyles": "计数样式",
-    "$hintDetail.counterStyles": "计数样式包括：d（阿拉伯数字，默认值），dlz（前导零阿拉伯数字），lr（小写罗马数字），ur（大写罗马数字），la（小写英文字母），ua（大写英文字母），lg（小写希腊字母），hs（天干），eb（地支），cjk（汉字数字），di（实心圆点），ci（空心圆点），sq（实心方块）"
+    "$hintDetail.layoutSyntax": "使用结构 “前缀{目标:样式}后缀” 来自定义格式。前缀和后缀可以是任意文本，{} 为占位符。您可以自由组合文本与多个计数器。例如：“图 {i:d}” 将生成 “图 1”、“图 2”。",
+    "$hintHeader.counterNames": "目标对象",
+    "$hintDetail.counterNames": "可用的目标：c1~c6（正文标题 H1~H6），o1~o6（大纲标题 H1~H6），t1~t6（目录 TOC H1~H6），t（表格），i（图片），以及 f（代码块）。",
+    "$hintHeader.counterStyles": "编号样式",
+    "$hintDetail.counterStyles": "可用的样式：d（阿拉伯数字，默认），dlz（带前导零的数字），lr（小写罗马数字），ur（大写罗马数字），la（小写字母），ua（大写字母），lg（小写希腊字母），hs（天干），eb（地支），cjk（中文数字），di（实心圆点），ci（空心圆圈），sq（实心方块）。"
   },
   "fence_enhance": {
     "pluginName": "代码块增强",
@@ -822,7 +823,7 @@
     "$label.ENCRYPT_HOTKEY": "加密",
     "$label.DECRYPT_HOTKEY": "解密",
     "$label.SECRET_KEY": "密钥",
-    "$label.SHOW_HINT_MODAL": "加解密后弹出提示窗口"
+    "$label.SHOW_HINT_DIALOG": "加解密后弹出提示窗口"
   },
   "resource_manager": {
     "pluginName": "资源管理",
@@ -833,9 +834,9 @@
     "title.setting": "配置",
     "title.nonExistInFile": "挂载目录中未被引用的资源 (共 {{size}} 项)",
     "title.nonExistInFolder": "挂载目录中丢失的资源 (共 {{size}} 项)",
-    "$label.MODAL_LEFT_PERCENT": "左边距",
-    "$label.MODAL_WIDTH_PERCENT": "宽度",
-    "$label.MODAL_HEIGHT_PERCENT": "高度",
+    "$label.PANEL_LEFT_PERCENT": "左边距",
+    "$label.PANEL_WIDTH_PERCENT": "宽度",
+    "$label.PANEL_HEIGHT_PERCENT": "高度",
     "$label.RESOURCE_GRAMMARS": "资源语法",
     "$label.TRAVERSE_STRATEGY": "遍历策略",
     "$label.RESOURCE_EXT": "资源文件扩展名",
@@ -932,13 +933,13 @@
     "$option.GESTURES.button.right": "右键",
     "$option.GESTURES.button.x1": "X1",
     "$option.GESTURES.button.x2": "X2",
-    "$tooltip.STRATEGY": "智能自适应：优先识别 8 方向；若连续滑动轨迹变复杂，则自动降级为 4 方向以提升容错率",
-    "$tooltip.HYSTERESIS": "提高转向判定阈值，防止临界角度的抖动导致轨迹跳变",
-    "$tooltip.START_TIMEOUT": "长按防呆机制。按下触发键后，若在此时间内未发生移动，则判定为普通点击并中止手势捕获。0 为禁用",
-    "$tooltip.IDLE_TIMEOUT": "移动防呆机制。在划动手势的过程中，如果鼠标停滞不动超过此时长，则中断当前手势。0 为禁用",
-    "$tooltip.COOLDOWN": "全局冷却机制。防止用户手抖连划造成连续触发",
-    "$tooltip.MACRO_RADIUS": "记录一个全新方向所需跨越的最小滑动像素距离。值越大，容错率越高，但需要滑动的幅度也越大",
-    "$tooltip.TAIL_RADIUS": "手势结束（松开按键）时，用于识别最后一段极短轨迹的阈值。通常比「宏观采样半径」小，以保证动作收尾时的灵敏度"
+    "$tooltip.STRATEGY": "智能自适应：优先识别 8 方向；当轨迹较为复杂时自动降级为 4 方向，以提升识别准确率",
+    "$tooltip.HYSTERESIS": "适当提高转向判定的阈值，能有效过滤微小手抖带来的错误变向",
+    "$tooltip.START_TIMEOUT": "如果在按下触发键后该时间内鼠标未移动，将视为普通点击并取消手势。设置为 0 则禁用此机制",
+    "$tooltip.IDLE_TIMEOUT": "在划动过程中，如果鼠标中途停顿超时，则提前中断本次手势的录制。设置为 0 则禁用此机制",
+    "$tooltip.COOLDOWN": "触发成功后的等待时间，防止由于用户操作过快造成的重复误触",
+    "$tooltip.MACRO_RADIUS": "判定动作切换方向所需跨越的最小滑动距离（像素）。该值越大，越不容易因手抖产生误判，但需要您大幅度甩动鼠标",
+    "$tooltip.TAIL_RADIUS": "用于精确识别松开按键前最后一小段运动方向的半径阈值。通常建议小于“宏观采样半径”，以保证动作收尾干脆灵敏"
   },
   "slash_commands": {
     "pluginName": "斜杠命令",
@@ -974,7 +975,7 @@
     "$title.trigger": "命令触发",
     "$placeholder.LettersAndNumbersOnly": "仅限英文字母和数字",
     "$placeholder.emojiOnly": "仅限单个 Emoji 符号",
-    "$placeholder.callbackType": "若类型为 “插入文字片段”，填入待插入的字符串；\n若类型为 “插入动态文字片段”，填入返回字符串的函数；\n若类型为 “执行逻辑命令”，填入执行逻辑命令的函数。"
+    "$placeholder.callbackType": "文字片段：输入要插入的字符串；\n动态片段：输入返回字符串的 JS 函数；\n逻辑命令：输入要执行的 JS 函数"
   },
   "cjk_symbol_pairing": {
     "pluginName": "中文符号配对",
@@ -1639,7 +1640,6 @@
     "option.MD103.style.double": "两个（$$）",
     "tooltip.numberOrArray": "数字或数字数组\n例如 1 或 [ 2, 2, 2, 1, 1, 1 ]",
     "$label.USE_INDICATOR_BUTTON": "启用",
-    "$label.RIGHT_CLICK_BUTTON_TO_FIX": "右击以修复",
     "$label.BUTTON_WIDTH": "宽度",
     "$label.BUTTON_HEIGHT": "高度",
     "$label.BUTTON_RIGHT": "到右边框距离",
@@ -1650,19 +1650,20 @@
     "$label.TITLE_BAR_BUTTONS": "标题栏按钮",
     "$label.COLUMNS": "展示列",
     "$label.TRANSLATE": "翻译检测规则",
-    "$label.TOOLS": "工具",
+    "$label.TOOLS": "操作列",
     "$label.RESULT_ORDER_BY": "检测结果排序",
-    "$label.RIGHT_CLICK_TABLE_TO_TOGGLE_SOURCE_MODE": "右击表格以切换源码模式",
+    "$label.RIGHT_CLICK_TABLE_ACTION": "右击表格",
+    "$label.RIGHT_CLICK_INDICATOR_ACTION": "右击状态指示器",
     "$label.HOTKEY_FIX_LINT": "快捷键：修复",
     "$label.invokeMarkdownlintSettings": "设置检测规则",
     "$label.RULE_CONFIG": "检测规则",
     "$label.CUSTOM_RULE_FILES": "自定义检测规则文件",
-    "$option.TITLE_BAR_BUTTONS.close": "关闭",
-    "$option.TITLE_BAR_BUTTONS.refresh": "刷新",
-    "$option.TITLE_BAR_BUTTONS.toggleSourceMode": "源码模式",
-    "$option.TITLE_BAR_BUTTONS.fixAll": "修复",
-    "$option.TITLE_BAR_BUTTONS.detailAll": "详细信息",
-    "$option.TITLE_BAR_BUTTONS.settings": "设置",
+    "$option.actions.close": "关闭",
+    "$option.actions.refresh": "刷新",
+    "$option.actions.toggleSourceMode": "源码模式",
+    "$option.actions.fixAll": "修复",
+    "$option.actions.detailAll": "详细信息",
+    "$option.actions.settings": "设置",
     "$option.COLUMNS.idx": "序号",
     "$option.COLUMNS.line": "行",
     "$option.COLUMNS.rule": "规则",
@@ -1676,7 +1677,6 @@
     "$option.RESULT_ORDER_BY.ruleName": "按规则名排序",
     "$option.RESULT_ORDER_BY.ruleDesc": "按规则描述排序",
     "$title.indicator": "状态指示器",
-    "$title.detectAndFix": "检测与修复",
     "$tooltip.viewMarkdownlintRules": "规则文档"
   },
   "action_buttons": {
@@ -1690,7 +1690,6 @@
     "$label.POSITION_RIGHT": "距右边框",
     "$label.POSITION_BOTTOM": "距底边框",
     "$label.SUPPORT_RIGHT_CLICK": "支持右键点击",
-    "$label.HIDE_BUTTON_HINT": "隐藏提示",
     "$label.BUTTONS": "预设按钮",
     "$label.BUTTONS.enable": "启用",
     "$label.BUTTONS.coordinate": "坐标",
@@ -1704,8 +1703,7 @@
     "$label.BUTTONS.callback": "系统回调",
     "$label.BUTTONS.evil": "自定义回调",
     "$title.buttonStyle": "按钮样式",
-    "$divider.layout": "布局",
-    "$divider.interaction": "交互",
+    "$title.buttonLayout": "按钮布局",
     "$tooltip.coord0": "向上递增",
     "$tooltip.coord1": "向左递增",
     "$tooltip.exclusive": "与「自定义回调」互斥",

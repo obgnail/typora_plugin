@@ -3,1433 +3,1437 @@ const FS_EXTRA = require("fs-extra")
 const i18n = require("../i18n")
 
 const MIXINS = {
-    settings: require("./settings"),
-    migrate: require("./migrate"),
-    hotkeyHub: require("./hotkeyHub"),
-    eventHub: require("./eventHub"),
-    stateRecorder: require("./stateRecorder"),
-    exportHelper: require("./exportHelper"),
-    styleTemplater: require("./styleTemplater"),
-    contextMenu: require("./contextMenu"),
-    notification: require("./notification"),
-    formDialog: require("./formDialog"),
-    diagramParser: require("./diagramParser"),
-    thirdPartyDiagramParser: require("./thirdPartyDiagramParser"),
-    decorator: require("./decorator"),
-    unstableRequire: require("./unstableRequire"),
+  settings: require("./settings"),
+  migrate: require("./migrate"),
+  hotkeyHub: require("./hotkeyHub"),
+  eventHub: require("./eventHub"),
+  stateRecorder: require("./stateRecorder"),
+  exportHelper: require("./exportHelper"),
+  styleManager: require("./styleManager"),
+  contextMenu: require("./contextMenu"),
+  notification: require("./notification"),
+  formDialog: require("./formDialog"),
+  diagramParser: require("./diagramParser"),
+  thirdPartyDiagramParser: require("./thirdPartyDiagramParser"),
+  decorator: require("./decorator"),
+  unstableRequire: require("./unstableRequire"),
 }
 
 class utils {
-    static nodeVersion = process?.versions?.node
-    static electronVersion = process?.versions?.electron
-    static chromeVersion = process?.versions?.chrome
-    static typoraVersion = window._options.appVersion
-    static isBetaVersion = this.typoraVersion[0] === "0"
+  static nodeVersion = process?.versions?.node
+  static electronVersion = process?.versions?.electron
+  static chromeVersion = process?.versions?.chrome
+  static typoraVersion = window._options.appVersion
+  static isBetaVersion = this.typoraVersion[0] === "0"
 
-    static separator = File.isWin ? "\\" : "/"
-    static protocolRoot = this.isBetaVersion ? "typora://typemark" : "typora://app/typemark"
-    static supportHasSelector = CSS.supports("selector(:has(*))")
-    static tempFolder = window._options.tempPath || require("os").tmpdir()
-    static Package = Object.freeze({ Path: PATH, FsExtra: FS_EXTRA })
-    static mixins = Object.fromEntries(
-        Object.entries(MIXINS).map(([name, cls]) => [[name], new cls(this, i18n)]),
-    )
+  static separator = File.isWin ? "\\" : "/"
+  static protocolRoot = this.isBetaVersion ? "typora://typemark" : "typora://app/typemark"
+  static supportHasSelector = CSS.supports("selector(:has(*))")
+  static tempFolder = window._options.tempPath || require("os").tmpdir()
+  static Package = Object.freeze({ Path: PATH, FsExtra: FS_EXTRA })
+  static mixins = Object.fromEntries(
+    Object.entries(MIXINS).map(([name, cls]) => [[name], new cls(this, i18n)]),
+  )
 
-    static PLUGIN_LOAD_ABORT = Symbol.for("plugin:load-abort")  // For plugin's beforeProcess method; return this to stop loading the plugin
+  static PLUGIN_LOAD_ABORT = Symbol.for("plugin:load-abort")  // For plugin's prepare method; return this to stop loading the plugin
 
-    // =========== Plugin ===========
-    static container = null
-    static setContainer = container => this.container = container
-    static getAllBasePlugins = () => this.container.getAllBasePlugins()
-    static getAllCustomPlugins = () => this.container.getAllCustomPlugins()
-    static getBasePlugin = fixedName => this.container.getBasePlugin(fixedName)
-    static getCustomPlugin = fixedName => this.container.getCustomPlugin(fixedName)
-    static getAllBasePluginSettings = () => this.container.getAllBasePluginSettings()
-    static getAllCustomPluginSettings = () => this.container.getAllCustomPluginSettings()
-    static getGlobalSetting = () => this.container.getGlobalSetting()
-    static getBasePluginSetting = fixedName => this.container.getBasePluginSetting(fixedName)
-    static getCustomPluginSetting = fixedName => this.container.getCustomPluginSetting(fixedName)
-    static tryGetPlugin = fixedName => this.container.tryGetPlugin(fixedName)
-    static tryGetPluginSetting = fixedName => this.container.tryGetPluginSetting(fixedName)
+  // =========== Plugin ===========
+  static container = null
+  static setContainer = container => this.container = container
+  static getAllBasePlugins = () => this.container.getAllBasePlugins()
+  static getAllCustomPlugins = () => this.container.getAllCustomPlugins()
+  static getBasePlugin = fixedName => this.container.getBasePlugin(fixedName)
+  static getCustomPlugin = fixedName => this.container.getCustomPlugin(fixedName)
+  static getAllBasePluginSettings = () => this.container.getAllBasePluginSettings()
+  static getAllCustomPluginSettings = () => this.container.getAllCustomPluginSettings()
+  static getGlobalSetting = () => this.container.getGlobalSetting()
+  static getBasePluginSetting = fixedName => this.container.getBasePluginSetting(fixedName)
+  static getCustomPluginSetting = fixedName => this.container.getCustomPluginSetting(fixedName)
+  static tryGetPlugin = fixedName => this.container.tryGetPlugin(fixedName)
+  static tryGetPluginSetting = fixedName => this.container.tryGetPluginSetting(fixedName)
 
-    static getPluginFunction = (fixedName, fnName) => this.tryGetPlugin(fixedName)?.[fnName]
-    static callPluginFunction = (fixedName, fnName, ...args) => {
-        const plugin = this.tryGetPlugin(fixedName)
-        return plugin?.[fnName]?.apply(plugin, args)
+  static getPluginFunction = (fixedName, fnName) => this.tryGetPlugin(fixedName)?.[fnName]
+  static callPluginFunction = (fixedName, fnName, ...args) => {
+    const plugin = this.tryGetPlugin(fixedName)
+    return plugin?.[fnName]?.apply(plugin, args)
+  }
+
+  static hasOverrideBasePluginFn = (plugin, fn) => plugin[fn] !== global.BasePlugin.prototype[fn]
+  static hasOverrideCustomPluginFn = (plugin, fn) => plugin[fn] !== global.BaseCustomPlugin.prototype[fn]
+
+  static isUnderMountFolder = path => {
+    const mountFolder = PATH.resolve(this.getMountFolder())
+    const p = PATH.resolve(path)
+    return p && mountFolder && p.startsWith(mountFolder)
+  }
+  static openFile = filepath => {
+    if (!filepath) return
+    if (!this.getMountFolder() || this.isUnderMountFolder(filepath)) {
+      File.editor.restoreLastCursor()
+      File.editor.focusAndRestorePos()
+      File.editor.library.openFile(filepath)
+    } else {
+      File.editor.library.openFileInNewWindow(filepath, false)
+    }
+  }
+  static openFolder = folder => {
+    if (folder) File.editor.library.openFileInNewWindow(folder, true)
+  }
+  static reload = async () => {
+    const content = await File.getContent()
+    File.reloadContent(content, { fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true })
+  }
+
+  static getAnchorNode = (closest) => {
+    const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode)
+    return closest ? anchorNode.closest(closest) : anchorNode
+  }
+
+  static _meta = {}  // Used to pass data in the context menu
+  static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
+    const plugin = this.getBasePlugin(fixedName)
+    if (plugin && typeof plugin.getDynamicActions === "function") {
+      anchorNode = anchorNode || this.getAnchorNode()
+      const anchor = anchorNode[0]
+      if (anchor) {
+        this._meta = {}
+        return plugin.getDynamicActions(anchor, this._meta, notInContextMenu)
+      }
+    }
+  }
+  static callPluginDynamicAction = (fixedName, action) => {
+    const plugin = this.getBasePlugin(fixedName)
+    if (plugin?.hasOwnProperty("call") && typeof plugin.call === "function") {
+      plugin.call(action, this._meta)
+    }
+  }
+  static updateAndCallPluginDynamicAction = (fixedName, action, anchorNode, notInContextMenu) => {
+    this.updatePluginDynamicActions(fixedName, anchorNode, notInContextMenu)
+    this.callPluginDynamicAction(fixedName, action)
+  }
+
+  static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
+  static openPath = (path) => reqnode("electron").shell.openPath(path)
+
+  static downloadImage = async (src, folder, filename) => {
+    folder = folder || this.tempFolder
+    filename = filename || (this.randomString() + "_" + PATH.extname(src))
+    const { state } = await JSBridge.invoke("app.download", src, folder, filename)
+    return { ok: state === "completed", filepath: PATH.join(folder, filename) }
+  }
+
+  // MIME type detection should use magic number checks or a dedicated library.
+  // Manually checking magic numbers is impractical and a library adds too much overhead.
+  // This uses a simplified approach. Modern browsers can often infer the subtype reliably.
+  static convertImageToBase64 = (bin) => {
+    const prefix = bin.slice(0, 5).toString()
+    const mime = ["<svg", "<?xml"].some(e => prefix.startsWith(e)) ? "image/svg+xml" : "image"
+    const base64 = bin.toString("base64")
+    return `data:${mime};base64,${base64}`
+  }
+
+
+  // =========== Event ===========
+  static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
+  static isIMEActivated = ev => ev.key === "Process"
+  static modifierKey = keyString => {
+    const keys = keyString.toLowerCase().split("+").map(k => k.trim())
+    const ctrl = keys.includes("ctrl")
+    const shift = keys.includes("shift")
+    const alt = keys.includes("alt")
+    return ev => ev.shiftKey === shift && ev.altKey === alt && this.metaKeyPressed(ev) === ctrl
+  }
+
+
+  // =========== Pure Function ===========
+  static noop = () => undefined
+  static identity = args => args
+
+  static safeEval = x => new Function(`return (${x})`)()
+  static unsafeEval = x => eval(`(${x})`)
+
+  /** @description NOT a foolproof solution. */
+  static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str)
+  /** @description NOT a foolproof solution. The Promises/A+ specification is not a part of Node.js, so there is no foolproof solution at all */
+  static isPromise = obj => this.isObject(obj) && typeof obj.then === "function"
+  /** @description NOT a foolproof solution. Determine the "true" asynchronous functions */
+  static isAsyncFunction = fn => fn.constructor.name === "AsyncFunction"
+  /** @description NOT a foolproof solution. */
+  static isObject = value => {
+    const type = typeof value
+    return value != null && (type === "object" || type === "function")
+  }
+
+  static randomString = (len = 8) => Math.random().toString(36).substring(2, 2 + len).padEnd(len, "0")
+  static randomInt = (min, max) => {
+    const ceil = Math.ceil(min)
+    const floor = Math.floor(max)
+    return Math.floor(Math.random() * (floor - ceil) + ceil)
+  }
+  static getUUID = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0
+    const v = c === "x" ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+
+  static escape = html => {
+    const replacements = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;", "/": "&#x2F;", "`": "&#x60;", "=": "&#x3D;" }
+    return html.replace(/[&<>"'`=\/]/g, c => replacements[c])
+  }
+
+  static throttle = (fn, delay) => {
+    let timer, result
+    return function (...args) {
+      if (timer) return result
+      result = fn.apply(this, args)
+      timer = setTimeout(() => timer = null, delay)
+      return result
+    }
+  }
+
+  static debounce = (fn, delay) => {
+    let timer, deferred
+    return function (...args) {
+      if (!deferred) {
+        deferred = Promise.withResolvers()
+      }
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        const { resolve, reject } = deferred
+        deferred = null
+        timer = null
+        Promise.try(() => fn.apply(this, args)).then(resolve, reject)
+      }, delay)
+      return deferred.promise
+    }
+  }
+
+  static memorize = fn => {
+    const cache = Object.create(null)
+    return function (...args) {
+      const key = JSON.stringify(args)
+      if (key in cache) {
+        return cache[key]
+      }
+      const result = fn.apply(this, args)
+      cache[key] = result
+      return result
+    }
+  }
+
+  static memoizeLimited = (fn, cap = 100) => {
+    const cache = new Map()
+    return function (...args) {
+      const key = JSON.stringify(args)
+      if (cache.has(key)) {
+        const item = cache.get(key)
+        cache.delete(key)
+        cache.set(key, item)
+        return item
+      }
+      const result = fn.apply(this, args)
+      cache.set(key, result)
+      if (cap > 0 && cache.size > cap) {
+        cache.delete(cache.keys().next().value)
+      }
+      return result
+    }
+  }
+
+  static once = fn => {
+    let result
+    let called = false
+    return function (...args) {
+      if (!called) {
+        called = true
+        result = fn.apply(this, args)
+      }
+      return result
+    }
+  }
+
+  static oneShot = () => {
+    let shot
+    const arm = fn => shot = fn
+    const fire = function (...args) {
+      const fn = shot
+      shot = null
+      return fn?.apply(this, args)
+    }
+    return [arm, fire]
+  }
+
+  static chunk = (array, size = 10) => {
+    let index = 0
+    let result = []
+    while (index < array.length) {
+      result.push(array.slice(index, (index + size)))
+      index += size
+    }
+    return result
+  }
+
+  static zip = (...arrays) => {
+    if (arrays.length === 0) return []
+    const minLength = Math.min(...arrays.map(arr => arr.length))
+    return Array.from({ length: minLength }, (_, i) => arrays.map(arr => arr[i]))
+  }
+
+  static pick = (obj, props) => {
+    if (!obj || typeof obj !== "object") return {}
+    const entries = props
+      .map(prop => [prop, obj[prop]])
+      .filter(([_, val]) => val !== undefined)
+    return Object.fromEntries(entries)
+  }
+
+  static pickBy = (obj, predicate) => {
+    if (!obj || typeof obj !== "object" || typeof predicate !== "function") return {}
+    const entries = Object.entries(obj).filter(([key, value]) => predicate(value, key, obj))
+    return Object.fromEntries(entries)
+  }
+
+  /**
+   * @example merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
+   * @example merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
+   */
+  static merge = (source, other) => {
+    if (!this.isObject(source) || !this.isObject(other)) {
+      return other === undefined ? source : other
+    }
+    return Object.keys({ ...source, ...other }).reduce((obj, key) => {
+      obj[key] = Array.isArray(other[key]) ? other[key] : this.merge(source[key], other[key])
+      return obj
+    }, Array.isArray(source) ? [] : {})
+  }
+
+  /**
+   * only merge keys that exist in source
+   * @example update({ o: { a: [1, 2] } }, { o: { a: [3, 4] }, d: { b: 4 } }) -> { o: { a: [ 3, 4 ] } } }
+   * @example update({ o: { a: 3, c: 1 } }, { o: { a: 2 }, d: { b: 4 } }) -> { o: { a: 2, c: 1 } } }
+   */
+  static update = (source, other) => {
+    if (!this.isObject(source) || !this.isObject(other)) {
+      return other === undefined ? source : other
+    }
+    return Object.keys(source).reduce((obj, key) => {
+      if (other[key]) {
+        obj[key] = Array.isArray(other[key]) ? other[key] : this.update(source[key], other[key])
+      } else {
+        obj[key] = source[key]
+      }
+      return obj
+    }, Array.isArray(source) ? [] : {})
+  }
+
+  /**
+   * Recursively creates a minimal version of an object by removing properties that are null, empty, or deeply equal to their counterparts in a default values object.
+   * @example minimize({ o: { a: 3, b: 4 } }, { o: { a: 3 } }) -> { o: { b: 4 } }
+   */
+  static minimize = (sourceObject, defaultValues, options = {}, result = {}) => {
+    const { allowNull = false, allowUndefined = false, allowEmptyArray = false, allowEmptyObject = false } = options
+
+    for (const key of Object.keys(sourceObject)) {
+      const sourceValue = sourceObject[key]
+      const defaultValue = defaultValues ? defaultValues[key] : undefined
+
+      if (sourceValue === null && !allowNull) continue
+      if (sourceValue === undefined && !allowUndefined) continue
+      if (this.deepEqual(sourceValue, defaultValue)) continue
+
+      if (Array.isArray(sourceValue)) {
+        if (allowEmptyArray || sourceValue.length > 0) {
+          result[key] = sourceValue
+        }
+      } else if (typeof sourceValue === "object" && sourceValue !== null) {
+        const subDefault = (typeof defaultValue === "object" && defaultValue !== null) ? defaultValue : {}
+        const minimizedSubObject = this.minimize(sourceValue, subDefault, options, {})
+        if (allowEmptyObject || Object.keys(minimizedSubObject).length > 0) {
+          result[key] = minimizedSubObject
+        }
+      } else {
+        result[key] = sourceValue
+      }
+    }
+    return result
+  }
+
+  static cloneDeep = (obj, memo = new WeakMap()) => {
+    if (obj == null || typeof obj !== "object") {
+      return obj
+    } else if (memo.has(obj)) {
+      return memo.get(obj)
+    } else if (obj instanceof Date) {
+      return new Date(obj.getTime())
+    } else if (obj instanceof RegExp) {
+      return new RegExp(obj.source, obj.flags)
+    } else if (obj instanceof Map) {
+      const clonedMap = new Map()
+      memo.set(obj, clonedMap)
+      obj.forEach((value, key) => {
+        clonedMap.set(this.cloneDeep(key, memo), this.cloneDeep(value, memo))
+      })
+      return clonedMap
+    } else if (obj instanceof Set) {
+      const clonedSet = new Set()
+      memo.set(obj, clonedSet)
+      obj.forEach(value => {
+        clonedSet.add(this.cloneDeep(value, memo))
+      })
+      return clonedSet
+    }
+    const clone = Array.isArray(obj) ? [] : Object.create(Object.getPrototypeOf(obj))
+    memo.set(obj, clone)
+    for (const key of [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)]) {
+      clone[key] = this.cloneDeep(obj[key], memo)
+    }
+    return clone
+  }
+
+  static naiveCloneDeep = (source) => {
+    if (source == null || typeof source !== "object") {
+      return source
+    }
+    return Array.isArray(source)
+      ? source.map(this.naiveCloneDeep)
+      : Object.fromEntries(Object.entries(source).map(([key, val]) => [key, this.naiveCloneDeep(val)]))
+  }
+
+  static deepEqual = (object, other) => _.isEqual(object, other)
+
+  static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+  static waitUntil = async (conditionFn, interval = 50, timeout = 10000) => {
+    const endTime = Date.now() + timeout
+    while (Date.now() < endTime) {
+      const result = await conditionFn()
+      if (result) {
+        return result
+      }
+      await this.sleep(interval)
+    }
+    throw new Error(`Polling timed out: ${conditionFn}`)
+  }
+
+  static asyncReplaceAll = (text, regex, replaceFn) => {
+    if (!regex.global) {
+      throw Error("Called with a non-global RegExp argument")
     }
 
-    static hasOverrideBasePluginFn = (plugin, fn) => plugin[fn] !== global.BasePlugin.prototype[fn]
-    static hasOverrideCustomPluginFn = (plugin, fn) => plugin[fn] !== global.BaseCustomPlugin.prototype[fn]
-
-    static isUnderMountFolder = path => {
-        const mountFolder = PATH.resolve(this.getMountFolder())
-        const p = PATH.resolve(path)
-        return p && mountFolder && p.startsWith(mountFolder)
+    let match
+    let lastIndex = 0
+    const reg = new RegExp(regex)  // To avoid modifying `RegExp.lastIndex`, copy a new object
+    const promises = []
+    while (match = reg.exec(text)) {
+      const args = [...match, match.index, match.input]
+      promises.push(text.slice(lastIndex, match.index), replaceFn(...args))
+      lastIndex = reg.lastIndex
     }
-    static openFile = filepath => {
-        if (!filepath) return
-        if (!this.getMountFolder() || this.isUnderMountFolder(filepath)) {
-            File.editor.restoreLastCursor()
-            File.editor.focusAndRestorePos()
-            File.editor.library.openFile(filepath)
+    promises.push(text.slice(lastIndex))
+    return Promise.all(promises).then(results => results.join(""))
+  }
+
+  static compareVersion = (ver1, ver2) => {
+    const arr1 = (ver1 || "").split(".")
+    const arr2 = (ver2 || "").split(".")
+    const maxLength = Math.max(arr1.length, arr2.length)
+    for (let i = 0; i < maxLength; i++) {
+      const num1 = parseInt(arr1[i] || 0, 10)
+      const num2 = parseInt(arr2[i] || 0, 10)
+      if (num1 !== num2) {
+        return Math.sign(num1 - num2)
+      }
+    }
+    return 0
+  }
+
+  static dateTimeFormat = (date = new Date(), format = "yyyy-MM-dd HH:mm:ss", locale = undefined) => {
+    const fns = {
+      yyyy: () => date.getFullYear().toString(),
+      yyy: () => (date.getFullYear() % 1000).toString().padStart(3, "0"),
+      yy: () => (date.getFullYear() % 100).toString().padStart(2, "0"),
+      MMMM: () => new Intl.DateTimeFormat(locale, { month: "long" }).format(date),
+      MMM: () => new Intl.DateTimeFormat(locale, { month: "short" }).format(date),
+      MM: () => (date.getMonth() + 1).toString().padStart(2, "0"),
+      M: () => (date.getMonth() + 1).toString(),
+      dddd: () => new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date),
+      ddd: () => new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date),
+      dd: () => date.getDate().toString().padStart(2, "0"),
+      d: () => date.getDate().toString(),
+      HH: () => date.getHours().toString().padStart(2, "0"),
+      H: () => date.getHours().toString(),
+      hh: () => ((date.getHours() % 12 || 12)).toString().padStart(2, "0"),
+      h: () => (date.getHours() % 12 || 12).toString(),
+      mm: () => date.getMinutes().toString().padStart(2, "0"),
+      m: () => date.getMinutes().toString(),
+      ss: () => date.getSeconds().toString().padStart(2, "0"),
+      s: () => date.getSeconds().toString(),
+      SSS: () => date.getMilliseconds().toString().padStart(3, "0"),
+      S: () => date.getMilliseconds().toString(),
+      a: () => new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true }).formatToParts(date).find(part => part.type === "dayPeriod")?.value || "",
+    }
+    const regex = /(yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a)/g
+    return format.replace(regex, (match) => fns[match] ? fns[match]() : match)
+  }
+
+  static nestedPropertyHelpers = {
+    has: (obj, key) => {
+      if (key == null) {
+        return false
+      }
+      return key.split(".").every(k => {
+        if (obj && typeof obj === "object" && Object.hasOwn(obj, k)) {
+          obj = obj[k]
+          return true
+        }
+        return false
+      })
+    },
+    dive: (obj, key) => {
+      if (key == null) return {}
+      const keys = key.split(".")
+      const targetKey = keys.pop()
+      let keyContainer = obj
+      for (const k of keys) {
+        if (keyContainer && typeof keyContainer === "object" && Object.hasOwn(keyContainer, k)) {
+          keyContainer = keyContainer[k]
         } else {
-            File.editor.library.openFileInNewWindow(filepath, false)
+          throw new Error(`Object has no such nested property: ${key}`)
         }
+      }
+      if (keyContainer && typeof keyContainer === "object") {
+        return { keyContainer, targetKey }
+      }
+      return {}
+    },
+    handle: (obj, key, handler) => {
+      const { keyContainer, targetKey } = this.nestedPropertyHelpers.dive(obj, key)
+      if (keyContainer && targetKey) {
+        return handler(keyContainer, targetKey)
+      }
+    },
+    get: (obj, key) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey]),
+    set: (obj, key, val) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey] = val),
+    push: (obj, key, item) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].push(item)),
+    removeIndex: (obj, key, idx) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].splice(idx, 1)),
+  }
+
+  /**
+   * @description Creates a function that confirms an action only after it has been
+   * triggered `threshold` times consecutively within `timeWindow` milliseconds.
+   * It supports an optional `getIdentifier` function to ensure only identical actions count.
+   */
+  static createConsecutiveAction = (
+    {
+      threshold = 2,
+      timeWindow = 1000,
+      totalTimeLimit = 0,
+      debounceDelay = 0,
+      resetOnConfirmed = true,
+      getIdentifier = (...args) => undefined,
+      shouldReset = () => false,
+      shouldConfirm = () => false,
+      onTimeout = this.noop,
+      onReset = this.noop,
+      onInsufficient = (current, total) => this.notification.show(i18n.t("global", "confirmNeeded", { count: total - current }), "info"),
+      onConfirmed,
+    },
+  ) => {
+    if (typeof onConfirmed !== "function") {
+      throw new Error("onConfirmed must be a Function")
     }
-    static openFolder = folder => {
-        if (folder) File.editor.library.openFileInNewWindow(folder, true)
+    threshold = Math.max(threshold, 2)
+    totalTimeLimit = Math.max(totalTimeLimit, 0)
+    debounceDelay = Math.max(debounceDelay, 0)
+
+    const NO_IDENTIFIER = Symbol("no-identifier")
+    let currentCount = 0
+    let lastTimestamp = 0
+    let firstTimestamp = 0
+    let lastIdentifier = NO_IDENTIFIER
+    let resetTimer = null
+    let debounceTimer = null
+
+    const resetState = () => {
+      onReset(currentCount, threshold)
+
+      currentCount = 0
+      lastTimestamp = 0
+      firstTimestamp = 0
+      lastIdentifier = NO_IDENTIFIER
+      if (resetTimer) {
+        clearTimeout(resetTimer)
+        resetTimer = null
+      }
+      if (debounceTimer) {
+        clearTimeout(debounceTimer)
+        debounceTimer = null
+      }
     }
-    static reload = async () => {
-        const content = await File.getContent()
-        File.reloadContent(content, { fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true })
+    const executeConfirmation = (...args) => {
+      onConfirmed(...args)
+      if (resetOnConfirmed) resetState()
     }
 
-    static getAnchorNode = (closest) => {
-        const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode)
-        return closest ? anchorNode.closest(closest) : anchorNode
-    }
+    return function (...args) {
+      if (debounceDelay > 0 && debounceTimer) return
 
-    static _meta = {}  // Used to pass data in the context menu
-    static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
-        const plugin = this.getBasePlugin(fixedName)
-        if (plugin && typeof plugin.getDynamicActions === "function") {
-            anchorNode = anchorNode || this.getAnchorNode()
-            const anchor = anchorNode[0]
-            if (anchor) {
-                this._meta = {}
-                return plugin.getDynamicActions(anchor, this._meta, notInContextMenu)
-            }
+      if (shouldConfirm(...args)) {
+        executeConfirmation(...args)
+        return
+      }
+
+      const now = Date.now()
+      const currentIdentifier = getIdentifier(...args)
+      if (shouldReset(...args)) resetState()
+
+      const needReset = (
+        currentCount === 0
+        || now - lastTimestamp > timeWindow
+        || (totalTimeLimit > 0 && currentCount > 0 && now - firstTimestamp > totalTimeLimit)
+        || (lastIdentifier !== NO_IDENTIFIER && currentIdentifier !== lastIdentifier)
+      )
+      if (needReset) {
+        resetState()
+        currentCount = 1
+        firstTimestamp = now
+      } else {
+        currentCount++
+      }
+      lastTimestamp = now
+      lastIdentifier = currentIdentifier
+      if (resetTimer) {
+        clearTimeout(resetTimer)
+        resetTimer = null
+      }
+      if (debounceDelay > 0) {
+        if (debounceTimer) clearTimeout(debounceTimer)
+        debounceTimer = setTimeout(() => debounceTimer = null, debounceDelay)
+      }
+
+      if (currentCount < threshold) {
+        resetTimer = setTimeout(() => {
+          if (currentCount > 0 && currentCount < threshold) {
+            onTimeout(currentCount, threshold)
+          }
+          resetState()
+        }, timeWindow)
+        onInsufficient(currentCount, threshold)
+      } else {
+        executeConfirmation(...args)
+      }
+    }
+  }
+
+  // =========== Business File ===========
+  static getLocalRootUrl = () => File.editor.docMenu.getLocalRootUrl() || this.getCurrentDirPath()
+  static toProtocolUrl = (path) => {
+    const segments = (typeof path === "string" ? path : "")
+      .trim()
+      .split(/[\\/]+/)
+      .filter(seg => seg && seg !== "." && seg !== "..")
+      .map(encodeURIComponent)
+      .join("/")
+    return `${this.protocolRoot}/${segments}`
+  }
+
+  static getCurrentFileContent = () => File.editor.getMarkdown()
+  static editCurrentFile = async (replacement, persistence = File.option.enableAutoSave) => {
+    await this.fixScrollTop(async () => {
+      const bak = File.presentedItemChanged
+      File.presentedItemChanged = this.noop
+      try {
+        const filepath = this.getFilePath()
+        const content = this.getCurrentFileContent()
+        const replaced = typeof replacement === "function"
+          ? await replacement(content)
+          : replacement
+        if (replaced === content) return
+        if (persistence && filepath) {
+          const ok = await this.writeFile(filepath, replaced)
+          if (!ok) return
         }
-    }
-    static callPluginDynamicAction = (fixedName, action) => {
-        const plugin = this.getBasePlugin(fixedName)
-        if (plugin?.hasOwnProperty("call") && typeof plugin.call === "function") {
-            plugin.call(action, this._meta)
-        }
-    }
-    static updateAndCallPluginDynamicAction = (fixedName, action, anchorNode, notInContextMenu) => {
-        this.updatePluginDynamicActions(fixedName, anchorNode, notInContextMenu)
-        this.callPluginDynamicAction(fixedName, action)
-    }
-
-    static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
-    static openPath = (path) => reqnode("electron").shell.openPath(path)
-
-    static downloadImage = async (src, folder, filename) => {
-        folder = folder || this.tempFolder
-        filename = filename || (this.randomString() + "_" + PATH.extname(src))
-        const { state } = await JSBridge.invoke("app.download", src, folder, filename)
-        return { ok: state === "completed", filepath: PATH.join(folder, filename) }
-    }
-
-    // MIME type detection should use magic number checks or a dedicated library.
-    // Manually checking magic numbers is impractical and a library adds too much overhead.
-    // This uses a simplified approach. Modern browsers can often infer the subtype reliably.
-    static convertImageToBase64 = (bin) => {
-        const prefix = bin.slice(0, 5).toString()
-        const mime = ["<svg", "<?xml"].some(e => prefix.startsWith(e)) ? "image/svg+xml" : "image"
-        const base64 = bin.toString("base64")
-        return `data:${mime};base64,${base64}`
-    }
-
-
-    // =========== Event ===========
-    static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
-    static isIMEActivated = ev => ev.key === "Process"
-    static modifierKey = keyString => {
-        const keys = keyString.toLowerCase().split("+").map(k => k.trim())
-        const ctrl = keys.includes("ctrl")
-        const shift = keys.includes("shift")
-        const alt = keys.includes("alt")
-        return ev => ev.shiftKey === shift && ev.altKey === alt && this.metaKeyPressed(ev) === ctrl
-    }
-
-
-    // =========== Pure Function ===========
-    static noop = () => undefined
-    static identity = args => args
-
-    static safeEval = x => new Function(`return (${x})`)()
-    static unsafeEval = x => eval(`(${x})`)
-
-    /** @description NOT a foolproof solution. */
-    static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str)
-    /** @description NOT a foolproof solution. The Promises/A+ specification is not a part of Node.js, so there is no foolproof solution at all */
-    static isPromise = obj => this.isObject(obj) && typeof obj.then === "function"
-    /** @description NOT a foolproof solution. Determine the "true" asynchronous functions */
-    static isAsyncFunction = fn => fn.constructor.name === "AsyncFunction"
-    /** @description NOT a foolproof solution. */
-    static isObject = value => {
-        const type = typeof value
-        return value != null && (type === "object" || type === "function")
-    }
-
-    static randomString = (len = 8) => Math.random().toString(36).substring(2, 2 + len).padEnd(len, "0")
-    static randomInt = (min, max) => {
-        const ceil = Math.ceil(min)
-        const floor = Math.floor(max)
-        return Math.floor(Math.random() * (floor - ceil) + ceil)
-    }
-    static getUUID = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
-        const r = (Math.random() * 16) | 0
-        const v = c === "x" ? r : (r & 0x3) | 0x8
-        return v.toString(16)
+        const op = persistence ? { delayRefresh: true, skipChangeCount: true, skipStore: true } : undefined
+        File.reloadContent(replaced, op)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        File.presentedItemChanged = bak
+      }
     })
+  }
 
-    static escape = html => {
-        const replacements = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;", "/": "&#x2F;", "`": "&#x60;", "=": "&#x3D;" }
-        return html.replace(/[&<>"'`=\/]/g, c => replacements[c])
+  static fixScrollTop = async fn => {
+    const inSourceMode = File.editor.sourceView.inSourceMode
+    const scrollTop = inSourceMode
+      ? File.editor.sourceView.cm.getScrollInfo().top
+      : this.entities.eContent.scrollTop
+    await fn()
+    if (inSourceMode) {
+      File.editor.sourceView.cm.scrollTo(0, scrollTop)
+    } else {
+      this.entities.eContent.scrollTop = scrollTop
+    }
+  }
+
+  static getStyleId = name => `plu-style-${name}`
+  static getStyleEl = name => document.getElementById(this.getStyleId(name))
+  static getStyleText = name => this.getStyleEl(name)?.innerHTML
+  static removeStyle = name => this.getStyleEl(name)?.remove()
+  static replaceStyle = (name, css) => this.getStyleEl(name).textContent = css
+  static insertStyle = (name, css) => {
+    if (!css) return
+    const el = document.createElement("style")
+    el.id = this.getStyleId(name)
+    el.appendChild(document.createTextNode(css))
+    document.head.append(el)
+  }
+  static insertStyleFile = (name, href) => {
+    const el = document.createElement("link")
+    el.id = this.getStyleId(name)
+    el.type = "text/css"
+    el.rel = "stylesheet"
+    el.href = this.joinPluginPath(href)
+    document.head.append(el)
+  }
+
+  static newFilePath = async filename => {
+    filename = filename || File.getFileName() || Date.now() + ".md"
+    const dirPath = this.getFilePath() ? this.getCurrentDirPath() : this.getMountFolder()
+    if (!dirPath) {
+      alert(i18n.t("global", "error.onBlankPage"))
+      return
+    }
+    let filepath = PATH.resolve(dirPath, filename)
+    const exist = await this.existPath(filepath)
+    if (exist) {
+      const ext = PATH.extname(filepath)
+      filepath = ext ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`) : filepath + "-copy.md"
+    }
+    return filepath
+  }
+
+  static getFileName = (filePath, removeSuffix = true) => {
+    let fileName = filePath ? PATH.basename(filePath) : File.getFileName()
+    if (fileName === undefined) return
+    if (removeSuffix) {
+      const idx = fileName.lastIndexOf(".")
+      if (idx !== -1) {
+        fileName = fileName.substring(0, idx)
+      }
+    }
+    return fileName
+  }
+
+  static getStorage = (key) => ({
+    set: value => localStorage.setItem(key, JSON.stringify(value)),
+    get: () => JSON.parse(localStorage.getItem(key)),
+    exist: () => localStorage.getItem(key) != null,
+    remove: () => localStorage.removeItem(key),
+  })
+
+  // =========== Basic File ===========
+  static getDirname = () => global.dirname || global.__dirname
+  static getHomeDir = () => require("os").homedir() || File.option.userPath
+  static getFilePath = () => File.filePath || File.bundle?.filePath || ""
+  static getMountFolder = () => File.getMountFolder() || ""
+  static getCurrentDirPath = () => PATH.dirname(this.getFilePath())
+  static joinPluginPath = (...paths) => PATH.join(this.getDirname(), ...paths)
+  static resolvePluginPath = (...paths) => PATH.resolve(this.getDirname(), ...paths)
+  static getUserSpaceFile = (file = "") => this.joinPluginPath("./plugin/global/user_space", file)
+  static require = (...paths) => require(this.joinPluginPath(...paths))
+
+  static readFiles = async files => Promise.all(files.map(file => FS_EXTRA.readFile(file, "utf-8").catch(() => undefined)))
+  static existPath = async path => FS_EXTRA.access(path).then(() => true).catch(() => false)
+  static writeFile = async (filepath, content) => {
+    try {
+      await FS_EXTRA.writeFile(filepath, content)
+      return true
+    } catch (e) {
+      await this.showMessageBox({
+        type: "error",
+        title: "Typora Plugin",
+        buttons: [i18n.t("global", "confirm")],
+        message: i18n.t("global", "error.writeFileFailed"),
+        detail: e.toString(),
+      })
+    }
+  }
+
+  static readYaml = content => require("../lib/js-yaml").load(content)
+  static stringifyYaml = (obj, args) => require("../lib/js-yaml").dump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
+  static readToml = content => require("../lib/smol-toml").parse(content)
+  static stringifyToml = obj => require("../lib/smol-toml").stringify(obj)
+  static readTomlFile = async filepath => this.readToml(await FS_EXTRA.readFile(filepath, "utf-8"))
+
+  static unzip = async (buffer, workDir) => {
+    const extract = require("extract-zip")
+    const absWorkDir = PATH.resolve(workDir)
+    const zipPath = PATH.join(absWorkDir, `temp_zip_${Date.now()}.zip`)
+    await FS_EXTRA.writeFile(zipPath, buffer)
+    const { promise, resolve, reject } = Promise.withResolvers()
+    const entries = []
+    const opts = {
+      dir: absWorkDir,
+      onEntry: (entry) => entries.push(PATH.join(absWorkDir, entry.fileName)),
+    }
+    extract(zipPath, opts, (err) => {
+      if (err) reject(err)
+      else resolve()
+    })
+    await promise.finally(() => FS_EXTRA.remove(zipPath).catch(err => console.error(err)))
+    return entries
+  }
+
+  // TODO: Uses dual counters to prevent from terminating prematurely while tasks are paused for asynchronous IO. Too complicated.
+  static walkDir = async (
+    {
+      dir,
+      onFile,
+      onDir = null,
+      fileFilter = (name, path, stats) => true,
+      dirFilter = (name, path, stats) => true,
+      fileParamsGetter = (path, file, dir, stats) => ({ path, file, dir, stats }),
+      onEntity = null,
+      onNonFatalError = (path, err) => console.error(`Error processing path ${path}:`, err),
+      onFinished = null,
+      semaphore = 20,
+      maxDepth = -1,
+      maxEntities = -1,
+      strategy = "bfs", // bfs | dfs
+      followSymlinks = false,
+      stopOnNonFatalError = false,
+      signal = null,
+    },
+  ) => {
+    if (signal?.aborted) {
+      const reason = signal.reason ?? new DOMException("Signal Aborted", "AbortError")
+      return Promise.reject(reason)
     }
 
-    static throttle = (fn, delay) => {
-        let timer, result
-        return function (...args) {
-            if (timer) return result
-            result = fn.apply(this, args)
-            timer = setTimeout(() => timer = null, delay)
-            return result
-        }
+    semaphore = Math.max(semaphore, 1)
+
+    const { readdir, stat, lstat } = FS_EXTRA
+    const { join, dirname, basename } = PATH
+    const statFn = followSymlinks ? stat : lstat
+    const nextTaskFn = strategy === "dfs" ? "pop" : "shift"
+    const needCheckEntities = maxEntities > 0
+    const noNeedCheckDepth = maxDepth < 0
+
+    let fatalError
+    let aborted = false
+    let entityCount = 0
+    let runningTasks = 0  // The number of currently executing tasks, limited by the `semaphore`
+    let pendingPaths = 0  // The number of discovered paths that are not yet processed
+    const taskQueue = []
+    const { promise: drainPromise, resolve: resolveDrain, reject: rejectDrain } = Promise.withResolvers()
+
+    if (signal) {
+      const onAbort = () => rejectAndStop(signal.reason ?? new DOMException("Signal Aborted", "AbortError"))
+      signal.addEventListener("abort", onAbort, { once: true })
+      drainPromise.finally(() => signal.removeEventListener("abort", onAbort)).catch(() => undefined)
     }
-
-    static debounce = (fn, delay) => {
-        let timer, deferred
-        return function (...args) {
-            if (!deferred) {
-                deferred = Promise.withResolvers()
-            }
-            clearTimeout(timer)
-            timer = setTimeout(() => {
-                const { resolve, reject } = deferred
-                deferred = null
-                timer = null
-                Promise.try(() => fn.apply(this, args)).then(resolve, reject)
-            }, delay)
-            return deferred.promise
-        }
+    if (onFinished) {
+      drainPromise.finally(() => onFinished(fatalError)).catch(() => undefined)
     }
-
-    static memorize = fn => {
-        const cache = Object.create(null)
-        return function (...args) {
-            const key = JSON.stringify(args)
-            if (key in cache) {
-                return cache[key]
-            }
-            const result = fn.apply(this, args)
-            cache[key] = result
-            return result
-        }
+    const rejectAndStop = (err) => {
+      if (aborted) return
+      aborted = true
+      taskQueue.length = 0
+      fatalError = err
+      rejectDrain(err)
     }
-
-    static memoizeLimited = (fn, cap = 100) => {
-        const cache = new Map()
-        return function (...args) {
-            const key = JSON.stringify(args)
-            if (cache.has(key)) {
-                const item = cache.get(key)
-                cache.delete(key)
-                cache.set(key, item)
-                return item
-            }
-            const result = fn.apply(this, args)
-            cache.set(key, result)
-            if (cap > 0 && cache.size > cap) {
-                cache.delete(cache.keys().next().value)
-            }
-            return result
-        }
+    const checkDrain = () => {
+      if (runningTasks === 0 && pendingPaths === 0 && !aborted) {
+        resolveDrain()
+      }
     }
-
-    static once = fn => {
-        let result
-        let called = false
-        return function (...args) {
-            if (!called) {
-                called = true
-                result = fn.apply(this, args)
-            }
-            return result
-        }
-    }
-
-    static oneShot = () => {
-        let shot
-        const arm = fn => shot = fn
-        const fire = function (...args) {
-            const fn = shot
-            shot = null
-            return fn?.apply(this, args)
-        }
-        return [arm, fire]
-    }
-
-    static chunk = (array, size = 10) => {
-        let index = 0
-        let result = []
-        while (index < array.length) {
-            result.push(array.slice(index, (index + size)))
-            index += size
-        }
-        return result
-    }
-
-    static zip = (...arrays) => {
-        if (arrays.length === 0) return []
-        const minLength = Math.min(...arrays.map(arr => arr.length))
-        return Array.from({ length: minLength }, (_, i) => arrays.map(arr => arr[i]))
-    }
-
-    static pick = (obj, props) => {
-        if (!obj || typeof obj !== "object") return {}
-        const entries = props
-            .map(prop => [prop, obj[prop]])
-            .filter(([_, val]) => val !== undefined)
-        return Object.fromEntries(entries)
-    }
-
-    static pickBy = (obj, predicate) => {
-        if (!obj || typeof obj !== "object" || typeof predicate !== "function") return {}
-        const entries = Object.entries(obj).filter(([key, value]) => predicate(value, key, obj))
-        return Object.fromEntries(entries)
-    }
-
-    /**
-     * @example merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
-     * @example merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
-     */
-    static merge = (source, other) => {
-        if (!this.isObject(source) || !this.isObject(other)) {
-            return other === undefined ? source : other
-        }
-        return Object.keys({ ...source, ...other }).reduce((obj, key) => {
-            obj[key] = Array.isArray(other[key]) ? other[key] : this.merge(source[key], other[key])
-            return obj
-        }, Array.isArray(source) ? [] : {})
-    }
-
-    /**
-     * only merge keys that exist in source
-     * @example update({ o: { a: [1, 2] } }, { o: { a: [3, 4] }, d: { b: 4 } }) -> { o: { a: [ 3, 4 ] } } }
-     * @example update({ o: { a: 3, c: 1 } }, { o: { a: 2 }, d: { b: 4 } }) -> { o: { a: 2, c: 1 } } }
-     */
-    static update = (source, other) => {
-        if (!this.isObject(source) || !this.isObject(other)) {
-            return other === undefined ? source : other
-        }
-        return Object.keys(source).reduce((obj, key) => {
-            if (other[key]) {
-                obj[key] = Array.isArray(other[key]) ? other[key] : this.update(source[key], other[key])
-            } else {
-                obj[key] = source[key]
-            }
-            return obj
-        }, Array.isArray(source) ? [] : {})
-    }
-
-    /**
-     * Recursively creates a minimal version of an object by removing properties that are null, empty, or deeply equal to their counterparts in a default values object.
-     * @example minimize({ o: { a: 3, b: 4 } }, { o: { a: 3 } }) -> { o: { b: 4 } }
-     */
-    static minimize = (sourceObject, defaultValues, options = {}, result = {}) => {
-        const { allowNull = false, allowUndefined = false, allowEmptyArray = false, allowEmptyObject = false } = options
-
-        for (const key of Object.keys(sourceObject)) {
-            const sourceValue = sourceObject[key]
-            const defaultValue = defaultValues ? defaultValues[key] : undefined
-
-            if (sourceValue === null && !allowNull) continue
-            if (sourceValue === undefined && !allowUndefined) continue
-            if (this.deepEqual(sourceValue, defaultValue)) continue
-
-            if (Array.isArray(sourceValue)) {
-                if (allowEmptyArray || sourceValue.length > 0) {
-                    result[key] = sourceValue
-                }
-            } else if (typeof sourceValue === "object" && sourceValue !== null) {
-                const subDefault = (typeof defaultValue === "object" && defaultValue !== null) ? defaultValue : {}
-                const minimizedSubObject = this.minimize(sourceValue, subDefault, options, {})
-                if (allowEmptyObject || Object.keys(minimizedSubObject).length > 0) {
-                    result[key] = minimizedSubObject
-                }
-            } else {
-                result[key] = sourceValue
-            }
-        }
-        return result
-    }
-
-    static cloneDeep = (obj, memo = new WeakMap()) => {
-        if (obj == null || typeof obj !== "object") {
-            return obj
-        } else if (memo.has(obj)) {
-            return memo.get(obj)
-        } else if (obj instanceof Date) {
-            return new Date(obj.getTime())
-        } else if (obj instanceof RegExp) {
-            return new RegExp(obj.source, obj.flags)
-        } else if (obj instanceof Map) {
-            const clonedMap = new Map()
-            memo.set(obj, clonedMap)
-            obj.forEach((value, key) => {
-                clonedMap.set(this.cloneDeep(key, memo), this.cloneDeep(value, memo))
-            })
-            return clonedMap
-        } else if (obj instanceof Set) {
-            const clonedSet = new Set()
-            memo.set(obj, clonedSet)
-            obj.forEach(value => {
-                clonedSet.add(this.cloneDeep(value, memo))
-            })
-            return clonedSet
-        }
-        const clone = Array.isArray(obj) ? [] : Object.create(Object.getPrototypeOf(obj))
-        memo.set(obj, clone)
-        for (const key of [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)]) {
-            clone[key] = this.cloneDeep(obj[key], memo)
-        }
-        return clone
-    }
-
-    static naiveCloneDeep = (source) => {
-        if (source == null || typeof source !== "object") {
-            return source
-        }
-        return Array.isArray(source)
-            ? source.map(this.naiveCloneDeep)
-            : Object.fromEntries(Object.entries(source).map(([key, val]) => [key, this.naiveCloneDeep(val)]))
-    }
-
-    static deepEqual = (object, other) => _.isEqual(object, other)
-
-    static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-    static waitUntil = async (conditionFn, interval = 50, timeout = 10000) => {
-        const endTime = Date.now() + timeout
-        while (Date.now() < endTime) {
-            const result = await conditionFn()
-            if (result) {
-                return result
-            }
-            await this.sleep(interval)
-        }
-        throw new Error(`Polling timed out: ${conditionFn}`)
-    }
-
-    static asyncReplaceAll = (text, regex, replaceFn) => {
-        if (!regex.global) {
-            throw Error("Called with a non-global RegExp argument")
-        }
-
-        let match
-        let lastIndex = 0
-        const reg = new RegExp(regex)  // To avoid modifying `RegExp.lastIndex`, copy a new object
-        const promises = []
-        while (match = reg.exec(text)) {
-            const args = [...match, match.index, match.input]
-            promises.push(text.slice(lastIndex, match.index), replaceFn(...args))
-            lastIndex = reg.lastIndex
-        }
-        promises.push(text.slice(lastIndex))
-        return Promise.all(promises).then(results => results.join(""))
-    }
-
-    static compareVersion = (ver1, ver2) => {
-        const arr1 = (ver1 || "").split(".")
-        const arr2 = (ver2 || "").split(".")
-        const maxLength = Math.max(arr1.length, arr2.length)
-        for (let i = 0; i < maxLength; i++) {
-            const num1 = parseInt(arr1[i] || 0, 10)
-            const num2 = parseInt(arr2[i] || 0, 10)
-            if (num1 !== num2) {
-                return Math.sign(num1 - num2)
-            }
-        }
-        return 0
-    }
-
-    static dateTimeFormat = (date = new Date(), format = "yyyy-MM-dd HH:mm:ss", locale = undefined) => {
-        const fns = {
-            yyyy: () => date.getFullYear().toString(),
-            yyy: () => (date.getFullYear() % 1000).toString().padStart(3, "0"),
-            yy: () => (date.getFullYear() % 100).toString().padStart(2, "0"),
-            MMMM: () => new Intl.DateTimeFormat(locale, { month: "long" }).format(date),
-            MMM: () => new Intl.DateTimeFormat(locale, { month: "short" }).format(date),
-            MM: () => (date.getMonth() + 1).toString().padStart(2, "0"),
-            M: () => (date.getMonth() + 1).toString(),
-            dddd: () => new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date),
-            ddd: () => new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date),
-            dd: () => date.getDate().toString().padStart(2, "0"),
-            d: () => date.getDate().toString(),
-            HH: () => date.getHours().toString().padStart(2, "0"),
-            H: () => date.getHours().toString(),
-            hh: () => ((date.getHours() % 12 || 12)).toString().padStart(2, "0"),
-            h: () => (date.getHours() % 12 || 12).toString(),
-            mm: () => date.getMinutes().toString().padStart(2, "0"),
-            m: () => date.getMinutes().toString(),
-            ss: () => date.getSeconds().toString().padStart(2, "0"),
-            s: () => date.getSeconds().toString(),
-            SSS: () => date.getMilliseconds().toString().padStart(3, "0"),
-            S: () => date.getMilliseconds().toString(),
-            a: () => new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true }).formatToParts(date).find(part => part.type === "dayPeriod")?.value || "",
-        }
-        const regex = /(yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a)/g
-        return format.replace(regex, (match) => fns[match] ? fns[match]() : match)
-    }
-
-    static nestedPropertyHelpers = {
-        has: (obj, key) => {
-            if (key == null) {
-                return false
-            }
-            return key.split(".").every(k => {
-                if (obj && typeof obj === "object" && Object.hasOwn(obj, k)) {
-                    obj = obj[k]
-                    return true
-                }
-                return false
-            })
-        },
-        dive: (obj, key) => {
-            if (key == null) return {}
-            const keys = key.split(".")
-            const targetKey = keys.pop()
-            let keyContainer = obj
-            for (const k of keys) {
-                if (keyContainer && typeof keyContainer === "object" && Object.hasOwn(keyContainer, k)) {
-                    keyContainer = keyContainer[k]
-                } else {
-                    throw new Error(`Object has no such nested property: ${key}`)
-                }
-            }
-            if (keyContainer && typeof keyContainer === "object") {
-                return { keyContainer, targetKey }
-            }
-            return {}
-        },
-        handle: (obj, key, handler) => {
-            const { keyContainer, targetKey } = this.nestedPropertyHelpers.dive(obj, key)
-            if (keyContainer && targetKey) {
-                return handler(keyContainer, targetKey)
-            }
-        },
-        get: (obj, key) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey]),
-        set: (obj, key, val) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey] = val),
-        push: (obj, key, item) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].push(item)),
-        removeIndex: (obj, key, idx) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].splice(idx, 1)),
-    }
-
-    /**
-     * @description Creates a function that confirms an action only after it has been
-     * triggered `threshold` times consecutively within `timeWindow` milliseconds.
-     * It supports an optional `getIdentifier` function to ensure only identical actions count.
-     */
-    static createConsecutiveAction = (
-        {
-            threshold = 2,
-            timeWindow = 1000,
-            totalTimeLimit = 0,
-            debounceDelay = 0,
-            resetOnConfirmed = true,
-            getIdentifier = (...args) => undefined,
-            shouldReset = () => false,
-            shouldConfirm = () => false,
-            onTimeout = this.noop,
-            onReset = this.noop,
-            onInsufficient = (current, total) => this.notification.show(i18n.t("global", "confirmNeeded", { count: total - current }), "info"),
-            onConfirmed,
-        },
-    ) => {
-        if (typeof onConfirmed !== "function") {
-            throw new Error("onConfirmed must be a Function")
-        }
-        threshold = Math.max(threshold, 2)
-        totalTimeLimit = Math.max(totalTimeLimit, 0)
-        debounceDelay = Math.max(debounceDelay, 0)
-
-        const NO_IDENTIFIER = Symbol("no-identifier")
-        let currentCount = 0
-        let lastTimestamp = 0
-        let firstTimestamp = 0
-        let lastIdentifier = NO_IDENTIFIER
-        let resetTimer = null
-        let debounceTimer = null
-
-        const resetState = () => {
-            onReset(currentCount, threshold)
-
-            currentCount = 0
-            lastTimestamp = 0
-            firstTimestamp = 0
-            lastIdentifier = NO_IDENTIFIER
-            if (resetTimer) {
-                clearTimeout(resetTimer)
-                resetTimer = null
-            }
-            if (debounceTimer) {
-                clearTimeout(debounceTimer)
-                debounceTimer = null
-            }
-        }
-        const executeConfirmation = (...args) => {
-            onConfirmed(...args)
-            if (resetOnConfirmed) resetState()
-        }
-
-        return function (...args) {
-            if (debounceDelay > 0 && debounceTimer) return
-
-            if (shouldConfirm(...args)) {
-                executeConfirmation(...args)
-                return
-            }
-
-            const now = Date.now()
-            const currentIdentifier = getIdentifier(...args)
-            if (shouldReset(...args)) resetState()
-
-            const needReset = (
-                currentCount === 0
-                || now - lastTimestamp > timeWindow
-                || (totalTimeLimit > 0 && currentCount > 0 && now - firstTimestamp > totalTimeLimit)
-                || (lastIdentifier !== NO_IDENTIFIER && currentIdentifier !== lastIdentifier)
-            )
-            if (needReset) {
-                resetState()
-                currentCount = 1
-                firstTimestamp = now
-            } else {
-                currentCount++
-            }
-            lastTimestamp = now
-            lastIdentifier = currentIdentifier
-            if (resetTimer) {
-                clearTimeout(resetTimer)
-                resetTimer = null
-            }
-            if (debounceDelay > 0) {
-                if (debounceTimer) clearTimeout(debounceTimer)
-                debounceTimer = setTimeout(() => debounceTimer = null, debounceDelay)
-            }
-
-            if (currentCount < threshold) {
-                resetTimer = setTimeout(() => {
-                    if (currentCount > 0 && currentCount < threshold) {
-                        onTimeout(currentCount, threshold)
-                    }
-                    resetState()
-                }, timeWindow)
-                onInsufficient(currentCount, threshold)
-            } else {
-                executeConfirmation(...args)
-            }
-        }
-    }
-
-    // =========== Business File ===========
-    static getLocalRootUrl = () => File.editor.docMenu.getLocalRootUrl() || this.getCurrentDirPath()
-    static toProtocolUrl = (path) => {
-        const segments = (typeof path === "string" ? path : "")
-            .trim()
-            .split(/[\\/]+/)
-            .filter(seg => seg && seg !== "." && seg !== "..")
-            .map(encodeURIComponent)
-            .join("/")
-        return `${this.protocolRoot}/${segments}`
-    }
-
-    static getCurrentFileContent = () => File.editor.getMarkdown()
-    static editCurrentFile = async (replacement, persistence = File.option.enableAutoSave) => {
-        await this.fixScrollTop(async () => {
-            const bak = File.presentedItemChanged
-            File.presentedItemChanged = this.noop
-            try {
-                const filepath = this.getFilePath()
-                const content = this.getCurrentFileContent()
-                const replaced = typeof replacement === "function"
-                    ? await replacement(content)
-                    : replacement
-                if (replaced === content) return
-                if (persistence && filepath) {
-                    const ok = await this.writeFile(filepath, replaced)
-                    if (!ok) return
-                }
-                const op = persistence ? { delayRefresh: true, skipChangeCount: true, skipStore: true } : undefined
-                File.reloadContent(replaced, op)
-            } catch (e) {
-                console.error(e)
-            } finally {
-                File.presentedItemChanged = bak
-            }
+    const runNextTask = () => {
+      if (aborted) return
+      while (taskQueue.length > 0 && runningTasks < semaphore) {
+        const task = taskQueue[nextTaskFn]()
+        runningTasks++
+        task().finally(() => {
+          runningTasks--
+          runNextTask()
+          checkDrain()
         })
+      }
     }
+    const scheduleTask = (fn) => {
+      if (!aborted) {
+        taskQueue.push(fn)
+        runNextTask()
+      }
+    }
+    const processPath = async (currentPath, parentDir, fileName, depth) => {
+      try {
+        const stats = await statFn(currentPath)
+        if (aborted) return
 
-    static fixScrollTop = async fn => {
-        const inSourceMode = File.editor.sourceView.inSourceMode
-        const scrollTop = inSourceMode
-            ? File.editor.sourceView.cm.getScrollInfo().top
-            : this.entities.eContent.scrollTop
-        await fn()
-        if (inSourceMode) {
-            File.editor.sourceView.cm.scrollTo(0, scrollTop)
-        } else {
-            this.entities.eContent.scrollTop = scrollTop
-        }
-    }
-
-    static insertStyle = (id, css) => {
-        if (!css) return
-        const el = document.createElement("style")
-        el.id = id
-        el.appendChild(document.createTextNode(css))
-        document.head.append(el)
-    }
-    static insertStyleFile = (id, href) => {
-        const el = document.createElement("link")
-        el.id = id
-        el.type = "text/css"
-        el.rel = "stylesheet"
-        el.href = this.joinPluginPath(href)
-        document.head.append(el)
-    }
-    static registerStyle = (name, style) => this.insertStyle(`plugin-${name}-style`, style)
-    static removeStyle = id => document.getElementById(id)?.remove()
-
-    static newFilePath = async filename => {
-        filename = filename || File.getFileName() || Date.now() + ".md"
-        const dirPath = this.getFilePath() ? this.getCurrentDirPath() : this.getMountFolder()
-        if (!dirPath) {
-            alert(i18n.t("global", "error.onBlankPage"))
+        if (needCheckEntities) {
+          entityCount++
+          if (entityCount > maxEntities) {
+            rejectAndStop(new DOMException("Stats Count Exceeded", "QuotaExceededError"))
             return
+          }
         }
-        let filepath = PATH.resolve(dirPath, filename)
-        const exist = await this.existPath(filepath)
-        if (exist) {
-            const ext = PATH.extname(filepath)
-            filepath = ext ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`) : filepath + "-copy.md"
-        }
-        return filepath
-    }
-
-    static getFileName = (filePath, removeSuffix = true) => {
-        let fileName = filePath ? PATH.basename(filePath) : File.getFileName()
-        if (fileName === undefined) return
-        if (removeSuffix) {
-            const idx = fileName.lastIndexOf(".")
-            if (idx !== -1) {
-                fileName = fileName.substring(0, idx)
+        onEntity?.(stats)
+        if (stats.isDirectory()) {
+          if (dirFilter(fileName, currentPath, stats) && (noNeedCheckDepth || depth < maxDepth)) {
+            const shouldProcessChildren = !(onDir && await onDir(fileName, currentPath, stats) === false)
+            if (shouldProcessChildren) {
+              const files = await readdir(currentPath)
+              pendingPaths += files.length
+              for (const file of files) {
+                const newPath = join(currentPath, file)
+                scheduleTask(() => processPath(newPath, currentPath, file, depth + 1))
+              }
             }
+          }
+        } else if (stats.isFile() || (!followSymlinks && stats.isSymbolicLink())) {
+          if (fileFilter(fileName, currentPath, stats)) {
+            const params = await fileParamsGetter(currentPath, fileName, parentDir, stats)
+            if (!aborted) await onFile(params)
+          }
         }
-        return fileName
+      } catch (err) {
+        onNonFatalError(currentPath, err)
+        if (depth === 0 || stopOnNonFatalError) rejectAndStop(err)
+      } finally {
+        // currentPath is fully processed (regardless of success, failure, or filtering)
+        pendingPaths--
+      }
     }
 
-    static getStorage = (key) => ({
-        set: value => localStorage.setItem(key, JSON.stringify(value)),
-        get: () => JSON.parse(localStorage.getItem(key)),
-        exist: () => localStorage.getItem(key) != null,
-        remove: () => localStorage.removeItem(key),
+    pendingPaths = 1
+    scheduleTask(() => processPath(dir, dirname(dir), basename(dir), 0))
+    return drainPromise
+  }
+
+  // =========== Business Operations ===========
+  static exitTypora = () => JSBridge.invoke("window.close")
+  static restartTypora = () => {
+    this.openFolder(this.getMountFolder())
+    setTimeout(this.exitTypora, 50)
+  }
+
+  static showInFinder = file => JSBridge.showInFinder(file)
+
+  static isDiscardableUntitled = () => File.changeCounter?.isDiscardableUntitled()
+
+  static openUrl = url => (File.editor.tryOpenUrl_ ?? File.editor.tryOpenUrl)(url, 1)
+
+  static showMessageBox = async (
+    {
+      type = "info",
+      title = "Typora Plugin",
+      message, detail,
+      buttons = [i18n.t("global", "confirm"), i18n.t("global", "cancel")],
+      defaultId = 0,
+      cancelId = 1,
+      normalizeAccessKeys = true,
+      checkboxLabel,
+    },
+  ) => {
+    const op = { type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel }
+    return JSBridge.invoke("dialog.showMessageBox", op)
+  }
+
+  static getMarkdownIt = this.once(() => require("../lib/markdown-it")({ html: true, linkify: true, typographer: true }))
+  static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
+  static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
+
+  static fetch = async (url, { proxy = "", timeout = 3 * 60 * 1000, ...args } = {}) => {
+    let signal, agent
+    if (timeout) {
+      signal = AbortSignal.timeout(timeout)
+    }
+    if (proxy) {
+      const { HttpsProxyAgent } = require("../lib/https-proxy-agent")
+      agent = new HttpsProxyAgent(proxy)
+    }
+    const nodeFetch = require("../lib/node-fetch-commonjs")
+    return nodeFetch(url, { agent, signal, ...args })
+  }
+
+  static splitFrontMatter = content => {
+    const result = { yamlObject: null, remainContent: content, yamlLineCount: 0 }
+    content = content.trimLeft()
+    if (!/^---\r?\n/.test(content)) {
+      return result
+    }
+    const endDelimiterMatch = /\n---\r?\n/.exec(content)
+    if (!endDelimiterMatch) {
+      return result
+    }
+    const yamlContent = content.slice(4, endDelimiterMatch.index)
+    result.remainContent = content.slice(endDelimiterMatch.index + endDelimiterMatch[0].length)
+    result.yamlLineCount = (yamlContent === "" ? 0 : (yamlContent.match(/\n/g) || []).length + 1) + 2
+    try {
+      result.yamlObject = this.readYaml(yamlContent) ?? {}
+    } catch (e) {
+      console.error(e)
+    }
+    return result
+  }
+
+  static getRecentFiles = async () => {
+    const recent = await JSBridge.invoke("setting.getRecentFiles")
+    const ret = typeof recent === "string" ? JSON.parse(recent || "{}") : (recent || {})
+    const { files = [], folders = [] } = ret
+    return { files, folders }
+  }
+
+  static isNetworkURI = url => /^https?|(ftp):\/\//.test(url)
+  static isSpecialImage = src => /^(blob|chrome-blob|moz-blob|data):[^\/]/.test(src)
+  static isNetworkImage = this.isNetworkURI
+
+  static getFenceContentByCid = cid => cid && File.editor.fences.queue[cid]?.getValue()
+
+  static getTocTree = useBuiltin => {
+    const root = { depth: 0, cid: "n0", text: this.getFileName(), parent: null, children: [] }
+    const stack = [root]
+    const toc = useBuiltin
+      ? File.editor.library.outline.getHeaderMatrix(true)
+        .map(([depth, text, cid]) => ({ depth, text, cid, children: [] }))
+      : (File.editor.nodeMap.toc.headers ?? [])
+        .filter(node => Boolean(node?.attributes))
+        .map(({ attributes: { depth, text }, cid }) => {
+          text = text.replace(/\[\^([^\]]+)\]/g, "")
+          text = this.escape(text)
+          return { depth, cid, text, children: [] }
+        })
+    toc.forEach(node => {
+      while (stack.length > 0 && stack.at(-1).depth >= node.depth) {
+        stack.pop()
+      }
+      const parent = stack.at(-1)
+      node.parent = parent
+      parent.children.push(node)
+      stack.push(node)
     })
+    return root
+  }
 
-    // =========== Basic File ===========
-    static getDirname = () => global.dirname || global.__dirname
-    static getHomeDir = () => require("os").homedir() || File.option.userPath
-    static getFilePath = () => File.filePath || File.bundle?.filePath || ""
-    static getMountFolder = () => File.getMountFolder() || ""
-    static getCurrentDirPath = () => PATH.dirname(this.getFilePath())
-    static joinPluginPath = (...paths) => PATH.join(this.getDirname(), ...paths)
-    static resolvePluginPath = (...paths) => PATH.resolve(this.getDirname(), ...paths)
-    static getUserSpaceFile = (file = "") => this.joinPluginPath("./plugin/global/user_space", file)
-    static require = (...paths) => require(this.joinPluginPath(...paths))
+  // =========== DOM Operations ===========
+  static entities = {
+    eWrite: document.querySelector("#write"),
+    $eWrite: $(document.querySelector("#write")),
+    eContent: document.querySelector("content"),
+    $eContent: $(document.querySelector("content")),
+    querySelectorInWrite: (...args) => this.entities.eWrite.querySelector(...args),
+    querySelectorAllInWrite: (...args) => this.entities.eWrite.querySelectorAll(...args),
+  }
 
-    static readFiles = async files => Promise.all(files.map(file => FS_EXTRA.readFile(file, "utf-8").catch(() => undefined)))
-    static existPath = async path => FS_EXTRA.access(path).then(() => true).catch(() => false)
-    static writeFile = async (filepath, content) => {
-        try {
-            await FS_EXTRA.writeFile(filepath, content)
-            return true
-        } catch (e) {
-            const detail = e.toString()
-            const confirm = i18n.t("global", "confirm")
-            const message = i18n.t("global", "error.writeFileFailed")
-            const op = { type: "error", title: "Typora Plugin", buttons: [confirm], message, detail }
-            await this.showMessageBox(op)
+  static isShown = el => !el.classList.contains("plugin-common-hidden")
+  static isHidden = el => el.classList.contains("plugin-common-hidden")
+  static hide = el => el.classList.add("plugin-common-hidden")
+  static show = el => el.classList.remove("plugin-common-hidden")
+  static toggleInvisible = (el, hide) => el.classList.toggle("plugin-common-hidden", hide)
+
+  static isInViewBox = el => {
+    const totalHeight = window.innerHeight || document.documentElement.clientHeight
+    const totalWidth = window.innerWidth || document.documentElement.clientWidth
+    const { top, right, bottom, left } = el.getBoundingClientRect()
+    return top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight
+  }
+
+  static isImgEmbed = img => img.complete && img.naturalWidth !== 0 && img.naturalHeight !== 0
+
+  static markdownInlineStyleToHTML = (content, dir = this.getLocalRootUrl()) => {
+    return content
+      .replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
+      .replace(/(?<!\\)[*_]{2}(.+?)(?<!\\)[*_]{2}/gs, `<strong>$1</strong>`)
+      .replace(/(?<![*\\])\*(?![\\*])(.+?)(?<![*\\])\*(?![\\*])/gs, `<em>$1</em>`)
+      .replace(/(?<!\\)~~(.+?)(?<!\\)~~/gs, "<del>$1</del>")
+      .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
+      .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => {
+        if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
+          src = PATH.resolve(dir, src)
         }
+        return `<img alt="${alt}" src="${src}">`
+      })
+  }
+
+  static buildTable = ([headers = [], ...bodyRows] = []) => {
+    if (headers.length === 0) return "<table></table>"
+    const thead = `<tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr>`
+    const tbody = bodyRows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("")
+    return `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`
+  }
+
+  static jumpToEdge = (toTop = true) => {
+    const fn = toTop ? "jumpTop" : "jumpBottom"
+    File.editor.selection[fn]()
+    if (File.isTypeWriterMode) {
+      const scrollTop = toTop ? "0" : this.entities.eWrite.getBoundingClientRect().height
+      this.entities.$eContent.animate({ scrollTop }, "100", "swing", () => File.editor.library.outline.highlightVisibleHeader())
+    }
+  }
+
+  static scroll = (target, options = {}) => {
+    if (target instanceof Element) {
+      target = $(target)
+    } else if (typeof target === "string") {
+      target = File.editor.findElemById(target)
+    }
+    if (!target) return
+
+    const {
+      height = (window.innerHeight || document.documentElement.clientHeight) / 2,
+      focus = true, moveCursor = false, showHiddenEls = true,
+    } = options
+
+    if (focus) File.editor.focusAndRestorePos()
+    if (moveCursor) File.editor.selection.jumpIntoElemEnd(target)
+    if (showHiddenEls) ["collapse_paragraph", "collapse_table", "collapse_list", "truncate_text"].forEach(plu => this.callPluginFunction(plu, "rollback", target[0]))
+
+    if (File.isTypeWriterMode) {
+      File.editor.selection.typeWriterScroll(target)
+    } else {
+      File.editor.selection.scrollAdjust(target, height)
+    }
+    if (File.isFocusMode) {
+      File.editor.updateFocusMode(false)
+    }
+  }
+
+  static scrollSourceView = lineToGo => {
+    const cm = File.editor.sourceView.cm
+    lineToGo = Math.min(Math.max(1, lineToGo), cm.lastLine() + 1)
+    const cursor = { line: lineToGo - 1, ch: 0 }
+    cm.scrollIntoView(cursor)
+    cm.setCursor(cursor)
+  }
+
+  // content: string type. \n represents a soft line break; \n\n represents a hard line break.
+  static insertText = (anchorNode, content, restoreLastCursor = true) => {
+    if (restoreLastCursor) {
+      File.editor.contextMenu.hide()
+      // File.editor.writingArea.focus()
+      File.editor.restoreLastCursor()
+    }
+    File.editor.insertText(content)
+  }
+
+  static createFragment = els => {
+    if (!els) return null
+
+    if (typeof els === "string") {
+      const tpl = document.createElement("template")
+      tpl.innerHTML = els
+      return tpl.content
+    }
+    let frag = els
+    if (Array.isArray(els) || els instanceof NodeList) {
+      frag = document.createDocumentFragment()
+      frag.append(...els)
+    }
+    return frag
+  }
+
+  static insertElements = els => {
+    const frag = this.createFragment(els)
+    if (frag) document.getElementById("typora-quick-open").after(frag)
+  }
+
+  /** Backup before `File.editor.stylize.toggleFences()` as it uses `File.option` to set block code language. Restore after. */
+  static insertFence = (lang = "") => {
+    const lang1_ = File.option["default-code-lang"]  // Used for old versions
+    const lang2_ = File.option.defaultCodeLang       // Used for new versions
+    const menu_ = File.option.DefaultCodeLangOptionMenu
+    const op_ = File.option.defaultCodeLangOption
+
+    File.option["default-code-lang"] = lang
+    File.option.defaultCodeLang = lang
+    File.option.DefaultCodeLangOptionMenu = 1
+    File.option.defaultCodeLangOption = 1
+    try {
+      File.editor.stylize.toggleFences()
+    } finally {
+      File.option["default-code-lang"] = lang1_
+      File.option.defaultCodeLang = lang2_
+      File.option.DefaultCodeLangOptionMenu = menu_
+      File.option.defaultCodeLangOption = op_
+    }
+  }
+
+  static insertBlockCode = (anchorNode, lang, content) => {
+    const cnt = ["```", lang, "\n", content, "\n", "```"].join("")
+    this.insertText(anchorNode, cnt)
+  }
+
+  static findActiveNode = range => {
+    range = range ?? File.editor.selection.getRangy()
+    if (range) {
+      const selection = window.getSelection()
+      const markElem = File.editor.getMarkElem(selection.anchorNode)
+      return File.editor.findNodeByElem(markElem)
+    }
+  }
+
+  static getRangy = () => {
+    const range = File.editor.selection.getRangy()
+    if (!range) return {}
+
+    const selection = window.getSelection()
+    const markElem = File.editor.getMarkElem(selection.anchorNode)
+    const node = File.editor.findNodeByElem(markElem)
+    const bookmark = range.getBookmark(markElem[0])
+    return { range, markElem, node, bookmark }
+  }
+
+  static getRangyText = () => {
+    const { node, bookmark } = this.getRangy()
+    const el = File.editor.findElemById(node.cid)
+    return el.rawText().substring(bookmark.start, bookmark.end)
+  }
+
+  static getRafManager = () => new AnimationFrameManager()
+
+  static renderMermaid = async (definition) => {
+    const graph = await window.mermaidAPI.render("plugin-common-mermaid", definition)
+    return (typeof graph === "string") ? graph : graph.svg
+  }
+
+  static runWithFakeProgressBar = (task, timeout = 30 * 1000) => {
+    const id = `plugin-progress-${this.randomString()}`
+    const outerCss = "position:fixed; top:0; left:0; width:100%; height:3px; z-index:9999; pointer-events:none;"
+    const innerCss = "width:100%; height:100%; background-color:#e91e63; transform-origin:left; transform:scaleX(0); opacity:1;"
+    this.insertElements(`<div id="${id}" style="${outerCss}"><div style="${innerCss}"></div></div>`)
+
+    const outerEl = document.getElementById(id)
+    const innerEl = outerEl.firstElementChild
+
+    void innerEl.offsetWidth  // Trigger reflow
+    innerEl.style.transition = `transform ${timeout}ms cubic-bezier(0.05, 0.9, 0.1, 1)`
+    innerEl.style.transform = "scaleX(0.99)"
+
+    const { promise, resolve, reject } = Promise.withResolvers()
+    const timer = setTimeout(() => reject(new Error("Timeout")), timeout)
+    const onFinish = () => {
+      clearTimeout(timer)
+      innerEl.style.transition = "transform 0.3s ease-out"
+      innerEl.style.transform = "scaleX(1)"
+      setTimeout(() => {
+        innerEl.style.transition = "opacity 0.3s ease-in"
+        innerEl.style.opacity = "0"
+        setTimeout(() => outerEl.remove(), 300)
+      }, 300)
     }
 
-    static readYaml = content => require("../lib/js-yaml").load(content)
-    static stringifyYaml = (obj, args) => require("../lib/js-yaml").dump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
-    static readToml = content => require("../lib/smol-toml").parse(content)
-    static stringifyToml = obj => require("../lib/smol-toml").stringify(obj)
-    static readTomlFile = async filepath => this.readToml(await FS_EXTRA.readFile(filepath, "utf-8"))
+    task().then(resolve).catch(reject).finally(onFinish)
 
-    static unzip = async (buffer, workDir) => {
-        const extract = require("extract-zip")
-        const absWorkDir = PATH.resolve(workDir)
-        const zipPath = PATH.join(absWorkDir, `temp_zip_${Date.now()}.zip`)
-        await FS_EXTRA.writeFile(zipPath, buffer)
-        const { promise, resolve, reject } = Promise.withResolvers()
-        const entries = []
-        const opts = {
-            dir: absWorkDir,
-            onEntry: (entry) => entries.push(PATH.join(absWorkDir, entry.fileName)),
+    return promise
+  }
+
+  static resizeElement = (
+    {
+      targetEle,
+      resizeEle,
+      resizeWidth = true,
+      resizeHeight = true,
+      onMouseDown = null,
+      onMouseMove = null,
+      onMouseUp = null,
+    },
+  ) => {
+    const rafManager = this.getRafManager()
+    let startX, startY, startWidth, startHeight
+    targetEle.addEventListener("mousedown", ev => {
+      const { width, height } = document.defaultView.getComputedStyle(resizeEle)
+      startX = ev.clientX
+      startY = ev.clientY
+      startWidth = parseFloat(width)
+      startHeight = parseFloat(height)
+      onMouseDown?.(startX, startY, startWidth, startHeight)
+      document.addEventListener("mousemove", mousemove)
+      document.addEventListener("mouseup", mouseup)
+      ev.stopPropagation()
+      ev.preventDefault()
+    }, true)
+
+    function mousemove(e) {
+      rafManager.schedule(() => {
+        let deltaX = e.clientX - startX
+        let deltaY = e.clientY - startY
+        if (onMouseMove) {
+          const { deltaX: newDeltaX, deltaY: newDeltaY } = onMouseMove(deltaX, deltaY) ?? {}
+          deltaX = newDeltaX || deltaX
+          deltaY = newDeltaY || deltaY
         }
-        extract(zipPath, opts, (err) => {
-            if (err) reject(err)
-            else resolve()
+        if (resizeWidth) {
+          resizeEle.style.width = startWidth + deltaX + "px"
+        }
+        if (resizeHeight) {
+          resizeEle.style.height = startHeight + deltaY + "px"
+        }
+      })
+    }
+
+    function mouseup() {
+      document.removeEventListener("mousemove", mousemove)
+      document.removeEventListener("mouseup", mouseup)
+      rafManager.cancel()
+      onMouseUp?.()
+    }
+  }
+
+  static dragElement = (
+    {
+      targetEle,
+      moveEle,
+      onCheck = null,
+      onMouseDown = null,
+      onMouseMove = null,
+      onMouseUp = null,
+    },
+  ) => {
+    const rafManager = this.getRafManager()
+    targetEle.addEventListener("mousedown", ev => {
+      if (onCheck && !onCheck(ev)) return
+
+      ev.stopPropagation()
+      const { left, top } = moveEle.getBoundingClientRect()
+      const shiftX = ev.clientX - left
+      const shiftY = ev.clientY - top
+      onMouseDown?.()
+
+      const _onMouseMove = ev => {
+        ev.stopPropagation()
+        ev.preventDefault()
+        const currentX = ev.clientX
+        const currentY = ev.clientY
+        rafManager.schedule(() => {
+          onMouseMove?.()
+          moveEle.style.left = currentX - shiftX + "px"
+          moveEle.style.top = currentY - shiftY + "px"
         })
-        await promise.finally(() => FS_EXTRA.remove(zipPath).catch(err => console.error(err)))
-        return entries
+      }
+
+      const _onMouseUp = ev => {
+        ev.stopPropagation()
+        ev.preventDefault()
+        rafManager.cancel()
+        onMouseUp?.()
+        document.removeEventListener("mousemove", _onMouseMove)
+        document.removeEventListener("mouseup", _onMouseUp)
+      }
+
+      document.addEventListener("mousemove", _onMouseMove)
+      document.addEventListener("mouseup", _onMouseUp)
+    })
+    targetEle.ondragstart = () => false
+  }
+
+  static scrollActiveItem = (list, activeSelector, isNext) => {
+    if (list.childElementCount === 0) return
+    const origin = list.querySelector(activeSelector)
+    const active = isNext
+      ? origin?.nextElementSibling ?? list.firstElementChild
+      : origin?.previousElementSibling ?? list.lastElementChild
+    origin?.classList.toggle("active")
+    active.classList.toggle("active")
+    active.scrollIntoView({ block: "nearest" })
+  }
+
+  static createSmartInputHandler = (inputEl, callback, options = {}) => {
+    const config = {
+      immediateOnCompositionEnd: true, debounceDelay: 0, throttleDelay: 0, minInputLength: 0,
+      trimWhitespace: true, caseSensitive: false, enableIMECache: false, maxCacheSize: 10,
+      onCompositionStart: null, onCompositionEnd: null, onInput: null,
+      ...options,
     }
 
-    // TODO: Uses dual counters to prevent from terminating prematurely while tasks are paused for asynchronous IO. Too complicated.
-    static walkDir = async (
-        {
-            dir,
-            onFile,
-            onDir = null,
-            fileFilter = (name, path, stats) => true,
-            dirFilter = (name, path, stats) => true,
-            fileParamsGetter = (path, file, dir, stats) => ({ path, file, dir, stats }),
-            onEntity = null,
-            onNonFatalError = (path, err) => console.error(`Error processing path ${path}:`, err),
-            onFinished = null,
-            semaphore = 20,
-            maxDepth = -1,
-            maxEntities = -1,
-            strategy = "bfs", // bfs | dfs
-            followSymlinks = false,
-            stopOnNonFatalError = false,
-            signal = null,
-        },
-    ) => {
-        if (signal?.aborted) {
-            const reason = signal.reason ?? new DOMException("Signal Aborted", "AbortError")
-            return Promise.reject(reason)
-        }
-
-        semaphore = Math.max(semaphore, 1)
-
-        const { readdir, stat, lstat } = FS_EXTRA
-        const { join, dirname, basename } = PATH
-        const statFn = followSymlinks ? stat : lstat
-        const nextTaskFn = strategy === "dfs" ? "pop" : "shift"
-        const needCheckEntities = maxEntities > 0
-        const noNeedCheckDepth = maxDepth < 0
-
-        let fatalError
-        let aborted = false
-        let entityCount = 0
-        let runningTasks = 0  // The number of currently executing tasks, limited by the `semaphore`
-        let pendingPaths = 0  // The number of discovered paths that are not yet processed
-        const taskQueue = []
-        const { promise: drainPromise, resolve: resolveDrain, reject: rejectDrain } = Promise.withResolvers()
-
-        if (signal) {
-            const onAbort = () => rejectAndStop(signal.reason ?? new DOMException("Signal Aborted", "AbortError"))
-            signal.addEventListener("abort", onAbort, { once: true })
-            drainPromise.finally(() => signal.removeEventListener("abort", onAbort)).catch(() => undefined)
-        }
-        if (onFinished) {
-            drainPromise.finally(() => onFinished(fatalError)).catch(() => undefined)
-        }
-        const rejectAndStop = (err) => {
-            if (aborted) return
-            aborted = true
-            taskQueue.length = 0
-            fatalError = err
-            rejectDrain(err)
-        }
-        const checkDrain = () => {
-            if (runningTasks === 0 && pendingPaths === 0 && !aborted) {
-                resolveDrain()
-            }
-        }
-        const runNextTask = () => {
-            if (aborted) return
-            while (taskQueue.length > 0 && runningTasks < semaphore) {
-                const task = taskQueue[nextTaskFn]()
-                runningTasks++
-                task().finally(() => {
-                    runningTasks--
-                    runNextTask()
-                    checkDrain()
-                })
-            }
-        }
-        const scheduleTask = (fn) => {
-            if (!aborted) {
-                taskQueue.push(fn)
-                runNextTask()
-            }
-        }
-        const processPath = async (currentPath, parentDir, fileName, depth) => {
-            try {
-                const stats = await statFn(currentPath)
-                if (aborted) return
-
-                if (needCheckEntities) {
-                    entityCount++
-                    if (entityCount > maxEntities) {
-                        rejectAndStop(new DOMException("Stats Count Exceeded", "QuotaExceededError"))
-                        return
-                    }
-                }
-                onEntity?.(stats)
-                if (stats.isDirectory()) {
-                    if (dirFilter(fileName, currentPath, stats) && (noNeedCheckDepth || depth < maxDepth)) {
-                        const shouldProcessChildren = !(onDir && await onDir(fileName, currentPath, stats) === false)
-                        if (shouldProcessChildren) {
-                            const files = await readdir(currentPath)
-                            pendingPaths += files.length
-                            for (const file of files) {
-                                const newPath = join(currentPath, file)
-                                scheduleTask(() => processPath(newPath, currentPath, file, depth + 1))
-                            }
-                        }
-                    }
-                } else if (stats.isFile() || (!followSymlinks && stats.isSymbolicLink())) {
-                    if (fileFilter(fileName, currentPath, stats)) {
-                        const params = await fileParamsGetter(currentPath, fileName, parentDir, stats)
-                        if (!aborted) await onFile(params)
-                    }
-                }
-            } catch (err) {
-                onNonFatalError(currentPath, err)
-                if (depth === 0 || stopOnNonFatalError) rejectAndStop(err)
-            } finally {
-                // currentPath is fully processed (regardless of success, failure, or filtering)
-                pendingPaths--
-            }
-        }
-
-        pendingPaths = 1
-        scheduleTask(() => processPath(dir, dirname(dir), basename(dir), 0))
-        return drainPromise
+    const buildExecutor = () => {
+      let executor = callback
+      if (config.enableIMECache) {
+        executor = this.memoizeLimited(executor, config.maxCacheSize)
+      }
+      if (config.debounceDelay > 0) {
+        executor = this.debounce(executor, config.debounceDelay)
+      } else if (config.throttleDelay > 0) {
+        executor = this.throttle(executor, config.throttleDelay)
+      }
+      return executor
     }
 
-    // =========== Business Operations ===========
-    static exitTypora = () => JSBridge.invoke("window.close")
-    static restartTypora = () => {
-        this.openFolder(this.getMountFolder())
-        setTimeout(this.exitTypora, 50)
+    let isComposing = false
+    let lastCallbackTime = 0
+    let finalCallback = buildExecutor()
+
+    const processValue = (val) => {
+      let processed = val || ""
+      if (config.trimWhitespace) processed = processed.trim()
+      if (!config.caseSensitive) processed = processed.toLowerCase()
+      return processed
+    }
+    const shouldExecuteCallback = (val) => config.minInputLength === 0 || val.length >= config.minInputLength
+    const execute = (val, ev) => {
+      if (!shouldExecuteCallback(val)) return
+      lastCallbackTime = Date.now()
+      const result = finalCallback(val, ev)
+      config.onInput?.(val, ev)
+      return result
+    }
+    const handleInput = (ev) => {
+      if (!isComposing) execute(processValue(ev.target.value), ev)
+    }
+    const handleCompositionStart = (ev) => {
+      isComposing = true
+      config.onCompositionStart?.(ev)
+    }
+    const handleCompositionEnd = (ev) => {
+      isComposing = false
+      config.onCompositionEnd?.(ev)
+      if (config.immediateOnCompositionEnd) {
+        execute(processValue(ev.target.value), ev)
+      }
+    }
+    const handle = (register) => {
+      const attr = register ? "addEventListener" : "removeEventListener"
+      inputEl[attr]("input", handleInput)
+      inputEl[attr]("compositionstart", handleCompositionStart)
+      inputEl[attr]("compositionend", handleCompositionEnd)
     }
 
-    static showInFinder = file => JSBridge.showInFinder(file)
+    handle(true)
 
-    static isDiscardableUntitled = () => File.changeCounter?.isDiscardableUntitled()
-
-    static openUrl = url => (File.editor.tryOpenUrl_ ?? File.editor.tryOpenUrl)(url, 1)
-
-    static showMessageBox = async (
-        {
-            type = "info",
-            title = "Typora Plugin",
-            message, detail,
-            buttons = [i18n.t("global", "confirm"), i18n.t("global", "cancel")],
-            defaultId = 0,
-            cancelId = 1,
-            normalizeAccessKeys = true,
-            checkboxLabel,
-        },
-    ) => {
-        const op = { type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel }
-        return JSBridge.invoke("dialog.showMessageBox", op)
+    return {
+      updateConfig: (newConfig) => {
+        Object.assign(config, newConfig)
+        finalCallback = buildExecutor()
+      },
+      clean: () => handle(false),
+      isComposing: () => isComposing,
+      getLastCallbackTime: () => lastCallbackTime,
+      trigger: (val) => execute(processValue(val ?? inputEl.value), null),
     }
-
-    static getMarkdownIt = this.once(() => require("../lib/markdown-it")({ html: true, linkify: true, typographer: true }))
-    static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
-    static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
-
-    static fetch = async (url, { proxy = "", timeout = 3 * 60 * 1000, ...args } = {}) => {
-        let signal, agent
-        if (timeout) {
-            signal = AbortSignal.timeout(timeout)
-        }
-        if (proxy) {
-            const { HttpsProxyAgent } = require("../lib/https-proxy-agent")
-            agent = new HttpsProxyAgent(proxy)
-        }
-        const nodeFetch = require("../lib/node-fetch-commonjs")
-        return nodeFetch(url, { agent, signal, ...args })
-    }
-
-    static splitFrontMatter = content => {
-        const result = { yamlObject: null, remainContent: content, yamlLineCount: 0 }
-        content = content.trimLeft()
-        if (!/^---\r?\n/.test(content)) {
-            return result
-        }
-        const endDelimiterMatch = /\n---\r?\n/.exec(content)
-        if (!endDelimiterMatch) {
-            return result
-        }
-        const yamlContent = content.slice(4, endDelimiterMatch.index)
-        result.remainContent = content.slice(endDelimiterMatch.index + endDelimiterMatch[0].length)
-        result.yamlLineCount = (yamlContent === "" ? 0 : (yamlContent.match(/\n/g) || []).length + 1) + 2
-        try {
-            result.yamlObject = this.readYaml(yamlContent) ?? {}
-        } catch (e) {
-            console.error(e)
-        }
-        return result
-    }
-
-    static getRecentFiles = async () => {
-        const recent = await JSBridge.invoke("setting.getRecentFiles")
-        const ret = typeof recent === "string" ? JSON.parse(recent || "{}") : (recent || {})
-        const { files = [], folders = [] } = ret
-        return { files, folders }
-    }
-
-    static isNetworkURI = url => /^https?|(ftp):\/\//.test(url)
-    static isSpecialImage = src => /^(blob|chrome-blob|moz-blob|data):[^\/]/.test(src)
-    static isNetworkImage = this.isNetworkURI
-
-    static getFenceContentByCid = cid => {
-        if (cid) return File.editor.fences.queue[cid]?.getValue()
-    }
-
-    static getTocTree = useBuiltin => {
-        const root = { depth: 0, cid: "n0", text: this.getFileName(), parent: null, children: [] }
-        const stack = [root]
-        const toc = useBuiltin
-            ? File.editor.library.outline.getHeaderMatrix(true)
-                .map(([depth, text, cid]) => ({ depth, text, cid, children: [] }))
-            : (File.editor.nodeMap.toc.headers ?? [])
-                .filter(node => Boolean(node?.attributes))
-                .map(({ attributes: { depth, text }, cid }) => {
-                    text = text.replace(/\[\^([^\]]+)\]/g, "")
-                    text = this.escape(text)
-                    return { depth, cid, text, children: [] }
-                })
-        toc.forEach(node => {
-            while (stack.length > 0 && stack.at(-1).depth >= node.depth) {
-                stack.pop()
-            }
-            const parent = stack.at(-1)
-            node.parent = parent
-            parent.children.push(node)
-            stack.push(node)
-        })
-        return root
-    }
-
-    // =========== DOM Operations ===========
-    static entities = {
-        eWrite: document.querySelector("#write"),
-        $eWrite: $(document.querySelector("#write")),
-        eContent: document.querySelector("content"),
-        $eContent: $(document.querySelector("content")),
-        querySelectorInWrite: (...args) => this.entities.eWrite.querySelector(...args),
-        querySelectorAllInWrite: (...args) => this.entities.eWrite.querySelectorAll(...args),
-    }
-
-    static isShown = el => !el.classList.contains("plugin-common-hidden")
-    static isHidden = el => el.classList.contains("plugin-common-hidden")
-    static hide = el => el.classList.add("plugin-common-hidden")
-    static show = el => el.classList.remove("plugin-common-hidden")
-    static toggleInvisible = (el, hide) => el.classList.toggle("plugin-common-hidden", hide)
-
-    static isInViewBox = el => {
-        const totalHeight = window.innerHeight || document.documentElement.clientHeight
-        const totalWidth = window.innerWidth || document.documentElement.clientWidth
-        const { top, right, bottom, left } = el.getBoundingClientRect()
-        return top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight
-    }
-
-    static isImgEmbed = img => img.complete && img.naturalWidth !== 0 && img.naturalHeight !== 0
-
-    static markdownInlineStyleToHTML = (content, dir = this.getLocalRootUrl()) => {
-        return content
-            .replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
-            .replace(/(?<!\\)[*_]{2}(.+?)(?<!\\)[*_]{2}/gs, `<strong>$1</strong>`)
-            .replace(/(?<![*\\])\*(?![\\*])(.+?)(?<![*\\])\*(?![\\*])/gs, `<em>$1</em>`)
-            .replace(/(?<!\\)~~(.+?)(?<!\\)~~/gs, "<del>$1</del>")
-            .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
-            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => {
-                if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
-                    src = PATH.resolve(dir, src)
-                }
-                return `<img alt="${alt}" src="${src}">`
-            })
-    }
-
-    static buildTable = ([headers = [], ...bodyRows] = []) => {
-        if (headers.length === 0) return "<table></table>"
-        const thead = `<tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr>`
-        const tbody = bodyRows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("")
-        return `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`
-    }
-
-    static jumpToEdge = (toTop = true) => {
-        const fn = toTop ? "jumpTop" : "jumpBottom"
-        File.editor.selection[fn]()
-        if (File.isTypeWriterMode) {
-            const scrollTop = toTop ? "0" : this.entities.eWrite.getBoundingClientRect().height
-            this.entities.$eContent.animate({ scrollTop }, "100", "swing", () => File.editor.library.outline.highlightVisibleHeader())
-        }
-    }
-
-    static scroll = (target, options = {}) => {
-        if (target instanceof Element) {
-            target = $(target)
-        } else if (typeof target === "string") {
-            target = File.editor.findElemById(target)
-        }
-        if (!target) return
-
-        const {
-            height = (window.innerHeight || document.documentElement.clientHeight) / 2,
-            focus = true, moveCursor = false, showHiddenEls = true,
-        } = options
-
-        if (focus) File.editor.focusAndRestorePos()
-        if (moveCursor) File.editor.selection.jumpIntoElemEnd(target)
-        if (showHiddenEls) ["collapse_paragraph", "collapse_table", "collapse_list", "truncate_text"].forEach(plu => this.callPluginFunction(plu, "rollback", target[0]))
-
-        if (File.isTypeWriterMode) {
-            File.editor.selection.typeWriterScroll(target)
-        } else {
-            File.editor.selection.scrollAdjust(target, height)
-        }
-        if (File.isFocusMode) {
-            File.editor.updateFocusMode(false)
-        }
-    }
-
-    static scrollSourceView = lineToGo => {
-        const cm = File.editor.sourceView.cm
-        lineToGo = Math.min(Math.max(1, lineToGo), cm.lastLine() + 1)
-        const cursor = { line: lineToGo - 1, ch: 0 }
-        cm.scrollIntoView(cursor)
-        cm.setCursor(cursor)
-    }
-
-    // content: string type. \n represents a soft line break; \n\n represents a hard line break.
-    static insertText = (anchorNode, content, restoreLastCursor = true) => {
-        if (restoreLastCursor) {
-            File.editor.contextMenu.hide()
-            // File.editor.writingArea.focus()
-            File.editor.restoreLastCursor()
-        }
-        File.editor.insertText(content)
-    }
-
-    static createFragment = elements => {
-        if (!elements) return
-
-        if (typeof elements === "string") {
-            const dom = new DOMParser().parseFromString(elements, "text/html")
-            elements = [...dom.body.childNodes]
-        }
-        let fragment = elements
-        if (Array.isArray(elements) || elements instanceof NodeList) {
-            fragment = document.createDocumentFragment()
-            fragment.append(...elements)
-        }
-        return fragment
-    }
-
-    static insertElement = elements => {
-        const fragment = this.createFragment(elements)
-        if (fragment) document.getElementById("typora-quick-open").after(fragment)
-    }
-
-    /** Backup before `File.editor.stylize.toggleFences()` as it uses `File.option` to set block code language. Restore after. */
-    static insertFence = (lang = "") => {
-        const lang1_ = File.option["default-code-lang"]  // Used for old versions
-        const lang2_ = File.option.defaultCodeLang       // Used for new versions
-        const menu_ = File.option.DefaultCodeLangOptionMenu
-        const op_ = File.option.defaultCodeLangOption
-
-        File.option["default-code-lang"] = lang
-        File.option.defaultCodeLang = lang
-        File.option.DefaultCodeLangOptionMenu = 1
-        File.option.defaultCodeLangOption = 1
-        try {
-            File.editor.stylize.toggleFences()
-        } finally {
-            File.option["default-code-lang"] = lang1_
-            File.option.defaultCodeLang = lang2_
-            File.option.DefaultCodeLangOptionMenu = menu_
-            File.option.defaultCodeLangOption = op_
-        }
-    }
-
-    static insertBlockCode = (anchorNode, lang, content) => {
-        const cnt = ["```", lang, "\n", content, "\n", "```"].join("")
-        this.insertText(anchorNode, cnt)
-    }
-
-    static findActiveNode = range => {
-        range = range ?? File.editor.selection.getRangy()
-        if (range) {
-            const selection = window.getSelection()
-            const markElem = File.editor.getMarkElem(selection.anchorNode)
-            return File.editor.findNodeByElem(markElem)
-        }
-    }
-
-    static getRangy = () => {
-        const range = File.editor.selection.getRangy()
-        if (!range) return {}
-
-        const selection = window.getSelection()
-        const markElem = File.editor.getMarkElem(selection.anchorNode)
-        const node = File.editor.findNodeByElem(markElem)
-        const bookmark = range.getBookmark(markElem[0])
-        return { range, markElem, node, bookmark }
-    }
-
-    static getRangyText = () => {
-        const { node, bookmark } = this.getRangy()
-        const el = File.editor.findElemById(node.cid)
-        return el.rawText().substring(bookmark.start, bookmark.end)
-    }
-
-    static getRafManager = () => new AnimationFrameManager()
-
-    static renderMermaid = async (definition) => {
-        const graph = await window.mermaidAPI.render("plugin-common-mermaid", definition)
-        return (typeof graph === "string") ? graph : graph.svg
-    }
-
-    static runWithFakeProgressBar = (task, timeout = 30 * 1000) => {
-        const id = `plugin-progress-${this.randomString()}`
-        const outerCss = "position:fixed; top:0; left:0; width:100%; height:3px; z-index:9999; pointer-events:none;"
-        const innerCss = "width:100%; height:100%; background-color:#e91e63; transform-origin:left; transform:scaleX(0); opacity:1; will-change:transform, opacity;"
-        this.insertElement(`<div id="${id}" style="${outerCss}"><div style="${innerCss}"></div></div>`)
-
-        const outerEl = document.getElementById(id)
-        const innerEl = outerEl.firstElementChild
-
-        void innerEl.offsetWidth  // Trigger reflow
-        innerEl.style.transition = `transform ${timeout}ms cubic-bezier(0.05, 0.9, 0.1, 1)`
-        innerEl.style.transform = "scaleX(0.99)"
-
-        const { promise, resolve, reject } = Promise.withResolvers()
-        const timer = setTimeout(() => reject(new Error("Timeout")), timeout)
-        const onFinish = () => {
-            clearTimeout(timer)
-            innerEl.style.transition = "transform 0.3s ease-out"
-            innerEl.style.transform = "scaleX(1)"
-            setTimeout(() => {
-                innerEl.style.transition = "opacity 0.3s ease-in"
-                innerEl.style.opacity = "0"
-                setTimeout(() => outerEl.remove(), 300)
-            }, 300)
-        }
-
-        task().then(resolve).catch(reject).finally(onFinish)
-
-        return promise
-    }
-
-    static resizeElement = (
-        {
-            targetEle,
-            resizeEle,
-            resizeWidth = true,
-            resizeHeight = true,
-            onMouseDown = null,
-            onMouseMove = null,
-            onMouseUp = null,
-        },
-    ) => {
-        const rafManager = this.getRafManager()
-        let startX, startY, startWidth, startHeight
-        targetEle.addEventListener("mousedown", ev => {
-            const { width, height } = document.defaultView.getComputedStyle(resizeEle)
-            startX = ev.clientX
-            startY = ev.clientY
-            startWidth = parseFloat(width)
-            startHeight = parseFloat(height)
-            onMouseDown?.(startX, startY, startWidth, startHeight)
-            document.addEventListener("mousemove", mousemove)
-            document.addEventListener("mouseup", mouseup)
-            ev.stopPropagation()
-            ev.preventDefault()
-        }, true)
-
-        function mousemove(e) {
-            rafManager.schedule(() => {
-                let deltaX = e.clientX - startX
-                let deltaY = e.clientY - startY
-                if (onMouseMove) {
-                    const { deltaX: newDeltaX, deltaY: newDeltaY } = onMouseMove(deltaX, deltaY) ?? {}
-                    deltaX = newDeltaX || deltaX
-                    deltaY = newDeltaY || deltaY
-                }
-                if (resizeWidth) {
-                    resizeEle.style.width = startWidth + deltaX + "px"
-                }
-                if (resizeHeight) {
-                    resizeEle.style.height = startHeight + deltaY + "px"
-                }
-            })
-        }
-
-        function mouseup() {
-            document.removeEventListener("mousemove", mousemove)
-            document.removeEventListener("mouseup", mouseup)
-            rafManager.cancel()
-            onMouseUp?.()
-        }
-    }
-
-    static dragElement = (
-        {
-            targetEle,
-            moveEle,
-            onCheck = null,
-            onMouseDown = null,
-            onMouseMove = null,
-            onMouseUp = null,
-        },
-    ) => {
-        const rafManager = this.getRafManager()
-        targetEle.addEventListener("mousedown", ev => {
-            if (onCheck && !onCheck(ev)) return
-
-            ev.stopPropagation()
-            const { left, top } = moveEle.getBoundingClientRect()
-            const shiftX = ev.clientX - left
-            const shiftY = ev.clientY - top
-            onMouseDown?.()
-
-            const _onMouseMove = ev => {
-                ev.stopPropagation()
-                ev.preventDefault()
-                const currentX = ev.clientX
-                const currentY = ev.clientY
-                rafManager.schedule(() => {
-                    onMouseMove?.()
-                    moveEle.style.left = currentX - shiftX + "px"
-                    moveEle.style.top = currentY - shiftY + "px"
-                })
-            }
-
-            const _onMouseUp = ev => {
-                ev.stopPropagation()
-                ev.preventDefault()
-                rafManager.cancel()
-                onMouseUp?.()
-                document.removeEventListener("mousemove", _onMouseMove)
-                document.removeEventListener("mouseup", _onMouseUp)
-            }
-
-            document.addEventListener("mousemove", _onMouseMove)
-            document.addEventListener("mouseup", _onMouseUp)
-        })
-        targetEle.ondragstart = () => false
-    }
-
-    static scrollActiveItem = (list, activeSelector, isNext) => {
-        if (list.childElementCount === 0) return
-        const origin = list.querySelector(activeSelector)
-        const active = isNext
-            ? origin?.nextElementSibling ?? list.firstElementChild
-            : origin?.previousElementSibling ?? list.lastElementChild
-        origin?.classList.toggle("active")
-        active.classList.toggle("active")
-        active.scrollIntoView({ block: "nearest" })
-    }
-
-    static createSmartInputHandler = (inputEl, callback, options = {}) => {
-        const config = {
-            immediateOnCompositionEnd: true, debounceDelay: 0, throttleDelay: 0, minInputLength: 0,
-            trimWhitespace: true, caseSensitive: false, enableIMECache: false, maxCacheSize: 10,
-            onCompositionStart: null, onCompositionEnd: null, onInput: null,
-            ...options,
-        }
-
-        const buildExecutor = () => {
-            let executor = callback
-            if (config.enableIMECache) {
-                executor = this.memoizeLimited(executor, config.maxCacheSize)
-            }
-            if (config.debounceDelay > 0) {
-                executor = this.debounce(executor, config.debounceDelay)
-            } else if (config.throttleDelay > 0) {
-                executor = this.throttle(executor, config.throttleDelay)
-            }
-            return executor
-        }
-
-        let isComposing = false
-        let lastCallbackTime = 0
-        let finalCallback = buildExecutor()
-
-        const processValue = (val) => {
-            let processed = val || ""
-            if (config.trimWhitespace) processed = processed.trim()
-            if (!config.caseSensitive) processed = processed.toLowerCase()
-            return processed
-        }
-        const shouldExecuteCallback = (val) => config.minInputLength === 0 || val.length >= config.minInputLength
-        const execute = (val, ev) => {
-            if (!shouldExecuteCallback(val)) return
-            lastCallbackTime = Date.now()
-            const result = finalCallback(val, ev)
-            config.onInput?.(val, ev)
-            return result
-        }
-        const handleInput = (ev) => {
-            if (!isComposing) execute(processValue(ev.target.value), ev)
-        }
-        const handleCompositionStart = (ev) => {
-            isComposing = true
-            config.onCompositionStart?.(ev)
-        }
-        const handleCompositionEnd = (ev) => {
-            isComposing = false
-            config.onCompositionEnd?.(ev)
-            if (config.immediateOnCompositionEnd) {
-                execute(processValue(ev.target.value), ev)
-            }
-        }
-        const handle = (register) => {
-            const attr = register ? "addEventListener" : "removeEventListener"
-            inputEl[attr]("input", handleInput)
-            inputEl[attr]("compositionstart", handleCompositionStart)
-            inputEl[attr]("compositionend", handleCompositionEnd)
-        }
-
-        handle(true)
-
-        return {
-            updateConfig: (newConfig) => {
-                Object.assign(config, newConfig)
-                finalCallback = buildExecutor()
-            },
-            clean: () => handle(false),
-            isComposing: () => isComposing,
-            getLastCallbackTime: () => lastCallbackTime,
-            trigger: (val) => execute(processValue(val ?? inputEl.value), null),
-        }
-    }
+  }
 }
 
 class AnimationFrameManager {
-    rafId = null
+  rafId = null
 
-    get isPending() {
-        return this.rafId !== null
-    }
+  get isPending() {
+    return this.rafId !== null
+  }
 
-    schedule(callback) {
-        if (this.rafId) cancelAnimationFrame(this.rafId)
-        this.rafId = requestAnimationFrame(() => {
-            callback()
-            this.rafId = null
-        })
-    }
+  schedule(callback) {
+    if (this.rafId) cancelAnimationFrame(this.rafId)
+    this.rafId = requestAnimationFrame(() => {
+      callback()
+      this.rafId = null
+    })
+  }
 
-    cancel() {
-        if (this.rafId) {
-            cancelAnimationFrame(this.rafId)
-            this.rafId = null
-        }
+  cancel() {
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId)
+      this.rafId = null
     }
+  }
 }
 
 module.exports = Object.assign(utils, utils.mixins)

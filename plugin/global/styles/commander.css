@@ -12,10 +12,12 @@
   --cmd-bg-output: #f8fafc;
   --cmd-text-error: #ef4444;
 
+  --window-min-width: 400px;
+
   top: 20%;
   left: 50%;
-  width: 720px;
-  height: 480px;
+  width: 600px;
+  height: 370px;
 }
 
 #plugin-commander-form {

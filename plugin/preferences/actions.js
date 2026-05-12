@@ -1,254 +1,254 @@
 module.exports = (plugin) => {
-    const { utils, i18n } = plugin
-    const { Path, FsExtra } = utils.Package
-    const consecutive = (onConfirmed) => utils.createConsecutiveAction({ threshold: 3, timeWindow: 3000, onConfirmed })
-    const openUrl = (urlOrFn) => () => utils.openUrl(typeof urlOrFn === "function" ? urlOrFn() : urlOrFn)
-    const showPluginPath = (relPath) => () => utils.showInFinder(utils.joinPluginPath(relPath))
-    const showSettings = async (title, settings) => await utils.formDialog.modal({
+  const { utils, i18n } = plugin
+  const { Path, FsExtra } = utils.Package
+  const consecutive = (onConfirmed) => utils.createConsecutiveAction({ threshold: 3, timeWindow: 3000, onConfirmed })
+  const openUrl = (urlOrFn) => () => utils.openUrl(typeof urlOrFn === "function" ? urlOrFn() : urlOrFn)
+  const openPath = (relPath) => () => utils.showInFinder(utils.joinPluginPath(relPath))
+  const showSettings = async (title, settings) => await utils.formDialog.modal({
+    title,
+    schema: ({ Controls }) => [Controls.Code("settings").Readonly(true)],
+    data: { settings: typeof settings === "string" ? settings : JSON.stringify(settings, null, "  ") },
+  })
+
+  const actions = {
+    visitRepo: openUrl("https://github.com/obgnail/typora_plugin"),
+    viewDeepWiki: openUrl("https://deepwiki.com/obgnail/typora_plugin"),
+    viewGithubImageBed: openUrl("https://github.com/obgnail/typora_image_uploader"),
+    viewMarkdownlintRules: openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+    viewCodeMirrorKeymapsManual: openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
+    viewVitePressLineHighlighting: openUrl(`https://vitepress.dev/${i18n.locale === "zh-CN" ? "zh/" : ""}guide/markdown#line-highlighting-in-code-blocks`),
+    viewFocusLineHighlightingEffect: openUrl("https://codemirror.net/5/demo/activeline.html"),
+    viewAbcVisualOptionsManual: openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
+    viewVisibleTabsEffect: openUrl("https://codemirror.net/5/demo/visibletabs.html"),
+    viewCodeFoldingEffect: openUrl("https://codemirror.net/5/demo/folding.html"),
+    viewSideBySideEffect: openUrl("https://github.com/obgnail/typora_plugin/blob/master/assets/sideBySideView.png"),
+    viewIndentedWrappedLineEffect: openUrl("https://codemirror.net/5/demo/indentwrap.html"),
+    viewGlobPattern: openUrl("https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html"),
+    neverGonnaTellALie: openUrl(i18n.locale === "zh-CN" ? "https://www.bilibili.com/video/BV1GJ411x7h7/" : "https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+    chooseEchartsRenderer: openUrl(`https://echarts.apache.org/handbook/${i18n.locale === "zh-CN" ? "zh" : "en"}/best-practices/canvas-vs-svg/`),
+    downloadWaveDromSkins: openUrl("https://github.com/wavedrom/wavedrom/tree/trunk/skins"),
+    viewMarpOptions: openUrl("https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options"),
+    viewArticleUploaderReadme: openPath("./plugin/article_uploader/README.md"),
+    viewJsonRPCReadme: openPath("./plugin/json_rpc/README.md"),
+    editStyles: openPath("./plugin/global/user_styles/README.md"),
+    developPlugins: openPath("./plugin/custom/README.md"),
+    openLocaleFolder: openPath("./plugin/global/locales/en.json"),
+    openPluginFolder: openPath("./plugin"),
+    openSettingsFolder: async () => utils.settings.openFolder(),
+    toggleDevTools: () => JSBridge.invoke("window.toggleDevTools"),
+    togglePreferencePanel: () => File.megaMenu.togglePreferencePanel(),
+    sendEmail: () => utils.sendEmail("he1251698542@gmail.com", "Feedback"),
+    importSettings: async () => {
+      const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
+        title: i18n.t("$label.importSettings"),
+        properties: ["openFile", "dontAddToRecent"],
+        filters: [{ name: "JSON", extensions: ["json"] }],
+      })
+      if (canceled || filePaths.length === 0) return
+      await utils.settings.import(filePaths[0])
+      utils.notification.show(i18n.t("success"))
+    },
+    exportSettings: async () => {
+      const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
+        title: i18n.t("$label.exportSettings"),
+        defaultPath: Path.join(utils.tempFolder, "typora-plugin-settings.json"),
+        properties: ["saveFile", "showOverwriteConfirmation"],
+        filters: [{ name: "JSON", extensions: ["json"] }],
+      })
+      if (canceled || !filePath) return
+      await utils.settings.export(filePath)
+      utils.showInFinder(filePath)
+      utils.notification.show(i18n.t("success"))
+    },
+    restoreSettings: consecutive(async () => {
+      await plugin.renewMenu(fixedName => utils.settings.clear(fixedName))
+      utils.notification.show(i18n.t("success.restore"))
+    }),
+    restoreAllSettings: consecutive(async () => {
+      await plugin.renewMenu(async () => {
+        const path = await utils.settings.getActualPath("settings.user.toml")
+        await utils.writeFile(path, "")
+      })
+      utils.notification.show(i18n.t("success.restoreAll"))
+    }),
+    inspectRuntimeSettings: async () => {
+      const { settings } = await plugin.getCurrent()
+      await showSettings(i18n._t("settings", "$label.inspectRuntimeSettings"), settings)
+    },
+    inspectDefaultSettings: async () => {
+      const path = await utils.settings.getActualPath("settings.default.toml")
+      const content = await utils.Package.FsExtra.readFile(path, "utf-8")
+      const settings = utils.readToml(content)?.[plugin._getCurrentPlugin()]
+      await showSettings(i18n._t("settings", "$tooltip.inspectDefaultSettings"), settings)
+    },
+    inspectAllDefaultSettings: async () => {
+      const path = await utils.settings.getActualPath("settings.default.toml")
+      const settings = await utils.Package.FsExtra.readFile(path, "utf-8")
+      await showSettings(i18n.t("$tooltip.inspectAllDefaultSettings"), settings)
+    },
+    openSettingsDefaultTomlExternally: async () => {
+      const path = await utils.settings.getActualPath("settings.default.toml")
+      utils.openPath(path)
+    },
+    openSettingsUserTomlExternally: async () => {
+      const path = await utils.settings.getActualPath("settings.user.toml")
+      utils.openPath(path)
+    },
+    invokeMarkdownlintSettings: async () => utils.callPluginFunction("markdownlint", "settings"),
+    installPlantUMLServer: async () => {
+      await utils.formDialog.modal({
+        title: i18n._t("plantUML", "$tooltip.installPlantUMLServer"),
+        schema: ({ Group, Controls }) => [
+          Controls.Code("dockerCommand").Label("Run the server with Docker").Readonly(true),
+          Group("Help",
+            Controls.Action("viewWebsite").Label("Official Website"),
+            Controls.Action("viewDockerHub").Label("Docker Hub"),
+            Controls.Action("viewGithub").Label("Github"),
+          ),
+        ],
+        data: { dockerCommand: "docker pull plantuml/plantuml-server:jetty\ndocker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty" },
+        actions: {
+          viewDockerHub: () => utils.openUrl("https://hub.docker.com/r/plantuml/plantuml-server"),
+          viewGithub: () => utils.openUrl("https://github.com/plantuml/plantuml-server"),
+          viewWebsite: () => utils.openUrl("https://plantuml.com/en/starting"),
+        },
+      })
+    },
+    myopicDefocusEffectDemo: async () => {
+      const { MyopicDefocus } = require("../myopic_defocus.js")
+      const myopicDefocus = new MyopicDefocus({ svgContainerId: "myopic-defocus-svg-demo", blurLayerId: "myopic-defocus-layer-demo" })
+
+      const t = (x) => i18n._t("myopic_defocus", x)
+      const _t = (x) => i18n._t("settings", x)
+      const getData = () => {
+        const { width, height } = window.screen
+        const dpr = window.devicePixelRatio || 1
+        const resX = parseInt(width * dpr)
+        const resY = parseInt(height * dpr)
+        return { screenSize: 14, screenResolutionX: resX, screenResolutionY: resY, screenDistance: 40, effectStrength: 10 }
+      }
+      const getSchema = () => {
+        const [explain1, explain2] = t("demoExplain").split("\n")
+        const colors = ["#ff0000", "#008000", "#0000ff"].map(c => `<div style="width: 50px; height: 50px; background: ${c}; border-radius: 50%"></div>`).join("")
+        const explain = `
+          <div style="line-height: 1.7; color: #666; margin-top: 5px"><b>${explain1}</b></div>
+          <div style="line-height: 1.7; color: #666; margin: 10px 0 20px">${explain2}</div>
+          <div style="display: flex; justify-content: space-around; margin-bottom: 10px">${colors}</div>`
+        return ({ Group, Controls }) => [
+          Controls.Custom().Content(explain).Unsafe(true),
+          Group(
+            Controls.Range("effectStrength").Label(t("$label.EFFECT_STRENGTH")).Unit("%").Min(0).Max(35),
+            Controls.Float("screenSize").Label(t("$label.SCREEN_SIZE")).Unit(_t("$unit.inch")),
+            Controls.Integer("screenResolutionX").Label(t("$label.SCREEN_RESOLUTION_X")).Unit(_t("$unit.pixel")).Min(1),
+            Controls.Integer("screenResolutionY").Label(t("$label.SCREEN_RESOLUTION_Y")).Unit(_t("$unit.pixel")).Min(1),
+            Controls.Float("screenDistance").Label(t("$label.SCREEN_DISTANCE")).Unit(_t("$unit.centimeter")).Min(1),
+          ),
+        ]
+      }
+      const getWatchers = () => {
+        const CONFIG = ["screenSize", "screenResolutionX", "screenResolutionY", "screenDistance", "effectStrength"]
+        const effect = (_, ctx) => {
+          const cfg = Object.fromEntries(CONFIG.map(f => [f, ctx.getValue(f)]))
+          const fn = (cfg.effectStrength === 0) ? "removeEffect" : "applyEffect"
+          myopicDefocus[fn](cfg)
+        }
+        return [{ triggers: CONFIG, affects: [], effect }]
+      }
+
+      await utils.formDialog.modal({
+        title: t("$label.myopicDefocusEffectDemo"),
+        schema: getSchema(),
+        data: getData(),
+        watchers: getWatchers(),
+      })
+      myopicDefocus.removeEffect()
+    },
+    updatePlugin: async () => {
+      const updater = utils.getBasePlugin("updater")
+      if (!updater) {
+        const msg = i18n.t("error.pluginDisabled", { plugin: i18n._t("updater", "pluginName") })
+        utils.notification.show(msg, "error")
+      } else {
+        await updater.call()
+      }
+    },
+    uninstallPlugin: async () => {
+      const uninstall = async () => {
+        const remove = `<script src="./plugin/index.js" defer="defer"></script>`
+        const windowHTML = utils.joinPluginPath("./window.html")
+        const pluginFolder = utils.joinPluginPath("./plugin")
+        try {
+          const content = await FsExtra.readFile(windowHTML, "utf-8")
+          const newContent = content.replace(remove, "")
+          await FsExtra.writeFile(windowHTML, newContent)
+          await FsExtra.remove(pluginFolder)
+        } catch (e) {
+          alert(e.toString())
+          return
+        }
+        const message = i18n.t("success.uninstall")
+        const confirm = i18n.t("confirm")
+        await utils.showMessageBox({ type: "info", message, buttons: [confirm] })
+        utils.restartTypora()
+      }
+
+      const title = i18n.t("$label.uninstallPlugin")
+      const { response, data } = await utils.formDialog.modal({
         title,
-        schema: ({ Controls }) => [Controls.Code("settings").Readonly(true)],
-        data: { settings: typeof settings === "string" ? settings : JSON.stringify(settings, null, "\t") },
-    })
+        schema: ({ Controls }) => [
+          Controls.Hint().HintHeader(i18n.t("uninstallPluginWarning")).HintDetail(i18n.t("uninstallPluginDetail", { reconfirm: title })),
+          Controls.Text("confirmInput").Label(i18n.t("uninstallPluginConfirmInput")).Placeholder(title),
+        ],
+        data: { confirmInput: "" },
+      })
+      if (response === 0) return
+      if (data.confirmInput !== title) {
+        utils.notification.show(i18n.t("error.incorrectCommand"), "error")
+      } else {
+        await uninstall()
+      }
+    },
+    donate: async () => {
+      const WeChatPay = "8|RWSVREYNE9TCVADDKEGVPNJ1KGAYNZ31KENF2LWDEA3KFHHDRWYEPA4F00KSZT3454M24RD5PVVM21AAJ5DAGMQ3H62CHEQOOT226D49LZR6G1FKOG0G7NUV5GR2HD2B6V3V8DHR2S8027S36ESCU3GJ0IAE7IY9S25URTMZQCZBY8ZTHFTQ45VVGFX3VD1SE9K4Y9K7I1Y7U4FIKZSS2Y87BH4OSASYLS48A6SR2T5YZJNMJ2WCQE0ZBK9OVLGWGWGL1ED400U1BYMZRW7UAS7VECNVL98WKG4PNIF0KFNIVS45KHQXJFH9E9SYRCWYRUX45Q37"
+      const AliPay = "9|CF07WK7ZZ6CKLVC5KX92LZGUL3X93E51RYAL92NHYVQSD6CAH4D1DTCENAJ8HHB0062DU7LS29Q8Y0NT50M8XPFP9N1QE1JPFW39U0CDP2UX9H2WLEYD712FI3C5657LIWMT7K5CCVL509G04FT4N0IJD3KRAVBDM76CWI81XY77LLSI2AZ668748L62IC4E8CYYVNBG4Z525HZ4BXQVV6S81JC0CVABEACU597FNP9OHNC959X4D29MMYXS1V5MWEU8XC4BD5WSLL29VSAQOGLBWAVVTMX75DOSRF78P9LARIJ7J50IK1MM2QT5UXU5Q1YA7J2AVVHMG00E06Q80RCDXVGOFO76D1HCGYKW93MXR5X4H932TYXAXL93BYWV9UH6CTDUDFWACE5G0OM9N"
+      const QR_CONFIG = [{ label: "WeChat Pay", color: "#1AAD19", data: WeChatPay }, { label: "AliPay", color: "#027AFF", data: AliPay }]
 
-    const actions = {
-        visitRepo: openUrl("https://github.com/obgnail/typora_plugin"),
-        viewDeepWiki: openUrl("https://deepwiki.com/obgnail/typora_plugin"),
-        viewGithubImageBed: openUrl("https://github.com/obgnail/typora_image_uploader"),
-        viewMarkdownlintRules: openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
-        viewCodeMirrorKeymapsManual: openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
-        viewVitePressLineHighlighting: openUrl(`https://vitepress.dev/${i18n.locale === "zh-CN" ? "zh/" : ""}guide/markdown#line-highlighting-in-code-blocks`),
-        viewFocusLineHighlightingEffect: openUrl("https://codemirror.net/5/demo/activeline.html"),
-        viewAbcVisualOptionsManual: openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
-        viewVisibleTabsEffect: openUrl("https://codemirror.net/5/demo/visibletabs.html"),
-        viewCodeFoldingEffect: openUrl("https://codemirror.net/5/demo/folding.html"),
-        viewSideBySideEffect: openUrl("https://github.com/obgnail/typora_plugin/blob/master/assets/sideBySideView.png"),
-        viewIndentedWrappedLineEffect: openUrl("https://codemirror.net/5/demo/indentwrap.html"),
-        viewGlobPattern: openUrl("https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html"),
-        neverGonnaTellALie: openUrl(i18n.locale === "zh-CN" ? "https://www.bilibili.com/video/BV1GJ411x7h7/" : "https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
-        chooseEchartsRenderer: openUrl(`https://echarts.apache.org/handbook/${i18n.locale === "zh-CN" ? "zh" : "en"}/best-practices/canvas-vs-svg/`),
-        downloadWaveDromSkins: openUrl("https://github.com/wavedrom/wavedrom/tree/trunk/skins"),
-        viewMarpOptions: openUrl("https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options"),
-        viewArticleUploaderReadme: showPluginPath("./plugin/article_uploader/README.md"),
-        viewJsonRPCReadme: showPluginPath("./plugin/json_rpc/README.md"),
-        editStyles: showPluginPath("./plugin/global/user_styles/README.md"),
-        developPlugins: showPluginPath("./plugin/custom/README.md"),
-        openLocaleFolder: showPluginPath("./plugin/global/locales/en.json"),
-        openPluginFolder: showPluginPath("./plugin"),
-        openSettingsFolder: async () => utils.settings.openFolder(),
-        toggleDevTools: () => JSBridge.invoke("window.toggleDevTools"),
-        togglePreferencePanel: () => File.megaMenu.togglePreferencePanel(),
-        sendEmail: () => utils.sendEmail("he1251698542@gmail.com", "Feedback"),
-        importSettings: async () => {
-            const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
-                title: i18n.t("$label.importSettings"),
-                properties: ["openFile", "dontAddToRecent"],
-                filters: [{ name: "JSON", extensions: ["json"] }],
-            })
-            if (canceled || filePaths.length === 0) return
-            await utils.settings.import(filePaths[0])
-            utils.notification.show(i18n.t("success"))
-        },
-        exportSettings: async () => {
-            const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
-                title: i18n.t("$label.exportSettings"),
-                defaultPath: Path.join(utils.tempFolder, "typora-plugin-settings.json"),
-                properties: ["saveFile", "showOverwriteConfirmation"],
-                filters: [{ name: "JSON", extensions: ["json"] }],
-            })
-            if (canceled || !filePath) return
-            await utils.settings.export(filePath)
-            utils.showInFinder(filePath)
-            utils.notification.show(i18n.t("success"))
-        },
-        restoreSettings: consecutive(async () => {
-            await plugin.renewMenu(fixedName => utils.settings.clear(fixedName))
-            utils.notification.show(i18n.t("success.restore"))
-        }),
-        restoreAllSettings: consecutive(async () => {
-            await plugin.renewMenu(async () => {
-                const path = await utils.settings.getActualPath("settings.user.toml")
-                await utils.writeFile(path, "")
-            })
-            utils.notification.show(i18n.t("success.restoreAll"))
-        }),
-        inspectRuntimeSettings: async () => {
-            const { settings } = await plugin.getCurrent()
-            await showSettings(i18n._t("settings", "$label.inspectRuntimeSettings"), settings)
-        },
-        inspectDefaultSettings: async () => {
-            const path = await utils.settings.getActualPath("settings.default.toml")
-            const content = await utils.Package.FsExtra.readFile(path, "utf-8")
-            const settings = utils.readToml(content)?.[plugin._getCurrentPlugin()]
-            await showSettings(i18n._t("settings", "$tooltip.inspectDefaultSettings"), settings)
-        },
-        inspectAllDefaultSettings: async () => {
-            const path = await utils.settings.getActualPath("settings.default.toml")
-            const settings = await utils.Package.FsExtra.readFile(path, "utf-8")
-            await showSettings(i18n.t("$tooltip.inspectAllDefaultSettings"), settings)
-        },
-        openSettingsDefaultTomlExternally: async () => {
-            const path = await utils.settings.getActualPath("settings.default.toml")
-            utils.openPath(path)
-        },
-        openSettingsUserTomlExternally: async () => {
-            const path = await utils.settings.getActualPath("settings.user.toml")
-            utils.openPath(path)
-        },
-        invokeMarkdownlintSettings: async () => utils.callPluginFunction("markdownlint", "settings"),
-        installPlantUMLServer: async () => {
-            await utils.formDialog.modal({
-                title: i18n._t("plantUML", "$tooltip.installPlantUMLServer"),
-                schema: ({ Group, Controls }) => [
-                    Controls.Code("dockerCommand").Label("Run the server with Docker").Readonly(true),
-                    Group("Help",
-                        Controls.Action("viewWebsite").Label("Official Website"),
-                        Controls.Action("viewDockerHub").Label("Docker Hub"),
-                        Controls.Action("viewGithub").Label("Github"),
-                    ),
-                ],
-                data: { dockerCommand: "docker pull plantuml/plantuml-server:jetty\ndocker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty" },
-                actions: {
-                    viewDockerHub: () => utils.openUrl("https://hub.docker.com/r/plantuml/plantuml-server"),
-                    viewGithub: () => utils.openUrl("https://github.com/plantuml/plantuml-server"),
-                    viewWebsite: () => utils.openUrl("https://plantuml.com/en/starting"),
-                },
-            })
-        },
-        myopicDefocusEffectDemo: async () => {
-            const { MyopicDefocus } = require("../myopic_defocus.js")
-            const myopicDefocus = new MyopicDefocus({ svgContainerId: "myopic-defocus-svg-demo", blurLayerId: "myopic-defocus-layer-demo" })
-
-            const t = (x) => i18n._t("myopic_defocus", x)
-            const _t = (x) => i18n._t("settings", x)
-            const getData = () => {
-                const { width, height } = window.screen
-                const dpr = window.devicePixelRatio || 1
-                const resX = parseInt(width * dpr)
-                const resY = parseInt(height * dpr)
-                return { screenSize: 14, screenResolutionX: resX, screenResolutionY: resY, screenDistance: 40, effectStrength: 10 }
+      const _decompress = (compressed) => {
+        const [chunk, raw] = compressed.split("|", 2)
+        const rows = raw.match(new RegExp(`\\w{${chunk}}`, "g"))
+        return rows.map(r => parseInt(r, 36).toString(2).padStart(rows.length, "0"))
+      }
+      const _toSVG = (matrix, color, displaySize = 140) => {
+        let path = ""
+        const size = matrix.length
+        for (let r = 0; r < size; r++) {
+          for (let c = 0; c < size; c++) {
+            if (matrix[r][c] === "1") {
+              path += `M${c},${r}h1v1h-1z`
             }
-            const getSchema = () => {
-                const [explain1, explain2] = t("demoExplain").split("\n")
-                const colors = ["#ff0000", "#008000", "#0000ff"].map(c => `<div style="width: 50px; height: 50px; background: ${c}; border-radius: 50%"></div>`).join("")
-                const explain = `
-                    <div style="line-height: 1.7; color: #666; margin-top: 5px"><b>${explain1}</b></div>
-                    <div style="line-height: 1.7; color: #666; margin: 10px 0 20px">${explain2}</div>
-                    <div style="display: flex; justify-content: space-around; margin-bottom: 10px">${colors}</div>`
-                return ({ Group, Controls }) => [
-                    Controls.Custom().Content(explain).Unsafe(true),
-                    Group(
-                        Controls.Range("effectStrength").Label(t("$label.EFFECT_STRENGTH")).Unit("%").Min(0).Max(35),
-                        Controls.Float("screenSize").Label(t("$label.SCREEN_SIZE")).Unit(_t("$unit.inch")),
-                        Controls.Integer("screenResolutionX").Label(t("$label.SCREEN_RESOLUTION_X")).Unit(_t("$unit.pixel")).Min(1),
-                        Controls.Integer("screenResolutionY").Label(t("$label.SCREEN_RESOLUTION_Y")).Unit(_t("$unit.pixel")).Min(1),
-                        Controls.Float("screenDistance").Label(t("$label.SCREEN_DISTANCE")).Unit(_t("$unit.centimeter")).Min(1),
-                    ),
-                ]
-            }
-            const getWatchers = () => {
-                const CONFIG = ["screenSize", "screenResolutionX", "screenResolutionY", "screenDistance", "effectStrength"]
-                const effect = (_, ctx) => {
-                    const cfg = Object.fromEntries(CONFIG.map(f => [f, ctx.getValue(f)]))
-                    const fn = (cfg.effectStrength === 0) ? "removeEffect" : "applyEffect"
-                    myopicDefocus[fn](cfg)
-                }
-                return [{ triggers: CONFIG, affects: [], effect }]
-            }
-
-            await utils.formDialog.modal({
-                title: t("$label.myopicDefocusEffectDemo"),
-                schema: getSchema(),
-                data: getData(),
-                watchers: getWatchers(),
-            })
-            myopicDefocus.removeEffect()
-        },
-        updatePlugin: async () => {
-            const updater = utils.getBasePlugin("updater")
-            if (!updater) {
-                const msg = i18n.t("error.pluginDisabled", { plugin: i18n._t("updater", "pluginName") })
-                utils.notification.show(msg, "error")
-            } else {
-                await updater.call()
-            }
-        },
-        uninstallPlugin: async () => {
-            const uninstall = async () => {
-                const remove = `<script src="./plugin/index.js" defer="defer"></script>`
-                const windowHTML = utils.joinPluginPath("./window.html")
-                const pluginFolder = utils.joinPluginPath("./plugin")
-                try {
-                    const content = await FsExtra.readFile(windowHTML, "utf-8")
-                    const newContent = content.replace(remove, "")
-                    await FsExtra.writeFile(windowHTML, newContent)
-                    await FsExtra.remove(pluginFolder)
-                } catch (e) {
-                    alert(e.toString())
-                    return
-                }
-                const message = i18n.t("success.uninstall")
-                const confirm = i18n.t("confirm")
-                await utils.showMessageBox({ type: "info", message, buttons: [confirm] })
-                utils.restartTypora()
-            }
-
-            const title = i18n.t("$label.uninstallPlugin")
-            const { response, data } = await utils.formDialog.modal({
-                title,
-                schema: ({ Controls }) => [
-                    Controls.Hint().HintHeader(i18n.t("uninstallPluginWarning")).HintDetail(i18n.t("uninstallPluginDetail", { reconfirm: title })),
-                    Controls.Text("confirmInput").Label(i18n.t("uninstallPluginConfirmInput")).Placeholder(title),
-                ],
-                data: { confirmInput: "" },
-            })
-            if (response === 0) return
-            if (data.confirmInput !== title) {
-                utils.notification.show(i18n.t("error.incorrectCommand"), "error")
-            } else {
-                await uninstall()
-            }
-        },
-        donate: async () => {
-            const WeChatPay = "8|RWSVREYNE9TCVADDKEGVPNJ1KGAYNZ31KENF2LWDEA3KFHHDRWYEPA4F00KSZT3454M24RD5PVVM21AAJ5DAGMQ3H62CHEQOOT226D49LZR6G1FKOG0G7NUV5GR2HD2B6V3V8DHR2S8027S36ESCU3GJ0IAE7IY9S25URTMZQCZBY8ZTHFTQ45VVGFX3VD1SE9K4Y9K7I1Y7U4FIKZSS2Y87BH4OSASYLS48A6SR2T5YZJNMJ2WCQE0ZBK9OVLGWGWGL1ED400U1BYMZRW7UAS7VECNVL98WKG4PNIF0KFNIVS45KHQXJFH9E9SYRCWYRUX45Q37"
-            const AliPay = "9|CF07WK7ZZ6CKLVC5KX92LZGUL3X93E51RYAL92NHYVQSD6CAH4D1DTCENAJ8HHB0062DU7LS29Q8Y0NT50M8XPFP9N1QE1JPFW39U0CDP2UX9H2WLEYD712FI3C5657LIWMT7K5CCVL509G04FT4N0IJD3KRAVBDM76CWI81XY77LLSI2AZ668748L62IC4E8CYYVNBG4Z525HZ4BXQVV6S81JC0CVABEACU597FNP9OHNC959X4D29MMYXS1V5MWEU8XC4BD5WSLL29VSAQOGLBWAVVTMX75DOSRF78P9LARIJ7J50IK1MM2QT5UXU5Q1YA7J2AVVHMG00E06Q80RCDXVGOFO76D1HCGYKW93MXR5X4H932TYXAXL93BYWV9UH6CTDUDFWACE5G0OM9N"
-            const QR_CONFIG = [{ label: "WeChat Pay", color: "#1AAD19", data: WeChatPay }, { label: "AliPay", color: "#027AFF", data: AliPay }]
-
-            const _decompress = (compressed) => {
-                const [chunk, raw] = compressed.split("|", 2)
-                const rows = raw.match(new RegExp(`\\w{${chunk}}`, "g"))
-                return rows.map(r => parseInt(r, 36).toString(2).padStart(rows.length, "0"))
-            }
-            const _toSVG = (matrix, color, displaySize = 140) => {
-                let path = ""
-                const size = matrix.length
-                for (let r = 0; r < size; r++) {
-                    for (let c = 0; c < size; c++) {
-                        if (matrix[r][c] === "1") {
-                            path += `M${c},${r}h1v1h-1z`
-                        }
-                    }
-                }
-                return `<svg width="${displaySize}" height="${displaySize}" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><path d="${path}" fill="${color}" /></svg>`
-            }
-            const qrEls = QR_CONFIG.map(qr => {
-                const svg = _toSVG(_decompress(qr.data), qr.color)
-                const label = `<div style="font-weight: bold">${qr.label}</div>`
-                return `<div style="display: flex; flex-direction: column; align-items: center">${svg}${label}</div>`
-            })
-            const qrcodeCnt = `<div style="display: flex; justify-content: space-evenly; margin-top: 8px">${qrEls.join("")}</div>`
-            const backers = (await FsExtra.readFile(utils.joinPluginPath("./plugin/preferences/backers.txt"), "utf-8"))
-                .split("\n").filter(Boolean).map(e => `<div>${utils.escape(e)}</div>`).join("")
-            const backersCnt = `<div style="text-align: center; font-weight: bold; margin-bottom: 5px;">THANK YOU TO ALL THE BACKERS</div><div style="display: grid; grid-template-columns: repeat(10, auto);">${backers}</div>`
-            await utils.formDialog.modal({
-                title: i18n.t("$label.donate"),
-                schema: ({ Controls }) => [
-                    Controls.Custom().Content(qrcodeCnt).Unsafe(true),
-                    Controls.Custom().Content(backersCnt).Unsafe(true),
-                    Controls.Action("starMe").Label("<b>Star This Project on GitHub</b>"),
-                ],
-                actions: { starMe: actions.visitRepo },
-            })
-        },
-    }
-    return actions
+          }
+        }
+        return `<svg width="${displaySize}" height="${displaySize}" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><path d="${path}" fill="${color}" /></svg>`
+      }
+      const qrEls = QR_CONFIG.map(qr => {
+        const svg = _toSVG(_decompress(qr.data), qr.color)
+        const label = `<div style="font-weight: bold">${qr.label}</div>`
+        return `<div style="display: flex; flex-direction: column; align-items: center">${svg}${label}</div>`
+      })
+      const qrcodeCnt = `<div style="display: flex; justify-content: space-evenly; margin-top: 8px">${qrEls.join("")}</div>`
+      const backers = (await FsExtra.readFile(utils.joinPluginPath("./plugin/preferences/backers.txt"), "utf-8"))
+        .split("\n").filter(Boolean).map(e => `<div>${utils.escape(e)}</div>`).join("")
+      const backersCnt = `<div style="text-align: center; font-weight: bold; margin-bottom: 5px;">THANK YOU TO ALL THE BACKERS</div><div style="display: grid; grid-template-columns: repeat(10, auto);">${backers}</div>`
+      await utils.formDialog.modal({
+        title: i18n.t("$label.donate"),
+        schema: ({ Controls }) => [
+          Controls.Custom().Content(qrcodeCnt).Unsafe(true),
+          Controls.Custom().Content(backersCnt).Unsafe(true),
+          Controls.Action("starMe").Label("<b>Star This Project on GitHub</b>"),
+        ],
+        actions: { starMe: actions.visitRepo },
+      })
+    },
+  }
+  return actions
 }
