@@ -1348,6 +1348,15 @@ const schema_callouts = () => [
   Frag.SettingHandler(),
 ]
 
+const schema_code_block_title = () => [
+  Frag.PluginBase(),
+  Group("appearance",
+    Color("TITLE_BAR_BG_COLOR"),
+    Color("TITLE_BAR_TEXT_COLOR"),
+  ),
+  Frag.SettingHandler(),
+]
+
 const schema_image_viewer = () => [
   Frag.PluginBase(true),
   Group("style",
@@ -1550,6 +1559,7 @@ const RAW_SCHEMA_FNS = {
   plantUML: schema_plantUML,
   marp: schema_marp,
   callouts: schema_callouts,
+  code_block_title: schema_code_block_title,
 }
 
 const mapTree = (schemas, visitBox = box => box, visitField = field => field, prefix = "") => schemas.map(box => {

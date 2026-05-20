@@ -1708,5 +1708,27 @@
     "$tooltip.coord1": "向左递增",
     "$tooltip.exclusive": "与「自定义回调」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
+  },
+  "code_block_title": {
+    "pluginName": "代码块标题",
+    "$title.appearance": "外观",
+    "$label.TITLE_BAR_BG_COLOR": "背景颜色",
+    "$label.TITLE_BAR_TEXT_COLOR": "文字颜色",
+    "act.enable": "开启",
+    "act.disable": "关闭",
+    "modeEnabled": "代码块标题已开启",
+    "modeDisabled": "代码块标题已关闭"
+  },
+  "blockSideBySide": {
+    "pluginName": "并列显示活动块"
+  },
+  "sortableOutline": {
+    "pluginName": "大纲拖拽排序",
+    "$label.auto_save_file": "自动保存文件"
+  },
+  "redirectLocalRootUrl": {
+    "pluginName": "重定向本地资源根目录",
+    "$label.root": "资源根目录",
+    "$label.filter_regexp": "过滤正则表达式"
   }
 }

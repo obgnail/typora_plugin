@@ -1703,6 +1703,33 @@
     "$label.BUTTONS.callback": "System Callback",
     "$label.BUTTONS.evil": "Custom Callback",
     "$title.buttonStyle": "Button Style",
+    "$title.buttons.evil": "Custom Callback",
+    "$tooltip.buttons.coordinate.0": "Increments in the upward direction",
+    "$tooltip.buttons.coordinate.1": "Increments in the leftward direction",
+    "$tooltip.exclusive": "Mutually exclusive with the option 'Custom Callback'",
+    "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
+  },
+  "code_block_title": {
+    "pluginName": "Code Block Title",
+    "$title.appearance": "Appearance",
+    "$label.TITLE_BAR_BG_COLOR": "Background Color",
+    "$label.TITLE_BAR_TEXT_COLOR": "Text Color",
+    "act.enable": "Enable",
+    "act.disable": "Disable",
+    "modeEnabled": "Code Block Title Enabled",
+    "modeDisabled": "Code Block Title Disabled"
+  },
+  "blockSideBySide": {
+    "pluginName": "Block Side By Side"
+  },
+  "sortableOutline": {
+    "pluginName": "Sortable Outline",
+    "$label.auto_save_file": "Auto Save File"
+  },
+  "redirectLocalRootUrl": {
+    "pluginName": "Redirect Local Root Url",
+    "$label.root": "Resource Root Directory",
+    "$label.filter_regexp": "Filter Regex",
     "$title.buttonLayout": "Button Layout",
     "$tooltip.coord0": "Increments upwards",
     "$tooltip.coord1": "Increments leftwards",

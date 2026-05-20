@@ -1708,5 +1708,27 @@
     "$tooltip.coord1": "向左遞增",
     "$tooltip.exclusive": "與「自訂回呼」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
+  },
+  "code_block_title": {
+    "pluginName": "程式碼區塊標題",
+    "$title.appearance": "外觀",
+    "$label.TITLE_BAR_BG_COLOR": "背景顏色",
+    "$label.TITLE_BAR_TEXT_COLOR": "文字顏色",
+    "act.enable": "開啟",
+    "act.disable": "關閉",
+    "modeEnabled": "程式碼區塊標題已開啟",
+    "modeDisabled": "程式碼區塊標題已關閉"
+  },
+  "blockSideBySide": {
+    "pluginName": "並排顯示活動區塊"
+  },
+  "sortableOutline": {
+    "pluginName": "大綱拖拽排序",
+    "$label.auto_save_file": "自動保存文檔"
+  },
+  "redirectLocalRootUrl": {
+    "pluginName": "重新導向本地資源根目錄",
+    "$label.root": "資源根目錄",
+    "$label.filter_regexp": "過濾正則表達式"
   }
 }
