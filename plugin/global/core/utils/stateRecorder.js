@@ -10,7 +10,6 @@ class StateRecorder {
    * @param {string} options.name: Give it a name.
    * @param {string} options.selector: Find the elements whose state you want to record using a selector.
    * @param {function(Element): any} options.stateGetter: Record the state of the target element. Element is the element found by the selector.
-   *                                                 Return the state of the tag you want to record. The return value can be of any type.
    * @param {function(Element, state): any} options.stateRestorer: Restore the state for the element. State is the return value of stateGetter.
    * @param {function} options.finalFn: The function to execute last.
    * @param {function(Function)} options.delayFn: The function to delay execute.

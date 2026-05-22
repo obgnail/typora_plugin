@@ -17,6 +17,7 @@
   right: 0;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.03);
   border-left: 1px solid var(--outline-border);
+  border-radius: 0;
   z-index: 9990;
   background: var(--outline-bg);
   color: var(--outline-text-main);

@@ -192,7 +192,7 @@ class MarkdownlintPlugin extends BasePlugin {
         return value
       }
       return {
-        "extends": (value) => value.trim(),
+        "extends": val => val.trim(),
         "MD022.lines_above": toNumberOrNumberArray,
         "MD022.lines_below": toNumberOrNumberArray,
       }
@@ -240,9 +240,13 @@ class MarkdownlintPlugin extends BasePlugin {
     }
     worker.onerror = event => console.error(event.message)
     const send = (action, customPayload) => {
-      const content = this.utils.getCurrentFileContent()
-      const payload = { content, ...customPayload }
-      worker.postMessage({ action, payload })
+      worker.postMessage({
+        action,
+        payload: {
+          content: this.utils.getCurrentFileContent(),
+          ...customPayload,
+        },
+      })
     }
     return {
       configure: async ({ ruleConfig = this.config.RULE_CONFIG, customRuleFiles = this.config.CUSTOM_RULE_FILES, persistent = false } = {}) => {
@@ -279,13 +283,12 @@ class MarkdownlintPlugin extends BasePlugin {
       line: { key: "line", title: this.i18n.t("$option.COLUMNS.line"), width: "4em", sortable: true },
       rule: { key: "rule", title: this.i18n.t("$option.COLUMNS.rule"), width: "5em", sortable: true },
       desc: { key: "desc", title: this.i18n.t("$option.COLUMNS.desc"), sortable: true },
-      ops: { key: "ops", title: this.i18n.t("$option.COLUMNS.ops"), width: "5.2em", render: opsRender },
+      ops: { key: "ops", title: this.i18n.t("$option.COLUMNS.ops"), width: `${this.config.TOOLS.length * 26}px`, render: opsRender },
     }
-    const schema = {
+    this.entities.table.setSchema({
       defaultSort: { key: sortKey, direction: "asc" },
       columns: this.config.COLUMNS.map(col => supportedColumns[col]),
-    }
-    this.entities.table.setSchema(schema)
+    })
   }
 
   _onCheck = fixInfos => {

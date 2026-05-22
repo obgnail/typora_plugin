@@ -1190,6 +1190,24 @@ class utils {
     return el.rawText().substring(bookmark.start, bookmark.end)
   }
 
+  static getSelectionManager = () => {
+    let savedRange = null
+    return {
+      save: () => {
+        const selection = window.getSelection()
+        savedRange = (selection?.rangeCount > 0) ? selection.getRangeAt(0).cloneRange() : null
+      },
+      restore: () => {
+        const selection = window.getSelection()
+        if (savedRange && selection) {
+          selection.removeAllRanges()
+          selection.addRange(savedRange)
+        }
+      },
+      clear: () => savedRange = null,
+    }
+  }
+
   static getRafManager = () => new AnimationFrameManager()
 
   static renderMermaid = async (definition) => {
@@ -1199,7 +1217,7 @@ class utils {
 
   static runWithFakeProgressBar = (task, timeout = 30 * 1000) => {
     const id = `plugin-progress-${this.randomString()}`
-    const outerCss = "position:fixed; top:0; left:0; width:100%; height:3px; z-index:9999; pointer-events:none;"
+    const outerCss = "position:fixed; top:0; left:0; width:100%; height:3px; z-index:100000; pointer-events:none;"
     const innerCss = "width:100%; height:100%; background-color:#e91e63; transform-origin:left; transform:scaleX(0); opacity:1;"
     this.insertElements(`<div id="${id}" style="${outerCss}"><div style="${innerCss}"></div></div>`)
 

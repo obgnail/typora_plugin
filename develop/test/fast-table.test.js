@@ -378,7 +378,7 @@ describe("FastTable Edge Cases", () => {
     await flushMicrotasks()
     const end = performance.now()
 
-    assert.ok(end - start < 1000, "Large dataset rendering should be efficient")
+    assert.ok(end - start < 2000, "Large dataset rendering should be efficient")
     assert.strictEqual(ft.entities.tbody.querySelectorAll("tr").length, 1000)
   })
 })

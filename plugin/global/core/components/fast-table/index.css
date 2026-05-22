@@ -153,8 +153,8 @@ td .action-icon {
   cursor: pointer;
   color: var(--text-sub);
   font-size: 15px;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   padding: 0;
   margin: 0;
   border-radius: var(--radius-sm);
@@ -162,10 +162,6 @@ td .action-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-td .action-icon + .action-icon {
-  margin-left: 4px;
 }
 
 td .action-icon:hover {

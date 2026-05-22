@@ -14,7 +14,6 @@ class Migrate {
       "reopenClosedFiles", "sortableOutline", "blockSideBySide", "chineseSymbolAutoPairer", "redirectLocalRootUrl",
       "scrollBookmarker", "imageReviewer", "quickButton", "toc", "templater",
       "callouts", "marp", "timeline", "chat", "kanban",
-      "__modal_example",
     ]
     const toDir = name => this.utils.joinPluginPath("./plugin/custom/plugins", name)
     const toFile = name => this.utils.joinPluginPath("./plugin/custom/plugins", `${name}.js`)

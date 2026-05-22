@@ -264,6 +264,9 @@ BUILTIN = [
   { name = "Git Commit", disable = false, shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
 ]
 
+# Post-Execution Script. JavaScript code to execute after the command finishes
+POST_SCRIPT = "({ command, cwd, options, code, error, stdout, stderr }) => null"
+
 
 [command_palette]
 # =========== [ Basic ] ===========
@@ -360,7 +363,7 @@ COLUMNS = ["line", "rule", "desc", "ops"]
 #   info  : View Lint Doc
 #   locate: Scroll to Line
 #   fix   : Fix Error
-TOOLS = ["info", "locate", "fix"]
+TOOLS = ["locate", "fix"]
 
 # Default result sorting rule
 #   idx       : Sort by index
@@ -866,15 +869,15 @@ ENABLE_WHEN_EXPORT = true
 # Requires ENABLE_WHEN_EXPORT = true
 APPLY_EXPORT_HEADER_NUMBERING = """
 (headers) => {
-    const counters = Array(7).fill(0)
-    headers.forEach(header => {
-        const [level, text, ...rest] = header
-        counters[level]++
-        counters.fill(0, level + 1)
-        const counter = counters.slice(2, level + 1).join('.')
-        const numbering = counter ? `${counter}. ` : ""
-        header[1] = numbering + text
-    })
+  const counters = Array(7).fill(0)
+  headers.forEach(header => {
+    const [level, text, ...rest] = header
+    counters[level]++
+    counters.fill(0, level + 1)
+    const counter = counters.slice(2, level + 1).join('.')
+    const numbering = counter ? `${counter}. ` : ""
+    header[1] = numbering + text
+  })
 }
 """
 

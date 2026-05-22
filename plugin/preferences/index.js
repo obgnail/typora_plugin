@@ -1,6 +1,10 @@
 class PreferencesPlugin extends BasePlugin {
   FALLBACK_MENU = "global"
   menuStorage = this.utils.getStorage(`${this.fixedName}.menu`)
+  applyOptions = (() => {
+    const hook = this.utils.safeEval(this.config.FORM_RENDERING_HOOK)
+    return (typeof hook === "function") ? hook : this.utils.identity
+  })()
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
@@ -45,7 +49,6 @@ class PreferencesPlugin extends BasePlugin {
     this.PREPROCESSORS = require("./preprocessors.js")(this)
     this.SCHEMAS = this._getSchemas()
     this.META = this._getMeta()
-    this.applyOptions = this._getHook()
   }
 
   process = () => {
@@ -229,11 +232,6 @@ class PreferencesPlugin extends BasePlugin {
   _getSchemas = () => {
     const compile = require("./schemas.js")
     return compile(this.entities.form.dsl, this.i18n.allData)
-  }
-
-  _getHook = () => {
-    const hook = this.utils.safeEval(this.config.FORM_RENDERING_HOOK)
-    return (typeof hook === "function") ? hook : this.utils.identity
   }
 
   _getMeta = () => ({

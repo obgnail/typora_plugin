@@ -83,29 +83,25 @@ class Wsl extends PosixShell {
 class CommandExecutor {
   static _runSpawn({ command, cwd, options, hooks }) {
     const { spawn } = require("child_process")
-    const { onStdout, onStderr, onClose } = hooks
+    const { onStdout, onStderr, onExit } = hooks
 
     const child = spawn(command, { encoding: "utf8", cwd, shell: true, ...options })
     child.stdout.on("data", data => onStdout?.(data.toString()))
     child.stderr.on("data", data => onStderr?.(data.toString()))
     child.on("close", code => {
       const error = code !== 0 ? new Error(`Process exited with code ${code}`) : null
-      onClose?.({ code, error, stdout: null, stderr: null })
+      onExit?.({ command, cwd, options, code, error, stdout: null, stderr: null })
     })
   }
 
   static _runExec({ command, cwd, options, hooks }) {
     const { exec } = require("child_process")
-    const { onStdout, onStderr, onClose } = hooks
+    const { onStdout, onStderr, onExit } = hooks
 
     exec(command, { encoding: "utf8", cwd, ...options }, (error, stdout, stderr) => {
-      const hasError = error || stderr.length > 0
-      if (hasError) {
-        onStderr?.(error ? error.message : stderr.toString())
-      } else {
-        onStdout?.(stdout)
-      }
-      onClose?.({ error, stdout, stderr, code: error ? (error.code || 1) : 0 })
+      if (stdout) onStdout?.(stdout)
+      if (stderr) onStderr?.(stderr)
+      onExit?.({ command, cwd, options, error, stdout, stderr, code: error ? (error.code || 1) : 0 })
     })
   }
 
@@ -151,6 +147,10 @@ class CommanderPlugin extends BasePlugin {
       .filter(a => a.name && a.cmd)
       .map(a => ({ act_name: a.name, act_value: this.ACT_VALUE_PREFIX + a.name, act_hotkey: a.hotkey }))
     return [defaultAction, ...customActions]
+  })()
+  postScript = (() => {
+    const hook = this.utils.safeEval(this.config.POST_SCRIPT)
+    return (typeof hook === "function") ? hook : this.utils.noop
   })()
 
   style = () => true
@@ -265,7 +265,7 @@ class CommanderPlugin extends BasePlugin {
       hooks: {
         onStdout: (isEcho || type === ALWAYS) ? _onStdout : null,
         onStderr: (isEcho || type === ALWAYS || type === ERROR) ? _onStderr : null,
-        onClose: null,
+        onExit: this.postScript,
       },
     })
   }
