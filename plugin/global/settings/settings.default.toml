@@ -1230,6 +1230,11 @@ HIGHLIGHT_ON_FOCUS = false
 # Highlight line background color on cursor focus
 HIGHLIGHT_LINE_COLOR_ON_FOCUS = "rgba(142, 150, 170, 0.14)"
 
+# =========== [ Code Title ] ===========
+# Enable code title
+# See: https://vuepress.vuejs.org/guide/markdown.html#code-blocks
+ENABLE_CODE_TITLE = false
+
 # =========== [ Advanced ] ===========
 # Auto-align wrapped lines: Maintain proper indentation for long, wrapped text lines. Note: High rendering performance cost
 # See: https://github.com/codemirror/codemirror5/issues/2085

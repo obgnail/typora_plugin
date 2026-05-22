@@ -590,6 +590,7 @@ const schema_fence_enhance = () => [
     Switch("HIGHLIGHT_ON_HOVER"),
     Text("HIGHLIGHT_LINE_COLOR_ON_HOVER").ShowIf(When.true("HIGHLIGHT_ON_HOVER")),
   ),
+  Switch("ENABLE_CODE_TITLE").ActionTooltip("viewVuePressCodeTitle"),
   Group("advanced",
     Switch("SIDE_BY_SIDE_VIEW").Tooltip("stylisticConfusion").ActionTooltip("viewSideBySideEffect"),
     Switch("VISIBLE_TABS").ActionTooltip("viewVisibleTabsEffect"),
