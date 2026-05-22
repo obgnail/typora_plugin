@@ -682,40 +682,46 @@ const foldLanguage = async ({ utils }) => {
 }
 
 // See: https://vuepress.vuejs.org/guide/markdown.html#code-title
-const codeTitle = ({ utils }) => {
-  const className = "plugin-code-title"
+const codeTitle = ({ utils, config }) => {
+  const CLASS = "code-title-bar"
   const REGEX = /.+?\s+title="([^"]+)"/
+  const LANG_REGEX = /\s+title="[^"]+"/
 
-  const rerender = (cid) => {
-    if (!cid) return
-    const fence = document.querySelector(`.md-fences[cid="${cid}"]`)
-    if (!fence) return
-
-    let barEl = fence.querySelector(`.${className}`)
-    const title = fence.getAttribute("lang")?.match(REGEX)?.[1]
+  const rerender = (fence) => {
+    const lang = fence.getAttribute("lang")
+    const title = lang?.match(REGEX)?.[1]
     if (!title) {
-      barEl?.remove()
-    } else {
-      if (!barEl) {
-        barEl = document.createElement("div")
-        barEl.className = className
-        fence.prepend(barEl)
-      }
-      barEl.textContent = title
+      fence.classList.remove(CLASS)
+      return
     }
+    fence.classList.add(CLASS)
+    const langOnly = lang.replace(LANG_REGEX, "").trim()
+    const formatted = config.CODE_TITLE_FORMAT
+      .replace("{title}", title)
+      .replace("{lang}", langOnly)
+    fence.style.setProperty("--code-title", `"${formatted.replace(/"/g, '\\"')}"`)
   }
 
   utils.insertStyle("plugin-fence-enhance-code-title",
-    `.md-fences .${className} {
+    `.md-fences.${CLASS}::before {
+      content: var(--code-title);
+      display: block;
       padding: 6px 14px;
       border-bottom: 1px solid var(--code-title-border, #d0d0d0);
       margin-bottom: 6px;
       color: var(--code-title-text, currentColor);
       user-select: none;
-  }`)
+    }`)
 
-  utils.eventHub.addEventListener(utils.eventHub.eventType.afterAddCodeBlock, cid => rerender(cid))
-  utils.eventHub.addEventListener(utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => rerender(node?.cid))
+  utils.eventHub.addEventListener(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+    const fence = cm?.display.wrapper.parentElement
+    if (fence) rerender(fence)
+  })
+  utils.eventHub.addEventListener(utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => {
+    const cm = node?.cid && File.editor.fences.queue[node.cid]
+    const fence = cm?.display.wrapper.parentElement
+    if (fence) rerender(fence)
+  })
 }
 
 module.exports = {

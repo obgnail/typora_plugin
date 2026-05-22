@@ -717,6 +717,7 @@
     "$label.HIGHLIGHT_ON_FOCUS": "光标聚焦高亮",
     "$label.HIGHLIGHT_LINE_COLOR_ON_FOCUS": "高亮背景色",
     "$label.ENABLE_CODE_TITLE": "代码标题",
+    "$label.CODE_TITLE_FORMAT": "标题格式",
     "$title.buttonGeneral": "按钮",
     "$title.functionButtons": "功能按钮",
     "$title.buttonHotkeys": "代码块快捷键",

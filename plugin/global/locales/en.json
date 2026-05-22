@@ -717,6 +717,7 @@
     "$label.HIGHLIGHT_ON_FOCUS": "Highlight on Focus",
     "$label.HIGHLIGHT_LINE_COLOR_ON_FOCUS": "Focus Background Color",
     "$label.ENABLE_CODE_TITLE": "Code Title",
+    "$label.CODE_TITLE_FORMAT": "Title Format",
     "$title.buttonGeneral": "Button",
     "$title.functionButtons": "Function Buttons",
     "$title.buttonHotkeys": "Code Block Hotkeys",

@@ -1237,6 +1237,8 @@ HIGHLIGHT_LINE_COLOR_ON_FOCUS = "rgba(142, 150, 170, 0.14)"
 # Enable code title
 # See: https://vuepress.vuejs.org/guide/markdown.html#code-blocks
 ENABLE_CODE_TITLE = false
+# Title text format. Supports {title} and {lang} placeholders. Example: "{title} ({lang})"
+CODE_TITLE_FORMAT = "{title}"
 
 # =========== [ Advanced ] ===========
 # Auto-align wrapped lines: Maintain proper indentation for long, wrapped text lines. Note: High rendering performance cost
