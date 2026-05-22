@@ -17,6 +17,7 @@ module.exports = (plugin) => {
     viewMarkdownlintRules: openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
     viewCodeMirrorKeymapsManual: openUrl("https://codemirror.net/5/doc/manual.html#keymaps"),
     viewVitePressLineHighlighting: openUrl(`https://vitepress.dev/${i18n.locale === "zh-CN" ? "zh/" : ""}guide/markdown#line-highlighting-in-code-blocks`),
+    viewVuePressCodeTitle: openUrl("https://vuepress.vuejs.org/guide/markdown.html#code-title"),
     viewFocusLineHighlightingEffect: openUrl("https://codemirror.net/5/demo/activeline.html"),
     viewAbcVisualOptionsManual: openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
     viewVisibleTabsEffect: openUrl("https://codemirror.net/5/demo/visibletabs.html"),

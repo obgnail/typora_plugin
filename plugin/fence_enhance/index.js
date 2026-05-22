@@ -32,6 +32,9 @@ class FenceEnhancePlugin extends BasePlugin {
     if (this.config.HIGHLIGHT_BY_LANGUAGE) {
       new HighlightHelper(this).process()
     }
+    if (this.config.ENABLE_CODE_TITLE) {
+      codeTitle(this)
+    }
     if (this.config.ENABLE_LANGUAGE_FOLD) {
       await foldLanguage(this)
     }
@@ -414,6 +417,42 @@ const sideBySideView = ({ utils }) => {
 // doc: https://codemirror.net/5/demo/visibletabs.html
 const visibleTabs = ({ utils }) => {
   utils.insertStyleFile("fence-enhance-visible-tabs", "./plugin/fence_enhance/resource/visible-tabs.css")
+}
+
+const codeTitle = ({ utils }) => {
+  const className = "plugin-code-title"
+  const REGEX = /.+?\s+title="([^"]+)"/
+
+  const rerender = (cid) => {
+    if (!cid) return
+    const fence = document.querySelector(`.md-fences[cid="${cid}"]`)
+    if (!fence) return
+
+    let barEl = fence.querySelector(`.${className}`)
+    const title = fence.getAttribute("lang")?.match(REGEX)?.[1]
+    if (!title) {
+      barEl?.remove()
+    } else {
+      if (!barEl) {
+        barEl = document.createElement("div")
+        barEl.className = className
+        fence.prepend(barEl)
+      }
+      barEl.textContent = title
+    }
+  }
+
+  utils.insertStyle("plugin-fence-enhance-code-title",
+    `.md-fences .${className} {
+      padding: 6px 14px;
+      border-bottom: 1px solid var(--code-title-border, #d0d0d0);
+      margin-bottom: 6px;
+      color: var(--code-title-text, currentColor);
+      user-select: none;
+  }`)
+
+  utils.eventHub.addEventListener(utils.eventHub.eventType.afterAddCodeBlock, cid => rerender(cid))
+  utils.eventHub.addEventListener(utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => rerender(node?.cid))
 }
 
 // doc: https://codemirror.net/5/doc/manual.html

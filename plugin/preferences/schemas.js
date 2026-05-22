@@ -590,6 +590,7 @@ const schema_fence_enhance = () => [
     Switch("HIGHLIGHT_ON_HOVER"),
     Text("HIGHLIGHT_LINE_COLOR_ON_HOVER").ShowIf(When.true("HIGHLIGHT_ON_HOVER")),
   ),
+  Switch("ENABLE_CODE_TITLE").ActionTooltip("viewVuePressCodeTitle"),
   Group("advanced",
     Switch("SIDE_BY_SIDE_VIEW").Tooltip("stylisticConfusion").ActionTooltip("viewSideBySideEffect"),
     Switch("VISIBLE_TABS").ActionTooltip("viewVisibleTabsEffect"),
@@ -1348,15 +1349,6 @@ const schema_callouts = () => [
   Frag.SettingHandler(),
 ]
 
-const schema_code_block_title = () => [
-  Frag.PluginBase(),
-  Group("appearance",
-    Color("TITLE_BAR_BG_COLOR"),
-    Color("TITLE_BAR_TEXT_COLOR"),
-  ),
-  Frag.SettingHandler(),
-]
-
 const schema_image_viewer = () => [
   Frag.PluginBase(true),
   Group("style",
@@ -1559,7 +1551,6 @@ const RAW_SCHEMA_FNS = {
   plantUML: schema_plantUML,
   marp: schema_marp,
   callouts: schema_callouts,
-  code_block_title: schema_code_block_title,
 }
 
 const mapTree = (schemas, visitBox = box => box, visitField = field => field, prefix = "") => schemas.map(box => {

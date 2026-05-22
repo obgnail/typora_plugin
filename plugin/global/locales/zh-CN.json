@@ -715,12 +715,14 @@
     "$label.HIGHLIGHT_LINE_COLOR_ON_HOVER": "高亮背景色",
     "$label.HIGHLIGHT_ON_FOCUS": "光标聚焦高亮",
     "$label.HIGHLIGHT_LINE_COLOR_ON_FOCUS": "高亮背景色",
+    "$label.ENABLE_CODE_TITLE": "代码标题",
     "$title.buttonGeneral": "按钮",
     "$title.functionButtons": "功能按钮",
     "$title.buttonHotkeys": "代码块快捷键",
     "$title.lineHighlighting": "行高亮",
     "$tooltip.viewCodeMirrorKeymapsManual": "CodeMirror 风格的快捷键",
     "$tooltip.viewVitePressLineHighlighting": "行高亮语法",
+    "$tooltip.viewVuePressCodeTitle": "代码标题语法",
     "$tooltip.viewFocusLineHighlightingEffect": "查看效果",
     "$tooltip.viewSideBySideEffect": "查看效果",
     "$tooltip.viewVisibleTabsEffect": "查看效果",
@@ -1708,27 +1710,5 @@
     "$tooltip.coord1": "向左递增",
     "$tooltip.exclusive": "与「自定义回调」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
-  },
-  "code_block_title": {
-    "pluginName": "代码块标题",
-    "$title.appearance": "外观",
-    "$label.TITLE_BAR_BG_COLOR": "背景颜色",
-    "$label.TITLE_BAR_TEXT_COLOR": "文字颜色",
-    "act.enable": "开启",
-    "act.disable": "关闭",
-    "modeEnabled": "代码块标题已开启",
-    "modeDisabled": "代码块标题已关闭"
-  },
-  "blockSideBySide": {
-    "pluginName": "并列显示活动块"
-  },
-  "sortableOutline": {
-    "pluginName": "大纲拖拽排序",
-    "$label.auto_save_file": "自动保存文件"
-  },
-  "redirectLocalRootUrl": {
-    "pluginName": "重定向本地资源根目录",
-    "$label.root": "资源根目录",
-    "$label.filter_regexp": "过滤正则表达式"
   }
 }

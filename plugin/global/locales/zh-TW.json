@@ -715,12 +715,14 @@
     "$label.HIGHLIGHT_LINE_COLOR_ON_HOVER": "高亮背景色",
     "$label.HIGHLIGHT_ON_FOCUS": "游標聚焦高亮",
     "$label.HIGHLIGHT_LINE_COLOR_ON_FOCUS": "高亮背景色",
+    "$label.ENABLE_CODE_TITLE": "程式碼區塊標題",
     "$title.buttonGeneral": "按鈕",
     "$title.functionButtons": "功能按鈕",
     "$title.buttonHotkeys": "程式碼區塊快捷鍵",
     "$title.lineHighlighting": "行高亮",
     "$tooltip.viewCodeMirrorKeymapsManual": "CodeMirror 風格的快捷鍵",
     "$tooltip.viewVitePressLineHighlighting": "行高亮語法",
+    "$tooltip.viewVuePressCodeTitle": "程式碼區塊標題語法",
     "$tooltip.viewFocusLineHighlightingEffect": "查看效果",
     "$tooltip.viewSideBySideEffect": "查看效果",
     "$tooltip.viewVisibleTabsEffect": "查看效果",
@@ -1708,27 +1710,5 @@
     "$tooltip.coord1": "向左遞增",
     "$tooltip.exclusive": "與「自訂回呼」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
-  },
-  "code_block_title": {
-    "pluginName": "程式碼區塊標題",
-    "$title.appearance": "外觀",
-    "$label.TITLE_BAR_BG_COLOR": "背景顏色",
-    "$label.TITLE_BAR_TEXT_COLOR": "文字顏色",
-    "act.enable": "開啟",
-    "act.disable": "關閉",
-    "modeEnabled": "程式碼區塊標題已開啟",
-    "modeDisabled": "程式碼區塊標題已關閉"
-  },
-  "blockSideBySide": {
-    "pluginName": "並排顯示活動區塊"
-  },
-  "sortableOutline": {
-    "pluginName": "大綱拖拽排序",
-    "$label.auto_save_file": "自動保存文檔"
-  },
-  "redirectLocalRootUrl": {
-    "pluginName": "重新導向本地資源根目錄",
-    "$label.root": "資源根目錄",
-    "$label.filter_regexp": "過濾正則表達式"
   }
 }

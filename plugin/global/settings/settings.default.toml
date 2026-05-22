@@ -1230,6 +1230,11 @@ HIGHLIGHT_ON_FOCUS = false
 # Highlight line background color on cursor focus
 HIGHLIGHT_LINE_COLOR_ON_FOCUS = "rgba(142, 150, 170, 0.14)"
 
+# =========== [ Code Title ] ===========
+# Enable code title
+# See: https://vuepress.vuejs.org/guide/markdown.html#code-blocks
+ENABLE_CODE_TITLE = false
+
 # =========== [ Advanced ] ===========
 # Auto-align wrapped lines: Maintain proper indentation for long, wrapped text lines. Note: High rendering performance cost
 # See: https://github.com/codemirror/codemirror5/issues/2085
@@ -2148,7 +2153,6 @@ LIST = [
   "window_tab",
   "commander",
   "fence_enhance",
-  "code_block_title",
   "datatables",
   "export_enhance",
   "mouse_gestures",
@@ -3235,18 +3239,6 @@ DEFAULT_ICON = "\\f075"
 # Template: Default sample padding content when inserting
 TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
 
-
-################### code_block_title ###################
-[code_block_title]
-# =========== [ Basic ] ===========
-ENABLE = true
-NAME = ""
-
-# =========== [ Appearance ] ===========
-# Title bar background color (empty = follow theme)
-TITLE_BAR_BG_COLOR = ""
-# Title bar text color (empty = follow theme)
-TITLE_BAR_TEXT_COLOR = ""
 
 [test]
 # =========== [ Basic ] ===========
