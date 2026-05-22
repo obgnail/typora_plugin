@@ -1,30 +1,33 @@
+"use strict"
+
 const __POLYFILLS__ = new Map()
 
-const _record = (target, attr, fn) => {
+const _record = (target, prop, fn) => {
   if (!__POLYFILLS__.has(target)) {
     __POLYFILLS__.set(target, {})
   }
-  __POLYFILLS__.get(target)[attr] = fn
+  __POLYFILLS__.get(target)[prop] = fn
 }
 
-const _define = (target, attr, fn) => {
-  if (target && !(attr in target)) {
-    Object.defineProperty(target, attr, {
-      value: fn,
-      configurable: true,
-      enumerable: false,
-      writable: true,
-    })
+const _define = (target, prop, fn) => {
+  if (target && !(prop in target)) {
+    Object.defineProperty(target, prop, { value: fn, configurable: true, enumerable: false, writable: true })
   }
 }
 
-const _impl = (target, attr, fn) => {
-  _record(target, attr, fn)
-  _define(target, attr, fn)
+const _impl = (target, prop, fn) => {
+  _record(target, prop, fn)
+  _define(target, prop, fn)
 }
 
 const _isIterable = (obj) => {
   return obj == null ? false : typeof obj[Symbol.iterator] === "function"
+}
+
+const _isRegExp = (obj) => {
+  if (obj == null) return false
+  const matchSym = obj[Symbol.match]
+  return matchSym !== undefined ? !!matchSym : Object.prototype.toString.call(obj) === "[object RegExp]"
 }
 
 function object() {
@@ -49,6 +52,23 @@ function object() {
       result[key].push(item)
     }
     return result
+  })
+}
+
+function string() {
+  _impl(String.prototype, "replaceAll", function (searchValue, replaceValue) {
+    if (this == null) {
+      throw new TypeError("String.prototype.replaceAll called on null or undefined")
+    }
+    const str = String(this)
+    if (_isRegExp(searchValue)) {
+      if (!searchValue.flags.includes("g")) {
+        throw new TypeError("String.prototype.replaceAll called with a non-global RegExp argument")
+      }
+      return str.replace(searchValue, replaceValue)
+    }
+    const regex = new RegExp(String(searchValue).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")
+    return str.replace(regex, replaceValue)
   })
 }
 
@@ -146,6 +166,7 @@ function abortSignal() {
 }
 
 object()
+string()
 array()
 typedArray()
 promise()

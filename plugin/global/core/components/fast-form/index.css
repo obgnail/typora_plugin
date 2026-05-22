@@ -363,7 +363,7 @@ mark.feature-highlight {
 .explain {
   color: var(--ff-text-secondary);
   font-size: var(--ff-font-size-xs);
-  line-height: 1.2;
+  margin-top: 2px;
 }
 
 @keyframes tooltipSlideUp {
@@ -1916,7 +1916,7 @@ textarea:hover,
   z-index: 999999;
   pointer-events: none;
   opacity: 0.95;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--ff-color-primary);
   box-sizing: border-box;
 }

@@ -362,6 +362,7 @@
     "$label.BUILTIN.disable": "禁用",
     "$label.BUILTIN.shell": "Shell",
     "$label.BUILTIN.cmd": "命令",
+    "$label.POST_SCRIPT": "后置脚本",
     "$title.cmdDisplay": "输出显示",
     "$placeholder.envInfo": "环境变量:\n$f 当前文件路径\n$d 当前文件目录\n$m 当前挂载目录"
   },
@@ -938,7 +939,7 @@
     "$tooltip.START_TIMEOUT": "如果在按下触发键后该时间内鼠标未移动，将视为普通点击并取消手势。设置为 0 则禁用此机制",
     "$tooltip.IDLE_TIMEOUT": "在划动过程中，如果鼠标中途停顿超时，则提前中断本次手势的录制。设置为 0 则禁用此机制",
     "$tooltip.COOLDOWN": "触发成功后的等待时间，防止由于用户操作过快造成的重复误触",
-    "$tooltip.MACRO_RADIUS": "判定动作切换方向所需跨越的最小滑动距离（像素）。该值越大，越不容易因手抖产生误判，但需要您大幅度甩动鼠标",
+    "$tooltip.MACRO_RADIUS": "判定动作切换方向所需跨越的最小滑动距离（像素）。该值越大，越不容易因手抖产生误判，但需要大幅度甩动鼠标",
     "$tooltip.TAIL_RADIUS": "用于精确识别松开按键前最后一小段运动方向的半径阈值。通常建议小于“宏观采样半径”，以保证动作收尾干脆灵敏"
   },
   "slash_commands": {
@@ -1226,7 +1227,7 @@
     "$label.CIRCLE_TOP": "时间圆点顶部位置"
   },
   "echarts": {
-    "pluginName": "Echarts",
+    "pluginName": "ECharts",
     "$label.THEME": "主题",
     "$label.LOCALE": "语言环境",
     "$label.RENDERER": "渲染器",
@@ -1336,7 +1337,7 @@
     "$label.INCLUDE_HEADINGS.table": "表格",
     "$label.INCLUDE_HEADINGS.link": "链接",
     "$label.INCLUDE_HEADINGS.math": "公式",
-    "$title.displayHeader": "显示标题",
+    "$title.displayHeader": "标题节点",
     "$option.TITLE_BAR_BUTTONS.header": "标题",
     "$option.TITLE_BAR_BUTTONS.image": "图片",
     "$option.TITLE_BAR_BUTTONS.table": "表格",
@@ -1657,7 +1658,7 @@
     "$label.HOTKEY_FIX_LINT": "快捷键：修复",
     "$label.invokeMarkdownlintSettings": "设置检测规则",
     "$label.RULE_CONFIG": "检测规则",
-    "$label.CUSTOM_RULE_FILES": "自定义检测规则文件",
+    "$label.CUSTOM_RULE_FILES": "自定义检测规则",
     "$option.actions.close": "关闭",
     "$option.actions.refresh": "刷新",
     "$option.actions.toggleSourceMode": "源码模式",

@@ -1,13 +1,15 @@
 #plugin-bookmark {
-  top: 80px;
-  right: 40px;
-  width: 320px;
+  --bookmark-width: 360px;
   --bookmark-bg-hover: rgba(0, 0, 0, 0.04);
   --bookmark-text-main: #1e293b;
   --bookmark-text-sub: #475569;
   --bookmark-radius-item: 8px;
   --bookmark-danger-bg: rgba(239, 68, 68, 0.1);
   --bookmark-danger-text: #ef4444;
+
+  top: 80px;
+  left: calc(100vw - var(--bookmark-width) - 20px);
+  width: var(--bookmark-width);
 }
 
 .plugin-bookmark-list {

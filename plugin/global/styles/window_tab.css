@@ -50,7 +50,7 @@ body.pin-outline #plugin-window-tab .tab-bar {
   max-width: ${this.config.TAB_MAX_WIDTH};
   position: relative;
   padding: 0 10px 0 15px;
-  border: 1px solid transparent;
+  border: 1px solid rgba(0, 0, 0, 0.03);
   border-bottom-color: rgba(0, 0, 0, 0.07);
   box-sizing: border-box;
   display: flex;

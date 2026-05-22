@@ -27,11 +27,26 @@ class ThirdPartyDiagramParser {
    * @param {function(lang): string} exportStyleGetter: Get styles for export.
    * @param {function(): string} versionGetter: Get the version.
    */
-  register = ({
-                lang, mappingLang = "", destroyWhenUpdate, interactiveMode = true, metaConfigSchema,
-                checkSelector, wrapElement, lazyLoadFunc, beforeRenderFunc, renderStyleGetter, createFunc,
-                updateFunc, destroyFunc, beforeExportToNative, beforeExportToHTML, exportStyleGetter, versionGetter,
-              }) => {
+  register = (
+    {
+      lang,
+      mappingLang = "",
+      destroyWhenUpdate,
+      interactiveMode = true,
+      metaConfigSchema,
+      checkSelector,
+      wrapElement,
+      lazyLoadFunc, beforeRenderFunc,
+      renderStyleGetter,
+      createFunc,
+      updateFunc,
+      destroyFunc,
+      beforeExportToNative,
+      beforeExportToHTML,
+      exportStyleGetter,
+      versionGetter,
+    },
+  ) => {
     lang = lang.toLowerCase()
     lazyLoadFunc = this.utils.once(lazyLoadFunc)
     const settingMsg = null

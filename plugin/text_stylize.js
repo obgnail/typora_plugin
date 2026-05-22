@@ -1,4 +1,55 @@
 class TextStylizePlugin extends BasePlugin {
+  stylizer = (() => {
+    const { setStyle, setBrush, useBrush } = new StyleSetter(this, this.config.DEFAULT_FORMAT_BRUSH)
+    const fns = {
+      setStyle,
+      setBrush,
+      useBrush,
+      clearAll: () => setStyle({ replaceMap: {} }),
+      toggleForegroundColor: color => setStyle({ toggleMap: { color: color } }),
+      toggleBackgroundColor: color => setStyle({ toggleMap: { background: color } }),
+      toggleSize: size => setStyle({ toggleMap: { "font-size": size } }),
+      toggleWeight: weight => setStyle({ toggleMap: { "font-weight": weight } }),
+      toggleFamily: family => setStyle({ toggleMap: { "font-family": family } }),
+      toggleBorder: border => setStyle({ toggleMap: { border } }),
+      toggleEmphasis: emphasis => setStyle({ toggleMap: { "text-emphasis": emphasis } }),
+      toggleBlur: (num = 0.5) => setStyle({ mergeMap: { "filter": `blur(${num}em)` } }),
+      toggleItalic: () => setStyle({ toggleMap: { "font-style": "italic" } }),
+      toggleUnderline: () => setStyle({ mergeMap: { "text-decoration": "underline" } }),
+      toggleThroughline: () => setStyle({ mergeMap: { "text-decoration": "line-through" } }),
+      toggleOverline: () => setStyle({ mergeMap: { "text-decoration": "overline" } }),
+      toggleSuperScript: () => setStyle({ toggleMap: { "vertical-align": "super" } }),
+      toggleSubScript: () => setStyle({ toggleMap: { "vertical-align": "sub" } }),
+      increaseSize: (num = 0.1) => setStyle({
+        hook: styleMap => {
+          const prop = "font-size"
+          styleMap[prop] = styleMap[prop] || "1.0em"
+          const size = Math.max(0.1, (parseFloat(styleMap[prop]) + num).toFixed(1))
+          if (size !== 1) {
+            styleMap[prop] = size + "em"
+          } else {
+            delete styleMap[prop]
+          }
+        },
+      }),
+      decreaseSize: (num = 0.1) => fns.increaseSize(-num),
+      increaseLetterSpacing: (num = 1) => setStyle({
+        hook: styleMap => {
+          const prop = "letter-spacing"
+          styleMap[prop] = styleMap[prop] || "1pt"
+          const spacing = Math.max(0, parseInt(styleMap[prop]) + num)
+          if (spacing !== 0) {
+            styleMap[prop] = spacing + "pt"
+          } else {
+            delete styleMap[prop]
+          }
+        },
+      }),
+      decreaseLetterSpacing: (num = 1) => fns.increaseLetterSpacing(-num),
+    }
+    return fns
+  })()
+
   style = () => true
 
   html = () => {
@@ -60,7 +111,6 @@ class TextStylizePlugin extends BasePlugin {
   }
 
   init = () => {
-    this.actions = this.getActions()
     this.entities = {
       panel: document.querySelector("#plugin-text-stylize"),
       toolbar: document.querySelector("#plugin-text-stylize .stylize-tool"),
@@ -112,80 +162,29 @@ class TextStylizePlugin extends BasePlugin {
   onAction = (action, color) => {
     const fnMap = {
       close: this.call,
-      erase: this.actions.clearAll,
-      setBrush: this.actions.setBrush,
-      useBrush: this.actions.useBrush,
-      italic: this.actions.toggleItalic,
-      underline: this.actions.toggleUnderline,
-      throughline: this.actions.toggleThroughline,
-      overline: this.actions.toggleOverline,
-      superScript: this.actions.toggleSuperScript,
-      subScript: this.actions.toggleSubScript,
-      emphasis: () => this.actions.toggleEmphasis("filled red"),
-      blur: () => this.actions.toggleBlur(0.5),
-      weight: () => this.actions.toggleWeight("bold"),
-      title: () => this.actions.toggleSize("2em"),
-      increaseSize: () => this.actions.increaseSize(0.1),
-      decreaseSize: () => this.actions.decreaseSize(0.1),
-      increaseLetterSpacing: () => this.actions.increaseLetterSpacing(1),
-      decreaseLetterSpacing: () => this.actions.decreaseLetterSpacing(1),
-      family: () => this.actions.toggleFamily("serif"),
-      foregroundColor: () => this.actions.toggleForegroundColor(color || this.config.DEFAULT_COLORS.FOREGROUND),
-      backgroundColor: () => this.actions.toggleBackgroundColor(color || this.config.DEFAULT_COLORS.BACKGROUND),
-      borderColor: () => this.actions.toggleBorder(`1px solid ${color || this.config.DEFAULT_COLORS.BORDER}`),
+      erase: this.stylizer.clearAll,
+      setBrush: this.stylizer.setBrush,
+      useBrush: this.stylizer.useBrush,
+      italic: this.stylizer.toggleItalic,
+      underline: this.stylizer.toggleUnderline,
+      throughline: this.stylizer.toggleThroughline,
+      overline: this.stylizer.toggleOverline,
+      superScript: this.stylizer.toggleSuperScript,
+      subScript: this.stylizer.toggleSubScript,
+      emphasis: () => this.stylizer.toggleEmphasis("filled red"),
+      blur: () => this.stylizer.toggleBlur(0.5),
+      weight: () => this.stylizer.toggleWeight("bold"),
+      title: () => this.stylizer.toggleSize("2em"),
+      increaseSize: () => this.stylizer.increaseSize(0.1),
+      decreaseSize: () => this.stylizer.decreaseSize(0.1),
+      increaseLetterSpacing: () => this.stylizer.increaseLetterSpacing(1),
+      decreaseLetterSpacing: () => this.stylizer.decreaseLetterSpacing(1),
+      family: () => this.stylizer.toggleFamily("serif"),
+      foregroundColor: () => this.stylizer.toggleForegroundColor(color || this.config.DEFAULT_COLORS.FOREGROUND),
+      backgroundColor: () => this.stylizer.toggleBackgroundColor(color || this.config.DEFAULT_COLORS.BACKGROUND),
+      borderColor: () => this.stylizer.toggleBorder(`1px solid ${color || this.config.DEFAULT_COLORS.BORDER}`),
     }
     fnMap[action]?.()
-  }
-
-  getActions = () => {
-    const { setStyle, setBrush, useBrush } = new StyleSetter(this, this.config.DEFAULT_FORMAT_BRUSH)
-    const actions = {
-      setStyle,
-      setBrush,
-      useBrush,
-      clearAll: () => setStyle({ replaceMap: {} }),
-      toggleForegroundColor: color => setStyle({ toggleMap: { color: color } }),
-      toggleBackgroundColor: color => setStyle({ toggleMap: { background: color } }),
-      toggleSize: size => setStyle({ toggleMap: { "font-size": size } }),
-      toggleWeight: weight => setStyle({ toggleMap: { "font-weight": weight } }),
-      toggleFamily: family => setStyle({ toggleMap: { "font-family": family } }),
-      toggleBorder: border => setStyle({ toggleMap: { border } }),
-      toggleEmphasis: emphasis => setStyle({ toggleMap: { "text-emphasis": emphasis } }),
-      toggleBlur: (num = 0.5) => setStyle({ mergeMap: { "filter": `blur(${num}em)` } }),
-      toggleItalic: () => setStyle({ toggleMap: { "font-style": "italic" } }),
-      toggleUnderline: () => setStyle({ mergeMap: { "text-decoration": "underline" } }),
-      toggleThroughline: () => setStyle({ mergeMap: { "text-decoration": "line-through" } }),
-      toggleOverline: () => setStyle({ mergeMap: { "text-decoration": "overline" } }),
-      toggleSuperScript: () => setStyle({ toggleMap: { "vertical-align": "super" } }),
-      toggleSubScript: () => setStyle({ toggleMap: { "vertical-align": "sub" } }),
-      increaseSize: (num = 0.1) => setStyle({
-        hook: styleMap => {
-          styleMap["font-size"] = styleMap["font-size"] || "1.0em"
-          const origin = parseFloat(styleMap["font-size"])
-          const size = Math.max(0.1, (origin + num).toFixed(1))
-          if (size !== 1) {
-            styleMap["font-size"] = size + "em"
-          } else {
-            delete styleMap["font-size"]
-          }
-        },
-      }),
-      decreaseSize: (num = 0.1) => actions.increaseSize(-num),
-      increaseLetterSpacing: (num = 1) => setStyle({
-        hook: styleMap => {
-          styleMap["letter-spacing"] = styleMap["letter-spacing"] || "1pt"
-          const origin = parseInt(styleMap["letter-spacing"])
-          const spacing = Math.max(0, origin + num)
-          if (spacing !== 0) {
-            styleMap["letter-spacing"] = spacing + "pt"
-          } else {
-            delete styleMap["letter-spacing"]
-          }
-        },
-      }),
-      decreaseLetterSpacing: (num = 1) => actions.increaseLetterSpacing(-num),
-    }
-    return actions
   }
 }
 

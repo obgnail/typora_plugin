@@ -39,6 +39,49 @@ describe("Object Polyfills", () => {
   })
 })
 
+describe("String Polyfills", () => {
+  const { replaceAll } = polyfills.get(String.prototype)
+
+  it("String.prototype.replaceAll should replace all occurrences of a string", () => {
+    const result = replaceAll.call("hello world, hello universe", "hello", "goodbye")
+    assert.strictEqual(result, "goodbye world, goodbye universe")
+  })
+
+  it("String.prototype.replaceAll should replace all occurrences using a global RegExp", () => {
+    const result = replaceAll.call("apple banana apple", /apple/g, "orange")
+    assert.strictEqual(result, "orange banana orange")
+  })
+
+  it("String.prototype.replaceAll should throw TypeError if regex is not global", () => {
+    const str = "a-b-c"
+    assert.throws(() => replaceAll.call(str, /-/), TypeError)
+    assert.throws(() => replaceAll.call(str, /-/i), TypeError)
+  })
+
+  it("String.prototype.replaceAll should accept a replacer function", () => {
+    const str = "123-456"
+    const result = replaceAll.call(str, /\d/g, (match) => (parseInt(match) * 2).toString())
+    assert.strictEqual(result, "246-81012")
+
+    const str2 = "a-a-a"
+    let count = 0
+    const result2 = replaceAll.call(str2, "a", () => String(++count))
+    assert.strictEqual(result2, "1-2-3")
+  })
+
+  it("String.prototype.replaceAll should handle special replacement patterns", () => {
+    const str = "abc"
+    assert.strictEqual(replaceAll.call(str, "b", "$$"), "a$c")
+    assert.strictEqual(replaceAll.call(str, "b", "[$&]"), "a[b]c")
+  })
+
+  it("String.prototype.replaceAll should handle edge cases", () => {
+    assert.throws(() => replaceAll.call(null, "a", "b"), TypeError)
+    assert.throws(() => replaceAll.call(undefined, "a", "b"), TypeError)
+    assert.strictEqual(replaceAll.call("abc", "", "-"), "-a-b-c-")
+  })
+})
+
 describe("TypedArray, String and Array at() Polyfill", () => {
   const { at: arrayAt } = polyfills.get(Array.prototype)
   const { at: stringAt } = polyfills.get(String.prototype)
@@ -68,7 +111,7 @@ describe("TypedArray, String and Array at() Polyfill", () => {
   })
 })
 
-describe("Array Change Methods Polyfill", () => {
+describe("Array Polyfills", () => {
   const { toReversed, toSorted, toSpliced } = polyfills.get(Array.prototype)
 
   it("Array.prototype.toReversed should return reversed copy", () => {

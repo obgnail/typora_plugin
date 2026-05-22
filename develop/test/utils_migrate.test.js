@@ -121,7 +121,7 @@ describe("Migrate class functionality", () => {
       assert.ok(removeSpy.mock.callCount() > 0, "Should attempt to remove plugins")
 
       const removedPaths = removeSpy.mock.calls.map(call => call.arguments[0])
-      const hasExpectedRemovals = removedPaths.some(path => path.includes("__modal_example"))
+      const hasExpectedRemovals = removedPaths.some(path => path.includes("openInTotalCommander"))
       assert.ok(hasExpectedRemovals, "Should remove deprecated plugins")
     })
 

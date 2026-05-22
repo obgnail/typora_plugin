@@ -295,6 +295,8 @@ class CommandPalettePlugin extends BasePlugin {
   }
 
   process = () => {
+    this.selectionManager = this.utils.getSelectionManager()
+
     this.inputHandler = this.utils.createSmartInputHandler(
       this.entities.input,
       val => this.doSearch(val),
@@ -378,6 +380,7 @@ class CommandPalettePlugin extends BasePlugin {
   triggerAction = () => {
     const state = this.store.get()
     const activeItem = state.items[state.activeIndex]
+    this.selectionManager.restore()
     if (activeItem?.action({ ...state }) !== false) {
       this.hide()
     }
@@ -390,6 +393,7 @@ class CommandPalettePlugin extends BasePlugin {
   }
 
   show = async (input = ">") => {
+    this.selectionManager.save()
     this.anchorNode = this.utils.getAnchorNode()
     this.utils.show(this.entities.overlay)
     await this.setInput(input)

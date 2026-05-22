@@ -1,7 +1,7 @@
 /**
  * This file defines the UI configurations for plugin preference panels using a fluent, declarative DSL.
  *
- * The Dual-State Builder:
+ * Dual-State DSL:
  * Controls in this DSL are strictly context-aware. You use the exact same syntax (e.g., `Textarea("CMD")`)
  * everywhere, and the engine automatically adapts its structure based on where you place it:
  *   1. **As an Independent Box**: When placed directly at the root of a schema or inside structural
@@ -14,11 +14,11 @@ const OPTION_SCOPE = Symbol("Schema:OptionScope")
 const I18N_DICT = Symbol("Schema:I18nDict")
 
 let Group, When
-let Switch, Text, Password, Color, Integer, Float, Icon, Range, Action, Static, Hint, Divider, Hotkey,
-  Textarea, Code, Select, Segment, Radio, Checkbox, Transfer, ToggleSort, Dict, Palette, Table,
-  Object_, Array_
+let Switch, Text, Password, Color, Integer, Float, Icon, Range, Action, Static,
+  Hint, Divider, Hotkey, Textarea, Code, Select, Segment, Radio, Checkbox, Transfer,
+  ToggleSort, Dict, Palette, Table, Object_, Array_
 
-let Deps, Frag
+let DEPS, FRAG
 
 let initialized = false
 
@@ -35,12 +35,12 @@ const initDSL = (dsl) => {
     Table: (builder) => (...args) => builder(...args).SubFormOptions("boxDependencyUnmetAction", "readonly").SubFormOptions("collapsibleBox", false),
   }
   const withI18n = (builder) => (key, ...args) => {
-    const instance = builder(key, ...args)
+    const control = builder(key, ...args)
     if (key !== undefined) {
-      instance.Label(key)
-      instance[I18N_DICT] = "label"
+      control.Label(key)
+      control[I18N_DICT] = "label"
     }
-    return instance
+    return control
   }
 
   const enhancedControls = Object.fromEntries(
@@ -50,20 +50,20 @@ const initDSL = (dsl) => {
     ]))
 
   ;({
-    Switch, Text, Password, Color, Integer, Float, Icon, Range, Action, Static, Hint, Divider, Hotkey,
-    Textarea, Code, Select, Segment, Radio, Checkbox, Transfer, ToggleSort, Dict, Palette, Table,
-    Object: Object_, Array: Array_,
+    Switch, Text, Password, Color, Integer, Float, Icon, Range, Action, Static,
+    Hint, Divider, Hotkey, Textarea, Code, Select, Segment, Radio, Checkbox, Transfer,
+    ToggleSort, Dict, Palette, Table, Object: Object_, Array: Array_,
   } = enhancedControls)
 
   const { preset, presetFor } = dsl.Extend
   preset("ActionTooltip", (control, action, icon = "fa fa-link", text = undefined) => control.Tooltip({ action, icon, text }))
-  presetFor(["integer", "float", "range"], "Percent", control => control.Min(1).Max(100).Step(1))
+  presetFor(["integer", "float", "range"], "Percent", control => control.Min(1).Max(100).Step(1).Unit(UNITS.percent))
   presetFor(["integer", "float", "range"], "AllowMinusOne", control => control.Min(-1).Tooltip("minusOneMeansUnlimited"))
   presetFor(["switch", "text", "password"], "Protect", control => control.ActionTooltip("openSettingsFolder", "fa fa-gear", "protected").Disabled(true))
   presetFor(["select", "segment", "radio", "checkbox", "transfer", "togglesort"], "OptionScope", (control, scope) => control.fields[0][OPTION_SCOPE] = scope)
   presetFor(["table"], "Headers", (control, headers) => control.ThMap(Object.fromEntries(headers.map(th => [th, `${control.fields[0].key}.${th}`]))))
 
-  Deps = {
+  DEPS = {
     markmapToc: When.true("ENABLE_TOC_MARKMAP"),
     markmapFence: When.true("ENABLE_FENCE_MARKMAP"),
     fenceEnhanceButton: When.true("ENABLE_BUTTON"),
@@ -72,8 +72,8 @@ const initDSL = (dsl) => {
     gesturesDisplay: (btn) => When.and(When.or(When.true("ENABLE_VISUALIZER"), When.true("ENABLE_HUD")), When.contains("TRIGGER_BUTTONS", btn)),
   }
 
-  Frag = {
-    PluginBase: (hasHotkey = false) => Group(
+  FRAG = {
+    Base: (hasHotkey = false) => Group(
       Switch("ENABLE"),
       Text("NAME").Placeholder("defaultIfEmpty"),
       hasHotkey ? Hotkey("HOTKEY") : null,
@@ -94,12 +94,12 @@ const initDSL = (dsl) => {
   }
 }
 
-const Units = {
+const UNITS = {
   byte: "byte", centimeter: "centimeter", degree: "degree", em: "em", inch: "inch", item: "item",
   line: "line", millisecond: "millisecond", percent: "percent", pixel: "pixel", second: "second",
 }
 
-const Opts = {
+const OPTS = {
   textStylizeTools: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush"],
   imageViewerTools: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterfall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fitScreen", "autoSize", "restore", "info", "dummy"],
   markdownlintTools: ["settings", "detailAll", "fixAll", "toggleSourceMode", "refresh", "close"],
@@ -139,7 +139,7 @@ const schema_global = () => [
 ]
 
 const schema_window_tab = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group("appearance",
     Switch("SHOW_TAB_CLOSE_BUTTON"),
     Switch("TRIM_FILE_EXT"),
@@ -178,11 +178,11 @@ const schema_window_tab = () => [
     Array_("COPY_PATH_HOTKEY"),
     Array_("TOGGLE_TAB_BAR_HOTKEY"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_search_multi = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group("search",
     Switch("CASE_SENSITIVE"),
     Switch("OPTIMIZE_SEARCH").Tooltip("breakOrder"),
@@ -202,17 +202,17 @@ const schema_search_multi = () => [
   Group("advanced",
     Switch("FOLLOW_SYMBOLIC_LINKS"),
     Segment("TRAVERSE_STRATEGY").Options(["bfs", "dfs"]),
-    Integer("TIMEOUT").AllowMinusOne().Unit(Units.millisecond),
-    Integer("MAX_SIZE").Unit(Units.byte).Min(1).Max(2000000).Tooltip("maxBytes"),
+    Integer("TIMEOUT").AllowMinusOne().Unit(UNITS.millisecond),
+    Integer("MAX_SIZE").Unit(UNITS.byte).Min(1).Max(2000000).Tooltip("maxBytes"),
     Integer("MAX_ENTITIES").AllowMinusOne(),
     Integer("MAX_DEPTH").AllowMinusOne(),
     Integer("CONCURRENCY_LIMIT").Min(1),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_commander = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Switch("BACKSPACE_TO_HIDE"),
   Group("cmdDisplay",
     Select("QUICK_RUN_DISPLAY").Options(["echo", "always", "error", "silent"]),
@@ -234,18 +234,19 @@ const schema_commander = () => [
       shell: "cmd/bash",
       cmd: "",
     }),
-  Frag.SettingHandler(),
+  Code("POST_SCRIPT").Tooltip("expertsOnly"),
+  FRAG.SettingHandler(),
 ]
 
 const schema_md_padding = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Array_("IGNORE_WORDS"),
   Array_("IGNORE_PATTERNS"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_read_only = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group(
     Switch("READ_ONLY_DEFAULT"),
     Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
@@ -257,62 +258,62 @@ const schema_read_only = () => [
     Select("REMAIN_AVAILABLE_MENU_KEY").ShowIf(When.true("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY")),
     Text("SHOW_TEXT"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_blur = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group(
     Switch("BLUR_DEFAULT"),
     Switch("RESTORE_ON_HOVER"),
     Segment("BLUR_TYPE").Options(["blur", "hide"]),
-    Integer("BLUR_LEVEL").Unit(Units.pixel).Min(1).ShowIf(When.eq("BLUR_TYPE", "blur")),
+    Integer("BLUR_LEVEL").Unit(UNITS.pixel).Min(1).ShowIf(When.eq("BLUR_TYPE", "blur")),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_dark = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Switch("DARK_DEFAULT"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_no_image = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group(
     Switch("NO_IMAGE_DEFAULT"),
     Switch("SHOW_ON_HOVER"),
-    Integer("TRANSITION_DURATION").Unit(Units.millisecond).Min(0),
-    Integer("TRANSITION_DELAY").Unit(Units.millisecond).Min(0),
+    Integer("TRANSITION_DURATION").Unit(UNITS.millisecond).Min(0),
+    Integer("TRANSITION_DELAY").Unit(UNITS.millisecond).Min(0),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_myopic_defocus = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Action("myopicDefocusEffectDemo").Explain("enableMyopicDefocus"),
   Group(
     Switch("DEFOCUS_DEFAULT"),
-    Range("EFFECT_STRENGTH").Unit(Units.percent).Min(1).Max(35),
-    Float("SCREEN_SIZE").Unit(Units.inch).Min(1),
-    Integer("SCREEN_RESOLUTION_X").Unit(Units.pixel).Min(1),
-    Integer("SCREEN_RESOLUTION_Y").Unit(Units.pixel).Min(1),
-    Float("SCREEN_DISTANCE").Unit(Units.centimeter).Min(1),
+    Range("EFFECT_STRENGTH").Unit(UNITS.percent).Min(1).Max(35),
+    Float("SCREEN_SIZE").Unit(UNITS.inch).Min(1),
+    Integer("SCREEN_RESOLUTION_X").Unit(UNITS.pixel).Min(1),
+    Integer("SCREEN_RESOLUTION_Y").Unit(UNITS.pixel).Min(1),
+    Float("SCREEN_DISTANCE").Unit(UNITS.centimeter).Min(1),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_command_palette = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group(
     Switch("BACKSPACE_TO_HIDE"),
-    Integer("DEBOUNCE_INTERVAL").Unit(Units.millisecond).Min(10),
+    Integer("DEBOUNCE_INTERVAL").Unit(UNITS.millisecond).Min(10),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_resize_image = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group("image",
     Switch("RECORD_RESIZE"),
     Switch("ALLOW_EXCEED_LIMIT"),
@@ -322,21 +323,21 @@ const schema_resize_image = () => [
     Hotkey("MODIFIER_KEY.TEMPORARY").Tooltip("modifyKeyExample"),
     Hotkey("MODIFIER_KEY.PERSISTENT"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_resize_table = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group(
     Switch("RECORD_RESIZE"),
     Switch("REMOVE_MIN_CELL_WIDTH"),
-    Integer("DRAG_THRESHOLD").Unit(Units.pixel).Min(1),
+    Integer("DRAG_THRESHOLD").Unit(UNITS.pixel).Min(1),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_datatables = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group(
     Switch("ORDERING"),
     Switch("DEFAULT_ORDER"),
@@ -345,13 +346,13 @@ const schema_datatables = () => [
     Switch("CASE_INSENSITIVE"),
     Switch("SCROLL_COLLAPSE"),
     Switch("PAGING"),
-    Integer("PAGE_LENGTH").Unit(Units.item).Min(1),
+    Integer("PAGE_LENGTH").Unit(UNITS.item).Min(1),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_markmap = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group(
     Switch("ENABLE_TOC_MARKMAP"),
     Switch("ENABLE_FENCE_MARKMAP"),
@@ -367,12 +368,12 @@ const schema_markmap = () => [
     Switch("CLICK_TO_POSITION"),
     Switch("AUTO_COLLAPSE_PARAGRAPH_ON_FOLD").Tooltip("experimental"),
     Range("POSITIONING_VIEWPORT_HEIGHT").Min(0.1).Max(0.95).Step(0.01).Tooltip("positioningViewPort"),
-    Range("WIDTH_PERCENT_WHEN_INIT").Min(20).Max(95).Step(1),
-    Range("HEIGHT_PERCENT_WHEN_INIT").Min(20).Max(95).Step(1),
-    Range("HEIGHT_PERCENT_WHEN_PIN_TOP").Min(20).Max(95).Step(1),
-    Range("WIDTH_PERCENT_WHEN_PIN_RIGHT").Min(20).Max(95).Step(1),
-  ).ShowIf(Deps.markmapToc),
-  ToggleSort("TITLE_BAR_BUTTONS").Options(["download", "settings", "fit", "pinRight", "pinTop", "unfold", "expand", "close"]).MinItems(1).ShowIf(Deps.markmapToc),
+    Range("WIDTH_PERCENT_WHEN_INIT").Min(20).Max(95).Step(1).Unit(UNITS.percent),
+    Range("HEIGHT_PERCENT_WHEN_INIT").Min(20).Max(95).Step(1).Unit(UNITS.percent),
+    Range("HEIGHT_PERCENT_WHEN_PIN_TOP").Min(20).Max(95).Step(1).Unit(UNITS.percent),
+    Range("WIDTH_PERCENT_WHEN_PIN_RIGHT").Min(20).Max(95).Step(1).Unit(UNITS.percent),
+  ).ShowIf(DEPS.markmapToc),
+  ToggleSort("TITLE_BAR_BUTTONS").Options(["download", "settings", "fit", "pinRight", "pinTop", "unfold", "expand", "close"]).MinItems(1).ShowIf(DEPS.markmapToc),
   Group("mindmapDiagramDefaultOptions",
     Switch("DEFAULT_TOC_OPTIONS.zoom"),
     Switch("DEFAULT_TOC_OPTIONS.pan"),
@@ -381,15 +382,15 @@ const schema_markmap = () => [
     Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel").Min(1).Max(7).Step(1),
     Range("DEFAULT_TOC_OPTIONS.fitRatio").Min(0.5).Max(1).Step(0.01),
     Range("DEFAULT_TOC_OPTIONS.maxInitialScale").Min(0.5).Max(5).Step(0.25),
-    Integer("DEFAULT_TOC_OPTIONS.maxWidth").Unit(Units.pixel).Min(0).Max(100).Step(5).Tooltip("zero"),
-    Integer("DEFAULT_TOC_OPTIONS.nodeMinHeight").Unit(Units.pixel).Min(5).Max(50).Step(1),
-    Integer("DEFAULT_TOC_OPTIONS.spacingHorizontal").Unit(Units.pixel).Min(0).Max(100).Step(5),
-    Integer("DEFAULT_TOC_OPTIONS.spacingVertical").Unit(Units.pixel).Min(0).Max(100).Step(5),
-    Integer("DEFAULT_TOC_OPTIONS.paddingX").Unit(Units.pixel).Min(0).Max(100).Step(5),
-    Integer("DEFAULT_TOC_OPTIONS.duration").Unit(Units.millisecond).Min(0).Max(1000).Step(10),
+    Integer("DEFAULT_TOC_OPTIONS.maxWidth").Unit(UNITS.pixel).Min(0).Max(100).Step(5).Tooltip("zero"),
+    Integer("DEFAULT_TOC_OPTIONS.nodeMinHeight").Unit(UNITS.pixel).Min(5).Max(50).Step(1),
+    Integer("DEFAULT_TOC_OPTIONS.spacingHorizontal").Unit(UNITS.pixel).Min(0).Max(100).Step(5),
+    Integer("DEFAULT_TOC_OPTIONS.spacingVertical").Unit(UNITS.pixel).Min(0).Max(100).Step(5),
+    Integer("DEFAULT_TOC_OPTIONS.paddingX").Unit(UNITS.pixel).Min(0).Max(100).Step(5),
+    Integer("DEFAULT_TOC_OPTIONS.duration").Unit(UNITS.millisecond).Min(0).Max(1000).Step(10),
     Palette("DEFAULT_TOC_OPTIONS.color"),
-  ).ShowIf(Deps.markmapToc),
-  Palette("CANDIDATE_COLOR_SCHEMES").Dimensions(2).ShowIf(Deps.markmapToc),
+  ).ShowIf(DEPS.markmapToc),
+  Palette("CANDIDATE_COLOR_SCHEMES").Dimensions(2).ShowIf(DEPS.markmapToc),
   Group("mindmapDiagramExport",
     Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL"),
     Switch("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES"),
@@ -397,22 +398,22 @@ const schema_markmap = () => [
     Switch("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG"),
     Switch("DOWNLOAD_OPTIONS.SHOW_IN_FINDER"),
     Range("DOWNLOAD_OPTIONS.IMAGE_QUALITY").Min(0.01).Max(1).Step(0.01).Tooltip("pixelImagesOnly"),
-    Integer("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL").Unit(Units.pixel).Min(1).Step(1),
-    Integer("DOWNLOAD_OPTIONS.PADDING_VERTICAL").Unit(Units.pixel).Min(1).Step(1),
+    Integer("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL").Unit(UNITS.pixel).Min(1).Step(1),
+    Integer("DOWNLOAD_OPTIONS.PADDING_VERTICAL").Unit(UNITS.pixel).Min(1).Step(1),
     Float("DOWNLOAD_OPTIONS.IMAGE_SCALE").Min(0.1).Step(0.1),
     Text("DOWNLOAD_OPTIONS.FILENAME"),
     Text("DOWNLOAD_OPTIONS.FOLDER").Tooltip("tempDir"),
     Color("DOWNLOAD_OPTIONS.BACKGROUND_COLOR").Tooltip("jpgFormatOnly"),
     Color("DOWNLOAD_OPTIONS.TEXT_COLOR"),
     Color("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR"),
-  ).ShowIf(Deps.markmapToc),
+  ).ShowIf(DEPS.markmapToc),
   Group("fence",
     Switch("INTERACTIVE_MODE"),
     Hotkey("FENCE_HOTKEY"),
     Text("FENCE_LANGUAGE").Protect(),
     Text("DEFAULT_FENCE_HEIGHT"),
     Color("DEFAULT_FENCE_BACKGROUND_COLOR"),
-  ).ShowIf(Deps.markmapFence),
+  ).ShowIf(DEPS.markmapFence),
   Group("fenceDiagramDefaultOptions",
     Switch("DEFAULT_FENCE_OPTIONS.zoom"),
     Switch("DEFAULT_FENCE_OPTIONS.pan"),
@@ -421,22 +422,22 @@ const schema_markmap = () => [
     Range("DEFAULT_FENCE_OPTIONS.colorFreezeLevel").Min(1).Max(7).Step(1),
     Range("DEFAULT_FENCE_OPTIONS.fitRatio").Min(0.5).Max(1).Step(0.01),
     Range("DEFAULT_FENCE_OPTIONS.maxInitialScale").Min(0.5).Max(5).Step(0.25),
-    Integer("DEFAULT_FENCE_OPTIONS.maxWidth").Unit(Units.pixel).Min(0).Max(1000).Step(10).Tooltip("zero"),
-    Integer("DEFAULT_FENCE_OPTIONS.nodeMinHeight").Unit(Units.pixel).Min(5).Max(50).Step(1),
-    Integer("DEFAULT_FENCE_OPTIONS.spacingHorizontal").Unit(Units.pixel).Min(0).Max(200).Step(1),
-    Integer("DEFAULT_FENCE_OPTIONS.spacingVertical").Unit(Units.pixel).Min(0).Max(200).Step(1),
-    Integer("DEFAULT_FENCE_OPTIONS.paddingX").Unit(Units.pixel).Min(0).Max(100).Step(1),
-    Integer("DEFAULT_FENCE_OPTIONS.duration").Unit(Units.millisecond).Min(0).Max(1000).Step(10),
+    Integer("DEFAULT_FENCE_OPTIONS.maxWidth").Unit(UNITS.pixel).Min(0).Max(1000).Step(10).Tooltip("zero"),
+    Integer("DEFAULT_FENCE_OPTIONS.nodeMinHeight").Unit(UNITS.pixel).Min(5).Max(50).Step(1),
+    Integer("DEFAULT_FENCE_OPTIONS.spacingHorizontal").Unit(UNITS.pixel).Min(0).Max(200).Step(1),
+    Integer("DEFAULT_FENCE_OPTIONS.spacingVertical").Unit(UNITS.pixel).Min(0).Max(200).Step(1),
+    Integer("DEFAULT_FENCE_OPTIONS.paddingX").Unit(UNITS.pixel).Min(0).Max(100).Step(1),
+    Integer("DEFAULT_FENCE_OPTIONS.duration").Unit(UNITS.millisecond).Min(0).Max(1000).Step(10),
     Text("DEFAULT_FENCE_OPTIONS.height"),
     Color("DEFAULT_FENCE_OPTIONS.backgroundColor"),
     Palette("DEFAULT_FENCE_OPTIONS.color"),
-  ).ShowIf(Deps.markmapFence),
-  Code("FENCE_TEMPLATE").ShowIf(Deps.markmapFence),
-  Frag.SettingHandler(),
+  ).ShowIf(DEPS.markmapFence),
+  Code("FENCE_TEMPLATE").ShowIf(DEPS.markmapFence),
+  FRAG.SettingHandler(),
 ]
 
 const schema_auto_number = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group("autoNumbering",
     Switch("ENABLE_OUTLINE"),
     Switch("ENABLE_CONTENT"),
@@ -497,41 +498,41 @@ const schema_auto_number = () => [
     }),
   Switch("ENABLE_WHEN_EXPORT"),
   Code("APPLY_EXPORT_HEADER_NUMBERING").Tooltip("expertsOnly").ShowIf(When.true("ENABLE_WHEN_EXPORT")),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_fence_enhance = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group("buttonGeneral",
     Switch("ENABLE_BUTTON"),
-    Switch("AUTO_HIDE").ShowIf(Deps.fenceEnhanceButton),
-    Switch("HIDE_BUTTON_HINT").ShowIf(Deps.fenceEnhanceButton),
-    Range("BUTTON_OPACITY").Min(0).Max(1).Step(0.05).ShowIf(Deps.fenceEnhanceButton),
-    Range("BUTTON_OPACITY_HOVER").Min(0).Max(1).Step(0.05).ShowIf(Deps.fenceEnhanceButton),
-    Text("BUTTON_SIZE").ShowIf(Deps.fenceEnhanceButton),
-    Text("BUTTON_COLOR").ShowIf(Deps.fenceEnhanceButton),
-    Text("BUTTON_PADDING").ShowIf(Deps.fenceEnhanceButton),
-    Text("BUTTON_TOP").ShowIf(Deps.fenceEnhanceButton),
-    Text("BUTTON_RIGHT").ShowIf(Deps.fenceEnhanceButton),
-    Integer("HINT_DURATION").Unit(Units.millisecond).Min(500).Step(100).ShowIf(Deps.fenceEnhanceButton),
+    Switch("AUTO_HIDE").ShowIf(DEPS.fenceEnhanceButton),
+    Switch("HIDE_BUTTON_HINT").ShowIf(DEPS.fenceEnhanceButton),
+    Range("BUTTON_OPACITY").Min(0).Max(1).Step(0.05).ShowIf(DEPS.fenceEnhanceButton),
+    Range("BUTTON_OPACITY_HOVER").Min(0).Max(1).Step(0.05).ShowIf(DEPS.fenceEnhanceButton),
+    Text("BUTTON_SIZE").ShowIf(DEPS.fenceEnhanceButton),
+    Text("BUTTON_COLOR").ShowIf(DEPS.fenceEnhanceButton),
+    Text("BUTTON_PADDING").ShowIf(DEPS.fenceEnhanceButton),
+    Text("BUTTON_TOP").ShowIf(DEPS.fenceEnhanceButton),
+    Text("BUTTON_RIGHT").ShowIf(DEPS.fenceEnhanceButton),
+    Integer("HINT_DURATION").Unit(UNITS.millisecond).Min(500).Step(100).ShowIf(DEPS.fenceEnhanceButton),
   ),
   Group("functionButtons",
-    Switch("ENABLE_COPY").ShowIf(Deps.fenceEnhanceButton),
+    Switch("ENABLE_COPY").ShowIf(DEPS.fenceEnhanceButton),
     Switch("TRIM_WHITESPACE_ON_COPY").ShowIf(When.and(When.true("ENABLE_BUTTON"), When.true("ENABLE_COPY"))),
     Switch("COPY_AS_MARKDOWN").ShowIf(When.follow("TRIM_WHITESPACE_ON_COPY")),
     Select("LINE_BREAKS_ON_COPY").Options(["lf", "crlf", "preserve"]).ShowIf(When.follow("TRIM_WHITESPACE_ON_COPY")),
     Divider(),
-    Switch("ENABLE_INDENT").ShowIf(Deps.fenceEnhanceButton),
+    Switch("ENABLE_INDENT").ShowIf(DEPS.fenceEnhanceButton),
     Array_("EXCLUDE_LANGUAGE_ON_INDENT").ShowIf(When.and(When.true("ENABLE_BUTTON"), When.true("ENABLE_INDENT"))),
     Divider(),
-    Switch("ENABLE_FOLD").ShowIf(Deps.fenceEnhanceButton),
+    Switch("ENABLE_FOLD").ShowIf(DEPS.fenceEnhanceButton),
     Segment("FOLD_OVERFLOW").Options(["hidden", "scroll"]).ShowIf(When.and(When.true("ENABLE_BUTTON"), When.true("ENABLE_FOLD"))),
-    Integer("MANUAL_FOLD_LINES").Unit(Units.line).Min(1).Step(1).ShowIf(When.follow("FOLD_OVERFLOW")),
+    Integer("MANUAL_FOLD_LINES").Unit(UNITS.line).Min(1).Step(1).ShowIf(When.follow("FOLD_OVERFLOW")),
     Switch("DEFAULT_FOLD").ShowIf(When.follow("FOLD_OVERFLOW")),
     Switch("EXPAND_ON_FOCUS").ShowIf(When.follow("DEFAULT_FOLD_THRESHOLD")),
     Switch("FOLD_ON_BLUR").ShowIf(When.follow("DEFAULT_FOLD_THRESHOLD")),
-    Integer("DEFAULT_FOLD_THRESHOLD").Unit(Units.line).Min(0).Step(1).ShowIf(When.and(When.follow("FOLD_OVERFLOW"), When.true("DEFAULT_FOLD"))),
-    Integer("AUTO_FOLD_LINES").Unit(Units.line).Min(1).Step(1).ShowIf(When.follow("DEFAULT_FOLD_THRESHOLD")),
+    Integer("DEFAULT_FOLD_THRESHOLD").Unit(UNITS.line).Min(0).Step(1).ShowIf(When.and(When.follow("FOLD_OVERFLOW"), When.true("DEFAULT_FOLD"))),
+    Integer("AUTO_FOLD_LINES").Unit(UNITS.line).Min(1).Step(1).ShowIf(When.follow("DEFAULT_FOLD_THRESHOLD")),
   ),
   Table("CUSTOM_BUTTONS")
     .Headers(["HINT", "ICON"])
@@ -553,15 +554,15 @@ const schema_fence_enhance = () => [
       ON_RENDER: "({ btn, fence, cid, enhance }) => console.log('Rendered')",
       ON_CLICK: "({ ev, btn, cont, fence, cm, cid, plu }) => console.log('Clicked')",
     })
-    .ShowIf(Deps.fenceEnhanceButton),
+    .ShowIf(DEPS.fenceEnhanceButton),
   Group("buttonHotkeys",
     Switch("ENABLE_HOTKEY").ActionTooltip("viewCodeMirrorKeymapsManual"),
-    Text("SWAP_PREVIOUS_LINE").ShowIf(Deps.fenceEnhanceHotkey),
-    Text("SWAP_NEXT_LINE").ShowIf(Deps.fenceEnhanceHotkey),
-    Text("COPY_PREVIOUS_LINE").ShowIf(Deps.fenceEnhanceHotkey),
-    Text("COPY_NEXT_LINE").ShowIf(Deps.fenceEnhanceHotkey),
-    Text("INSERT_LINE_PREVIOUS").ShowIf(Deps.fenceEnhanceHotkey),
-    Text("INSERT_LINE_NEXT").ShowIf(Deps.fenceEnhanceHotkey),
+    Text("SWAP_PREVIOUS_LINE").ShowIf(DEPS.fenceEnhanceHotkey),
+    Text("SWAP_NEXT_LINE").ShowIf(DEPS.fenceEnhanceHotkey),
+    Text("COPY_PREVIOUS_LINE").ShowIf(DEPS.fenceEnhanceHotkey),
+    Text("COPY_NEXT_LINE").ShowIf(DEPS.fenceEnhanceHotkey),
+    Text("INSERT_LINE_PREVIOUS").ShowIf(DEPS.fenceEnhanceHotkey),
+    Text("INSERT_LINE_NEXT").ShowIf(DEPS.fenceEnhanceHotkey),
   ),
   Table("CUSTOM_HOTKEYS")
     .Headers(["HOTKEY", "CALLBACK"])
@@ -577,7 +578,7 @@ const schema_fence_enhance = () => [
       HOTKEY: "",
       CALLBACK: "({ pre, cid, cm, cursor, lineNum, lastNum, separator }) => console.log('Callback')",
     })
-    .ShowIf(Deps.fenceEnhanceHotkey),
+    .ShowIf(DEPS.fenceEnhanceHotkey),
   Group("lineHighlighting",
     Switch("HIGHLIGHT_BY_LANGUAGE").ActionTooltip("viewVitePressLineHighlighting"),
     Segment("NUMBERING_BASE").Options(["0-based", "1-based"]).ShowIf(When.true("HIGHLIGHT_BY_LANGUAGE")),
@@ -591,13 +592,13 @@ const schema_fence_enhance = () => [
     Text("HIGHLIGHT_LINE_COLOR_ON_HOVER").ShowIf(When.true("HIGHLIGHT_ON_HOVER")),
   ),
   Group("advanced",
-    Switch("SIDE_BY_SIDE_VIEW").Tooltip("stylisticConfusion").ActionTooltip("viewSideBySideEffect"),
+    Switch("SIDE_BY_SIDE_VIEW").ActionTooltip("viewSideBySideEffect").Tooltip("stylisticConfusion"),
     Switch("VISIBLE_TABS").ActionTooltip("viewVisibleTabsEffect"),
     Switch("ENABLE_LANGUAGE_FOLD").ActionTooltip("viewCodeFoldingEffect"),
     Switch("INDENTED_WRAPPED_LINE").ActionTooltip("viewIndentedWrappedLineEffect"),
     Switch("PRELOAD_ALL_FENCES").Tooltip("dangerous"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_collapse_paragraph = () => [
@@ -616,52 +617,52 @@ const schema_collapse_paragraph = () => [
     Hotkey("MODIFIER_KEY.COLLAPSE_ALL_SIBLINGS"),
     Hotkey("MODIFIER_KEY.COLLAPSE_RECURSIVE"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_collapse_list = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group(
     Switch("RECORD_COLLAPSE"),
     Text("TRIANGLE_COLOR"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_collapse_table = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Switch("RECORD_COLLAPSE"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_truncate_text = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group("hotkey",
     Hotkey("HIDE_FRONT_HOTKEY"),
     Hotkey("HIDE_BASE_VIEW_HOTKEY"),
     Hotkey("SHOW_ALL_HOTKEY"),
     Integer("RETAIN_LENGTH").Min(1).ShowIf(When.or(When.bool("HIDE_FRONT_HOTKEY", true), When.bool("HIDE_BASE_VIEW_HOTKEY", true))),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_export_enhance = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group(
     Switch("EMBED_NETWORK_IMAGES"),
     Integer("DOWNLOAD_THREADS").Min(1).ShowIf(When.true("EMBED_NETWORK_IMAGES")),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_text_stylize = () => [
-  Frag.PluginBase(true),
-  Transfer("TOOLS").Options(Opts.textStylizeTools).MinItems(1),
+  FRAG.Base(true),
+  Transfer("TOOLS").Options(OPTS.textStylizeTools).MinItems(1),
   Table("ACTION_HOTKEYS")
     .Headers(["hotkey", "action"])
     .NestedBoxes([
       Group(
-        Select("action").Options(Opts.textStylizeTools).OptionScope("TOOLS"),
+        Select("action").Options(OPTS.textStylizeTools).OptionScope("TOOLS"),
         Hotkey("hotkey"),
       ),
     ])
@@ -673,11 +674,11 @@ const schema_text_stylize = () => [
     Text("DEFAULT_FORMAT_BRUSH").Tooltip("brushExample"),
   ),
   Palette("COLOR_TABLE").Dimensions(2).AllowJagged(false),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_cipher = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group(
     Switch("SHOW_HINT_DIALOG"),
     Password("SECRET_KEY").Protect(),
@@ -686,11 +687,11 @@ const schema_cipher = () => [
     Hotkey("ENCRYPT_HOTKEY"),
     Hotkey("DECRYPT_HOTKEY"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_resource_manager = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group("windowPosition",
     Range("PANEL_LEFT_PERCENT").Percent(),
     Range("PANEL_WIDTH_PERCENT").Percent(),
@@ -703,16 +704,16 @@ const schema_resource_manager = () => [
     Select("RESOURCE_GRAMMARS").Options(["markdown", "html"]).MinItems(1),
     Segment("TRAVERSE_STRATEGY").Options(["bfs", "dfs"]),
     Switch("FOLLOW_SYMBOLIC_LINKS"),
-    Integer("TIMEOUT").Unit(Units.millisecond).Min(1),
+    Integer("TIMEOUT").Unit(UNITS.millisecond).Min(1),
     Integer("MAX_ENTITIES").AllowMinusOne(),
     Integer("MAX_DEPTH").AllowMinusOne(),
     Integer("CONCURRENCY_LIMIT").Min(1),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_easy_modify = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group("hotkey",
     Hotkey("HOTKEY_COPY_FULL_PATH"),
     Hotkey("HOTKEY_INCREASE_HEADERS_LEVEL"),
@@ -728,7 +729,7 @@ const schema_easy_modify = () => [
     Hotkey("HOTKEY_CONVERT_IMAGE_TO_BASE64"),
     Hotkey("HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_custom = () => [
@@ -737,28 +738,28 @@ const schema_custom = () => [
     Text("NAME").Placeholder("defaultIfEmpty"),
   ),
   Switch("HIDE_DISABLE_PLUGINS"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_mouse_gestures = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group(
     Select("POINTER_TYPES").Options(["mouse", "pen", "touch"]).MinItems(1),
     Select("TRIGGER_BUTTONS").Options(["middle", "right", "x1", "x2"]).MinItems(1),
     Select("SUPPRESSION_KEY").Options(["", "alt", "ctrl", "shift", "meta"]),
-    Integer("START_TIMEOUT").Unit(Units.millisecond).Min(0).Tooltip("START_TIMEOUT"),
-    Integer("IDLE_TIMEOUT").Unit(Units.millisecond).Min(0).Tooltip("IDLE_TIMEOUT"),
-    Integer("COOLDOWN").Unit(Units.millisecond).Min(0).Tooltip("COOLDOWN"),
+    Integer("START_TIMEOUT").Unit(UNITS.millisecond).Min(0).Tooltip("START_TIMEOUT"),
+    Integer("IDLE_TIMEOUT").Unit(UNITS.millisecond).Min(0).Tooltip("IDLE_TIMEOUT"),
+    Integer("COOLDOWN").Unit(UNITS.millisecond).Min(0).Tooltip("COOLDOWN"),
   ),
   Group(
     Switch("ENABLE_VISUALIZER"),
     Switch("ENABLE_HUD"),
     Switch("ENABLE_SENSORY"),
-    Integer("TRAJECTORY_LINE_WIDTH").Unit(Units.pixel).Min(1).ShowIf(When.true("ENABLE_VISUALIZER")),
-    Color("DEFAULT_COLOR.middle").ShowIf(Deps.gesturesDisplay("middle")),
-    Color("DEFAULT_COLOR.right").ShowIf(Deps.gesturesDisplay("right")),
-    Color("DEFAULT_COLOR.x1").ShowIf(Deps.gesturesDisplay("x1")),
-    Color("DEFAULT_COLOR.x2").ShowIf(Deps.gesturesDisplay("x2")),
+    Integer("TRAJECTORY_LINE_WIDTH").Unit(UNITS.pixel).Min(1).ShowIf(When.true("ENABLE_VISUALIZER")),
+    Color("DEFAULT_COLOR.middle").ShowIf(DEPS.gesturesDisplay("middle")),
+    Color("DEFAULT_COLOR.right").ShowIf(DEPS.gesturesDisplay("right")),
+    Color("DEFAULT_COLOR.x1").ShowIf(DEPS.gesturesDisplay("x1")),
+    Color("DEFAULT_COLOR.x2").ShowIf(DEPS.gesturesDisplay("x2")),
   ),
   Table("GESTURES")
     .Headers(["path", "button", "name"])
@@ -768,7 +769,7 @@ const schema_mouse_gestures = () => [
         Text("name"),
         Select("button").Options(["", "middle", "right", "x1", "x2"]).OptionScope("GESTURES.button"),
         Text("path"),
-        Integer("cooldown").Unit(Units.millisecond).Min(0),
+        Integer("cooldown").Unit(UNITS.millisecond).Min(0),
       ),
       Code("execute"),
     ])
@@ -782,15 +783,15 @@ const schema_mouse_gestures = () => [
     }),
   Group("advanced",
     Select("STRATEGY").Options(["fourWay", "eightWay", "adaptive"]).Tooltip("STRATEGY"),
-    Integer("MACRO_RADIUS").Unit(Units.pixel).Min(1).Tooltip("MACRO_RADIUS"),
-    Integer("TAIL_RADIUS").Unit(Units.pixel).Min(1).Tooltip("TAIL_RADIUS"),
-    Integer("HYSTERESIS").Unit(Units.degree).Min(0).Max(45).Tooltip("HYSTERESIS"),
+    Integer("MACRO_RADIUS").Unit(UNITS.pixel).Min(1).Tooltip("MACRO_RADIUS"),
+    Integer("TAIL_RADIUS").Unit(UNITS.pixel).Min(1).Tooltip("TAIL_RADIUS"),
+    Integer("HYSTERESIS").Unit(UNITS.degree).Min(0).Max(45).Tooltip("HYSTERESIS"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_slash_commands = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group("trigger",
     Text("TRIGGER_REGEXP"),
     Text("FUNC_PARAM_SEPARATOR").Protect(),
@@ -823,11 +824,11 @@ const schema_slash_commands = () => [
       cursorOffset: [0, 0],
       callback: "",
     }),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_cjk_symbol_pairing = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group(
     Switch("AUTO_SKIP_PAIR"),
     Switch("AUTO_DELETE_PAIR"),
@@ -855,11 +856,11 @@ const schema_cjk_symbol_pairing = () => [
     ])
     .DefaultValues({ enable: true, input: "", output: "" })
     .ShowIf(When.true("AUTO_CONVERT_FULL_TO_HALF")),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_right_outline = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group(
     Switch("DEFAULT_SHOW_OUTLINE"),
     Switch("REMOVE_HEADER_STYLES"),
@@ -875,7 +876,7 @@ const schema_right_outline = () => [
     Switch("INCLUDE_HEADINGS.link").ShowIf(When.contains("TITLE_BAR_BUTTONS", "link")),
     Switch("INCLUDE_HEADINGS.math").ShowIf(When.contains("TITLE_BAR_BUTTONS", "math")),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_right_click_menu = () => [
@@ -903,11 +904,11 @@ const schema_right_click_menu = () => [
   Group("advanced",
     Switch("FIND_LOST_PLUGINS"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_pie_menu = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Hotkey("MODIFIER_KEY").Tooltip("example"),
   Table("BUTTONS")
     .Headers(["CALLBACK", "ICON"])
@@ -918,7 +919,7 @@ const schema_pie_menu = () => [
       ),
     ])
     .DefaultValues({ ICON: "fa fa-bomb", CALLBACK: "" }),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_preferences = () => [
@@ -935,11 +936,11 @@ const schema_preferences = () => [
     Select("HIDE_MENUS"),
   ),
   Code("FORM_RENDERING_HOOK").Tooltip("expertsOnly"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_hotkeys = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Table("CUSTOM_HOTKEYS")
     .Headers(["hotkey", "desc"])
     .NestedBoxes([
@@ -962,27 +963,27 @@ const schema_hotkeys = () => [
       closestSelector: "",
       evil: "(anchorNode) => console.log(`Invoke with anchor: ${anchorNode}`)",
     }),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_asset_root_redirect = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Text("ROOT_PATH"),
   Array_("IGNORE_GLOB_FILES").ActionTooltip("viewGlobPattern"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_bookmark = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group(
     Hotkey("MODIFIER_KEY").Tooltip("modifierKeyExample"),
     Switch("AUTO_POPUP_WINDOW"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_templater = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Switch("AUTO_OPEN"),
   Table("TEMPLATE_VARIABLES")
     .Headers(["name", "callback"])
@@ -1006,13 +1007,13 @@ const schema_templater = () => [
     ])
     .DefaultValues({ name: "", text: "" }),
   Array_("TEMPLATE_FOLDERS"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_editor_width_slider = () => [
-  Frag.PluginBase(true),
-  Integer("WIDTH_RATIO").Unit(Units.percent).Min(-1).Max(100).Step(1).Tooltip("minusOneMeansDisable"),
-  Frag.SettingHandler(),
+  FRAG.Base(true),
+  Integer("WIDTH_RATIO").Unit(UNITS.percent).Min(-1).Max(100).Step(1).Tooltip("minusOneMeansDisable"),
+  FRAG.SettingHandler(),
 ]
 
 const schema_article_uploader = () => [
@@ -1047,24 +1048,24 @@ const schema_article_uploader = () => [
     Hotkey("UPLOAD_WORDPRESS_HOTKEY").ShowIf(When.true("upload.wordpress.enabled")),
     Hotkey("UPLOAD_CSDN_HOTKEY").ShowIf(When.true("upload.csdn.enabled")),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_ripgrep = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Switch("BACKSPACE_TO_HIDE"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_static_markers = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Switch("STATIC_DEFAULT"),
   Checkbox("STATIC_MARKERS").Options(["strong", "em", "del", "underline", "superscript", "subscript", "code", "image", "link", "footnote", "highlight", "emoji", "inlineMath", "inlineHTML"]).Columns(4),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_sidebar_enhance = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group(
     Switch("CTRL_WHEEL_TO_SCROLL_SIDEBAR"),
     Switch("SORTABLE_OUTLINE"),
@@ -1072,18 +1073,18 @@ const schema_sidebar_enhance = () => [
   ),
   Group(
     Switch("ENABLE_FILE_COUNT"),
-    Text("FONT_WEIGHT").ShowIf(Deps.countFile),
-    Text("TEXT_COLOR").ShowIf(Deps.countFile),
-    Text("BACKGROUND_COLOR").ShowIf(Deps.countFile),
+    Text("FONT_WEIGHT").ShowIf(DEPS.countFile),
+    Text("TEXT_COLOR").ShowIf(DEPS.countFile),
+    Text("BACKGROUND_COLOR").ShowIf(DEPS.countFile),
     Divider(),
-    Array_("COUNT_EXT").ShowIf(Deps.countFile),
-    Array_("IGNORE_FOLDERS").ShowIf(Deps.countFile),
+    Array_("COUNT_EXT").ShowIf(DEPS.countFile),
+    Array_("IGNORE_FOLDERS").ShowIf(DEPS.countFile),
     Divider(),
-    Switch("FOLLOW_SYMBOLIC_LINKS").ShowIf(Deps.countFile),
-    Integer("MIN_FILES_TO_DISPLAY").Min(1).ShowIf(Deps.countFile).Tooltip("ignoreMinNum"),
-    Integer("MAX_SIZE").Unit(Units.byte).Min(1).Max(2000000).Tooltip("maxBytes").ShowIf(Deps.countFile),
-    Integer("MAX_ENTITIES").Min(100).ShowIf(Deps.countFile),
-    Integer("CONCURRENCY_LIMIT").Min(1).ShowIf(Deps.countFile),
+    Switch("FOLLOW_SYMBOLIC_LINKS").ShowIf(DEPS.countFile),
+    Integer("MIN_FILES_TO_DISPLAY").Min(0).ShowIf(DEPS.countFile).Tooltip("ignoreMinNum"),
+    Integer("MAX_SIZE").Unit(UNITS.byte).Min(1).Max(2000000).Tooltip("maxBytes").ShowIf(DEPS.countFile),
+    Integer("MAX_ENTITIES").Min(100).ShowIf(DEPS.countFile),
+    Integer("CONCURRENCY_LIMIT").Min(1).ShowIf(DEPS.countFile),
   ),
   Group(
     Array_("HIDDEN_NODE_PATTERNS"),
@@ -1108,17 +1109,17 @@ const schema_sidebar_enhance = () => [
       extensions: [],
     })
     .ShowIf(When.and(When.true("CUSTOMIZE_SIDEBAR_ICONS"), When.follow("CUSTOMIZE_SIDEBAR_ICONS"))),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_cursor_history = () => [
-  Frag.PluginBase(),
+  FRAG.Base(),
   Group("hotkey",
     Hotkey("HOTKEY_GO_FORWARD"),
     Hotkey("HOTKEY_GO_BACK"),
   ),
   Integer("MAX_HISTORY_ENTRIES").Min(1).Step(1),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_json_rpc = () => [
@@ -1132,51 +1133,51 @@ const schema_json_rpc = () => [
     Integer("SERVER_OPTIONS.port").Min(0).Max(65535).Step(1),
     Text("SERVER_OPTIONS.path"),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_updater = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group(
-    Integer("NETWORK_REQUEST_TIMEOUT").Unit(Units.millisecond).Min(30000),
+    Integer("NETWORK_REQUEST_TIMEOUT").Unit(UNITS.millisecond).Min(30000),
     Text("PROXY"),
   ),
   Group("autoUpdate",
     Switch("AUTO_UPDATE"),
-    Integer("UPDATE_LOOP_INTERVAL").Unit(Units.millisecond).Min(-1).Tooltip("loopInterval").ShowIf(When.true("AUTO_UPDATE")),
-    Integer("START_UPDATE_INTERVAL").Unit(Units.millisecond).Min(-1).Tooltip("waitInterval").ShowIf(When.true("AUTO_UPDATE")),
+    Integer("UPDATE_LOOP_INTERVAL").Unit(UNITS.millisecond).Min(-1).Tooltip("loopInterval").ShowIf(When.true("AUTO_UPDATE")),
+    Integer("START_UPDATE_INTERVAL").Unit(UNITS.millisecond).Min(-1).Tooltip("waitInterval").ShowIf(When.true("AUTO_UPDATE")),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_test = () => [
-  Frag.PluginBase(),
-  Frag.SettingHandler(),
+  FRAG.Base(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_kanban = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group("fence",
     Text("LANGUAGE").Protect(),
     Switch("INTERACTIVE_MODE"),
     Switch("STRICT_MODE"),
   ),
   Group("kanbanStyle",
-    Integer("KANBAN_WIDTH").Unit(Units.pixel).Min(1),
-    Integer("KANBAN_MAX_HEIGHT").Unit(Units.pixel).Min(1),
-    Float("KANBAN_TASK_DESC_MAX_HEIGHT").Unit(Units.em).Min(-1).Tooltip("minusOneMeansShowAll"),
+    Integer("KANBAN_WIDTH").Unit(UNITS.pixel).Min(1),
+    Integer("KANBAN_MAX_HEIGHT").Unit(UNITS.pixel).Min(1),
+    Float("KANBAN_TASK_DESC_MAX_HEIGHT").Unit(UNITS.em).Min(-1).Tooltip("minusOneMeansShowAll"),
     Switch("HIDE_DESC_WHEN_EMPTY"),
     Switch("WRAP"),
     Switch("ALLOW_MARKDOWN_INLINE_STYLE"),
     Palette("KANBAN_COLOR"),
     Palette("TASK_COLOR"),
   ),
-  Frag.Template(),
-  Frag.SettingHandler(),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_chat = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group("fence",
     Text("LANGUAGE").Protect(),
     Switch("INTERACTIVE_MODE"),
@@ -1190,13 +1191,13 @@ const schema_chat = () => [
     Text("DEFAULT_OPTIONS.senderNickname"),
     Text("DEFAULT_OPTIONS.timeNickname"),
   ),
-  Frag.Template(),
-  Frag.SettingHandler(),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_timeline = () => [
-  Frag.PluginBase(true),
-  Frag.LangMode(),
+  FRAG.Base(true),
+  FRAG.LangMode(),
   Group("diagramStyle",
     Text("BACKGROUND_COLOR"),
     Text("TITLE_COLOR"),
@@ -1209,38 +1210,38 @@ const schema_timeline = () => [
     Text("TIME_COLOR"),
     Text("CIRCLE_TOP"),
   ),
-  Frag.Template(),
-  Frag.SettingHandler(),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_echarts = () => [
-  Frag.PluginBase(true),
-  Frag.LangMode(),
-  Frag.ChartStyle(),
-  Frag.Template(),
+  FRAG.Base(true),
+  FRAG.LangMode(),
+  FRAG.ChartStyle(),
+  FRAG.Template(),
   Group("advanced",
     Segment("LOCALE").Options(["en", "zh"]),
     Segment("THEME").Options(["light", "dark"]),
     Segment("RENDERER").Options(["svg", "canvas"]).ActionTooltip("chooseEchartsRenderer"),
     Select("EXPORT_TYPE").Options(["svg", "png", "jpg"]),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_chart = () => [
-  Frag.PluginBase(true),
-  Frag.LangMode(),
+  FRAG.Base(true),
+  FRAG.LangMode(),
   Group("diagramStyle",
     Segment("CHART_ALIGN").Options(["left", "center", "right"]),
     Text("DEFAULT_FENCE_HEIGHT"),
     Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
   ),
-  Frag.Template(),
-  Frag.SettingHandler(),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_wavedrom = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group("languageMode",
     Text("LANGUAGE").Protect(),
     Switch("INTERACTIVE_MODE"),
@@ -1251,40 +1252,40 @@ const schema_wavedrom = () => [
     Text("DEFAULT_FENCE_HEIGHT"),
     Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
   ),
-  Frag.Template(),
+  FRAG.Template(),
   Array_("SKIN_FILES").ActionTooltip("downloadWaveDromSkins", "fa fa-download"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_calendar = () => [
-  Frag.PluginBase(true),
-  Frag.LangMode(),
-  Frag.ChartStyle(),
-  Frag.Template(),
-  Frag.SettingHandler(),
+  FRAG.Base(true),
+  FRAG.LangMode(),
+  FRAG.ChartStyle(),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_abc = () => [
-  Frag.PluginBase(true),
-  Frag.LangMode(),
-  Frag.ChartStyle(),
-  Frag.Template(),
+  FRAG.Base(true),
+  FRAG.LangMode(),
+  FRAG.ChartStyle(),
+  FRAG.Template(),
   Dict("VISUAL_OPTIONS").ActionTooltip("viewAbcVisualOptionsManual"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_drawIO = () => [
-  Frag.PluginBase(true),
-  Frag.LangMode(),
-  Frag.ChartStyle(),
-  Frag.Template(),
+  FRAG.Base(true),
+  FRAG.LangMode(),
+  FRAG.ChartStyle(),
+  FRAG.Template(),
   Group("advanced",
     Text("RESOURCE_URI"),
     Text("PROXY"),
-    Integer("SERVER_TIMEOUT").Unit(Units.millisecond).Min(1000),
+    Integer("SERVER_TIMEOUT").Unit(UNITS.millisecond).Min(1000),
     Integer("CACHED_URL_COUNT").Min(1),
   ),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_plantUML = () => [
@@ -1295,27 +1296,27 @@ const schema_plantUML = () => [
   ),
   Group(
     Text("SERVER_URL"),
-    Integer("SERVER_TIMEOUT").Unit(Units.millisecond).Min(1000),
+    Integer("SERVER_TIMEOUT").Unit(UNITS.millisecond).Min(1000),
     Text("PROXY"),
     Integer("CACHED_URL_COUNT").Min(1),
     Segment("OUTPUT_FORMAT").Options(["svg", "png", "txt"]),
   ),
-  Frag.LangMode(),
-  Frag.ChartStyle(),
-  Frag.Template(),
-  Frag.SettingHandler(),
+  FRAG.LangMode(),
+  FRAG.ChartStyle(),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_marp = () => [
-  Frag.PluginBase(true),
-  Frag.LangMode(),
+  FRAG.Base(true),
+  FRAG.LangMode(),
   Dict("MARP_CORE_OPTIONS").ActionTooltip("viewMarpOptions"),
-  Frag.Template(),
-  Frag.SettingHandler(),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_callouts = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group("style",
     Switch("SET_TITLE_COLOR"),
     Text("BOX_SHADOW"),
@@ -1344,79 +1345,79 @@ const schema_callouts = () => [
       ),
     ])
     .DefaultValues({ type: "", icon: "", background_color: "", left_line_color: "" }),
-  Frag.Template(),
-  Frag.SettingHandler(),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_image_viewer = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group("style",
     Range("MASK_BACKGROUND_OPACITY").Min(0).Max(1).Step(0.05),
     Range("IMAGE_MAX_WIDTH").Percent(),
     Range("IMAGE_MAX_HEIGHT").Percent(),
     Text("THUMBNAIL_HEIGHT"),
-    Integer("BLUR_LEVEL").Unit(Units.pixel).Min(1),
+    Integer("BLUR_LEVEL").Unit(UNITS.pixel).Min(1),
     Integer("PRELOAD_THUMBNAIL_COUNT").Min(0),
-    Integer("WATERFALL_COLUMNS").Min(0),
+    Integer("WATERFALL_COLUMNS").Min(1),
   ),
   Group("component",
     Switch("SHOW_THUMBNAIL_NAV"),
     Segment("TOOL_POSITION").Options(["bottom", "top"]),
   ),
   ToggleSort("SHOW_MESSAGE").Options(["index", "title", "size"]),
-  Transfer("TOOL_FUNCTION").Options(Opts.imageViewerTools).MinItems(1).OptionScope("operations"),
+  Transfer("TOOL_FUNCTION").Options(OPTS.imageViewerTools).OptionScope("operations").MinItems(1),
   Group("behavior",
     Switch("SKIP_BROKEN_IMAGES"),
     Select("FIRST_IMAGE_STRATEGIES").Options(["inViewBoxImage", "closestViewBoxImage", "firstImage"]).MinItems(1),
     Select("THUMBNAIL_OBJECT_FIT").Options(["fill", "contain", "cover", "scale-down"]),
-    Integer("AUTO_PLAY_INTERVAL").Unit(Units.second).Min(1),
+    Integer("AUTO_PLAY_INTERVAL").Unit(UNITS.second).Min(1),
   ),
   Group("adjustScale",
-    Float("ZOOM_SCALE").Min(0.01),
-    Integer("ROTATE_SCALE").Unit(Units.degree).Min(1),
-    Integer("SKEW_SCALE").Unit(Units.degree).Min(1),
-    Integer("TRANSLATE_SCALE").Unit(Units.pixel).Min(1),
+    Float("ZOOM_SCALE").Min(0.01).Max(1).Step(0.01),
+    Integer("ROTATE_SCALE").Unit(UNITS.degree).Min(1),
+    Integer("SKEW_SCALE").Unit(UNITS.degree).Min(1),
+    Integer("TRANSLATE_SCALE").Unit(UNITS.pixel).Min(1),
   ),
   Group("mouseEvent",
     Switch("CLICK_MASK_TO_EXIT"),
-    Select("MOUSEDOWN_FUNCTION.0").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("MOUSEDOWN_FUNCTION.1").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("MOUSEDOWN_FUNCTION.2").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("CTRL_MOUSEDOWN_FUNCTION.0").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("CTRL_MOUSEDOWN_FUNCTION.1").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("CTRL_MOUSEDOWN_FUNCTION.2").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("SHIFT_MOUSEDOWN_FUNCTION.0").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("SHIFT_MOUSEDOWN_FUNCTION.1").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("SHIFT_MOUSEDOWN_FUNCTION.2").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("ALT_MOUSEDOWN_FUNCTION.0").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("ALT_MOUSEDOWN_FUNCTION.1").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("ALT_MOUSEDOWN_FUNCTION.2").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("WHEEL_FUNCTION.0").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("WHEEL_FUNCTION.1").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("CTRL_WHEEL_FUNCTION.0").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("CTRL_WHEEL_FUNCTION.1").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("SHIFT_WHEEL_FUNCTION.0").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("SHIFT_WHEEL_FUNCTION.1").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("ALT_WHEEL_FUNCTION.0").Options(Opts.imageViewerTools).OptionScope("operations"),
-    Select("ALT_WHEEL_FUNCTION.1").Options(Opts.imageViewerTools).OptionScope("operations"),
+    Select("MOUSEDOWN_FUNCTION.0").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("MOUSEDOWN_FUNCTION.1").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("MOUSEDOWN_FUNCTION.2").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("CTRL_MOUSEDOWN_FUNCTION.0").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("CTRL_MOUSEDOWN_FUNCTION.1").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("CTRL_MOUSEDOWN_FUNCTION.2").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("SHIFT_MOUSEDOWN_FUNCTION.0").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("SHIFT_MOUSEDOWN_FUNCTION.1").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("SHIFT_MOUSEDOWN_FUNCTION.2").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("ALT_MOUSEDOWN_FUNCTION.0").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("ALT_MOUSEDOWN_FUNCTION.1").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("ALT_MOUSEDOWN_FUNCTION.2").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("WHEEL_FUNCTION.0").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("WHEEL_FUNCTION.1").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("CTRL_WHEEL_FUNCTION.0").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("CTRL_WHEEL_FUNCTION.1").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("SHIFT_WHEEL_FUNCTION.0").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("SHIFT_WHEEL_FUNCTION.1").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("ALT_WHEEL_FUNCTION.0").Options(OPTS.imageViewerTools).OptionScope("operations"),
+    Select("ALT_WHEEL_FUNCTION.1").Options(OPTS.imageViewerTools).OptionScope("operations"),
   ),
   Table("HOTKEY_FUNCTION")
     .Headers(["hotkey", "fn"])
     .NestedBoxes([
       Group(
-        Select("fn").Options(Opts.imageViewerTools).OptionScope("operations"),
+        Select("fn").Options(OPTS.imageViewerTools).OptionScope("operations"),
         Hotkey("hotkey"),
       ),
     ])
     .DefaultValues({ hotkey: "", fn: "nextImage" }),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_markdownlint = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group("style",
     Switch("TRANSLATE"),
-    Select("TITLE_BAR_BUTTONS").Options(Opts.markdownlintTools).OptionScope("actions"),
+    Select("TITLE_BAR_BUTTONS").Options(OPTS.markdownlintTools).OptionScope("actions"),
     Select("COLUMNS").Options(["idx", "line", "rule", "desc", "ops"]).MinItems(1),
     Select("TOOLS").Options(["info", "locate", "fix"]).MinItems(1).ShowIf(When.contains("COLUMNS", "ops")),
     Select("RESULT_ORDER_BY").Options(["index", "lineNumber", "ruleName", "ruleDesc"]),
@@ -1433,17 +1434,17 @@ const schema_markdownlint = () => [
   ),
   Group(
     "shortcuts",
-    Select("RIGHT_CLICK_TABLE_ACTION").Options(Opts.markdownlintTools).OptionScope("actions"),
-    Select("RIGHT_CLICK_INDICATOR_ACTION").Options(Opts.markdownlintTools).OptionScope("actions").ShowIf(When.true("USE_INDICATOR_BUTTON")),
+    Select("RIGHT_CLICK_TABLE_ACTION").Options(OPTS.markdownlintTools).OptionScope("actions"),
+    Select("RIGHT_CLICK_INDICATOR_ACTION").Options(OPTS.markdownlintTools).OptionScope("actions").ShowIf(When.true("USE_INDICATOR_BUTTON")),
     Hotkey("HOTKEY_FIX_LINT"),
   ),
   Array_("CUSTOM_RULE_FILES"),
   Dict("RULE_CONFIG").ActionTooltip("viewMarkdownlintRules"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const schema_action_buttons = () => [
-  Frag.PluginBase(true),
+  FRAG.Base(true),
   Group("buttonStyle",
     Text("BUTTON_SIZE"),
     Text("BUTTON_ICON_SIZE"),
@@ -1484,7 +1485,7 @@ const schema_action_buttons = () => [
       evil: "",
     }),
   Switch("SUPPORT_RIGHT_CLICK"),
-  Frag.SettingHandler(),
+  FRAG.SettingHandler(),
 ]
 
 const RAW_SCHEMA_FNS = {
@@ -1554,22 +1555,21 @@ const RAW_SCHEMA_FNS = {
 
 const mapTree = (schemas, visitBox = box => box, visitField = field => field, prefix = "") => schemas.map(box => {
   const newBox = visitBox(box, prefix)
-  if (!Array.isArray(newBox.fields)) return newBox
-
-  return {
-    ...newBox,
-    fields: newBox.fields.map(field => {
-      const newField = visitField(field, prefix)
-      const nextPrefix = newField.key || prefix
-      const mapNested = (tree) => Array.isArray(tree) ? mapTree(tree, visitBox, visitField, nextPrefix) : tree
-      return {
-        ...newField,
-        ...(newField.nestedBoxes && { nestedBoxes: mapNested(newField.nestedBoxes) }),
-        ...(newField.subSchema && { subSchema: mapNested(newField.subSchema) }),
-        ...(newField.tabs && { tabs: newField.tabs.map(tab => ({ ...tab, schema: mapNested(tab.schema || []) })) }),
-      }
-    }),
-  }
+  return (!Array.isArray(newBox.fields))
+    ? newBox
+    : {
+      ...newBox,
+      fields: newBox.fields.map(field => {
+        const newField = visitField(field, prefix)
+        const mapNested = (tree) => Array.isArray(tree) ? mapTree(tree, visitBox, visitField, prefix ? `${prefix}.${newField.key}` : newField.key) : tree
+        return {
+          ...newField,
+          ...(newField.nestedBoxes && { nestedBoxes: mapNested(newField.nestedBoxes) }),
+          ...(newField.subSchema && { subSchema: mapNested(newField.subSchema) }),
+          ...(newField.tabs && { tabs: newField.tabs.map(tab => ({ ...tab, schema: mapNested(tab.schema || []) })) }),
+        }
+      }),
+    }
 })
 
 const i18n = (boxes, t) => {
@@ -1580,19 +1580,10 @@ const i18n = (boxes, t) => {
       return textKey ? { ...tip, text: t(`$tooltip.${textKey}`) } : tip
     })
 
-  const mapRecord = (record, tPrefix) =>
-    (record && typeof record === "object" && !Array.isArray(record))
-      ? Object.fromEntries(Object.entries(record).map(([k, v]) => [k, t(`${tPrefix}.${v}`)]))
-      : record
-
-  const mapOptions = (options, optScope) => {
-    if (Array.isArray(options)) {
-      return Object.fromEntries(options.map(opt => [opt, t(`$option.${optScope}.${opt}`)]))
-    }
-    if (options && typeof options === "object") {
-      return Object.fromEntries(Object.entries(options).map(([k, v]) => [k, t(`$option.${optScope}.${v}`)]))
-    }
-    return options
+  const mapValues = (data, prefix) => {
+    if (!data || typeof data !== "object") return data
+    const entries = Array.isArray(data) ? data.map(item => [item, item]) : Object.entries(data)
+    return Object.fromEntries(entries.map(([k, v]) => [k, t(`${prefix}.${v}`)]))
   }
 
   return mapTree(
@@ -1615,8 +1606,8 @@ const i18n = (boxes, t) => {
       ...(divider != null && { divider: t(`$divider.${divider}`) }),
       ...(unit != null && { unit: t(`$unit.${unit}`) }),
       ...(tooltip != null && { tooltip: mapTooltip(tooltip) }),
-      ...(options != null && { options: mapOptions(options, optScope || field.key) }),
-      ...(thMap != null && { thMap: mapRecord(thMap, "$label") }),
+      ...(options != null && { options: mapValues(options, `$option.${optScope || field.key}`) }),
+      ...(thMap != null && { thMap: mapValues(thMap, "$label") }),
       ...(tabs != null && { tabs: tabs.map(tab => ({ ...tab, label: t(`$tab.${tab.label}`) })) }),
     }),
   )

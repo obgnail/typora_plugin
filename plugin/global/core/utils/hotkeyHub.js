@@ -49,9 +49,9 @@ class HotkeyHub {
       combo += ev.key.toLowerCase()
       const callback = this.hotkeys.get(combo)
       if (callback) {
-        callback()
         ev.preventDefault()
         ev.stopPropagation()
+        callback()
       }
     }, true)
   }
