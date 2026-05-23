@@ -75,6 +75,7 @@ module.exports = {
     HIGHLIGHT_LINE_COLOR_BY_LANGUAGE: required,
     HIGHLIGHT_LINE_COLOR_ON_HOVER: required,
     HIGHLIGHT_LINE_COLOR_ON_FOCUS: required,
+    CODE_TITLE_PATTERN: [required, regex],
   },
   sidebar_enhance: {
     HIDDEN_NODE_PATTERNS: each([required, regex]),

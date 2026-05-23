@@ -1216,7 +1216,7 @@ HIGHLIGHT_BY_LANGUAGE = false
 NUMBERING_BASE = "1-based"
 
 # Highlight metadata regex capture pattern
-HIGHLIGHT_PATTERN = '^(?<lang>[^{}]+){(?<line>[\d\s,-]+)}$'
+HIGHLIGHT_PATTERN = '^(?<lang>[^{}]+){(?<line>[\d\s,-]+)}'
 
 # Render background color for language-based line highlights
 HIGHLIGHT_LINE_COLOR_BY_LANGUAGE = "rgba(142, 150, 170, 0.14)"
@@ -1235,8 +1235,11 @@ HIGHLIGHT_LINE_COLOR_ON_FOCUS = "rgba(142, 150, 170, 0.14)"
 
 # =========== [ Code Title ] ===========
 # Enable code title
-# See: https://vuepress.vuejs.org/guide/markdown.html#code-blocks
+# See: https://vuepress.vuejs.org/guide/markdown.html#code-title
 ENABLE_CODE_TITLE = false
+
+# Code title metadata regex capture pattern
+CODE_TITLE_PATTERN = '.+?\s+title="(?<title>[^"]+)"'
 
 # =========== [ Advanced ] ===========
 # Auto-align wrapped lines: Maintain proper indentation for long, wrapped text lines. Note: High rendering performance cost

@@ -682,37 +682,33 @@ const foldLanguage = async ({ utils }) => {
 }
 
 // See: https://vuepress.vuejs.org/guide/markdown.html#code-title
-const codeTitle = ({ utils }) => {
+const codeTitle = ({ utils, config }) => {
   const className = "plugin-code-title"
-  const REGEX = /.+?\s+title="([^"]+)"/
+  const REGEX = new RegExp(config.CODE_TITLE_PATTERN)
 
   const rerender = (cid) => {
     if (!cid) return
     const fence = document.querySelector(`.md-fences[cid="${cid}"]`)
     if (!fence) return
 
-    let barEl = fence.querySelector(`.${className}`)
-    const title = fence.getAttribute("lang")?.match(REGEX)?.[1]
+    let titleEl = fence.querySelector(`.${className}`)
+    const title = fence.getAttribute("lang")?.match(REGEX)?.groups?.title
     if (!title) {
-      barEl?.remove()
+      titleEl?.remove()
     } else {
-      if (!barEl) {
-        barEl = document.createElement("div")
-        barEl.className = className
-        fence.prepend(barEl)
+      if (!titleEl) {
+        titleEl = document.createElement("div")
+        titleEl.className = className
+        fence.prepend(titleEl)
       }
-      barEl.textContent = title
+      titleEl.textContent = title
     }
   }
 
-  utils.insertStyle("plugin-fence-enhance-code-title",
-    `.md-fences .${className} {
-      padding: 6px 14px;
-      border-bottom: 1px solid var(--code-title-border, #d0d0d0);
-      margin-bottom: 6px;
-      color: var(--code-title-text, currentColor);
-      user-select: none;
-  }`)
+  utils.insertStyle(
+    "plugin-fence-enhance-code-title",
+    `.md-fences .${className} { padding: 6px 14px; margin-bottom: 6px; border-bottom: 1px solid #d0d0d0; color: currentColor; user-select: none; }`,
+  )
 
   utils.eventHub.addEventListener(utils.eventHub.eventType.afterAddCodeBlock, cid => rerender(cid))
   utils.eventHub.addEventListener(utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => rerender(node?.cid))
