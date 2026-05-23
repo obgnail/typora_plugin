@@ -1235,9 +1235,16 @@ HIGHLIGHT_LINE_COLOR_ON_FOCUS = "rgba(142, 150, 170, 0.14)"
 
 # =========== [ Code Title ] ===========
 # Enable code title
+# Add title="xxx" to fence info to show a title bar:
+#   ```js title="hello.js"
+#   const hello = 'world'
+#   ```
 # See: https://vuepress.vuejs.org/guide/markdown.html#code-blocks
 ENABLE_CODE_TITLE = false
-# Title text format. Supports {title} and {lang} placeholders. Example: "{title} ({lang})"
+# Title text format. Supports {title} and {lang} placeholders.
+#   "{title}"           → "hello.js"
+#   "{title} ({lang})"  → "hello.js (js)"
+#   "{lang}"            → "js"
 CODE_TITLE_FORMAT = "{title}"
 
 # =========== [ Advanced ] ===========

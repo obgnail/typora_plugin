@@ -224,6 +224,23 @@ yay -S typora-plugin
 
 ### fence_enhance
 
+增强代码块：复制、折叠、格式化、代码块标题。
+
+**代码块标题（Code Title）：** 在 fence info 中添加 `title="xxx"`，代码块顶部会显示对应的标题栏。
+
+````markdown
+```js title="hello.js"
+const hello = 'world'
+```
+````
+
+支持通过 `{title}` 和 `{lang}` 占位符自定义标题栏格式：
+- `"{title}"`（默认）：显示 `hello.js`
+- `"{title} ({lang})"`：显示 `hello.js (js)`
+- `"{lang}"`：显示 `js`
+
+可在偏好设置 → fence_enhance → CODE_TITLE_FORMAT 中配置。
+
 ![fence_enhance](assets/fence_enhance.png)
 
 

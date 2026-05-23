@@ -209,6 +209,23 @@ Resource management, cleanup of unused images
 
 ### fence_enhance
 
+Enhanced code block features: copy, fold, format, code title.
+
+**Code Title:** Add `title="xxx"` to fence info to display a title bar above the code block.
+
+````markdown
+```js title="hello.js"
+const hello = 'world'
+```
+````
+
+Customize the title format using `{title}` and `{lang}` placeholders:
+- `"{title}"` (default): renders `hello.js`
+- `"{title} ({lang})"`: renders `hello.js (js)`
+- `"{lang}"`: renders `js`
+
+Configure via Preferences → fence_enhance → CODE_TITLE_FORMAT.
+
 ![fence_enhance](assets/fence_enhance.png)
 
 

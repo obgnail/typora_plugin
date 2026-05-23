@@ -16,7 +16,6 @@ class FenceEnhancePlugin extends BasePlugin {
 
   process = async () => {
     this.utils.settings.autoSave(this)
-
     if (this.config.ENABLE_BUTTON) this.buttonHelper.process()
     if (this.config.ENABLE_HOTKEY) new HotkeyHelper(this).process()
     if (this.config.HIGHLIGHT_BY_LANGUAGE) new HighlightHelper(this).process()
@@ -714,12 +713,12 @@ const codeTitle = ({ utils, config }) => {
     }`)
 
   utils.eventHub.addEventListener(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
-    const fence = cm?.display.wrapper.parentElement
+    const fence = cm?.display.wrapper.parentElement ?? document.querySelector(`.md-fences[cid="${cid}"]`)
     if (fence) rerender(fence)
   })
   utils.eventHub.addEventListener(utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => {
     const cm = node?.cid && File.editor.fences.queue[node.cid]
-    const fence = cm?.display.wrapper.parentElement
+    const fence = cm?.display.wrapper.parentElement ?? document.querySelector(`.md-fences[cid="${node?.cid}"]`)
     if (fence) rerender(fence)
   })
 }
