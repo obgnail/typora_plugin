@@ -329,6 +329,7 @@
     "$label.CASE_SENSITIVE": "區分大小寫",
     "$label.OPTIMIZE_SEARCH": "搜尋最佳化",
     "$label.STOP_SEARCHING_ON_HIDING": "隱藏視窗後立即停止搜尋",
+    "$label.EXPLAIN_TRIGGER": "觸發說明氣泡",
     "$label.TRAVERSE_STRATEGY": "遍歷策略",
     "$label.BACKSPACE_TO_HIDE": "清空並按退格鍵隱藏視窗",
     "$label.ALLOW_EXT": "允許檔案副檔名",
@@ -337,6 +338,8 @@
     "$tooltip.breakOrder": "重組搜尋條件",
     "$title.searchResult": "搜尋結果",
     "$title.search": "搜尋",
+    "$option.EXPLAIN_TRIGGER.focus": "聚焦時",
+    "$option.EXPLAIN_TRIGGER.hover": "滑鼠懸停時",
     "$option.TRAVERSE_STRATEGY.bfs": "廣度優先",
     "$option.TRAVERSE_STRATEGY.dfs": "深度優先"
   },

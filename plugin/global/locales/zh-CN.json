@@ -329,6 +329,7 @@
     "$label.CASE_SENSITIVE": "区分大小写",
     "$label.OPTIMIZE_SEARCH": "搜索优化",
     "$label.STOP_SEARCHING_ON_HIDING": "隐藏窗口后立即停止搜索",
+    "$label.EXPLAIN_TRIGGER": "触发说明气泡",
     "$label.TRAVERSE_STRATEGY": "遍历策略",
     "$label.BACKSPACE_TO_HIDE": "清空并按退格键隐藏窗口",
     "$label.ALLOW_EXT": "允许文件扩展名",
@@ -337,6 +338,8 @@
     "$tooltip.breakOrder": "重组搜索条件",
     "$title.searchResult": "搜索结果",
     "$title.search": "搜索",
+    "$option.EXPLAIN_TRIGGER.focus": "聚焦时",
+    "$option.EXPLAIN_TRIGGER.hover": "鼠标悬停时",
     "$option.TRAVERSE_STRATEGY.bfs": "广度优先",
     "$option.TRAVERSE_STRATEGY.dfs": "深度优先"
   },

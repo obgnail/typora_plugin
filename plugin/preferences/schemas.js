@@ -188,6 +188,7 @@ const schema_search_multi = () => [
     Switch("OPTIMIZE_SEARCH").Tooltip("breakOrder"),
     Switch("STOP_SEARCHING_ON_HIDING"),
     Switch("BACKSPACE_TO_HIDE"),
+    Select("EXPLAIN_TRIGGER").Options(["focus", "hover"]),
   ),
   Group("searchResult",
     Switch("RELATIVE_PATH"),

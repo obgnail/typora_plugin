@@ -1,6 +1,5 @@
 class Highlighter {
   constructor(plugin) {
-    this.plugin = plugin
     this.utils = plugin.utils
     this.config = plugin.config
     this._resetStatus()
@@ -13,11 +12,6 @@ class Highlighter {
       const needSearch = this.searchStatus.futureCM.has(cid)
       if (needSearch) this._searchOnCM(cm)
     }, 999)
-
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
-      const isShown = !this.plugin.entities.panel.hidden
-      if (isShown) this.plugin.highlightByAST()
-    })
 
     document.querySelector(".plugin-search-highlights").addEventListener("mousedown", ev => {
       const target = ev.target.closest(".plugin-highlight-item")

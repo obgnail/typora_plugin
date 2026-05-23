@@ -1209,6 +1209,7 @@ class utils {
   }
 
   static getRafManager = () => new AnimationFrameManager()
+  static getSingleTaskRunner = () => new SingleTaskRunner()
 
   static renderMermaid = async (definition) => {
     const graph = await window.mermaidAPI.render("plugin-common-mermaid", definition)
@@ -1451,6 +1452,31 @@ class AnimationFrameManager {
       cancelAnimationFrame(this.rafId)
       this.rafId = null
     }
+  }
+}
+
+class SingleTaskRunner {
+  _controller = null
+
+  async run(taskFn) {
+    this.abort()
+    const controller = new AbortController()
+    this._controller = controller
+
+    try {
+      await taskFn(controller.signal)
+    } catch (err) {
+      if (err?.name !== "AbortError") throw err
+    } finally {
+      if (this._controller === controller) {
+        this._controller = null
+      }
+    }
+  }
+
+  abort(message = "Cancellation") {
+    this._controller?.abort(new DOMException(message, "AbortError"))
+    this._controller = null
   }
 }
 

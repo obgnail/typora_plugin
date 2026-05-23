@@ -606,6 +606,7 @@ class HighlightHelper {
     }
     this.utils.decorator.decorate(() => window, "getCodeMirrorMode", { before, after, modifyResult: true, modifyArgs: true })
     this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+      if (!cm) return
       this._rerender(cm)
       cm.off("change", handleLineChange)
       cm.on("change", handleLineChange)
@@ -684,7 +685,7 @@ const foldLanguage = async ({ utils }) => {
 // See: https://vuepress.vuejs.org/guide/markdown.html#code-title
 const codeTitle = ({ utils, config }) => {
   const className = "plugin-code-title"
-  const REGEX = new RegExp(config.CODE_TITLE_PATTERN)
+  const pattern = new RegExp(config.CODE_TITLE_PATTERN)
 
   const rerender = (cid) => {
     if (!cid) return
@@ -692,7 +693,7 @@ const codeTitle = ({ utils, config }) => {
     if (!fence) return
 
     let titleEl = fence.querySelector(`.${className}`)
-    const title = fence.getAttribute("lang")?.match(REGEX)?.groups?.title
+    const title = fence.getAttribute("lang")?.match(pattern)?.groups?.title
     if (!title) {
       titleEl?.remove()
     } else {

@@ -329,6 +329,7 @@
     "$label.CASE_SENSITIVE": "Case Sensitive",
     "$label.OPTIMIZE_SEARCH": "Optimize Search",
     "$label.STOP_SEARCHING_ON_HIDING": "Stop Searching When Window is Hidden",
+    "$label.EXPLAIN_TRIGGER": "Explanation Bubble Trigger",
     "$label.TRAVERSE_STRATEGY": "Search Strategy",
     "$label.BACKSPACE_TO_HIDE": "Hide Window on Empty and Backspace",
     "$label.ALLOW_EXT": "Allowed Extensions",
@@ -337,6 +338,8 @@
     "$tooltip.breakOrder": "Recombine search conditions",
     "$title.searchResult": "Search Results",
     "$title.search": "Search",
+    "$option.EXPLAIN_TRIGGER.focus": "On Focus",
+    "$option.EXPLAIN_TRIGGER.hover": "On Mouse Hover",
     "$option.TRAVERSE_STRATEGY.bfs": "Breadth-First",
     "$option.TRAVERSE_STRATEGY.dfs": "Depth-First"
   },

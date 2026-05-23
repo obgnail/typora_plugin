@@ -912,8 +912,7 @@ class Searcher {
         const ast = this.parse(expression, optimize)
         return callback(ast)
       } catch (e) {
-        console.error(e)
-        return `Syntax Error: ${e.toString().slice(7)}`
+        return `Syntax Error: ${e.message || e.toString()}`
       }
     }
     const _toJSON = ({ expression, optimize }) => _to(expression, optimize, ast => JSON.stringify(ast, null, "  "))
