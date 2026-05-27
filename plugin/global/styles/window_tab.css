@@ -149,3 +149,35 @@ body.pin-outline #plugin-window-tab .tab-bar {
   z-index: 99999;
   pointer-events: none;
 }
+
+#plugin-window-tab .new-tab-button {
+  flex-shrink: 0;
+  padding-left: 6px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+#plugin-window-tab .new-tab-inner {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background-color: var(--side-bar-bg-color, #f0f0f0);
+  box-sizing: border-box;
+}
+
+#plugin-window-tab .new-tab-button:hover .new-tab-inner {
+  background-color: var(--active-file-bg-color, lightgray);
+}
+
+#plugin-window-tab .new-tab-button .close-icon {
+  transform: rotate(45deg);
+}
