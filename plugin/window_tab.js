@@ -96,7 +96,13 @@ class TabManager {
 
   switch(idx) {
     this._activeIdx = Math.min(Math.max(0, idx), this.maxIdx)
-    if (this.current) this.utils.openFile(this.current.path)
+    if (this.current) {
+      const path = this.current.path
+      File.editor.restoreLastCursor()
+      File.editor.focusAndRestorePos()
+      File.editor.library.openFile(path)
+      queueMicrotask(() => File.editor.library.refreshPanelCommand())
+    }
   }
 
   switchByPath(path) {
@@ -259,16 +265,9 @@ class TabManager {
     if (matchMountFolder && mountFolder !== currentMountFolder) return
 
     let activePath
-    const existTabsMap = new Map(this._tabs.map(tab => [tab.path, tab]))
-    saveTabs.forEach(tab => {
-      const existTab = existTabsMap.get(tab.path)
-      if (!existTab) {
-        this._tabs.push({ path: tab.path, scrollTop: tab.scrollTop })
-      } else {
-        existTab.scrollTop = tab.scrollTop
-      }
-      if (tab.active) activePath = tab.path
-    })
+    // Replace current tabs with saved tabs (not merge), so deleted tabs won't reappear.
+    this._tabs = saveTabs.map(tab => ({ path: tab.path, scrollTop: tab.scrollTop || 0 }))
+    saveTabs.forEach(tab => { if (tab.active) activePath = tab.path })
 
     this._formatShowNames()
 
@@ -404,7 +403,31 @@ class WindowTabPlugin extends BasePlugin {
       this.utils.waitUntil(isHeaderReady, 50, 1000).catch(this.utils.noop).finally(adjustTop)
     }
     const handleClick = () => {
-      this.entities.tabBar.addEventListener("click", ev => {
+      this.entities.tabBar.addEventListener("click", async ev => {
+        const newTabButton = ev.target.closest(".new-tab-button")
+        if (newTabButton) {
+          const mdFilters = [
+            { name: "Markdown Files", extensions: ["md", "markdown", "mdown", "mkd", "mdx"] },
+            { name: "All Files", extensions: ["*"] },
+          ]
+          const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
+            properties: ["openFile"],
+            filters: mdFilters,
+          })
+          if (!canceled && filePaths && filePaths.length > 0) {
+            const absPath = filePaths[0]
+            const ext = absPath.split(".").pop().toLowerCase()
+            const isMarkdown = ["md", "markdown", "mdown", "mkd", "mdx"].includes(ext)
+            if (!isMarkdown) {
+              this.utils.showMessageBox({ type: "error", title: "路径错误", message: `请选择 Markdown 文件（.md 等），不支持目录或其他文件类型。\n当前选择：${absPath}` })
+            } else {
+              File.editor.restoreLastCursor()
+              File.editor.focusAndRestorePos()
+              File.editor.library.openFile(absPath)
+            }
+          }
+          return
+        }
         const closeButton = ev.target.closest(".close-button")
         const tabContainer = ev.target.closest(".tab-container")
         if (!closeButton && !tabContainer) return
@@ -414,6 +437,7 @@ class WindowTabPlugin extends BasePlugin {
           this.openFileNewWindow(this.tab.getTabPathByIdx(idx), false)
         } else if (closeButton) {
           this.tab.close(idx)
+          if (this.config.REOPEN_TABS_ON_STARTUP) this.saveTabs(this.autoSaveStorage)
         } else {
           this.tab.switch(idx)
         }
@@ -627,6 +651,7 @@ class WindowTabPlugin extends BasePlugin {
             ev.stopPropagation()
             ev.preventDefault()
             this.tab.close(idx)
+            if (this.config.REOPEN_TABS_ON_STARTUP) this.saveTabs(this.autoSaveStorage)
           }
         }
       })
@@ -642,6 +667,7 @@ class WindowTabPlugin extends BasePlugin {
         }
       }
       const onClickMenuItem = (ev, key) => {
+        const isCloseAction = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs"].includes(key)
         const commands = {
           closeTab: () => this.tab.close(tabIdx),
           closeOtherTabs: () => this.tab.closeOthers(tabIdx),
@@ -653,6 +679,7 @@ class WindowTabPlugin extends BasePlugin {
           openInNewWindow: () => this.openInNewWindow(tabIdx),
         }
         commands[key]?.()
+        if (isCloseAction && this.config.REOPEN_TABS_ON_STARTUP) this.saveTabs(this.autoSaveStorage)
       }
       this.utils.contextMenu.register(this.entities.tabBar, getMenuItems, onClickMenuItem)
     }
@@ -682,11 +709,14 @@ class WindowTabPlugin extends BasePlugin {
     const reopenTabsWhenInit = () => {
       this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
         // Redirection is disabled when opening specific files (isDiscardableUntitled === false).
+        // Register autoSave AFTER restoreSession completes, so the restore's fileContentLoaded
+        // does not overwrite the saved state with stale data.
         this.utils.waitUntil(this.utils.isDiscardableUntitled, 50, 2000)
-          .then(() => this.openSaveTabs(this.autoSaveStorage, true))
+          .then(() => this.openSaveTabs(this.autoSaveStorage, false))
           .catch(this.utils.noop)
-        const autoSave = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage))
-        setTimeout(autoSave, 2000)
+          .finally(() => {
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage))
+          })
       })
     }
 
@@ -853,6 +883,10 @@ class WindowTabPlugin extends BasePlugin {
 
   _renderTabs = wantOpenPath => {
     let currentTabEl = this.entities.tabBar.firstElementChild
+    // Skip the new-tab button if it already exists at the end
+    const existingNewTabBtn = this.entities.tabBar.querySelector(".new-tab-button")
+    if (existingNewTabBtn) existingNewTabBtn.remove()
+
     for (let idx = 0; idx < this.tab.tabs.length; idx++) {
       const tabObj = this.tab.tabs[idx]
       if (!currentTabEl) {
@@ -872,6 +906,10 @@ class WindowTabPlugin extends BasePlugin {
       currentTabEl.remove()
       currentTabEl = next
     }
+
+    // Append the new-tab button after all tabs
+    this.entities.tabBar.insertAdjacentHTML("beforeend",
+      `<span class="new-tab-button"><span class="new-tab-inner"><div class="close-icon"></div></span></span>`)
   }
 
   forceToggleTabBar = () => {
