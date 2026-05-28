@@ -1,6 +1,7 @@
 class DiagramParser {
   enableMappingSym = Symbol("enable_mapping")
   exitInteractiveStrategies = ["click_exit_button"]
+  originDiagramTypes = ["sequence", "flow", "mermaid"]
   PANEL = `<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`
   parsers = new Map()     // map[lang]parser
   langMapping = new Map() // map[lang]mappingLang
@@ -381,12 +382,12 @@ class DiagramParser {
       if (!mode) return false
       if (Object.hasOwn(mode, this.enableMappingSym)) return true
 
-      const t = typeof mode
-      if (t === "object" && mode.name) {
+      if (typeof mode === "object" && mode.name) {
         mode = mode.name
       }
-      if (t === "string") {
-        return this.parsers.get(mode.toLowerCase())
+      if (typeof mode === "string") {
+        const m = mode.toLowerCase()
+        return this.parsers.has(m) || this.originDiagramTypes.includes(m)
       }
       return origin
     })
