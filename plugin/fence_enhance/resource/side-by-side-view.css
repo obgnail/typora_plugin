@@ -1,75 +1,82 @@
-/* Math display side-by-side */
+:root {
+  --sbs-panel-outdent: -10%;
+  --sbs-code-width: 50%;
+  --sbs-preview-width: calc(100% - var(--sbs-code-width));
+  --sbs-preview-gap: 10px;
+  --sbs-divider-color: var(--text-color);
+}
+
 .mathjax-block.md-rawblock-on-edit .md-rawblock-tooltip {
-    right: -10%;
+  right: var(--sbs-panel-outdent);
 }
 
 .mathjax-block.md-rawblock-on-edit .md-rawblock-panel {
-    display: grid;
-    grid-template-columns:  55% 45%; /* edit for proportions between code and rendering*/
-    grid-template-rows: auto auto auto;
-    margin: 0 -10%; /* edit this value to enlarge the math edition width */
-    background-color: var(--rawblock-edit-panel-bd); /* edition panel background color */
+  display: grid;
+  grid-template-columns: var(--sbs-code-width) var(--sbs-preview-width);
+  grid-template-rows: auto auto auto;
+  margin: 0 var(--sbs-panel-outdent);
+  background-color: var(--rawblock-edit-panel-bd);
 }
 
 .mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-before {
-    grid-row-start: 1;
-    overflow-x: scroll;
+  grid-row-start: 1;
+  overflow-x: scroll;
 }
 
 .mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-input {
-    grid-column-start: 1;
-    grid-row-start: 2;
-    border-right: 1px solid var(--text-color); /* vertical separation bar color */
+  grid-column-start: 1;
+  grid-row-start: 2;
+  border-right: 1px solid var(--sbs-divider-color);
 }
 
 .mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-after {
-    grid-row-start: 3;
-    overflow-x: scroll;
+  grid-row-start: 3;
+  overflow-x: scroll;
 }
 
 .mathjax-block.md-rawblock-on-edit .md-rawblock-panel .code-tooltip {
-    grid-column-start: 2;
-    grid-row-start: 2;
-    display: grid;
-    box-shadow: none;
-    align-items: center;
-    margin: 0 10px;
-    overflow-x: scroll;
-    overflow-y: hidden;
-    border: none;
-    background-color: var(--rawblock-edit-panel-bd); /* edition panel background color */
+  grid-column-start: 2;
+  grid-row-start: 2;
+  display: grid;
+  box-shadow: none;
+  align-items: center;
+  margin: 0 var(--sbs-preview-gap);
+  overflow-x: scroll;
+  overflow-y: hidden;
+  border: none;
+  background-color: var(--rawblock-edit-panel-bd);
 }
 
 .mathjax-block.md-rawblock-on-edit .md-rawblock-panel .code-tooltip .mathjax-candidate {
-    overflow: unset;
+  overflow: unset;
 }
 
 .md-fences.md-diagram.md-focus {
-    display: flex;
-    background-color: var(--bg-color-1);
-    box-shadow: none;
-    border-radius: unset;
-    margin: 0 -10% !important;
-    padding: unset !important;
+  display: flex;
+  background-color: var(--bg-color-1);
+  box-shadow: none;
+  border-radius: unset;
+  margin: 0 var(--sbs-panel-outdent) !important;
+  padding: unset !important;
 }
 
 .md-fences.md-diagram.md-focus .CodeMirror {
-    width: 45%;
-    background-color: var(--rawblock-edit-panel-bd);
+  width: var(--sbs-code-width);
+  background-color: var(--rawblock-edit-panel-bd);
 }
 
 .md-fences.md-diagram.md-focus .md-diagram-panel {
-    position: unset;
-    width: 55%;
+  position: unset;
+  width: var(--sbs-preview-width);
 }
 
 .md-fences.md-diagram.md-focus .CodeMirror .CodeMirror-scroll {
-    margin-top: 6px;
+  margin-top: 6px;
 }
 
 .md-fences.md-diagram.md-focus .code-tooltip,
 .md-fences.md-diagram.md-focus .fence-enhance {
-    right: 55% !important;
+  right: var(--sbs-preview-width) !important;
 }
 
 /* TODO side by side only when sufficient width @media */
