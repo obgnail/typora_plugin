@@ -177,7 +177,7 @@ STOP_SEARCHING_ON_HIDING = true
 # When to display the search explanation bubble
 #   focus: On Input / Focus
 #   hover: On Mouse Hover
-EXPLAIN_TRIGGER = ["focus", "hover"]
+EXPLAIN_TRIGGER = ["focus"]
 
 # Max execution time (ms): Prevents search deadlocks. Set to -1 for unlimited
 TIMEOUT = 60000
@@ -218,8 +218,8 @@ HIGHLIGHT_COLORS = [
 # Max highlights: Limit HTML rendering to preserve performance
 MAX_HIGHLIGHTS = 5000
 
-# Hide button hint: Remove tooltip text when hovering over tool buttons
-HIDE_BUTTON_HINT = false
+# Show highlight hint: Show tooltip text when hovering over highlight tags
+SHOW_HIGHLIGHT_HINT = false
 
 # =========== [ Advanced ] ===========
 # Optimize Search (AST Reordering): Reorder search conditions using short-circuit evaluation. Prioritizes low-cost queries (e.g., size, mtime) over high-cost queries (e.g., content, h1)
@@ -1091,8 +1091,8 @@ BUTTON_OPACITY = 0.5
 # Button hover opacity (0.0 ~ 1.0)
 BUTTON_OPACITY_HOVER = 0.8
 
-# Disable tooltip hint text on hover
-HIDE_BUTTON_HINT = false
+# Show tooltip on hover
+SHOW_BUTTON_HINT = true
 
 # Show buttons exclusively when the cursor enters the code block bounds
 AUTO_HIDE = false
@@ -2094,7 +2094,7 @@ SHOW_PLUGIN_HOTKEY = true
 SHOW_ACTION_OPTIONS_ICON = true
 
 # Prevent the context menu from auto-hiding when it loses focus
-DO_NOT_HIDE = false
+RETAIN_ON_BLUR = false
 
 # Min width constraint for submenus
 #   ""        : Inherits default width (aligns with first-level menu width)
@@ -2535,19 +2535,33 @@ HOTKEY_GO_BACK = "alt+ArrowLeft"
 MAX_HISTORY_ENTRIES = 100
 
 
-[json_rpc]
+[remote_control]
 # =========== [ Basic ] ===========
 # Warning: Activating this grants remote execution permissions over this machine. Proceed with extreme caution
 ENABLE = false
 NAME = ""
 
 # =========== [ Server ] ===========
-# RPC Server config
-#   port  : Listener Port
-#   host  : Bind Host
-#   path  : Route Path
-#   strict: Strict Mode
-SERVER_OPTIONS = { port = 5080, host = "127.0.0.1", path = "/", strict = false }
+# RPC Server Port
+SERVER_PORT = 5080
+
+# =========== [ Security ] ===========
+# Auth Token
+AUTH_TOKEN = "secret-token"
+
+# Warning: Enabling this allows remote execution of arbitrary JavaScript code, posing serious security risks
+ENABLE_EVAL = false
+
+# Allow modifying plugin configuration via RPC
+ALLOW_CONFIG_ACCESS = false
+
+# Configure whitelist of plugin methods allowed for remote invocation
+ALLOWED_METHODS = { window_tab = ["showInFinder", "closeTab"], search_multi = ["call"], read_only = ["call"] }
+
+# =========== [ Rate Limit ] ===========
+# requestsPerMinute: Maximum requests per minute per client
+# burstSize:         Allowed instantaneous burst requests
+RATE_LIMIT = { requestsPerMinute = 60, burstSize = 10 }
 
 
 [updater]

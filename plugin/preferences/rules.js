@@ -112,10 +112,6 @@ module.exports = {
     "upload.cnblog.password": required,
     "upload.csdn.cookie": required,
   },
-  json_rpc: {
-    "SERVER_OPTIONS.host": required,
-    "SERVER_OPTIONS.path": required,
-  },
   updater: {
     UPDATE_LOOP_INTERVAL: notZero,
     START_UPDATE_INTERVAL: notZero,

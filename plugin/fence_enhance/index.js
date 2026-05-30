@@ -376,21 +376,18 @@ class ButtonHelper {
 
       enhance = document.createElement("div")
       enhance.setAttribute("class", "fence-enhance")
-      if (this.config.AUTO_HIDE) {
-        enhance.style.visibility = "hidden"
-      }
+      if (this.config.AUTO_HIDE) enhance.style.visibility = "hidden"
       const buttons = this.buttons.map(btn => {
-        const btnEl = document.createElement("div")
-        btnEl.classList.add("enhance-btn")
-        btnEl.setAttribute("action", btn.action)
-        if (!this.config.HIDE_BUTTON_HINT && btn.hint) {
-          btnEl.setAttribute("ty-hint", btn.hint)
-        }
-        if (!btn.enable) btnEl.style.display = "none"
+        const el = document.createElement("div")
+        el.classList.add("enhance-btn")
+        el.setAttribute("action", btn.action)
+        if (this.config.SHOW_BUTTON_HINT && btn.hint) el.setAttribute("ty-hint", btn.hint)
+        if (!btn.enable) el.style.display = "none"
+
         const i = document.createElement("i")
         i.className = btn.iconClassName
-        btnEl.appendChild(i)
-        return btnEl
+        el.appendChild(i)
+        return el
       })
       enhance.append(...buttons)
       fence.append(enhance)

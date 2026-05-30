@@ -1093,16 +1093,21 @@ describe("Function, Timing & Flow Control Utilities", () => {
       assert.ok(conditionCalled)
     })
 
-    it("uses default interval and timeout", async () => {
+    it("uses default interval and timeout", async (t) => {
+      t.mock.timers.enable({ apis: ["setTimeout", "Date"] })
       let count = 0
       const startTime = Date.now()
       const until = () => {
         count++
         return count >= 2
       }
-      await utils.waitUntil(until)
+      const promise = utils.waitUntil(until)
+      await new Promise(setImmediate)
+      t.mock.timers.tick(50)
+      await promise
       const elapsed = Date.now() - startTime
-      assert.ok(elapsed >= 50) // Should wait at least 2 intervals (2 * 25ms default))
+      assert.strictEqual(count, 2)
+      assert.strictEqual(elapsed, 50)
     })
   })
 })

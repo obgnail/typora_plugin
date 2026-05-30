@@ -1,19 +1,5 @@
 class Downloader {
-  static _toSVG = (
-    plugin,
-    svg = plugin.entities.svg,
-    options = {
-      nodeMinHeight: plugin.config.DEFAULT_TOC_OPTIONS.nodeMinHeight,
-      paddingX: plugin.config.DEFAULT_TOC_OPTIONS.paddingX,
-      paddingH: plugin.config.DOWNLOAD_OPTIONS.PADDING_HORIZONTAL,
-      paddingV: plugin.config.DOWNLOAD_OPTIONS.PADDING_VERTICAL,
-      imageScale: plugin.config.DOWNLOAD_OPTIONS.IMAGE_SCALE,
-      textColor: plugin.config.DOWNLOAD_OPTIONS.TEXT_COLOR,
-      openCircleColor: plugin.config.DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR,
-      removeForeignObject: plugin.config.DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT,
-      removeUselessClasses: plugin.config.DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES,
-    },
-  ) => {
+  static toSVG = (svg, options) => {
     const normalizeAttributes = (svg, clonedSVG) => {
       const { x, y, width, height } = svg.querySelector("g").getBBox()
       const { paddingH, paddingV, imageScale } = options
@@ -119,21 +105,13 @@ class Downloader {
     return clonedSVG
   }
 
-  static _toString = (svg) => new XMLSerializer().serializeToString(svg)
+  static toString = (svg) => new XMLSerializer().serializeToString(svg)
 
-  static _toImage = async (
-    plugin,
-    format,
-    options = {
-      imageQuality: plugin.config.DOWNLOAD_OPTIONS.IMAGE_QUALITY,
-      keepAlphaChannel: plugin.config.DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL,
-      backgroundColor: plugin.config.DOWNLOAD_OPTIONS.BACKGROUND_COLOR,
-    },
-  ) => {
-    const svg = this._toSVG(plugin)
+  static toImage = async (svgElement, format, options) => {
+    const svg = this.toSVG(svgElement, options)
     const img = new Image()
     const ok = await new Promise(resolve => {
-      const str = this._toString(svg)
+      const str = this.toString(svg)
       img.src = `data:image/svg+xml;utf8,${encodeURIComponent(str)}`
       img.onerror = () => resolve(false)
       img.onload = () => resolve(true)
@@ -163,15 +141,7 @@ class Downloader {
     return Buffer.from(base64, "base64")
   }
 
-  static svg = (plugin) => this._toString(this._toSVG(plugin))
-
-  static png = async (plugin) => this._toImage(plugin, "png")
-
-  static jpg = async (plugin) => this._toImage(plugin, "jpeg")
-
-  static webp = async (plugin) => this._toImage(plugin, "webp")
-
-  static html = (plugin) => {
+  static toHTML = (title, transformer, features, root, mmOptions, tocOptions) => {
     const escapeHtml = text => text.replace(/[&<"]/g, char => ({ "&": "&amp;", "<": "&lt;", "\"": "&quot;" })[char])
     const createTag = (tagName, attributes, content) => {
       const attrs = Object.entries(attributes || {})
@@ -227,7 +197,7 @@ class Downloader {
       const context = {
         getMarkmap: () => window.markmap,
         root,
-        options: { ...plugin.mm.options, ...plugin.config.DEFAULT_TOC_OPTIONS },
+        options: { ...mmOptions, ...tocOptions },
       }
       const createIIFE = (fn, params) => {
         const args = params
@@ -252,7 +222,7 @@ class Downloader {
       })
     }
 
-    const toHTML = (title, styles, scripts) => `
+    const renderHtml = (title, styles, scripts) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -268,34 +238,58 @@ class Downloader {
 </body>
 </html>`
 
-    const run = (title = "MINDMAP") => {
-      const { transformer } = plugin.Lib
-      const { root, features } = plugin.transformContext
-      const { styles, scripts } = transformer.getUsedAssets(features)
-      deepDeleteAttr(root, "__path")
-      const external = getExternalScripts(transformer)
-      const styleEls = handleStyles(styles)
-      const scriptEls = handleScripts(external, scripts, root)
-      return toHTML(title, styleEls, scriptEls)
+    const { styles, scripts } = transformer.getUsedAssets(features)
+    deepDeleteAttr(root, "__path")
+    const external = getExternalScripts(transformer)
+    const styleEls = handleStyles(styles)
+    const scriptEls = handleScripts(external, scripts, root)
+    return renderHtml(title, styleEls, scriptEls)
+  }
+
+  static getFormats = () => [
+    { name: "ALL", extensions: ["svg", "png", "jpg", "jpeg", "webp", "html", "htm", "md", "txt"] },
+    { name: "IMG", extensions: ["svg", "png", "jpg", "jpeg", "webp"] },
+    { name: "HTML", extensions: ["html", "htm"] },
+    { name: "TXT", extensions: ["md", "txt"] },
+  ]
+
+  static download = async (tocController, file) => {
+    const {
+      utils, entities, mm,
+      Lib: { transformer },
+      config: { DOWNLOAD_OPTIONS: downloadOps, DEFAULT_TOC_OPTIONS: tocOps },
+      transformContext: { root, features, content },
+    } = tocController
+    const ops = {
+      nodeMinHeight: tocOps.nodeMinHeight,
+      paddingX: tocOps.paddingX,
+      paddingH: downloadOps.PADDING_HORIZONTAL,
+      paddingV: downloadOps.PADDING_VERTICAL,
+      imageScale: downloadOps.IMAGE_SCALE,
+      textColor: downloadOps.TEXT_COLOR,
+      openCircleColor: downloadOps.OPEN_CIRCLE_COLOR,
+      removeForeignObject: downloadOps.REMOVE_FOREIGN_OBJECT,
+      removeUselessClasses: downloadOps.REMOVE_USELESS_CLASSES,
+      imageQuality: downloadOps.IMAGE_QUALITY,
+      keepAlphaChannel: downloadOps.KEEP_ALPHA_CHANNEL,
+      backgroundColor: downloadOps.BACKGROUND_COLOR,
     }
 
-    return run()
-  }
-
-  static md = (plugin) => plugin.transformContext.content
-
-  static getFormats = () => {
-    const formats = Object.keys(this).filter(k => !k.startsWith("_") && !["getFormats", "download"].includes(k))
-    const separate = formats.map(k => ({ name: k.toUpperCase(), extensions: [k] }))
-    const total = { name: "ALL", extensions: formats }
-    return [total, ...separate]
-  }
-
-  static download = async (plugin, file) => {
-    const ext = plugin.utils.Package.Path.extname(file).toLowerCase().replace(/^\./, "")
-    const func = this[ext] || this.svg
-    const content = await func(plugin)
-    return plugin.utils.writeFile(file, content)
+    const fnMap = {
+      svg: () => this.toString(this.toSVG(entities.svg, ops)),
+      png: () => this.toImage(entities.svg, "png", ops),
+      jpeg: () => this.toImage(entities.svg, "jpeg", ops),
+      webp: () => this.toImage(entities.svg, "webp", ops),
+      jpg: () => fnMap.jpeg(),
+      html: () => this.toHTML(utils.getFileName() || "MINDMAP", transformer, features, root, mm?.options || {}, tocOps),
+      htm: () => fnMap.html(),
+      md: () => content,
+      txt: () => fnMap.md(),
+    }
+    const ext = utils.Package.Path.extname(file).toLowerCase().replace(/^\./, "")
+    const fn = fnMap[ext] || fnMap.svg
+    const ret = await fn()
+    return ret === undefined ? false : utils.writeFile(file, ret)
   }
 }
 

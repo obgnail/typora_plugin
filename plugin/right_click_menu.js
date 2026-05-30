@@ -286,7 +286,7 @@ class RightClickMenuPlugin extends BasePlugin {
   }
 
   hideMenuIfNeed = key => {
-    if (!this.config.DO_NOT_HIDE) {
+    if (!this.config.RETAIN_ON_BLUR) {
       File.editor.contextMenu.hide()
       this.menuManager.clearAll()
       return
@@ -297,14 +297,14 @@ class RightClickMenuPlugin extends BasePlugin {
   }
 
   getDynamicActions = () => this.i18n.fillActions([
-    { act_value: "do_not_hide", act_state: this.config.DO_NOT_HIDE, act_hint: this.i18n.t("actHint.do_not_hide") },
+    { act_value: "retain_on_blur", act_state: this.config.RETAIN_ON_BLUR, act_hint: this.i18n.t("actHint.retain_on_blur") },
     { act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY, act_hidden: !this.supportShortcut },
     { act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
   ])
 
   call = async action => {
     const fns = {
-      do_not_hide: () => this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE,
+      retain_on_blur: () => this.config.RETAIN_ON_BLUR = !this.config.RETAIN_ON_BLUR,
       hide_other_options: async () => {
         this.config.HIDE_OTHER_OPTIONS = !this.config.HIDE_OTHER_OPTIONS
         await this.utils.styleManager.reset(this.fixedName, this.style())

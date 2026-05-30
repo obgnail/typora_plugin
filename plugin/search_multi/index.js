@@ -188,7 +188,7 @@ class SearchMultiPlugin extends BasePlugin {
     })
     this.entities.form.addEventListener("submit", ev => {
       ev.preventDefault()
-      this.run()
+      this.search()
     })
     this.entities.input.addEventListener("keydown", ev => {
       if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
@@ -200,7 +200,7 @@ class SearchMultiPlugin extends BasePlugin {
     })
   }
 
-  run = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
+  search = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
     if (this.fsm.isSearching()) this.fsm.cancel()
 
     const ast = this.getAST(input)
@@ -231,22 +231,26 @@ class SearchMultiPlugin extends BasePlugin {
     }
   }
 
+  getHighlightHits = (ast) => {
+    const tokens = this.searcher.getPositiveContentTokens(ast)
+    return tokens.length === 0 ? null : this.highlighter.doSearch(tokens)
+  }
+
   highlightByAST = (ast = this.getAST()) => {
     this.entities.highlights.innerHTML = ""
     if (!ast) return
 
     try {
-      const tokens = this.searcher.getPositiveContentTokens(ast)
-      if (tokens.length === 0) return
+      const hitGroups = this.getHighlightHits(ast)
+      if (!hitGroups) return
 
       const hint = this.i18n.t("highlightHint")
-      const hitGroups = this.highlighter.doSearch(tokens)
       const items = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
         const item = document.createElement("div")
         item.className = `plugin-highlight-item ${cls}`
         item.dataset.pos = -1
         item.textContent = `${name} (${hits.length})`
-        if (!this.config.HIDE_BUTTON_HINT) item.setAttribute("ty-hint", hint)
+        if (this.config.SHOW_HIGHLIGHT_HINT) item.setAttribute("ty-hint", hint)
         return item
       })
       this.entities.highlights.append(...items)
@@ -289,8 +293,7 @@ class SearchMultiPlugin extends BasePlugin {
       item.className = "plugin-search-item"
       item.dataset.path = filePath
       if (this.config.SHOW_MTIME) {
-        const time = stats.mtime.toLocaleString(undefined, { hour12: false })
-        item.setAttribute("ty-hint", time)
+        item.setAttribute("ty-hint", stats.mtime.toLocaleString(undefined, { hour12: false }))
       }
 
       const itemTitle = document.createElement("div")

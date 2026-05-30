@@ -65,15 +65,12 @@ module.exports = (plugin) => {
         if (isConditionMet) utils.notification.show(`Plugin Enabled!\nPlease ensure server ${context.getValue("SERVER_URL")} is available.`)
       },
     }],
-    json_rpc: [{
+    remote_control: [{
       name: "showRPCServerHint",
       when: { $and: [{ ENABLE: true }, { $meta: { $isMounting: false } }] },
       affects: [],
       effect: (isMet, context) => {
-        if (isMet) {
-          const { host, port } = context.getValue("SERVER_OPTIONS")
-          utils.notification.show(`Plugin Enabled!\nPlease ensure server ${host}:${port} is available.`)
-        }
+        if (isMet) utils.notification.show(`Plugin Enabled!\nPlease ensure server localhost:${context.getValue("SERVER_PORT")} is available.`)
       },
     }],
     article_uploader: [{
