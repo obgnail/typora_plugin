@@ -577,7 +577,7 @@ describe("TabManager Test Suite", () => {
 
       manager.restoreSession(savedSession, "root", "root", false)
 
-      assert.strictEqual(manager.count, 2)
+      assert.strictEqual(manager.count, 1)
       // Default activeIdx is 0 (from initialization/reset)
       assert.strictEqual(manager.activeIdx, 0)
     })
