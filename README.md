@@ -14,73 +14,97 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
     </p>
 </div>
 
+---
 
-| #    | Plugin              | Function                                                     | Enabled by Default |
-| ---- | ------------------- | ------------------------------------------------------------ | ------------------ |
-| 1    | window_tab          | Window Tab Bar                                               |                    |
-| 2    | search_multi        | Multi-Fields File Searcher                                   |                    |
-| 3    | collapse_paragraph  | Chapter Folding                                              | ×                  |
-| 4    | collapse_list       | List Folding                                                 | ×                  |
-| 5    | collapse_table      | Table Folding                                                | ×                  |
-| 6    | md_padding          | Chinese-English Text Spacer                                  |                    |
-| 7    | slash_commands      | Slash Commands                                               |                    |
-| 8    | mouse_gestures      | Mouse Gestures                                               | ×                  |
-| 9    | templater           | File Templater                                               |                    |
-| 10   | resource_manager    | Resource Management                                          |                    |
-| 11   | fence_enhance       | Enhance Fence                                                |                    |
-| 12   | right_outline       | Right Outline                                                |                    |
-| 13   | commander           | Commander                                                    |                    |
-| 14   | command_palette     | Command Palette                                              |                    |
-| 15   | right_click_menu    | Right-Click Menu                                             |                    |
-| 16   | pie_menu            | Pie menu                                                     | ×                  |
-| 17   | datatables          | Enhance Table                                                | ×                  |
-| 18   | preferences         | Preferences                                                  |                    |
-| 19   | markmap             | Provides Markmap support                                     |                    |
-| 20   | echarts             | Provides Echarts support                                     |                    |
-| 21   | chart               | Provides Chart.js support                                    |                    |
-| 22   | drawIO              | Provides DrawIO support                                      |                    |
-| 23   | abc                 | Provides abc.js support                                      |                    |
-| 24   | calendar            | Provides tui.calendar support                                |                    |
-| 25   | wavedrom            | Provides WaveDrom support                                    |                    |
-| 26   | marp                | Provides Marp support                                        |                    |
-| 27   | plantUML            | Provides PlantUML support                                    | ×                  |
-| 28   | callouts            | Provides Callouts support                                    |                    |
-| 29   | text_stylize        | Text stylization                                             |                    |
-| 30   | read_only           | Read-only mode                                               |                    |
-| 31   | blur                | Blur mode                                                    |                    |
-| 32   | kanban              | Kanban                                                       |                    |
-| 33   | timeline            | Timeline                                                     |                    |
-| 34   | chat                | Chat                                                         |                    |
-| 35   | auto_number         | Auto numbering                                               |                    |
-| 36   | image_viewer        | Image viewer                                                 |                    |
-| 37   | cjk_symbol_pairing  | CJK Symbol Pairing                                           |                    |
-| 38   | resize_table        | Table Resizer                                                |                    |
-| 39   | resize_image        | Image Resizer                                                |                    |
-| 40   | export_enhance      | Avoid image loss when exporting to HTML/PDF                  | ×                  |
-| 41   | sidebar_enhance     | Drag & drop to rearrange、Display non-Markdown files、Keep Fold State |                    |
-| 42   | markdownlint        | Markdownlint Check                                           |                    |
-| 43   | truncate_text       | Hide content to improve performance for large files          | ×                  |
-| 44   | dark                | Dark mode                                                    |                    |
-| 45   | no_image            | No image mode                                                |                    |
-| 46   | myopic_defocus      | Defocus Comfort Mode                                         |                    |
-| 47   | updater             | One-click plugin update                                      |                    |
-| 48   | easy_modify         | Editing tools                                                |                    |
-| 49   | editor_width_slider | Adjust writing area width                                    |                    |
-| 50   | asset_root_redirect | Resource Redirection                                         | ×                  |
-| 51   | bookmark            | Bookmark manager                                             | ×                  |
-| 52   | cipher              | Encrypt files                                                | ×                  |
-| 53   | ripgrep             | Search files using ripgrep                                   | ×                  |
-| 54   | article_uploader    | One-click upload blog to supported platforms                 | ×                  |
-| 55   | cursor_history      | Cursor History                                               | ×                  |
-| 56   | static_markers      | Static Markers                                               | ×                  |
-| 57   | custom              | Open platform for user-defined plugins (Advanced)            |                    |
-| 58   | hotkeys             | Hotkey registration center (Advanced)                        |                    |
-| 59   | action_buttons      | Add function buttons in the lower right corner (Advanced)    |                    |
-| 60   | remote_control      | Typora Automation (Advanced)                                 | ×                  |
+## 目录
+
+- [Plugin List](#plugin-list)
+- [Q&A](#qa)
+- [How to Use: Windows/Linux Platform](#how-to-use-windowslinux-platform)
+- [How to Use: Archlinux Platform](#how-to-use-archlinux-platform)
+- [Plugin Usage Instructions](#plugin-usage-instructions)
+- [Editing Enhancement](#editing-enhancement)
+- [View & Theme](#view--theme)
+- [Component Rendering](#component-rendering)
+- [Navigation & Management](#navigation--management)
+- [Advanced Features](#advanced-features)
+- [Acknowledgements](#acknowledgements)
+- [Conclusion](#conclusion)
+
+## Plugin List
+
+> Format: plugin_name (fixedName) — description, `[×]` = disabled by default, blank = enabled by default. fixedName is the key used in settings.user.toml.
+
+```
+Typora Plugin
+├── Editing Enhancement
+│   ├── collapse_paragraph — Chapter Folding [×]
+│   ├── collapse_list — List Folding [×]
+│   ├── collapse_table — Table Folding [×]
+│   ├── md_padding — Chinese-English Text Spacer
+│   ├── slash_commands — Slash Commands
+│   ├── mouse_gestures — Mouse Gestures [×]
+│   ├── templater — File Templater
+│   ├── fence_enhance — Enhance Fence
+│   ├── right_outline — Right Outline
+│   ├── commander — Commander
+│   ├── command_palette — Command Palette
+│   ├── right_click_menu — Right-Click Menu
+│   ├── pie_menu — Pie menu [×]
+│   ├── datatables — Enhance Table [×]
+│   ├── resize_table — Table Resizer
+│   ├── resize_image — Image Resizer
+│   ├── easy_modify — Editing tools
+│   ├── editor_width_slider — Adjust writing area width
+│   ├── cjk_symbol_pairing — CJK Symbol Pairing
+│   ├── text_stylize — Text stylization
+│   ├── resource_manager — Resource Management
+│   ├── markdownlint — Markdownlint Check
+│   └── export_enhance — Avoid image loss when exporting to HTML/PDF [×]
+├── View & Theme
+│   ├── dark — Dark mode
+│   ├── no_image — No image mode
+│   ├── blur — Blur mode
+│   ├── myopic_defocus — Defocus Comfort Mode
+│   ├── read_only — Read-only mode
+│   ├── truncate_text — Hide content to improve performance for large files [×]
+│   ├── image_viewer — Image viewer
+│   ├── static_markers — Static Markers [×]
+│   └── sidebar_enhance — Drag & drop to rearrange、Display non-Markdown files、Keep Fold State
+├── Component Rendering
+│   ├── markmap — Provides Markmap support
+│   ├── echarts — Provides Echarts support
+│   ├── chart — Provides Chart.js support
+│   ├── drawIO — Provides DrawIO support
+│   ├── abc — Provides abc.js support
+│   ├── calendar — Provides tui.calendar support
+│   ├── wavedrom — Provides WaveDrom support
+│   ├── marp — Provides Marp support
+│   ├── plantUML — Provides PlantUML support [×]
+│   ├── callouts — Provides Callouts support
+│   ├── kanban — Kanban
+│   ├── timeline — Timeline
+│   └── chat — Chat
+├── Navigation & Management
+│   ├── window_tab — Window Tab Bar
+│   ├── search_multi — Multi-Fields File Searcher
+│   ├── auto_number — Auto numbering
+│   ├── bookmark — Bookmark manager [×]
+│   ├── cursor_history — Cursor History [×]
+│   ├── preferences — Preferences
+│   ├── updater — One-click plugin update
+│   └── asset_root_redirect — Resource Redirection [×]
+└── Advanced Features
+    ├── hotkeys — Hotkey registration center (Advanced)
+    ├── action_buttons — Add function buttons in the lower right corner (Advanced)
+    ├── custom — Open platform for user-defined plugins (Advanced)
+    ├── remote_control — Typora Automation (Advanced) [×]
+    ├── cipher — Encrypt files [×]
+    ├── ripgrep — Search files using ripgrep [×]
+    └── article_uploader — One-click upload blog to supported platforms [×]
+```
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
-
-
 
 ## Q&A
 
@@ -91,8 +115,6 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 - **How to develop plugins?** No Build Time, No need to install development environment. Please refer to [Readme](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README-en.md) for details.
 - **Does it support Typora for Mac?** I don't have a Mac device, so I haven't tested it.
 - **Any other questions?** Please ask [AI Wiki](https://deepwiki.com/obgnail/typora_plugin).
-
-
 
 ## How to Use: Windows/Linux Platform
 
@@ -115,7 +137,6 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 
 5. Verification: Restart Typora, right-click in the main text area, and if you see the plugin items, everything is fine.
 
-
 |           | Official Version                             | Beta Version                                 |
 | --------- | -------------------------------------------- | -------------------------------------------- |
 | Steps 2-3 | ![typora_dir_new](assets/typora_dir_new.png) | ![typora_dir_old](assets/typora_dir_old.png) |
@@ -124,8 +145,6 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 | ------ | ---------------------------------------------- | ------------------------------------------ |
 | Step 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
 
-
-
 ## How to Use: Archlinux Platform
 
 > Currently, this method is only for the Archlinux platform, see [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)
@@ -133,8 +152,6 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 ```sh
 yay -S typora-plugin
 ```
-
-
 
 ## Plugin Usage Instructions
 
@@ -150,33 +167,43 @@ All plugins provide seven usage methods:
   - Quick buttons (see `action_buttons` plugin)
   - Pie menu（see `pie_menu` plugin）
 
+## Editing Enhancement
 
-### window_tab
-
-![window_tab](assets/window_tab.gif)
-
-
-### search_multi
-
-By using Google search syntax and combining different criteria to accurately search for files.
-
-![search_mutli](assets/search_mutli.gif)
-
+- [collapse_paragraph](#collapse_paragraph) — Chapter Folding ×
+- [collapse_list](#collapse_list) — List Folding ×
+- [collapse_table](#collapse_table) — Table Folding ×
+- [md_padding](#md_padding) — Chinese-English Text Spacer
+- [slash_commands](#slash_commands) — Slash Commands
+- [mouse_gestures](#mouse_gestures) — Mouse Gestures ×
+- [templater](#templater) — File Templater
+- [fence_enhance](#fence_enhance) — Enhance Fence
+- [right_outline](#right_outline) — Right Outline
+- [commander](#commander) — Commander
+- [command_palette](#command_palette) — Command Palette
+- [right_click_menu](#right_click_menu) — Right-Click Menu
+- [pie_menu](#pie_menu) — Pie menu ×
+- [datatables](#datatables) — Enhance Table ×
+- [resize_table](#resize_table) — Table Resizer
+- [resize_image](#resize_image) — Image Resizer
+- [easy_modify](#easy_modify) — Editing tools
+- [editor_width_slider](#editor_width_slider) — Adjust writing area width
+- [cjk_symbol_pairing](#cjk_symbol_pairing) — CJK Symbol Pairing
+- [text_stylize](#text_stylize) — Text stylization
+- [resource_manager](#resource_manager) — Resource Management
+- [markdownlint](#markdownlint) — Markdownlint Check
+- [export_enhance](#export_enhance) — Avoid image loss when exporting to HTML/PDF ×
 
 ### collapse_paragraph
 
 ![collapse_paragraph](assets/collapse_paragraph.gif)
 
-
 ### collapse_list
 
 Fold/expand unordered lists, ordered lists, task lists.
 
-
 ### collapse_table
 
 Fold/expand tables.
-
 
 ### md_padding
 
@@ -184,14 +211,13 @@ Add spaces between Chinese and English, Chinese and numbers when mixed.
 
 ![md_padding](assets/md_padding.gif)
 
-
 ### slash_commands
 
 Similar to Notion's slash command.
 
 ![slash_commands](assets/slash_commands.gif)
 
-## mouse_gestures
+### mouse_gestures
 
 Mouse gestures in Typora.
 
@@ -201,38 +227,23 @@ Similar to Obsidian's file template function, quickly create files based on temp
 
 ![templater](assets/templater.gif)
 
-
-### resource_manager
-
-Resource management, cleanup of unused images
-
-
 ### fence_enhance
 
 ![fence_enhance](assets/fence_enhance.png)
-
 
 ### right_outline
 
 Typora's sidebar cannot display both [File] and [Outline] simultaneously. To solve this problem, this plugin adds an [Outline] on the right.
 
-
 ### commander
 
 ![commander](assets/commander.gif)
-
-
-### markmap
-
-![markmap](assets/markmap.gif)
-
 
 ### command_palette
 
 Similar to VSCode's command palette (Ctrl+Shift+P)
 
 ![command_palette](assets/command_palette.png)
-
 
 ### right_click_menu
 
@@ -247,9 +258,146 @@ Pie Menu. Usage:
 - `Pin the circular menu, so it doesn't automatically disappear`: Left mouse button in the middle of the circle
 - `Expand the circular menu, so it doesn't automatically collapse`: Right mouse button in the middle of the circle
 
-### preferences
+### datatables
 
-Preferences
+Enhance tables. Provides functions such as search, filter, pagination, and sorting.
+
+Usage: Place the cursor on the table -> Right-click menu -> Interactive Plugins -> Table Enhancement.
+
+![datatables](assets/datatables.png)
+
+### resize_table
+
+`ctrl + mouse drag`: Modify the row height and column width of the table.
+
+![resize_table](assets/resize_table.gif)
+
+### resize_image
+
+`alt + mouse scroll`: Adjust the image size.
+
+### easy_modify
+
+This plugin is a collection of commonly used editing tools, currently including:
+
+1. Copy title path
+2. Promote the title level of the selected paragraph
+3. Demote the title level of the selected paragraph
+4. Convert line break CRLF to LF
+5. Convert line break LF to CRLF
+6. Remove invisible characters
+7. Generate mind map based on the document outline: mindmap
+8. Generate mind map based on the document outline: graph
+9. Extract selected text to a new file
+10. Add trailing spaces
+
+### editor_width_slider
+
+Adjust the width of the writing area.
+
+### cjk_symbol_pairing
+
+Automatically pair symbols when typing `《 【 （ ' " 「`.
+
+### text_stylize
+
+![text_stylize](assets/text_stylize.gif)
+
+### resource_manager
+
+Resource management, cleanup of unused images
+
+### markdownlint
+
+Check whether the current file complies with the markdown best practices.
+
+### export_enhance
+
+When exporting HTML/PDF, convert images to base64 to avoid image loss.
+
+## View & Theme
+
+- [dark](#dark) — Dark mode
+- [no_image](#no_image) — No image mode
+- [blur](#blur) — Blur mode
+- [myopic_defocus](#myopic_defocus) — Defocus Comfort Mode
+- [read_only](#read_only) — Read-only mode
+- [truncate_text](#truncate_text) — Hide content to improve performance for large files ×
+- [image_viewer](#image_viewer) — Image viewer
+- [static_markers](#static_markers) — Static Markers ×
+- [sidebar_enhance](#sidebar_enhance) — Drag & drop to rearrange、Display non-Markdown files、Keep Fold State
+
+### dark
+
+Dark Mode
+
+### no_image
+
+No Image Mode
+
+### blur
+
+After enabling, only the currently focused component is visible, the rest are blurred. It can be used to prevent peeking.
+
+> This plugin can only be used with the official version of Typora.
+
+### myopic_defocus
+
+Defocus Comfort Mode
+
+### read_only
+
+In read-only mode, the document cannot be edited (after enabling, the bottom right corner of the statistics area will show `ReadOnly`).
+
+### truncate_text
+
+The rendering performance of large files in Typora is very poor. Use this plugin to temporarily hide content (just hide the display, not modify the file) to improve rendering performance. It can also be used to prevent peeking.
+
+> Principle: By setting the display style of DOM elements to none, elements are hidden so that they do not occupy a position in the rendering tree, and operations on hidden elements do not cause reflow of other elements.
+
+### image_viewer
+
+One-stop image viewing, and provides simple image editing.
+
+![image-reviewer](./assets/image-reviewer.png)
+
+### static_markers
+
+Say goodbye to distracting format refreshes. This plugin keeps your Markdown syntax markers always visible and static.
+
+This plugin disables the auto-hiding feature for syntax markers in WYSIWYG mode. It ensures that all Markdown characters—like **, ##, and _—remain persistently visible around your text, just as they would in a source code editor.
+
+![static_markers](./assets/static_markers.png)
+
+> This plugin is disabled by default and needs to be manually enabled.
+
+### sidebar_enhance
+
+- Drag & drop outline to rearrange
+- Display non-Markdown files in the sidebar
+- Keep Fold Outline State
+- Customize Sidebar File Icons
+- Display File Count
+
+## Component Rendering
+
+- [markmap](#markmap) — Provides Markmap support
+- [echarts](#echarts) — Provides Echarts support
+- [chart](#chart) — Provides Chart.js support
+- [drawIO](#drawio) — Provides DrawIO support
+- [abc](#abc) — Provides abc.js support
+- [calendar](#calendar) — Provides tui.calendar support
+- [wavedrom](#wavedrom) — Provides WaveDrom support
+- [marp](#marp) — Provides Marp support
+- [plantUML](#plantuml) — Provides PlantUML support ×
+- [callouts](#callouts) — Provides Callouts support
+- [kanban](#kanban) — Kanban
+- [timeline](#timeline) — Timeline
+- [chat](#chat) — Chat
+
+### markmap
+
+![markmap](assets/markmap.gif)
 
 ### echarts
 
@@ -306,112 +454,32 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 
 ![chat](./assets/chat.png)
 
-### text_stylize
+## Navigation & Management
 
-![text_stylize](./assets/text_stylize.gif)
+- [window_tab](#window_tab) — Window Tab Bar
+- [search_multi](#search_multi) — Multi-Fields File Searcher
+- [auto_number](#auto_number) — Auto numbering
+- [bookmark](#bookmark) — Bookmark manager ×
+- [cursor_history](#cursor_history) — Cursor History ×
+- [preferences](#preferences) — Preferences
+- [updater](#updater) — One-click plugin update
+- [asset_root_redirect](#asset_root_redirect) — Resource Redirection ×
 
-### read_only
+### window_tab
 
-In read-only mode, the document cannot be edited (after enabling, the bottom right corner of the statistics area will show `ReadOnly`).
+![window_tab](assets/window_tab.gif)
 
-### blur
+### search_multi
 
-After enabling, only the currently focused component is visible, the rest are blurred. It can be used to prevent peeking.
+By using Google search syntax and combining different criteria to accurately search for files.
 
-> This plugin can only be used with the official version of Typora.
+![search_mutli](assets/search_mutli.gif)
 
 ### auto_number
 
 ![auto_number](assets/auto_number.png)
 
 Unlike other implementations using theme CSS, this plugin perfectly solves the problem of no numbering in the sidebar after exporting to PDF by modifying the built-in function :)
-
-
-
-### image_viewer
-
-One-stop image viewing, and provides simple image editing.
-
-![image-reviewer](./assets/image-reviewer.png)
-
-### cjk_symbol_pairing
-
-Automatically pair symbols when typing `《 【 （ ‘ “ 「`.
-
-### datatables
-
-Enhance tables. Provides functions such as search, filter, pagination, and sorting.
-
-Usage: Place the cursor on the table -> Right-click menu -> Interactive Plugins -> Table Enhancement.
-
-![datatables](assets/datatables.png)
-
-### resize_table
-
-`ctrl + mouse drag`: Modify the row height and column width of the table.
-
-![resize_table](assets/resize_table.gif)
-
-### resize_image
-
-`alt + mouse scroll`: Adjust the image size.
-
-### export_enhance
-
-When exporting HTML/PDF, convert images to base64 to avoid image loss.
-
-### sidebar_enhance
-
-- Drag & drop outline to rearrange
-- Display non-Markdown files in the sidebar
-- Keep Fold Outline State
-- Customize Sidebar File Icons
-- Display File Count
-
-### dark
-
-Dark Mode
-
-### no_image
-
-No Image Mode
-
-### myopic_defocus
-
-Defocus Comfort Mode
-
-### markdownlint
-
-Check whether the current file complies with the markdown best practices.
-
-### updater
-
-Upgrade Plugin.
-
-### easy_modify
-
-This plugin is a collection of commonly used editing tools, currently including:
-
-1. Copy title path
-2. Promote the title level of the selected paragraph
-3. Demote the title level of the selected paragraph
-4. Convert line break CRLF to LF
-5. Convert line break LF to CRLF
-6. Remove invisible characters
-7. Generate mind map based on the document outline: mindmap
-8. Generate mind map based on the document outline: graph
-9. Extract selected text to a new file
-10. Add trailing spaces
-
-### editor_width_slider
-
-Adjust the width of the writing area.
-
-### asset_root_redirect
-
-If you mainly use Obsidian or Joplin to manage files and occasionally use Typora to open files, you will encounter a problem: both Obsidian and Joplin put local resources in the same directory, but Typora defaults to using relative paths to reference local resources.
-
-> This plugin is disabled by default and needs to be manually enabled.
 
 ### bookmark
 
@@ -420,22 +488,6 @@ Usage:
 1. Use alt + click on the text content to bookmark.
 2. This will automatically bring up the bookmark manager. Click on the bookmark above to jump to the bookmark.
 
-### cipher
-
-Encrypt File.
-
-### truncate_text
-
-The rendering performance of large files in Typora is very poor. Use this plugin to temporarily hide content (just hide the display, not modify the file) to improve rendering performance. It can also be used to prevent peeking.
-
-> Principle: By setting the display style of DOM elements to none, elements are hidden so that they do not occupy a position in the rendering tree, and operations on hidden elements do not cause reflow of other elements.
-
-### ripgrep
-
-Typora comes with ripgrep. This plugin supports using the built-in ripgrep to search files.
-
-> To use this plugin, you need to be familiar with the ripgrep tool. This plugin is disabled by default and needs to be manually enabled.
-
 ### cursor_history
 
 - hotkey for the previous cursor: alt+←
@@ -443,15 +495,29 @@ Typora comes with ripgrep. This plugin supports using the built-in ripgrep to se
 
 > This plugin is disabled by default and needs to be manually enabled.
 
-### static_markers
+### preferences
 
-Say goodbye to distracting format refreshes. This plugin keeps your Markdown syntax markers always visible and static.
+Preferences
 
-This plugin disables the auto-hiding feature for syntax markers in WYSIWYG mode. It ensures that all Markdown characters—like **, ##, and _—remain persistently visible around your text, just as they would in a source code editor.
+### updater
 
-![static_markers](./assets/static_markers.png)
+Upgrade Plugin.
+
+### asset_root_redirect
+
+If you mainly use Obsidian or Joplin to manage files and occasionally use Typora to open files, you will encounter a problem: both Obsidian and Joplin put local resources in the same directory, but Typora defaults to using relative paths to reference local resources.
 
 > This plugin is disabled by default and needs to be manually enabled.
+
+## Advanced Features
+
+- [hotkeys](#hotkeys) — Hotkey registration center (Advanced)
+- [action_buttons](#action_buttons) — Add function buttons in the lower right corner (Advanced)
+- [custom](#custom) — Open platform for user-defined plugins (Advanced)
+- [remote_control](#remote_control) — Typora Automation (Advanced) ×
+- [cipher](#cipher) — Encrypt files ×
+- [ripgrep](#ripgrep) — Search files using ripgrep ×
+- [article_uploader](#article_uploader) — One-click upload blog to supported platforms ×
 
 ### hotkeys
 
@@ -481,6 +547,16 @@ For specific usage, please refer to [README.md](https://github.com/obgnail/typor
 
 > This plugin is an advanced plugin, only available to developers. After enabling this plugin, the external will have both node and browser environments, which can fully control the computer, so if you are not a developer, please do not enable it.
 
+### cipher
+
+Encrypt File.
+
+### ripgrep
+
+Typora comes with ripgrep. This plugin supports using the built-in ripgrep to search files.
+
+> To use this plugin, you need to be familiar with the ripgrep tool. This plugin is disabled by default and needs to be manually enabled.
+
 ### article_uploader
 
 The user clicks or uses a shortcut key to trigger the automatic publishing function of the current article. The program automatically publishes blog articles to major platforms according to user configuration.
@@ -488,7 +564,6 @@ The user clicks or uses a shortcut key to trigger the automatic publishing funct
 For specific usage, refer to: [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/article_uploader/README.md). Taking uploading to CSDN as an example, the GIF is as follows:
 
 ![CSDN Success Demonstration](https://my-picture-bed1-1321100201.cos.ap-beijing.myqcloud.com/mypictures/CSDN%E6%88%90%E5%8A%9F%E6%BC%94%E7%A4%BA.gif)
-
 
 ## Acknowledgements
 
@@ -502,4 +577,3 @@ For specific usage, refer to: [README.md](https://github.com/obgnail/typora_plug
 **This project follows the MIT license, feel free to enjoy it.**
 
 If you find it useful, please give it a star ⭐, and feel free to recommend it to like-minded friends.
-
