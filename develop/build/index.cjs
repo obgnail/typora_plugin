@@ -115,7 +115,7 @@ const pluginVendor = {
 
 const SHARED_VENDORS_CONFIG = {
   "js-yaml": sharedVendor.download({ outFileName: "js-yaml.js", url: "https://raw.githubusercontent.com/nodeca/js-yaml/refs/heads/master/dist/js-yaml.min.js" }),
-  "markdown-it": sharedVendor.download({ outFileName: "markdown-it.js", url: "https://cdn.jsdelivr.net/npm/markdown-it@14.1.1/dist/markdown-it.min.js" }),
+  "markdown-it": sharedVendor.download({ outFileName: "markdown-it.js", url: "https://cdn.jsdelivr.net/npm/markdown-it@latest/dist/markdown-it.min.js" }),
   "smol-toml": sharedVendor.bundle({ outFileName: "smol-toml.js", entryInBuild: "smol-toml.mjs" }),
   "node-fetch-commonjs": sharedVendor.bundle({ outFileName: "node-fetch-commonjs.js", entryInBuild: "node-fetch-commonjs.cjs" }),
   "https-proxy-agent": sharedVendor.bundle({ outFileName: "https-proxy-agent.js", entryInBuild: "https-proxy-agent.mjs" }),
@@ -133,7 +133,7 @@ const SHARED_VENDORS_CONFIG = {
 }
 
 const PLUGIN_VENDORS_CONFIG = {
-  "node-json-rpc": pluginVendor.bundle({ entryInBuild: "node-json-rpc.cjs", outFilePath: "plugin/json_rpc/node-json-rpc.js" }),
+  "json-rpc-2.0": pluginVendor.bundle({ entryInBuild: "json-rpc-2.0.mjs", outFilePath: "plugin/remote_control/json-rpc-2.0.min.js" }),
   "md-padding": pluginVendor.bundle({ entryInBuild: "md-padding.mjs", outFilePath: "plugin/md_padding/md-padding.min.js" }),
   "aes-ecb": pluginVendor.bundle({ entryInBuild: "aes-ecb.mjs", outFilePath: "plugin/cipher/aes-ecb.min.js" }),
   "markmap": pluginVendor.bundle({ entryInBuild: "markmap.mjs", outFilePath: "plugin/markmap/resource/markmap.min.js" }),

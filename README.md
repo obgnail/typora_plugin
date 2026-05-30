@@ -76,7 +76,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | 57   | custom              | Open platform for user-defined plugins (Advanced)            |                    |
 | 58   | hotkeys             | Hotkey registration center (Advanced)                        |                    |
 | 59   | action_buttons      | Add function buttons in the lower right corner (Advanced)    |                    |
-| 60   | json_rpc            | Typora Automation (Advanced)                                 | ×                  |
+| 60   | remote_control      | Typora Automation (Advanced)                                 | ×                  |
 
 > If you have other needs or find bugs, feel free to [open an issue](https://github.com/obgnail/typora_plugin/issues/new). PRs are also welcome. If you find this project helpful, please give me a star ⭐
 
@@ -473,11 +473,11 @@ Provide open capabilities, support users to write their own plugins.
 
 For specific usage, please refer to [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README.md).
 
-### json_rpc
+### remote_control
 
-Expose all capabilities including the typora-plugin in the form of `json-rpc` for external manipulation of Typora.
+Expose all capabilities including the typora-plugin in the form of `JSON RPC` for external manipulation of Typora.
 
-For specific usage, please refer to [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/json_rpc/README.md).
+For specific usage, please refer to [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/remote_control/README.md).
 
 > This plugin is an advanced plugin, only available to developers. After enabling this plugin, the external will have both node and browser environments, which can fully control the computer, so if you are not a developer, please do not enable it.
 

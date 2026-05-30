@@ -30,7 +30,7 @@ module.exports = (plugin) => {
     downloadWaveDromSkins: openUrl("https://github.com/wavedrom/wavedrom/tree/trunk/skins"),
     viewMarpOptions: openUrl("https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options"),
     viewArticleUploaderReadme: openPath("./plugin/article_uploader/README.md"),
-    viewJsonRPCReadme: openPath("./plugin/json_rpc/README.md"),
+    viewRemoteControlReadme: openPath("./plugin/remote_control/README.md"),
     editStyles: openPath("./plugin/global/user_styles/README.md"),
     developPlugins: openPath("./plugin/custom/README.md"),
     openLocaleFolder: openPath("./plugin/global/locales/en.json"),

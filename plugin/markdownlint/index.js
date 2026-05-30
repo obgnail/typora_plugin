@@ -1,3 +1,22 @@
+const createLinterClient = (workerPath, hooks, contentProvider) => {
+  const ACTION = { CONFIGURE: "configure", CLOSE: "close", CHECK: "check", FIX: "fix" }
+  const { onCheck, onFix, onError } = hooks
+  const worker = new Worker(workerPath)
+  worker.onmessage = event => {
+    const { action, result } = event.data
+    const onEvent = (action === ACTION.FIX) ? onFix : onCheck
+    onEvent(result)
+  }
+  worker.onerror = event => onError(event)
+  const send = (action, customPayload) => worker.postMessage({ action, payload: { content: contentProvider(), ...customPayload } })
+  return {
+    configure: (payload) => send(ACTION.CONFIGURE, payload),
+    close: () => send(ACTION.CLOSE),
+    check: () => send(ACTION.CHECK),
+    fix: (fixInfo) => send(ACTION.FIX, { fixInfo }),
+  }
+}
+
 class MarkdownlintPlugin extends BasePlugin {
   fixInfos = []
   TRANSLATIONS = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
@@ -34,7 +53,31 @@ class MarkdownlintPlugin extends BasePlugin {
   }
 
   init = () => {
-    this.linter = this._createLinter(this._onCheck, this._onFix)
+    const client = createLinterClient(
+      "plugin/markdownlint/linter-worker.js",
+      { onCheck: this._onCheck, onFix: this._onFix, onError: event => console.error(event.message) },
+      () => this.utils.getCurrentFileContent(),
+    )
+    this.linter = {
+      configure: async ({ ruleConfig = this.config.RULE_CONFIG, customRuleFiles = this.config.CUSTOM_RULE_FILES, persistent = false } = {}) => {
+        if (persistent) {
+          const conf = { RULE_CONFIG: ruleConfig, CUSTOM_RULE_FILES: customRuleFiles }
+          await this.utils.settings.handle(this.fixedName, pluginSettings => Object.assign(pluginSettings, conf))
+          Object.assign(this.config, conf)
+        }
+        client.configure({
+          ruleConfig,
+          coreLib: this.utils.joinPluginPath("plugin/markdownlint/markdownlint.min.js"),
+          helpersLib: this.utils.joinPluginPath("plugin/markdownlint/markdownlint-rule-helpers.min.js"),
+          polyfillLib: this.utils.joinPluginPath("plugin/global/core/polyfill.js"),
+          customRuleFiles: customRuleFiles.map(f => this.utils.resolvePluginPath(f)),
+        })
+      },
+      close: client.close,
+      check: client.check,
+      fix: (fixInfo = this.fixInfos) => client.fix(fixInfo),
+    }
+
     this.entities = {
       panel: document.querySelector("#plugin-markdownlint"),
       wrap: document.querySelector(".plugin-markdownlint-table-wrap"),
@@ -227,45 +270,6 @@ class MarkdownlintPlugin extends BasePlugin {
       const ruleConfig = this.utils.minimize(data, defaultValues)
       await this.linter.configure({ ruleConfig, persistent: true })
       this.utils.notification.show(this.i18n.t("success.edit"))
-    }
-  }
-
-  _createLinter = (onCheck, onFix) => {
-    const ACTION = { CONFIGURE: "configure", CLOSE: "close", CHECK: "check", FIX: "fix" }
-    const worker = new Worker("plugin/markdownlint/linter-worker.js")
-    worker.onmessage = event => {
-      const { action, result } = event.data
-      const onEvent = (action === ACTION.FIX) ? onFix : onCheck
-      onEvent(result)
-    }
-    worker.onerror = event => console.error(event.message)
-    const send = (action, customPayload) => {
-      worker.postMessage({
-        action,
-        payload: {
-          content: this.utils.getCurrentFileContent(),
-          ...customPayload,
-        },
-      })
-    }
-    return {
-      configure: async ({ ruleConfig = this.config.RULE_CONFIG, customRuleFiles = this.config.CUSTOM_RULE_FILES, persistent = false } = {}) => {
-        if (persistent) {
-          const conf = { RULE_CONFIG: ruleConfig, CUSTOM_RULE_FILES: customRuleFiles }
-          await this.utils.settings.handle(this.fixedName, pluginSettings => Object.assign(pluginSettings, conf))
-          Object.assign(this.config, conf)
-        }
-        send(ACTION.CONFIGURE, {
-          ruleConfig,
-          coreLib: this.utils.joinPluginPath("plugin/markdownlint/markdownlint.min.js"),
-          helpersLib: this.utils.joinPluginPath("plugin/markdownlint/markdownlint-rule-helpers.min.js"),
-          polyfillLib: this.utils.joinPluginPath("plugin/global/core/polyfill.js"),
-          customRuleFiles: customRuleFiles.map(f => this.utils.resolvePluginPath(f)),
-        })
-      },
-      close: () => send(ACTION.CLOSE),
-      check: () => send(ACTION.CHECK),
-      fix: (fixInfo = this.fixInfos) => send(ACTION.FIX, { fixInfo }),
     }
   }
 

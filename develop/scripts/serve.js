@@ -2,9 +2,6 @@ const sync = require("./sync")
 const rpc = require("./rpc")
 
 module.exports = async () => {
-  const cli = await rpc()
-  sync(() => {
-    cli.startTypora()
-    cli.closeTypora()
-  })
+  const sdk = await rpc()
+  sync(async () => sdk.api.system.restartTypora())
 }

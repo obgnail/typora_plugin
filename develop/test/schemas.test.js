@@ -31,6 +31,7 @@ const isIgnored = (fixedName, key) => (
   (fixedName === "abc" && key.startsWith("VISUAL_OPTIONS"))
   || (fixedName === "markdownlint" && key.startsWith("RULE_CONFIG"))
   || (fixedName === "marp" && key.startsWith("MARP_CORE_OPTIONS"))
+  || (fixedName === "remote_control" && key.startsWith("ALLOWED_METHODS"))
 )
 
 const flattenKeys = (obj, prefix = [], result = new Set()) => {

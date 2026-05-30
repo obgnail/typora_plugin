@@ -17,6 +17,7 @@
     "@toast-ui/calendar": "^2.1.3",
     "crypto-js": "^4.2.0",
     "https-proxy-agent": "^7.0.6",
+    "json-rpc-2.0": "^1.7.1",
     "katex": "^0.16.33",
     "markdownlint": "^0.39.0",
     "markdownlint-rule-helpers": "^0.30.0",
@@ -32,7 +33,6 @@
     "micromark-extension-gfm": "^3.0.0",
     "micromark-extension-math": "^3.1.0",
     "node-fetch-commonjs": "^3.3.2",
-    "node-json-rpc": "^0.0.1",
     "smol-toml": "^1.6.1"
   },
   "devDependencies": {
