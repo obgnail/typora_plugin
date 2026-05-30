@@ -96,13 +96,7 @@ class TabManager {
 
   switch(idx) {
     this._activeIdx = Math.min(Math.max(0, idx), this.maxIdx)
-    if (this.current) {
-      const path = this.current.path
-      File.editor.restoreLastCursor()
-      File.editor.focusAndRestorePos()
-      File.editor.library.openFile(path)
-      queueMicrotask(() => File.editor.library.refreshPanelCommand())
-    }
+    this.utils.openFile(this.current?.path, true)
   }
 
   switchByPath(path) {
@@ -264,10 +258,8 @@ class TabManager {
     if (!saveTabs || saveTabs.length === 0) return
     if (matchMountFolder && mountFolder !== currentMountFolder) return
 
-    let activePath
-    // Replace current tabs with saved tabs (not merge), so deleted tabs won't reappear.
-    this._tabs = saveTabs.map(tab => ({ path: tab.path, scrollTop: tab.scrollTop || 0 }))
-    saveTabs.forEach(tab => { if (tab.active) activePath = tab.path })
+    const activePath = saveTabs.find(tab => tab.active)?.path
+    this._tabs = saveTabs.map(({ path, scrollTop }) => ({ path, scrollTop: scrollTop || 0 }))
 
     this._formatShowNames()
 
@@ -362,7 +354,7 @@ class WindowTabPlugin extends BasePlugin {
 
   style = () => true
 
-  html = () => `<div id="plugin-window-tab"><div class="tab-bar"></div></div>`
+  html = () => `<div id="plugin-window-tab"><div class="tab-bar"><div class="tab-wrapper"></div><div class="add-button"><div class="add-icon"></div></div></div></div>`
 
   hotkey = () => [
     { hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: () => this.tab.next() },
@@ -380,6 +372,8 @@ class WindowTabPlugin extends BasePlugin {
       header: document.querySelector("header"),
       source: document.querySelector("#typora-source"),
       tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
+      tabWrapper: document.querySelector("#plugin-window-tab .tab-wrapper"),
+      newTabButton: document.querySelector("#plugin-window-tab .add-button"),
       windowTab: document.querySelector("#plugin-window-tab"),
     }
   }
@@ -403,31 +397,17 @@ class WindowTabPlugin extends BasePlugin {
       this.utils.waitUntil(isHeaderReady, 50, 1000).catch(this.utils.noop).finally(adjustTop)
     }
     const handleClick = () => {
-      this.entities.tabBar.addEventListener("click", async ev => {
-        const newTabButton = ev.target.closest(".new-tab-button")
-        if (newTabButton) {
-          const mdFilters = [
-            { name: "Markdown Files", extensions: ["md", "markdown", "mdown", "mkd", "mdx"] },
-            { name: "All Files", extensions: ["*"] },
-          ]
-          const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
-            properties: ["openFile"],
-            filters: mdFilters,
-          })
-          if (!canceled && filePaths && filePaths.length > 0) {
-            const absPath = filePaths[0]
-            const ext = absPath.split(".").pop().toLowerCase()
-            const isMarkdown = ["md", "markdown", "mdown", "mkd", "mdx"].includes(ext)
-            if (!isMarkdown) {
-              this.utils.showMessageBox({ type: "error", title: "路径错误", message: `请选择 Markdown 文件（.md 等），不支持目录或其他文件类型。\n当前选择：${absPath}` })
-            } else {
-              File.editor.restoreLastCursor()
-              File.editor.focusAndRestorePos()
-              File.editor.library.openFile(absPath)
-            }
-          }
-          return
+      this.entities.newTabButton.addEventListener("click", async ev => {
+        const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
+          properties: ["openFile"],
+          filters: [{ name: "Markdown Files", extensions: ["md", "markdown", "mdown", "mkd", "mdx"] }],
+        })
+        if (!canceled && filePaths?.length > 0) {
+          this.utils.openFile(filePaths[0], true)
         }
+      })
+
+      this.entities.tabWrapper.addEventListener("click", async ev => {
         const closeButton = ev.target.closest(".close-button")
         const tabContainer = ev.target.closest(".tab-container")
         if (!closeButton && !tabContainer) return
@@ -472,7 +452,7 @@ class WindowTabPlugin extends BasePlugin {
         }
         let dragged, cloned, offsetX, offsetY, startX, startY, axis, _axis, threshold, _offsetX
 
-        $("#plugin-window-tab .tab-bar").on("dragstart", ".tab-container", function (ev) {
+        $("#plugin-window-tab .tab-wrapper").on("dragstart", ".tab-container", function (ev) {
           dragged = this
           _offsetX = ev.offsetX
 
@@ -573,7 +553,7 @@ class WindowTabPlugin extends BasePlugin {
           }
         }
 
-        $("#plugin-window-tab .tab-bar").on("dragstart", ".tab-container", function (ev) {
+        $("#plugin-window-tab .tab-wrapper").on("dragstart", ".tab-container", function (ev) {
           ev.originalEvent.dataTransfer.effectAllowed = "move"
           ev.originalEvent.dataTransfer.dropEffect = "move"
           this.style.opacity = 0.5
@@ -644,7 +624,7 @@ class WindowTabPlugin extends BasePlugin {
       }, { passive: true })
     }
     const handleMiddleClick = () => {
-      this.entities.tabBar.addEventListener("mousedown", ev => {
+      this.entities.tabWrapper.addEventListener("mousedown", ev => {
         if (ev.button === 1) {
           const idx = parseInt(ev.target.closest(".tab-container")?.dataset.idx)
           if (!isNaN(idx)) {
@@ -681,7 +661,7 @@ class WindowTabPlugin extends BasePlugin {
         commands[key]?.()
         if (isCloseAction && this.config.REOPEN_TABS_ON_STARTUP) this.saveTabs(this.autoSaveStorage)
       }
-      this.utils.contextMenu.register(this.entities.tabBar, getMenuItems, onClickMenuItem)
+      this.utils.contextMenu.register(this.entities.tabWrapper, getMenuItems, onClickMenuItem)
     }
     const adjustQuickOpen = () => {
       const openQuickTab = (item, ev) => {
@@ -826,10 +806,10 @@ class WindowTabPlugin extends BasePlugin {
 
   _insertTabDiv = (filePath, showName, idx) => {
     const hint = this.config.SHOW_FULL_PATH_ON_HOVER ? `ty-hint="${filePath}"` : ""
-    const btn = this.config.SHOW_TAB_CLOSE_BUTTON ? `<span class="close-button"><div class="close-icon"></div></span>` : ""
-    this.entities.tabBar.insertAdjacentHTML("beforeend",
+    const btn = this.config.SHOW_TAB_CLOSE_BUTTON ? `<div class="close-button"><div class="close-icon"></div></div>` : ""
+    this.entities.tabWrapper.insertAdjacentHTML("beforeend",
       `<div class="tab-container" data-idx="${idx}" draggable="true" ${hint}>
-          <div class="active-indicator"></div><span class="window-tab-name">${showName}</span>${btn}
+          <div class="active-indicator"></div><div class="window-tab-name">${showName}</div>${btn}
         </div>`)
   }
 
@@ -882,16 +862,13 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   _renderTabs = wantOpenPath => {
-    let currentTabEl = this.entities.tabBar.firstElementChild
-    // Skip the new-tab button if it already exists at the end
-    const existingNewTabBtn = this.entities.tabBar.querySelector(".new-tab-button")
-    if (existingNewTabBtn) existingNewTabBtn.remove()
+    let currentTabEl = this.entities.tabWrapper.firstElementChild
 
     for (let idx = 0; idx < this.tab.tabs.length; idx++) {
       const tabObj = this.tab.tabs[idx]
       if (!currentTabEl) {
         this._insertTabDiv(tabObj.path, tabObj.showName, idx)
-        currentTabEl = this.entities.tabBar.lastElementChild
+        currentTabEl = this.entities.tabWrapper.lastElementChild
       } else {
         this._updateTabDiv(currentTabEl, tabObj.path, tabObj.showName, idx)
       }
@@ -906,10 +883,6 @@ class WindowTabPlugin extends BasePlugin {
       currentTabEl.remove()
       currentTabEl = next
     }
-
-    // Append the new-tab button after all tabs
-    this.entities.tabBar.insertAdjacentHTML("beforeend",
-      `<span class="new-tab-button"><span class="new-tab-inner"><div class="close-icon"></div></span></span>`)
   }
 
   forceToggleTabBar = () => {
@@ -928,7 +901,7 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   rerenderTabBar = () => {
-    this.entities.tabBar.innerHTML = ""
+    this.entities.tabWrapper.innerHTML = ""
     const p = this.tab.current?.path
     if (p) this.utils.openFile(p)
   }
