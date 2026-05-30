@@ -205,10 +205,7 @@ class TabManager {
     this._formatShowNames()
     const cur = this.current
     this._tabs.sort(({ showName: n1 }, { showName: n2 }) => (n1 || "").localeCompare(n2 || ""))
-    if (cur) {
-      this._activeIdx = this._tabs.indexOf(cur)
-      this.utils.openFile(this.current.path)
-    }
+    if (cur) this.switch(this._tabs.indexOf(cur))
   }
 
   move(fromIdx, toIdx) {
@@ -902,8 +899,7 @@ class WindowTabPlugin extends BasePlugin {
 
   rerenderTabBar = () => {
     this.entities.tabWrapper.innerHTML = ""
-    const p = this.tab.current?.path
-    if (p) this.utils.openFile(p)
+    this.utils.openFile(this.tab.current?.path)
   }
 
   copyPath = idx => navigator.clipboard.writeText(this.tab.getTabPathByIdx(idx) || "")
