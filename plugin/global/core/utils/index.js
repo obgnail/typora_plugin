@@ -66,9 +66,13 @@ class utils {
     const p = PATH.resolve(path)
     return p && mountFolder && p.startsWith(mountFolder)
   }
-  static openFile = filepath => {
+  static openFile = (filepath, force = false) => {
     if (!filepath) return
-    if (!this.getMountFolder() || this.isUnderMountFolder(filepath)) {
+    if (!this.getMountFolder()) {
+      File.editor.library.openFileInNewWindow(filepath, false)
+      return
+    }
+    if (force || this.isUnderMountFolder(filepath)) {
       File.editor.restoreLastCursor()
       File.editor.focusAndRestorePos()
       File.editor.library.openFile(filepath)

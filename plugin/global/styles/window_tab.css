@@ -17,6 +17,13 @@
   box-sizing: border-box;
 }
 
+#plugin-window-tab .tab-wrapper {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  flex-shrink: 0;
+}
+
 body.pin-outline #plugin-window-tab .tab-bar {
   width: calc(100vw - var(--sidebar-width, 0px));
 }
@@ -148,4 +155,50 @@ body.pin-outline #plugin-window-tab .tab-bar {
   top: 0;
   z-index: 99999;
   pointer-events: none;
+}
+
+#plugin-window-tab .add-button {
+  flex-shrink: 0;
+  padding-left: 6px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+#plugin-window-tab .add-icon {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+#plugin-window-tab .add-button:hover .add-icon {
+  background-color: var(--active-file-bg-color, lightgray);
+}
+
+#plugin-window-tab .add-icon::before,
+#plugin-window-tab .add-icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 11px;
+  height: 1.5px;
+  background-color: var(--active-file-border-color, black);
+}
+
+#plugin-window-tab .add-icon::before {
+  transform: translate(-50%, -50%);
+}
+
+#plugin-window-tab .add-icon::after {
+  transform: translate(-50%, -50%) rotate(90deg);
 }
