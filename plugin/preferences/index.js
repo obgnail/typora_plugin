@@ -53,34 +53,29 @@ class PreferencesPlugin extends BasePlugin {
 
   process = () => {
     const searchInDialog = () => {
-      const querySchemas = (query) => {
-        const hits = new Set()
-        if (!query) return hits
-        Object.entries(this.SCHEMAS).forEach(([pluginName, boxes]) => {
-          boxes.forEach(box => {
-            if (box.title?.toLowerCase().includes(query)) {
-              hits.add(pluginName)
-            }
-            box.fields?.forEach(field => {
-              if (field.label?.toLowerCase().includes(query)) {
-                hits.add(pluginName)
-              }
-            })
-          })
-        })
-        return hits
+      const matchSchemas = (query) => {
+        if (!query) return []
+        return Object.keys(this.SCHEMAS).filter(name =>
+          this.SCHEMAS[name].some(box =>
+            box.title?.toLowerCase().includes(query) ||
+            box.fields?.some(field => field.label?.toLowerCase().includes(query)),
+          ),
+        )
       }
-      const toggleMenuItem = (query) => {
-        const hitSchemas = querySchemas(query)
+      const filterMenuItems = (query) => {
+        const hitSchemas = matchSchemas(query)
+        const regex = query ? new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi") : null
         this.entities.menu.querySelectorAll(".plugin-preferences-menu-item").forEach(el => {
-          const hide = !!query && !hitSchemas.has(el.dataset.plugin) && !el.textContent.toLowerCase().includes(query)
-          this.utils.toggleInvisible(el, hide)
+          const name = el.textContent
+          const isHit = hitSchemas.includes(el.dataset.plugin) || name.toLowerCase().includes(query)
+          this.utils.toggleInvisible(el, Boolean(query && !isHit))
+          el.innerHTML = (query && isHit) ? name.replace(regex, "<div class='plugin-preferences-highlight'>$1</div>") : name
         })
       }
       const highlightForm = (query) => this.entities.form.getApi("highlight")?.highlight(query)
       const scroll = () => this.entities.menu.querySelector(".plugin-preferences-menu-item.active")?.scrollIntoView({ block: "center" })
       this.utils.createSmartInputHandler(this.entities.searchInput, (query) => {
-        toggleMenuItem(query)
+        filterMenuItems(query)
         highlightForm(query)
         if (!query) scroll()
       })

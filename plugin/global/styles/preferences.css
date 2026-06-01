@@ -6,6 +6,7 @@
   --pref-bg-active: rgba(66, 133, 244, 0.1);
   --pref-bg-search: rgba(0, 0, 0, 0.04);
   --pref-border: rgba(0, 0, 0, 0.06);
+  --pref-bg-highlight: rgba(245, 158, 11, 0.4);
   --pref-text-main: #1e293b;
   --pref-text-sub: #475569;
   --pref-text-placeholder: #94a3b8;
@@ -170,6 +171,12 @@
   background: var(--pref-bg-active);
   color: var(--pref-primary-text);
   font-weight: 600;
+}
+
+.plugin-preferences-highlight {
+  color: inherit;
+  background-color: var(--pref-bg-highlight);
+  border-radius: 4px;
 }
 
 .plugin-preferences-right {
