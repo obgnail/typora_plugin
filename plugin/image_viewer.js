@@ -355,6 +355,8 @@ class ImageViewerPlugin extends BasePlugin {
   }
 
   process = () => {
+    this._handleImageInteraction()
+
     this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close())
 
     if (this.config.CLICK_MASK_TO_EXIT) {
@@ -374,11 +376,6 @@ class ImageViewerPlugin extends BasePlugin {
       const fn = fnList[ev.deltaY > 0 ? 1 : 0]
       if (typeof fn === "function") fn()
     }, { passive: false })
-    this.entities.image.addEventListener("mousedown", ev => {
-      const fnList = this.getFnList(ev, "MOUSEDOWN")
-      const fn = fnList[ev.button]
-      if (typeof fn === "function") fn()
-    })
     this.entities.ops.addEventListener("click", ev => {
       const target = ev.target.closest("[option]")
       if (!target) return
@@ -404,6 +401,54 @@ class ImageViewerPlugin extends BasePlugin {
       if (target) target.scrollLeft += ev.deltaY * 0.5
       ev.stopPropagation()
     }, { passive: true })
+  }
+
+  _handleImageInteraction = () => {
+    const raf = this.utils.getRafManager()
+
+    this.entities.image.addEventListener("mousedown", ev => {
+      const executeAction = () => {
+        const fnList = this.getFnList(ev, "MOUSEDOWN")
+        const fn = fnList[ev.button]
+        if (typeof fn === "function") fn()
+      }
+
+      if (ev.button !== 0) {
+        executeAction()
+        return
+      }
+
+      ev.preventDefault()
+
+      let isMoved = false
+      const startX = ev.clientX
+      const startY = ev.clientY
+      const initialTx = this.operations.state.translateX
+      const initialTy = this.operations.state.translateY
+
+      this.entities.image.classList.add("dragging")
+
+      const onMouseMove = ev => {
+        const deltaX = ev.clientX - startX
+        const deltaY = ev.clientY - startY
+        if (!isMoved && Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 3) isMoved = true
+        raf.schedule(() => {
+          this.operations.state.translateX = initialTx + deltaX
+          this.operations.state.translateY = initialTy + deltaY
+          this.operations.apply(false)
+        })
+      }
+      const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove)
+        document.removeEventListener("mouseup", onMouseUp)
+        this.entities.image.classList.remove("dragging")
+        raf.cancel()
+        if (!isMoved) executeAction()
+      }
+
+      document.addEventListener("mousemove", onMouseMove)
+      document.addEventListener("mouseup", onMouseUp)
+    })
   }
 
   getFnList = (ev, method) => {

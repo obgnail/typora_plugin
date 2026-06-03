@@ -358,7 +358,7 @@ The rendering performance of large files in Typora is very poor. Use this plugin
 
 One-stop image viewing, and provides simple image editing.
 
-![image-reviewer](./assets/image-reviewer.png)
+![image_viewer](./assets/image_viewer.png)
 
 ### static_markers
 

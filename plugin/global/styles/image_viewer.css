@@ -34,6 +34,10 @@
   transition: transform 0.2s ease 0s;
 }
 
+#plugin-image-viewer .viewer-image.dragging {
+  transition: none !important;
+}
+
 #plugin-image-viewer .viewer-item {
   position: absolute;
   z-index: 99999;
