@@ -114,7 +114,7 @@ const pluginVendor = {
 }
 
 const SHARED_VENDORS_CONFIG = {
-  "js-yaml": sharedVendor.download({ outFileName: "js-yaml.js", url: "https://raw.githubusercontent.com/nodeca/js-yaml/refs/heads/master/dist/js-yaml.min.js" }),
+  "js-yaml": sharedVendor.download({ outFileName: "js-yaml.js", url: "https://cdn.jsdelivr.net/npm/js-yaml@latest/dist/js-yaml.min.js" }),
   "markdown-it": sharedVendor.download({ outFileName: "markdown-it.js", url: "https://cdn.jsdelivr.net/npm/markdown-it@latest/dist/markdown-it.min.js" }),
   "smol-toml": sharedVendor.bundle({ outFileName: "smol-toml.js", entryInBuild: "smol-toml.mjs" }),
   "node-fetch-commonjs": sharedVendor.bundle({ outFileName: "node-fetch-commonjs.js", entryInBuild: "node-fetch-commonjs.cjs" }),
