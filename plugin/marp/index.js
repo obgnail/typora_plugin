@@ -42,9 +42,18 @@ class MarpPlugin extends BasePlugin {
   getVersion = () => "marp-core@4.2.0"
 
   lazyLoad = () => {
-    const { Marp } = require("./marp-core.min.js")
-    this.Marp = Marp
-    this.marp = new Marp(this.config.MARP_CORE_OPTIONS).use(this._marpAbsoluteImagePath())
+    // Isolate global MathJax to prevent conflict with Typora's built-in MathJax.
+    // marp-core's bundled MathJax calls MathJax.loader.preLoad() during require(),
+    // which conflicts with Typora's global MathJax that lacks this API.
+    const _mathjax = globalThis.MathJax
+    delete globalThis.MathJax
+    try {
+      const { Marp } = require("./marp-core.min.js")
+      this.Marp = Marp
+      this.marp = new Marp(this.config.MARP_CORE_OPTIONS).use(this._marpAbsoluteImagePath())
+    } finally {
+      globalThis.MathJax = _mathjax
+    }
   }
 
   _marpAbsoluteImagePath = () => {
