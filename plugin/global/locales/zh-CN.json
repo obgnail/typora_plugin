@@ -1723,5 +1723,21 @@
     "$tooltip.coord1": "向左递增",
     "$tooltip.exclusive": "与「自定义回调」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
+  },
+  "file_rules": {
+    "pluginName": "文件规则",
+    "notify.copySuccess": "文件已复制到 {{folder}}",
+    "notify.copySuccessBatch": "{{count}} 个文件已复制到 {{folder}}",
+    "notify.copyFailed": "复制文件失败: {{error}}",
+    "notify.noFile": "无可用文件路径，请先保存文档。",
+    "notify.pathTraversal": "检测到路径穿越攻击，文件名无效。",
+    "notify.noOriginalPath": "无法使用原始文件：文件路径不可用。请启用 copy_to_assets 或确保文件具有有效路径。",
+    "notify.fileNameCollision": "100 次尝试后仍存在文件名冲突：{{name}}。请重命名源文件。",
+    "$label.COPY_TO_ASSETS": "复制到资源文件夹",
+    "$label.USE_RELATIVE_PATH": "使用相对路径",
+    "$label.ESCAPE_URL": "转义 URL 特殊字符",
+    "$label.TARGET_FOLDER": "自定义目标文件夹",
+    "$tooltip.defaultTargetFolder": "留空则使用 ./{filename}.assets/ 约定",
+    "$tooltip.escapeUrl": "对文件路径中的空格和特殊字符进行 URL 编码"
   }
 }

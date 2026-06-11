@@ -1500,6 +1500,17 @@ const schema_action_buttons = () => [
   FRAG.SettingHandler(),
 ]
 
+const schema_file_rules = () => [
+  FRAG.Base(),
+  Group(
+    Switch("COPY_TO_ASSETS"),
+    Switch("USE_RELATIVE_PATH"),
+    Switch("ESCAPE_URL").Tooltip("escapeUrl"),
+    Text("TARGET_FOLDER").Placeholder("defaultIfEmpty").Tooltip("defaultTargetFolder"),
+  ),
+  FRAG.SettingHandler(),
+]
+
 const RAW_SCHEMA_FNS = {
   global: schema_global,
   window_tab: schema_window_tab,
@@ -1563,6 +1574,7 @@ const RAW_SCHEMA_FNS = {
   plantUML: schema_plantUML,
   marp: schema_marp,
   callouts: schema_callouts,
+  file_rules: schema_file_rules,
 }
 
 const mapTree = (schemas, visitBox = box => box, visitField = field => field, prefix = "") => schemas.map(box => {

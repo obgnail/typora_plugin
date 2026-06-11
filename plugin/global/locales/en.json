@@ -1723,5 +1723,21 @@
     "$tooltip.coord1": "Increments leftwards",
     "$tooltip.exclusive": "Mutually exclusive with 'Custom Callback'",
     "$placeholder.customCallback": "() => window.confirm('Custom action running...')"
+  },
+  "file_rules": {
+    "pluginName": "File Rules",
+    "notify.copySuccess": "File copied to {{folder}}",
+    "notify.copySuccessBatch": "{{count}} files copied to {{folder}}",
+    "notify.copyFailed": "Failed to copy file: {{error}}",
+    "notify.noFile": "No file path available. Please save the document first.",
+    "notify.pathTraversal": "Path traversal attempt blocked. Invalid filename.",
+    "notify.noOriginalPath": "Cannot use original file: file path is not available. Enable copy_to_assets or ensure file has a valid path.",
+    "notify.fileNameCollision": "File name collision after 100 attempts: {{name}}. Please rename the source file.",
+    "$label.COPY_TO_ASSETS": "Copy to Assets Folder",
+    "$label.USE_RELATIVE_PATH": "Use Relative Paths",
+    "$label.ESCAPE_URL": "Escape URL Special Characters",
+    "$label.TARGET_FOLDER": "Custom Target Folder",
+    "$tooltip.defaultTargetFolder": "Leave empty to use ./{filename}.assets/ convention",
+    "$tooltip.escapeUrl": "URL-encode spaces and special characters in file paths"
   }
 }

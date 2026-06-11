@@ -1723,5 +1723,21 @@
     "$tooltip.coord1": "向左遞增",
     "$tooltip.exclusive": "與「自訂回呼」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
+  },
+  "file_rules": {
+    "pluginName": "檔案規則",
+    "notify.copySuccess": "檔案已複製到 {{folder}}",
+    "notify.copySuccessBatch": "{{count}} 個檔案已複製到 {{folder}}",
+    "notify.copyFailed": "複製檔案失敗: {{error}}",
+    "notify.noFile": "無可用檔案路徑，請先儲存文件。",
+    "notify.pathTraversal": "偵測到路徑穿越攻擊，檔名無效。",
+    "notify.noOriginalPath": "無法使用原始檔案：檔案路徑不可用。請啟用 copy_to_assets 或確保檔案具有有效路徑。",
+    "notify.fileNameCollision": "100 次嘗試後仍存在檔名衝突：{{name}}。請重新命名來源檔案。",
+    "$label.COPY_TO_ASSETS": "複製到資源資料夾",
+    "$label.USE_RELATIVE_PATH": "使用相對路徑",
+    "$label.ESCAPE_URL": "逸出 URL 特殊字元",
+    "$label.TARGET_FOLDER": "自訂目標資料夾",
+    "$tooltip.defaultTargetFolder": "留空則使用 ./{filename}.assets/ 慣例",
+    "$tooltip.escapeUrl": "對檔案路徑中的空格和特殊字元進行 URL 編碼"
   }
 }

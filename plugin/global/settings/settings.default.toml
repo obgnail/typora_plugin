@@ -2139,6 +2139,7 @@ LIST = [
   "md_padding",
   "text_stylize",
   "markdownlint",
+  "file_rules",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__COMPONENT_PLUGINS__"
@@ -3263,6 +3264,23 @@ DEFAULT_ICON = "\\f075"
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting
 TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
+
+
+[file_rules]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+
+# =========== [ File Processing Rules ] ===========
+# Copy the pasted/dropped file to the target folder
+COPY_TO_ASSETS = true
+# Convert the inserted path to a relative path
+USE_RELATIVE_PATH = true
+# URL-encode special characters in the path
+ESCAPE_URL = true
+# Custom destination folder (relative to current markdown file's directory).
+# Empty string means use ./${filename}.assets/ convention.
+TARGET_FOLDER = ""
 
 
 [test]
