@@ -1504,9 +1504,6 @@ const schema_file_rules = () => [
   FRAG.Base(),
   Group(
     Switch("COPY_TO_ASSETS"),
-    Switch("USE_RELATIVE_PATH"),
-    Switch("ESCAPE_URL").Tooltip("escapeUrl"),
-    Text("TARGET_FOLDER").Placeholder("defaultIfEmpty").Tooltip("defaultTargetFolder"),
   ),
   FRAG.SettingHandler(),
 ]

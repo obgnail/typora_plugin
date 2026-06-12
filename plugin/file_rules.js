@@ -1,28 +1,27 @@
 class FileRulesPlugin extends BasePlugin {
-  rule = null
   imageExtensions = new Set([
     "jpg", "jpeg", "png", "gif", "svg", "webp", "bmp", "tiff", "ico", "jfif",
   ])
 
   prepare = () => {
-    const { COPY_TO_ASSETS, USE_RELATIVE_PATH, ESCAPE_URL, TARGET_FOLDER } = this.config
-
-    const hasRule = COPY_TO_ASSETS || USE_RELATIVE_PATH || ESCAPE_URL
-    if (hasRule) {
-      this.rule = {
-        copy_to_assets: COPY_TO_ASSETS,
-        use_relative_path: USE_RELATIVE_PATH,
-        escape_url: ESCAPE_URL,
-        target_folder: TARGET_FOLDER,
-      }
-    }
-
-    if (!this.rule) {
+    if (!this.config.COPY_TO_ASSETS) {
       return this.utils.PLUGIN_LOAD_ABORT
     }
   }
 
   process = () => {
+    // Images: leverage Typora's native defaultImageStorage mechanism.
+    // Override the target folder so Typora handles copying & markdown insertion.
+    const getImgEdit = () => File?.editor?.imgEdit
+    this.utils.decorator.modifyReturn(getImgEdit, "getTargetImageStorageFolderFromSetting", (original) => {
+      return this._getTargetFolder() || original
+    })
+    this.utils.decorator.modifyReturn(getImgEdit, "getTargetImageStorageFolder", (original) => {
+      return this._getTargetFolder() || original
+    })
+
+    // Non-image files (pdf, exe, msi, etc.): Typora has no native storage
+    // for these, so we handle paste/drop ourselves with the same folder rules.
     this.utils.entities.eWrite.addEventListener("paste", this._handlePaste, { capture: true })
     this.utils.entities.eWrite.addEventListener("drop", this._handleDrop, { capture: true })
   }
@@ -40,25 +39,51 @@ class FileRulesPlugin extends BasePlugin {
   }
 
   _processFiles = async (fileList, ev) => {
-    if (!this.rule || fileList.length === 0) return
+    const files = Array.from(fileList)
+    // If event contains ONLY images, let Typora handle them natively (decorator applies)
+    const hasNonImage = files.some(f => !this._isImage(f))
+    if (!hasNonImage) return
 
-    // Immediately prevent default to stop Typora's built-in handler
+    // Resolve targetFolder BEFORE preventDefault — if we can't determine a
+    // folder (e.g. upload/ipic mode), bail out and let Typora handle the event.
+    const targetFolder = this._getTargetFolder()
+    if (!targetFolder) return
+
+    // When non-image files are present, we handle ALL files in the event.
+    // preventDefault is necessary for non-images, but it also blocks Typora's
+    // image handler — so we process images here too to avoid silent data loss.
     ev.preventDefault()
     ev.stopPropagation()
 
+    const filePath = this.utils.getFilePath()
+    if (!filePath) {
+      this.utils.notification.show(this.i18n.t("notify.noFile"), "warning")
+      return
+    }
+
     const markdownParts = []
     let successCount = 0
-    let targetFolder = ""
-    for (const file of fileList) {
+
+    const { FsExtra, Path } = this.utils.Package
+    await FsExtra.ensureDir(targetFolder)
+    const currentDir = this.utils.getCurrentDirPath()
+
+    for (const file of files) {
       try {
-        const result = await this._processFile(file)
-        if (result) {
-          markdownParts.push(result.markdown)
-          successCount++
-          if (!targetFolder && result.targetFolder) {
-            targetFolder = result.targetFolder
-          }
+        const sourcePath = this._getFilePath(file)
+        const isImage = this._isImage(file)
+
+        const destPath = await this._copyFile(file, targetFolder, sourcePath, FsExtra, Path)
+        let finalPath = File.option.useRelativePathForImg
+          ? Path.relative(currentDir, destPath).replace(/\\/g, "/")
+          : destPath
+        if (File.option.autoEscapeImageURL) {
+          finalPath = this._escapeUrl(finalPath)
         }
+
+        const displayName = Path.basename(destPath, Path.extname(destPath))
+        markdownParts.push(this._generateMarkdown(finalPath, displayName, isImage))
+        successCount++
       } catch (e) {
         console.error("[file_rules]", e)
         this.utils.notification.show(
@@ -68,8 +93,7 @@ class FileRulesPlugin extends BasePlugin {
       }
     }
 
-    if (successCount > 0 && targetFolder) {
-      const { Path } = this.utils.Package
+    if (successCount > 0) {
       const folderName = Path.basename(targetFolder)
       this.utils.notification.show(
         this.i18n.t("notify.copySuccessBatch", { count: successCount, folder: folderName }),
@@ -82,86 +106,34 @@ class FileRulesPlugin extends BasePlugin {
     }
   }
 
-  _processFile = async (file) => {
-    const filePath = this.utils.getFilePath()
-    if (!filePath) {
-      this.utils.notification.show(this.i18n.t("notify.noFile"), "warning")
-      return null
-    }
-
-    const currentDir = this.utils.getCurrentDirPath()
-    const fileName = this.utils.getFileName(filePath, true)
-    const rule = this.rule
-    const targetDir = this._resolveTargetFolder(rule, currentDir, fileName)
-
-    const { FsExtra, Path } = this.utils.Package
-
-    let destPath
-    if (rule.copy_to_assets) {
-      await FsExtra.ensureDir(targetDir)
-      const ext = this._getExtension(file)
-      const originalName = file.name || `file-${this._timestamp()}.${ext}`
-      destPath = await this._copyFile(file, targetDir, originalName, FsExtra, Path)
-      if (!destPath) return null
-    } else {
-      destPath = file.path
-      if (!destPath) {
-        console.error("[file_rules] Cannot use original file: file.path is not available")
-        throw new Error(this.i18n.t("notify.noOriginalPath"))
-      }
-    }
-
-    let finalPath
-    if (rule.use_relative_path) {
-      finalPath = Path.relative(currentDir, destPath)
-      finalPath = finalPath.replace(/\\/g, "/")
-    } else {
-      finalPath = destPath
-    }
-
-    if (rule.escape_url) {
-      finalPath = this._escapeUrl(finalPath)
-    }
-
-    const ext = this._getExtension(file)
-    const isImage = this.imageExtensions.has(ext.toLowerCase())
-    const displayName = Path.basename(destPath, Path.extname(destPath))
-    const markdown = this._generateMarkdown(finalPath, displayName, isImage)
-
-    return {
-      markdown,
-      targetFolder: rule.copy_to_assets ? targetDir : null,
-    }
+  _isImage = (file) => {
+    if (file.type && file.type.startsWith("image/")) return true
+    const ext = this._getExtension(file).toLowerCase()
+    return this.imageExtensions.has(ext)
   }
 
-  _resolveTargetFolder = (rule, currentDir, fileName) => {
-    const { Path } = this.utils.Package
-    if (rule.target_folder) {
-      return Path.resolve(currentDir, rule.target_folder)
-    }
-    return Path.resolve(currentDir, `${fileName}.assets`)
+  _getFilePath = (file) => {
+    if (file.path) return file.path
+    try {
+      const { webUtils } = reqnode("electron")
+      const p = webUtils?.getPathForFile?.(file)
+      if (p) return p
+    } catch (_) {}
+    return null
   }
 
-  _copyFile = async (file, targetDir, originalName, FsExtra, Path) => {
-    let destName = Path.basename(originalName)
-    if (destName.includes("/") || destName.includes("\\") || destName === "..") {
-      console.error("[file_rules] Path traversal attempt blocked:", originalName)
-      throw new Error(this.i18n.t("notify.pathTraversal"))
-    }
+  _copyFile = async (file, targetDir, sourcePath, FsExtra, Path) => {
+    let destName = Path.basename(file.name || (sourcePath ? Path.basename(sourcePath) : `file-${Date.now()}`))
 
     let destPath = Path.join(targetDir, destName)
-
-    if (file.path && Path.resolve(file.path) === Path.resolve(destPath)) {
+    if (sourcePath && Path.resolve(sourcePath) === Path.resolve(destPath)) {
       return destPath
     }
 
     let counter = 1
-    const maxAttempts = 100
     while (await this.utils.existPath(destPath)) {
-      if (counter >= maxAttempts) {
-        throw new Error(
-          this.i18n.t("notify.fileNameCollision", { name: destName })
-        )
+      if (counter >= 100) {
+        throw new Error(this.i18n.t("notify.fileNameCollision", { name: destName }))
       }
       const ext = Path.extname(destName)
       const base = Path.basename(destName, ext)
@@ -170,21 +142,49 @@ class FileRulesPlugin extends BasePlugin {
       counter++
     }
 
-    const resolvedPath = Path.resolve(targetDir, destName)
+    // Path traversal guard
+    const resolved = Path.resolve(destPath)
     const resolvedTarget = Path.resolve(targetDir) + Path.sep
-    if (resolvedPath !== Path.resolve(targetDir) && !resolvedPath.startsWith(resolvedTarget)) {
-      console.error("[file_rules] Path traversal blocked after resolution:", resolvedPath)
+    if (resolved !== Path.resolve(targetDir) && !resolved.startsWith(resolvedTarget)) {
       throw new Error(this.i18n.t("notify.pathTraversal"))
     }
 
-    if (file.path) {
-      await FsExtra.copy(file.path, destPath)
+    if (sourcePath) {
+      await FsExtra.copy(sourcePath, destPath)
     } else {
       const buffer = Buffer.from(await file.arrayBuffer())
       await FsExtra.writeFile(destPath, buffer)
     }
-
     return destPath
+  }
+
+  _getTargetFolder = () => {
+    const filePath = this.utils.getFilePath()
+    if (!filePath) return null
+
+    const { Path } = this.utils.Package
+    const currentDir = this.utils.getCurrentDirPath()
+    const fileName = this.utils.getFileName(filePath, true)
+
+    // Read Typora's native defaultImageStorage setting directly.
+    // We CANNOT call getTargetImageStorageFolder() here — it's been decorated
+    // by this plugin and would cause infinite recursion.
+    const storage = File?.option?.defaultImageStorage
+    if (!storage || storage === "upload" || storage === "ipic") {
+      return null  // Let decorator fall through to original Typora behavior
+    }
+
+    if (storage === "folder") {
+      return Path.normalize(currentDir.replace(/[\\/]$/, ""))
+    }
+    if (storage === "assert") {
+      return Path.resolve(currentDir, "assets")
+    }
+    if (storage === "per-file-assert") {
+      return Path.resolve(currentDir, `${fileName}.assets`)
+    }
+    // Custom path (may contain ${filename} placeholder)
+    return Path.resolve(currentDir, storage.replace(/\${filename}/g, fileName))
   }
 
   _getExtension = (file) => {
@@ -206,16 +206,10 @@ class FileRulesPlugin extends BasePlugin {
       .join("/")
   }
 
-  _generateMarkdown = (relativePath, displayName, isImage) => {
+  _generateMarkdown = (finalPath, displayName, isImage) => {
     const prefix = isImage ? "!" : ""
     const safeName = displayName.replace(/[\[\]()]/g, "\\$&")
-    return `${prefix}[${safeName}](${relativePath})`
-  }
-
-  _timestamp = () => {
-    const now = new Date()
-    const pad = n => String(n).padStart(2, "0")
-    return `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
+    return `${prefix}[${safeName}](${finalPath})`
   }
 }
 

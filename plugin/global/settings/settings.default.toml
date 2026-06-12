@@ -3272,15 +3272,12 @@ ENABLE = false
 NAME = ""
 
 # =========== [ File Processing Rules ] ===========
-# Copy the pasted/dropped file to the target folder
+# Copy the pasted/dropped non-image file to the target folder.
+# Relative path, URL escaping, and target folder are read from Typora's preferences:
+#   - Use Relative Path  → File.option.useRelativePathForImg
+#   - Escape URL         → File.option.autoEscapeImageURL
+#   - Target Folder      → File.editor.imgEdit.getTargetImageStorageFolder()
 COPY_TO_ASSETS = true
-# Convert the inserted path to a relative path
-USE_RELATIVE_PATH = true
-# URL-encode special characters in the path
-ESCAPE_URL = true
-# Custom destination folder (relative to current markdown file's directory).
-# Empty string means use ./${filename}.assets/ convention.
-TARGET_FOLDER = ""
 
 
 [test]
