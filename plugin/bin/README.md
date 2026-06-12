@@ -43,7 +43,7 @@ Yes, you can run `install_windows_amd_x64.exe` located in this folder. However, 
 * `install_windows.ps1` / `install_linux.sh`: The standard automated installers. They safely inject the plugin code into Typora's core files (`window.html`) and configure the correct folder permissions.
 * `uninstall_windows.ps1` / `uninstall_linux.sh`: The uninstallation scripts. They cleanly remove the plugin code from Typora and restore it to its original state.
 * `ensure_permissions.ps1`: A utility script for Windows to fix read/write permission issues. It forces "Full Control" access for users to the plugin and settings directories.
-* `install_windows_amd_x64.exe`: A lightweight Windows installer. It does the same code injection as the `.ps1` script but doesn't require Administrator privileges (it skips the permission setup phase).
+* `install_windows_amd_x64.exe`: A lightweight Windows installer. Compiled via `x86_64-w64-mingw32-gcc -m64 -Os -s -static-libgcc install.c -o install_windows_amd_x64.exe`, it performs the same code injection as the `.ps1` script but doesn't require Administrator privileges (it skips the permission setup phase).
 * `move_settings_files.ps1` / `move_settings_files.sh`: Configuration migration scripts designed for advanced users. It moves your configuration files (`settings.user.toml`, `custom_plugin.user.toml`) between the plugin folder and your system user directory (`~/.config/typora_plugin`). **Note: Configuration files in the system user directory have a higher priority than those in the plugin directory.** *(You don't need this script for normal plugin upgrades, as the upgrade process automatically preserves your personal settings).*
 * `typora-plugin.sh`: A quick-run helper script for Linux that executes `move_settings_files.sh` safely without overwriting your existing files.
 * `version.json`: Contains the current version information of the plugin.
@@ -86,14 +86,14 @@ Yes, you can run `install_windows_amd_x64.exe` located in this folder. However, 
 
 #### Windows 下能否免管理员权限安装？
 
-可以。你可以执行同目录下的 `install_windows_amd_x64.exe`，但请注意，该程序没有做自动赋权操作。如果后续使用遇到问题，可能仍需要手动运行 `ensure_permissions.ps1` 或者手动修改文件夹权限（参考 2.1 章节）。
+可以。你可以执行同目录下的 `install_windows_amd_x64.exe`，但请注意，该程序没有做自动赋权操作。如果后续使用遇到问题，可能仍需要手动运行 `ensure_permissions.ps1` 或者手动修改文件夹权限（参考 2.1 章节）以确保插件正常工作。
 
 ### `bin` 目录下文件的功能介绍
 
 * `install_windows.ps1` / `install_linux.sh`：标准的自动化安装脚本。负责将插件代码注入到 Typora 的核心文件（`window.html`）中，并自动配置好读写权限。
 * `uninstall_windows.ps1` / `uninstall_linux.sh`：卸载脚本。负责将 Typora 核心文件中的插件代码抹除，使其恢复原状。
 * `ensure_permissions.ps1`：Windows 权限修复脚本。如果你在保存配置时遇到 “文件写入失败” 的报错，运行它会赋予 plugin 目录和配置文件 “完全控制” 的权限。
-* `install_windows_amd_x64.exe`：轻量级 Windows 安装程序。功能等同于 `.ps1` 安装脚本，但不请求管理员权限（因此跳过了权限分配步骤）。
+* `install_windows_amd_x64.exe`：轻量级 Windows 安装程序。该程序由 `x86_64-w64-mingw32-gcc -m64 -Os -s -static-libgcc install.c -o install_windows_amd_x64.exe` 编译而成。其功能等同于 `.ps1` 安装脚本，但不请求管理员权限（因此跳过了权限分配步骤）。
 * `move_settings_files.ps1` / `move_settings_files.sh`：配置迁移脚本。此脚本专为希望将配置文件独立出去的高级用户准备，用于将你的个性化配置文件（`settings.user.toml`, `custom_plugin.user.toml`）迁移到系统用户目录（`~/.config/typora_plugin`）。**请注意：系统用户目录下的配置文件优先级高于插件目录下的配置文件。**（注：日常升级插件时脚本会自动处理个人配置，通常无需手动运行此迁移配置脚本）。
 * `typora-plugin.sh`：Linux 环境下的快捷辅助脚本，用于静默调用迁移脚本，且不会覆盖现有配置。
 * `version.json`：记录当前插件版本。
