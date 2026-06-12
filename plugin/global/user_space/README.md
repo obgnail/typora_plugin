@@ -1,20 +1,20 @@
-# 用户空间说明
+# User Space Readme
 
-欢迎来到您的个人用户空间！
+Welcome to your personal user space!
 
-这是一个为您预留的专属目录。您可以在此存放任何您需要的文件，例如：
+This is a dedicated directory reserved for you. You can store any of your personal files here, such as:
 
-* 自定义配置
-* 个人脚本或插件
-* 项目文件或资源
-* 笔记与备忘录
+* Custom configurations
+* Personal scripts or plugins
+* Project files or assets
+* Notes and memos
 
-## 核心特性：数据持久化
+## Key Feature: Data Persistence
 
-**当插件更新时，此目录下的所有文件和子目录都将被完整保留，不会被更新过程覆盖或删除。**
+**When the plugin is updated, all files and subdirectories within this directory will be automatically preserved. They will NOT be overwritten or deleted during the update process.**
 
-您可以把这里看作是您在插件中的一个“个人文件夹”，确保您的个人数据在插件升级后依然安全。
+You can think of this directory as your personal "documents folder" within the plugin, ensuring your data remains safe across upgrades.
 
-## 二次开发支持
+## Development Support
 
-如果您计划对 typora_plugin 做二次开发，可以将所需文件放置于此，并通过 `__plugin_utils__.getUserSpaceFile(fileName)` 获取目标文件。
+If you plan to develop on typora_plugin, you can place the required files here and obtain the target file through `__plugin_utils__.getUserSpaceFile(fileName)`.
