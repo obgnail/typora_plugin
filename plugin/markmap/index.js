@@ -59,9 +59,13 @@ class MarkmapPlugin extends BasePlugin {
   lazyLoad = async () => {
     if (this.Lib.transformerVersions) return
 
-    const { Transformer, transformerVersions, markmap } = require("./resource/markmap.min.js")
-    const transformer = new Transformer()
-    Object.assign(this.Lib, markmap, { transformer, Transformer, transformerVersions })
+    const localImagePlugin = resolveImageSrcPlugin(
+      src => src && !this.utils.isNetworkImage(src) && !this.utils.isSpecialImage(src),
+      src => this.utils.Package.Path.resolve(this.utils.getLocalRootUrl(), src),
+    )
+    const { Transformer, transformerVersions, builtInPlugins, markmap } = require("./resource/markmap.min.js")
+    const transformer = new Transformer([...builtInPlugins, localImagePlugin])
+    Object.assign(this.Lib, markmap, { transformer, transformerVersions })
 
     const { styles, scripts } = transformer.getAssets()
     this.localizeResources(styles, scripts)
@@ -93,6 +97,30 @@ class MarkmapPlugin extends BasePlugin {
     }
     localize(styles, "stylesheet", "href")
     localize(scripts, "script", "src")
+  }
+}
+
+function wrapFunction(fn, wrapper) {
+  return (...args) => wrapper(fn, ...args)
+}
+
+function resolveImageSrcPlugin(filter, resolve) {
+  return {
+    name: "resolveImageSrc",
+    transform(transformHooks) {
+      transformHooks.parser.tap(md => {
+        md.renderer.renderAttrs = wrapFunction(md.renderer.renderAttrs, (renderAttrs, token) => {
+          if (token.tag === "img") {
+            const src = token.attrGet("src")
+            if (filter(src)) {
+              token.attrSet("src", resolve(src))
+            }
+          }
+          return renderAttrs(token)
+        })
+      })
+      return {}
+    },
   }
 }
 
