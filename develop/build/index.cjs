@@ -208,6 +208,30 @@ function createAliasPlugin(registry, currentAbsOutfile) {
   }
 }
 
+// Patch mathjax-full's AllPackages.js: remove the global MathJax detection block so
+// marp-core uses its own bundled MathJax without touching Typora's global MathJax.
+// See docs/issue-notes/1203-marp-mathjax-conflict/solution-build-patch.md
+function patchMathjaxGlobalDetect() {
+  return {
+    name: "patch-mathjax-global-detect",
+    setup(build) {
+      build.onLoad({ filter: /[\\/]mathjax-full[\\/]js[\\/]input[\\/]tex[\\/]AllPackages\.js$/ }, async (args) => {
+        const fs = require("fs")
+        let code = fs.readFileSync(args.path, "utf8")
+        const original = code
+        code = code.replace(
+          /if\s*\(typeof MathJax !== 'undefined' && MathJax\.loader\)\s*\{[\s\S]*?\}\s*/,
+          "/* patched by typora_plugin build: removed global MathJax detection to avoid Typora conflict */\n"
+        )
+        if (code === original) {
+          console.warn(`\x1b[33mWarning: AllPackages.js global-detect block not found; mathjax-full may have changed.\x1b[0m`)
+        }
+        return { contents: code, loader: "js" }
+      })
+    },
+  }
+}
+
 const vendorExecutors = {
   [VENDOR_TYPE.download]: async (vendor, { analyze }) => {
     await Promise.all(vendor.downloads.map(async task => {
@@ -221,7 +245,7 @@ const vendorExecutors = {
       ...ESBUILD_OPTIONS,
       entryPoints: [vendor.absEntry],
       outfile: vendor.absOut,
-      plugins: [createAliasPlugin(aliasRegistry, vendor.absOut)],
+      plugins: [createAliasPlugin(aliasRegistry, vendor.absOut), patchMathjaxGlobalDetect()],
       metafile: analyze,
     })
     if (analyze && result.metafile) {
