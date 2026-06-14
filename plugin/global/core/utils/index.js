@@ -244,15 +244,13 @@ class utils {
     }
   }
 
-  // Note: `called` must be set AFTER `fn.apply()`, not before.
-  // If `fn` throws, we want the next call to retry — not silently return `undefined` forever.
   static once = fn => {
     let result
     let called = false
     return function (...args) {
       if (!called) {
-        result = fn.apply(this, args)
         called = true
+        result = fn.apply(this, args)
       }
       return result
     }
