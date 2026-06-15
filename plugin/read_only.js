@@ -22,7 +22,7 @@ class ReadOnlyPlugin extends BasePlugin {
     }
     const updateInput = wantToLock => {
       if (!wantToLock) return
-      const selectors = ["#typora-quick-open-input input", "#plugin-search-multi-form input", "#plugin-commander-form input", "#plugin-command-palette-input", "#plugin-ripgrep-form input", ".plugin-preferences-search input"]
+      const selectors = ["#typora-quick-open-input input", "#plugin-search-multi-form input", "#plugin-commander-form input", "#plugin-command-palette-input", "#plugin-ripgrep-form input", "#plugin-preferences-search input"]
       selectors.forEach(s => document.querySelector(s)?.removeAttribute("readonly"))
     }
     const updateReplaceButton = wantToLock => {

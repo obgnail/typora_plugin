@@ -83,14 +83,14 @@
   flex-direction: column;
 }
 
-.plugin-preferences-search {
+#plugin-preferences-search {
   padding: 16px 12px;
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.plugin-preferences-search .ion-search {
+#plugin-preferences-search .ion-search {
   position: absolute;
   left: 24px;
   color: var(--pref-text-sub);
@@ -98,7 +98,7 @@
   pointer-events: none;
 }
 
-.plugin-preferences-search input {
+#plugin-preferences-search input {
   width: 100%;
   height: 36px;
   background: var(--pref-bg-search);
@@ -111,17 +111,17 @@
   transition: all 0.2s ease;
 }
 
-.plugin-preferences-search input::placeholder {
+#plugin-preferences-search input::placeholder {
   color: var(--pref-text-placeholder);
 }
 
-.plugin-preferences-search input:focus {
+#plugin-preferences-search input:focus {
   border-color: var(--pref-primary);
   background: var(--pref-bg-dialog);
   box-shadow: 0 0 0 3px var(--pref-shadow-focus);
 }
 
-.plugin-preferences-search .clear-btn {
+#plugin-preferences-search .clear-btn {
   position: absolute;
   right: 20px;
   color: var(--pref-text-sub);
@@ -134,11 +134,11 @@
   transition: color 0.2s;
 }
 
-.plugin-preferences-search .clear-btn:hover {
+#plugin-preferences-search .clear-btn:hover {
   color: var(--pref-text-main);
 }
 
-.plugin-preferences-search input:not(:placeholder-shown) ~ .clear-btn {
+#plugin-preferences-search input:not(:placeholder-shown) ~ .clear-btn {
   display: block;
 }
 

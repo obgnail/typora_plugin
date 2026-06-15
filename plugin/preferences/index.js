@@ -15,7 +15,7 @@ class PreferencesPlugin extends BasePlugin {
       <div class="plugin-preferences-dialog">
         <div class="plugin-preferences-content">
           <div class="plugin-preferences-left">
-            <div class="plugin-preferences-search"><i class="ion-search"></i><input type="text" placeholder="${this.i18n.t("search")}"><i class="ion-close-round clear-btn"></i></div>
+            <div id="plugin-preferences-search"><i class="ion-search"></i><input type="text" placeholder="${this.i18n.t("search")}"><i class="ion-close-round clear-btn"></i></div>
             <div class="plugin-preferences-menu"></div>
           </div>
           <div class="plugin-preferences-right">
@@ -39,8 +39,8 @@ class PreferencesPlugin extends BasePlugin {
       title: document.querySelector(".plugin-preferences-title"),
       form: document.querySelector(".plugin-preferences-form"),
       main: document.querySelector(".plugin-preferences-main"),
-      searchInput: document.querySelector(".plugin-preferences-search input"),
-      searchClear: document.querySelector(".plugin-preferences-search .clear-btn"),
+      searchInput: document.querySelector("#plugin-preferences-search input"),
+      searchClear: document.querySelector("#plugin-preferences-search .clear-btn"),
       close: document.querySelector(".plugin-preferences-close"),
     }
     this.RULES = require("./rules.js")
