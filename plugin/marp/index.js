@@ -39,15 +39,15 @@ class MarpPlugin extends BasePlugin {
 
   destroy = shadowRoot => shadowRoot.innerHTML = ""
 
-  getVersion = () => "marp-core@4.2.0"
+  getVersion = () => "marp-core@4.3.0"
 
   lazyLoad = () => {
     const { Marp } = require("./marp-core.min.js")
     this.Marp = Marp
-    this.marp = new Marp(this.config.MARP_CORE_OPTIONS).use(this._marpAbsoluteImagePath())
+    this.marp = new Marp(this.config.MARP_CORE_OPTIONS).use(this._imageAbsPath())
   }
 
-  _marpAbsoluteImagePath = () => {
+  _imageAbsPath = () => {
     const toAbsPath = (url) => {
       const decodedURL = decodeURIComponent(url)
       const dir = this.utils.getLocalRootUrl()
@@ -58,13 +58,11 @@ class MarpPlugin extends BasePlugin {
     }
 
     return function (marp) {
-      // Image commands (`![bg](...) `): They will be processed by `marp.normalizeLink`, replaced to the `background-image: url(...)` in `style` attribute.
       const originalNormalizeLink = marp.normalizeLink
-      marp.normalizeLink = (url) => {
-        const normalized = originalNormalizeLink(url)
-        return toAbsPath(normalized)
-      }
       const originalImageRule = marp.renderer.rules.image
+
+      // Image commands (`![bg](...) `): They will be processed by `marp.normalizeLink`, replaced to the `background-image: url(...)` in `style` attribute.
+      marp.normalizeLink = (url) => toAbsPath(originalNormalizeLink(url))
 
       // Ordinary images (`![alt](...) `): They will be processed by `md.renderer.rules.images`, replaced to the `src` attribute of the `<img>` tag.
       marp.renderer.rules.image = (tokens, idx, options, env, self) => {

@@ -126,9 +126,9 @@ class GalleryManager {
 
   _getTargetImage = images => {
     const strategies = {
-      firstImage: imgs => imgs[0],
-      inViewBoxImage: imgs => imgs.find(img => this.utils.isInViewBox(img)),
-      closestViewBoxImage: imgs => imgs
+      firstImage: images => images[0],
+      inViewBoxImage: images => images.find(img => this.utils.isInViewBox(img)),
+      closestViewBoxImage: images => images
         .reduce((closest, img) => {
           const distance = Math.abs(img.getBoundingClientRect().top - window.innerHeight / 2)
           return distance < closest.minDist ? { img, minDist: distance } : closest
@@ -237,24 +237,64 @@ class ImageViewerPlugin extends BasePlugin {
   operations = null
   gallery = null
   dispatcher = null
+  opMap = (() => {
+    const getHint = (ops, op) => {
+      const hint = ops[op]?.hint
+      return hint && hint !== dummy ? hint : null
+    }
 
-  static OP_ICONS = {
-    dummy: "", info: "fa fa-info-circle", thumbnailNav: "fa fa-caret-square-o-down",
-    waterfall: "fa fa-list", close: "fa fa-times", download: "fa fa-download",
-    scroll: "fa fa-crosshairs", play: "fa fa-play", location: "fa fa-location-arrow",
-    nextImage: "fa fa-angle-right", previousImage: "fa fa-angle-left",
-    firstImage: "fa fa-fast-backward", lastImage: "fa fa-fast-forward",
-    zoomOut: "fa fa fa-search-minus", zoomIn: "fa fa fa-search-plus",
-    rotateLeft: "fa fa-rotate-left", rotateRight: "fa fa-rotate-right",
-    hFlip: "fa fa-arrows-h", vFlip: "fa fa-arrows-v",
-    translateLeft: "fa fa-arrow-left", translateRight: "fa fa-arrow-right",
-    translateUp: "fa fa-arrow-up", translateDown: "fa fa-arrow-down",
-    incHSkew: "fa fa-toggle-right", decHSkew: "fa fa-toggle-left",
-    incVSkew: "fa fa-toggle-up", decVSkew: "fa fa-toggle-down",
-    originSize: "fa fa-clock-o", fitScreen: "fa fa-codepen",
-    autoSize: "fa fa-search-plus", restore: "fa fa-history",
-  }
-  static KEY_TRANSLATE = { arrowup: "↑", arrowdown: "↓", arrowleft: "←", arrowright: "→", " ": "Space" }
+    const TRANSLATES = { arrowup: "↑", arrowdown: "↓", arrowleft: "←", arrowright: "→", " ": "␣" }
+    const ICONS = {
+      dummy: "", info: "fa fa-info-circle", thumbnailNav: "fa fa-caret-square-o-down",
+      waterfall: "fa fa-list", close: "fa fa-times", download: "fa fa-download",
+      scroll: "fa fa-crosshairs", play: "fa fa-play", location: "fa fa-location-arrow",
+      nextImage: "fa fa-angle-right", previousImage: "fa fa-angle-left",
+      firstImage: "fa fa-fast-backward", lastImage: "fa fa-fast-forward",
+      zoomOut: "fa fa fa-search-minus", zoomIn: "fa fa fa-search-plus",
+      rotateLeft: "fa fa-rotate-left", rotateRight: "fa fa-rotate-right",
+      hFlip: "fa fa-arrows-h", vFlip: "fa fa-arrows-v",
+      translateLeft: "fa fa-arrow-left", translateRight: "fa fa-arrow-right",
+      translateUp: "fa fa-arrow-up", translateDown: "fa fa-arrow-down",
+      incHSkew: "fa fa-toggle-right", decHSkew: "fa fa-toggle-left",
+      incVSkew: "fa fa-toggle-up", decVSkew: "fa fa-toggle-down",
+      originSize: "fa fa-clock-o", fitScreen: "fa fa-codepen",
+      autoSize: "fa fa-search-plus", restore: "fa fa-history",
+    }
+    const dummy = this.i18n.t("$option.operations.dummy")
+    const modifierKeys = ["", "CTRL", "SHIFT", "ALT"]
+    const mouseConfigTypes = [
+      { name: "MOUSEDOWN_FUNCTION", labels: ["leftClick", "middleClick", "rightClick"] },
+      { name: "WHEEL_FUNCTION", labels: ["wheelUp", "wheelDown"] },
+    ]
+    const ops = Object.fromEntries(Object.entries(ICONS).map(
+      ([op, icon]) => [op, { hint: this.i18n.t(`$option.operations.${op}`), icon }],
+    ))
+    const mouseHints = mouseConfigTypes.flatMap(({ name, labels }) => {
+      const translatedLabels = this.i18n.array(labels, "mouse.")
+      return modifierKeys.flatMap(modifier => {
+        const configKey = modifier ? `${modifier}_${name}` : name
+        const config = this.config[configKey] || []
+        const prefix = modifier ? `${modifier}+` : ""
+        return translatedLabels
+          .map((evName, idx) => {
+            const hint = getHint(ops, config[idx])
+            return hint ? `${prefix}${evName}\t${hint}` : null
+          })
+          .filter(Boolean)
+      })
+    })
+    const hotkeyHints = this.config.HOTKEY_FUNCTION
+      .map(({ hotkey, fn }) => {
+        const hint = getHint(ops, fn)
+        if (!hint) return null
+        const key = TRANSLATES[hotkey.toLowerCase()] || hotkey
+        return `${key}\t${hint}`
+      })
+      .filter(Boolean)
+
+    ops.info.hint = [...mouseHints, ...hotkeyHints].join("\n")
+    return ops
+  })()
 
   style = () => ({
     imageMaxWidth: this.config.IMAGE_MAX_WIDTH + "%",
@@ -265,18 +305,11 @@ class ImageViewerPlugin extends BasePlugin {
   })
 
   html = () => {
-    const opEntities = Object.fromEntries(
-      Object.entries(this.constructor.OP_ICONS).map(([op, icon]) => [
-        op, { hint: this.i18n.t(`$option.operations.${op}`), icon },
-      ]),
-    )
-    opEntities.info.hint = this._buildInfoHint(opEntities)
-
     const columns = `<div class="viewer-waterfall-col"></div>`.repeat(this.config.WATERFALL_COLUMNS)
     const messageList = this.config.SHOW_MESSAGE.map(m => `<div class="viewer-${m}"></div>`).join("")
     const operationList = this.config.TOOL_FUNCTION
-      .filter(op => Object.hasOwn(opEntities, op))
-      .map(op => `<i class="${opEntities[op].icon}" option="${op}" title="${opEntities[op].hint}"></i>`)
+      .filter(op => Object.hasOwn(this.opMap, op))
+      .map(op => `<i class="${this.opMap[op].icon}" data-op="${op}" title="${this.opMap[op].hint}"></i>`)
       .join("")
 
     const navClass = this.config.SHOW_THUMBNAIL_NAV ? "" : "plugin-common-hidden"
@@ -296,41 +329,6 @@ class ImageViewerPlugin extends BasePlugin {
         <div class="viewer-item" action="nextImage"><i class="fa fa-angle-right"></i></div>
         <div class="plugin-viewer-cover viewer-mask"></div>
       </div>`
-  }
-
-  _buildInfoHint = (opEntities) => {
-    const result = [`${this.i18n.t("currentConfig")}:`]
-    const dummy = this.i18n.t("$option.operations.dummy")
-    const modifierKeys = ["", "CTRL", "SHIFT", "ALT"]
-    const mouseEvents = [
-      { name: "MOUSEDOWN_FUNCTION", events: this.i18n.array(["leftClick", "middleClick", "rightClick"], "mouse.") },
-      { name: "WHEEL_FUNCTION", events: this.i18n.array(["wheelUp", "wheelDown"], "mouse.") },
-    ]
-
-    for (const { name, events } of mouseEvents) {
-      for (const modifier of modifierKeys) {
-        const configKey = modifier ? `${modifier}_${name}` : name
-        const config = this.config[configKey]
-        events.forEach((evName, idx) => {
-          const op = config[idx]
-          const hint = opEntities[op]?.hint
-          if (hint && hint !== dummy) {
-            const keyCombo = (modifier ? `${modifier}+` : "") + evName
-            result.push(`${keyCombo}\t${hint}`)
-          }
-        })
-      }
-    }
-
-    this.config.HOTKEY_FUNCTION.forEach(({ hotkey, fn }) => {
-      const hint = opEntities[fn]?.hint
-      if (hint && hint !== dummy) {
-        const translatedKey = this.constructor.KEY_TRANSLATE[hotkey.toLowerCase()] || hotkey
-        result.push(`${translatedKey}\t${hint}`)
-      }
-    })
-
-    return result.join("\n")
   }
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -363,11 +361,8 @@ class ImageViewerPlugin extends BasePlugin {
       this.entities.mask.addEventListener("click", this.call)
     }
     this.entities.viewer.addEventListener("click", ev => {
-      const item = ev.target.closest(".viewer-item")
-      if (item) {
-        const act = item.getAttribute("action")
-        this.dispatcher.execute(act)
-      }
+      const act = ev.target.closest(".viewer-item")?.getAttribute("action")
+      if (act) this.dispatcher.execute(act)
     })
     this.entities.viewer.addEventListener("wheel", ev => {
       if (this.utils.isShown(this.entities.waterfall)) return
@@ -377,30 +372,22 @@ class ImageViewerPlugin extends BasePlugin {
       if (typeof fn === "function") fn()
     }, { passive: false })
     this.entities.ops.addEventListener("click", ev => {
-      const target = ev.target.closest("[option]")
-      if (!target) return
-      const option = target.getAttribute("option")
-      const arg = option.includes("rotate") ? 90 : undefined
-      this.dispatcher.execute(option, arg)
+      const op = ev.target.closest("[data-op]")?.dataset.op
+      if (op) this.dispatcher.execute(op, op.includes("rotate") ? 90 : undefined)
     })
     this.entities.nav.addEventListener("click", ev => {
-      const target = ev.target.closest(".viewer-thumbnail")
-      if (target) {
-        this.dispatcher.execute("jumpToIndex", parseInt(target.dataset.idx, 10))
-      }
-    })
-    this.entities.waterfall.addEventListener("click", ev => {
-      const target = ev.target.closest(".viewer-waterfall-item")
-      this.dispatcher.execute("waterfall")
-      if (target) {
-        this.dispatcher.execute("jumpToIndex", parseInt(target.dataset.idx, 10))
-      }
+      const idx = ev.target.closest(".viewer-thumbnail")?.dataset.idx
+      if (idx) this.dispatcher.execute("jumpToIndex", parseInt(idx, 10))
     })
     this.entities.nav.addEventListener("wheel", ev => {
-      const target = ev.target.closest(".viewer-nav")
-      if (target) target.scrollLeft += ev.deltaY * 0.5
+      ev.currentTarget.scrollLeft += ev.deltaY * 0.5
       ev.stopPropagation()
     }, { passive: true })
+    this.entities.waterfall.addEventListener("click", ev => {
+      const idx = ev.target.closest(".viewer-waterfall-item")?.dataset.idx
+      this.dispatcher.execute("waterfall")
+      if (idx) this.dispatcher.execute("jumpToIndex", parseInt(idx, 10))
+    })
   }
 
   _handleImageInteraction = () => {
@@ -466,7 +453,7 @@ class ImageViewerPlugin extends BasePlugin {
     const class_ = isOrigin ? "fa fa-search-minus" : "fa fa-search-plus"
     this.entities.image.style.maxWidth = value
     this.entities.image.style.maxHeight = value
-    const autoSizeIcon = this.entities.ops.querySelector(`[option="autoSize"]`)
+    const autoSizeIcon = this.entities.ops.querySelector(`[data-op="autoSize"]`)
     if (autoSizeIcon) autoSizeIcon.className = class_
   }
 
@@ -498,8 +485,8 @@ class ImageViewerPlugin extends BasePlugin {
   }
 
   _updateToolIcons = src => {
-    const autoSize = this.entities.ops.querySelector(`[option="autoSize"]`)
-    const download = this.entities.ops.querySelector(`[option="download"]`)
+    const autoSize = this.entities.ops.querySelector(`[data-op="autoSize"]`)
+    const download = this.entities.ops.querySelector(`[data-op="download"]`)
     if (autoSize) autoSize.className = "fa fa-search-plus"
     if (download) this.utils.toggleInvisible(download, !this.utils.isNetworkImage(src))
   }
@@ -561,7 +548,7 @@ class ImageViewerPlugin extends BasePlugin {
     this.utils.toggleInvisible(this.entities.nav, force)
   }
 
-  setPlayButtonState = (isActive) => this.entities.ops.querySelector(`[option="play"]`)?.classList.toggle("active", isActive)
+  setPlayButtonState = (isActive) => this.entities.ops.querySelector(`[data-op="play"]`)?.classList.toggle("active", isActive)
 
   location = () => {
     let src = this.entities.image.getAttribute("src")

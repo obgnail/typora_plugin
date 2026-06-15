@@ -158,7 +158,6 @@ const schema_window_tab = () => [
   Group("mouseInteraction",
     Switch("CTRL_CLICK_TO_NEW_WINDOW"),
     Switch("MIDDLE_CLICK_TO_CLOSE"),
-    Switch("CTRL_WHEEL_TO_SWITCH"),
     Switch("WHEEL_TO_SCROLL_TAB_BAR"),
     Switch("SHOW_FULL_PATH_ON_HOVER"),
   ),
@@ -698,7 +697,6 @@ const schema_cipher = () => [
 const schema_resource_manager = () => [
   FRAG.Base(true),
   Group("windowPosition",
-    Range("PANEL_LEFT_PERCENT").Percent(),
     Range("PANEL_WIDTH_PERCENT").Percent(),
     Range("PANEL_HEIGHT_PERCENT").Percent(),
   ),

@@ -1,7 +1,5 @@
 {
   "settings": {
-    "__LESS_USED_PLUGINS__": "少用插件",
-    "__OFTEN_USED_PLUGINS__": "常用插件",
     "__VISUAL_PLUGINS__": "視覺插件",
     "__EDITING_PLUGINS__": "編輯插件",
     "__COMPONENT_PLUGINS__": "元件插件",
@@ -160,7 +158,6 @@
     "$label.REOPEN_TABS_ON_STARTUP": "啟動時恢復未關閉標籤頁",
     "$label.CTRL_CLICK_TO_NEW_WINDOW": "Ctrl+Click: 在新視窗中開啟",
     "$label.WHEEL_TO_SCROLL_TAB_BAR": "Wheel: 滾動標籤欄",
-    "$label.CTRL_WHEEL_TO_SWITCH": "Ctrl+Wheel: 切換標籤頁",
     "$label.MIDDLE_CLICK_TO_CLOSE": "Middle Click: 關閉標籤頁",
     "$label.SHOW_FULL_PATH_ON_HOVER": "Hover: 顯示檔案路徑",
     "$label.DRAG_STYLE": "標籤頁拖曳風格",
@@ -842,7 +839,6 @@
     "title.setting": "設定",
     "title.nonExistInFile": "掛載目錄中未被引用的資源 (共 {{size}} 項)",
     "title.nonExistInFolder": "掛載目錄中丟失的資源 (共 {{size}} 項)",
-    "$label.PANEL_LEFT_PERCENT": "左邊距",
     "$label.PANEL_WIDTH_PERCENT": "寬度",
     "$label.PANEL_HEIGHT_PERCENT": "高度",
     "$label.RESOURCE_GRAMMARS": "資源語法",
@@ -1361,7 +1357,6 @@
   },
   "image_viewer": {
     "pluginName": "圖片檢視",
-    "currentConfig": "目前設定",
     "mouse.leftClick": "滑鼠左鍵",
     "mouse.middleClick": "滑鼠中鍵",
     "mouse.rightClick": "滑鼠右鍵",

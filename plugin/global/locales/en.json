@@ -1,7 +1,5 @@
 {
   "settings": {
-    "__LESS_USED_PLUGINS__": "Less Used Plugins",
-    "__OFTEN_USED_PLUGINS__": "Often Used Plugins",
     "__VISUAL_PLUGINS__": "Visual Plugins",
     "__EDITING_PLUGINS__": "Editing Plugins",
     "__COMPONENT_PLUGINS__": "Component Plugins",
@@ -160,7 +158,6 @@
     "$label.REOPEN_TABS_ON_STARTUP": "Reopen Unclosed Tabs on Startup",
     "$label.CTRL_CLICK_TO_NEW_WINDOW": "Ctrl+Click: Open in New Window",
     "$label.WHEEL_TO_SCROLL_TAB_BAR": "Scroll Wheel: Scroll Tab Bar",
-    "$label.CTRL_WHEEL_TO_SWITCH": "Ctrl+Wheel: Switch Tabs",
     "$label.MIDDLE_CLICK_TO_CLOSE": "Middle Click: Close Tab",
     "$label.SHOW_FULL_PATH_ON_HOVER": "Hover: Show Full Path",
     "$label.DRAG_STYLE": "Drag Style",
@@ -842,7 +839,6 @@
     "title.setting": "Configuration",
     "title.nonExistInFile": "Unreferenced Resources in Mount Directory ({{size}} items)",
     "title.nonExistInFolder": "Missing Resources in Mount Directory ({{size}} items)",
-    "$label.PANEL_LEFT_PERCENT": "Left Margin",
     "$label.PANEL_WIDTH_PERCENT": "Width",
     "$label.PANEL_HEIGHT_PERCENT": "Height",
     "$label.RESOURCE_GRAMMARS": "Resource Syntax",
@@ -1361,7 +1357,6 @@
   },
   "image_viewer": {
     "pluginName": "Image Viewer",
-    "currentConfig": "Current Layout",
     "mouse.leftClick": "Left Click",
     "mouse.middleClick": "Middle Click",
     "mouse.rightClick": "Right Click",

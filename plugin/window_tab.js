@@ -609,16 +609,7 @@ class WindowTabPlugin extends BasePlugin {
       window.addEventListener("blur", this._stopCheckTabsInterval)
     }
     const handleWheel = () => {
-      this.entities.tabBar.addEventListener("wheel", ev => {
-        const target = ev.target.closest("#plugin-window-tab .tab-bar")
-        if (!target) return
-        if (this.config.CTRL_WHEEL_TO_SWITCH && this.utils.metaKeyPressed(ev)) {
-          if (ev.deltaY < 0) this.tab.previous()
-          else this.tab.next()
-        } else if (this.config.WHEEL_TO_SCROLL_TAB_BAR) {
-          target.scrollLeft += ev.deltaY * 0.5
-        }
-      }, { passive: true })
+      this.entities.tabBar.addEventListener("wheel", ev => ev.currentTarget.scrollLeft += ev.deltaY * 0.5, { passive: true })
     }
     const handleMiddleClick = () => {
       this.entities.tabWrapper.addEventListener("mousedown", ev => {
@@ -722,7 +713,7 @@ class WindowTabPlugin extends BasePlugin {
     handleFocusChange()
     adjustQuickOpen()
     if (this.utils.compareVersion(this.utils.typoraVersion, "1.1.0") >= 0) interceptLink()
-    if (this.config.WHEEL_TO_SCROLL_TAB_BAR || this.config.CTRL_WHEEL_TO_SWITCH) handleWheel()
+    if (this.config.WHEEL_TO_SCROLL_TAB_BAR) handleWheel()
     if (this.config.MIDDLE_CLICK_TO_CLOSE) handleMiddleClick()
     if (this.config.REOPEN_TABS_ON_STARTUP) reopenTabsWhenInit()
     if (this.config.CONTEXT_MENU.length) handleContextMenu()

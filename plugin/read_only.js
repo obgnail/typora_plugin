@@ -17,17 +17,17 @@ class ReadOnlyPlugin extends BasePlugin {
 
   _afterFreshLock = () => {
     const updateCheckbox = wantToLock => {
-      const elements = this.utils.entities.querySelectorAllInWrite(`input[type="checkbox"]`)
-      elements.forEach(box => box.toggleAttribute("disabled", wantToLock))
+      this.utils.entities.querySelectorAllInWrite(`input[type="checkbox"]`)
+        .forEach(box => box.toggleAttribute("disabled", wantToLock))
     }
     const updateInput = wantToLock => {
       if (!wantToLock) return
-      const selectors = ["#typora-quick-open-input input", "#plugin-search-multi-form input", "#plugin-commander-form input", "#plugin-command-palette-input", "#plugin-ripgrep-form input", "#plugin-preferences-search input"]
-      selectors.forEach(s => document.querySelector(s)?.removeAttribute("readonly"))
+      ["#typora-quick-open-input input", "#plugin-search-multi-form input", "#plugin-commander-form input", "#plugin-command-palette-input", "#plugin-ripgrep-form input", "#plugin-preferences-search input"]
+        .forEach(s => document.querySelector(s)?.removeAttribute("readonly"))
     }
     const updateReplaceButton = wantToLock => {
-      const selectors = ["#search-panel-replace-btn", "#search-panel-replaceall-btn", "#search-panel-replace-input"]
-      selectors.forEach(s => document.querySelector(s).toggleAttribute("disabled", wantToLock))
+      ["#search-panel-replace-btn", "#search-panel-replaceall-btn", "#search-panel-replace-input"]
+        .forEach(s => document.querySelector(s).toggleAttribute("disabled", wantToLock))
     }
 
     const wantToLock = File.isLocked

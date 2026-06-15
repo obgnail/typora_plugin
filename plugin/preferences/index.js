@@ -15,7 +15,7 @@ class PreferencesPlugin extends BasePlugin {
       <div class="plugin-preferences-dialog">
         <div class="plugin-preferences-content">
           <div class="plugin-preferences-left">
-            <div id="plugin-preferences-search"><i class="ion-search"></i><input type="text" placeholder="${this.i18n.t("search")}"><i class="ion-close-round clear-btn"></i></div>
+            <div id="plugin-preferences-search"><input type="text" placeholder="${this.i18n.t("search")}"><i class="ion-close-round clear-btn"></i></div>
             <div class="plugin-preferences-menu"></div>
           </div>
           <div class="plugin-preferences-right">

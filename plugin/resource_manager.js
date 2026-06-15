@@ -133,10 +133,10 @@ class ResourceManagerPlugin extends BasePlugin {
 
   _initPanelRect = (resetLeft = true) => {
     const { left, width, height } = this.entities.content.getBoundingClientRect()
-    const { PANEL_LEFT_PERCENT: l, PANEL_WIDTH_PERCENT: w, PANEL_HEIGHT_PERCENT: h } = this.config
+    const { PANEL_WIDTH_PERCENT: w, PANEL_HEIGHT_PERCENT: h } = this.config
     const style = { width: `${width * w / 100}px`, height: `${height * h / 100}px` }
     if (resetLeft) {
-      style.left = `${left + width * l / 100}px`
+      style.left = `${left + width * (100 - w) / 200}px`
     }
     Object.assign(this.entities.panel.style, style)
   }

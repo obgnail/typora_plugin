@@ -171,7 +171,6 @@ module.exports = {
   image_viewer: {
     THUMBNAIL_HEIGHT: required,
   },
-
   markdownlint: {
     BUTTON_WIDTH: required,
     BUTTON_HEIGHT: required,

@@ -9,7 +9,7 @@
 
 [global]
 # =========== [ Basic ] ===========
-# Master switch. Enables or disables the plugin system
+# Master Switch. Enables or disables the plugin system
 ENABLE = true
 
 # Locale
@@ -86,9 +86,6 @@ CTRL_CLICK_TO_NEW_WINDOW = true
 
 # Wheel to scroll tab bar: Enable horizontal scrolling on the tab bar using the mouse wheel
 WHEEL_TO_SCROLL_TAB_BAR = true
-
-# Ctrl+Wheel to switch tabs: Quickly switch active tabs using Ctrl+Wheel
-CTRL_WHEEL_TO_SWITCH = false
 
 # Middle click to close tab: Close tabs using the middle mouse button
 MIDDLE_CLICK_TO_CLOSE = true
@@ -308,7 +305,13 @@ REMOVE_HEADER_STYLES = true
 TITLE_BAR_BUTTONS = ["header", "image", "table", "fence", "link", "math"]
 
 # Include H1 and H2 elements in specific elements of the outline
-INCLUDE_HEADINGS = { fence = true, image = true, table = true, link = true, math = true }
+INCLUDE_HEADINGS = {
+  fence = true,
+  image = true,
+  table = true,
+  link = true,
+  math = true,
+}
 
 # =========== [ Interaction ] ===========
 # Allow drag-and-drop operations on outline titles to rearrange document structure
@@ -341,7 +344,17 @@ CUSTOM_RULE_FILES = [
 
 # Lint rules
 # See: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
-RULE_CONFIG = { default = true, MD010 = { code_blocks = false }, MD012 = { maximum = 3 }, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false, MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "Python", "Rust", "SQL", "TypeScript"] }, MD060 = false }
+RULE_CONFIG = {
+  default = true,
+  MD010 = { code_blocks = false },
+  MD012 = { maximum = 3 },
+  MD013 = false,
+  MD024 = { siblings_only = true },
+  MD033 = false,
+  MD041 = false,
+  MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "Python", "Rust", "SQL", "TypeScript"] },
+  MD060 = false,
+}
 
 # =========== [ UI Elements & Styling ] ===========
 # Translate English rule text to target locale
@@ -577,7 +590,10 @@ NAME = ""
 # Mouse wheel modifier keys
 #   TEMPORARY : Temporarily scale image size in the current view (e.g., "alt" = Alt+Wheel)
 #   PERSISTENT: Persistently scale image size by converting Markdown images to HTML with explicit dimensions (e.g., "ctrl" = Ctrl+Wheel)
-MODIFIER_KEY = { TEMPORARY = "alt", PERSISTENT = "" }
+MODIFIER_KEY = {
+  TEMPORARY = "alt",
+  PERSISTENT = "",
+}
 
 # =========== [ Boundaries & Alignment ] ===========
 # Allow exceed limit: Permit images to scale beyond the parent container or screen viewport width
@@ -634,7 +650,7 @@ DEFAULT_ORDER = false
 # Enable searching: Display an instant content filter search box above the table
 SEARCHING = true
 
-# Case insensitive search
+# Case-insensitive search
 CASE_INSENSITIVE = true
 
 # Enable regex search: Support advanced regex rules within the search box
@@ -680,10 +696,10 @@ FIX_SKIPPED_LEVEL_HEADERS = true
 # Strip visual styling markers (e.g., **bold**, `code`) from MindMap nodes
 REMOVE_HEADER_STYLES = true
 
-# Auto fit window size: Triggered on diagram data updates
+# Auto-fit window size: Triggered on diagram data updates
 AUTO_FIT_ON_UPDATE = true
 
-# Auto fit window size: Triggered on node fold/expand actions
+# Auto-fit window size: Triggered on node fold/expand actions
 AUTO_FIT_WHEN_FOLD = true
 
 # Preserve user fold states during diagram update/redraws
@@ -733,7 +749,22 @@ CANDIDATE_COLOR_SCHEMES = [
 #   spacingVertical   : Vertical node spacing
 #   paddingX          : Node internal padding
 #   fitRatio          : Window fill ratio margin
-DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialScale = 2, maxWidth = 0, nodeMinHeight = 16, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 7, zoom = true, pan = true, toggleRecursively = false, color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
+DEFAULT_TOC_OPTIONS = {
+  duration = 500,
+  initialExpandLevel = -1,
+  maxInitialScale = 2,
+  maxWidth = 0,
+  nodeMinHeight = 16,
+  spacingHorizontal = 80,
+  spacingVertical = 5,
+  fitRatio = 0.95,
+  paddingX = 8,
+  colorFreezeLevel = 7,
+  zoom = true,
+  pan = true,
+  toggleRecursively = false,
+  color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"],
+}
 
 # Customize exported SVG/Image settings
 #   FILENAME: Output filename format. Supported placeholders
@@ -757,7 +788,22 @@ DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialScale
 #   OPEN_CIRCLE_COLOR: Color of expanded node indicators
 #   SHOW_PATH_INQUIRY_DIALOG: Prompt directory selection dialog before saving
 #   SHOW_IN_FINDER: Automatically open the output directory after saving
-DOWNLOAD_OPTIONS = { FILENAME = "{{filename}}_{{timestamp}}.svg", FOLDER = "", REMOVE_USELESS_CLASSES = true, REMOVE_FOREIGN_OBJECT = false, PADDING_HORIZONTAL = 25, PADDING_VERTICAL = 25, IMAGE_SCALE = 2, IMAGE_QUALITY = 0.92, KEEP_ALPHA_CHANNEL = true, BACKGROUND_COLOR = "#FFFFFF", TEXT_COLOR = "#333333", OPEN_CIRCLE_COLOR = "#FFFFFF", SHOW_PATH_INQUIRY_DIALOG = true, SHOW_IN_FINDER = true }
+DOWNLOAD_OPTIONS = {
+  FILENAME = "{{filename}}_{{timestamp}}.svg",
+  FOLDER = "",
+  REMOVE_USELESS_CLASSES = true,
+  REMOVE_FOREIGN_OBJECT = false,
+  PADDING_HORIZONTAL = 25,
+  PADDING_VERTICAL = 25,
+  IMAGE_SCALE = 2,
+  IMAGE_QUALITY = 0.92,
+  KEEP_ALPHA_CHANNEL = true,
+  BACKGROUND_COLOR = "#FFFFFF",
+  TEXT_COLOR = "#333333",
+  OPEN_CIRCLE_COLOR = "#FFFFFF",
+  SHOW_PATH_INQUIRY_DIALOG = true,
+  SHOW_IN_FINDER = true,
+}
 
 # =========== [ Fence MindMap (Code Block) ] ===========
 # Enable Fence Markmap (If false, all Fence-related configurations below are disabled)
@@ -782,7 +828,24 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 #   height         : structural height for the Fence Diagram
 #   backgroundColor: background color for the Fence Diagram
 #   Other Keys mirror DEFAULT_TOC_OPTIONS
-DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, maxInitialScale = 2, colorFreezeLevel = 7, zoom = false, pan = false, toggleRecursively = false, maxWidth = 0, nodeMinHeight = 16, spacingHorizontal = 80, spacingVertical = 5, paddingX = 8, fitRatio = 0.95, height = "300px", backgroundColor = "#F8F8F8", color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
+DEFAULT_FENCE_OPTIONS = {
+  duration = 500,
+  initialExpandLevel = -1,
+  maxInitialScale = 2,
+  colorFreezeLevel = 7,
+  zoom = false,
+  pan = false,
+  toggleRecursively = false,
+  maxWidth = 0,
+  nodeMinHeight = 16,
+  spacingHorizontal = 80,
+  spacingVertical = 5,
+  paddingX = 8,
+  fitRatio = 0.95,
+  height = "300px",
+  backgroundColor = "#F8F8F8",
+  color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"],
+}
 
 # Template content injection when generating code blocks
 FENCE_TEMPLATE = """
@@ -892,7 +955,7 @@ APPLY_EXPORT_HEADER_NUMBERING = """
 #
 # Syntax Schema (Inspired by Python f-strings):
 #   Format: "Prefix{CounterName:CounterStyle}Suffix"
-#   Example: image = "Figure {i:cjk}" -> Figure 一, Figure 二..
+#   Example: image = "Figure {i:cjk}" -> Figure 一, Figure 二
 #
 # Multi-Counter Combination:
 #   Example: content-h4 = "{c2:ua}-{c3:cjk}.{c4:ur}" -> B-五.III
@@ -1287,7 +1350,12 @@ RECORD_COLLAPSE = true
 #   COLLAPSE_ALL_SIBLINGS : Fold/Expand all sibling sections in current file
 #   COLLAPSE_RECURSIVE    : Recursively fold/expand current section
 # Avoid "alt" (used by Bookmark plugin) and "shift" (used by OS selection)
-MODIFIER_KEY = { COLLAPSE_SINGLE = "ctrl", COLLAPSE_SIBLINGS = "ctrl+alt", COLLAPSE_ALL_SIBLINGS = "ctrl+shift+alt", COLLAPSE_RECURSIVE = "" }
+MODIFIER_KEY = {
+  COLLAPSE_SINGLE = "ctrl",
+  COLLAPSE_SIBLINGS = "ctrl+alt",
+  COLLAPSE_ALL_SIBLINGS = "ctrl+shift+alt",
+  COLLAPSE_RECURSIVE = "",
+}
 
 
 [collapse_list]
@@ -1359,7 +1427,7 @@ SKEW_SCALE = 1
 # Translation distance per action (px)
 TRANSLATE_SCALE = 10
 
-# Auto-play carousel interval (Seconds)
+# Autoplay carousel interval (Seconds)
 AUTO_PLAY_INTERVAL = 3
 
 # =========== [ Visual Effects ] ===========
@@ -1667,7 +1735,11 @@ COLOR_TABLE = [
 #   FOREGROUND: Default foreground color
 #   BACKGROUND: Default background color
 #   BORDER    : Default border color
-DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#330000" }
+DEFAULT_COLORS = {
+  FOREGROUND = "#330000",
+  BACKGROUND = "#FFFFFF",
+  BORDER = "#330000",
+}
 
 
 [cipher]
@@ -1840,7 +1912,12 @@ POINTER_TYPES = ["mouse"]
 TRIGGER_BUTTONS = ["middle", "right", "x1", "x2"]
 
 # The color of trajectory and hud during a gesture movement
-DEFAULT_COLOR = { middle = "#e0af68", right = "#7dcfff", x1 = "#bb9af7", x2 = "#f7768e" }
+DEFAULT_COLOR = {
+  middle = "#e0af68",
+  right = "#7dcfff",
+  x1 = "#bb9af7",
+  x2 = "#f7768e",
+}
 
 # =========== [ Presets Gestures ] ===========
 # Registry of preset gestures
@@ -2139,7 +2216,6 @@ LIST = [
   "md_padding",
   "text_stylize",
   "markdownlint",
-  "assets_storage",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__COMPONENT_PLUGINS__"
@@ -2217,7 +2293,7 @@ BUTTONS = [
   { ICON = "fa fa-filter", CALLBACK = "resource_manager" },
   { ICON = "fa fa-wrench", CALLBACK = "preferences" },
   { ICON = "fa fa-bookmark", CALLBACK = "bookmark" },
-  { ICON = "fa fa-code", CALLBACK = "commander" }
+  { ICON = "fa fa-code", CALLBACK = "commander" },
 ]
 
 
@@ -2282,18 +2358,15 @@ NAME = ""
 HOTKEY = ""
 
 # =========== [ Window Position ] ===========
-# Left margin percentage of the panel
-PANEL_LEFT_PERCENT = 5
-
 # Width percentage of the panel
-PANEL_WIDTH_PERCENT = 90
+PANEL_WIDTH_PERCENT = 80
 
 # Height percentage of the panel
 PANEL_HEIGHT_PERCENT = 70
 
 # =========== [ Resource Recognition Match ] ===========
 # Grammar syntax identifiers applied when scanning for mounted resources
-#   markdown: Standard markdown syntax `![alt](uri)`
+#   markdown: Standard Markdown syntax `![alt](uri)`
 #   html    : Standard `<IMG>` tag syntax
 RESOURCE_GRAMMARS = ["markdown", "html"]
 
@@ -2494,18 +2567,31 @@ selenium = { headless = true }
 #   loginUrl: Target Login URL
 #   username: Account Username
 #   password: Account Password
-wordpress = { enabled = true, hostname = "https://blog.bugdesigner.cn", loginUrl = "https://blog.bugdesigner.cn/superman/", username = "demo", password = "demo1" }
+wordpress = {
+  enabled = true,
+  hostname = "https://blog.bugdesigner.cn",
+  loginUrl = "https://blog.bugdesigner.cn/superman/",
+  username = "demo",
+  password = "demo1",
+}
 
 # Authentication parameters for CNBlog integration
 #   enabled : Enabled
 #   username: Account Username
 #   password: Account Password
-cnblog = { enabled = true, username = "demo2", password = "demo2" }
+cnblog = {
+  enabled = true,
+  username = "demo2",
+  password = "demo2",
+}
 
 # Authentication parameters for CSDN integration
 #   enabled: Enabled
 #   cookie : Authentication Cookie string (Requires manual browser extraction; monitor for expiry)
-csdn = { enabled = true, cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s; log_Id_click=37......" }
+csdn = {
+  enabled = true,
+  cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s; log_Id_click=37......",
+}
 
 
 [ripgrep]
@@ -2536,6 +2622,12 @@ HOTKEY_GO_BACK = "alt+ArrowLeft"
 MAX_HISTORY_ENTRIES = 100
 
 
+[assets_storage]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+
+
 [remote_control]
 # =========== [ Basic ] ===========
 # Warning: Activating this grants remote execution permissions over this machine. Proceed with extreme caution
@@ -2557,12 +2649,19 @@ ENABLE_EVAL = false
 ALLOW_CONFIG_ACCESS = false
 
 # Configure whitelist of plugin methods allowed for remote invocation
-ALLOWED_METHODS = { window_tab = ["showInFinder", "closeTab"], search_multi = ["call"], read_only = ["call"] }
+ALLOWED_METHODS = {
+  window_tab = ["showInFinder", "closeTab"],
+  search_multi = ["call"],
+  read_only = ["call"],
+}
 
 # =========== [ Rate Limit ] ===========
 # requestsPerMinute: Maximum requests per minute per client
 # burstSize:         Allowed instantaneous burst requests
-RATE_LIMIT = { requestsPerMinute = 60, burstSize = 10 }
+RATE_LIMIT = {
+  requestsPerMinute = 60,
+  burstSize = 10,
+}
 
 
 [updater]
@@ -2674,7 +2773,15 @@ INTERACTIVE_MODE = true
 #   allowMarkdown   : Support Markdown Syntax
 #   senderNickname  : Default nickname for the sender (Right side)
 #   timeNickname    : Keyword nickname specifically used to declare timestamps
-DEFAULT_OPTIONS = { useStrict = true, showNickname = true, showAvatar = true, notAllowShowTime = false, allowMarkdown = true, senderNickname = "me", timeNickname = "time" }
+DEFAULT_OPTIONS = {
+  useStrict = true,
+  showNickname = true,
+  showAvatar = true,
+  notAllowShowTime = false,
+  allowMarkdown = true,
+  senderNickname = "me",
+  timeNickname = "time",
+}
 
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting a code block
@@ -3034,7 +3141,11 @@ INTERACTIVE_MODE = true
 #   scale     : Zoom scale
 #   staffwidth: Staff width
 #   responsive: Responsive resizing behavior
-VISUAL_OPTIONS = { scale = 1.0, staffwidth = 400, responsive = "resize" }
+VISUAL_OPTIONS = {
+  scale = 1.0,
+  staffwidth = 400,
+  responsive = "resize",
+}
 
 # Default Fence Height, if 'auto' it adapts to the content
 DEFAULT_FENCE_HEIGHT = "auto"
@@ -3264,18 +3375,6 @@ DEFAULT_ICON = "\\f075"
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting
 TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
-
-
-[assets_storage]
-# =========== [ Basic ] ===========
-ENABLE = false
-NAME = ""
-
-# Copy pasted/dropped files (images and non-images) to the target folder.
-# Target folder, relative path, and URL escaping are read from Typora's preferences:
-#   - Target Folder      → File.option.defaultImageStorage
-#   - Use Relative Path  → File.option.useRelativePathForImg
-#   - Escape URL         → File.option.autoEscapeImageURL
 
 
 [test]

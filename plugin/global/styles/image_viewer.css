@@ -5,7 +5,7 @@
   left: 0;
   bottom: 0;
   height: 100vh;
-  z-index: 99997;
+  z-index: 19998;
 }
 
 #plugin-image-viewer {
@@ -26,7 +26,7 @@
 
 #plugin-image-viewer .viewer-image {
   position: fixed;
-  z-index: 99998;
+  z-index: 19999;
   height: auto;
   max-width: ${imageMaxWidth};
   max-height: ${imageMaxHeight};
@@ -40,7 +40,7 @@
 
 #plugin-image-viewer .viewer-item {
   position: absolute;
-  z-index: 99999;
+  z-index: 20000;
   top: 50%;
   transform: translateY(-50%);
   width: 48px;
@@ -75,7 +75,7 @@
   position: fixed;
   display: flex;
   align-items: center;
-  z-index: 99999;
+  z-index: 20000;
   width: 100%;
   ${thumbnailPosition}: 0;
   overflow-x: auto;
@@ -126,7 +126,7 @@
 
 #plugin-image-viewer .viewer-tool {
   position: fixed;
-  z-index: 99999;
+  z-index: 20000;
   height: 52px;
   width: 100%;
   bottom: ${toolPosition};
@@ -184,7 +184,7 @@
   position: fixed;
   width: 100vw;
   height: 100vh;
-  z-index: 99999;
+  z-index: 20000;
   overflow-y: auto;
   background-color: rgba(15, 15, 17, 0.98);
 }

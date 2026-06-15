@@ -1,7 +1,5 @@
 {
   "settings": {
-    "__LESS_USED_PLUGINS__": "少用插件",
-    "__OFTEN_USED_PLUGINS__": "常用插件",
     "__VISUAL_PLUGINS__": "视觉插件",
     "__EDITING_PLUGINS__": "编辑插件",
     "__COMPONENT_PLUGINS__": "组件插件",
@@ -160,7 +158,6 @@
     "$label.REOPEN_TABS_ON_STARTUP": "启动时恢复未关闭标签页",
     "$label.CTRL_CLICK_TO_NEW_WINDOW": "Ctrl+Click: 在新窗口中打开",
     "$label.WHEEL_TO_SCROLL_TAB_BAR": "Wheel: 滚动标签栏",
-    "$label.CTRL_WHEEL_TO_SWITCH": "Ctrl+Wheel: 切换标签页",
     "$label.MIDDLE_CLICK_TO_CLOSE": "Middle Click: 关闭标签页",
     "$label.SHOW_FULL_PATH_ON_HOVER": "Hover: 显示文件路径",
     "$label.DRAG_STYLE": "标签页拖拽风格",
@@ -842,7 +839,6 @@
     "title.setting": "配置",
     "title.nonExistInFile": "挂载目录中未被引用的资源 (共 {{size}} 项)",
     "title.nonExistInFolder": "挂载目录中丢失的资源 (共 {{size}} 项)",
-    "$label.PANEL_LEFT_PERCENT": "左边距",
     "$label.PANEL_WIDTH_PERCENT": "宽度",
     "$label.PANEL_HEIGHT_PERCENT": "高度",
     "$label.RESOURCE_GRAMMARS": "资源语法",
@@ -1361,7 +1357,6 @@
   },
   "image_viewer": {
     "pluginName": "图片查看",
-    "currentConfig": "当前配置",
     "mouse.leftClick": "鼠标左键",
     "mouse.middleClick": "鼠标中键",
     "mouse.rightClick": "鼠标右键",
