@@ -1723,5 +1723,13 @@
     "$tooltip.coord1": "向左递增",
     "$tooltip.exclusive": "与「自定义回调」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
+  },
+  "assets_storage": {
+    "pluginName": "资源存储",
+    "notify.copySuccess": "文件已复制到 {{folder}}",
+    "notify.copySuccessBatch": "{{count}} 个文件已复制到 {{folder}}",
+    "notify.copyFailed": "复制文件失败: {{error}}",
+    "notify.pathTraversal": "检测到路径穿越攻击，文件名无效。",
+    "notify.fileNameCollision": "100 次尝试后仍存在文件名冲突：{{name}}。请重命名源文件。"
   }
 }

@@ -1723,5 +1723,13 @@
     "$tooltip.coord1": "向左遞增",
     "$tooltip.exclusive": "與「自訂回呼」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
+  },
+  "assets_storage": {
+    "pluginName": "資源儲存",
+    "notify.copySuccess": "檔案已複製到 {{folder}}",
+    "notify.copySuccessBatch": "{{count}} 個檔案已複製到 {{folder}}",
+    "notify.copyFailed": "複製檔案失敗: {{error}}",
+    "notify.pathTraversal": "偵測到路徑穿越攻擊，檔名無效。",
+    "notify.fileNameCollision": "100 次嘗試後仍存在檔名衝突：{{name}}。請重新命名來源檔案。"
   }
 }

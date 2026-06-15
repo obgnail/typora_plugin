@@ -1723,5 +1723,13 @@
     "$tooltip.coord1": "Increments leftwards",
     "$tooltip.exclusive": "Mutually exclusive with 'Custom Callback'",
     "$placeholder.customCallback": "() => window.confirm('Custom action running...')"
+  },
+  "assets_storage": {
+    "pluginName": "Assets Storage",
+    "notify.copySuccess": "File copied to {{folder}}",
+    "notify.copySuccessBatch": "{{count}} files copied to {{folder}}",
+    "notify.copyFailed": "Failed to copy file: {{error}}",
+    "notify.pathTraversal": "Path traversal attempt blocked. Invalid filename.",
+    "notify.fileNameCollision": "File name collision after 100 attempts: {{name}}. Please rename the source file."
   }
 }

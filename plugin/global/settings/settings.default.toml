@@ -2139,6 +2139,7 @@ LIST = [
   "md_padding",
   "text_stylize",
   "markdownlint",
+  "assets_storage",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__COMPONENT_PLUGINS__"
@@ -3263,6 +3264,18 @@ DEFAULT_ICON = "\\f075"
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting
 TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
+
+
+[assets_storage]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+
+# Copy pasted/dropped files (images and non-images) to the target folder.
+# Target folder, relative path, and URL escaping are read from Typora's preferences:
+#   - Target Folder      → File.option.defaultImageStorage
+#   - Use Relative Path  → File.option.useRelativePathForImg
+#   - Escape URL         → File.option.autoEscapeImageURL
 
 
 [test]
