@@ -1,27 +1,9 @@
-class FileRulesPlugin extends BasePlugin {
+class AssetsStoragePlugin extends BasePlugin {
   imageExtensions = new Set([
     "jpg", "jpeg", "png", "gif", "svg", "webp", "bmp", "tiff", "ico", "jfif",
   ])
 
-  prepare = () => {
-    if (!this.config.COPY_TO_ASSETS) {
-      return this.utils.PLUGIN_LOAD_ABORT
-    }
-  }
-
   process = () => {
-    // Images: leverage Typora's native defaultImageStorage mechanism.
-    // Override the target folder so Typora handles copying & markdown insertion.
-    const getImgEdit = () => File?.editor?.imgEdit
-    this.utils.decorator.modifyReturn(getImgEdit, "getTargetImageStorageFolderFromSetting", (original) => {
-      return this._getTargetFolder() || original
-    })
-    this.utils.decorator.modifyReturn(getImgEdit, "getTargetImageStorageFolder", (original) => {
-      return this._getTargetFolder() || original
-    })
-
-    // Non-image files (pdf, exe, msi, etc.): Typora has no native storage
-    // for these, so we handle paste/drop ourselves with the same folder rules.
     this.utils.entities.eWrite.addEventListener("paste", this._handlePaste, { capture: true })
     this.utils.entities.eWrite.addEventListener("drop", this._handleDrop, { capture: true })
   }
@@ -29,37 +11,25 @@ class FileRulesPlugin extends BasePlugin {
   _handlePaste = (ev) => {
     const files = ev.clipboardData?.files
     if (!files || files.length === 0) return
-    this._processFiles(files, ev).catch(e => console.error("[file_rules] paste error:", e))
+    this._processFiles(files, ev).catch(e => console.error("[assets_storage] paste error:", e))
   }
 
   _handleDrop = (ev) => {
     const files = ev.dataTransfer?.files
     if (!files || files.length === 0) return
-    this._processFiles(files, ev).catch(e => console.error("[file_rules] drop error:", e))
+    this._processFiles(files, ev).catch(e => console.error("[assets_storage] drop error:", e))
   }
 
   _processFiles = async (fileList, ev) => {
     const files = Array.from(fileList)
-    // If event contains ONLY images, let Typora handle them natively (decorator applies)
-    const hasNonImage = files.some(f => !this._isImage(f))
-    if (!hasNonImage) return
 
     // Resolve targetFolder BEFORE preventDefault — if we can't determine a
     // folder (e.g. upload/ipic mode), bail out and let Typora handle the event.
     const targetFolder = this._getTargetFolder()
     if (!targetFolder) return
 
-    // When non-image files are present, we handle ALL files in the event.
-    // preventDefault is necessary for non-images, but it also blocks Typora's
-    // image handler — so we process images here too to avoid silent data loss.
     ev.preventDefault()
     ev.stopPropagation()
-
-    const filePath = this.utils.getFilePath()
-    if (!filePath) {
-      this.utils.notification.show(this.i18n.t("notify.noFile"), "warning")
-      return
-    }
 
     const markdownParts = []
     let successCount = 0
@@ -85,7 +55,7 @@ class FileRulesPlugin extends BasePlugin {
         markdownParts.push(this._generateMarkdown(finalPath, displayName, isImage))
         successCount++
       } catch (e) {
-        console.error("[file_rules]", e)
+        console.error("[assets_storage]", e)
         this.utils.notification.show(
           this.i18n.t("notify.copyFailed", { error: e.message }),
           "error",
@@ -108,8 +78,17 @@ class FileRulesPlugin extends BasePlugin {
 
   _isImage = (file) => {
     if (file.type && file.type.startsWith("image/")) return true
-    const ext = this._getExtension(file).toLowerCase()
-    return this.imageExtensions.has(ext)
+    if (file.name) {
+      const idx = file.name.lastIndexOf(".")
+      if (idx !== -1) {
+        return this.imageExtensions.has(file.name.substring(idx + 1).toLowerCase())
+      }
+    }
+    if (file.type) {
+      const subtype = file.type.split("/")[1]
+      if (subtype) return this.imageExtensions.has(subtype.toLowerCase())
+    }
+    return false
   }
 
   _getFilePath = (file) => {
@@ -167,11 +146,9 @@ class FileRulesPlugin extends BasePlugin {
     const fileName = this.utils.getFileName(filePath, true)
 
     // Read Typora's native defaultImageStorage setting directly.
-    // We CANNOT call getTargetImageStorageFolder() here — it's been decorated
-    // by this plugin and would cause infinite recursion.
     const storage = File?.option?.defaultImageStorage
     if (!storage || storage === "upload" || storage === "ipic") {
-      return null  // Let decorator fall through to original Typora behavior
+      return null
     }
 
     if (storage === "folder") {
@@ -185,18 +162,6 @@ class FileRulesPlugin extends BasePlugin {
     }
     // Custom path (may contain ${filename} placeholder)
     return Path.resolve(currentDir, storage.replace(/\${filename}/g, fileName))
-  }
-
-  _getExtension = (file) => {
-    if (file.name) {
-      const idx = file.name.lastIndexOf(".")
-      if (idx !== -1) return file.name.substring(idx + 1)
-    }
-    if (file.type) {
-      const subtype = file.type.split("/")[1]
-      if (subtype) return subtype
-    }
-    return ""
   }
 
   _escapeUrl = (path) => {
@@ -214,5 +179,5 @@ class FileRulesPlugin extends BasePlugin {
 }
 
 module.exports = {
-  plugin: FileRulesPlugin,
+  plugin: AssetsStoragePlugin,
 }

@@ -2139,7 +2139,7 @@ LIST = [
   "md_padding",
   "text_stylize",
   "markdownlint",
-  "file_rules",
+  "assets_storage",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__COMPONENT_PLUGINS__"
@@ -3266,18 +3266,16 @@ DEFAULT_ICON = "\\f075"
 TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
 
 
-[file_rules]
+[assets_storage]
 # =========== [ Basic ] ===========
 ENABLE = false
 NAME = ""
 
-# =========== [ File Processing Rules ] ===========
-# Copy the pasted/dropped non-image file to the target folder.
-# Relative path, URL escaping, and target folder are read from Typora's preferences:
+# Copy pasted/dropped files (images and non-images) to the target folder.
+# Target folder, relative path, and URL escaping are read from Typora's preferences:
+#   - Target Folder      → File.option.defaultImageStorage
 #   - Use Relative Path  → File.option.useRelativePathForImg
 #   - Escape URL         → File.option.autoEscapeImageURL
-#   - Target Folder      → File.editor.imgEdit.getTargetImageStorageFolder()
-COPY_TO_ASSETS = true
 
 
 [test]

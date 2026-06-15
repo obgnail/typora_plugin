@@ -1500,11 +1500,8 @@ const schema_action_buttons = () => [
   FRAG.SettingHandler(),
 ]
 
-const schema_file_rules = () => [
+const schema_assets_storage = () => [
   FRAG.Base(),
-  Group(
-    Switch("COPY_TO_ASSETS"),
-  ),
   FRAG.SettingHandler(),
 ]
 
@@ -1571,7 +1568,7 @@ const RAW_SCHEMA_FNS = {
   plantUML: schema_plantUML,
   marp: schema_marp,
   callouts: schema_callouts,
-  file_rules: schema_file_rules,
+  assets_storage: schema_assets_storage,
 }
 
 const mapTree = (schemas, visitBox = box => box, visitField = field => field, prefix = "") => schemas.map(box => {

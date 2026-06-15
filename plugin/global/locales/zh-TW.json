@@ -1724,14 +1724,12 @@
     "$tooltip.exclusive": "與「自訂回呼」互斥",
     "$placeholder.customCallback": "() => window.confirm('Custom Callback')"
   },
-  "file_rules": {
-    "pluginName": "檔案規則",
+  "assets_storage": {
+    "pluginName": "資源儲存",
     "notify.copySuccess": "檔案已複製到 {{folder}}",
     "notify.copySuccessBatch": "{{count}} 個檔案已複製到 {{folder}}",
     "notify.copyFailed": "複製檔案失敗: {{error}}",
-    "notify.noFile": "無可用檔案路徑，請先儲存文件。",
     "notify.pathTraversal": "偵測到路徑穿越攻擊，檔名無效。",
-    "notify.fileNameCollision": "100 次嘗試後仍存在檔名衝突：{{name}}。請重新命名來源檔案。",
-    "$label.COPY_TO_ASSETS": "複製檔案到資源資料夾"
+    "notify.fileNameCollision": "100 次嘗試後仍存在檔名衝突：{{name}}。請重新命名來源檔案。"
   }
 }
