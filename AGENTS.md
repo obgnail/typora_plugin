@@ -1,10 +1,17 @@
 # AGENTS.md
 
-This file provides guidance to Qoder (lingma.aliyun.com) when working with code in this repository.
+This file provides guidance to AI coding assistants and agents when working with code in this repository.
 
 ## Project Overview
 
 Typora Plugin is an extensible plugin system for the Typora Markdown editor. It injects into Typora's Electron-based runtime (via `window.html`) and provides 50+ plugins. The project is pure JavaScript (no TypeScript), requires Typora >= 0.9.98, and supports Windows and Linux.
+
+**Compatibility Target:**
+
+Because this project must support Typora 0.9.98, any code injected into the Typora runtime must be compatible with its underlying legacy Electron version. The minimum supported environment limits are:
+
+- **Chrome**: 83.0.4103.122
+- **Node.js**: 12.14.1
 
 ## Commands
 
@@ -84,6 +91,14 @@ npm run rpc                                 # JSON-RPC connection to running Typ
 - UTF-8, 2-space indent, LF line endings (see `.editorconfig`)
 - All UI strings go through the i18n system (locale files in `plugin/global/locales/`)
 - When adding a new plugin: add a `[plugin_name]` section to `settings.default.toml` with at least `ENABLE` and `NAME` keys, add translations to all three locale JSON files, and optionally add a CSS file to `plugin/global/styles/`
+
+## Debugging
+
+- **Open DevTools**: To open Typora's Developer Tools for debugging or inspecting the DOM and console logs, use the following JS command:
+
+  ```javascript
+  JSBridge.invoke("window.toggleDevTools")
+  ```
 
 ## Testing
 
