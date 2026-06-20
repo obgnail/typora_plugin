@@ -69,28 +69,26 @@ class ImageOperations {
 }
 
 class GalleryManager {
-  imageGetter = null
+  imageGetter = undefined
 
   constructor(utils, config) {
     this.utils = utils
     this.config = config
   }
 
-  _collectImage = () => {
+  getImages = () => {
     const images = [...this.utils.entities.querySelectorAllInWrite("img")]
     return this.config.SKIP_BROKEN_IMAGES ? images.filter(this.utils.isImgEmbed) : images
   }
 
-  getAllImages = () => this._collectImage()
-
-  initImageMsgGetter = () => {
+  initImageGetter = () => {
     if (this.imageGetter) return
 
-    const images = this._collectImage()
-    this.imageGetter = this._createImageMsgGetter(images)
+    const images = this.getImages()
+    this.imageGetter = this.createImageIterator(images)
     if (images.length === 0) return
 
-    const target = this._getTargetImage(images)
+    const target = this.getTargetImage(images)
     if (!target) return
 
     while (true) {
@@ -101,7 +99,7 @@ class GalleryManager {
     }
   }
 
-  _createImageMsgGetter = images => {
+  createImageIterator = images => {
     let idx = -1
     const maxIdx = images.length - 1
     return (next = true) => {
@@ -124,11 +122,11 @@ class GalleryManager {
     }
   }
 
-  _getTargetImage = images => {
+  getTargetImage = images => {
     const strategies = {
-      firstImage: images => images[0],
-      inViewBoxImage: images => images.find(img => this.utils.isInViewBox(img)),
-      closestViewBoxImage: images => images
+      firstImage: imgs => imgs[0],
+      inViewBoxImage: imgs => imgs.find(img => this.utils.isInViewBox(img)),
+      closestViewBoxImage: imgs => imgs
         .reduce((closest, img) => {
           const distance = Math.abs(img.getBoundingClientRect().top - window.innerHeight / 2)
           return distance < closest.minDist ? { img, minDist: distance } : closest
@@ -143,19 +141,17 @@ class GalleryManager {
     }
   }
 
-  dumpImage = (direction = "next", condition = () => true) => {
+  findImage = (direction = "next", condition = () => true) => {
     const isNext = direction === "next"
     while (true) {
       const curImg = this.imageGetter(isNext)
-      if (condition(curImg)) {
-        return curImg
-      }
+      if (condition(curImg)) return curImg
     }
   }
 
-  dumpIndex = targetIdx => {
+  getImageByIndex = targetIdx => {
     const safeIdx = Math.max(targetIdx, 0)
-    return this.dumpImage("next", img => img.total === 0 || img.idx === Math.min(safeIdx, img.total - 1))
+    return this.findImage("next", img => img.total === 0 || img.idx === Math.min(safeIdx, img.total - 1))
   }
 }
 
@@ -187,18 +183,19 @@ class CommandDispatcher {
         view.restoreSize()
         operations.resetState()
       },
-      nextImage: () => this.onImageChange(gallery.dumpImage("next")),
-      previousImage: () => this.onImageChange(gallery.dumpImage("previous")),
-      firstImage: () => this.onImageChange(gallery.dumpIndex(-1)),
-      lastImage: () => this.onImageChange(gallery.dumpIndex(Number.MAX_VALUE)),
-      jumpToIndex: idx => this.onImageChange(gallery.dumpIndex(idx)),
+      nextImage: () => this.onImageChange(gallery.findImage("next")),
+      previousImage: () => this.onImageChange(gallery.findImage("previous")),
+      firstImage: () => this.onImageChange(gallery.getImageByIndex(-1)),
+      lastImage: () => this.onImageChange(gallery.getImageByIndex(Number.MAX_VALUE)),
+      jumpToIndex: idx => this.onImageChange(gallery.getImageByIndex(idx)),
       play: stop => this.play(stop),
       thumbnailNav: force => view.thumbnailNav(force),
       location: () => view.location(),
       download: () => view.download(),
-      scroll: () => view.scroll(gallery.getAllImages()),
+      scroll: () => view.scroll(gallery.getImages()),
       waterfall: () => view.waterfall(),
       close: () => view.close(),
+      info: () => view.showInfo(),
       dummy: () => null,
     }
   }
@@ -237,64 +234,22 @@ class ImageViewerPlugin extends BasePlugin {
   operations = null
   gallery = null
   dispatcher = null
-  opMap = (() => {
-    const getHint = (ops, op) => {
-      const hint = ops[op]?.hint
-      return hint && hint !== dummy ? hint : null
-    }
-
-    const TRANSLATES = { arrowup: "↑", arrowdown: "↓", arrowleft: "←", arrowright: "→", " ": "␣" }
-    const ICONS = {
-      dummy: "", info: "fa fa-info-circle", thumbnailNav: "fa fa-caret-square-o-down",
-      waterfall: "fa fa-list", close: "fa fa-times", download: "fa fa-download",
-      scroll: "fa fa-crosshairs", play: "fa fa-play", location: "fa fa-location-arrow",
-      nextImage: "fa fa-angle-right", previousImage: "fa fa-angle-left",
-      firstImage: "fa fa-fast-backward", lastImage: "fa fa-fast-forward",
-      zoomOut: "fa fa fa-search-minus", zoomIn: "fa fa fa-search-plus",
-      rotateLeft: "fa fa-rotate-left", rotateRight: "fa fa-rotate-right",
-      hFlip: "fa fa-arrows-h", vFlip: "fa fa-arrows-v",
-      translateLeft: "fa fa-arrow-left", translateRight: "fa fa-arrow-right",
-      translateUp: "fa fa-arrow-up", translateDown: "fa fa-arrow-down",
-      incHSkew: "fa fa-toggle-right", decHSkew: "fa fa-toggle-left",
-      incVSkew: "fa fa-toggle-up", decVSkew: "fa fa-toggle-down",
-      originSize: "fa fa-clock-o", fitScreen: "fa fa-codepen",
-      autoSize: "fa fa-search-plus", restore: "fa fa-history",
-    }
-    const dummy = this.i18n.t("$option.operations.dummy")
-    const modifierKeys = ["", "CTRL", "SHIFT", "ALT"]
-    const mouseConfigTypes = [
-      { name: "MOUSEDOWN_FUNCTION", labels: ["leftClick", "middleClick", "rightClick"] },
-      { name: "WHEEL_FUNCTION", labels: ["wheelUp", "wheelDown"] },
-    ]
-    const ops = Object.fromEntries(Object.entries(ICONS).map(
-      ([op, icon]) => [op, { hint: this.i18n.t(`$option.operations.${op}`), icon }],
-    ))
-    const mouseHints = mouseConfigTypes.flatMap(({ name, labels }) => {
-      const translatedLabels = this.i18n.array(labels, "mouse.")
-      return modifierKeys.flatMap(modifier => {
-        const configKey = modifier ? `${modifier}_${name}` : name
-        const config = this.config[configKey] || []
-        const prefix = modifier ? `${modifier}+` : ""
-        return translatedLabels
-          .map((evName, idx) => {
-            const hint = getHint(ops, config[idx])
-            return hint ? `${prefix}${evName}\t${hint}` : null
-          })
-          .filter(Boolean)
-      })
-    })
-    const hotkeyHints = this.config.HOTKEY_FUNCTION
-      .map(({ hotkey, fn }) => {
-        const hint = getHint(ops, fn)
-        if (!hint) return null
-        const key = TRANSLATES[hotkey.toLowerCase()] || hotkey
-        return `${key}\t${hint}`
-      })
-      .filter(Boolean)
-
-    ops.info.hint = [...mouseHints, ...hotkeyHints].join("\n")
-    return ops
-  })()
+  opMap = Object.fromEntries(Object.entries({
+    dummy: "", info: "fa fa-info-circle", thumbnailNav: "fa fa-caret-square-o-down",
+    waterfall: "fa fa-list", close: "fa fa-times", download: "fa fa-download",
+    scroll: "fa fa-crosshairs", play: "fa fa-play", location: "fa fa-location-arrow",
+    nextImage: "fa fa-angle-right", previousImage: "fa fa-angle-left",
+    firstImage: "fa fa-fast-backward", lastImage: "fa fa-fast-forward",
+    zoomOut: "fa fa fa-search-minus", zoomIn: "fa fa fa-search-plus",
+    rotateLeft: "fa fa-rotate-left", rotateRight: "fa fa-rotate-right",
+    hFlip: "fa fa-arrows-h", vFlip: "fa fa-arrows-v",
+    translateLeft: "fa fa-arrow-left", translateRight: "fa fa-arrow-right",
+    translateUp: "fa fa-arrow-up", translateDown: "fa fa-arrow-down",
+    incHSkew: "fa fa-toggle-right", decHSkew: "fa fa-toggle-left",
+    incVSkew: "fa fa-toggle-up", decVSkew: "fa fa-toggle-down",
+    originSize: "fa fa-clock-o", fitScreen: "fa fa-codepen",
+    autoSize: "fa fa-search-plus", restore: "fa fa-history",
+  }).map(([op, icon]) => [op, { hint: this.i18n.t(`$option.operations.${op}`), icon }]))
 
   style = () => ({
     imageMaxWidth: this.config.IMAGE_MAX_WIDTH + "%",
@@ -309,7 +264,7 @@ class ImageViewerPlugin extends BasePlugin {
     const messageList = this.config.SHOW_MESSAGE.map(m => `<div class="viewer-${m}"></div>`).join("")
     const operationList = this.config.TOOL_FUNCTION
       .filter(op => Object.hasOwn(this.opMap, op))
-      .map(op => `<i class="${this.opMap[op].icon}" data-op="${op}" title="${this.opMap[op].hint}"></i>`)
+      .map(op => `<i class="${this.opMap[op].icon}" data-op="${op}" ty-hint="${this.opMap[op].hint}"></i>`)
       .join("")
 
     const navClass = this.config.SHOW_THUMBNAIL_NAV ? "" : "plugin-common-hidden"
@@ -367,9 +322,7 @@ class ImageViewerPlugin extends BasePlugin {
     this.entities.viewer.addEventListener("wheel", ev => {
       if (this.utils.isShown(this.entities.waterfall)) return
       ev.preventDefault()
-      const fnList = this.getFnList(ev, "WHEEL")
-      const fn = fnList[ev.deltaY > 0 ? 1 : 0]
-      if (typeof fn === "function") fn()
+      this.resolveConfiguredHandlers(ev, "WHEEL")[ev.deltaY > 0 ? 1 : 0]?.()
     }, { passive: false })
     this.entities.ops.addEventListener("click", ev => {
       const op = ev.target.closest("[data-op]")?.dataset.op
@@ -394,17 +347,9 @@ class ImageViewerPlugin extends BasePlugin {
     const raf = this.utils.getRafManager()
 
     this.entities.image.addEventListener("mousedown", ev => {
-      const executeAction = () => {
-        const fnList = this.getFnList(ev, "MOUSEDOWN")
-        const fn = fnList[ev.button]
-        if (typeof fn === "function") fn()
-      }
+      const executeAction = () => this.resolveConfiguredHandlers(ev, "MOUSEDOWN")[ev.button]?.()
 
-      if (ev.button !== 0) {
-        executeAction()
-        return
-      }
-
+      if (ev.button !== 0) return executeAction()
       ev.preventDefault()
 
       let isMoved = false
@@ -438,14 +383,14 @@ class ImageViewerPlugin extends BasePlugin {
     })
   }
 
-  getFnList = (ev, method) => {
+  resolveConfiguredHandlers = (ev, method) => {
     const modifiers = []
     if (this.utils.metaKeyPressed(ev)) modifiers.push("CTRL")
     else if (ev.shiftKey) modifiers.push("SHIFT")
     else if (ev.altKey) modifiers.push("ALT")
     modifiers.push(method, "FUNCTION")
     const configKey = modifiers.join("_")
-    return (this.config[configKey] || []).map(fnName => this.dispatcher.getHandler(fnName))
+    return (this.config[configKey] || []).map(actionName => this.dispatcher.getHandler(actionName))
   }
 
   changeSize = (isOrigin = true) => {
@@ -508,39 +453,73 @@ class ImageViewerPlugin extends BasePlugin {
   }
 
   waterfall = () => {
-    const columns = [...this.entities.waterfall.querySelectorAll(".viewer-waterfall-col")]
-
-    const toggleComponent = isHide => {
-      [...this.entities.viewer.children]
-        .filter(el => !el.classList.contains("viewer-waterfall") && !el.classList.contains("viewer-mask"))
-        .forEach(el => this.utils.toggleInvisible(el, isHide))
-    }
-
-    const navToWaterfall = () => {
-      const getMinHeightCol = () => columns.reduce((min, col) => col.offsetHeight < min.offsetHeight ? col : min, columns[0])
-      ;[...this.entities.nav.children].forEach(img => {
-        img.classList.replace("viewer-thumbnail", "viewer-waterfall-item")
-        getMinHeightCol().appendChild(img)
+    const { waterfall, nav, viewer } = this.entities
+    const columns = [...waterfall.querySelectorAll(".viewer-waterfall-col")]
+    const isHidden = this.utils.isHidden(waterfall)
+    const toggleSiblings = hide => {
+      [...viewer.children].forEach(el => {
+        if (el !== waterfall && !el.classList.contains("viewer-mask")) {
+          this.utils.toggleInvisible(el, hide)
+        }
       })
     }
 
-    const waterfallToNav = () => {
-      const items = [...this.entities.waterfall.querySelectorAll(".viewer-waterfall-item")]
+    this.utils.toggleInvisible(waterfall)
+
+    if (isHidden) {
+      columns.forEach(col => col.innerHTML = "")
+      toggleSiblings(true)
+      const getMinHeightCol = () => columns.reduce((min, col) => col.offsetHeight < min.offsetHeight ? col : min, columns[0])
+      ;[...nav.children].forEach(img => {
+        img.classList.replace("viewer-thumbnail", "viewer-waterfall-item")
+        getMinHeightCol().appendChild(img)
+      })
+      waterfall.querySelector(".viewer-waterfall-item.select")?.scrollIntoView()
+    } else {
+      const items = [...waterfall.querySelectorAll(".viewer-waterfall-item")]
         .sort((a, b) => parseInt(a.dataset.idx, 10) - parseInt(b.dataset.idx, 10))
       items.forEach(img => img.classList.replace("viewer-waterfall-item", "viewer-thumbnail"))
-      this.entities.nav.append(...items)
+      nav.append(...items)
+      toggleSiblings(false)
     }
+  }
 
-    this.utils.toggleInvisible(this.entities.waterfall)
-    if (this.utils.isHidden(this.entities.waterfall)) {
-      waterfallToNav()
-      toggleComponent(false)
-    } else {
-      columns.forEach(col => col.innerHTML = "")
-      toggleComponent(true)
-      navToWaterfall()
-      this.entities.waterfall.querySelector(".viewer-waterfall-item.select")?.scrollIntoView()
+  showInfo = async () => {
+    const dummy = this.i18n.t("$option.operations.dummy")
+    const TRANSLATES = { arrowup: "↑", arrowdown: "↓", arrowleft: "←", arrowright: "→", " ": "␣" }
+    const MODIFIERS = ["", "CTRL", "SHIFT", "ALT"]
+    const MOUSE_CONFIGS = [
+      { name: "MOUSEDOWN_FUNCTION", labels: ["leftClick", "middleClick", "rightClick"] },
+      { name: "WHEEL_FUNCTION", labels: ["wheelUp", "wheelDown"] },
+    ]
+    const getHint = op => {
+      const hint = this.opMap[op]?.hint
+      return hint && hint !== dummy ? hint : null
     }
+    const details = MOUSE_CONFIGS.reduce((acc, { name, labels }) => {
+      const translatedLabels = this.i18n.array(labels, "mouse.")
+      MODIFIERS.forEach(modifier => {
+        const configKey = modifier ? `${modifier}_${name}` : name
+        const config = this.config[configKey] || []
+        const prefix = modifier ? `${modifier}+` : ""
+        translatedLabels.forEach((evName, idx) => {
+          const hint = getHint(config[idx])
+          if (hint) acc[`${prefix}${evName}`] = hint
+        })
+      })
+      return acc
+    }, {})
+
+    this.config.HOTKEY_FUNCTION.forEach(({ hotkey, fn }) => {
+      const hint = getHint(fn)
+      if (hint) details[TRANSLATES[hotkey.toLowerCase()] || hotkey] = hint
+    })
+
+    await this.utils.formDialog.modal({
+      title: this.i18n.t("$option.operations.info"),
+      schema: ({ Controls }) => [Controls.Textarea("info").Readonly().Rows(14)],
+      data: { info: JSON.stringify(details, null, "  ") },
+    })
   }
 
   thumbnailNav = force => {
@@ -591,7 +570,7 @@ class ImageViewerPlugin extends BasePlugin {
     document.activeElement.blur()
     this.handleHotkey(false)
     this.utils.show(this.entities.viewer)
-    const currentInfo = this.gallery.initImageMsgGetter()
+    const currentInfo = this.gallery.initImageGetter()
     this.initThumbnailNav(currentInfo)
     this.dispatcher.execute("nextImage")
   }
