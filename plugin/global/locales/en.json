@@ -41,8 +41,9 @@
     "$tooltip.protected": "Protected setting. Editable via setting file only",
     "$tooltip.expertsOnly": "Experts only. Risky to modify",
     "$tooltip.lowVersion": "Typora version is too low to support this feature",
-    "$tooltip.minusOneMeansUnlimited": "-1 means no limit",
-    "$tooltip.minusOneMeansDisable": "-1 means disabled",
+    "$tooltip.zeroForNoLimit": "0 for no limit",
+    "$tooltip.minusOneForNoLimit": "-1 for no limit",
+    "$tooltip.minusOneForDisabled": "-1 for disabled",
     "$tooltip.maxBytes": "Typora limit: 2,000,000 bytes maximum",
     "$tooltip.inspectDefaultSettings": "Default Settings",
     "$title.languageMode": "Language & Mode",
@@ -343,7 +344,6 @@
   "commander": {
     "pluginName": "Commander",
     "act.toggle_panel": "Show/Hide Commander",
-    "runCommand": "Run Command",
     "$option.QUICK_RUN_DISPLAY.echo": "Echo Output Immediately",
     "$option.QUICK_RUN_DISPLAY.always": "Show Output After Execution",
     "$option.QUICK_RUN_DISPLAY.error": "Show Output Only on Error",
@@ -363,8 +363,10 @@
     "$label.BUILTIN.shell": "Shell",
     "$label.BUILTIN.cmd": "Command",
     "$label.POST_SCRIPT": "Post-Execution Script",
+    "$label.NORMALIZE_ENV_VARS": "Normalize Env Vars",
+    "$tooltip.normalizeEnvVars": "Auto-convert cross-platform variables (e.g., $f, $m) into the native format of the selected shell",
     "$title.cmdDisplay": "Output Display",
-    "$placeholder.envInfo": "Variables:\n$f: Current file path\n$d: Current directory\n$m: Mount directory"
+    "$placeholder.envInfo": "Variables:\nf: Current file path\nd: Current directory\nm: Mount directory"
   },
   "md_padding": {
     "pluginName": "Chinese-English Text Spacer",

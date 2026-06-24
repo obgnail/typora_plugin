@@ -3968,33 +3968,19 @@ const Control_Dict = {
     const listEl = element.querySelector(".dict-list")
     if (!listEl) return
     listEl.innerHTML = Object.entries(value || {}).map(([k, v]) => Control_Dict._createRow(k, v, controlOptions)).join("")
+    Control_Dict._initDropdowns(listEl)
   },
   bindEvents: ({ form }) => {
-    const closeAllMenus = () => form.getFormEl().querySelectorAll(".dict-type-menu.show").forEach(el => el.classList.remove("show"))
-    form.onEvent("click", function (ev) {
-      if (!ev.target.closest(".dict-type-wrap")) closeAllMenus()
-    }).onEvent("click", ".dict-type-badge", function (ev) {
-      ev.stopPropagation()
-      const menu = this.nextElementSibling
-      const isShown = menu.classList.contains("show")
-      closeAllMenus()
-      if (!isShown) menu.classList.add("show")
-    }).onEvent("click", ".dict-type-option", function (ev) {
-      ev.stopPropagation()
-      const targetType = this.dataset.type
-      const wrapEl = this.closest(".dict-type-wrap")
-      const badgeEl = wrapEl.querySelector(".dict-type-badge")
-      const valInput = wrapEl.closest(".dict-row").querySelector(".dict-val")
-      const typeHandler = Control_Dict._types[targetType]
+    form.onEvent("change", ".dict-type-dropdown", function (ev) {
+      const wrapEl = this.closest(".dict-row")
+      const valInput = wrapEl.querySelector(".dict-val")
+      const typeHandler = Control_Dict._types[this.getValue()]
       if (!typeHandler.validate(valInput.value)) {
         valInput.classList.add("input-error")
         setTimeout(() => valInput.classList.remove("input-error"), 500)
-        closeAllMenus()
+        this.setValue(ev.detail.oldValue)
         return
       }
-      badgeEl.dataset.type = targetType
-      badgeEl.textContent = typeHandler.label || ""
-      closeAllMenus()
       Control_Dict._collectAndCommit(wrapEl, form)
     }).onEvent("change", ".dict-input", function () {
       Control_Dict._collectAndCommit(this, form)
@@ -4013,10 +3999,14 @@ const Control_Dict = {
       const listEl = wrap.querySelector(".dict-list")
       const fieldKey = wrap.getAttribute("data-key")
       const controlOptions = form.getControlOptionsFromKey(fieldKey)
-      const row = Control_Dict._createRow("", "", controlOptions)
-      listEl.insertAdjacentHTML("beforeend", row)
+      listEl.insertAdjacentHTML("beforeend", Control_Dict._createRow("", "", controlOptions))
+      Control_Dict._initDropdowns(listEl.lastElementChild)
       listEl.lastElementChild.querySelector(".dict-key")?.focus()
     })
+  },
+  _initDropdowns: (container) => {
+    const opts = Object.entries(Control_Dict._types).map(([k, v]) => ({ value: k, label: v.label }))
+    container.querySelectorAll(".dict-type-dropdown").forEach(d => d.setOptions(opts))
   },
   _createRow: (key, val, options) => {
     let currentType = "string"
@@ -4031,18 +4021,13 @@ const Control_Dict = {
 
     const k = utils.escape(String(key || ""))
     const v = utils.escape(displayVal)
-    const typeConfig = Control_Dict._types
-    const currentLabel = typeConfig[currentType].label || ""
-    const toOption = ([key, def]) => `<div class="dict-type-option ${key === currentType ? "active" : ""}" data-type="${key}">${def.label || ""}</div>`
-    const menuItems = Object.entries(typeConfig).map(toOption).join("")
     return `
       <div class="dict-row">
         <input class="dict-input dict-key" type="text" value="${k}" placeholder="${options.keyPlaceholder}">
         <div class="dict-val-wrapper">
           <input class="dict-input dict-val" type="text" value="${v}" placeholder="${options.valuePlaceholder}">
           <div class="dict-type-wrap">
-            <div class="dict-type-badge" data-type="${currentType}">${currentLabel}</div>
-            <div class="dict-type-menu">${menuItems}</div>
+            <fast-dropdown class="dict-type-dropdown" value="${currentType}"></fast-dropdown>
           </div>
         </div>
         <div class="dict-actions"><i class="dict-btn-del fa fa-trash-o"></i></div>
@@ -4058,14 +4043,13 @@ const Control_Dict = {
       if (!k) return
 
       const valInput = row.querySelector(".dict-val")
-      const badgeEl = row.querySelector(".dict-type-badge")
+      const dropdown = row.querySelector(".dict-type-dropdown")
 
       const rawVal = valInput.value
-      let handler = typeConfig[badgeEl.dataset.type || "string"]
+      let handler = typeConfig[dropdown.getValue() || "string"]
       if (!handler.validate(rawVal)) {
         handler = typeConfig.string
-        badgeEl.dataset.type = "string"
-        badgeEl.textContent = handler.label || ""
+        dropdown.setValue("string")
         valInput.classList.add("input-warn")
         setTimeout(() => valInput.classList.remove("input-warn"), 500)
       }

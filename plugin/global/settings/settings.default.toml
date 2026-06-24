@@ -259,15 +259,21 @@ COMMIT_RUN_DISPLAY = "echo"
 #   $d: Directory of the current file
 #   $m: Current mount directory in Typora's sidebar
 BUILTIN = [
-  { name = "Default", disable = false, shell = "cmd/bash", cmd = "" },
-  { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $d" },
-  { name = "VScode", disable = false, shell = "cmd/bash", cmd = "code $f" },
-  { name = "Windows Terminal", disable = false, shell = "cmd/bash", cmd = "cd $d && wt" },
-  { name = "Git Commit", disable = false, shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
+  { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $env:d" },
+  { name = "VScode", disable = false, shell = "cmd/bash", cmd = "code %f%" },
+  { name = "Terminal", disable = false, shell = "cmd/bash", cmd = "wt" },
 ]
 
 # Post-Execution Script. JavaScript code to execute after the command finishes
 POST_SCRIPT = "({ command, cwd, options, code, error, stdout, stderr }) => null"
+
+
+# =========== [ Advanced ] ===========
+# Auto-convert cross-platform variables (e.g., $f, $m) into the native format of the selected shell
+NORMALIZE_ENV_VARS = true
+
+# Maximum allowed execution time in milliseconds. Set to 0 for no limit
+TIMEOUT = 0
 
 
 [command_palette]

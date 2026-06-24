@@ -41,8 +41,9 @@
     "$tooltip.protected": "受保護選項，僅支援透過設定檔修改",
     "$tooltip.expertsOnly": "僅限專家，誤改有風險",
     "$tooltip.lowVersion": "Typora 版本過低，此功能不可用",
-    "$tooltip.minusOneMeansUnlimited": "-1 表示無限制",
-    "$tooltip.minusOneMeansDisable": "-1 表示不啟用",
+    "$tooltip.zeroForNoLimit": "0 表示無限制",
+    "$tooltip.minusOneForNoLimit": "-1 表示無限制",
+    "$tooltip.minusOneForDisabled": "-1 表示不啟用",
     "$tooltip.maxBytes": "Typora 限制：上限為 2,000,000 位元組",
     "$tooltip.inspectDefaultSettings": "預設設定",
     "$title.languageMode": "語言與模式",
@@ -343,7 +344,6 @@
   "commander": {
     "pluginName": "命令行環境",
     "act.toggle_panel": "顯示 / 隱藏",
-    "runCommand": "執行命令",
     "$option.QUICK_RUN_DISPLAY.echo": "立即彈出視窗並回顯輸出",
     "$option.QUICK_RUN_DISPLAY.always": "執行結束後彈出視窗並顯示輸出",
     "$option.QUICK_RUN_DISPLAY.error": "僅在錯誤時彈出視窗並顯示輸出",
@@ -363,8 +363,10 @@
     "$label.BUILTIN.shell": "Shell",
     "$label.BUILTIN.cmd": "命令",
     "$label.POST_SCRIPT": "後置腳本",
+    "$label.NORMALIZE_ENV_VARS": "環境變數正規化",
+    "$tooltip.normalizeEnvVars": "自動將腳本中的跨平台變數（如 $f, $m）轉換為當前 Shell 支援的原生格式",
     "$title.cmdDisplay": "輸出顯示",
-    "$placeholder.envInfo": "環境變數:\n$f 目前檔案路徑\n$d 目前檔案目錄\n$m 目前掛載目錄"
+    "$placeholder.envInfo": "環境變數:\nf 目前檔案路徑\nd 目前檔案目錄\nm 目前掛載目錄"
   },
   "md_padding": {
     "pluginName": "中英文混排優化",

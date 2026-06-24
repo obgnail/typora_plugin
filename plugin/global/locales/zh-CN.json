@@ -41,8 +41,9 @@
     "$tooltip.protected": "受保护选项，仅支持通过配置文件修改",
     "$tooltip.expertsOnly": "仅限专家，误改有风险",
     "$tooltip.lowVersion": "Typora 版本过低，此功能不可用",
-    "$tooltip.minusOneMeansUnlimited": "-1 表示无限制",
-    "$tooltip.minusOneMeansDisable": "-1 表示不启用",
+    "$tooltip.zeroForNoLimit": "0 表示无限制",
+    "$tooltip.minusOneForNoLimit": "-1 表示无限制",
+    "$tooltip.minusOneForDisabled": "-1 表示不启用",
     "$tooltip.maxBytes": "Typora 限制：上限为 2,000,000 字节",
     "$tooltip.inspectDefaultSettings": "默认配置",
     "$title.languageMode": "语言与模式",
@@ -343,7 +344,6 @@
   "commander": {
     "pluginName": "命令行环境",
     "act.toggle_panel": "显示 / 隐藏",
-    "runCommand": "运行命令",
     "$option.QUICK_RUN_DISPLAY.echo": "立即弹窗并回显输出",
     "$option.QUICK_RUN_DISPLAY.always": "执行结束后弹窗并显示输出",
     "$option.QUICK_RUN_DISPLAY.error": "仅在错误时弹窗并显示输出",
@@ -363,8 +363,10 @@
     "$label.BUILTIN.shell": "Shell",
     "$label.BUILTIN.cmd": "命令",
     "$label.POST_SCRIPT": "后置脚本",
+    "$label.NORMALIZE_ENV_VARS": "环境变量归一化",
+    "$tooltip.normalizeEnvVars": "自动将脚本中的跨平台变量（如 $f, $m）转换为当前 Shell 支持的原生格式",
     "$title.cmdDisplay": "输出显示",
-    "$placeholder.envInfo": "环境变量:\n$f 当前文件路径\n$d 当前文件目录\n$m 当前挂载目录"
+    "$placeholder.envInfo": "环境变量:\nf 当前文件路径\nd 当前文件目录\nm 当前挂载目录"
   },
   "md_padding": {
     "pluginName": "中英文混排优化",

@@ -58,7 +58,7 @@ const initDSL = (dsl) => {
   const { preset, presetFor } = dsl.Extend
   preset("ActionTooltip", (control, action, icon = "fa fa-link", text = undefined) => control.Tooltip({ action, icon, text }))
   presetFor(["integer", "float", "range"], "Percent", control => control.Min(1).Max(100).Step(1).Unit(UNITS.percent))
-  presetFor(["integer", "float", "range"], "AllowMinusOne", control => control.Min(-1).Tooltip("minusOneMeansUnlimited"))
+  presetFor(["integer", "float", "range"], "AllowMinusOne", control => control.Min(-1).Tooltip("minusOneForNoLimit"))
   presetFor(["switch", "text", "password"], "Protect", control => control.ActionTooltip("openSettingsFolder", "fa fa-gear", "protected").Disabled(true))
   presetFor(["select", "segment", "radio", "checkbox", "transfer", "togglesort"], "OptionScope", (control, scope) => control.fields[0][OPTION_SCOPE] = scope)
   presetFor(["table"], "Headers", (control, headers) => control.ThMap(Object.fromEntries(headers.map(th => [th, `${control.fields[0].key}.${th}`]))))
@@ -235,6 +235,10 @@ const schema_commander = () => [
       cmd: "",
     }),
   Code("POST_SCRIPT").Tooltip("expertsOnly"),
+  Group("advanced",
+    Switch("NORMALIZE_ENV_VARS").Tooltip("normalizeEnvVars"),
+    Integer("TIMEOUT").Unit(UNITS.millisecond).Min(0).Tooltip("zeroForNoLimit"),
+  ),
   FRAG.SettingHandler(),
 ]
 
@@ -1015,7 +1019,7 @@ const schema_templater = () => [
 
 const schema_editor_width_slider = () => [
   FRAG.Base(true),
-  Integer("WIDTH_RATIO").Unit(UNITS.percent).Min(-1).Max(100).Step(1).Tooltip("minusOneMeansDisable"),
+  Integer("WIDTH_RATIO").Unit(UNITS.percent).Min(-1).Max(100).Step(1).Tooltip("minusOneForDisabled"),
   FRAG.SettingHandler(),
 ]
 

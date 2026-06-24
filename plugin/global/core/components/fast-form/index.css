@@ -1974,67 +1974,39 @@ textarea:hover,
   align-items: center;
 }
 
-.dict-type-badge {
+.dict-type-dropdown {
   height: 60%;
-  padding: 0 6px;
-  display: flex;
-  align-items: center;
   margin-right: 2px;
-  font-size: var(--ff-font-size-xs);
-  font-family: monospace;
-  color: var(--ff-text-secondary);
-  border-radius: 3px;
-  cursor: pointer;
-  user-select: none;
-  transition: all var(--ff-transition-base);
-  background-color: transparent;
-  font-weight: 600;
+
+  --fd-height: 100%;
+  --fd-padding: 0 6px;
+  --fd-bg: transparent;
+  --fd-hover-bg: var(--ff-color-primary-bg);
+  --fd-text: var(--ff-text-secondary);
+  --fd-font-size: var(--ff-font-size-xs);
+  --fd-font-family: monospace;
+  --fd-font-weight: 600;
+  --fd-border-radius: 3px;
+  --fd-transition: all var(--ff-transition-base);
+  --fd-menu-margin-top: 4px;
+  --fd-menu-right: 0;
+  --fd-menu-bg: var(--ff-bg-elevated);
+  --fd-menu-border: var(--ff-border-width) var(--ff-border-style) var(--ff-border-base);
+  --fd-menu-shadow: var(--ff-shadow-base);
+  --fd-item-padding: 2px 10px;
+  --fd-item-line-height: 2em;
+  --fd-item-border-radius: var(--ff-radius-sm);
+  --fd-item-font-size: var(--ff-font-size-xs);
+  --fd-item-text: var(--ff-text-primary);
+  --fd-item-hover-bg: var(--ff-bg-surface-hover);
+  --fd-item-hover-text: var(--ff-color-primary);
+  --fd-item-active-bg: var(--ff-color-primary-bg);
+  --fd-item-active-text: var(--ff-color-primary);
 }
 
-.dict-type-badge:hover {
-  color: var(--ff-color-primary);
-  background-color: var(--ff-color-primary-bg);
-}
-
-.dict-type-menu {
-  display: none;
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  background: var(--ff-bg-elevated);
-  border: var(--ff-border-width) var(--ff-border-style) var(--ff-border-base);
-  box-shadow: var(--ff-shadow-base);
-  border-radius: var(--ff-radius-base);
-  z-index: 10;
-  overflow: hidden;
-  padding: 4px;
-}
-
-.dict-type-menu.show {
-  display: block;
-  animation: fadeIn 0.15s ease-out;
-}
-
-.dict-type-option {
-  padding: 2px 10px;
-  font-size: var(--ff-font-size-xs);
-  color: var(--ff-text-primary);
-  cursor: pointer;
-  transition: background-color var(--ff-transition-base);
-  line-height: 2em;
-  border-radius: var(--ff-radius-sm);
-}
-
-.dict-type-option:hover {
-  background-color: var(--ff-bg-surface-hover);
-  color: var(--ff-color-primary);
-}
-
-.dict-type-option.active {
-  color: var(--ff-color-primary);
-  font-weight: 600;
-  background-color: var(--ff-color-primary-bg);
+.dict-type-dropdown:hover,
+.dict-type-dropdown[open] {
+  --fd-text: var(--ff-color-primary);
 }
 
 .dict-input {
