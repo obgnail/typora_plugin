@@ -1730,6 +1730,7 @@
     "notify.copySuccessBatch": "{{count}} 个文件已复制到 {{folder}}",
     "notify.copyFailed": "复制文件失败: {{error}}",
     "notify.pathTraversal": "检测到路径穿越攻击，文件名无效。",
-    "notify.fileNameCollision": "100 次尝试后仍存在文件名冲突：{{name}}。请重命名源文件。"
+    "notify.fileNameCollision": "100 次尝试后仍存在文件名冲突：{{name}}。请重命名源文件。",
+    "notify.mixedNotSupported": "不支持在一次粘贴/拖拽中混合图片和其他文件，请分开处理。"
   }
 }

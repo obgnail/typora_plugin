@@ -1,27 +1,34 @@
 class AssetsStoragePlugin extends BasePlugin {
-  imageExtensions = new Set([
+  static IMAGE_EXTENSIONS = new Set([
     "jpg", "jpeg", "png", "gif", "svg", "webp", "bmp", "tiff", "ico", "jfif",
   ])
+  static MAX_NAME_COLLISION = 100
 
   process = () => {
-    this.utils.entities.eWrite.addEventListener("paste", this._handlePaste, { capture: true })
-    this.utils.entities.eWrite.addEventListener("drop", this._handleDrop, { capture: true })
+    this.utils.entities.eWrite.addEventListener("paste", this._onPaste, { capture: true })
+    this.utils.entities.eWrite.addEventListener("drop", this._onDrop, { capture: true })
   }
 
-  _handlePaste = (ev) => {
-    const files = ev.clipboardData?.files
-    if (!files || files.length === 0) return
-    this._processFiles(files, ev).catch(e => console.error("[assets_storage] paste error:", e))
-  }
+  _onPaste = (ev) => this._tryHandle(ev, ev.clipboardData?.files)
+  _onDrop = (ev) => this._tryHandle(ev, ev.dataTransfer?.files)
 
-  _handleDrop = (ev) => {
-    const files = ev.dataTransfer?.files
-    if (!files || files.length === 0) return
-    this._processFiles(files, ev).catch(e => console.error("[assets_storage] drop error:", e))
-  }
+  _tryHandle = (ev, fileList) => {
+    if (!fileList || fileList.length === 0) return
 
-  _processFiles = async (fileList, ev) => {
-    const files = Array.from(fileList)
+    const all = Array.from(fileList)
+    const files = all.filter(f => !this._isImage(f))
+    if (files.length === 0) return
+
+    // Reject mixed image + non-image batches. preventDefault would silently
+    // swallow Typora's native image handling for the images in the same event,
+    // and only processing the non-images would leave images on the floor. Tell
+    // the user to split the batch.
+    if (files.length !== all.length) {
+      ev.preventDefault()
+      ev.stopPropagation()
+      this.utils.notification.show(this.i18n.t("notify.mixedNotSupported"), "warning")
+      return
+    }
 
     // Resolve targetFolder BEFORE preventDefault — if we can't determine a
     // folder (e.g. upload/ipic mode), bail out and let Typora handle the event.
@@ -30,29 +37,22 @@ class AssetsStoragePlugin extends BasePlugin {
 
     ev.preventDefault()
     ev.stopPropagation()
+    this._processFiles(files, targetFolder).catch(e =>
+      console.error("[assets_storage] processing failed:", e),
+    )
+  }
 
-    const markdownParts = []
-    let successCount = 0
-
+  _processFiles = async (files, targetFolder) => {
     const { FsExtra, Path } = this.utils.Package
     await FsExtra.ensureDir(targetFolder)
-    const currentDir = this.utils.getCurrentDirPath()
 
+    const parts = []
+    let successCount = 0
     for (const file of files) {
       try {
-        const sourcePath = this._getFilePath(file)
-        const isImage = this._isImage(file)
-
-        const destPath = await this._copyFile(file, targetFolder, sourcePath, FsExtra, Path)
-        let finalPath = File.option.useRelativePathForImg
-          ? Path.relative(currentDir, destPath).replace(/\\/g, "/")
-          : destPath
-        if (File.option.autoEscapeImageURL) {
-          finalPath = this._escapeUrl(finalPath)
-        }
-
-        const displayName = Path.basename(destPath, Path.extname(destPath))
-        markdownParts.push(this._generateMarkdown(finalPath, displayName, isImage))
+        const sourcePath = this._getSourcePath(file)
+        const destPath = await this._copyFile(file, targetFolder, sourcePath)
+        parts.push(this._buildMarkdownLink(destPath))
         successCount++
       } catch (e) {
         console.error("[assets_storage]", e)
@@ -64,54 +64,87 @@ class AssetsStoragePlugin extends BasePlugin {
     }
 
     if (successCount > 0) {
-      const folderName = Path.basename(targetFolder)
       this.utils.notification.show(
-        this.i18n.t("notify.copySuccessBatch", { count: successCount, folder: folderName }),
+        this.i18n.t("notify.copySuccessBatch", {
+          count: successCount,
+          folder: Path.basename(targetFolder),
+        }),
         "success",
       )
+      this.utils.insertText(null, parts.join("\n\n"))
+    }
+  }
+
+  _buildMarkdownLink = (destPath) => {
+    const { Path } = this.utils.Package
+    const link = this._formatPath(destPath)
+    const display = Path.basename(destPath, Path.extname(destPath))
+    return `[${display.replace(/[\[\]()]/g, "\\$&")}](${link})`
+  }
+
+  // Mirror Typora's image path rules:
+  //   1. When the destination sits inside the document's directory tree, emit
+  //      a path relative to the document with a leading "./" prefix. This
+  //      matches what Typora does for images it copies into defaultImageStorage
+  //      — always relative, always "./"-prefixed, regardless of the
+  //      useRelativePathForImg toggle.
+  //   2. Outside the doc tree, defer to File.option.useRelativePathForImg
+  //      (the result will start with "..", so no "./" prefix is needed).
+  //   3. Apply File.option.autoEscapeImageURL when Typora has it enabled.
+  _formatPath = (absolutePath) => {
+    const { Path } = this.utils.Package
+    const currentDir = this.utils.getCurrentDirPath()
+
+    let display = absolutePath
+    if (currentDir) {
+      const relative = Path.relative(currentDir, absolutePath)
+      const insideDocTree = relative && !Path.isAbsolute(relative) && !relative.startsWith("..")
+      if (insideDocTree) {
+        display = "./" + relative
+      } else if (File?.option?.useRelativePathForImg && relative) {
+        display = relative
+      }
     }
 
-    if (markdownParts.length > 0) {
-      this.utils.insertText(null, markdownParts.join("\n\n"))
+    let result = display.replace(/\\/g, "/")
+    if (File?.option?.autoEscapeImageURL) {
+      result = result.split("/").map(encodeURIComponent).join("/")
     }
+    return result
   }
 
   _isImage = (file) => {
     if (file.type && file.type.startsWith("image/")) return true
-    if (file.name) {
-      const idx = file.name.lastIndexOf(".")
-      if (idx !== -1) {
-        return this.imageExtensions.has(file.name.substring(idx + 1).toLowerCase())
-      }
-    }
-    if (file.type) {
-      const subtype = file.type.split("/")[1]
-      if (subtype) return this.imageExtensions.has(subtype.toLowerCase())
-    }
-    return false
+    const name = file.name || ""
+    const idx = name.lastIndexOf(".")
+    return idx !== -1
+      && AssetsStoragePlugin.IMAGE_EXTENSIONS.has(name.substring(idx + 1).toLowerCase())
   }
 
-  _getFilePath = (file) => {
+  _getSourcePath = (file) => {
     if (file.path) return file.path
     try {
       const { webUtils } = reqnode("electron")
-      const p = webUtils?.getPathForFile?.(file)
-      if (p) return p
-    } catch (_) {}
-    return null
+      return webUtils?.getPathForFile?.(file) || null
+    } catch (_) {
+      return null
+    }
   }
 
-  _copyFile = async (file, targetDir, sourcePath, FsExtra, Path) => {
-    let destName = Path.basename(file.name || (sourcePath ? Path.basename(sourcePath) : `file-${Date.now()}`))
-
+  _copyFile = async (file, targetDir, sourcePath) => {
+    const { FsExtra, Path } = this.utils.Package
+    let destName = Path.basename(
+      file.name || (sourcePath ? Path.basename(sourcePath) : `file-${Date.now()}`),
+    )
     let destPath = Path.join(targetDir, destName)
+
     if (sourcePath && Path.resolve(sourcePath) === Path.resolve(destPath)) {
       return destPath
     }
 
     let counter = 1
     while (await this.utils.existPath(destPath)) {
-      if (counter >= 100) {
+      if (counter >= AssetsStoragePlugin.MAX_NAME_COLLISION) {
         throw new Error(this.i18n.t("notify.fileNameCollision", { name: destName }))
       }
       const ext = Path.extname(destName)
@@ -122,9 +155,9 @@ class AssetsStoragePlugin extends BasePlugin {
     }
 
     // Path traversal guard
-    const resolved = Path.resolve(destPath)
-    const resolvedTarget = Path.resolve(targetDir) + Path.sep
-    if (resolved !== Path.resolve(targetDir) && !resolved.startsWith(resolvedTarget)) {
+    const resolvedTarget = Path.resolve(targetDir)
+    const resolvedDest = Path.resolve(destPath)
+    if (resolvedDest !== resolvedTarget && !resolvedDest.startsWith(resolvedTarget + Path.sep)) {
       throw new Error(this.i18n.t("notify.pathTraversal"))
     }
 
@@ -147,9 +180,7 @@ class AssetsStoragePlugin extends BasePlugin {
 
     // Read Typora's native defaultImageStorage setting directly.
     const storage = File?.option?.defaultImageStorage
-    if (!storage || storage === "upload" || storage === "ipic") {
-      return null
-    }
+    if (!storage || storage === "upload" || storage === "ipic") return null
 
     if (storage === "folder") {
       return Path.normalize(currentDir.replace(/[\\/]$/, ""))
@@ -162,19 +193,6 @@ class AssetsStoragePlugin extends BasePlugin {
     }
     // Custom path (may contain ${filename} placeholder)
     return Path.resolve(currentDir, storage.replace(/\${filename}/g, fileName))
-  }
-
-  _escapeUrl = (path) => {
-    return path
-      .split("/")
-      .map(segment => encodeURIComponent(segment))
-      .join("/")
-  }
-
-  _generateMarkdown = (finalPath, displayName, isImage) => {
-    const prefix = isImage ? "!" : ""
-    const safeName = displayName.replace(/[\[\]()]/g, "\\$&")
-    return `${prefix}[${safeName}](${finalPath})`
   }
 }
 

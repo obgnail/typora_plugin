@@ -1730,6 +1730,7 @@
     "notify.copySuccessBatch": "{{count}} files copied to {{folder}}",
     "notify.copyFailed": "Failed to copy file: {{error}}",
     "notify.pathTraversal": "Path traversal attempt blocked. Invalid filename.",
-    "notify.fileNameCollision": "File name collision after 100 attempts: {{name}}. Please rename the source file."
+    "notify.fileNameCollision": "File name collision after 100 attempts: {{name}}. Please rename the source file.",
+    "notify.mixedNotSupported": "Mixing images and other files in one paste/drop is not supported. Please handle them separately."
   }
 }
