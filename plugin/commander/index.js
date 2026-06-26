@@ -1,24 +1,11 @@
-const { createProcessManager, CmdShell, PowerShell, BashShell, GitBash, Wsl } = require("./engine.js")
+const { createProcessManager, SHELL_REGISTRY } = require("./engine.js")
 
 class CommanderPlugin extends BasePlugin {
   processManager = createProcessManager()
   ACT_VALUE_PREFIX = "call_builtin@"
   DISPLAY_TYPES = { ALWAYS: "always", ERROR: "error", SILENT: "silent", ECHO: "echo" }
-  SHELLS = { CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl" }
-  EXECUTORS = {
-    [this.SHELLS.CMD_BASH]: File.isWin ? CmdShell : BashShell,
-    [this.SHELLS.POWER_SHELL]: PowerShell,
-    [this.SHELLS.GIT_BASH]: GitBash,
-    [this.SHELLS.WSL]: Wsl,
-  }
-  BUILTINS = (() => {
-    const shells = Object.values(this.SHELLS)
-    let ret = this.config.BUILTIN.filter(e => !e.disable && e.shell && shells.includes(e.shell))
-    if (!File.isWin) {
-      ret = ret.filter(e => e.shell !== this.SHELLS.CMD_BASH)
-    }
-    return ret
-  })()
+  EXECUTORS = Object.fromEntries(Object.entries(SHELL_REGISTRY).map(([id, s]) => [id, s.executor]))
+  BUILTINS = this.config.BUILTIN.filter(e => !e.disable && Object.hasOwn(SHELL_REGISTRY, e.shell))
   postScript = (() => {
     const hook = this.utils.safeEval(this.config.POST_SCRIPT)
     return (typeof hook === "function") ? hook : this.utils.noop
@@ -54,7 +41,7 @@ class CommanderPlugin extends BasePlugin {
     const defaultHotkey = { hotkey: this.config.HOTKEY, callback: this.call }
     const customHotkeys = this.BUILTINS
       .filter(({ hotkey, cmd }) => hotkey && cmd)
-      .map(({ hotkey, cmd, shell }) => ({ hotkey, callback: () => this.quickExecute(cmd, shell) }))
+      .map(({ shell, cmd, hotkey }) => ({ hotkey, callback: () => this.quickExecute(shell, cmd) }))
     return [defaultHotkey, ...customHotkeys]
   }
 
@@ -68,12 +55,8 @@ class CommanderPlugin extends BasePlugin {
       pre: document.querySelector(".plugin-commander-output pre"),
     }
 
-    const { CMD_BASH, POWER_SHELL, GIT_BASH, WSL } = this.SHELLS
-    const shells = [
-      { value: CMD_BASH, label: "CMD/Bash" },
-      ...(File.isWin && [{ value: POWER_SHELL, label: "PowerShell" }, { value: GIT_BASH, label: "GitBash" }, { value: WSL, label: "WSL" }]),
-    ]
-    this.entities.badgeShell.setOptions(shells).setValue(CMD_BASH)
+    const shellOptions = Object.entries(SHELL_REGISTRY).map(([id, s]) => ({ value: id, label: s.label }))
+    this.entities.badgeShell.setOptions(shellOptions).setValue(shellOptions[0].value)
     this.entities.badgeBuiltin.setOptions(this.BUILTINS.map(e => ({ value: e.cmd, label: e.name, shell: e.shell })))
   }
 
@@ -91,7 +74,7 @@ class CommanderPlugin extends BasePlugin {
     })
     this.entities.panel.addEventListener("keydown", ev => {
       ev.stopPropagation()
-      if (ev.key === "Escape") this.entities.panel.hide()
+      if (ev.key === "Escape") this.hidePanel()
     })
     this.entities.cmd.addEventListener("keydown", ev => {
       if (ev.key === "Enter") {
@@ -100,21 +83,21 @@ class CommanderPlugin extends BasePlugin {
           this.commitExecute()
         }
       } else if (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.cmd.value) {
-        this.entities.panel.hide()
+        this.hidePanel()
       }
     })
     this.entities.panel.addEventListener("btn-click", ev => {
-      if (ev.detail.action === "close") this.entities.panel.hide()
+      if (ev.detail.action === "close") this.hidePanel()
     })
   }
 
-  _refreshPanel = (cmd, shell, show = false) => {
+  _refreshPanel = (shellName, cmd, show = false) => {
     this.entities.cmd.value = cmd
     this.entities.cmd.dispatchEvent(new Event("input"))
-    this.entities.badgeShell.setValue(shell)
+    this.entities.badgeShell.setValue(shellName)
     this.entities.pre.textContent = ""
     this.entities.pre.classList.remove("error")
-    if (show) this.entities.panel.show()
+    if (show) this.showPanel()
   }
 
   _setRunningState = (isRunning) => {
@@ -124,27 +107,25 @@ class CommanderPlugin extends BasePlugin {
     commit.classList.toggle("running", isRunning)
   }
 
-  runCommand = (type, cmd, shellName) => {
+  runCommand = (shellName, cmd, displayType) => {
     const shell = this.EXECUTORS[shellName]
     if (!shell) {
-      throw new Error(`No such Shell Strategy: ${shellName}`)
+      throw new Error(`No such shell: ${shellName}`)
     }
 
     const { ECHO, ALWAYS, ERROR } = this.DISPLAY_TYPES
-    const isEcho = type === ECHO
+    const isError = displayType === ERROR
+    const isEchoOrAlways = displayType === ECHO || displayType === ALWAYS
 
-    this._refreshPanel(cmd, shellName, isEcho)
+    this._refreshPanel(shellName, cmd, isEchoOrAlways)
     this._setRunningState(true)
+
     const pre = this.entities.pre
-    const ensureVisible = this.utils.once(() => !isEcho && this.entities.panel.show())
-    const _onStdout = (data) => {
-      ensureVisible()
-      pre.append(data)
-    }
+    const _onStdout = (data) => pre.append(data)
     const _onStderr = (data) => {
-      ensureVisible()
       pre.append(data)
       pre.classList.add("error")
+      if (isError) this.showPanel()
     }
 
     this.processManager.run(shell, cmd, {
@@ -152,8 +133,8 @@ class CommanderPlugin extends BasePlugin {
       timeout: this.config.TIMEOUT,
       normalizeEnvVars: this.config.NORMALIZE_ENV_VARS,
       hooks: {
-        onStdout: (isEcho || type === ALWAYS) ? _onStdout : null,
-        onStderr: (isEcho || type === ALWAYS || type === ERROR) ? _onStderr : null,
+        onStdout: isEchoOrAlways ? _onStdout : null,
+        onStderr: (isEchoOrAlways || isError) ? _onStderr : null,
         onExit: (payload) => {
           this._setRunningState(false)
           this.postScript?.(payload)
@@ -167,18 +148,11 @@ class CommanderPlugin extends BasePlugin {
     })
   }
 
-  quickExecute = (cmd, shell) => this.runCommand(this.config.QUICK_RUN_DISPLAY, cmd, shell)
+  quickExecute = (shell, cmd) => this.runCommand(shell, cmd, this.config.QUICK_RUN_DISPLAY)
+  commitExecute = (shell = this.entities.badgeShell.getValue(), cmd = this.entities.cmd.value) => this.runCommand(shell, cmd, this.config.COMMIT_RUN_DISPLAY)
 
-  commitExecute = () => {
-    const cmd = this.entities.cmd.value
-    if (!cmd) {
-      this.entities.panel.show()
-      this.entities.pre.textContent = ""
-    } else {
-      this.runCommand(this.config.COMMIT_RUN_DISPLAY, cmd, this.entities.badgeShell.getValue())
-    }
-  }
-
+  hidePanel = () => this.entities.panel.hide()
+  showPanel = () => this.entities.panel.show()
   togglePanel = () => this.entities.panel.toggle()
 
   call = (action = "toggle_panel") => {
@@ -187,7 +161,7 @@ class CommanderPlugin extends BasePlugin {
     } else if (action.startsWith(this.ACT_VALUE_PREFIX)) {
       const name = action.slice(this.ACT_VALUE_PREFIX.length)
       const target = this.BUILTINS.find(c => c.name === name)
-      if (target) this.quickExecute(target.cmd, target.shell)
+      if (target) this.quickExecute(target.shell, target.cmd)
     }
   }
 }
