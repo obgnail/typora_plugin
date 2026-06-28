@@ -344,6 +344,13 @@
   "commander": {
     "pluginName": "命令行環境",
     "act.toggle_panel": "顯示 / 隱藏",
+    "tooltip.builtin": "內建命令",
+    "tooltip.history": "執行歷史",
+    "tooltip.env": "插入環境變數",
+    "tooltip.shell": "選擇執行環境",
+    "tooltip.execute": "執行 (Ctrl+Enter)",
+    "tooltip.copy": "複製輸出結果",
+    "placeholder.textarea": "在此輸入指令腳本...\n\n- 按 Ctrl + Enter 執行\n- 按 Esc 隱藏面板",
     "$option.QUICK_RUN_DISPLAY.echo": "立即彈出視窗並回顯輸出",
     "$option.QUICK_RUN_DISPLAY.always": "執行結束後彈出視窗並顯示輸出",
     "$option.QUICK_RUN_DISPLAY.error": "僅在錯誤時彈出視窗並顯示輸出",
@@ -364,9 +371,9 @@
     "$label.BUILTIN.cmd": "命令",
     "$label.POST_SCRIPT": "後置腳本",
     "$label.NORMALIZE_ENV_VARS": "環境變數正規化",
+    "$label.MAX_HISTORY_ENTRIES": "最大歷史記錄數",
     "$tooltip.normalizeEnvVars": "自動將腳本中的跨平台變數（如 $f, $m）轉換為當前 Shell 支援的原生格式",
-    "$title.cmdDisplay": "輸出顯示",
-    "$placeholder.envInfo": "環境變數:\nf 目前檔案路徑\nd 目前檔案目錄\nm 目前掛載目錄"
+    "$title.cmdDisplay": "輸出顯示"
   },
   "md_padding": {
     "pluginName": "中英文混排優化",

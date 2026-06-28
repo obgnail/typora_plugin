@@ -1,206 +1,257 @@
 #plugin-commander {
   --cmd-bg-surface: #ffffff;
-  --cmd-bg-input: rgba(0, 0, 0, 0.04);
-  --cmd-bg-hover: rgba(0, 0, 0, 0.04);
-  --cmd-border: rgba(0, 0, 0, 0.06);
-  --cmd-border-focus: #4285f4;
-  --cmd-text-main: #1e293b;
-  --cmd-text-sub: #475569;
-  --cmd-text-placeholder: #94a3b8;
-  --cmd-shadow-focus: rgba(66, 133, 244, 0.15);
-  --cmd-radius-input: 8px;
-  --cmd-bg-output: #f8fafc;
+  --cmd-bg-input: #fafafa;
+  --cmd-bg-input-focus: #ffffff;
+  --cmd-bg-hover: #f4f4f5;
+  --cmd-border: #e4e4e7;
+  --cmd-border-focus: #3b82f6;
+  --cmd-text-main: #27272a;
+  --cmd-text-sub: #71717a;
+  --cmd-text-placeholder: #a1a1aa;
+  --cmd-shadow-subtle: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --cmd-shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  --cmd-radius-wrap: 8px;
+  --cmd-bg-output: #f4f4f5;
   --cmd-text-error: #ef4444;
+  --cmd-icon-color: #52525b;
+  --cmd-btn-bg: #ffffff;
+  --cmd-btn-border: #e4e4e7;
+  --cmd-btn-hover: #f4f4f5;
+  --cmd-btn-active: #e4e4e7;
+  --cmd-play-color: #10b981;
+  --cmd-stop-color: #ef4444;
+  --cmd-scrollbar-thumb: rgba(161, 161, 170, 0.4);
+  --cmd-scrollbar-thumb-hover: rgba(113, 113, 122, 0.6);
 
-  --window-min-width: 400px;
+  --window-min-width: 420px;
+  --window-min-height: 480px;
 
-  top: 20%;
+  top: 15%;
   left: 50%;
-  width: 400px;
-  height: 480px;
+  width: 440px;
+  height: 520px;
+  background: var(--cmd-bg-surface);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+#plugin-commander::part(content-area) {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+}
+
+.plugin-commander-wrap {
   display: flex;
   flex-direction: column;
+  padding: 16px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 #plugin-commander-form {
   display: flex;
-  padding-bottom: 12px;
-  flex-shrink: 0;
-}
-
-#plugin-commander-form .plugin-commander-wrap {
-  position: relative;
-  width: 100%;
-  display: flex;
   flex-direction: column;
   background: var(--cmd-bg-input);
-  border: 1px solid transparent;
-  border-radius: var(--cmd-radius-input);
-  transition: all 0.2s ease;
-  box-sizing: border-box;
+  border: 1px solid var(--cmd-border);
+  border-radius: var(--cmd-radius-wrap);
+  box-shadow: var(--cmd-shadow-subtle);
+  transition: all 0.2s ease-out;
+  margin-bottom: 12px;
 }
 
-#plugin-commander-form .plugin-commander-wrap:focus-within {
+#plugin-commander-form:focus-within {
+  background: var(--cmd-bg-input-focus);
   border-color: var(--cmd-border-focus);
-  background: var(--cmd-bg-surface);
-  box-shadow: 0 0 0 3px var(--cmd-shadow-focus);
-}
-
-.plugin-commander-badges {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 6px 0 10px;
-  order: 1;
-}
-
-.plugin-commander-badges-right {
-  display: flex;
-  align-items: center;
-}
-
-.plugin-commander-shell {
-  --fd-height: 26px;
-  --fd-padding: 0 8px;
-  --fd-bg: transparent;
-  --fd-hover-bg: var(--cmd-bg-hover);
-  --fd-text: var(--cmd-text-placeholder);
-  --fd-font-size: 12px;
-  --fd-font-weight: 600;
-
-  --fd-menu-left: auto;
-  --fd-menu-right: 0;
-  --fd-menu-bg: var(--cmd-bg-surface);
-  --fd-menu-border: 1px solid var(--cmd-border);
-
-  --fd-item-hover-bg: var(--cmd-bg-hover);
-  --fd-item-hover-text: var(--cmd-text-main);
-  --fd-item-active-bg: var(--cmd-shadow-focus);
-  --fd-item-active-text: var(--cmd-border-focus);
-}
-
-.plugin-commander-shell:hover,
-.plugin-commander-shell[open] {
-  --fd-text: var(--cmd-text-main);
-}
-
-.plugin-commander-builtin {
-  width: 26px;
-  --fd-height: 26px;
-  --fd-padding: 0;
-  --fd-bg: transparent;
-  --fd-hover-bg: var(--cmd-bg-hover);
-  --fd-text: var(--cmd-text-placeholder);
-  --fd-font-size: 15px;
-
-  --fd-menu-left: 0;
-  --fd-menu-right: auto;
-  --fd-menu-bg: var(--cmd-bg-surface);
-  --fd-menu-border: 1px solid var(--cmd-border);
-
-  --fd-item-hover-bg: var(--cmd-bg-hover);
-  --fd-item-hover-text: var(--cmd-text-main);
-  --fd-item-active-bg: var(--cmd-shadow-focus);
-  --fd-item-active-text: var(--cmd-border-focus);
-}
-
-.plugin-commander-builtin:hover,
-.plugin-commander-builtin[open] {
-  --fd-text: var(--cmd-text-main);
-}
-
-.plugin-commander-badges .plugin-commander-commit {
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--cmd-text-placeholder);
-  cursor: pointer;
-  border-radius: 6px;
-  transition: color 0.2s ease, background-color 0.2s ease;
-  font-size: 15px;
-  visibility: hidden;
-}
-
-.plugin-commander-badges .plugin-commander-commit:hover {
-  color: var(--cmd-text-main);
-  background-color: var(--cmd-bg-hover);
-}
-
-.plugin-commander-badges .plugin-commander-commit.running {
-  color: var(--cmd-text-error);
-  visibility: visible !important;
-}
-
-.plugin-commander-badges .plugin-commander-commit.running:hover {
-  background-color: var(--cmd-bg-hover);
-  color: var(--cmd-text-error);
-  opacity: 0.8;
-}
-
-.plugin-commander-textarea:not(:placeholder-shown) + .plugin-commander-badges .plugin-commander-commit {
-  visibility: visible;
+  box-shadow: var(--cmd-shadow-focus), var(--cmd-shadow-subtle);
 }
 
 .plugin-commander-textarea {
   width: 100%;
-  min-height: 60px;
-  max-height: 250px;
+  min-height: 120px;
+  max-height: 300px;
   resize: vertical;
-  padding: 5px 15px 10px 15px;
+  padding: 12px 14px;
   background: transparent;
   border: none;
   color: var(--cmd-text-main);
   font-size: 13px;
-  line-height: 1.5;
-  font-family: Consolas, "Courier New", monospace;
+  line-height: 1.6;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   white-space: pre-wrap;
   word-break: break-all;
   outline: none;
   box-sizing: border-box;
-  order: 2;
-}
-
-.plugin-commander-textarea:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-.plugin-commander-textarea::-webkit-scrollbar {
-  width: 8px;
-}
-
-.plugin-commander-textarea::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.plugin-commander-textarea::-webkit-scrollbar-thumb {
-  background: var(--cmd-border);
-  border-radius: 4px;
-}
-
-.plugin-commander-textarea:hover::-webkit-scrollbar-thumb {
-  background-color: var(--cmd-text-placeholder);
 }
 
 .plugin-commander-textarea::placeholder {
   color: var(--cmd-text-placeholder);
 }
 
+.plugin-commander-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--cmd-border);
+  background: transparent;
+}
+
+.plugin-commander-toolbar-left,
+.plugin-commander-toolbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.plugin-commander-toolbar-left > * + *,
+.plugin-commander-toolbar-right > * + * {
+  margin-left: 8px;
+}
+
+.plugin-commander-dropdown {
+  --fd-height: 28px;
+  --fd-bg: var(--cmd-btn-bg);
+  --fd-hover-bg: var(--cmd-btn-hover);
+  --fd-menu-bg: var(--cmd-bg-surface);
+  --fd-menu-border: 1px solid var(--cmd-border);
+  --fd-item-hover-bg: var(--cmd-bg-hover);
+  --fd-item-hover-text: var(--cmd-text-main);
+  --fd-item-active-bg: var(--cmd-bg-hover);
+  --fd-item-active-text: var(--cmd-border-focus);
+
+  border: 1px solid var(--cmd-btn-border);
+  border-radius: 6px;
+  box-shadow: var(--cmd-shadow-subtle);
+  transition: all 0.15s ease;
+}
+
+.plugin-commander-dropdown:hover,
+.plugin-commander-dropdown[open] {
+  --fd-bg: var(--cmd-btn-hover);
+  --fd-text: var(--cmd-text-main);
+  border-color: var(--cmd-border);
+}
+
+.plugin-commander-shell {
+  --fd-padding: 0 12px;
+  --fd-text: var(--cmd-text-main);
+  --fd-font-size: 13px;
+  --fd-font-weight: 500;
+  --fd-menu-left: auto;
+  --fd-menu-right: 0;
+}
+
+.plugin-commander-builtin,
+.plugin-commander-history,
+.plugin-commander-env {
+  width: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  --fd-padding: 0;
+  --fd-text: var(--cmd-icon-color);
+  --fd-font-size: 14px;
+  --fd-menu-left: 0;
+  --fd-menu-right: auto;
+}
+
+.plugin-commander-commit {
+  width: 30px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cmd-play-color);
+  background: var(--cmd-btn-bg);
+  border: 1px solid var(--cmd-btn-border);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  font-size: 13px;
+  box-shadow: var(--cmd-shadow-subtle);
+  outline: none;
+}
+
+.plugin-commander-commit:hover {
+  background: var(--cmd-btn-hover);
+  border-color: var(--cmd-border);
+}
+
+.plugin-commander-commit:active {
+  background: var(--cmd-btn-active);
+  box-shadow: none;
+  transform: translateY(1px);
+}
+
+.plugin-commander-commit.running {
+  color: var(--cmd-stop-color);
+  animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.92);
+  }
+}
+
 .plugin-commander-output {
+  position: relative;
   flex: 1;
   overflow: auto;
   background: var(--cmd-bg-output);
   border: 1px solid var(--cmd-border);
-  border-radius: var(--cmd-radius-input);
-  padding: 16px;
-  min-height: 0;
+  border-radius: var(--cmd-radius-wrap);
+  padding: 12px 14px;
+  box-sizing: border-box;
+}
+
+.plugin-commander-copy {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  color: var(--cmd-icon-color);
+  background: var(--cmd-bg-surface);
+  border: 1px solid var(--cmd-border);
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 10;
+  box-shadow: var(--cmd-shadow-subtle);
+}
+
+.plugin-commander-output pre:not(:empty) + .plugin-commander-copy {
+  opacity: 0.6;
+  visibility: visible;
+}
+
+.plugin-commander-output pre:not(:empty) + .plugin-commander-copy:hover {
+  opacity: 1;
+  color: var(--cmd-text-main);
+  border-color: var(--cmd-border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.plugin-commander-copy.fa-check {
+  color: var(--cmd-play-color) !important;
+  border-color: var(--cmd-play-color) !important;
+  opacity: 1 !important;
 }
 
 .plugin-commander-output pre {
   display: block;
-  font-family: Consolas, "Courier New", monospace;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 13px;
   line-height: 1.6;
   margin: 0;
@@ -208,42 +259,56 @@
   white-space: pre-wrap;
   word-break: break-all;
   outline: none;
+  tab-size: 4;
 }
 
 .plugin-commander-output pre.error {
   color: var(--cmd-text-error);
 }
 
+.plugin-commander-textarea::-webkit-scrollbar,
 .plugin-commander-output::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
 }
 
+.plugin-commander-textarea::-webkit-scrollbar-track,
 .plugin-commander-output::-webkit-scrollbar-track {
   background: transparent;
 }
 
+.plugin-commander-textarea::-webkit-scrollbar-thumb,
 .plugin-commander-output::-webkit-scrollbar-thumb {
-  background: var(--cmd-border);
-  border-radius: 4px;
-  border: 2px solid transparent;
   background-clip: padding-box;
+  border: 4px solid rgba(0, 0, 0, 0);
+  border-radius: 9999px;
+  background-color: var(--cmd-scrollbar-thumb);
 }
 
+.plugin-commander-textarea:hover::-webkit-scrollbar-thumb,
 .plugin-commander-output:hover::-webkit-scrollbar-thumb {
-  background-color: var(--cmd-text-placeholder);
+  background-color: var(--cmd-scrollbar-thumb-hover);
 }
 
 body.plugin-dark-mode #plugin-commander {
-  --cmd-bg-surface: #1e1e20;
-  --cmd-bg-input: rgba(255, 255, 255, 0.05);
-  --cmd-bg-hover: rgba(255, 255, 255, 0.06);
-  --cmd-border: rgba(255, 255, 255, 0.08);
-  --cmd-border-focus: #8ab4f8;
-  --cmd-text-main: #f3f4f6;
-  --cmd-text-sub: #9ca3af;
-  --cmd-text-placeholder: #6b7280;
-  --cmd-shadow-focus: rgba(138, 180, 248, 0.15);
-  --cmd-bg-output: #252528;
+  --cmd-bg-surface: #18181b;
+  --cmd-bg-input: #27272a;
+  --cmd-bg-input-focus: #27272a;
+  --cmd-bg-hover: #3f3f46;
+  --cmd-border: #3f3f46;
+  --cmd-border-focus: #3b82f6;
+  --cmd-text-main: #e4e4e7;
+  --cmd-text-sub: #a1a1aa;
+  --cmd-text-placeholder: #71717a;
+  --cmd-shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --cmd-shadow-focus: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  --cmd-bg-output: #1f1f22;
   --cmd-text-error: #f87171;
+  --cmd-icon-color: #a1a1aa;
+  --cmd-btn-bg: #27272a;
+  --cmd-btn-border: #3f3f46;
+  --cmd-btn-hover: #3f3f46;
+  --cmd-btn-active: #52525b;
+  --cmd-scrollbar-thumb: rgba(161, 161, 170, 0.3);
+  --cmd-scrollbar-thumb-hover: rgba(161, 161, 170, 0.5);
 }

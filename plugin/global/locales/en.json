@@ -344,6 +344,13 @@
   "commander": {
     "pluginName": "Commander",
     "act.toggle_panel": "Show/Hide Commander",
+    "tooltip.builtin": "Built-in Scripts",
+    "tooltip.history": "Execution History",
+    "tooltip.env": "Insert Environment Variable",
+    "tooltip.shell": "Select Shell Context",
+    "tooltip.execute": "Execute (Ctrl+Enter)",
+    "tooltip.copy": "Copy Output",
+    "placeholder.textarea": "Type your script here...\n\n- Press Ctrl + Enter to execute\n- Press Esc to hide",
     "$option.QUICK_RUN_DISPLAY.echo": "Echo Output Immediately",
     "$option.QUICK_RUN_DISPLAY.always": "Show Output After Execution",
     "$option.QUICK_RUN_DISPLAY.error": "Show Output Only on Error",
@@ -364,9 +371,9 @@
     "$label.BUILTIN.cmd": "Command",
     "$label.POST_SCRIPT": "Post-Execution Script",
     "$label.NORMALIZE_ENV_VARS": "Normalize Env Vars",
+    "$label.MAX_HISTORY_ENTRIES": "Max History Entries",
     "$tooltip.normalizeEnvVars": "Auto-convert cross-platform variables (e.g., $f, $m) into the native format of the selected shell",
-    "$title.cmdDisplay": "Output Display",
-    "$placeholder.envInfo": "Variables:\nf: Current file path\nd: Current directory\nm: Mount directory"
+    "$title.cmdDisplay": "Output Display"
   },
   "md_padding": {
     "pluginName": "Chinese-English Text Spacer",

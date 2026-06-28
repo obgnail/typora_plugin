@@ -226,7 +226,7 @@ const schema_commander = () => [
         Select("shell").Options(["cmd/bash", "powershell", "gitbash", "wsl"]).OptionScope("BUILTIN.shell"),
         Text("name"),
       ),
-      Textarea("cmd").Rows(5).Placeholder("envInfo"),
+      Textarea("cmd").Rows(5),
     ])
     .DefaultValues({
       name: "",
@@ -237,7 +237,8 @@ const schema_commander = () => [
   Code("POST_SCRIPT").Tooltip("expertsOnly"),
   Group("advanced",
     Switch("NORMALIZE_ENV_VARS").Tooltip("normalizeEnvVars"),
-    Integer("TIMEOUT").Unit(UNITS.millisecond).Min(0).Tooltip("zeroForNoLimit"),
+    Integer("TIMEOUT").Min(0).Unit(UNITS.millisecond).Tooltip("zeroForNoLimit"),
+    Integer("MAX_HISTORY_ENTRIES").Min(1),
   ),
   FRAG.SettingHandler(),
 ]

@@ -84,6 +84,7 @@
   padding: 4px;
   box-sizing: border-box;
   max-height: 250px;
+  max-width: 350px;
   overflow-y: auto;
 }
 
@@ -103,8 +104,9 @@
   cursor: pointer;
   transition: var(--fd-transition, background-color 0.2s, color 0.2s);
   white-space: nowrap;
-  display: flex;
-  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 .dropdown-item:hover {

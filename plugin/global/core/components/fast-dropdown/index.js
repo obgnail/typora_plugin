@@ -46,10 +46,7 @@ class FastDropdown extends HTMLElement {
   }
 
   connectedCallback() {
-    this.entities.trigger.addEventListener("click", ev => {
-      ev.stopPropagation()
-      this.state.isOpen ? this.close() : this.open()
-    })
+    this.entities.trigger.addEventListener("click", () => this.state.isOpen ? this.close() : this.open())
     this.entities.menu.addEventListener("click", ev => {
       const val = ev.target.closest(".dropdown-item")?.dataset.value
       if (val) this._select(this.state.options.find(opt => opt.value === val))
@@ -101,7 +98,7 @@ class FastDropdown extends HTMLElement {
   }
 
   _handleClick = (ev) => {
-    if (!this.contains(ev.target)) this.close()
+    if (!ev.composedPath().includes(this)) this.close()
   }
 
   _select = (option) => {

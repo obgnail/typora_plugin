@@ -44,6 +44,9 @@ module.exports = {
     MAX_ENTITIES: notZero,
     MAX_DEPTH: notZero,
   },
+  commander: {
+    POST_SCRIPT: required,
+  },
   md_padding: {
     IGNORE_WORDS: each(required),
     IGNORE_PATTERNS: each([required, regex]),
@@ -63,6 +66,7 @@ module.exports = {
   },
   auto_number: {
     FONT_FAMILY: required,
+    APPLY_EXPORT_HEADER_NUMBERING: required,
   },
   fence_enhance: {
     BUTTON_SIZE: required,
@@ -95,6 +99,9 @@ module.exports = {
     MAX_ENTITIES: notZero,
     MAX_DEPTH: notZero,
     IGNORE_FOLDERS: each(required),
+  },
+  preferences: {
+    FORM_RENDERING_HOOK: required,
   },
   asset_root_redirect: {
     ROOT_PATH: required,

@@ -251,13 +251,13 @@ COMMIT_RUN_DISPLAY = "echo"
 # Predefined command list
 #   name   : Unique identifier for the plugin menu
 #   disable: Switch for this specific command
-#   shell  : Target shell (Supported: "cmd/bash", "powershell", "gitbash", "wsl")
+#   shell  : Target shell (Supported: cmd/bash, powershell, gitbash, wsl, sh, zsh, nushell, python, nodejs, r, julia)
 #   hotkey : (Optional) Execution shortcut
 #   cmd    : Execution string
 # Built-in environment variables:
-#   $f: Absolute path of the current file
-#   $d: Directory of the current file
-#   $m: Current mount directory in Typora's sidebar
+#   f: Absolute path of the current file
+#   d: Directory of the current file
+#   m: Current mount directory in Typora's sidebar
 BUILTIN = [
   { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $env:d" },
   { name = "VScode", disable = false, shell = "cmd/bash", cmd = "code %f%" },
@@ -267,6 +267,8 @@ BUILTIN = [
 # Post-Execution Script. JavaScript code to execute after the command finishes
 POST_SCRIPT = "({ command, cwd, options, code, error, stdout, stderr }) => null"
 
+# Max capacity limit for command history
+MAX_HISTORY_ENTRIES = 20
 
 # =========== [ Advanced ] ===========
 # Auto-convert cross-platform variables (e.g., $f, $m) into the native format of the selected shell

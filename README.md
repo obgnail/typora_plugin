@@ -119,7 +119,7 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 
 4. Go to the folder `A/plugin/bin/`.
 
-   - Windows: Right-Click on the file `installw_windows.ps1`. Select 'Run with PowerShell'.
+   - Windows: Right-Click on the file `install_windows.ps1`. Select 'Run with PowerShell'.
    - Linux: Run `install_linux.sh` as administrator.
 
 5. Verification: Restart Typora, right-click in the main text area, and if you see the plugin items, everything is fine.
