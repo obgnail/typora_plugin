@@ -32,7 +32,7 @@ class ChatPlugin extends BasePlugin {
     const avatarPaths = Object.fromEntries(
       Object.entries(avatars).map(([name, src]) => {
         if (!this.utils.isNetworkImage(src) && !this.utils.isSpecialImage(src)) {
-          src = this.utils.Package.Path.resolve(dir, src)
+          src = this.utils.toFileProtocol(this.utils.Package.Path.resolve(dir, src))
         }
         return [name, src]
       }),

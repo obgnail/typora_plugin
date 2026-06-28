@@ -44,8 +44,8 @@ class DataTablesPlugin extends BasePlugin {
     if ($?.fn?.dataTable) return
     this.initDataTablesConfig()
     await Promise.all([
-      $.getScript(this.utils.toProtocolUrl("plugin/datatables/resource/js/datatables.min.js")),
-      this.utils.insertStyleFile("datatables-common", "./plugin/datatables/resource/css/datatables.min.css"),
+      $.getScript(this.utils.toFileProtocol(this.utils.joinPluginPath("./plugin/datatables/resource/js/dataTables.min.js"))),
+      this.utils.insertStyleFile("datatables-common", "./plugin/datatables/resource/css/dataTables.min.css"),
       this.utils.styleManager.register(this.fixedName),
     ])
   }

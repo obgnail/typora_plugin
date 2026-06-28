@@ -97,7 +97,7 @@ class DrawIOPlugin extends BasePlugin {
 
   lazyLoad = async () => {
     const from = this.config.RESOURCE_URI
-    const path = this.utils.isNetworkURI(from) ? from : `file:///${this.utils.Package.Path.resolve(from)}`
+    const path = this.utils.isNetworkURI(from) ? from : this.utils.toFileProtocol(this.utils.Package.Path.resolve(from))
     await $.getScript(path)
     window.GraphViewer.prototype.toolbarZIndex = 7
   }

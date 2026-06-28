@@ -150,7 +150,7 @@ class ResourceManagerPlugin extends BasePlugin {
     this.entities.wrap.querySelector(".non-exist-in-folder-caption").textContent = this.i18n.t("title.nonExistInFolder", { size: notInFolder.length })
     this.entities.wrap.querySelector(".resource-manager-config-caption").textContent = this.i18n.t("title.setting")
 
-    const toData = arr => arr.map((src, idx) => ({ idx: idx + 1, src }))
+    const toData = arr => arr.map((src, idx) => ({ idx: idx + 1, src: this.utils.toFileProtocol(src) }))
     this.entities.fileTable.configure(toData(notInFile), this._getFileTableSchema())
     this.entities.folderTable.configure(toData(notInFolder), this._getFolderTableSchema())
   }

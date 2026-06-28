@@ -27,7 +27,6 @@ class utils {
   static isBetaVersion = this.typoraVersion[0] === "0"
 
   static separator = File.isWin ? "\\" : "/"
-  static protocolRoot = this.isBetaVersion ? "typora://typemark" : "typora://app/typemark"
   static supportHasSelector = CSS.supports("selector(:has(*))")
   static tempFolder = window._options.tempPath || require("os").tmpdir()
   static Package = Object.freeze({ Path: PATH, FsExtra: FS_EXTRA })
@@ -631,15 +630,7 @@ class utils {
 
   // =========== Business File ===========
   static getLocalRootUrl = () => File.editor.docMenu.getLocalRootUrl() || this.getCurrentDirPath()
-  static toProtocolUrl = (path) => {
-    const segments = (typeof path === "string" ? path : "")
-      .trim()
-      .split(/[\\/]+/)
-      .filter(seg => seg && seg !== "." && seg !== "..")
-      .map(encodeURIComponent)
-      .join("/")
-    return `${this.protocolRoot}/${segments}`
-  }
+  static toFileProtocol = (path) => path ? `file://${path}` : path
 
   static getCurrentFileContent = () => File.editor.getMarkdown()
   static editCurrentFile = async (replacement, persistence = File.option.enableAutoSave) => {
@@ -697,7 +688,7 @@ class utils {
     el.id = this.getStyleId(name)
     el.type = "text/css"
     el.rel = "stylesheet"
-    el.href = this.joinPluginPath(href)
+    el.href = this.toFileProtocol(this.joinPluginPath(href))
     document.head.append(el)
   }
 
@@ -989,8 +980,8 @@ class utils {
     return { files, folders }
   }
 
-  static isNetworkURI = url => /^https?|(ftp):\/\//.test(url)
-  static isSpecialImage = src => /^(blob|chrome-blob|moz-blob|data):[^\/]/.test(src)
+  static isNetworkURI = uri => /^https?|(ftp):\/\//.test(uri)
+  static isSpecialImage = uri => /^(blob|chrome-blob|moz-blob|data):[^\/]/.test(uri)
   static isNetworkImage = this.isNetworkURI
 
   static getFenceContentByCid = cid => cid && File.editor.fences.queue[cid]?.getValue()
@@ -1054,7 +1045,7 @@ class utils {
       .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
       .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => {
         if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
-          src = PATH.resolve(dir, src)
+          src = this.toFileProtocol(PATH.resolve(dir, src))
         }
         return `<img alt="${alt}" src="${src}">`
       })
@@ -1190,6 +1181,7 @@ class utils {
 
   static getRangyText = () => {
     const { node, bookmark } = this.getRangy()
+    if (!node || !bookmark) return
     const el = File.editor.findElemById(node.cid)
     return el.rawText().substring(bookmark.start, bookmark.end)
   }

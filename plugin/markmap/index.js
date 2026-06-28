@@ -61,7 +61,7 @@ class MarkmapPlugin extends BasePlugin {
 
     const localImagePlugin = resolveImageSrcPlugin(
       src => src && !this.utils.isNetworkImage(src) && !this.utils.isSpecialImage(src),
-      src => this.utils.Package.Path.resolve(this.utils.getLocalRootUrl(), src),
+      src => this.utils.toFileProtocol(this.utils.Package.Path.resolve(this.utils.getLocalRootUrl(), src)),
     )
     const { Transformer, transformerVersions, builtInPlugins, markmap } = require("./resource/markmap.min.js")
     const transformer = new Transformer([...builtInPlugins, localImagePlugin])
@@ -90,7 +90,7 @@ class MarkmapPlugin extends BasePlugin {
           const filename = url.slice(url.lastIndexOf("/") + 1)
           const localResource = localResources[filename]
           if (localResource) {
-            item.data[urlProp] = localResource
+            item.data[urlProp] = this.utils.toFileProtocol(localResource)
           }
         }
       }
