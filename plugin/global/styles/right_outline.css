@@ -84,6 +84,15 @@
   box-sizing: border-box;
 }
 
+/* Adds a dynamic bottom spacer to prevent the last item from being obscured by the status bar (Footer). */
+#plugin-right-outline .plugin-right-outline-list::after {
+  content: "";
+  display: block;
+  position: relative;
+  height: 5vh;
+  pointer-events: none;
+}
+
 #plugin-right-outline ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
