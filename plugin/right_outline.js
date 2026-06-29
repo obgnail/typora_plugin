@@ -216,7 +216,13 @@ class RightOutlinePlugin extends BasePlugin {
     this.entities.panel.style.width = panelWidth + "px"
     this.entities.content.style.width = `${width - panelWidth}px`
     this.utils.entities.eWrite.style.width = "initial"
-    if (forceRefresh) this.refreshPanel()
+
+    if (forceRefresh) {
+      // Bypass the visibility check and yield the main thread.
+      // This ensures the browser completes layout reflows before rendering the outline,
+      // preventing blank panels due to race conditions and smoothing the UI expansion.
+      setTimeout(() => this._refreshPanel(), 30)
+    }
   }
 
   togglePanel = () => this.isPanelShown() ? this.hidePanel() : this.showPanel()
