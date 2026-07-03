@@ -56,7 +56,7 @@ class PlantUMLPlugin extends BasePlugin {
         contentType: resp.headers.get("content-type") || "Unknown",
         buffer: Buffer.from(await resp.arrayBuffer()),
       }
-    }, this.config.CACHED_URL_COUNT)
+    }, { cap: this.config.CACHED_URL_COUNT, keyResolver: this.utils.identity })
   }
 }
 

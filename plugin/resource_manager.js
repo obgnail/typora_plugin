@@ -160,16 +160,16 @@ class ResourceManagerPlugin extends BasePlugin {
     const operationsRender = () => `<i class="fa fa-external-link action-icon" action="locate"></i><i class="fa fa-trash-o action-icon" action="delete"></i>`
     const isInPreview = this.entities.panel.getAttribute("window-buttons").includes("fa-eye-slash")
     const columns = [
-      { key: "idx", title: "No.", width: "3em", sortable: true },
+      { key: "idx", title: "No.", width: "max-content", sortable: true },
       { key: "src", title: "Resources", sortable: true },
       { key: "image", title: "Preview", sortable: true, ignore: !isInPreview, render: resourceRender },
-      { key: "operations", title: "Operations", width: "5.2em", render: operationsRender },
+      { key: "operations", title: "Operations", width: "max-content", render: operationsRender },
     ]
     return { columns }
   }
 
   _getFolderTableSchema = () => ({
-    columns: [{ key: "idx", title: "No.", width: "3em", sortable: true }, { key: "src", title: "Resources", sortable: true }],
+    columns: [{ key: "idx", title: "No.", width: "max-content", sortable: true }, { key: "src", title: "Resources", sortable: true }],
   })
 
   _getConfig = () => ({

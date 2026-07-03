@@ -20,6 +20,37 @@ const createLinterClient = (workerPath, hooks, contentProvider) => {
 class MarkdownlintPlugin extends BasePlugin {
   fixInfos = []
   TRANSLATIONS = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
+  ACTIONS = (() => {
+    const getDetail = async infos => {
+      const attrs = ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]
+      const infoList = infos.map(info => this.utils.pick(info, attrs))
+      const value = infoList.length === 1 ? infoList[0] : infoList
+      const content = JSON.stringify(value, null, "  ")
+      await this.utils.formDialog.modal({
+        title: this.i18n.t("$option.actions.detailAll"),
+        schema: ({ Controls }) => [Controls.Textarea("detail").Rows(14).Readonly(true)],
+        data: { detail: content },
+      })
+    }
+    return {
+      close: () => this.call(),
+      refresh: () => {
+        this.linter.check()
+        this.utils.notification.show(this.i18n.t("success.refresh"))
+      },
+      detailAll: () => getDetail(this.fixInfos),
+      fixAll: () => this.linter.fix(this.fixInfos),
+      detailSingle: idx => getDetail([this.fixInfos[idx]]),
+      fixSingle: idx => this.linter.fix([this.fixInfos[idx]]),
+      toggleSourceMode: () => File.toggleSourceMode(),
+      settings: () => this.settings(),
+      jumpToLine: lineToGo => {
+        if (!lineToGo) return
+        if (!File.editor.sourceView.inSourceMode) File.toggleSourceMode()
+        this.utils.scrollSourceView(lineToGo)
+      },
+    }
+  })()
 
   // Markdownlint config supports names and aliases,
   // keys are not case-sensitive and processed in order from top to bottom with later values overriding earlier ones.
@@ -46,10 +77,10 @@ class MarkdownlintPlugin extends BasePlugin {
     const icons = { settings: "fa-gear", detailAll: "fa-info-circle", fixAll: "fa-wrench", toggleSourceMode: "fa-code", refresh: "fa-refresh", close: "fa-times" }
     const buttons = this.config.TITLE_BAR_BUTTONS.map(name => `${name}|${icons[name]}|${this.i18n.t(`$option.actions.${name}`)}`).join(";")
     return `
-      <fast-window id="plugin-markdownlint" window-title="${this.pluginName}" window-buttons="${buttons}" hidden>
-        <div class="plugin-markdownlint-table-wrap"><fast-table class="plugin-markdownlint-table"></fast-table></div>
+      <fast-window id="plugin-markdownlint" window-title="${this.pluginName}" window-buttons="${buttons}" window-resize="horizontal" hidden>
+        <fast-table class="plugin-markdownlint-table"></fast-table>
       </fast-window>
-      ${this.config.USE_INDICATOR_BUTTON ? `<div id="plugin-markdownlint-button"></div>` : ""}`
+      ${this.config.USE_INDICATOR_BUTTON ? `<div id="plugin-markdownlint-indicator"></div>` : ""}`
   }
 
   init = () => {
@@ -80,82 +111,42 @@ class MarkdownlintPlugin extends BasePlugin {
 
     this.entities = {
       panel: document.querySelector("#plugin-markdownlint"),
-      wrap: document.querySelector(".plugin-markdownlint-table-wrap"),
       table: document.querySelector(".plugin-markdownlint-table"),
-      button: document.querySelector("#plugin-markdownlint-button"),
+      indicator: document.querySelector("#plugin-markdownlint-indicator"),
     }
     this._initTableColumns()
   }
 
   process = () => {
-    const onLifecycle = () => {
-      const { eventHub } = this.utils
-      eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.linter.check, 500))
-      eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => this.linter.configure())
-      eventHub.addEventListener(eventHub.eventType.toggleSettingPage, force => {
-        if (force) {
-          this.entities.panel.toggle(force)
-        }
-        if (this.entities.button) {
-          this.utils.toggleInvisible(this.entities.button, force)
-        }
-      })
-    }
+    const { eventHub } = this.utils
+    eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.linter.check, 500))
+    eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => this.linter.configure())
+    eventHub.addEventListener(eventHub.eventType.toggleSettingPage, force => {
+      if (force) this.entities.panel.toggle(force)
+      if (this.entities.indicator) this.utils.toggleInvisible(this.entities.indicator, force)
+    })
 
-    const _getDetail = async (infos = this.fixInfos) => {
-      const attrs = ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]
-      const infoList = infos.map(info => this.utils.pick(info, attrs))
-      const value = infoList.length === 1 ? infoList[0] : infoList
-      const content = JSON.stringify(value, null, "  ")
-      await this.utils.formDialog.modal({
-        title: this.i18n.t("$option.actions.detailAll"),
-        schema: ({ Controls }) => [Controls.Textarea("detail").Rows(14).Readonly(true)],
-        data: { detail: content },
-      })
-    }
-
-    const fnMap = {
-      close: () => this.call(),
-      refresh: () => {
-        this.linter.check()
-        this.utils.notification.show(this.i18n.t("success.refresh"))
-      },
-      detailAll: () => _getDetail(this.fixInfos),
-      fixAll: () => this.linter.fix(this.fixInfos),
-      detailSingle: idx => _getDetail([this.fixInfos[idx]]),
-      fixSingle: idx => this.linter.fix([this.fixInfos[idx]]),
-      toggleSourceMode: () => File.toggleSourceMode(),
-      settings: this.settings,
-      jumpToLine: lineToGo => {
-        if (!lineToGo) return
-        if (!File.editor.sourceView.inSourceMode) File.toggleSourceMode()
-        this.utils.scrollSourceView(lineToGo)
-      },
-    }
-
-    const onElementEvent = () => {
-      this.entities.button?.addEventListener("mousedown", ev => {
-        if (ev.button === 0) {
-          this.call()
-        } else if (ev.button === 2) {
-          fnMap[this.config.RIGHT_CLICK_INDICATOR_ACTION]?.()
-        }
-      })
-      this.entities.wrap.addEventListener("mousedown", ev => {
-        ev.preventDefault()
-        ev.stopPropagation()
-        if (ev.button === 2) fnMap[this.config.RIGHT_CLICK_TABLE_ACTION]?.()
-      })
-      this.entities.panel.addEventListener("btn-click", ev => fnMap[ev.detail.action]?.())
-      this.entities.table.addEventListener("row-action", ev => {
-        const { action, rowData } = ev.detail
-        const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
-        fnMap[action](arg)
-      })
-    }
-
-    onLifecycle()
-    onElementEvent()
+    this.entities.indicator?.addEventListener("mousedown", ev => {
+      if (ev.button === 0) this.call()
+      else if (ev.button === 2) this.ACTIONS[this.config.RIGHT_CLICK_INDICATOR_ACTION]?.()
+    })
+    this.entities.table.addEventListener("mousedown", ev => {
+      ev.preventDefault()
+      ev.stopPropagation()
+      if (ev.button === 2) this.ACTIONS[this.config.RIGHT_CLICK_TABLE_ACTION]?.()
+    })
+    this.entities.panel.addEventListener("btn-click", ev => this.ACTIONS[ev.detail.action]?.())
+    this.entities.table.addEventListener("row-action", ev => {
+      const { action, rowData } = ev.detail
+      const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
+      this.ACTIONS[action](arg)
+    })
+    this.entities.table.addEventListener("row-click", ev => {
+      const action = this.config.LEFT_CLICK_ROW_ACTION
+      const { rowData } = ev.detail
+      const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
+      this.ACTIONS[action](arg)
+    })
   }
 
   call = () => {
@@ -274,20 +265,20 @@ class MarkdownlintPlugin extends BasePlugin {
   }
 
   _initTableColumns = () => {
-    const [useInfo, useLocate, useFix] = ["info", "locate", "fix"].map(t => this.config.TOOLS.includes(t))
+    const [useDetail, useJump, useFix] = ["detailSingle", "jumpToLine", "fixSingle"].map(t => this.config.ROW_OPERATIONS.includes(t))
     const opsRender = (rowData) => {
-      const infoEl = useInfo ? `<i class="fa fa-info-circle action-icon" action="detailSingle"></i>` : ""
-      const locateEl = useLocate ? `<i class="fa fa-crosshairs action-icon" action="jumpToLine"></i>` : ""
-      const fixEl = (useFix && rowData.fixable) ? `<i class="fa fa-wrench action-icon" action="fixSingle"></i>` : ""
-      return [infoEl, locateEl, fixEl].join("")
+      const elDetail = useDetail ? `<i class="action-icon fa fa-info-circle" action="detailSingle"></i>` : ""
+      const elJump = useJump ? `<i class="action-icon fa fa-crosshairs" action="jumpToLine"></i>` : ""
+      const elFix = (useFix && rowData.fixable) ? `<i class="action-icon fa fa-wrench" action="fixSingle"></i>` : ""
+      return [elDetail, elJump, elFix].join("")
     }
     const sortKey = { index: "idx", lineNumber: "line", ruleName: "rule", ruleDesc: "desc" }[this.config.RESULT_ORDER_BY] || "line"
     const supportedColumns = {
-      idx: { key: "idx", title: this.i18n.t("$option.COLUMNS.idx"), width: "3em", sortable: true },
-      line: { key: "line", title: this.i18n.t("$option.COLUMNS.line"), width: "4em", sortable: true },
-      rule: { key: "rule", title: this.i18n.t("$option.COLUMNS.rule"), width: "5em", sortable: true },
+      idx: { key: "idx", title: this.i18n.t("$option.COLUMNS.idx"), width: "max-content", sortable: true },
+      line: { key: "line", title: this.i18n.t("$option.COLUMNS.line"), width: "max-content", sortable: true },
+      rule: { key: "rule", title: this.i18n.t("$option.COLUMNS.rule"), width: "max-content", sortable: true },
       desc: { key: "desc", title: this.i18n.t("$option.COLUMNS.desc"), sortable: true },
-      ops: { key: "ops", title: this.i18n.t("$option.COLUMNS.ops"), width: `${this.config.TOOLS.length * 26}px`, render: opsRender },
+      ops: { key: "ops", title: this.i18n.t("$option.COLUMNS.ops"), width: "max-content", render: opsRender },
     }
     this.entities.table.setSchema({
       defaultSort: { key: sortKey, direction: "asc" },
@@ -297,7 +288,7 @@ class MarkdownlintPlugin extends BasePlugin {
 
   _onCheck = fixInfos => {
     this.fixInfos = fixInfos
-    this.entities.button?.toggleAttribute("lint-check-failed", !!fixInfos.length)
+    this.entities.indicator?.toggleAttribute("lint-check-failed", !!fixInfos.length)
     if (!this.entities.panel.hidden) {
       this.entities.table.setData(fixInfos.map((item, idx) => {
         const rule = item.ruleNames[0]

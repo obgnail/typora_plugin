@@ -664,10 +664,11 @@ class TOCMarkmap {
   _initPanelRect = () => {
     const { top: t, left: l, width: w, height: h } = this.entities.content.getBoundingClientRect()
     const { WIDTH_PERCENT_WHEN_INIT: wRatio, HEIGHT_PERCENT_WHEN_INIT: hRatio } = this.config
+    const top = t + 10
     const height = h * hRatio / 100
     const width = w * wRatio / 100
     const left = l + (w - width) / 2
-    this._setPanelRect({ top: t, height, width, left })
+    this._setPanelRect({ top, height, width, left })
   }
 
   _setPanelRect = rect => {

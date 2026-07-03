@@ -386,10 +386,10 @@ TITLE_BAR_BUTTONS = ["settings", "fixAll", "toggleSourceMode", "refresh", "close
 COLUMNS = ["line", "rule", "desc", "ops"]
 
 # Executable actions for individual error row items
-#   info  : View Lint Doc
-#   locate: Scroll to Line
-#   fix   : Fix Error
-TOOLS = ["locate", "fix"]
+#   detailSingle: View Lint Doc
+#   jumpToLine  : Scroll to Line
+#   fixSingle   : Fix Error
+ROW_OPERATIONS = ["jumpToLine", "fixSingle"]
 
 # Default result sorting rule
 #   idx       : Sort by index
@@ -424,6 +424,9 @@ BUTTON_PASS_COLOR = "#92C498"
 BUTTON_ERROR_COLOR = "#d8bd74"
 
 # =========== [ Shortcuts ] ===========
+# Left-click the row action(Keys mirror ROW_OPERATIONS)
+LEFT_CLICK_ROW_ACTION = "jumpToLine"
+
 # Right-click the table action(Keys mirror TITLE_BAR_BUTTONS)
 RIGHT_CLICK_TABLE_ACTION = "toggleSourceMode"
 

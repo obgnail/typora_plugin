@@ -211,10 +211,10 @@ class utils {
     }
   }
 
-  static memorize = fn => {
+  static memorize = (fn, keyResolver = (...args) => JSON.stringify(args)) => {
     const cache = Object.create(null)
     return function (...args) {
-      const key = JSON.stringify(args)
+      const key = keyResolver.apply(this, args)
       if (key in cache) {
         return cache[key]
       }
@@ -224,10 +224,10 @@ class utils {
     }
   }
 
-  static memoizeLimited = (fn, cap = 100) => {
+  static memoizeLimited = (fn, { cap = 100, keyResolver = (...args) => JSON.stringify(args) } = {}) => {
     const cache = new Map()
     return function (...args) {
-      const key = JSON.stringify(args)
+      const key = keyResolver.apply(this, args)
       if (cache.has(key)) {
         const item = cache.get(key)
         cache.delete(key)
@@ -1356,16 +1356,13 @@ class utils {
   static createSmartInputHandler = (inputEl, callback, options = {}) => {
     const config = {
       immediateOnCompositionEnd: true, debounceDelay: 0, throttleDelay: 0, minInputLength: 0,
-      trimWhitespace: true, caseSensitive: false, enableIMECache: false, maxCacheSize: 10,
+      trimWhitespace: true, caseSensitive: false,
       onCompositionStart: null, onCompositionEnd: null, onInput: null,
       ...options,
     }
 
     const buildExecutor = () => {
       let executor = callback
-      if (config.enableIMECache) {
-        executor = this.memoizeLimited(executor, config.maxCacheSize)
-      }
       if (config.debounceDelay > 0) {
         executor = this.debounce(executor, config.debounceDelay)
       } else if (config.throttleDelay > 0) {

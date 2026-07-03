@@ -20,25 +20,11 @@
   --icon-hover: rgba(0, 0, 0, 0.04);
   --icon-danger-bg: rgba(239, 68, 68, 0.1);
   --icon-danger-text: #ef4444;
-}
 
-@keyframes markmap-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-#plugin-markmap {
   display: flex;
   min-width: 150px;
   min-height: 150px;
   padding: 0;
-
   background-color: var(--bg-dialog);
   color: var(--text-main);
   border: 1px solid var(--border);
@@ -70,6 +56,17 @@
 
 #plugin-markmap:not(.pinned-window) .plugin-markmap-header:active {
   cursor: grabbing;
+}
+
+@keyframes markmap-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .plugin-markmap-header {

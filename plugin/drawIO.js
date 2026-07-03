@@ -11,7 +11,7 @@ class DrawIOPlugin extends BasePlugin {
   _memorizedFetch = this.utils.memoizeLimited(async url => {
     const resp = await this.utils.fetch(url, { timeout: this.config.SERVER_TIMEOUT, proxy: this.config.PROXY })
     return resp.text()
-  }, this.config.CACHED_URL_COUNT)
+  }, { cap: this.config.CACHED_URL_COUNT, keyResolver: this.utils.identity })
 
   style = () => true
 

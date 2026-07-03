@@ -775,7 +775,7 @@ describe("Function, Timing & Flow Control Utilities", () => {
       const memoizedFn = utils.memoizeLimited((x) => {
         count++
         return x * 2
-      }, 2)
+      }, { cap: 2 })
 
       memoizedFn(1)
       memoizedFn(2)
@@ -789,7 +789,7 @@ describe("Function, Timing & Flow Control Utilities", () => {
       const memoizedFn = utils.memoizeLimited((x) => {
         count++
         return x * 2
-      }, 2)
+      }, { cap: 2 })
 
       memoizedFn(1)
       memoizedFn(2)

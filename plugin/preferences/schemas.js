@@ -102,7 +102,8 @@ const UNITS = {
 const OPTS = {
   textStylizeTools: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush"],
   imageViewerTools: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterfall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fitScreen", "autoSize", "restore", "info", "dummy"],
-  markdownlintTools: ["settings", "detailAll", "fixAll", "toggleSourceMode", "refresh", "close"],
+  markdownlintActions: ["settings", "detailAll", "fixAll", "toggleSourceMode", "refresh", "close"],
+  markdownlintRowActions: ["detailSingle", "jumpToLine", "fixSingle"],
 }
 
 const schema_global = () => [
@@ -1432,9 +1433,9 @@ const schema_markdownlint = () => [
   FRAG.Base(true),
   Group("style",
     Switch("TRANSLATE"),
-    Select("TITLE_BAR_BUTTONS").Options(OPTS.markdownlintTools).OptionScope("actions"),
+    Select("TITLE_BAR_BUTTONS").Options(OPTS.markdownlintActions).OptionScope("actions"),
     Select("COLUMNS").Options(["idx", "line", "rule", "desc", "ops"]).MinItems(1),
-    Select("TOOLS").Options(["info", "locate", "fix"]).MinItems(1).ShowIf(When.contains("COLUMNS", "ops")),
+    Select("ROW_OPERATIONS").Options(OPTS.markdownlintRowActions).OptionScope("rowActions").MinItems(1).ShowIf(When.contains("COLUMNS", "ops")),
     Select("RESULT_ORDER_BY").Options(["index", "lineNumber", "ruleName", "ruleDesc"]),
   ),
   Group("indicator",
@@ -1449,8 +1450,9 @@ const schema_markdownlint = () => [
   ),
   Group(
     "shortcuts",
-    Select("RIGHT_CLICK_TABLE_ACTION").Options(OPTS.markdownlintTools).OptionScope("actions"),
-    Select("RIGHT_CLICK_INDICATOR_ACTION").Options(OPTS.markdownlintTools).OptionScope("actions").ShowIf(When.true("USE_INDICATOR_BUTTON")),
+    Select("LEFT_CLICK_ROW_ACTION").Options(OPTS.markdownlintRowActions).OptionScope("rowActions"),
+    Select("RIGHT_CLICK_TABLE_ACTION").Options(OPTS.markdownlintActions).OptionScope("actions"),
+    Select("RIGHT_CLICK_INDICATOR_ACTION").Options(OPTS.markdownlintActions).OptionScope("actions").ShowIf(When.true("USE_INDICATOR_BUTTON")),
     Hotkey("HOTKEY_FIX_LINT"),
   ),
   Array_("CUSTOM_RULE_FILES"),

@@ -1,4 +1,6 @@
 #plugin-commander {
+  --cmd-width: 420px;
+  --cmd-height: 520px;
   --cmd-bg-surface: #ffffff;
   --cmd-bg-input: #fafafa;
   --cmd-bg-input-focus: #ffffff;
@@ -27,9 +29,9 @@
   --window-min-height: 480px;
 
   top: 15%;
-  left: 50%;
-  width: 440px;
-  height: 520px;
+  left: calc(100% - var(--cmd-width) - 80px);
+  width: var(--cmd-width);
+  height: var(--cmd-height);
   background: var(--cmd-bg-surface);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 }

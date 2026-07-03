@@ -142,8 +142,8 @@ describe("FastTable Data Processing", () => {
     })
 
     await flushMicrotasks()
-    const rows = ft.entities.tbody.querySelectorAll("tr")
-    const statusCell = rows[0].querySelectorAll("td")[1]
+    const rows = ft.entities.tbody.querySelectorAll(".tr")
+    const statusCell = rows[0].querySelectorAll(".td")[1]
     assert.ok(statusCell.innerHTML.includes("status-active"))
   })
 })
@@ -257,7 +257,7 @@ describe("FastTable Event Emission", () => {
     })
 
     await flushMicrotasks()
-    const row = ft.entities.tbody.querySelector("tr")
+    const row = ft.entities.tbody.querySelector(".tr")
     row.dispatchEvent(new window.Event("click", { bubbles: true }))
 
     assert.strictEqual(eventFired, true)
@@ -379,7 +379,7 @@ describe("FastTable Edge Cases", () => {
     const end = performance.now()
 
     assert.ok(end - start < 2000, "Large dataset rendering should be efficient")
-    assert.strictEqual(ft.entities.tbody.querySelectorAll("tr").length, 1000)
+    assert.strictEqual(ft.entities.tbody.querySelectorAll(".tr").length, 1000)
   })
 })
 
@@ -438,7 +438,7 @@ describe("FastTable Internal Methods", () => {
     ft.configure(data, schema)
 
     await flushMicrotasks()
-    assert.ok(ft.entities.tbody.querySelectorAll("tr").length > 0)
+    assert.ok(ft.entities.tbody.querySelectorAll(".tr").length > 0)
 
     ft._clearTable()
     assert.strictEqual(ft.entities.tbody.innerHTML, "")
@@ -471,13 +471,13 @@ describe("FastTable Header Click Sorting", () => {
 
     // First click - ascending
     await flushMicrotasks()
-    ft.entities.thead.querySelector("th").dispatchEvent(new window.Event("click", { bubbles: true }))
+    ft.entities.thead.querySelector(".th").dispatchEvent(new window.Event("click", { bubbles: true }))
     await flushMicrotasks()
     assert.strictEqual(ft.sortKey, "name")
     assert.strictEqual(ft.sortDirection, "asc")
 
     // Second click - descending
-    ft.entities.thead.querySelector("th").dispatchEvent(new window.Event("click", { bubbles: true }))
+    ft.entities.thead.querySelector(".th").dispatchEvent(new window.Event("click", { bubbles: true }))
     await flushMicrotasks()
     assert.strictEqual(ft.sortKey, "name")
     assert.strictEqual(ft.sortDirection, "desc")
@@ -489,7 +489,7 @@ describe("FastTable Header Click Sorting", () => {
     ft.configure(data, schema)
 
     await flushMicrotasks()
-    ft.entities.thead.querySelector("th").dispatchEvent(new window.Event("click", { bubbles: true }))
+    ft.entities.thead.querySelector(".th").dispatchEvent(new window.Event("click", { bubbles: true }))
 
     await flushMicrotasks()
     assert.strictEqual(ft.sortKey, null)
@@ -506,7 +506,7 @@ describe("FastTable Column Configuration", () => {
     ft.configure(data, schema)
 
     await flushMicrotasks()
-    assert.strictEqual(ft.entities.thead.querySelectorAll("th").length, 2, "Should only render 2 columns")
+    assert.strictEqual(ft.entities.thead.querySelectorAll(".th").length, 2, "Should only render 2 columns")
 
     const { processedColumns } = ft.getProcessed()
     assert.strictEqual(processedColumns.length, 2, "Hidden column should be filtered out")
@@ -518,7 +518,7 @@ describe("FastTable Column Configuration", () => {
     ft.configure(data, schema)
 
     await flushMicrotasks()
-    const cells = ft.entities.tbody.querySelectorAll("tr")[0].querySelectorAll("td")
+    const cells = ft.entities.tbody.querySelectorAll(".tr")[0].querySelectorAll(".td")
     assert.strictEqual(cells[0].textContent, "1")
     assert.strictEqual(cells[1].textContent, "John")
   })
@@ -562,11 +562,11 @@ describe("FastTable Accessibility", () => {
     ft.configure(data, schema)
 
     await flushMicrotasks()
-    assert.ok(ft.entities.table.querySelector("thead"))
-    assert.ok(ft.entities.table.querySelector("tbody"))
-    assert.strictEqual(ft.entities.thead.querySelectorAll("th").length, 2)
-    assert.strictEqual(ft.entities.tbody.querySelectorAll("tr").length, 1)
-    assert.strictEqual(ft.entities.tbody.querySelectorAll("td").length, 2)
+    assert.ok(ft.entities.table.querySelector(".thead"))
+    assert.ok(ft.entities.table.querySelector(".tbody"))
+    assert.strictEqual(ft.entities.thead.querySelectorAll(".th").length, 2)
+    assert.strictEqual(ft.entities.tbody.querySelectorAll(".tr").length, 1)
+    assert.strictEqual(ft.entities.tbody.querySelectorAll(".td").length, 2)
   })
 })
 

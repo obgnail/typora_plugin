@@ -61,7 +61,7 @@
   cursor: pointer;
   font-size: 1.1em;
   color: var(--outline-text-sub);
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -75,6 +75,10 @@
 #plugin-right-outline .plugin-right-outline-icon.select {
   background: var(--outline-bg-active);
   color: var(--outline-primary-text);
+}
+
+#plugin-right-outline .plugin-right-outline-icon:active {
+  transform: scale(0.92);
 }
 
 #plugin-right-outline .plugin-right-outline-list {
@@ -132,6 +136,14 @@
   margin-left: 1.4em;
 }
 
+#plugin-right-outline .toc-header-node {
+  opacity: 0.45;
+}
+
+#plugin-right-outline .toc-header-node:hover {
+  opacity: 0.8;
+}
+
 #plugin-right-outline .toc-node {
   padding: 6px 8px;
   border-radius: var(--outline-radius-item);
@@ -141,10 +153,6 @@
   color: var(--outline-text-sub);
   transition: background 0.15s, color 0.15s;
   line-height: 1.5;
-}
-
-#plugin-right-outline .toc-header-node {
-  opacity: 1;
 }
 
 #plugin-right-outline .toc-node:hover {
@@ -206,6 +214,8 @@
 
 .plugin-right-outline-drag-source {
   opacity: 0.4;
+  transform: scale(0.96);
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
 .plugin-right-outline-drag-above > .toc-node {
