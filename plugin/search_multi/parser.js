@@ -7,7 +7,7 @@ class Parser {
     PAREN_CLOSE: "PAREN_CLOSE",
     KEYWORD: "KEYWORD",
     PHRASE: "PHRASE",
-    REGEXP: "REGEXP",
+    REGEX: "REGEX",
     QUALIFIER: "QUALIFIER",
   }
 
@@ -109,7 +109,7 @@ class Parser {
         }
         if (endIdx !== -1) {
           const value = input.slice(cursor + 1, endIdx)
-          tokens.push({ type: this.TYPE.REGEXP, value, index: cursor })
+          tokens.push({ type: this.TYPE.REGEX, value, index: cursor })
           cursor = endIdx + 1
           continue
         }
@@ -205,7 +205,7 @@ class Parser {
     }
 
     const token = this._peek()
-    if (token.type === this.TYPE.KEYWORD || token.type === this.TYPE.PHRASE || token.type === this.TYPE.REGEXP) {
+    if (token.type === this.TYPE.KEYWORD || token.type === this.TYPE.PHRASE || token.type === this.TYPE.REGEX) {
       this._consume()
       return { type: token.type, scope, operator, operand: token.value }
     }
@@ -234,7 +234,7 @@ class Parser {
     return (
       type === this.TYPE.KEYWORD ||
       type === this.TYPE.PHRASE ||
-      type === this.TYPE.REGEXP ||
+      type === this.TYPE.REGEX ||
       type === this.TYPE.QUALIFIER ||
       type === this.TYPE.PAREN_OPEN ||
       type === this.TYPE.NOT
@@ -242,7 +242,7 @@ class Parser {
   }
 
   evaluate(ast, callback) {
-    const { OR, AND, NOT, KEYWORD, PHRASE, REGEXP } = this.TYPE
+    const { OR, AND, NOT, KEYWORD, PHRASE, REGEX } = this.TYPE
     const recurse = (node) => {
       if (!node) return false
       switch (node.type) {
@@ -254,7 +254,7 @@ class Parser {
           return !recurse(node.right)
         case KEYWORD:
         case PHRASE:
-        case REGEXP:
+        case REGEX:
           return callback(node)
         default:
           throw new Error(`Unknown AST Node Type: ${node.type}`)
@@ -264,29 +264,67 @@ class Parser {
     return recurse(ast)
   }
 
-  walkLeaves(ast, callback) {
-    const { OR, AND, NOT, KEYWORD, PHRASE, REGEXP } = this.TYPE
-    const recurse = (node) => {
+  walk(ast, visitor) {
+    const { OR, AND, NOT } = this.TYPE
+    const recurse = (node, depth, negated) => {
       if (!node) return
-      switch (node.type) {
-        case OR:
-        case AND:
-          recurse(node.left)
-          recurse(node.right)
-          break
-        case NOT:
-          recurse(node.right)
-          break
-        case KEYWORD:
-        case PHRASE:
-        case REGEXP:
-          callback(node)
-          break
-        default:
-          throw new Error(`Unknown AST Node Type: ${node.type}`)
+      visitor.onEnter?.(node, depth, negated)
+      if (node.type === OR || node.type === AND) {
+        recurse(node.left, depth + 1, negated)
+        recurse(node.right, depth + 1, negated)
+      } else if (node.type === NOT) {
+        recurse(node.right, depth + 1, !negated)
       }
+      visitor.onLeave?.(node, depth, negated)
     }
-    recurse(ast)
+    recurse(ast, 0, false)
+  }
+
+  walkLeaves(ast, callback) {
+    const { KEYWORD, PHRASE, REGEX } = this.TYPE
+    this.walk(ast, {
+      onEnter: (node, depth, negated) => {
+        if (node.type === KEYWORD || node.type === PHRASE || node.type === REGEX) {
+          callback(node, negated, depth)
+        }
+      },
+    })
+  }
+
+  reduce(ast, reducer, negated = false) {
+    if (!ast) return reducer.empty ? reducer.empty() : null
+    const { OR, AND, NOT, KEYWORD, PHRASE, REGEX } = this.TYPE
+    switch (ast.type) {
+      case AND:
+      case OR: {
+        const l = this.reduce(ast.left, reducer, negated)
+        const r = this.reduce(ast.right, reducer, negated)
+        const fn = (ast.type === AND) !== negated ? "and" : "or"  // XOR
+        return reducer[fn](l, r)
+      }
+      case NOT:
+        return reducer.not(this.reduce(ast.right, reducer, !negated))
+      case KEYWORD:
+      case PHRASE:
+      case REGEX:
+        return reducer.terminal(ast, negated)
+      default:
+        throw new Error(`Unknown AST Node Type: ${ast.type}`)
+    }
+  }
+
+  toDNF(ast) {
+    return this.reduce(ast, {
+      empty: () => [],
+      and: (left, right) => {
+        if (!left?.length) return right || []
+        if (!right?.length) return left || []
+        return left.flatMap(l => right.map(r => [...l, ...r]))
+      },
+      or: (left, right) => [...(left || []), ...(right || [])],
+      not: child => child,
+      terminal: (node, negated) => [[{ node, negated }]],
+    })
   }
 }
 

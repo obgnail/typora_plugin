@@ -15,8 +15,8 @@ const phraseNode = (val, scope = "default", op = ":") => ({
   operator: op,
   operand: val,
 })
-const regexpNode = (val, scope = "default", op = ":") => ({
-  type: "REGEXP",
+const regexNode = (val, scope = "default", op = ":") => ({
+  type: "REGEX",
   scope: scope,
   operator: op,
   operand: val,
@@ -47,7 +47,7 @@ describe("Search Parser: Tokenizer (Lexical Analysis)", () => {
   it("Regex with escaped slash", () => {
     const tokens = parser.tokenize("/home\\/user/")
     assert.deepStrictEqual(stripMeta(tokens), [
-      { type: parser.TYPE.REGEXP, value: "home\\/user" },
+      { type: parser.TYPE.REGEX, value: "home\\/user" },
     ])
   })
 
@@ -247,11 +247,11 @@ describe("Search Parser: Edge Cases", () => {
 
   it("Regex looks like comment", () => {
     const ast = parser.parse("/src/")
-    assert.deepStrictEqual(ast, regexpNode("src"))
+    assert.deepStrictEqual(ast, regexNode("src"))
   })
 
   it("Qualifier with regex", () => {
     const ast = parser.parse("path:/api\\/v1/")
-    assert.deepStrictEqual(ast, regexpNode("api\\/v1", "path", ":"))
+    assert.deepStrictEqual(ast, regexNode("api\\/v1", "path", ":"))
   })
 })

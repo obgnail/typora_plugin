@@ -1,11 +1,12 @@
 const Searcher = require("./searcher")
 const Highlighter = require("./highlighter")
+const { ExplainPresenter, GrammarPresenter } = require("./presenters")
 
 class SearchExecutor {
-  constructor(plugin, searcher) {
+  constructor({ config, utils, searcher }) {
+    this.config = config
+    this.utils = utils
     this.searcher = searcher
-    this.config = plugin.config
-    this.utils = plugin.utils
     this.taskRunner = this.utils.getSingleTaskRunner()
     this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => {
       const prefix = (ext !== "" && !ext.startsWith(".")) ? "." : ""
@@ -32,14 +33,14 @@ class SearchExecutor {
         const { extname } = this.utils.Package.Path
         const verifyExt = name => this.allowedExtensions.has(extname(name).toLowerCase())
 
-        const matcher = this.searcher.match.bind(null, ast)
+        const matcher = this.searcher.compile(ast)
         await new Promise((resolve, reject) => {
           this.utils.walkDir({
             dir: rootPath,
             fileFilter: 0 > MAX_SIZE ? verifyExt : (name, path, stat) => stat.size < MAX_SIZE && verifyExt(name),
             dirFilter: name => !IGNORE_FOLDERS.includes(name),
-            fileParamsGetter: this.searcher.getParamProvider(ast),
-            onFile: source => matcher(source) && onItem?.(source, signal),
+            fileParamsGetter: this.searcher.getFileParamsProvider(ast),
+            onFile: async source => (await matcher(source)) && onItem?.(source, signal),
             signal: TIMEOUT > 0 ? AbortSignal.any([signal, AbortSignal.timeout(TIMEOUT)]) : signal,
             semaphore: CONCURRENCY_LIMIT,
             maxEntities: MAX_ENTITIES,
@@ -93,9 +94,12 @@ class SearchStateMachine {
 }
 
 class SearchMultiPlugin extends BasePlugin {
-  searcher = new Searcher(this)
-  highlighter = new Highlighter(this)
-  executor = new SearchExecutor(this, this.searcher)
+  ctx = { config: this.config, utils: this.utils, i18n: this.i18n }
+  searcher = new Searcher(this.ctx)
+  highlighter = new Highlighter(this.ctx)
+  executor = new SearchExecutor({ ...this.ctx, searcher: this.searcher })
+  explainPresenter = new ExplainPresenter({ ...this.ctx, searcher: this.searcher })
+  grammarPresenter = new GrammarPresenter({ ...this.ctx, searcher: this.searcher })
 
   style = () => {
     const counter_prefix_text = this.i18n.t("matchedFiles") + "："
@@ -115,7 +119,7 @@ class SearchMultiPlugin extends BasePlugin {
       <div class="plugin-search-multi-header ${this.config.EXPLAIN_TRIGGER.map(t => `trigger-${t}`).join(" ")}">
         <form id="plugin-search-multi-form">
           <input type="text">
-          <div class="plugin-search-multi-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}">
+          <div class="plugin-search-multi-btn${(this.config.CASE_SENSITIVE) ? " select" : ""}">
             <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
           </div>
         </form>
@@ -181,7 +185,7 @@ class SearchMultiPlugin extends BasePlugin {
     })
     this.entities.panel.addEventListener("btn-click", ev => {
       if (ev.detail.action === "showGrammar") {
-        this.searcher.showGrammar()
+        this.grammarPresenter.show()
       } else if (ev.detail.action === "close") {
         this.hide()
       }
@@ -275,10 +279,10 @@ class SearchMultiPlugin extends BasePlugin {
     }
     try {
       const ast = this.searcher.parse(val, false)
-      expl.innerHTML = this.searcher.toExplain(ast, true)
+      this.explainPresenter.render(expl, ast)
       expl.classList.remove("is-error")
     } catch (e) {
-      expl.innerHTML = e.message || e.toString()
+      this.explainPresenter.renderError(expl, e)
       expl.classList.add("is-error")
       this.entities.header.classList.add("show-bubble")
     }

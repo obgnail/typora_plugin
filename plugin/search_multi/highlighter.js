@@ -1,7 +1,7 @@
 class Highlighter {
-  constructor(plugin) {
-    this.utils = plugin.utils
-    this.config = plugin.config
+  constructor({ utils, config }) {
+    this.utils = utils
+    this.config = config
     this._resetStatus()
   }
 
