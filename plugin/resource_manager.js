@@ -41,11 +41,11 @@ class ResourceManagerPlugin extends BasePlugin {
     this.entities.fileTable.addEventListener("row-action", async ev => {
       const { action, rowData } = ev.detail
       if (action === "locate") {
-        this.utils.showInFinder(rowData.src)
+        this.utils.showInFinder(rowData.path)
       } else if (action === "delete") {
         if (this.showWarnDialog) {
           const reconfirm = this.i18n.t("msgBox.reconfirmDeleteFile")
-          const filename = this.utils.getFileName(rowData.src, false)
+          const filename = this.utils.getFileName(rowData.path, false)
           const { response, checkboxChecked } = await this.utils.showMessageBox({
             type: "warning",
             message: `${reconfirm} ${filename}`,
@@ -56,7 +56,7 @@ class ResourceManagerPlugin extends BasePlugin {
             this.showWarnDialog = false
           }
         }
-        await this.utils.Package.FsExtra.remove(rowData.src)
+        await this.utils.Package.FsExtra.remove(rowData.path)
         this.entities.fileTable.deleteRow("idx", rowData.idx)
         this.utils.notification.show(this.i18n.t("success.deleted"))
       }
@@ -150,7 +150,7 @@ class ResourceManagerPlugin extends BasePlugin {
     this.entities.wrap.querySelector(".non-exist-in-folder-caption").textContent = this.i18n.t("title.nonExistInFolder", { size: notInFolder.length })
     this.entities.wrap.querySelector(".resource-manager-config-caption").textContent = this.i18n.t("title.setting")
 
-    const toData = arr => arr.map((src, idx) => ({ idx: idx + 1, src: this.utils.toFileProtocol(src) }))
+    const toData = arr => arr.map((path, idx) => ({ idx: idx + 1, path, src: this.utils.toFileProtocol(path) }))
     this.entities.fileTable.configure(toData(notInFile), this._getFileTableSchema())
     this.entities.folderTable.configure(toData(notInFolder), this._getFolderTableSchema())
   }
@@ -213,7 +213,7 @@ const findResources = async (plugin, searchDir) => {
           img = decodeURIComponent(img).split("?")[0]
           return img.replace(/^\s*([\\/])/, "")
         } catch (e) {
-          console.warn("error image path:", img)
+          console.warn("Error Image Path:", img)
         }
       })
       .filter(img => img
