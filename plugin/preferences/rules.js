@@ -149,7 +149,7 @@ module.exports = {
   chart: chartStyles,
   wavedrom: {
     ...chartStyles,
-    SKIN_FILES: each([required, path]),
+    SKIN_FOLDER: [required, path],
   },
   calendar: chartStyles,
   abc: chartStyles,

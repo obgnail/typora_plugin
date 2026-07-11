@@ -31,9 +31,21 @@
  * Wavedrom's documentation is incomplete; source code inspection is often required.
  */
 class WavedromPlugin extends BasePlugin {
-  wavedromPkg = null
+  Wavedrom = null
+  skins = null
   PREFIX = "WaveDrom_Display_"
   evalFunc = this.config.SAFE_MODE ? this.utils.safeEval : this.utils.unsafeEval
+
+  prepare = async () => {
+    const { FsExtra, Path } = this.utils.Package
+    const folder = this.utils.resolvePluginPath(this.config.SKIN_FOLDER)
+    const modules = await FsExtra.readdir(folder)
+    this.skins = Object.fromEntries(
+      modules
+        .map(file => this.utils.resolvePluginPath(folder, file))
+        .map(path => [Path.parse(path).name, path]),
+    )
+  }
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
@@ -53,6 +65,8 @@ class WavedromPlugin extends BasePlugin {
           backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
         }),
         align: { type: "string", enum: ["left", "center", "right"], valueAliases: { l: "left", c: "center", r: "right" }, default: this.config.CHART_ALIGN },
+        skin: { type: "string", enum: ["default", ...Object.keys(this.skins)], default: "default" },
+        hscale: { type: "number", default: 1 },
       },
       checkSelector: ".plugin-wavedrom-content",
       wrapElement: () => `<div class="plugin-wavedrom-content" id="${this.PREFIX + ++idx}"></div>`,
@@ -69,20 +83,21 @@ class WavedromPlugin extends BasePlugin {
     })
   }
 
-  create = ($wrap, content) => {
+  create = ($wrap, content, meta) => {
+    const metaConfig = { skin: meta.skin, hscale: meta.hscale }
     const id = $wrap.attr("id")
     const index = parseInt(id.slice(this.PREFIX.length))
-    const waveJson = this.evalFunc(content)
+    const waveJson = Object.assign({ config: metaConfig }, this.evalFunc(content))
     const notFirstSignal = false
-    this.wavedromPkg.renderWaveForm(index, waveJson, this.PREFIX, notFirstSignal)
+    this.Wavedrom.renderWaveForm(index, waveJson, this.PREFIX, notFirstSignal)
   }
 
-  getVersion = () => this.wavedromPkg?.version
+  getVersion = () => this.Wavedrom?.version
 
-  lazyLoad = () => {
-    this.wavedromPkg = require("./wavedrom.min.js")
-    const skins = this.config.SKIN_FILES.map(f => require(this.utils.resolvePluginPath(f)))
-    window.WaveSkin = Object.assign(this.wavedromPkg.waveSkin, ...skins)  // renderWaveForm() will use window.WaveSkin
+  lazyLoad = async () => {
+    this.Wavedrom = require("./wavedrom.min.js")
+    const skins = Object.values(this.skins).map(require)
+    window.WaveSkin = Object.assign(this.Wavedrom.waveSkin, ...skins)  // renderWaveForm() will use window.WaveSkin
   }
 }
 

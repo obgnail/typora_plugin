@@ -83,7 +83,7 @@ class Settings {
 
   import = async (importPath) => {
     const settings = await this.utils.Package.FsExtra.readJson(importPath)
-    const mismatch = [...Object.keys(this.META)].some(key => settings[key] !== this.META[key])
+    const mismatch = Object.keys(this.META).some(key => settings[key] !== this.META[key])
     if (mismatch) {
       throw new Error(`${importPath} is not the correct settings file.`)
     }

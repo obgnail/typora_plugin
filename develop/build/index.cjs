@@ -151,7 +151,12 @@ const PLUGIN_VENDORS_CONFIG = {
   "abc": pluginVendor.download({ files: { "plugin/abc/abcjs-basic-min.js": "https://raw.githubusercontent.com/paulrosen/abcjs/refs/heads/main/dist/abcjs-basic-min.js" } }),
   "chart": pluginVendor.download({ files: { "plugin/chart/chart.min.js": "https://cdn.jsdelivr.net/npm/chart.js" } }),
   "echarts": pluginVendor.download({ files: { "plugin/echarts/echarts.min.js": "https://raw.githubusercontent.com/apache/echarts/refs/heads/master/dist/echarts.min.js" } }),
-  "wavedrom": pluginVendor.download({ files: { "plugin/wavedrom/wavedrom.min.js": "https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.5.0/wavedrom.unpkg.min.js" } }),
+  "wavedrom": pluginVendor.download({
+    files: {
+      "plugin/wavedrom/wavedrom.min.js": "https://cdn.jsdelivr.net/npm/wavedrom@latest/wavedrom.unpkg.min.js",
+      "plugin/wavedrom/skins/narrow.js": "https://cdn.jsdelivr.net/npm/wavedrom@latest/skins/narrow.js",
+    },
+  }),
   "dataTables": pluginVendor.download({
     files: {
       "plugin/datatables/resource/js/dataTables.min.js": "https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js",

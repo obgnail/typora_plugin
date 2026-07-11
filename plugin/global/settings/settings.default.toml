@@ -215,14 +215,6 @@ HIGHLIGHT_COLORS = [
 # Max highlights: Limit HTML rendering to preserve performance
 MAX_HIGHLIGHTS = 5000
 
-# Show highlight hint: Show tooltip text when hovering over highlight tags
-SHOW_HIGHLIGHT_HINT = false
-
-# =========== [ Advanced ] ===========
-# Optimize Search (AST Reordering): Reorder search conditions using short-circuit evaluation. Prioritizes low-cost queries (e.g., size, mtime) over high-cost queries (e.g., content, h1)
-# Note: Enabling this may alter the highlight color assignment order of keywords
-OPTIMIZE_SEARCH = false
-
 
 [commander]
 # =========== [ Basic ] ===========
@@ -3052,8 +3044,8 @@ DEFAULT_FENCE_HEIGHT = "auto"
 DEFAULT_FENCE_BACKGROUND_COLOR = "#FFFFFF"
 
 # Skin Files
-# Download Skin Files: https://cdnjs.com/libraries/wavedrom
-SKIN_FILES = ["plugin/wavedrom/narrow.js"]
+# Download Skin Files: https://github.com/wavedrom/wavedrom/tree/trunk/skins
+SKIN_FOLDER = "plugin/wavedrom/skins"
 
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting a code block
@@ -3063,6 +3055,8 @@ TEMPLATE = """
 // @width            auto
 // @height           auto
 // @backgroundColor  transparent
+// @hscale           1
+// @skin             default
 // ==/BlockCodeConfig==
 
 // Tutorial: https://wavedrom.com/tutorial.html
@@ -3079,8 +3073,7 @@ TEMPLATE = """
         { name: 'clk2', wave: 'hpHplnLn' },
         { name: 'clk3', wave: 'nhNhplPl' },
         { name: 'clk4', wave: 'xlh.L.Hx' },
-    ],
-    config : { 'hscale' : 1.4 }
+    ]
 }"""
 
 

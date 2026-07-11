@@ -207,7 +207,7 @@ class AutoNumberPlugin extends BasePlugin {
     }
     const DEFAULT_STYLE = "d"
 
-    const joinKeys = (obj) => [...Object.keys(obj)].sort((a, b) => b.length - a.length).join("|")
+    const joinKeys = (obj) => Object.keys(obj).sort((a, b) => b.length - a.length).join("|")
     const names = joinKeys(NAMES)
     const styles = joinKeys(STYLES)
     const regex = new RegExp(`\\{\\s*(${names})(?::(${styles}))?\\s*\\}`, "gi")

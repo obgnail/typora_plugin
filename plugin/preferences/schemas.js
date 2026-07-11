@@ -131,9 +131,9 @@ const schema_global = () => [
     Action("viewGithubImageBed"),
   ),
   Group(
-    Action("updatePlugin"),
+    Action("updatePlugin").ActionTooltip("toggleDevTools", "fa fa-wrench"),
     Action("uninstallPlugin"),
-    Action("sendEmail").ActionTooltip("toggleDevTools", "fa fa-wrench"),
+    Action("sendEmail"),
     Action("donate"),
     Static("pluginVersion"),
   ),
@@ -185,7 +185,6 @@ const schema_search_multi = () => [
   FRAG.Base(true),
   Group("search",
     Switch("CASE_SENSITIVE"),
-    Switch("OPTIMIZE_SEARCH").Tooltip("breakOrder"),
     Switch("STOP_SEARCHING_ON_HIDING"),
     Switch("BACKSPACE_TO_HIDE"),
     Select("EXPLAIN_TRIGGER").Options(["focus", "hover"]),
@@ -194,7 +193,6 @@ const schema_search_multi = () => [
     Switch("RELATIVE_PATH"),
     Switch("SHOW_EXT"),
     Switch("SHOW_MTIME"),
-    Switch("SHOW_HIGHLIGHT_HINT"),
     Integer("MAX_HIGHLIGHTS").Min(1).Max(5000),
     Palette("HIGHLIGHT_COLORS"),
   ),
@@ -775,8 +773,8 @@ const schema_mouse_gestures = () => [
     .NestedBoxes([
       Group(
         Switch("enable"),
-        Text("name"),
         Select("button").Options(["", "middle", "right", "x1", "x2"]).OptionScope("GESTURES.button"),
+        Text("name"),
         Text("path"),
         Integer("cooldown").Unit(UNITS.millisecond).Min(0),
       ),
@@ -1267,9 +1265,9 @@ const schema_wavedrom = () => [
     Segment("CHART_ALIGN").Options(["left", "center", "right"]),
     Text("DEFAULT_FENCE_HEIGHT"),
     Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
+    Text("SKIN_FOLDER").ActionTooltip("downloadWaveDromSkins", "fa fa-download"),
   ),
   FRAG.Template(),
-  Array_("SKIN_FILES").ActionTooltip("downloadWaveDromSkins", "fa fa-download"),
   FRAG.SettingHandler(),
 ]
 

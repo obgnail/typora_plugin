@@ -1,9 +1,12 @@
+const { ASTUtils } = require("./parser")
+
 const el = (tag, className, children) => {
   const e = document.createElement(tag)
   if (className) e.className = className
   if (children !== undefined) {
     const nodes = Array.isArray(children) ? children : [children]
-    e.append(...nodes.filter(Boolean).map(c => typeof c === "string" ? document.createTextNode(c) : c))
+    const els = nodes.filter(Boolean).map(c => typeof c === "string" ? document.createTextNode(c) : c)
+    e.append(...els)
   }
   return e
 }
@@ -28,10 +31,6 @@ class ExplainPresenter {
     container.innerHTML = ""
     const dnf = this.searcher.toDNF(ast)
     if (!dnf?.length) return
-    if (dnf.length > 50) {
-      container.append(el("div", "sme-error-text", this.i18n.t("error.tooComplexExplain")))
-      return
-    }
 
     const nodes = dnf.flatMap((path, pathIdx) => {
       const tokens = path.flatMap((token, tokenIdx) => {
@@ -40,8 +39,8 @@ class ExplainPresenter {
         return isLast ? [tokenEl] : [tokenEl, el("div", "sme-and", this.i18n.t("and"))]
       })
       const pathEl = el("div", "sme-path", tokens)
-      const isLastPath = pathIdx === dnf.length - 1
       const divider = el("div", "sme-or-divider", this.i18n.t("or"))
+      const isLastPath = pathIdx === dnf.length - 1
       return isLastPath ? [pathEl] : [pathEl, divider]
     })
 
@@ -54,22 +53,21 @@ class ExplainPresenter {
   }
 
   _createToken({ node, negated, isBoolean }) {
-    const isRegex = node.type === this.searcher.parser.TYPE.REGEX
-    const qualifier = this.searcher.qualifiers.get(node.scope)
-    const scopeName = qualifier ? qualifier.name : node.scope
-    const opKey = isRegex ? "matchRegex" : OP_I18N[node.operator]
-    const opText = this.i18n.t(opKey)
+    const { qualifier, scope, operator, operand, matchType } = node.semantic
 
     const notEl = negated ? el("div", "sme-not", this.i18n.t("not")) : null
-    const scopeEl = el("div", "sme-scope", scopeName)
+    const scopeEl = el("div", "sme-scope", qualifier.name ?? scope)
     const els = []
+
     if (isBoolean) {
       els.push(notEl, scopeEl)
     } else {
-      const opEl = el("div", "sme-operator", opText)
-      const valEl = el("div", "sme-operand", isRegex ? `/${node.operand}/` : node.operand)
+      const isRegex = matchType === "REGEX"
+      const opEl = el("div", "sme-operator", this.i18n.t(isRegex ? "matchRegex" : OP_I18N[operator]))
+      const valEl = el("div", "sme-operand", isRegex ? `/${operand.pattern}/${operand.flags}` : operand)
       els.push(scopeEl, notEl, opEl, valEl)
     }
+
     return el("div", `sme-cond${negated ? " is-negated" : ""}`, els)
   }
 }
@@ -81,68 +79,69 @@ class GrammarPresenter {
     this.searcher = searcher
   }
 
-  _formatNodeText({ id, node, negated }, { translate, textStyle, asGraphNode }) {
-    const { searcher, i18n } = this
-    const isRegex = node.type === searcher.parser.TYPE.REGEX
-    const qualifier = searcher.qualifiers.get(node.scope)
-    const name = translate && qualifier ? qualifier.name : node.scope
+  _formatNodeText({ node, negated }, { translate, textStyle }) {
+    const { i18n } = this
+    const { qualifier, scope, operator, operand, matchType, castResult } = node.semantic
+    const isRegex = matchType === "REGEX"
 
-    const styledName = textStyle ? `<b>${name}</b>` : name
-    const operand = isRegex ? `/${node.operand}/` : node.operand
-    const styledOperand = textStyle ? `<u>${operand}</u>` : operand
-
-    let content
-    if (translate) {
-      const operator = isRegex ? i18n.t("matchRegex") : i18n.t(OP_I18N[node.operator])
-      const isBoolean = typeof node.castResult === "boolean"
-      if (isBoolean) {
-        const finalNegated = node.castResult ? negated : !negated
-        content = i18n.link([finalNegated ? i18n.t("not") : "", styledName])
-      } else {
-        content = i18n.link([styledName, negated ? i18n.t("not") : "", operator, styledOperand])
-      }
-    } else {
-      content = [negated ? "-" : "", node.scope, node.operator, styledOperand].join(" ").trim()
+    const operandTxt = isRegex ? `/${operand.pattern}/${operand.flags}` : operand
+    const finalOperandTxt = textStyle ? `<u>${operandTxt}</u>` : operandTxt
+    if (!translate) {
+      return `${negated ? "-" : ""}${scope} ${operator} ${finalOperandTxt}`
     }
 
-    return asGraphNode ? `${id}("${content.replace(/"/g, "#quot;")}")` : `「${content}」`
+    const name = translate ? qualifier.name : scope
+    const finalName = textStyle ? `<b>${name}</b>` : name
+    const isBoolean = typeof castResult === "boolean"
+    const finalNegated = isBoolean ? (castResult === negated) : negated
+    const operatorTxt = isRegex ? i18n.t("matchRegex") : i18n.t(OP_I18N[operator])
+
+    const ret = isBoolean
+      ? [finalNegated ? i18n.t("not") : "", finalName]
+      : [finalName, negated ? i18n.t("not") : "", operatorTxt, finalOperandTxt]
+    return i18n.link(ret)
   }
 
   _toGraphData(ast) {
-    let idCounter = 0
-    return this.searcher.parser.reduce(ast, {
+    let count = 0
+    return ASTUtils.reduce(ast, {
       empty: () => ({ nodes: [], edges: [], head: [], tail: [] }),
-      and: (left, right) => ({
-        nodes: [...left.nodes, ...right.nodes],
-        edges: [...left.edges, ...right.edges, ...left.tail.flatMap(t => right.head.map(h => ({ from: t, to: h })))],
-        head: left.head.length ? left.head : right.head,
-        tail: right.tail.length ? right.tail : left.tail,
+      and: (l, r) => ({
+        nodes: [...l.nodes, ...r.nodes],
+        edges: [...l.edges, ...r.edges, ...l.tail.flatMap(t => r.head.map(h => ({ from: t, to: h })))],
+        head: l.head.length ? l.head : r.head,
+        tail: r.tail.length ? r.tail : l.tail,
       }),
-      or: (left, right) => ({
-        nodes: [...left.nodes, ...right.nodes],
-        edges: [...left.edges, ...right.edges],
-        head: [...left.head, ...right.head],
-        tail: [...left.tail, ...right.tail],
+      or: (l, r) => ({
+        nodes: [...l.nodes, ...r.nodes],
+        edges: [...l.edges, ...r.edges],
+        head: [...l.head, ...r.head],
+        tail: [...l.tail, ...r.tail],
       }),
-      not: node => node,
+      not: n => n,
       terminal: (node, negated) => {
-        const id = "T" + (++idCounter)
+        const id = "T" + (++count)
         return { nodes: [{ id, node, negated }], edges: [], head: [id], tail: [id] }
       },
     })
   }
 
-  buildExplainText(ast, textStyle) {
+  buildExplain(ast, translate, textStyle) {
     const dnf = this.searcher.toDNF(ast)
-    const opts = { translate: true, textStyle, asGraphNode: false }
-    const paths = dnf.map(path => path.map(t => this._formatNodeText(t, opts)).join(this.i18n.t("and")))
-    return `${this.i18n.t("explain")}：\n` + paths.map((p, idx) => `${idx + 1}. ${p}`).join("\n")
+    const txt = dnf
+      .map(p => p.map(n => `「${this._formatNodeText(n, { translate, textStyle })}」`).join(this.i18n.t("and")))
+      .map((p, idx) => `${idx + 1}. ${p}`)
+      .join("\n")
+    return `${this.i18n.t("explain")}：\n${txt}`
   }
 
   buildMermaid(ast, translate, textStyle, direction) {
     const graphData = this._toGraphData(ast)
-    const opts = { translate, textStyle, asGraphNode: true }
-    const nodes = graphData.nodes.map(n => this._formatNodeText(n, opts))
+    const nodes = graphData.nodes.map(n => {
+      const text = this._formatNodeText(n, { translate, textStyle })
+      const safeText = text.replace(/"/g, "#quot;").replace(/^\s*([-*+>#])/g, "\\$1")
+      return `${n.id}("${safeText}")`
+    })
     const edges = graphData.edges.map(e => `${e.from} --> ${e.to}`)
     const start = graphData.head.map(h => `S --> ${h}`)
     const end = graphData.tail.map(t => `${t} --> E`)
@@ -152,18 +151,18 @@ class GrammarPresenter {
 
   async show() {
     const { searcher, utils, i18n: { t } } = this
-    const scopes = [...searcher.qualifiers.values()]
+    const scopes = Object.groupBy(searcher.qualifiers.values(), s => s.is_meta ? "isMeta" : "notMeta")
 
     const bold = x => `<b>${x}</b>`
     const em = x => `<em>${x}</em>`
     const joinEm = arr => arr.map(em).join("、")
     const ul = (...li) => `<ul style="padding-left: 1.2em; margin: 0; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
 
-    const hintDetail = {
+    const I18N = {
       syntax: t("modal.hintDetail.syntax", { eg: em("size>2kb") }),
       scope: ul(
-        bold(t("modal.hintDetail.scope.meta")) + ": " + joinEm(scopes.filter(s => s.is_meta).map(e => e.scope)),
-        bold(t("modal.hintDetail.scope.content")) + ": " + joinEm(scopes.filter(s => !s.is_meta).map(e => e.scope)),
+        bold(t("modal.hintDetail.scope.meta")) + ": " + joinEm(scopes.isMeta.map(e => e.scope)),
+        bold(t("modal.hintDetail.scope.content")) + ": " + joinEm(scopes.notMeta.map(e => e.scope)),
       ),
       operator: ul(
         bold(joinEm([":"])) + " " + t("modal.hintDetail.operator.colon"),
@@ -201,78 +200,71 @@ class GrammarPresenter {
       [em(`thead:k8s h2:prometheus blockcode:"kubectl apply"`), t("modal.example.desc10")],
     ])
 
-    const _to = async (expression, optimize, callback) => {
+    const PRESENT = { graph: "graph", text: "text", ast: "ast" }
+
+    const schema = ({ Group, Controls, When }) => [
+      Group(
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.syntax")).HintDetail(I18N.syntax),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.scope")).HintDetail(I18N.scope),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.operator")).HintDetail(I18N.operator),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.operand")).HintDetail(I18N.operand),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.combineCond")).HintDetail(I18N.combineCond),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.syntacticSugar")).HintDetail(I18N.syntacticSugar),
+      ),
+      Controls.Custom().Label(t("modal.title.example")).Unsafe(true).Content(example),
+      Group(t("modal.title.playground"),
+        Controls.Textarea("expression").Rows(3).NoResize(true).IsBlockLayout(true),
+        Controls.Code("_displayAST").Readonly(true).ShowIf(When.eq("presentation", PRESENT.ast)).DependencyUnmetAction("hide").IsBlockLayout(true),
+        Controls.Hint("_displayGraph").Unsafe(true).ShowIf(When.eq("presentation", PRESENT.graph)).DependencyUnmetAction("hide"),
+        Controls.Hint("_displayText").Unsafe(true).ShowIf(When.eq("presentation", PRESENT.text)).DependencyUnmetAction("hide"),
+        Controls.Select("presentation").Label(t("modal.playground.presentation")).Options({
+          [PRESENT.graph]: t("modal.playground.presentation.graph"),
+          [PRESENT.text]: t("modal.playground.presentation.text"),
+          [PRESENT.ast]: t("modal.playground.presentation.ast"),
+        }),
+        Controls.Select("direction").Label(t("modal.playground.direction")).Options(["TB", "BT", "RL", "LR"]).ShowIf(When.eq("presentation", PRESENT.graph)),
+        Controls.Switch("textStyle").Label(t("modal.playground.textStyle")).ShowIf(When.includes("presentation", [PRESENT.graph, PRESENT.text])),
+        Controls.Switch("translate").Label(t("modal.playground.translate")).ShowIf(When.follow("textStyle")),
+      ),
+      Controls.Action("_grammar_box_visible").Label(t("modal.title.grammar")).ActionType("toggle"),
+      Controls.Code("grammar").Readonly(true).ShowIf(When.true("_grammar_box_visible")),
+    ]
+
+    const _to = async (expression, callback) => {
       try {
-        const ast = searcher.parse(expression, optimize)
+        const ast = searcher.parse(expression)
         return callback(ast)
       } catch (e) {
         return `Syntax Error: ${e.message || e.toString()}`
       }
     }
 
-    const getSchema = () => {
-      const presentOps = {
-        graph: t("modal.playground.presentation.graph"),
-        text: t("modal.playground.presentation.text"),
-        ast: t("modal.playground.presentation.ast"),
-      }
-      return [
-        {
-          title: undefined, fields: [
-            { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.syntax"), hintDetail: hintDetail.syntax },
-            { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.scope"), hintDetail: hintDetail.scope },
-            { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.operator"), hintDetail: hintDetail.operator },
-            { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.operand"), hintDetail: hintDetail.operand },
-            { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.combineCond"), hintDetail: hintDetail.combineCond },
-            { type: "hint", unsafe: true, hintHeader: t("modal.hintHeader.syntacticSugar"), hintDetail: hintDetail.syntacticSugar },
-          ],
-        },
-        { title: t("modal.title.example"), fields: [{ type: "custom", content: example, unsafe: true }] },
-        {
-          title: t("modal.title.playground"), fields: [
-            { key: "expression", type: "textarea", rows: 3, noResize: true },
-            { key: "_displayAST", type: "code", readonly: true, dependencies: { presentation: "ast" }, dependencyUnmetAction: "hide" },
-            { key: "_displayGraph", type: "hint", unsafe: true, dependencies: { presentation: "graph" }, dependencyUnmetAction: "hide" },
-            { key: "_displayText", type: "hint", unsafe: true, dependencies: { presentation: "text" }, dependencyUnmetAction: "hide" },
-            { key: "optimize", type: "switch", label: t("$label.OPTIMIZE_SEARCH"), tooltip: t("$tooltip.breakOrder") },
-            { key: "textStyle", type: "switch", label: t("modal.playground.textStyle"), dependencies: { presentation: { $includes: ["graph", "text"] } } },
-            { key: "presentation", type: "select", label: t("modal.playground.presentation"), options: presentOps },
-            { key: "direction", type: "select", label: t("modal.playground.direction"), options: ["TB", "BT", "RL", "LR"], dependencies: { presentation: "graph" } },
-            { key: "translate", type: "switch", label: t("modal.playground.translate"), dependencies: { presentation: "graph" } },
-          ],
-        },
-        { title: undefined, fields: [{ key: "_grammar_box_visible", type: "action", label: t("modal.title.grammar"), actionType: "toggle" }] },
-        { title: undefined, fields: [{ key: "grammar", type: "code", readonly: true }], dependencies: { _grammar_box_visible: true } },
-      ]
-    }
-
     await utils.formDialog.modal({
       title: t("grammar"),
-      schema: getSchema(),
+      schema,
       data: {
         grammar: searcher.getGrammar(),
-        expression: `h2:"foo bar"  ( linenum<200 | blockcodelang=java | abc )  -file:baz`,
-        presentation: "graph", direction: "LR", optimize: false, textStyle: true, translate: true,
+        expression: `h2:"foo bar"  ( linenum<200 | blockcodelang=java | abc )  -file:/baz/`,
+        presentation: PRESENT.graph, direction: "LR", textStyle: true, translate: true,
         _displayAST: "", _displayGraph: { hintDetail: "" }, _displayText: { hintDetail: "" }, _grammar_box_visible: false,
       },
       rules: { expression: "required" },
       watchers: [{
-        triggers: ["expression", "presentation", "direction", "optimize", "textStyle", "translate"],
+        triggers: ["expression", "presentation", "direction", "textStyle", "translate"],
         affects: ["_displayAST", "_displayText", "_displayGraph"],
         effect: (isMet, ctx) => {
           if (!isMet) return
           const presentation = ctx.getValue("presentation")
           const expression = ctx.getValue("expression")
-          const optimize = ctx.getValue("optimize")
           const textStyle = ctx.getValue("textStyle")
           const translate = ctx.getValue("translate")
           const direction = ctx.getValue("direction")
-          if (presentation === "ast") {
-            _to(expression, optimize, ast => JSON.stringify(ast, null, "  ")).then(data => ctx.setValue("_displayAST", data))
-          } else if (presentation === "text") {
-            _to(expression, optimize, ast => this.buildExplainText(ast, textStyle)).then(data => ctx.setValue("_displayText", { hintDetail: data }))
-          } else if (presentation === "graph") {
-            _to(expression, optimize, async ast => {
+          if (presentation === PRESENT.ast) {
+            _to(expression, ast => JSON.stringify(ast, null, "  ")).then(data => ctx.setValue("_displayAST", data))
+          } else if (presentation === PRESENT.text) {
+            _to(expression, ast => this.buildExplain(ast, translate, textStyle)).then(data => ctx.setValue("_displayText", { hintDetail: data }))
+          } else if (presentation === PRESENT.graph) {
+            _to(expression, async ast => {
               const definition = this.buildMermaid(ast, translate, textStyle, direction)
               const svg = await utils.renderMermaid(definition)
               return `<div style="font-size:initial; line-height: initial; text-align:center;">${svg}</div>`

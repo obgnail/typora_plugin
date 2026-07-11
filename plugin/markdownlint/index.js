@@ -19,7 +19,7 @@ const createLinterClient = (workerPath, hooks, contentProvider) => {
 
 class MarkdownlintPlugin extends BasePlugin {
   fixInfos = []
-  TRANSLATIONS = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
+  TRANSLATIONS = this.i18n.entries(Object.keys(this.i18n.data).filter(e => e.startsWith("MD")))
   ACTIONS = (() => {
     const getDetail = async infos => {
       const attrs = ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]

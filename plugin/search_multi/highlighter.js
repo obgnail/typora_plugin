@@ -1,7 +1,7 @@
 class Highlighter {
   constructor({ utils, config }) {
     this.utils = utils
-    this.config = config
+    this.options = { caseSensitive: config.CASE_SENSITIVE, maxHighlights: config.MAX_HIGHLIGHTS }
     this._resetStatus()
   }
 
@@ -33,7 +33,7 @@ class Highlighter {
     })
   }
 
-  doSearch = (searchGroup = this.searchStatus.searchGroup, caseSensitive = this.config.CASE_SENSITIVE) => {
+  doSearch = (searchGroup = this.searchStatus.searchGroup, caseSensitive = this.options.caseSensitive) => {
     this.clearSearch()
     if (!searchGroup || searchGroup.length === 0) {
       return this.searchStatus.hitGroups
@@ -279,8 +279,7 @@ class Highlighter {
     }
 
     const nodeElement = File.editor.findElemById(node.cid)[0].querySelector(".md-htmlblock-container")
-    const textContent = nodeElement.textContent
-    const matches = textContent.matchAll(this.searchStatus.regexp)
+    const matches = nodeElement.textContent.matchAll(this.searchStatus.regexp)
     for (const match of matches) {
       const hit = {
         cid: node.cid,
@@ -359,7 +358,7 @@ class Highlighter {
     }
   }
 
-  _checkHits = () => this.searchStatus.hits.length <= this.config.MAX_HIGHLIGHTS
+  _checkHits = () => this.searchStatus.hits.length <= this.options.maxHighlights
 
   _polyfill = () => {
     if (!global.NodeDef) {

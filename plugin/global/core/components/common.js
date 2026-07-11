@@ -8,6 +8,13 @@ const createSheet = (name) => {
 
 const sharedSheets = ["font-awesome", "ionicons"].map(createSheet).filter(Boolean)
 
+const createTemplate = (el) => {
+  const tpl = document.createElement("template")
+  tpl.innerHTML = el
+  return tpl
+}
+
 module.exports = {
   sharedSheets,
+  createTemplate,
 }

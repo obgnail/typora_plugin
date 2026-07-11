@@ -1,3 +1,5 @@
+const TYPE_REGEX = "REGEX"
+
 const OPERATORS = {
   ":": (a, b) => a.includes(b),
   "=": (a, b) => a === b,
@@ -25,11 +27,11 @@ const ANCESTORS = {
 const NORMALIZERS = {
   noop: (operand) => operand,
   resolveNumber: (operand, operandType) => {
-    if (operandType === "REGEX") return operand
+    if (operandType === TYPE_REGEX) return operand
     return operand.replace(/[_,]/g, "")  // Supports thousands separator
   },
   resolveBoolean: (operand, operandType) => {
-    if (operandType === "REGEX") return operand
+    if (operandType === TYPE_REGEX) return operand
     switch (operand.toLowerCase()) {
       case "y":
       case "yes":
@@ -42,7 +44,7 @@ const NORMALIZERS = {
     }
   },
   resolveDate: (operand, operandType) => {
-    if (operandType === "REGEX") return operand
+    if (operandType === TYPE_REGEX) return operand
     const oneDay = 24 * 60 * 60 * 1000
     const today = new Date()
     const tomorrow = new Date(today.getTime() + oneDay)
@@ -55,30 +57,30 @@ const NORMALIZERS = {
 
 const VALIDATORS = {
   isStringOrRegex: (operator, operand, operandType) => {
-    if (operandType === "REGEX") {
+    if (operandType === TYPE_REGEX) {
       if (operator !== ":") return `Regex operands only support the ":" operator`
       try {
-        new RegExp(operand)
+        new RegExp(operand.pattern, operand.flags)
       } catch (e) {
-        return `Invalid regex: "${operand}"`
+        return `Invalid regex: "/${operand.pattern}/${operand.flags}"`
       }
     } else if (operator !== ":" && operator !== "=" && operator !== "!=") {
       return `Only supports "=", "!=", and ":" operators`
     }
   },
   isComparable: (operator, operand, operandType) => {
-    if (operandType === "REGEX") return "Regex operands are not valid for numerical comparisons"
+    if (operandType === TYPE_REGEX) return "Regex operands are not valid for numerical comparisons"
     if (operator === ":") return `The ":" operator is not valid for numerical comparisons`
   },
   isBoolean: (operator, operand, operandType) => {
     if (operator !== "=" && operator !== "!=") return `Only supports "=" and "!=" operators for logical comparisons`
-    if (operandType === "REGEX") return "Regex operands are not valid for logical comparisons"
+    if (operandType === TYPE_REGEX) return "Regex operands are not valid for logical comparisons"
     if (operand !== "true" && operand !== "false") return `Operand must be "true" or "false"`
   },
   isSize: (operator, operand, operandType) => {
     const err = VALIDATORS.isComparable(operator, operand, operandType)
     if (err) return err
-    const units = [...Object.keys(UNITS)].sort((a, b) => b.length - a.length).join("|")
+    const units = Object.keys(UNITS).sort((a, b) => b.length - a.length).join("|")
     const regex = new RegExp(`^\\d+(\\.\\d+)?(${units})$`, "i")
     if (!regex.test(operand)) return `Operand must be a number followed by a unit: ${units}`
   },
@@ -96,16 +98,22 @@ const VALIDATORS = {
 
 const CASTERS = {
   toStringOrRegex: (operand, operandType, options) => {
-    if (operandType === "REGEX") {
-      return new RegExp(operand, options.caseSensitive ? "u" : "iu")
+    if (operandType === TYPE_REGEX) {
+      const { pattern, flags = "" } = operand
+      const flagSet = new Set(flags.toLowerCase())
+      if (!options.caseSensitive) flagSet.add("i")
+      flagSet.add("u")
+      flagSet.delete("g")
+      flagSet.delete("y")
+      return new RegExp(pattern, [...flagSet].join(""))
     }
-    const str = operand.toString()
+    const str = String(operand)
     return options.caseSensitive ? str : str.toLowerCase()
   },
   toNumber: operand => Number(operand),
   toBoolean: operand => operand.toLowerCase() === "true",
   toBytes: operand => {
-    const units = [...Object.keys(UNITS)].sort((a, b) => b.length - a.length).join("|")
+    const units = Object.keys(UNITS).sort((a, b) => b.length - a.length).join("|")
     const match = operand.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
     if (!match) {
       throw new Error(`Operand must be a number followed by a unit: ${units}`)
@@ -156,8 +164,8 @@ const createBaseQualifiers = (ctx) => {
     CHINESE_G: /\p{sc=Han}/gu,
     IMAGE_MD: /(!\[((?:\[[^\]]*]|[^\[\]])*)]\()(<?((?:\([^)]*\)|[^()])*?)>?[ \t]*((['"])([.\n]*?)\6[ \t]*)?)(\)(?:\s*{([^{}()]*)})?)/,
     IMAGE_MD_G: /(!\[((?:\[[^\]]*]|[^\[\]])*)]\()(<?((?:\([^)]*\)|[^()])*?)>?[ \t]*((['"])([.\n]*?)\6[ \t]*)?)(\)(?:\s*{([^{}()]*)})?)/g,
-    IMG_TAG_G: /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/g,
     IMG_TAG: /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/,
+    IMG_TAG_G: /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/g,
     EMOJI: /\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/u,
     INVISIBLE: /[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/,
   }
@@ -168,7 +176,7 @@ const createBaseQualifiers = (ctx) => {
   const { arrayCompare, arrayRegex } = MATCHERS
   const { none, write } = ANCESTORS
 
-  const PROCESS = {
+  const MIXINS = {
     size: { validate: isSize, cast: toBytes },
     date: { normalize: resolveDate, validate: isDate, cast: toDate },
     number: { normalize: resolveNumber, validate: isNumber, cast: toNumber },
@@ -177,109 +185,81 @@ const createBaseQualifiers = (ctx) => {
   }
 
   const getMatchCount = (content, regex) => {
-    let count = 0
-    for (const _ of content.matchAll(regex)) count++
-    return count
+    let c = 0
+    for (const _ of content.matchAll(regex)) c++
+    return c
   }
 
-  const getWordNum = async source => {
-    const content = (await source.getContent()).trim()
-    if (content.length === 0) {
-      return 0
-    }
-    let replaceCount = 0
+  const countWords = content => {
+    content = content.trim()
+    if (content.length === 0) return 0
+
+    let chars = 0
     const words = content
-      // Replace Chinese characters with spaces
       .replace(REGEX.CHINESE_CHARS, () => {
-        replaceCount++
+        chars++
         return " "
       })
-      // Replace the letter following a single quotation mark or apostrophe with the b
       .replace(REGEX.QUOTE_LETTER, "b")
-      // Replace specific punctuation marks with spaces
       .replace(REGEX.PUNCT_SPACES, " ")
       .split(REGEX.SPLIT_WORDS)
-    return words.length - 2 + replaceCount
+    return words.length - 2 + chars
   }
 
   const DEFINITIONS = {
-    default: { is_meta: false, cost: 2, anchor: write, query: async source => `${await source.getContent()}\n${source.path}` },
-    path: { is_meta: true, cost: 1, anchor: none, query: source => source.path },
-    dir: { is_meta: true, cost: 1, anchor: none, query: source => Path.dirname(source.path) },
-    folder: { is_meta: true, cost: 1, anchor: none, query: source => Path.dirname(source.path) },
-    file: { is_meta: true, cost: 1, anchor: none, query: source => source.file },
-    name: { is_meta: true, cost: 1, anchor: none, query: source => Path.parse(source.file).name },
-    ext: { is_meta: true, cost: 1, anchor: none, query: source => Path.extname(source.file) },
-    content: { is_meta: false, cost: 2, anchor: write, query: async source => await source.getContent() },
+    default: { is_meta: false, cost: 2, anchor: write, query: async fileCtx => `${await fileCtx.getContent()}\n${fileCtx.path}` },
+    path: { is_meta: true, cost: 1, anchor: none, query: fileCtx => fileCtx.path },
+    dir: { is_meta: true, cost: 1, anchor: none, query: fileCtx => Path.dirname(fileCtx.path) },
+    folder: { is_meta: true, cost: 1, anchor: none, query: fileCtx => Path.dirname(fileCtx.path) },
+    file: { is_meta: true, cost: 1, anchor: none, query: fileCtx => fileCtx.file },
+    name: { is_meta: true, cost: 1, anchor: none, query: fileCtx => Path.parse(fileCtx.file).name },
+    ext: { is_meta: true, cost: 1, anchor: none, query: fileCtx => Path.extname(fileCtx.file) },
+    content: { is_meta: false, cost: 2, anchor: write, query: async fileCtx => await fileCtx.getContent() },
     frontmatter: {
       is_meta: false, cost: 3, anchor: `pre[mdtype="meta_block"]`,
-      query: async source => {
-        const { yamlObject } = splitFrontMatter(await source.getContent())
+      query: async fileCtx => {
+        const { yamlObject } = splitFrontMatter(await fileCtx.getContent())
         return yamlObject ? JSON.stringify(yamlObject) : ""
       },
     },
-    size: { is_meta: true, cost: 1, anchor: none, ...PROCESS.size, query: source => source.stats.size },
-    birthtime: { is_meta: true, cost: 1, anchor: none, ...PROCESS.date, query: source => toDate(source.stats.birthtime) },
-    mtime: { is_meta: true, cost: 1, anchor: none, ...PROCESS.date, query: source => toDate(source.stats.mtime) },
-    atime: { is_meta: true, cost: 1, anchor: none, ...PROCESS.date, query: source => toDate(source.stats.atime) },
-    linenum: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.number,
-      query: async source => (await source.getContent()).split("\n").length,
-    },
-    charnum: { is_meta: true, cost: 2, anchor: none, ...PROCESS.number, query: async source => (await source.getContent()).length },
-    wordnum: { is_meta: true, cost: 3, anchor: none, ...PROCESS.number, query: getWordNum },
+    size: { is_meta: true, cost: 1, anchor: none, ...MIXINS.size, query: fileCtx => fileCtx.stats.size },
+    birthtime: { is_meta: true, cost: 1, anchor: none, ...MIXINS.date, query: fileCtx => toDate(fileCtx.stats.birthtime) },
+    mtime: { is_meta: true, cost: 1, anchor: none, ...MIXINS.date, query: fileCtx => toDate(fileCtx.stats.mtime) },
+    atime: { is_meta: true, cost: 1, anchor: none, ...MIXINS.date, query: fileCtx => toDate(fileCtx.stats.atime) },
+    linenum: { is_meta: true, cost: 2, anchor: none, ...MIXINS.number, query: async fileCtx => (await fileCtx.getContent()).split("\n").length },
+    charnum: { is_meta: true, cost: 2, anchor: none, ...MIXINS.number, query: async fileCtx => (await fileCtx.getContent()).length },
+    wordnum: { is_meta: true, cost: 3, anchor: none, ...MIXINS.number, query: async fileCtx => countWords(await fileCtx.getContent()) },
     readminutes: {
-      is_meta: true, cost: 3, anchor: none, ...PROCESS.number,
-      query: async source => {
-        const words = await getWordNum(source)
+      is_meta: true, cost: 3, anchor: none, ...MIXINS.number,
+      query: async fileCtx => {
+        const words = countWords(await fileCtx.getContent())
         const wordsPerMinute = File.option.wordsPerMinute || 300
         return words / wordsPerMinute
       },
     },
     chinesenum: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.number,
-      query: async source => getMatchCount(await source.getContent(), REGEX.CHINESE_G),
+      is_meta: true, cost: 2, anchor: none, ...MIXINS.number,
+      query: async fileCtx => getMatchCount(await fileCtx.getContent(), REGEX.CHINESE_G),
     },
     imagenum: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.number,
-      query: async source => getMatchCount(await source.getContent(), REGEX.IMAGE_MD_G),
+      is_meta: true, cost: 2, anchor: none, ...MIXINS.number,
+      query: async fileCtx => getMatchCount(await fileCtx.getContent(), REGEX.IMAGE_MD_G),
     },
     imgtagnum: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.number,
-      query: async source => getMatchCount(await source.getContent(), REGEX.IMG_TAG_G),
+      is_meta: true, cost: 2, anchor: none, ...MIXINS.number,
+      query: async fileCtx => getMatchCount(await fileCtx.getContent(), REGEX.IMG_TAG_G),
     },
-    hasimage: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.boolean,
-      query: async source => REGEX.IMAGE_MD.test(await source.getContent()),
-    },
-    hasimgtag: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.boolean,
-      query: async source => REGEX.IMG_TAG.test(await source.getContent()),
-    },
-    haschinese: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.boolean,
-      query: async source => REGEX.CHINESE.test(await source.getContent()),
-    },
-    hasemoji: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.boolean,
-      query: async source => REGEX.EMOJI.test(await source.getContent()),
-    },
+    hasimage: { is_meta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => REGEX.IMAGE_MD.test(await fileCtx.getContent()) },
+    hasimgtag: { is_meta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => REGEX.IMG_TAG.test(await fileCtx.getContent()) },
+    haschinese: { is_meta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => REGEX.CHINESE.test(await fileCtx.getContent()) },
+    hasemoji: { is_meta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => REGEX.EMOJI.test(await fileCtx.getContent()) },
     hasinvisiblechar: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.boolean,
-      query: async source => REGEX.INVISIBLE.test(await source.getContent()),
+      is_meta: true, cost: 2, anchor: none, ...MIXINS.boolean,
+      query: async fileCtx => REGEX.INVISIBLE.test(await fileCtx.getContent()),
     },
-    isempty: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.boolean,
-      query: async source => (await source.getContent()).trim() === "",
-    },
-    crlf: {
-      is_meta: true, cost: 2, anchor: none, ...PROCESS.boolean,
-      query: async source => (await source.getContent()).includes("\r\n"),
-    },
-    line: {
-      is_meta: false, cost: 2, anchor: write, ...PROCESS.stringArray,
-      query: async source => (await source.getContent()).split("\n"),
-    },
+    isempty: { is_meta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => (await fileCtx.getContent()).trim() === "" },
+    crlf: { is_meta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => (await fileCtx.getContent()).includes("\r\n") },
+    line: { is_meta: false, cost: 2, anchor: write, ...MIXINS.stringArray, query: async fileCtx => (await fileCtx.getContent()).split("\n") },
   }
 
   return Object.entries(DEFINITIONS).map(([scope, def]) => ({ scope, name: i18n.t(`scope.${scope}`), ...def }))
@@ -288,17 +268,17 @@ const createBaseQualifiers = (ctx) => {
 const createMarkdownQualifiers = (ctx) => {
   const { utils, i18n } = ctx
 
-  const computeInline = async source => utils.parseMarkdownInline(await source.getContent())
-  const computeBlock = async source => utils.parseMarkdownBlock(await source.getContent())
+  const computeInline = async fileCtx => utils.parseMarkdownInline(await fileCtx.getContent())
+  const computeBlock = async fileCtx => utils.parseMarkdownBlock(await fileCtx.getContent())
 
   const PARSER = {
-    inline: async source => source.compute("$ast:inline", computeInline),
-    block: async source => source.compute("$ast:block", computeBlock),
+    inline: async fileCtx => fileCtx.compute("$ast:inline", computeInline),
+    block: async fileCtx => fileCtx.compute("$ast:block", computeBlock),
   }
 
   const FILTER = {
-    is: type => () => node => node.type === type,
-    wrappedBy: type => () => {
+    ofType: type => () => node => node.type === type,
+    within: type => () => {
       const openType = `${type}_open`
       const closeType = `${type}_close`
       let balance = 0
@@ -313,7 +293,7 @@ const createMarkdownQualifiers = (ctx) => {
         return isInside || wasInside
       }
     },
-    wrappedByTag: (type, tag) => () => {
+    withinTag: (type, tag) => () => {
       const openType = `${type}_open`
       const closeType = `${type}_close`
       let balance = 0
@@ -328,7 +308,7 @@ const createMarkdownQualifiers = (ctx) => {
         return isInside || wasInside
       }
     },
-    wrappedByMulti: (...types) => () => {
+    withinPath: (...types) => () => {
       const balances = new Uint8Array(types.length)
       const flags = new Map(
         types.flatMap((type, index) => [
@@ -385,7 +365,7 @@ const createMarkdownQualifiers = (ctx) => {
     },
   }
 
-  const preorder = (ast = [], filter) => {
+  const collectNodes = (ast = [], filter) => {
     const output = []
     const recurse = ast => {
       for (const node of ast) {
@@ -403,107 +383,67 @@ const createMarkdownQualifiers = (ctx) => {
   }
 
   const buildQuery = (parser, filterFactory, transformer) => {
-    return async source => {
-      const ast = await parser(source)
-      const nodes = preorder(ast, filterFactory())
+    return async fileCtx => {
+      const ast = await parser(fileCtx)
+      const nodes = collectNodes(ast, filterFactory())
       return nodes.flatMap(transformer).filter(Boolean)
     }
   }
 
   const DEFINITIONS = {
-    blockcode: { anchor: "pre.md-fences", parser: PARSER.block, filter: FILTER.is("fence"), transformer: TRANSFORMER.infoAndContent },
-    blockcodelang: { anchor: ".ty-cm-lang-input", parser: PARSER.block, filter: FILTER.is("fence"), transformer: TRANSFORMER.info },
-    blockcodebody: { anchor: "pre.md-fences", parser: PARSER.block, filter: FILTER.is("fence"), transformer: TRANSFORMER.content },
-    blockcodeline: { anchor: "pre.md-fences", parser: PARSER.block, filter: FILTER.is("fence"), transformer: TRANSFORMER.contentLine },
+    blockcode: { anchor: "pre.md-fences", parser: PARSER.block, filter: FILTER.ofType("fence"), transformer: TRANSFORMER.infoAndContent },
+    blockcodelang: { anchor: ".ty-cm-lang-input", parser: PARSER.block, filter: FILTER.ofType("fence"), transformer: TRANSFORMER.info },
+    blockcodebody: { anchor: "pre.md-fences", parser: PARSER.block, filter: FILTER.ofType("fence"), transformer: TRANSFORMER.content },
+    blockcodeline: { anchor: "pre.md-fences", parser: PARSER.block, filter: FILTER.ofType("fence"), transformer: TRANSFORMER.contentLine },
     blockhtml: {
-      anchor: ".md-html-inline,.md-htmlblock",
+      anchor: ".md-html-inline, .md-htmlblock",
       parser: PARSER.block,
-      filter: FILTER.is("html_block"),
+      filter: FILTER.ofType("html_block"),
       transformer: TRANSFORMER.content,
     },
-    blockquote: {
-      anchor: `[mdtype="blockquote"]`,
-      parser: PARSER.block,
-      filter: FILTER.wrappedBy("blockquote"),
-      transformer: TRANSFORMER.content,
-    },
-    table: { anchor: `[mdtype="table"]`, parser: PARSER.block, filter: FILTER.wrappedBy("table"), transformer: TRANSFORMER.content },
-    thead: { anchor: `[mdtype="table"] thead`, parser: PARSER.block, filter: FILTER.wrappedBy("thead"), transformer: TRANSFORMER.content },
-    tbody: { anchor: `[mdtype="table"] tbody`, parser: PARSER.block, filter: FILTER.wrappedBy("tbody"), transformer: TRANSFORMER.content },
-    ol: { anchor: `ol[mdtype="list"]`, parser: PARSER.block, filter: FILTER.wrappedBy("ordered_list"), transformer: TRANSFORMER.content },
-    ul: { anchor: `ul[mdtype="list"]`, parser: PARSER.block, filter: FILTER.wrappedBy("bullet_list"), transformer: TRANSFORMER.content },
+    blockquote: { anchor: `[mdtype="blockquote"]`, parser: PARSER.block, filter: FILTER.within("blockquote"), transformer: TRANSFORMER.content },
+    table: { anchor: `[mdtype="table"]`, parser: PARSER.block, filter: FILTER.within("table"), transformer: TRANSFORMER.content },
+    thead: { anchor: `[mdtype="table"] thead`, parser: PARSER.block, filter: FILTER.within("thead"), transformer: TRANSFORMER.content },
+    tbody: { anchor: `[mdtype="table"] tbody`, parser: PARSER.block, filter: FILTER.within("tbody"), transformer: TRANSFORMER.content },
+    ol: { anchor: `ol[mdtype="list"]`, parser: PARSER.block, filter: FILTER.within("ordered_list"), transformer: TRANSFORMER.content },
+    ul: { anchor: `ul[mdtype="list"]`, parser: PARSER.block, filter: FILTER.within("bullet_list"), transformer: TRANSFORMER.content },
     task: {
       anchor: ".task-list-item",
       parser: PARSER.block,
-      filter: FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"),
+      filter: FILTER.withinPath("bullet_list", "list_item", "paragraph"),
       transformer: TRANSFORMER.taskContent(0),
     },
     taskdone: {
       anchor: ".task-list-item.task-list-done",
       parser: PARSER.block,
-      filter: FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"),
+      filter: FILTER.withinPath("bullet_list", "list_item", "paragraph"),
       transformer: TRANSFORMER.taskContent(1),
     },
     tasktodo: {
       anchor: ".task-list-item.task-list-not-done",
       parser: PARSER.block,
-      filter: FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"),
+      filter: FILTER.withinPath("bullet_list", "list_item", "paragraph"),
       transformer: TRANSFORMER.taskContent(-1),
     },
-    head: { anchor: `[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.wrappedBy("heading"), transformer: TRANSFORMER.content },
-    h1: {
-      anchor: `h1[mdtype="heading"]`,
-      parser: PARSER.block,
-      filter: FILTER.wrappedByTag("heading", "h1"),
-      transformer: TRANSFORMER.content,
-    },
-    h2: {
-      anchor: `h2[mdtype="heading"]`,
-      parser: PARSER.block,
-      filter: FILTER.wrappedByTag("heading", "h2"),
-      transformer: TRANSFORMER.content,
-    },
-    h3: {
-      anchor: `h3[mdtype="heading"]`,
-      parser: PARSER.block,
-      filter: FILTER.wrappedByTag("heading", "h3"),
-      transformer: TRANSFORMER.content,
-    },
-    h4: {
-      anchor: `h4[mdtype="heading"]`,
-      parser: PARSER.block,
-      filter: FILTER.wrappedByTag("heading", "h4"),
-      transformer: TRANSFORMER.content,
-    },
-    h5: {
-      anchor: `h5[mdtype="heading"]`,
-      parser: PARSER.block,
-      filter: FILTER.wrappedByTag("heading", "h5"),
-      transformer: TRANSFORMER.content,
-    },
-    h6: {
-      anchor: `h6[mdtype="heading"]`,
-      parser: PARSER.block,
-      filter: FILTER.wrappedByTag("heading", "h6"),
-      transformer: TRANSFORMER.content,
-    },
+    head: { anchor: `[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.within("heading"), transformer: TRANSFORMER.content },
+    h1: { anchor: `h1[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h1"), transformer: TRANSFORMER.content },
+    h2: { anchor: `h2[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h2"), transformer: TRANSFORMER.content },
+    h3: { anchor: `h3[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h3"), transformer: TRANSFORMER.content },
+    h4: { anchor: `h4[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h4"), transformer: TRANSFORMER.content },
+    h5: { anchor: `h5[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h5"), transformer: TRANSFORMER.content },
+    h6: { anchor: `h6[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h6"), transformer: TRANSFORMER.content },
+    image: { anchor: `[md-inline="image"]`, parser: PARSER.inline, filter: FILTER.ofType("image"), transformer: TRANSFORMER.attrAndContent },
+    code: { anchor: `[md-inline="code"]`, parser: PARSER.inline, filter: FILTER.ofType("code_inline"), transformer: TRANSFORMER.content },
+    link: { anchor: `[md-inline="link"]`, parser: PARSER.inline, filter: FILTER.within("link"), transformer: TRANSFORMER.attrAndContent },
+    strong: { anchor: `[md-inline="strong"]`, parser: PARSER.inline, filter: FILTER.within("strong"), transformer: TRANSFORMER.content },
+    em: { anchor: `[md-inline="em"]`, parser: PARSER.inline, filter: FILTER.within("em"), transformer: TRANSFORMER.content },
+    del: { anchor: `[md-inline="del"]`, parser: PARSER.inline, filter: FILTER.within("s"), transformer: TRANSFORMER.content },
     highlight: {
       anchor: `[md-inline="highlight"]`,
       parser: PARSER.block,
-      filter: FILTER.is("text"),
+      filter: FILTER.ofType("text"),
       transformer: TRANSFORMER.regexContent(REGEX_HIGHLIGHT),
     },
-    image: { anchor: `[md-inline="image"]`, parser: PARSER.inline, filter: FILTER.is("image"), transformer: TRANSFORMER.attrAndContent },
-    code: { anchor: `[md-inline="code"]`, parser: PARSER.inline, filter: FILTER.is("code_inline"), transformer: TRANSFORMER.content },
-    link: {
-      anchor: `[md-inline="link"]`,
-      parser: PARSER.inline,
-      filter: FILTER.wrappedBy("link"),
-      transformer: TRANSFORMER.attrAndContent,
-    },
-    strong: { anchor: `[md-inline="strong"]`, parser: PARSER.inline, filter: FILTER.wrappedBy("strong"), transformer: TRANSFORMER.content },
-    em: { anchor: `[md-inline="em"]`, parser: PARSER.inline, filter: FILTER.wrappedBy("em"), transformer: TRANSFORMER.content },
-    del: { anchor: `[md-inline="del"]`, parser: PARSER.inline, filter: FILTER.wrappedBy("s"), transformer: TRANSFORMER.content },
   }
 
   return Object.entries(DEFINITIONS).map(([scope, def]) => ({
@@ -524,9 +464,7 @@ const createMarkdownQualifiers = (ctx) => {
   }))
 }
 
-const getQualifiers = (ctx) => [createBaseQualifiers, createMarkdownQualifiers]
-  .flatMap(fn => fn(ctx))
-  .map(buildQualifier)
+const getQualifiers = (ctx) => [createBaseQualifiers, createMarkdownQualifiers].flatMap(fn => fn(ctx)).map(buildQualifier)
 
 module.exports = {
   OPERATORS,

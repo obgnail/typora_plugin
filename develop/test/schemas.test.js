@@ -192,9 +192,7 @@ describe("all i18n keys starting with $ should be used in schemas", async () => 
   const getAllI18NKeys = async () => {
     return Object.fromEntries(
       Object.entries(i18n.data).map(([fixedName, data]) => {
-        const keys = new Set(
-          [...Object.keys(data)].filter(key => key.startsWith("$")),
-        )
+        const keys = new Set(Object.keys(data).filter(key => key.startsWith("$")))
         return [fixedName, keys]
       }),
     )

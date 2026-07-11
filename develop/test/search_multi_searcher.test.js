@@ -8,6 +8,7 @@ const Searcher = proxyquire("../../plugin/search_multi/searcher.js", {
   "fs-extra": { ...require("fs-extra"), "@noCallThru": true },
 })
 const { ExplainPresenter, GrammarPresenter } = require("../../plugin/search_multi/presenters.js")
+const { AST } = require("../../plugin/search_multi/parser.js")
 
 const mockPlugin = {
   utils: require("./mocks/utils.mock.js"),
@@ -103,7 +104,7 @@ let searcher, explainPresenter, grammarPresenter, mockFiles
 // Fetch fileKey dynamically to avoid L1 Cache pollution across scopes
 const assertMatch = async (query, fileKey, expected = true) => {
   const file = mockFiles[fileKey]
-  const ast = searcher.parse(query, true)
+  const ast = searcher.optimize(searcher.parse(query))
   const match = searcher.compile(ast)
   const result = await match(file)
   assert.strictEqual(result, expected, `Query ["${query}"] failed for file [${file.file}]. Expected ${expected}`)
@@ -116,7 +117,6 @@ const assertError = (query, errorRegex) => {
 before(() => {
   mockFiles = getMockFiles()
   searcher = new Searcher(mockPlugin)
-  searcher.process()
   explainPresenter = new ExplainPresenter({ ...mockPlugin, searcher: searcher })
   grammarPresenter = new GrammarPresenter({ ...mockPlugin, searcher: searcher })
 })
@@ -274,10 +274,10 @@ describe("Searcher: Preprocessing & Syntactic Sugar", () => {
 
 describe("Searcher: Syntax Edge Cases & Logic", () => {
   it("should handle case sensitivity configuration", async () => {
-    mockPlugin.config.CASE_SENSITIVE = true
+    searcher.options.caseSensitive = true
     await assertMatch("h1:Main", "torture")
     await assertMatch("h1:main", "torture", false)
-    mockPlugin.config.CASE_SENSITIVE = false
+    searcher.options.caseSensitive = false
   })
   it("should allow regex in structural search", async () => {
     await assertMatch("h1:/^Main/", "torture")
@@ -290,11 +290,6 @@ describe("Searcher: Syntax Edge Cases & Logic", () => {
     await assertMatch("(ext:md OR size>10mb) AND tasktodo:urgent", "torture")
     await assertMatch("-(ext:js OR isempty=true) AND h2:中文", "torture")
     await assertMatch("ext:js AND tasktodo:Todo", "torture", false)
-  })
-  it("should reorder AST based on optimization costs", () => {
-    const ast = searcher.parse("content:Header AND ext:md", true)
-    assert.strictEqual(ast.left.scope, "ext")
-    assert.strictEqual(ast.right.scope, "content")
   })
 })
 
@@ -324,18 +319,177 @@ describe("Searcher: Validation & Error Guards", () => {
   })
 })
 
+describe("Searcher: AST Optimizer & Physical Plan Generation", () => {
+  it("should safely handle null/empty AST boundaries", () => {
+    assert.strictEqual(searcher.optimize(null), null, "Should return null safely")
+  })
+
+  it("should reorder ESTree nodes based on Semantic Cost to ensure I/O short-circuiting", () => {
+    // Costs: wordnum(3) - high, content(2) - medium, ext(1) - low
+    const rawAst = searcher.parse("wordnum>=1 AND content:A AND ext:md")
+    const optAst = searcher.optimize(rawAst)
+
+    assert.strictEqual(optAst.type, AST.LogicalExpression)
+    assert.strictEqual(optAst.semantic.cost, 3, "Root cost should be the maximum of all branches")
+
+    // Right-heavy execution expected: (ext AND (content AND wordnum))
+    assert.strictEqual(optAst.left.semantic.scope, "ext", "Lowest cost must be evaluated first at the top level")
+    assert.strictEqual(optAst.right.type, AST.LogicalExpression)
+    assert.strictEqual(optAst.right.left.semantic.scope, "content", "Medium cost must be in the middle")
+    assert.strictEqual(optAst.right.right.semantic.scope, "wordnum", "Highest cost must be executed last (Deepest right)")
+  })
+
+  it("should deeply flatten and sort identically nested operators", () => {
+    // Explicit nested parentheses for identical AND operators
+    // Costs: blockcodeline(3), ext(1), size(1), h1(3)
+    const rawAst = searcher.parse("blockcodeline:A AND (ext:md AND size>10kb AND h1:Title)")
+    const optAst = searcher.optimize(rawAst)
+
+    // Right-heavy tree expected: (ext AND (size AND (blockcodeline AND h1)))
+    assert.strictEqual(optAst.type, AST.LogicalExpression)
+    assert.strictEqual(optAst.operator, "AND")
+    assert.ok(["ext", "size"].includes(optAst.left.semantic.scope))
+    assert.ok(["ext", "size"].includes(optAst.right.left.semantic.scope))
+    assert.ok(["h1", "blockcodeline"].includes(optAst.right.right.left.semantic.scope))
+    assert.ok(["h1", "blockcodeline"].includes(optAst.right.right.right.semantic.scope))
+  })
+
+  it("should treat mixed operators (AND/OR) as strict structural boundaries", () => {
+    // Costs: wordnum(3), content(2), (ext OR size)(1)
+    const rawAst = searcher.parse("wordnum>=1 AND content:A AND (ext:md OR size>10kb)")
+    const optAst = searcher.optimize(rawAst)
+
+    // Right-heavy tree expected: ((ext OR size) AND (content AND wordnum))
+    assert.strictEqual(optAst.type, AST.LogicalExpression)
+    assert.strictEqual(optAst.operator, "AND")
+    assert.strictEqual(optAst.left.type, AST.LogicalExpression, "Cost 1 OR Sub-tree should be evaluated first")
+    assert.strictEqual(optAst.left.operator, "OR")
+    assert.strictEqual(optAst.left.semantic.cost, 1)
+    assert.strictEqual(optAst.right.type, AST.LogicalExpression)
+    assert.strictEqual(optAst.right.operator, "AND")
+    assert.strictEqual(optAst.right.left.semantic.scope, "content", "Cost 2")
+    assert.strictEqual(optAst.right.right.semantic.scope, "wordnum", "Cost 3")
+  })
+
+  it("should correctly inherit cost and safely prune branches for Unary (NOT) nodes", () => {
+    const rawAst = searcher.parse("ext:md AND NOT content:A")
+    const optAst = searcher.optimize(rawAst)
+
+    assert.strictEqual(optAst.left.semantic.scope, "ext")
+    assert.strictEqual(optAst.right.type, AST.UnaryExpression)
+    assert.strictEqual(optAst.right.semantic.cost, 2, "Unary node must inherit child's cost")
+
+    // Pruning Test: Emulate an invalid/empty branch inside a NOT node
+    const prunedAst = searcher.optimize({ type: AST.UnaryExpression, argument: null, semantic: { cost: 0 } })
+    assert.strictEqual(prunedAst, null, "Unary node containing a null branch must be completely pruned")
+  })
+
+  it("should guarantee Metadata Anti-Corruption on AST Regeneration", () => {
+    // Manually construct an AST containing custom mock metadata
+    const rawAst = {
+      type: AST.LogicalExpression,
+      operator: "AND",
+      _pluginCustomMeta: "root_uuid",
+      left: {
+        type: AST.LogicalExpression,
+        operator: "AND",
+        _pluginCustomMeta: "intermediate_uuid",
+        left: { type: AST.Literal, semantic: { scope: "heavy", cost: 10 } },
+        right: { type: AST.Literal, semantic: { scope: "light_a", cost: 1 } },
+      },
+      right: { type: AST.Literal, semantic: { scope: "medium", cost: 5 } },
+    }
+
+    const optAst = searcher.optimize(rawAst)
+
+    assert.strictEqual(optAst.type, AST.LogicalExpression)
+    assert.strictEqual(optAst._pluginCustomMeta, "root_uuid", "Root metadata must be preserved")
+    assert.strictEqual(optAst.right.type, AST.LogicalExpression)
+    assert.strictEqual(optAst.right._pluginCustomMeta, undefined, "Intermediate nodes must be clean without pollution")
+    assert.strictEqual(optAst.right.left.semantic.scope, "medium")
+    assert.strictEqual(optAst.right.right.semantic.scope, "heavy")
+  })
+
+  it("should maintain immutable Structural Sharing for Leaf Nodes", () => {
+    const rawAst = searcher.parse("ext:md AND size>10kb")
+    const optAst = searcher.optimize(rawAst)
+
+    const findNode = (ast, scope) => {
+      if (!ast) return null
+      if (ast.semantic && ast.semantic.scope === scope) return ast
+      return findNode(ast.left, scope) || findNode(ast.right, scope)
+    }
+
+    const rawExtNode = findNode(rawAst, "ext")
+    const optExtNode = findNode(optAst, "ext")
+
+    assert.ok(rawExtNode !== null)
+    assert.strictEqual(rawExtNode, optExtNode, "Leaves MUST share the exact identical memory reference (Pointer Equality)")
+  })
+
+  it("should enforce minimal closure nesting (O(1) Left-Depth) to prevent JS Engine stack bloat", () => {
+    // Generate a long linear chain of ANDs with ascending costs
+    const query = Array.from({ length: 50 })
+      // Alternate between fast scopes to create a long string without hitting parsing limits
+      .map((_, i) => i % 2 === 0 ? `size>${i}kb` : `ext:${i}x`)
+      .join(" AND ")
+
+    // Add one extremely heavy query at the end to guarantee sorting order
+    const fullQuery = `${query} AND wordnum>=1`
+
+    const rawAst = searcher.parse(fullQuery)
+    const optAst = searcher.optimize(rawAst)
+
+    // Calculate left-side and right-side depth
+    const getDepth = (node, direction) => {
+      if (!node || !node[direction]) return 0
+      return 1 + getDepth(node[direction], direction)
+    }
+
+    const leftDepth = getDepth(optAst, "left")
+    const rightDepth = getDepth(optAst, "right")
+
+    // In a Left-Heavy tree, leftDepth would be ~50.
+    // In our Right-Heavy paradigm, the cheapest node is strictly at the top left.
+    assert.strictEqual(leftDepth, 1, "The absolute cheapest node MUST sit directly at depth 1 on the left branch")
+    assert.ok(rightDepth >= 50, "The remaining nodes should collapse entirely onto the right branch as nested closures")
+  })
+})
+
+describe("Searcher: Feature Utilities (extractContentMatchPatterns)", () => {
+  it("should extract patterns excluding meta qualifiers and negated expressions", () => {
+    const ast = searcher.parse(`content:A AND -content:B AND size>1kb AND name:C AND "hello world" AND /regex/`)
+    const patterns = searcher.extractContentMatchPatterns(ast)
+
+    // "content:A" (positive content), "hello world" (positive default), "/regex/" (positive regex)
+    // -content:B is negated, size/name are meta properties
+    assert.ok(patterns.includes("A"))
+    assert.ok(patterns.includes("hello world"))
+    assert.ok(patterns.includes("regex"))
+    assert.strictEqual(patterns.length, 3)
+  })
+
+  it("should extract correct escaping for keywords vs regexes", () => {
+    // foo.bar as keyword should be escaped, as regex it should not.
+    const ast = searcher.parse(`content:foo.bar AND /baz.qux/`)
+    const patterns = searcher.extractContentMatchPatterns(ast)
+    assert.ok(patterns.includes("foo\\.bar")) // Keyword escaped
+    assert.ok(patterns.includes("baz.qux"))   // Regex preserved
+  })
+})
+
 describe("Presenter: Visualization Methods", () => {
   it("should generate localized explain text", () => {
     const ast = searcher.parse("size>10k -ext:md")
-    const explanation = grammarPresenter.buildExplainText(ast)
+    const explanation = grammarPresenter.buildExplain(ast, true)
     assert.ok(explanation.includes("explain"))
     assert.ok(explanation.includes("size"))
     assert.ok(explanation.includes("operator.gt"))
     assert.ok(explanation.includes("10k"))
     assert.ok(explanation.includes("not"))
   })
-  it("should generate Mermaid graph definition", () => {
-    const ast = searcher.parse("a AND b OR c")
+  it("should generate Mermaid graph definition without crash", () => {
+    const ast = searcher.parse("(a OR b) AND (c OR d) AND NOT e")
     const mermaid = grammarPresenter.buildMermaid(ast, true, false, "TB")
     assert.ok(mermaid.startsWith("graph TB"))
     assert.ok(mermaid.includes("S((START))"))

@@ -1,3 +1,4 @@
+const FileContext = require("./file_context")
 const Searcher = require("./searcher")
 const Highlighter = require("./highlighter")
 const { ExplainPresenter, GrammarPresenter } = require("./presenters")
@@ -33,14 +34,14 @@ class SearchExecutor {
         const { extname } = this.utils.Package.Path
         const verifyExt = name => this.allowedExtensions.has(extname(name).toLowerCase())
 
-        const matcher = this.searcher.compile(ast)
+        const matcher = this.searcher.compile(this.searcher.optimize(ast))
         await new Promise((resolve, reject) => {
           this.utils.walkDir({
             dir: rootPath,
             fileFilter: 0 > MAX_SIZE ? verifyExt : (name, path, stat) => stat.size < MAX_SIZE && verifyExt(name),
             dirFilter: name => !IGNORE_FOLDERS.includes(name),
-            fileParamsGetter: this.searcher.getFileParamsProvider(ast),
-            onFile: async source => (await matcher(source)) && onItem?.(source, signal),
+            fileParamsGetter: (path, file, dir, stats) => new FileContext(path, file, dir, stats),
+            onFile: async fileCtx => (await matcher(fileCtx)) && onItem?.(fileCtx, signal),
             signal: TIMEOUT > 0 ? AbortSignal.any([signal, AbortSignal.timeout(TIMEOUT)]) : signal,
             semaphore: CONCURRENCY_LIMIT,
             maxEntities: MAX_ENTITIES,
@@ -119,8 +120,13 @@ class SearchMultiPlugin extends BasePlugin {
       <div class="plugin-search-multi-header ${this.config.EXPLAIN_TRIGGER.map(t => `trigger-${t}`).join(" ")}">
         <form id="plugin-search-multi-form">
           <input type="text">
-          <div class="plugin-search-multi-btn${(this.config.CASE_SENSITIVE) ? " select" : ""}">
-            <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
+          <div class="plugin-search-multi-actions">
+            <div class="plugin-search-multi-case${(this.config.CASE_SENSITIVE) ? " select" : ""}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 18 6 6 12 18M3 14h7"/><circle cx="18" cy="14" r="4"/><path d="M22 10v8"/></svg>
+            </div>
+            <div class="plugin-search-multi-submit">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+            </div>
           </div>
         </form>
         <div class="plugin-search-multi-explain"></div>
@@ -144,7 +150,8 @@ class SearchMultiPlugin extends BasePlugin {
       header: document.querySelector(".plugin-search-multi-header"),
       form: document.querySelector("#plugin-search-multi-form"),
       input: document.querySelector("#plugin-search-multi-form input"),
-      btn: document.querySelector(".plugin-search-multi-btn"),
+      caseBtn: document.querySelector(".plugin-search-multi-case"),
+      submitBtn: document.querySelector(".plugin-search-multi-submit"),
       explain: document.querySelector(".plugin-search-multi-explain"),
       result: document.querySelector(".plugin-search-multi-result"),
       counter: document.querySelector(".plugin-search-counter"),
@@ -152,7 +159,7 @@ class SearchMultiPlugin extends BasePlugin {
       highlights: document.querySelector(".plugin-search-highlights"),
     }
 
-    const resetUI = (isSearching = false) => {
+    const resetUI = (isSearching) => {
       this.entities.counter.textContent = isSearching ? "0" : ""
       this.entities.files.innerHTML = ""
       this.entities.highlights.innerHTML = ""
@@ -168,19 +175,18 @@ class SearchMultiPlugin extends BasePlugin {
   }
 
   process = () => {
-    this.searcher.process()
     this.highlighter.process()
 
     this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.resetHighlight())
     this.utils.createSmartInputHandler(this.entities.input, () => this._updateExplain(true))
 
-    this.entities.files.addEventListener("click", ev => {
-      const path = ev.target.closest(".plugin-search-item")?.dataset.path
-      if (path) this.utils.openFile(path)
-    })
-    this.entities.btn.addEventListener("click", () => {
-      this.entities.btn.classList.toggle("select")
-      this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
+    this.entities.files.addEventListener("click", ev => this.utils.openFile(ev.target.closest(".plugin-search-item")?.dataset.path))
+    this.entities.submitBtn.addEventListener("click", () => this.search())
+    this.entities.caseBtn.addEventListener("click", () => {
+      this.entities.caseBtn.classList.toggle("select")
+      const sensitive = this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
+      this.searcher.options.caseSensitive = sensitive
+      this.highlighter.options.caseSensitive = sensitive
       this._updateExplain(true)
     })
     this.entities.panel.addEventListener("btn-click", ev => {
@@ -207,7 +213,7 @@ class SearchMultiPlugin extends BasePlugin {
   search = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
     if (this.fsm.isSearching()) this.fsm.cancel()
 
-    const ast = this.getAST(input)
+    const ast = this._getAST(input)
     this._updateExplain(!ast)
 
     await this.executor.execute(ast, rootPath, {
@@ -224,23 +230,12 @@ class SearchMultiPlugin extends BasePlugin {
     })
   }
 
-  getAST = (input = this.entities.input.value, optimize = this.config.OPTIMIZE_SEARCH) => {
-    input = input.trim()
-    if (!input) return
-    try {
-      return this.searcher.parse(input, optimize)
-    } catch (e) {
-      this.utils.notification.show(e.message || e.toString(), "error", 5000)
-      console.error(e)
-    }
-  }
-
   getHighlightHits = (ast) => {
-    const tokens = this.searcher.getPositiveContentTokens(ast)
+    const tokens = this.searcher.extractContentMatchPatterns(ast)
     return tokens.length === 0 ? null : this.highlighter.doSearch(tokens)
   }
 
-  highlightByAST = (ast = this.getAST()) => {
+  highlightByAST = (ast = this._getAST()) => {
     this.entities.highlights.innerHTML = ""
     if (!ast) return
 
@@ -249,12 +244,12 @@ class SearchMultiPlugin extends BasePlugin {
       if (!hitGroups) return
 
       const hint = this.i18n.t("highlightHint")
-      const items = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
+      const items = Object.entries(hitGroups).map(([cls, group]) => {
         const item = document.createElement("div")
         item.className = `plugin-highlight-item ${cls}`
         item.dataset.pos = -1
-        item.textContent = `${name} (${hits.length})`
-        if (this.config.SHOW_HIGHLIGHT_HINT) item.setAttribute("ty-hint", hint)
+        item.textContent = `${group.name} (${group.hits.length})`
+        item.setAttribute("ty-hint", hint)
         return item
       })
       this.entities.highlights.append(...items)
@@ -265,6 +260,17 @@ class SearchMultiPlugin extends BasePlugin {
   }
 
   resetHighlight = () => !this.entities.panel.hidden && this.highlightByAST()
+
+  _getAST = (input = this.entities.input.value) => {
+    input = input.trim()
+    if (!input) return
+    try {
+      return this.searcher.parse(input)
+    } catch (e) {
+      this.utils.notification.show(e.message || e.toString(), "error", 5000)
+      console.error(e)
+    }
+  }
 
   _updateExplain = (show = true) => {
     this.entities.header.classList.toggle("show-bubble", show)
@@ -278,7 +284,7 @@ class SearchMultiPlugin extends BasePlugin {
       return
     }
     try {
-      const ast = this.searcher.parse(val, false)
+      const ast = this.searcher.parse(val)
       this.explainPresenter.render(expl, ast)
       expl.classList.remove("is-error")
     } catch (e) {
@@ -300,28 +306,28 @@ class SearchMultiPlugin extends BasePlugin {
         item.setAttribute("ty-hint", stats.mtime.toLocaleString(undefined, { hour12: false }))
       }
 
-      const itemTitle = document.createElement("div")
-      itemTitle.className = "plugin-search-item-title"
-      itemTitle.textContent = this.config.SHOW_EXT ? base : name
+      const titleEl = document.createElement("div")
+      titleEl.className = "plugin-search-item-title"
+      titleEl.textContent = this.config.SHOW_EXT ? base : name
 
-      const itemPath = document.createElement("div")
-      itemPath.className = "plugin-search-item-path"
-      itemPath.textContent = dirPath + this.utils.separator
+      const pathEl = document.createElement("div")
+      pathEl.className = "plugin-search-item-path"
+      pathEl.textContent = dirPath + this.utils.separator
 
-      item.append(itemTitle, itemPath)
+      item.append(titleEl, pathEl)
       return item
     }
 
-    let index = 0
+    let count = 0
     const rafManager = this.utils.getRafManager()
     const fragment = document.createDocumentFragment()
-    return (source, signal) => {
-      index++
-      fragment.appendChild(newItem(rootPath, source.path, source.stats))
+    return (fileCtx, signal) => {
+      count++
+      fragment.appendChild(newItem(rootPath, fileCtx.path, fileCtx.stats))
       rafManager.schedule(() => {
         if (signal?.aborted) return
         this.entities.files.appendChild(fragment)
-        this.entities.counter.textContent = index
+        this.entities.counter.textContent = count
       })
     }
   }

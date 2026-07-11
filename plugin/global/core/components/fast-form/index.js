@@ -4304,8 +4304,8 @@ const Control_Table = {
     }))
   },
   _createTableRow: (thMap, item) => {
-    const header = utils.pick(item, [...Object.keys(thMap)])
-    const headerValues = [...Object.values(header)].map(headerValue => typeof headerValue === "string" ? utils.escape(headerValue) : headerValue)
+    const header = utils.pick(item, Object.keys(thMap))
+    const headerValues = Object.values(header).map(headerValue => typeof headerValue === "string" ? utils.escape(headerValue) : headerValue)
     const editButtons = `<div class="table-edit fa fa-pencil"></div><div class="table-del fa fa-trash-o"></div>`
     return [...headerValues, editButtons]
   },
