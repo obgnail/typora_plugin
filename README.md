@@ -26,6 +26,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [preferences](#preferences)                 | Preferences                |         |
 | [updater](#updater)                         | One-click plugin update    |         |
 | [asset_root_redirect](#asset_root_redirect) | Resource Redirection       | ×       |
+| [repository](#repository)                   | Manage opened folders      | ×       |
 
 | Plugin：Enhance Editing                     | Feature                                     | Default |
 | :------------------------------------------ | :------------------------------------------ | :------ |
@@ -52,6 +53,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [resource_manager](#resource_manager)       | Resource Management                         |         |
 | [markdownlint](#markdownlint)               | Markdownlint Check                          |         |
 | [export_enhance](#export_enhance)           | Avoid image loss when exporting to HTML/PDF | ×       |
+| [html_editor](#html_editor)                 | Preview and edit HTML in the main editor    | ×       |
 
 | Plugin：View & Theme                | Feature                                                      | Default |
 | :---------------------------------- | :----------------------------------------------------------- | :------ |
@@ -62,6 +64,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [read_only](#read_only)             | Read-only mode                                               |         |
 | [truncate_text](#truncate_text)     | Hide content to improve performance for large files          | ×       |
 | [image_viewer](#image_viewer)       | Image viewer                                                 |         |
+| [diagram_enhance](#diagram_enhance) | Diagram zoom, pan, fullscreen, and resize                    | ×       |
 | [static_markers](#static_markers)   | Static Markers                                               | ×       |
 | [sidebar_enhance](#sidebar_enhance) | Drag & drop to rearrange、Display non-Markdown files、Keep Fold State |         |
 
@@ -200,6 +203,12 @@ If you mainly use Obsidian or Joplin to manage files and occasionally use Typora
 
 > This plugin is disabled by default and needs to be manually enabled.
 
+### repository
+
+Records folders explicitly opened by Typora and provides a manager for searching, sorting, assigning aliases, opening, or removing records. Removing a record never deletes the real folder. Data is stored in `plugin/global/user_space/repository.json`.
+
+> This plugin is disabled by default. Configure a hotkey in Preferences or invoke `repository.call` through `action_buttons`.
+
 ## Enhance Editing
 
 ### collapse_paragraph
@@ -324,6 +333,14 @@ Check whether the current file complies with the markdown best practices.
 
 When exporting HTML/PDF, convert images to base64 to avoid image loss.
 
+### html_editor
+
+Opens `.html` and `.htm` files in Typora's main editor with source, preview, and split views, live preview, element inspection, related-document navigation, and save conflict checks.
+
+Preview scripts and network resources are disabled by default. Enable `PREVIEW_ALLOW_SCRIPTS` or `PREVIEW_ALLOW_NETWORK` only for trusted files.
+
+> This plugin is disabled by default and needs to be manually enabled.
+
 ## View & Theme
 
 ### dark
@@ -359,6 +376,12 @@ The rendering performance of large files in Typora is very poor. Use this plugin
 One-stop image viewing, and provides simple image editing.
 
 ![image_viewer](./assets/image_viewer.png)
+
+### diagram_enhance
+
+Adds cursor-centered zoom, drag panning, touch gestures, original-DOM fullscreen viewing, and eight-direction container resizing to Typora diagrams. The context-menu action resets the current diagram's zoom and position.
+
+> This plugin is disabled by default and needs to be manually enabled.
 
 ### static_markers
 

@@ -2210,6 +2210,7 @@ LIST = [
   "no_image",
   "myopic_defocus",
   "editor_width_slider",
+  "diagram_enhance",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__EDITING_PLUGINS__"
@@ -2219,6 +2220,7 @@ LIST = [
   "md_padding",
   "text_stylize",
   "markdownlint",
+  "html_editor",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__COMPONENT_PLUGINS__"
@@ -2254,6 +2256,7 @@ LIST = [
   "command_palette",
   "ripgrep",
   "resource_manager",
+  "repository",
   "right_outline",
   "pie_menu",
   "bookmark",
@@ -3379,6 +3382,55 @@ DEFAULT_ICON = "\\f075"
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting
 TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
+
+
+[diagram_enhance]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+
+# =========== [ Zoom ] ===========
+ZOOM_STEP = 0.1
+MIN_SCALE = 0.1
+MAX_SCALE = 5.0
+WHEEL_ZOOM_DEFAULT = true
+DOUBLE_CLICK_TO_EDIT = true
+
+# =========== [ Interaction ] ===========
+SHOW_FULLSCREEN = true
+ENABLE_PAN = true
+ENABLE_TOUCH = true
+RESIZABLE = true
+
+# =========== [ Container ] ===========
+MIN_CONTAINER_WIDTH = 180
+MIN_CONTAINER_HEIGHT = 120
+
+
+[html_editor]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+HOTKEY = ""
+
+# =========== [ Editor ] ===========
+SHOW_IN_FILE_TREE = true
+DEFAULT_VIEW = "preview"
+AUTO_PREVIEW = true
+PREVIEW_DELAY = 300
+EDITOR_FONT_SIZE = 14
+SPLIT_SYNC = true
+
+# =========== [ Preview Security ] ===========
+PREVIEW_ALLOW_SCRIPTS = false
+PREVIEW_ALLOW_NETWORK = false
+
+
+[repository]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+HOTKEY = ""
 
 
 [test]
