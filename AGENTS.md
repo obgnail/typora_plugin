@@ -10,8 +10,32 @@ Typora Plugin is an extensible plugin system for the Typora Markdown editor. It 
 
 Because this project must support Typora 0.9.98, any code injected into the Typora runtime must be compatible with its underlying legacy Electron version. The minimum supported environment limits are:
 
-- **Chrome**: 83.0.4103.122
+- **Chrome**: 84 (do not rely on features introduced after Chrome 84)
 - **Node.js**: 12.14.1
+
+## Project Constraints
+
+### Storage and Concurrency
+
+- For small amounts of plugin data, use `utils.getStorage` instead of writing files under `user_space`. The latter is prone to permission errors.
+- Keep this storage flow simple: do not add file locking when using `utils.getStorage` for these small data sets.
+
+### Legacy Runtime Compatibility
+
+- Code running inside Typora must remain compatible with Typora 0.9.98 and Chrome 84. Avoid JavaScript, DOM, and CSS features introduced after that browser version.
+- In particular, do not use `Element.replaceChildren` or Flexbox `gap`. Use compatible DOM operations and spacing techniques instead.
+- If a newer JavaScript or DOM API is truly needed, add an appropriate compatibility implementation to `plugin/global/core/polyfill.js`. CSS features still require a compatible CSS fallback.
+
+### Theme-safe Plugin UI
+
+- Typora Plugin is not an official Typora project, so user themes may contain broad selectors that affect plugin UI. For plugin-owned UI markup, prefer `div` elements and avoid other HTML tags whenever practical.
+- Do not introduce native `select`, `option`, or `button` elements in plugin UI. Use the existing `fast-dropdown` component instead of `select`/`option`, and use a regular `div` for button-like controls.
+- Refer to the `commander` plugin for established `fast-dropdown` usage. The shared `fast-dropdown` component may be adjusted when the required behavior cannot be expressed by its current API.
+- Plugin dialogs should first consider reusing the shared `fast-window` component, following examples such as `search_multi` and `commander`. Reuse is preferred for dialogs such as `.repository-dialog`, but is not mandatory when the component is unsuitable.
+
+### Text Input Handling
+
+- For search and similar live text inputs, use `utils.createSmartInputHandler` so IME composition (including Chinese input) is handled correctly. Do not implement these handlers as `addEventListener("input", utils.debounce(...))`.
 
 ## Commands
 

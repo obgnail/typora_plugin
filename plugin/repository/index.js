@@ -3,7 +3,7 @@ const { RepositoryStore, UnsupportedRepositoryVersionError } = require("./store"
 class RepositoryPlugin extends BasePlugin {
   prepare = async () => {
     this.store = new RepositoryStore({
-      filePath: this.utils.getUserSpaceFile("repository.json"),
+      storage: this.utils.getStorage(`${this.fixedName}.data`),
     })
     this.data = this._emptyData()
     this.pendingWarnings = []
@@ -33,7 +33,10 @@ class RepositoryPlugin extends BasePlugin {
       --repository-primary: #4285f4;
       --repository-focus: rgba(66, 133, 244, .15);
       position: fixed;
-      inset: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
       z-index: 10000;
       display: flex;
       align-items: center;
@@ -101,7 +104,9 @@ class RepositoryPlugin extends BasePlugin {
       flex-direction: column;
       height: 100%;
       padding: 24px 32px;
-      gap: 12px;
+    }
+    #plugin-repository .repository-layout > * + * {
+      margin-top: 12px;
     }
     #plugin-repository .repository-toolbar {
       display: grid;
@@ -109,8 +114,8 @@ class RepositoryPlugin extends BasePlugin {
       gap: 8px;
     }
     #plugin-repository input,
-    #plugin-repository select,
-    #plugin-repository button {
+    #plugin-repository fast-dropdown,
+    #plugin-repository .repository-button {
       box-sizing: border-box;
       min-height: 36px;
       color: inherit;
@@ -120,26 +125,47 @@ class RepositoryPlugin extends BasePlugin {
       outline: none;
       transition: background .2s, border-color .2s, box-shadow .2s;
     }
-    #plugin-repository input,
-    #plugin-repository select {
+    #plugin-repository input {
       padding: 5px 8px;
     }
     #plugin-repository input:focus,
-    #plugin-repository select:focus {
+    #plugin-repository fast-dropdown[open] {
       border-color: var(--repository-primary);
       box-shadow: 0 0 0 3px var(--repository-focus);
     }
     #plugin-repository input::placeholder {
       color: var(--repository-text-placeholder);
     }
-    #plugin-repository button {
+    #plugin-repository fast-dropdown {
+      --fd-bg: var(--repository-bg-dialog);
+      --fd-hover-bg: var(--repository-bg-hover);
+      --fd-menu-bg: var(--repository-bg-dialog);
+      --fd-text: var(--repository-text-main);
+      --fd-item-text: var(--repository-text-main);
+      --fd-item-hover-bg: var(--repository-bg-hover);
+      --fd-height: 34px;
+      --fd-font-weight: 400;
+      --fd-padding: 5px 8px;
+      --fd-menu-left: 0;
+      --fd-menu-right: 0;
+    }
+    #plugin-repository fast-dropdown.is-disabled {
+      pointer-events: none;
+      cursor: not-allowed;
+      opacity: .5;
+    }
+    #plugin-repository .repository-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       padding: 5px 10px;
       cursor: pointer;
+      user-select: none;
     }
-    #plugin-repository button:hover {
+    #plugin-repository .repository-button:hover:not(.is-disabled) {
       background: var(--repository-bg-hover);
     }
-    #plugin-repository button:disabled {
+    #plugin-repository .repository-button.is-disabled {
       cursor: not-allowed;
       opacity: .5;
     }
@@ -194,9 +220,11 @@ class RepositoryPlugin extends BasePlugin {
     }
     #plugin-repository .repository-actions {
       display: flex;
-      gap: 5px;
     }
-    #plugin-repository .repository-actions button {
+    #plugin-repository .repository-actions > * + * {
+      margin-left: 5px;
+    }
+    #plugin-repository .repository-actions .repository-button {
       width: 32px;
       padding: 0;
     }
@@ -252,27 +280,23 @@ class RepositoryPlugin extends BasePlugin {
 
   html = () => `
     <div id="plugin-repository" class="repository-mask plugin-common-hidden">
-      <section class="repository-dialog" role="dialog" aria-modal="true" aria-labelledby="plugin-repository-title">
+      <div class="repository-dialog" role="dialog" aria-modal="true" aria-labelledby="plugin-repository-title">
         <div class="repository-header">
           <div id="plugin-repository-title" class="repository-title"></div>
-          <button class="repository-close ion-close-round" type="button" title="${this.i18n.t("action.close")}" aria-label="${this.i18n.t("action.close")}"></button>
+          <div class="repository-button repository-close ion-close-round" role="button" tabindex="0" title="${this.i18n.t("action.close")}" aria-label="${this.i18n.t("action.close")}"></div>
         </div>
         <div class="repository-main">
           <div class="repository-layout">
             <div class="repository-toolbar">
               <input class="repository-search" type="search" placeholder="${this.i18n.t("search.placeholder")}" aria-label="${this.i18n.t("search.label")}">
-              <select class="repository-sort" aria-label="${this.i18n.t("sort.label")}">
-                <option value="recent">${this.i18n.t("sort.recent")}</option>
-                <option value="name">${this.i18n.t("sort.name")}</option>
-                <option value="path">${this.i18n.t("sort.path")}</option>
-              </select>
-              <button class="repository-add" type="button"><span class="fa fa-folder-open-o"></span> ${this.i18n.t("action.add")}</button>
+              <fast-dropdown class="repository-sort" role="button" tabindex="0" aria-label="${this.i18n.t("sort.label")}"></fast-dropdown>
+              <div class="repository-button repository-add" role="button" tabindex="0"><div class="fa fa-folder-open-o" aria-hidden="true"></div>&nbsp;${this.i18n.t("action.add")}</div>
             </div>
             <div class="repository-status" aria-live="polite"></div>
             <div class="repository-list"></div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   `
 
@@ -289,17 +313,23 @@ class RepositoryPlugin extends BasePlugin {
       list: document.querySelector("#plugin-repository .repository-list"),
     }
     this.entities.title.textContent = this.pluginName
-    this.entities.sort.value = this.data.preferences.sortBy
-    this.entities.sort.disabled = Boolean(this.loadError)
-    this.entities.add.disabled = Boolean(this.loadError)
+    this.entities.sort
+      .setOptions([
+        { value: "recent", label: this.i18n.t("sort.recent") },
+        { value: "name", label: this.i18n.t("sort.name") },
+        { value: "path", label: this.i18n.t("sort.path") },
+      ])
+      .setValue(this.data.preferences.sortBy)
+    this._syncControlState()
   }
 
   process = () => {
     this.entities.close.addEventListener("click", () => this.utils.hide(this.entities.panel))
-    this.entities.search.addEventListener("input", this.utils.debounce(this.render, 100))
+    this.utils.createSmartInputHandler(this.entities.search, this.render, { debounceDelay: 100 })
     this.entities.sort.addEventListener("change", () => void this._changeSort())
     this.entities.add.addEventListener("click", () => void this._addFolder())
     this.entities.list.addEventListener("click", event => void this._handleListClick(event))
+    this.entities.panel.addEventListener("keydown", this._handleControlKeydown)
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && this.utils.isShown(this.entities.panel)) {
         this.utils.hide(this.entities.panel)
@@ -330,9 +360,10 @@ class RepositoryPlugin extends BasePlugin {
     if (!this.loadError) {
       try {
         this._acceptResult(await this.store.load())
-        this.entities.sort.value = this.data.preferences.sortBy
+        this.entities.sort.setValue(this.data.preferences.sortBy)
       } catch (error) {
         this.loadError = error
+        this._syncControlState()
         console.error("[repository] Failed to refresh repository data", error)
       }
     }
@@ -354,7 +385,7 @@ class RepositoryPlugin extends BasePlugin {
     const availability = await Promise.all(items.map(item => this._isDirectory(item.path)))
     if (token !== this.renderToken) return
 
-    this.entities.list.replaceChildren()
+    this.entities.list.textContent = ""
     this.entities.status.textContent = this.loadError
       ? this.i18n.t("status.loadError")
       : this.i18n.t("status.count", { total: this.data.repositories.length, visible: items.length })
@@ -410,13 +441,13 @@ class RepositoryPlugin extends BasePlugin {
   }
 
   _actionButton = (action, icon, title, disabled = false) => {
-    const button = document.createElement("button")
-    button.type = "button"
+    const button = document.createElement("div")
     button.dataset.action = action
-    button.className = `fa ${icon}`
+    button.className = `repository-button fa ${icon}`
     button.title = title
+    button.setAttribute("role", "button")
     button.setAttribute("aria-label", title)
-    button.disabled = Boolean(disabled)
+    this._setButtonDisabled(button, disabled)
     return button
   }
 
@@ -426,7 +457,9 @@ class RepositoryPlugin extends BasePlugin {
     const item = this._findItem(row.dataset.path)
     if (!item) return
 
-    const action = event.target.closest("[data-action]")?.dataset.action
+    const actionElement = event.target.closest("[data-action]")
+    if (actionElement?.getAttribute("aria-disabled") === "true") return
+    const action = actionElement?.dataset.action
     if (action === "rename") {
       this._beginRename(row, item)
     } else if (action === "delete") {
@@ -446,7 +479,8 @@ class RepositoryPlugin extends BasePlugin {
     input.value = item.alias
     input.placeholder = this.utils.Package.Path.basename(item.path)
     input.setAttribute("aria-label", this.i18n.t("alias.label"))
-    name.replaceChildren(input)
+    name.textContent = ""
+    name.appendChild(input)
     input.focus()
     input.select()
 
@@ -512,7 +546,7 @@ class RepositoryPlugin extends BasePlugin {
 
   _changeSort = async () => {
     if (this.loadError) return this._showLoadError()
-    await this._runMutation(() => this.store.setSortBy(this.entities.sort.value))
+    await this._runMutation(() => this.store.setSortBy(this.entities.sort.getValue()))
   }
 
   _captureCurrentMount = async () => {
@@ -588,6 +622,44 @@ class RepositoryPlugin extends BasePlugin {
   _findItem = folderPath => {
     const key = this.store.canonicalKey(folderPath)
     return this.data.repositories.find(item => this.store.canonicalKey(item.path) === key)
+  }
+
+  _handleControlKeydown = event => {
+    if (event.target === this.entities.sort) {
+      if (event.target.getAttribute("aria-disabled") === "true") return
+      if (event.key === "Escape") {
+        event.target.close()
+      } else if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault()
+        event.stopPropagation()
+        event.target.state.isOpen ? event.target.close() : event.target.open()
+      }
+      return
+    }
+    const control = event.target.closest?.('.repository-button[role="button"]')
+    if (!control || control.getAttribute("aria-disabled") === "true") return
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      event.stopPropagation()
+      control.click()
+    }
+  }
+
+  _setButtonDisabled = (button, disabled) => {
+    const isDisabled = Boolean(disabled)
+    button.classList.toggle("is-disabled", isDisabled)
+    button.setAttribute("aria-disabled", String(isDisabled))
+    button.tabIndex = isDisabled ? -1 : 0
+  }
+
+  _syncControlState = () => {
+    if (!this.entities) return
+    const disabled = Boolean(this.loadError)
+    this.entities.sort.classList.toggle("is-disabled", disabled)
+    this.entities.sort.setAttribute("aria-disabled", String(disabled))
+    this.entities.sort.tabIndex = disabled ? -1 : 0
+    if (disabled) this.entities.sort.close()
+    this._setButtonDisabled(this.entities.add, disabled)
   }
 
   _emptyData = () => ({

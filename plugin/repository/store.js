@@ -1,16 +1,7 @@
-const fs = require("fs")
 const path = require("path")
 
 const DATA_VERSION = 1
 const SORT_MODES = new Set(["recent", "name", "path"])
-
-const removeFile = async filePath => {
-  try {
-    await fs.promises.unlink(filePath)
-  } catch (error) {
-    if (error.code !== "ENOENT") throw error
-  }
-}
 
 class UnsupportedRepositoryVersionError extends Error {
   constructor(version) {
@@ -22,29 +13,24 @@ class UnsupportedRepositoryVersionError extends Error {
 
 class RepositoryStore {
   constructor({
-    filePath,
+    storage,
     platform = process.platform,
     now = () => new Date(),
-    lockTimeoutMs = 3000,
-    staleLockMs = 10000,
-    retryDelayMs = 30,
   } = {}) {
-    if (!filePath) throw new Error("RepositoryStore requires filePath")
+    if (!storage || typeof storage.get !== "function" || typeof storage.set !== "function") {
+      throw new Error("RepositoryStore requires a storage adapter")
+    }
 
-    this.filePath = path.resolve(filePath)
-    this.lockPath = `${this.filePath}.lock`
+    this.storage = storage
     this.platform = platform
     this.now = now
-    this.lockTimeoutMs = lockTimeoutMs
-    this.staleLockMs = staleLockMs
-    this.retryDelayMs = retryDelayMs
   }
 
-  load = () => this._withLock(async () => {
-    const result = await this._readUnlocked()
-    if (result.needsWrite) await this._writeUnlocked(result.data)
+  load = async () => {
+    const result = this._read()
+    if (result.needsWrite) this._write(result.data)
     return result
-  })
+  }
 
   upsert = folderPath => this._mutate(data => {
     const normalizedPath = this.normalizePath(folderPath)
@@ -106,36 +92,37 @@ class RepositoryStore {
     return data.repositories.find(item => this.canonicalKey(item.path) === key)
   }
 
-  _mutate = mutator => this._withLock(async () => {
-    const result = await this._readUnlocked()
-    const changed = await mutator(result.data)
-    if (changed || result.needsWrite) await this._writeUnlocked(result.data)
+  _mutate = async mutator => {
+    const result = this._read()
+    const changed = mutator(result.data)
+    if (changed || result.needsWrite) this._write(result.data)
     return { ...result, changed: Boolean(changed) }
-  })
+  }
 
-  _readUnlocked = async () => {
-    let content
+  _read = () => {
+    let raw
     try {
-      content = await fs.promises.readFile(this.filePath, "utf8")
+      raw = this.storage.get()
     } catch (error) {
-      if (error.code === "ENOENT") {
-        return { data: this._defaultData(), warnings: [], needsWrite: true }
-      }
-      throw error
+      return this._recoverCorruptData(error)
     }
+    if (raw == null) return { data: this._defaultData(), warnings: [], needsWrite: true }
 
     try {
-      const data = this._validateData(JSON.parse(content))
+      const data = this._validateData(raw)
       return { data, warnings: [], needsWrite: false }
     } catch (error) {
       if (error instanceof UnsupportedRepositoryVersionError) throw error
+      return this._recoverCorruptData(error)
+    }
+  }
 
-      const backupPath = await this._backupCorruptFile()
-      return {
-        data: this._defaultData(),
-        warnings: [{ code: "CORRUPT_DATA_RECOVERED", backupPath, error: error.message }],
-        needsWrite: true,
-      }
+  _recoverCorruptData = error => {
+    this.storage.remove?.()
+    return {
+      data: this._defaultData(),
+      warnings: [{ code: "CORRUPT_DATA_RECOVERED", error: error.message }],
+      needsWrite: true,
     }
   }
 
@@ -194,69 +181,7 @@ class RepositoryStore {
     return date.toISOString()
   }
 
-  _backupCorruptFile = async () => {
-    const suffix = this._nowISOString().replace(/[:.]/g, "-")
-    const backupPath = `${this.filePath}.corrupt-${suffix}.json`
-    await fs.promises.copyFile(this.filePath, backupPath)
-    return backupPath
-  }
-
-  _writeUnlocked = async data => {
-    await fs.promises.mkdir(path.dirname(this.filePath), { recursive: true })
-    const tempPath = `${this.filePath}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`
-    const content = `${JSON.stringify(data, null, 2)}\n`
-    try {
-      await fs.promises.writeFile(tempPath, content, "utf8")
-      await fs.promises.rename(tempPath, this.filePath)
-    } finally {
-      await removeFile(tempPath).catch(() => undefined)
-    }
-  }
-
-  _withLock = async action => {
-    await fs.promises.mkdir(path.dirname(this.filePath), { recursive: true })
-    const startedAt = Date.now()
-    let handle
-
-    while (!handle) {
-      try {
-        handle = await fs.promises.open(this.lockPath, "wx")
-        try {
-          await handle.writeFile(JSON.stringify({ pid: process.pid, createdAt: new Date().toISOString() }))
-        } catch (error) {
-          await handle.close().catch(() => undefined)
-          handle = null
-          await removeFile(this.lockPath).catch(() => undefined)
-          throw error
-        }
-      } catch (error) {
-        if (error.code !== "EEXIST") throw error
-        await this._removeStaleLock()
-        if (Date.now() - startedAt >= this.lockTimeoutMs) {
-          throw new Error(`Timed out waiting for repository lock: ${this.lockPath}`)
-        }
-        await new Promise(resolve => setTimeout(resolve, this.retryDelayMs))
-      }
-    }
-
-    try {
-      return await action()
-    } finally {
-      await handle.close().catch(() => undefined)
-      await removeFile(this.lockPath).catch(() => undefined)
-    }
-  }
-
-  _removeStaleLock = async () => {
-    try {
-      const stat = await fs.promises.stat(this.lockPath)
-      if (Date.now() - stat.mtimeMs > this.staleLockMs) {
-        await removeFile(this.lockPath)
-      }
-    } catch (error) {
-      if (error.code !== "ENOENT") throw error
-    }
-  }
+  _write = data => this.storage.set(data)
 }
 
 module.exports = {

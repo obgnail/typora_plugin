@@ -1,6 +1,4 @@
 const assert = require("node:assert/strict")
-const fs = require("node:fs")
-const os = require("node:os")
 const path = require("node:path")
 const test = require("node:test")
 
@@ -9,20 +7,23 @@ const {
   UnsupportedRepositoryVersionError,
 } = require("../../plugin/repository/store")
 
-const makeFixture = async () => {
-  const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "typora-repository-"))
-  const filePath = path.join(dir, "repository.json")
+const createStorage = initialValue => {
+  let raw = initialValue === undefined ? null : JSON.stringify(initialValue)
   return {
-    dir,
-    filePath,
-    cleanup: () => fs.promises.rm(dir, { recursive: true, force: true }),
+    set: value => raw = JSON.stringify(value),
+    get: () => raw == null ? null : JSON.parse(raw),
+    exist: () => raw != null,
+    remove: () => raw = null,
+    getRaw: () => raw,
+    setRaw: value => raw = value,
   }
 }
 
-test("initializes an empty versioned data file and reloads it", async t => {
-  const fixture = await makeFixture()
-  t.after(fixture.cleanup)
-  const store = new RepositoryStore({ filePath: fixture.filePath })
+const fixturePath = name => path.join(process.cwd(), "repository-fixtures", name)
+
+test("initializes empty versioned data in the storage adapter and reloads it", async () => {
+  const storage = createStorage()
+  const store = new RepositoryStore({ storage })
 
   const first = await store.load()
   const second = await store.load()
@@ -33,18 +34,16 @@ test("initializes an empty versioned data file and reloads it", async t => {
     repositories: [],
   })
   assert.deepEqual(second.data, first.data)
-  assert.equal(await fs.promises.readFile(fixture.filePath, "utf8").then(Boolean), true)
+  assert.equal(storage.exist(), true)
 })
 
-test("normalizes and deduplicates paths while refreshing lastOpenedAt", async t => {
-  const fixture = await makeFixture()
-  t.after(fixture.cleanup)
+test("normalizes and deduplicates paths while refreshing lastOpenedAt", async () => {
   const timestamps = [
     new Date("2026-01-01T00:00:00.000Z"),
     new Date("2026-01-02T00:00:00.000Z"),
   ]
-  const store = new RepositoryStore({ filePath: fixture.filePath, now: () => timestamps.shift() })
-  const folder = path.join(fixture.dir, "notes")
+  const store = new RepositoryStore({ storage: createStorage(), now: () => timestamps.shift() })
+  const folder = fixturePath("notes")
 
   await store.upsert(path.join(folder, "."))
   const result = await store.upsert(folder)
@@ -55,11 +54,9 @@ test("normalizes and deduplicates paths while refreshing lastOpenedAt", async t 
   assert.equal(result.data.repositories[0].lastOpenedAt, "2026-01-02T00:00:00.000Z")
 })
 
-test("persists aliases, alias resets, removals, and sort preference", async t => {
-  const fixture = await makeFixture()
-  t.after(fixture.cleanup)
-  const store = new RepositoryStore({ filePath: fixture.filePath })
-  const folder = path.join(fixture.dir, "notes")
+test("persists aliases, alias resets, removals, and sort preference", async () => {
+  const store = new RepositoryStore({ storage: createStorage() })
+  const folder = fixturePath("notes")
 
   await store.upsert(folder)
   await store.rename(folder, "  工作笔记  ")
@@ -77,12 +74,9 @@ test("persists aliases, alias resets, removals, and sort preference", async t =>
   assert.equal(result.data.repositories.length, 0)
 })
 
-test("deduplicates Windows paths without regard to case", async t => {
-  if (process.platform !== "win32") return t.skip("Windows-specific path semantics")
-  const fixture = await makeFixture()
-  t.after(fixture.cleanup)
-  const store = new RepositoryStore({ filePath: fixture.filePath, platform: "win32" })
-  const folder = path.join(fixture.dir, "Notes")
+test("deduplicates Windows paths without regard to case", async () => {
+  const store = new RepositoryStore({ storage: createStorage(), platform: "win32" })
+  const folder = fixturePath("Notes")
 
   await store.upsert(folder)
   const result = await store.upsert(folder.toUpperCase())
@@ -91,40 +85,34 @@ test("deduplicates Windows paths without regard to case", async t => {
   assert.equal(result.data.repositories[0].path, path.resolve(folder))
 })
 
-test("backs up corrupt JSON and recovers with empty data", async t => {
-  const fixture = await makeFixture()
-  t.after(fixture.cleanup)
-  await fs.promises.writeFile(fixture.filePath, "{broken", "utf8")
-  const store = new RepositoryStore({
-    filePath: fixture.filePath,
-    now: () => new Date("2026-01-03T04:05:06.000Z"),
-  })
+test("removes corrupt storage data and recovers with empty data", async () => {
+  const storage = createStorage()
+  storage.setRaw("{broken")
+  const store = new RepositoryStore({ storage })
 
   const result = await store.load()
 
   assert.equal(result.warnings[0].code, "CORRUPT_DATA_RECOVERED")
   assert.equal(result.data.repositories.length, 0)
-  assert.equal(await fs.promises.readFile(result.warnings[0].backupPath, "utf8"), "{broken")
+  assert.deepEqual(storage.get(), result.data)
 })
 
-test("rejects unknown versions without overwriting the source file", async t => {
-  const fixture = await makeFixture()
-  t.after(fixture.cleanup)
-  const original = JSON.stringify({ version: 99, repositories: [] })
-  await fs.promises.writeFile(fixture.filePath, original, "utf8")
-  const store = new RepositoryStore({ filePath: fixture.filePath })
+test("rejects unknown versions without overwriting stored data", async () => {
+  const original = { version: 99, repositories: [] }
+  const storage = createStorage(original)
+  const raw = storage.getRaw()
+  const store = new RepositoryStore({ storage })
 
   await assert.rejects(store.load(), UnsupportedRepositoryVersionError)
-  assert.equal(await fs.promises.readFile(fixture.filePath, "utf8"), original)
+  assert.equal(storage.getRaw(), raw)
 })
 
-test("serializes concurrent mutations from separate store instances", async t => {
-  const fixture = await makeFixture()
-  t.after(fixture.cleanup)
-  const first = new RepositoryStore({ filePath: fixture.filePath })
-  const second = new RepositoryStore({ filePath: fixture.filePath })
-  const folderA = path.join(fixture.dir, "a")
-  const folderB = path.join(fixture.dir, "b")
+test("applies concurrent mutations without a file lock", async () => {
+  const storage = createStorage()
+  const first = new RepositoryStore({ storage })
+  const second = new RepositoryStore({ storage })
+  const folderA = fixturePath("a")
+  const folderB = fixturePath("b")
 
   await Promise.all([first.upsert(folderA), second.upsert(folderB)])
   const result = await first.load()

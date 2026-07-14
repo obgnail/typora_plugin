@@ -131,11 +131,13 @@ class HtmlEditorPlugin extends BasePlugin {
       display: flex;
       flex: 0 0 52px;
       align-items: center;
-      gap: 12px;
       min-width: 0;
       padding: 0 16px;
       background: var(--html-editor-toolbar-bg);
       border-bottom: 1px solid var(--html-editor-border);
+    }
+    #plugin-html-file-view .html-editor-header > * + * {
+      margin-left: 12px;
     }
     #plugin-html-file-view .html-editor-heading {
       min-width: 0;
@@ -156,7 +158,10 @@ class HtmlEditorPlugin extends BasePlugin {
       color: var(--html-editor-subtext);
       font-size: 10px;
     }
-    #plugin-html-file-view button {
+    #plugin-html-file-view .html-editor-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       box-sizing: border-box;
       min-height: 30px;
       padding: 4px 9px;
@@ -165,12 +170,13 @@ class HtmlEditorPlugin extends BasePlugin {
       border: 1px solid var(--html-editor-border);
       border-radius: 6px;
       cursor: pointer;
+      user-select: none;
       transition: background .15s, border-color .15s, color .15s;
     }
-    #plugin-html-file-view button:hover:not(:disabled) {
+    #plugin-html-file-view .html-editor-button:hover:not(.is-disabled) {
       background: var(--html-editor-hover);
     }
-    #plugin-html-file-view button:disabled {
+    #plugin-html-file-view .html-editor-button.is-disabled {
       cursor: not-allowed;
       opacity: .45;
     }
@@ -181,16 +187,16 @@ class HtmlEditorPlugin extends BasePlugin {
       background: var(--html-editor-hover);
       border-radius: 8px;
     }
-    #plugin-html-file-view .html-editor-view-group button {
+    #plugin-html-file-view .html-editor-view-group .html-editor-button {
       border-color: transparent;
       background: transparent;
     }
-    #plugin-html-file-view .html-editor-view-group button[aria-pressed="true"] {
+    #plugin-html-file-view .html-editor-view-group .html-editor-button[aria-pressed="true"] {
       color: var(--html-editor-primary);
       background: var(--html-editor-active);
       border-color: rgba(66, 133, 244, .22);
     }
-    #plugin-html-file-view > .html-editor-header > button[aria-pressed="true"] {
+    #plugin-html-file-view > .html-editor-header > .html-editor-button[aria-pressed="true"] {
       color: var(--html-editor-primary);
       background: var(--html-editor-active);
       border-color: rgba(66, 133, 244, .22);
@@ -283,7 +289,7 @@ class HtmlEditorPlugin extends BasePlugin {
       background: var(--html-editor-toolbar-bg);
       border-bottom: 1px solid var(--html-editor-border);
     }
-    #plugin-html-file-view .html-editor-inspector-header button {
+    #plugin-html-file-view .html-editor-inspector-header .html-editor-button {
       min-width: 28px;
       min-height: 26px;
       padding: 2px 7px;
@@ -291,6 +297,10 @@ class HtmlEditorPlugin extends BasePlugin {
     #plugin-html-file-view .html-editor-inspector-body {
       padding: 10px;
       font-size: 12px;
+    }
+    #plugin-html-file-view .html-editor-inspector-title,
+    #plugin-html-file-view .html-editor-inspector-tag {
+      font-weight: 600;
     }
     #plugin-html-file-view .html-editor-inspector-selector {
       display: block;
@@ -323,13 +333,15 @@ class HtmlEditorPlugin extends BasePlugin {
       flex: 0 0 30px;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
       min-width: 0;
       padding: 0 12px;
       color: var(--html-editor-subtext);
       background: var(--html-editor-toolbar-bg);
       border-top: 1px solid var(--html-editor-border);
       font-size: 10px;
+    }
+    #plugin-html-file-view .html-editor-security {
+      margin-left: 12px;
     }
     #plugin-html-file-view .html-editor-status,
     #plugin-html-file-view .html-editor-security {
@@ -379,21 +391,21 @@ class HtmlEditorPlugin extends BasePlugin {
   `
 
   html = () => `
-    <section id="plugin-html-file-view" class="html-file-view plugin-common-hidden is-${this.options.defaultView}" aria-label="${this.i18n.t("aria.fileView")}">
+    <div id="plugin-html-file-view" class="html-file-view plugin-common-hidden is-${this.options.defaultView}" aria-label="${this.i18n.t("aria.fileView")}">
       <div class="html-editor-header">
         <div class="html-editor-heading">
           <div class="html-editor-title">HTML</div>
           <div class="html-editor-path"></div>
         </div>
-        <button type="button" data-action="open" title="${this.i18n.t("action.openTitle")}"><span class="fa fa-folder-open-o"></span> ${this.i18n.t("action.open")}</button>
-        <button type="button" data-action="save" title="${this.i18n.t("action.saveTitle")}" disabled><span class="fa fa-save"></span> ${this.i18n.t("action.save")}</button>
-        <button type="button" data-action="reload" title="${this.i18n.t("action.reloadTitle")}"><span class="fa fa-refresh"></span></button>
-        <button type="button" data-action="external" title="${this.i18n.t("action.externalTitle")}"><span class="fa fa-external-link"></span></button>
-        <button type="button" data-action="inspect" aria-pressed="false" title="${this.i18n.t("action.inspectTitle")}"><span class="fa fa-crosshairs"></span> ${this.i18n.t("action.inspect")}</button>
+        <div class="html-editor-button" role="button" tabindex="0" data-action="open" title="${this.i18n.t("action.openTitle")}"><div class="fa fa-folder-open-o" aria-hidden="true"></div>&nbsp;${this.i18n.t("action.open")}</div>
+        <div class="html-editor-button is-disabled" role="button" tabindex="-1" aria-disabled="true" data-action="save" title="${this.i18n.t("action.saveTitle")}"><div class="fa fa-save" aria-hidden="true"></div>&nbsp;${this.i18n.t("action.save")}</div>
+        <div class="html-editor-button" role="button" tabindex="0" data-action="reload" title="${this.i18n.t("action.reloadTitle")}"><div class="fa fa-refresh" aria-hidden="true"></div></div>
+        <div class="html-editor-button" role="button" tabindex="0" data-action="external" title="${this.i18n.t("action.externalTitle")}"><div class="fa fa-external-link" aria-hidden="true"></div></div>
+        <div class="html-editor-button" role="button" tabindex="0" data-action="inspect" aria-pressed="false" title="${this.i18n.t("action.inspectTitle")}"><div class="fa fa-crosshairs" aria-hidden="true"></div>&nbsp;${this.i18n.t("action.inspect")}</div>
         <div class="html-editor-view-group" aria-label="${this.i18n.t("aria.viewMode")}">
-          <button type="button" data-view="source" aria-pressed="false">${this.i18n.t("view.source")}</button>
-          <button type="button" data-view="preview" aria-pressed="true">${this.i18n.t("view.preview")}</button>
-          <button type="button" data-view="split" aria-pressed="false">${this.i18n.t("view.split")}</button>
+          <div class="html-editor-button" role="button" tabindex="0" data-view="source" aria-pressed="false">${this.i18n.t("view.source")}</div>
+          <div class="html-editor-button" role="button" tabindex="0" data-view="preview" aria-pressed="true">${this.i18n.t("view.preview")}</div>
+          <div class="html-editor-button" role="button" tabindex="0" data-view="split" aria-pressed="false">${this.i18n.t("view.split")}</div>
         </div>
       </div>
       <div class="html-editor-workspace">
@@ -402,26 +414,26 @@ class HtmlEditorPlugin extends BasePlugin {
         </div>
         <div class="html-editor-pane html-editor-preview-pane">
           <iframe class="html-editor-preview" title="${this.i18n.t("aria.preview")}" sandbox="" referrerpolicy="no-referrer"></iframe>
-          <aside class="html-editor-inspector plugin-common-hidden" aria-label="${this.i18n.t("aria.inspector")}">
+          <div class="html-editor-inspector plugin-common-hidden" aria-label="${this.i18n.t("aria.inspector")}">
             <div class="html-editor-inspector-header">
-              <strong>${this.i18n.t("inspector.title")}</strong>
-              <button type="button" data-action="close-inspector" title="${this.i18n.t("inspector.close")}">×</button>
+              <div class="html-editor-inspector-title">${this.i18n.t("inspector.title")}</div>
+              <div class="html-editor-button" role="button" tabindex="0" data-action="close-inspector" title="${this.i18n.t("inspector.close")}">×</div>
             </div>
             <div class="html-editor-inspector-body">
-              <strong class="html-editor-inspector-tag">${this.i18n.t("inspector.noSelection")}</strong>
-              <code class="html-editor-inspector-selector"></code>
+              <div class="html-editor-inspector-tag">${this.i18n.t("inspector.noSelection")}</div>
+              <div class="html-editor-inspector-selector"></div>
               <div class="html-editor-inspector-box"></div>
               <details open><summary>${this.i18n.t("inspector.attributes")}</summary><pre class="html-editor-inspector-attributes"></pre></details>
               <details><summary>${this.i18n.t("inspector.text")}</summary><pre class="html-editor-inspector-text"></pre></details>
             </div>
-          </aside>
+          </div>
         </div>
       </div>
       <div class="html-editor-footer">
         <div class="html-editor-status" aria-live="polite"></div>
         <div class="html-editor-security"></div>
       </div>
-    </section>
+    </div>
   `
 
   init = () => {
@@ -463,12 +475,15 @@ class HtmlEditorPlugin extends BasePlugin {
     this._installSaveRedirect()
 
     this.entities.open.addEventListener("click", () => void this._chooseFile())
-    this.entities.save.addEventListener("click", () => void this._save())
+    this.entities.save.addEventListener("click", () => {
+      if (this.entities.save.getAttribute("aria-disabled") !== "true") void this._save()
+    })
     this.entities.reload.addEventListener("click", () => void this._reload())
     this.entities.external.addEventListener("click", () => this.activeFile && this.utils.openPath(this.activeFile))
     this.entities.inspect.addEventListener("click", () => this._toggleInspector())
     this.entities.closeInspector.addEventListener("click", () => this._toggleInspector(false))
     this.entities.views.forEach(button => button.addEventListener("click", () => this._setViewMode(button.dataset.view)))
+    this.entities.root.addEventListener("keydown", this._handleControlKeydown)
     this.entities.source.addEventListener("input", this._handleSourceInput)
     this.entities.source.addEventListener("keydown", this._handleEditorKeydown)
     this.entities.source.addEventListener("scroll", this._handleSourceScroll, { passive: true })
@@ -688,6 +703,16 @@ class HtmlEditorPlugin extends BasePlugin {
     this.entities.source.value = `${value.slice(0, selectionStart)}  ${value.slice(selectionEnd)}`
     this.entities.source.selectionStart = this.entities.source.selectionEnd = selectionStart + 2
     this._handleSourceInput()
+  }
+
+  _handleControlKeydown = event => {
+    const control = event.target.closest?.('.html-editor-button[role="button"]')
+    if (!control || control.getAttribute("aria-disabled") === "true") return
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      event.stopPropagation()
+      control.click()
+    }
   }
 
   _handleDocumentKeydown = event => {
@@ -1042,7 +1067,7 @@ class HtmlEditorPlugin extends BasePlugin {
     const dirty = this._isDirty()
     this.entities.title.textContent = `${this.utils.Package.Path.basename(this.activeFile)}${dirty ? " *" : ""}`
     this.entities.path.textContent = this.activeFile
-    this.entities.save.disabled = !dirty
+    this._setControlDisabled(this.entities.save, !dirty)
     this.entities.status.textContent = message || this.i18n.t("status.summary", {
       state: this.i18n.t(dirty ? "status.dirty" : "status.clean"),
       count: this.entities.source.value.length.toLocaleString(),
@@ -1058,6 +1083,13 @@ class HtmlEditorPlugin extends BasePlugin {
       network: state(this.options.allowNetwork),
       sync: state(this.options.splitSync),
     })
+  }
+
+  _setControlDisabled = (control, disabled) => {
+    const isDisabled = Boolean(disabled)
+    control.classList.toggle("is-disabled", isDisabled)
+    control.setAttribute("aria-disabled", String(isDisabled))
+    control.tabIndex = isDisabled ? -1 : 0
   }
 
   _isDirty = () => Boolean(this.activeFile) && this.entities?.source?.value !== this.savedSource

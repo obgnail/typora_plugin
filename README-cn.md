@@ -207,7 +207,7 @@ yay -S typora-plugin
 
 ### repository
 
-记录 Typora 明确打开过的文件夹，并在管理窗口中搜索、排序、设置别名、打开或移除记录。删除记录不会删除真实文件夹；数据保存在 `plugin/global/user_space/repository.json`。
+记录 Typora 明确打开过的文件夹，并在管理窗口中搜索、排序、设置别名、打开或移除记录。删除记录不会删除真实文件夹；数据通过 `utils.getStorage` 保存在本地存储的 `repository.data` 键中。
 
 > 此插件默认关闭，需手动开启。可在设置中配置快捷键，也可通过 `action_buttons` 调用 `repository.call`。
 

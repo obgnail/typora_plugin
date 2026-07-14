@@ -205,7 +205,7 @@ If you mainly use Obsidian or Joplin to manage files and occasionally use Typora
 
 ### repository
 
-Records folders explicitly opened by Typora and provides a manager for searching, sorting, assigning aliases, opening, or removing records. Removing a record never deletes the real folder. Data is stored in `plugin/global/user_space/repository.json`.
+Records folders explicitly opened by Typora and provides a manager for searching, sorting, assigning aliases, opening, or removing records. Removing a record never deletes the real folder. Data is stored in local storage under the `repository.data` key.
 
 > This plugin is disabled by default. Configure a hotkey in Preferences or invoke `repository.call` through `action_buttons`.
 

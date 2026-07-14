@@ -82,6 +82,7 @@ class DiagramEnhancePlugin extends BasePlugin {
 
   _bindInteractionRoot = root => {
     root.addEventListener("click", this._handleClick, true)
+    root.addEventListener("keydown", this._handleControlKeydown, true)
     root.addEventListener("wheel", this._handleWheel, { passive: false, capture: true })
     root.addEventListener("pointerdown", this._handlePointerDown, true)
     root.addEventListener("pointermove", this._handlePointerMove, true)
@@ -90,6 +91,7 @@ class DiagramEnhancePlugin extends BasePlugin {
 
     return () => {
       root.removeEventListener("click", this._handleClick, true)
+      root.removeEventListener("keydown", this._handleControlKeydown, true)
       root.removeEventListener("wheel", this._handleWheel, true)
       root.removeEventListener("pointerdown", this._handlePointerDown, true)
       root.removeEventListener("pointermove", this._handlePointerMove, true)
@@ -99,16 +101,16 @@ class DiagramEnhancePlugin extends BasePlugin {
   }
 
   _toolbarHTML = () => `
-    <button type="button" class="plugin-diagram-wheel-toggle" data-action="wheel-toggle" title="${this.i18n.t("toolbar.wheelDisable")}" aria-label="${this.i18n.t("toolbar.wheelDisable")}" aria-pressed="true"><span class="fa fa-mouse-pointer" aria-hidden="true"></span><span>${this.i18n.t("toolbar.wheel")}</span></button>
-    <button type="button" data-action="zoom-in" title="${this.i18n.t("toolbar.zoomIn")}" aria-label="${this.i18n.t("toolbar.zoomIn")}"><span class="fa fa-plus" aria-hidden="true"></span></button>
-    <button type="button" data-action="zoom-out" title="${this.i18n.t("toolbar.zoomOut")}" aria-label="${this.i18n.t("toolbar.zoomOut")}"><span class="fa fa-minus" aria-hidden="true"></span></button>
-    <button type="button" data-action="reset" title="${this.i18n.t("toolbar.reset")}" aria-label="${this.i18n.t("toolbar.reset")}"><span class="fa fa-undo" aria-hidden="true"></span></button>
-    <output data-role="percent" aria-live="polite">100%</output>
-    ${this.options.showFullscreen ? `<button type="button" data-action="fullscreen" title="${this.i18n.t("toolbar.fullscreenEnter")}" aria-label="${this.i18n.t("toolbar.fullscreenEnter")}" aria-pressed="false"><span class="fa fa-expand" aria-hidden="true"></span></button>` : ""}
+    <div class="plugin-diagram-control plugin-diagram-wheel-toggle" role="button" tabindex="0" data-action="wheel-toggle" title="${this.i18n.t("toolbar.wheelDisable")}" aria-label="${this.i18n.t("toolbar.wheelDisable")}" aria-pressed="true"><div class="fa fa-mouse-pointer" aria-hidden="true"></div><div>${this.i18n.t("toolbar.wheel")}</div></div>
+    <div class="plugin-diagram-control" role="button" tabindex="0" data-action="zoom-in" title="${this.i18n.t("toolbar.zoomIn")}" aria-label="${this.i18n.t("toolbar.zoomIn")}"><div class="fa fa-plus" aria-hidden="true"></div></div>
+    <div class="plugin-diagram-control" role="button" tabindex="0" data-action="zoom-out" title="${this.i18n.t("toolbar.zoomOut")}" aria-label="${this.i18n.t("toolbar.zoomOut")}"><div class="fa fa-minus" aria-hidden="true"></div></div>
+    <div class="plugin-diagram-control" role="button" tabindex="0" data-action="reset" title="${this.i18n.t("toolbar.reset")}" aria-label="${this.i18n.t("toolbar.reset")}"><div class="fa fa-undo" aria-hidden="true"></div></div>
+    <div data-role="percent" aria-live="polite">100%</div>
+    ${this.options.showFullscreen ? `<div class="plugin-diagram-control" role="button" tabindex="0" data-action="fullscreen" title="${this.i18n.t("toolbar.fullscreenEnter")}" aria-label="${this.i18n.t("toolbar.fullscreenEnter")}" aria-pressed="false"><div class="fa fa-expand" aria-hidden="true"></div></div>` : ""}
   `
 
   _resizeHandlesHTML = () => RESIZE_HANDLES
-    .map(([position, cursor]) => `<span class="plugin-diagram-resize-handle" data-position="${position}" data-cursor="${cursor}" aria-hidden="true"></span>`)
+    .map(([position, cursor]) => `<div class="plugin-diagram-resize-handle" data-position="${position}" data-cursor="${cursor}" aria-hidden="true"></div>`)
     .join("")
 
   _exportStyle = buildExportStyle
@@ -222,6 +224,11 @@ class DiagramEnhancePlugin extends BasePlugin {
       }
       return
     }
+    if (button.getAttribute("aria-disabled") === "true") {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
 
     event.preventDefault()
     event.stopPropagation()
@@ -244,6 +251,16 @@ class DiagramEnhancePlugin extends BasePlugin {
       case "fullscreen":
         void this._toggleFullscreen(state)
         break
+    }
+  }
+
+  _handleControlKeydown = event => {
+    const control = event.target.closest?.(`${TOOLBAR_SELECTOR} [data-action]`)
+    if (!control || control.getAttribute("aria-disabled") === "true") return
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      event.stopPropagation()
+      control.click()
     }
   }
 
@@ -500,8 +517,8 @@ class DiagramEnhancePlugin extends BasePlugin {
 
     const zoomIn = toolbar.querySelector('[data-action="zoom-in"]')
     const zoomOut = toolbar.querySelector('[data-action="zoom-out"]')
-    if (zoomIn) zoomIn.disabled = state.scale >= this.options.maxScale
-    if (zoomOut) zoomOut.disabled = state.scale <= this.options.minScale
+    if (zoomIn) this._setControlDisabled(zoomIn, state.scale >= this.options.maxScale)
+    if (zoomOut) this._setControlDisabled(zoomOut, state.scale <= this.options.minScale)
 
     const wheel = toolbar.querySelector('[data-action="wheel-toggle"]')
     if (wheel) {
@@ -553,6 +570,13 @@ class DiagramEnhancePlugin extends BasePlugin {
     button.setAttribute("aria-pressed", String(active))
     const icon = button.querySelector(".fa")
     if (icon) icon.className = `fa ${active ? "fa-compress" : "fa-expand"}`
+  }
+
+  _setControlDisabled = (control, disabled) => {
+    const isDisabled = Boolean(disabled)
+    control.classList.toggle("is-disabled", isDisabled)
+    control.setAttribute("aria-disabled", String(isDisabled))
+    control.tabIndex = isDisabled ? -1 : 0
   }
 
   _beforeNativeExport = () => {
