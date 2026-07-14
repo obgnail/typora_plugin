@@ -48,7 +48,6 @@ body.unibody-window #plugin-search-multi {
 
 .plugin-search-counter,
 .plugin-search-highlights,
-.plugin-search-multi-searching,
 .plugin-search-files:empty::before {
   display: none;
 }
@@ -74,11 +73,8 @@ body.unibody-window #plugin-search-multi {
   box-sizing: border-box;
   width: 100%;
   height: 36px;
-  padding: 0 64px 0 32px;
+  padding: 0 64px 0 14px;
   background-color: var(--sm-bg-input);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: 10px center;
   border: 1px solid transparent;
   border-radius: var(--sm-radius);
   color: var(--sm-text-main);
@@ -113,15 +109,17 @@ body.unibody-window #plugin-search-multi {
 }
 
 #plugin-search-multi-form svg {
+  position: absolute;
   width: 15px;
   height: 15px;
   stroke: currentColor;
   fill: none;
   pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
 }
 
 #plugin-search-multi-form .plugin-search-multi-case,
-#plugin-search-multi-form .plugin-search-multi-submit {
+#plugin-search-multi-form .plugin-search-multi-trigger {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,18 +128,50 @@ body.unibody-window #plugin-search-multi {
   color: var(--sm-text-sub);
   border-radius: 6px;
   cursor: pointer;
-  transition: color 0.2s, background-color 0.2s;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  overflow: hidden;
 }
 
 #plugin-search-multi-form .plugin-search-multi-case:hover,
-#plugin-search-multi-form .plugin-search-multi-submit:hover {
+#plugin-search-multi-form .plugin-search-multi-trigger:hover {
   color: var(--sm-text-main);
   background-color: var(--sm-bg-hover);
+}
+
+#plugin-search-multi-form .plugin-search-multi-trigger.is-searching {
+  background-color: var(--sm-bg-error);
+}
+
+#plugin-search-multi-form .plugin-search-multi-trigger.is-searching:hover {
+  background-color: rgba(239, 68, 68, 0.15);
 }
 
 #plugin-search-multi-form .plugin-search-multi-case.select {
   color: var(--sm-border-focus);
   background-color: var(--sm-shadow-focus);
+}
+
+#plugin-search-multi-form .plugin-search-multi-trigger .sm-icon-run {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+#plugin-search-multi-form .plugin-search-multi-trigger .sm-icon-stop {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.4);
+  fill: currentColor;
+  stroke: none;
+  color: var(--sm-text-error);
+}
+
+#plugin-search-multi-form .plugin-search-multi-trigger.is-searching .sm-icon-run {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.4);
+}
+
+#plugin-search-multi-form .plugin-search-multi-trigger.is-searching .sm-icon-stop {
+  opacity: 1;
+  transform: rotate(0) scale(1.1);
 }
 
 .plugin-search-multi-explain {
@@ -309,10 +339,6 @@ ${colors_style}
   margin: 6px -3px 0;
 }
 
-.plugin-search-multi-result.is-searching .plugin-search-multi-searching {
-  display: flex;
-}
-
 .plugin-search-multi-result.is-searching .plugin-search-counter,
 .plugin-search-multi-result.is-done .plugin-search-counter,
 .plugin-search-multi-result.is-abort .plugin-search-counter,
@@ -423,18 +449,6 @@ ${colors_style}
   opacity: 0.65;
 }
 
-.plugin-search-multi-searching {
-  position: relative;
-  align-items: center;
-  color: var(--sm-text-sub);
-  font-size: 12px;
-  line-height: 40px;
-}
-
-.plugin-search-multi-searching > div:first-child {
-  margin-right: 8px;
-}
-
 .plugin-highlight-item {
   margin: 3px;
   padding: 2px 10px;
@@ -496,8 +510,4 @@ body.plugin-dark-mode #plugin-search-multi {
   --sm-condition-border: #334155;
   --sm-operator-color: #79c0ff;
   --sm-divider-line: #334155;
-}
-
-body.plugin-dark-mode #plugin-search-multi-form input {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
 }

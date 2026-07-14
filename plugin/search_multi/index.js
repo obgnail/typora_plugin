@@ -124,8 +124,9 @@ class SearchMultiPlugin extends BasePlugin {
             <div class="plugin-search-multi-case${(this.config.CASE_SENSITIVE) ? " select" : ""}">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 18 6 6 12 18M3 14h7"/><circle cx="18" cy="14" r="4"/><path d="M22 10v8"/></svg>
             </div>
-            <div class="plugin-search-multi-submit">
-              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+            <div class="plugin-search-multi-trigger">
+              <svg class="sm-icon-run" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg class="sm-icon-stop" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2.5" ry="2.5"/></svg>
             </div>
           </div>
         </form>
@@ -135,10 +136,6 @@ class SearchMultiPlugin extends BasePlugin {
         <div class="plugin-search-counter"></div>
         <div class="plugin-search-files"></div>
         <div class="plugin-search-highlights"></div>
-        <div class="plugin-search-multi-searching">
-          <div>${this.i18n.t("searching")}</div>
-          <div class="typora-search-spinner"><div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div></div>
-        </div>
       </div>
     </fast-window>`
 
@@ -151,7 +148,7 @@ class SearchMultiPlugin extends BasePlugin {
       form: document.querySelector("#plugin-search-multi-form"),
       input: document.querySelector("#plugin-search-multi-form input"),
       caseBtn: document.querySelector(".plugin-search-multi-case"),
-      submitBtn: document.querySelector(".plugin-search-multi-submit"),
+      triggerBtn: document.querySelector(".plugin-search-multi-trigger"),
       explain: document.querySelector(".plugin-search-multi-explain"),
       result: document.querySelector(".plugin-search-multi-result"),
       counter: document.querySelector(".plugin-search-counter"),
@@ -168,9 +165,11 @@ class SearchMultiPlugin extends BasePlugin {
       onStateChange: (newState, oldState) => {
         this.entities.result.classList.remove(`is-${oldState}`)
         this.entities.result.classList.add(`is-${newState}`)
+        this.entities.triggerBtn.classList.toggle("is-searching", newState === "searching")
       },
       onEnterIdle: () => resetUI(false),
       onEnterSearching: () => resetUI(true),
+      onEnterAbort: () => this.utils.notification.show("Search Aborted", "warning"),
     })
   }
 
@@ -181,7 +180,14 @@ class SearchMultiPlugin extends BasePlugin {
     this.utils.createSmartInputHandler(this.entities.input, () => this._updateExplain(true))
 
     this.entities.files.addEventListener("click", ev => this.utils.openFile(ev.target.closest(".plugin-search-item")?.dataset.path))
-    this.entities.submitBtn.addEventListener("click", () => this.search())
+    this.entities.triggerBtn.addEventListener("click", () => {
+      if (this.fsm.isSearching()) {
+        this.executor.abort()
+        this.fsm.cancel()
+      } else {
+        this.search()
+      }
+    })
     this.entities.caseBtn.addEventListener("click", () => {
       this.entities.caseBtn.classList.toggle("select")
       const sensitive = this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
