@@ -105,7 +105,7 @@ class SearchMultiPlugin extends BasePlugin {
   style = () => {
     const counter_prefix_text = this.i18n.t("matchedFiles") + "："
     const colors_style = this.config.HIGHLIGHT_COLORS
-      .map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color} !important; }`)
+      .map((color, idx) => `.cm-sm-hit-${idx} { background-color: ${color} !important; }`)
       .join("\n")
     return { counter_prefix_text, colors_style }
   }
@@ -125,14 +125,14 @@ class SearchMultiPlugin extends BasePlugin {
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 18 6 6 12 18M3 14h7"/><circle cx="18" cy="14" r="4"/><path d="M22 10v8"/></svg>
             </div>
             <div class="plugin-search-multi-trigger">
-              <svg class="sm-icon-run" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg class="sm-icon-run" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
               <svg class="sm-icon-stop" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2.5" ry="2.5"/></svg>
             </div>
           </div>
         </form>
         <div class="plugin-search-multi-explain"></div>
       </div>
-      <div class="plugin-search-multi-result is-idle">
+      <div class="plugin-search-result is-idle">
         <div class="plugin-search-counter"></div>
         <div class="plugin-search-files"></div>
         <div class="plugin-search-highlights"></div>
@@ -150,7 +150,7 @@ class SearchMultiPlugin extends BasePlugin {
       caseBtn: document.querySelector(".plugin-search-multi-case"),
       triggerBtn: document.querySelector(".plugin-search-multi-trigger"),
       explain: document.querySelector(".plugin-search-multi-explain"),
-      result: document.querySelector(".plugin-search-multi-result"),
+      result: document.querySelector(".plugin-search-result"),
       counter: document.querySelector(".plugin-search-counter"),
       files: document.querySelector(".plugin-search-files"),
       highlights: document.querySelector(".plugin-search-highlights"),
@@ -237,8 +237,8 @@ class SearchMultiPlugin extends BasePlugin {
   }
 
   getHighlightHits = (ast) => {
-    const tokens = this.searcher.extractContentMatchPatterns(ast)
-    return tokens.length === 0 ? null : this.highlighter.doSearch(tokens)
+    const conditions = this.searcher.extractHighlightConditions(ast)
+    return conditions.length === 0 ? null : this.highlighter.doSearch(conditions)
   }
 
   highlightByAST = (ast = this._getAST()) => {
@@ -249,13 +249,19 @@ class SearchMultiPlugin extends BasePlugin {
       const hitGroups = this.getHighlightHits(ast)
       if (!hitGroups) return
 
-      const hint = this.i18n.t("highlightHint")
       const items = Object.entries(hitGroups).map(([cls, group]) => {
         const item = document.createElement("div")
-        item.className = `plugin-highlight-item ${cls}`
+        item.className = `plugin-hl-item ${cls}`
         item.dataset.pos = -1
-        item.textContent = `${group.name} (${group.hits.length})`
-        item.setAttribute("ty-hint", hint)
+
+        const nameEl = document.createElement("div")
+        nameEl.className = "sm-hl-name"
+        nameEl.textContent = group.name
+        const countEl = document.createElement("div")
+        countEl.className = "sm-hl-count"
+        countEl.textContent = group.hits.length
+        item.append(nameEl, countEl)
+
         return item
       })
       this.entities.highlights.append(...items)
@@ -301,6 +307,11 @@ class SearchMultiPlugin extends BasePlugin {
   }
 
   _createResultAppender = (rootPath) => {
+    const formatBytes = (bytes) => {
+      if (bytes < 1024) return `${bytes} B`
+      return bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`
+    }
+
     const newItem = (rootPath, filePath, stats) => {
       const { dir, base, name } = this.utils.Package.Path.parse(filePath)
       const dirPath = this.config.RELATIVE_PATH ? dir.replace(rootPath, ".") : dir
@@ -308,13 +319,17 @@ class SearchMultiPlugin extends BasePlugin {
       const item = document.createElement("div")
       item.className = "plugin-search-item"
       item.dataset.path = filePath
-      if (this.config.SHOW_MTIME) {
-        item.setAttribute("ty-hint", stats.mtime.toLocaleString(undefined, { hour12: false }))
-      }
 
       const titleEl = document.createElement("div")
       titleEl.className = "plugin-search-item-title"
-      titleEl.textContent = this.config.SHOW_EXT ? base : name
+      const nameEl = document.createElement("div")
+      nameEl.className = "plugin-search-item-name"
+      nameEl.textContent = this.config.SHOW_EXT ? base : name
+      const metaEl = document.createElement("div")
+      metaEl.className = "plugin-search-item-meta"
+      metaEl.textContent = formatBytes(stats.size)
+
+      titleEl.append(nameEl, metaEl)
 
       const pathEl = document.createElement("div")
       pathEl.className = "plugin-search-item-path"

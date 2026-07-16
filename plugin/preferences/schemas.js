@@ -192,7 +192,7 @@ const schema_search_multi = () => [
   Group("searchResult",
     Switch("RELATIVE_PATH"),
     Switch("SHOW_EXT"),
-    Switch("SHOW_MTIME"),
+    Switch("HIGHLIGHTS_MATCH_ANCHOR").Tooltip("matchAnchor"),
     Integer("MAX_HIGHLIGHTS").Min(1).Max(5000),
     Palette("HIGHLIGHT_COLORS"),
   ),

@@ -141,22 +141,20 @@ class Searcher {
     })
   }
 
-  extractContentMatchPatterns = (ast) => {
+  extractHighlightConditions = (ast) => {
     const isMeta = new Set([...this.qualifiers.values()].filter(q => q.is_meta).map(q => q.scope))
-    const contentNodes = new Set()
-
+    const conds = []
     ASTUtils.walkLeaves(ast, (node, negated) => {
-      if (!negated && !isMeta.has(node.semantic.scope)) {
-        contentNodes.add(node)
-      }
+      if (negated || isMeta.has(node.semantic.scope)) return
+      const { matchType, operand, anchor } = node.semantic
+      const isRegex = matchType === "REGEX"
+      const rawPattern = isRegex ? operand.pattern : String(operand)
+      const pattern = isRegex ? operand.pattern : rawPattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+      const flags = isRegex ? operand.flags : ""
+      const strictReg = isRegex ? new RegExp(`^(${pattern})$`, flags.replace(/[gy]/ig, "")) : null
+      conds.push({ id: conds.length, name: rawPattern, anchor, isRegex, rawPattern, pattern, flags, strictReg })
     })
-
-    return [...contentNodes]
-      .map(n => n.semantic.matchType === "REGEX"
-        ? n.semantic.operand.pattern
-        : n.semantic.operand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
-      )
-      .filter(Boolean)
+    return conds
   }
 
   toDNF = (ast) => {

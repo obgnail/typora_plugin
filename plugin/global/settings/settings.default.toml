@@ -112,8 +112,8 @@ TAB_SWITCH_ON_CLOSE = "right"
 #   exit     : Exit Typora immediately
 LAST_TAB_CLOSE_ACTION = "blankPage"
 
-# Reopen unclosed tabs on startup: Restores tabs on next launch.
-# Requires Typora's native setting "Open specific folder / Reopen last directory" to be enabled
+# Reopen unclosed tabs on startup: Restores tabs on next launch
+# Disabled when opening specific files on startup
 REOPEN_TABS_ON_STARTUP = false
 
 # =========== [ Hotkeys ] ===========
@@ -179,6 +179,9 @@ EXPLAIN_TRIGGER = ["focus"]
 # Max execution time (ms): Prevents search deadlocks. Set to -1 for unlimited
 TIMEOUT = 60000
 
+# Match Anchor: highlights strictly respect the spatial boundaries of specific Markdown elements. When disabled, matches will be globally highlighted anywhere in the text
+HIGHLIGHTS_MATCH_ANCHOR = true
+
 # Traverse strategy
 #   bfs: Breadth-First Search
 #   dfs: Depth-First Search
@@ -202,9 +205,6 @@ RELATIVE_PATH = true
 
 # Show file extension: Display extensions (e.g., .md) after file titles
 SHOW_EXT = true
-
-# Show modified time: Display the modification time on hover
-SHOW_MTIME = false
 
 # Highlight colors: Background colors for keywords
 HIGHLIGHT_COLORS = [
@@ -1409,7 +1409,7 @@ TOOL_POSITION = "top"
 #   inViewBoxImage     : First image within the current viewport
 #   closestViewBoxImage: Image closest to the center of the viewport
 #   firstImage         : First image in the entire document
-FIRST_IMAGE_STRATEGIES = ["inViewBoxImage", "firstImage"]
+FIRST_IMAGE_STRATEGIES = ["inViewBoxImage", "closestViewBoxImage"]
 
 # Image information displayed on the left side of the toolbar
 #   index: Image Index

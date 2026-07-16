@@ -123,7 +123,7 @@ class GalleryManager {
   }
 
   getTargetImage = images => {
-    const strategies = {
+    const STRATEGIES = {
       firstImage: imgs => imgs[0],
       inViewBoxImage: imgs => imgs.find(img => this.utils.isInViewBox(img)),
       closestViewBoxImage: imgs => imgs
@@ -134,10 +134,10 @@ class GalleryManager {
         .img,
     }
 
-    const strategyNames = [...this.config.FIRST_IMAGE_STRATEGIES, "firstImage"]
-    for (const name of strategyNames) {
-      const image = strategies[name]?.(images)
-      if (image) return image
+    const strategies = [...this.config.FIRST_IMAGE_STRATEGIES, "closestViewBoxImage"]
+    for (const name of strategies) {
+      const img = STRATEGIES[name]?.(images)
+      if (img) return img
     }
   }
 

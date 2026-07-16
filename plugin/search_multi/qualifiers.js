@@ -184,11 +184,7 @@ const createBaseQualifiers = (ctx) => {
     stringArray: { match: { KEYWORD: arrayCompare, REGEX: arrayRegex } },
   }
 
-  const getMatchCount = (content, regex) => {
-    let c = 0
-    for (const _ of content.matchAll(regex)) c++
-    return c
-  }
+  const getMatchCount = (content, regex) => (content.match(regex) || []).length
 
   const countWords = content => {
     content = content.trim()
@@ -259,7 +255,6 @@ const createBaseQualifiers = (ctx) => {
     },
     isempty: { is_meta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => (await fileCtx.getContent()).trim() === "" },
     crlf: { is_meta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => (await fileCtx.getContent()).includes("\r\n") },
-    line: { is_meta: false, cost: 2, anchor: write, ...MIXINS.stringArray, query: async fileCtx => (await fileCtx.getContent()).split("\n") },
   }
 
   return Object.entries(DEFINITIONS).map(([scope, def]) => ({ scope, name: i18n.t(`scope.${scope}`), ...def }))
@@ -277,6 +272,7 @@ const createMarkdownQualifiers = (ctx) => {
   }
 
   const FILTER = {
+    is: (fn) => () => node => fn(node),
     ofType: type => () => node => node.type === type,
     within: type => () => {
       const openType = `${type}_open`
@@ -402,11 +398,11 @@ const createMarkdownQualifiers = (ctx) => {
       transformer: TRANSFORMER.content,
     },
     blockquote: { anchor: `[mdtype="blockquote"]`, parser: PARSER.block, filter: FILTER.within("blockquote"), transformer: TRANSFORMER.content },
-    table: { anchor: `[mdtype="table"]`, parser: PARSER.block, filter: FILTER.within("table"), transformer: TRANSFORMER.content },
-    thead: { anchor: `[mdtype="table"] thead`, parser: PARSER.block, filter: FILTER.within("thead"), transformer: TRANSFORMER.content },
-    tbody: { anchor: `[mdtype="table"] tbody`, parser: PARSER.block, filter: FILTER.within("tbody"), transformer: TRANSFORMER.content },
-    ol: { anchor: `ol[mdtype="list"]`, parser: PARSER.block, filter: FILTER.within("ordered_list"), transformer: TRANSFORMER.content },
-    ul: { anchor: `ul[mdtype="list"]`, parser: PARSER.block, filter: FILTER.within("bullet_list"), transformer: TRANSFORMER.content },
+    table: { anchor: `.md-table`, parser: PARSER.block, filter: FILTER.within("table"), transformer: TRANSFORMER.content },
+    thead: { anchor: `.md-table thead`, parser: PARSER.block, filter: FILTER.within("thead"), transformer: TRANSFORMER.content },
+    tbody: { anchor: `.md-table tbody`, parser: PARSER.block, filter: FILTER.within("tbody"), transformer: TRANSFORMER.content },
+    ol: { anchor: `.ol-list`, parser: PARSER.block, filter: FILTER.within("ordered_list"), transformer: TRANSFORMER.content },
+    ul: { anchor: `.ul-list`, parser: PARSER.block, filter: FILTER.within("bullet_list"), transformer: TRANSFORMER.content },
     task: {
       anchor: ".task-list-item",
       parser: PARSER.block,
@@ -425,16 +421,21 @@ const createMarkdownQualifiers = (ctx) => {
       filter: FILTER.withinPath("bullet_list", "list_item", "paragraph"),
       transformer: TRANSFORMER.taskContent(-1),
     },
-    head: { anchor: `[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.within("heading"), transformer: TRANSFORMER.content },
-    h1: { anchor: `h1[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h1"), transformer: TRANSFORMER.content },
-    h2: { anchor: `h2[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h2"), transformer: TRANSFORMER.content },
-    h3: { anchor: `h3[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h3"), transformer: TRANSFORMER.content },
-    h4: { anchor: `h4[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h4"), transformer: TRANSFORMER.content },
-    h5: { anchor: `h5[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h5"), transformer: TRANSFORMER.content },
-    h6: { anchor: `h6[mdtype="heading"]`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h6"), transformer: TRANSFORMER.content },
-    image: { anchor: `[md-inline="image"]`, parser: PARSER.inline, filter: FILTER.ofType("image"), transformer: TRANSFORMER.attrAndContent },
-    code: { anchor: `[md-inline="code"]`, parser: PARSER.inline, filter: FILTER.ofType("code_inline"), transformer: TRANSFORMER.content },
-    link: { anchor: `[md-inline="link"]`, parser: PARSER.inline, filter: FILTER.within("link"), transformer: TRANSFORMER.attrAndContent },
+    head: { anchor: `.md-heading`, parser: PARSER.block, filter: FILTER.within("heading"), transformer: TRANSFORMER.content },
+    h1: { anchor: `h1.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h1"), transformer: TRANSFORMER.content },
+    h2: { anchor: `h2.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h2"), transformer: TRANSFORMER.content },
+    h3: { anchor: `h3.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h3"), transformer: TRANSFORMER.content },
+    h4: { anchor: `h4.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h4"), transformer: TRANSFORMER.content },
+    h5: { anchor: `h5.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h5"), transformer: TRANSFORMER.content },
+    h6: { anchor: `h6.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h6"), transformer: TRANSFORMER.content },
+    image: { anchor: `.md-image`, parser: PARSER.inline, filter: FILTER.ofType("image"), transformer: TRANSFORMER.attrAndContent },
+    code: {
+      anchor: `[md-inline="code"]`,
+      parser: PARSER.inline,
+      filter: FILTER.is(node => node.type === "code_inline" && node.markup === "`"),
+      transformer: TRANSFORMER.content,
+    },
+    link: { anchor: `.md-link`, parser: PARSER.inline, filter: FILTER.within("link"), transformer: TRANSFORMER.attrAndContent },
     strong: { anchor: `[md-inline="strong"]`, parser: PARSER.inline, filter: FILTER.within("strong"), transformer: TRANSFORMER.content },
     em: { anchor: `[md-inline="em"]`, parser: PARSER.inline, filter: FILTER.within("em"), transformer: TRANSFORMER.content },
     del: { anchor: `[md-inline="del"]`, parser: PARSER.inline, filter: FILTER.within("s"), transformer: TRANSFORMER.content },

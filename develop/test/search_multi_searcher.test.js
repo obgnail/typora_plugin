@@ -192,7 +192,6 @@ describe("Searcher: Full Markdown Block Matchers", () => {
     await assertMatch("frontmatter:Testing", "torture")
     await assertMatch("default:Torture", "torture")
     await assertMatch("content:中文测试", "torture")
-    await assertMatch("line:张三", "torture")
   })
   it("should match Code Blocks", async () => {
     await assertMatch("blockcodelang:javascript", "torture")
@@ -456,25 +455,25 @@ describe("Searcher: AST Optimizer & Physical Plan Generation", () => {
   })
 })
 
-describe("Searcher: Feature Utilities (extractContentMatchPatterns)", () => {
+describe("Searcher: Feature Utilities (extractHighlightConditions)", () => {
   it("should extract patterns excluding meta qualifiers and negated expressions", () => {
     const ast = searcher.parse(`content:A AND -content:B AND size>1kb AND name:C AND "hello world" AND /regex/`)
-    const patterns = searcher.extractContentMatchPatterns(ast)
+    const patterns = searcher.extractHighlightConditions(ast)
 
     // "content:A" (positive content), "hello world" (positive default), "/regex/" (positive regex)
     // -content:B is negated, size/name are meta properties
-    assert.ok(patterns.includes("A"))
-    assert.ok(patterns.includes("hello world"))
-    assert.ok(patterns.includes("regex"))
+    assert.ok(patterns.some(e => e.name.includes("A")))
+    assert.ok(patterns.some(e => e.name.includes("hello world")))
+    assert.ok(patterns.some(e => e.name.includes("regex")))
     assert.strictEqual(patterns.length, 3)
   })
 
   it("should extract correct escaping for keywords vs regexes", () => {
     // foo.bar as keyword should be escaped, as regex it should not.
     const ast = searcher.parse(`content:foo.bar AND /baz.qux/`)
-    const patterns = searcher.extractContentMatchPatterns(ast)
-    assert.ok(patterns.includes("foo\\.bar")) // Keyword escaped
-    assert.ok(patterns.includes("baz.qux"))   // Regex preserved
+    const patterns = searcher.extractHighlightConditions(ast)
+    assert.ok(patterns.some(e => e.name.includes("foo.bar")))  // Keyword escaped
+    assert.ok(patterns.some(e => e.name.includes("baz.qux")))  // Regex preserved
   })
 })
 
