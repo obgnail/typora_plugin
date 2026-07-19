@@ -1508,6 +1508,50 @@ const schema_assets_storage = () => [
   FRAG.SettingHandler(),
 ]
 
+const schema_diagram_enhance = () => [
+  FRAG.Base(),
+  Group("zoom",
+    Float("ZOOM_STEP").Min(0.05).Max(1).Step(0.05),
+    Float("MIN_SCALE").Min(0.05).Max(1).Step(0.05),
+    Float("MAX_SCALE").Min(1).Max(10).Step(0.1),
+    Switch("WHEEL_ZOOM_DEFAULT"),
+    Switch("DOUBLE_CLICK_TO_EDIT"),
+  ),
+  Group("interaction",
+    Switch("SHOW_FULLSCREEN"),
+    Switch("ENABLE_PAN"),
+    Switch("ENABLE_TOUCH"),
+    Switch("RESIZABLE"),
+  ),
+  Group("container",
+    Integer("MIN_CONTAINER_WIDTH").Min(100).Max(1000),
+    Integer("MIN_CONTAINER_HEIGHT").Min(80).Max(1000),
+  ),
+  FRAG.SettingHandler(),
+]
+
+const schema_html_editor = () => [
+  FRAG.Base(true),
+  Group("editor",
+    Switch("SHOW_IN_FILE_TREE"),
+    Select("DEFAULT_VIEW").Options(["source", "preview", "split"]),
+    Switch("AUTO_PREVIEW"),
+    Integer("PREVIEW_DELAY").Min(100).Max(2000),
+    Integer("EDITOR_FONT_SIZE").Min(10).Max(28),
+    Switch("SPLIT_SYNC"),
+  ),
+  Group("security",
+    Switch("PREVIEW_ALLOW_SCRIPTS"),
+    Switch("PREVIEW_ALLOW_NETWORK"),
+  ),
+  FRAG.SettingHandler(),
+]
+
+const schema_repository = () => [
+  FRAG.Base(true),
+  FRAG.SettingHandler(),
+]
+
 const RAW_SCHEMA_FNS = {
   global: schema_global,
   window_tab: schema_window_tab,
@@ -1572,6 +1616,9 @@ const RAW_SCHEMA_FNS = {
   marp: schema_marp,
   callouts: schema_callouts,
   assets_storage: schema_assets_storage,
+  diagram_enhance: schema_diagram_enhance,
+  html_editor: schema_html_editor,
+  repository: schema_repository,
 }
 
 const mapTree = (schemas, visitBox = box => box, visitField = field => field, prefix = "") => schemas.map(box => {

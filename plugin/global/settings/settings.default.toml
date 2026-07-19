@@ -2210,6 +2210,7 @@ LIST = [
   "no_image",
   "myopic_defocus",
   "editor_width_slider",
+  "diagram_enhance",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__EDITING_PLUGINS__"
@@ -2219,6 +2220,7 @@ LIST = [
   "md_padding",
   "text_stylize",
   "markdownlint",
+  "html_editor",
 ]
 [[right_click_menu.MENUS]]
 NAME = "__COMPONENT_PLUGINS__"
@@ -2254,6 +2256,7 @@ LIST = [
   "command_palette",
   "ripgrep",
   "resource_manager",
+  "repository",
   "right_outline",
   "pie_menu",
   "bookmark",
@@ -3379,6 +3382,91 @@ DEFAULT_ICON = "\\f075"
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting
 TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
+
+
+[diagram_enhance]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+
+# =========== [ Zoom ] ===========
+# Zoom Step
+ZOOM_STEP = 0.1
+
+# Minimum Scale
+MIN_SCALE = 0.1
+
+# Maximum Scale
+MAX_SCALE = 5.0
+
+# Enable Wheel Zoom by Default
+WHEEL_ZOOM_DEFAULT = true
+
+# Double-click Diagram to Edit
+DOUBLE_CLICK_TO_EDIT = true
+
+# =========== [ Interaction ] ===========
+# Show Fullscreen Button
+SHOW_FULLSCREEN = true
+
+# Enable Drag Panning
+ENABLE_PAN = true
+
+# Enable Touch Gestures
+ENABLE_TOUCH = true
+
+# Allow Container Resizing
+RESIZABLE = true
+
+# =========== [ Container ] ===========
+# Minimum Container Width
+MIN_CONTAINER_WIDTH = 180
+
+# Minimum Container Height
+MIN_CONTAINER_HEIGHT = 120
+
+
+[html_editor]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+HOTKEY = ""
+
+# =========== [ Editor ] ===========
+# Show HTML Files in File Tree
+SHOW_IN_FILE_TREE = true
+
+# Default View
+#   source : Source
+#   preview: Preview
+#   split  : Split
+DEFAULT_VIEW = "preview"
+
+# Refresh Preview While Editing
+AUTO_PREVIEW = true
+
+# Preview Refresh Delay (ms)
+PREVIEW_DELAY = 300
+
+# Editor Font Size (px)
+EDITOR_FONT_SIZE = 14
+
+# Synchronize Split View Scrolling
+SPLIT_SYNC = true
+
+# =========== [ Preview Security ] ===========
+# Allow Scripts in Preview (Risky)
+PREVIEW_ALLOW_SCRIPTS = false
+
+# Allow Network Resources in Preview
+PREVIEW_ALLOW_NETWORK = false
+
+
+[repository]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+HOTKEY = ""
 
 
 [test]
