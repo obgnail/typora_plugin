@@ -14,14 +14,14 @@ class DiagramParser {
   }
 
   /**
-   * @param {string} lang: language
-   * @param {string} mappingLang: language to map to
-   * @param {boolean} destroyWhenUpdate: Whether to clear the HTML in the preview before updating
-   * @param {boolean} interactiveMode: In interactive mode, the code block will not automatically expand
-   * @param {function(cid, content, $pre): Promise<null>} renderFunc: Renders based on the content. 1)cid: CID of the current code block. 2)content: content of the code block. 3) $pre: jQuery element of the code block.
-   * @param {function(cid): null} cancelFunc: Cancel function, triggered when: 1) modified to another lang 2) the code block content is cleared 3) the code block content does not conform to the syntax
-   * @param {function(): null} destroyAllFunc: When switching documents, all charts need to be destroyed (Note: cannot be an AsyncFunction, to prevent the fileOpened event from triggering renderFunc at the same time as destroyAll)
-   * @param {function(lang): string} exportStyleGetter: Used to add CSS when exporting
+   * @param lang {string}: language
+   * @param mappingLang {string}: language to map to
+   * @param destroyWhenUpdate {boolean}: Whether to clear the HTML in the preview before updating
+   * @param interactiveMode {boolean}: In interactive mode, the code block will not automatically expand
+   * @param renderFunc {function(cid, content, $pre): Promise<null>}: Renders based on the content. 1)cid: CID of the current code block. 2)content: content of the code block. 3) $pre: jQuery element of the code block.
+   * @param cancelFunc {function(cid): null}: Cancel function, triggered when: 1) modified to another lang 2) the code block content is cleared 3) the code block content does not conform to the syntax
+   * @param destroyAllFunc {function(): null}: When switching documents, all charts need to be destroyed (Note: cannot be an AsyncFunction, to prevent the fileOpened event from triggering renderFunc at the same time as destroyAll)
+   * @param exportStyleGetter {function(lang): string}: Used to add CSS when exporting
    */
   register = (
     {

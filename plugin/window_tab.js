@@ -699,7 +699,7 @@ class WindowTabPlugin extends BasePlugin {
       this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
         if (context.anchor?.startsWith("#")) {
           const $target = File.editor.EditHelper.findAnchorElem(context.anchor)
-          this.utils.scroll($target, { height: 10 })
+          this.utils.scrollTo($target, { height: 10 })
           context = {}
         }
       })

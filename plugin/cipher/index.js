@@ -19,9 +19,11 @@ class CipherPlugin extends BasePlugin {
     }
   }
 
+  isEncrypted = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str)
+
   encrypt = async raw => {
     const { encrypt } = this.lazyLoad()
-    const isCiphered = this.utils.isBase64(raw)
+    const isCiphered = this.isEncrypted(raw)
     if (!this.showMessageBox && !isCiphered) {
       return encrypt(raw, this.key)
     }
@@ -44,7 +46,7 @@ class CipherPlugin extends BasePlugin {
 
   decrypt = async ciphered => {
     const { decrypt } = this.lazyLoad()
-    const isCiphered = this.utils.isBase64(ciphered)
+    const isCiphered = this.isEncrypted(ciphered)
     if (isCiphered) {
       return decrypt(ciphered, this.key)
     }

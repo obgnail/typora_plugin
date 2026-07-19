@@ -38,7 +38,7 @@
     "$label.TEMPLATE": "Template",
     "$label.CHART_ALIGN": "Chart Alignment",
     "$placeholder.defaultIfEmpty": "Use default if empty",
-    "$tooltip.protected": "Protected setting. Editable via setting file only",
+    "$tooltip.protected": "Protected. Editable via setting file only",
     "$tooltip.expertsOnly": "Experts only. Risky to modify",
     "$tooltip.lowVersion": "Typora version is too low to support this feature",
     "$tooltip.zeroForNoLimit": "0 for no limit",
@@ -132,7 +132,8 @@
     "$tooltip.openSettingsUserTomlExternally": "Open User Settings",
     "$tooltip.neverGonnaTellALie": "Tutorials",
     "$tooltip.openPluginFolder": "Plugin Directory",
-    "$tooltip.toggleDevTools": "Dev Tools"
+    "$tooltip.toggleDevTools": "Dev Tools",
+    "$tooltip.copyEmail": "Copy Email Address"
   },
   "window_tab": {
     "pluginName": "Window Tabs",
@@ -494,7 +495,7 @@
     "success.download": "Exported successfully",
     "title.color": "Color Scheme",
     "title.chart": "Diagram",
-    "title.window": "Pop-up",
+    "title.window": "Popup",
     "title.interactive": "Interaction",
     "title.behavior": "Behavior",
     "title.download": "Export",

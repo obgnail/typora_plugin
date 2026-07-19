@@ -32,7 +32,9 @@ class MarpPlugin extends BasePlugin {
 
   create = ($wrap, content) => {
     const { html, css } = this.marp.render(content)
-    const shadowRoot = $wrap[0].shadowRoot || $wrap[0].attachShadow({ mode: "open" }) // Use shadowDOM to isolate styles
+    // Use shadowDOM to isolate styles
+    const shadowRoot = $wrap[0].shadowRoot ?? $wrap[0].attachShadow({ mode: "open" })
+    // The `adoptedStyleSheets` approach cannot be used because it does not allow @import rules
     shadowRoot.innerHTML = `<style>${css}</style>` + html
     return shadowRoot
   }
@@ -42,9 +44,8 @@ class MarpPlugin extends BasePlugin {
   getVersion = () => "marp-core@4.3.0"
 
   lazyLoad = () => {
-    const { Marp } = require("./marp-core.min.js")
-    this.Marp = Marp
-    this.marp = new Marp(this.config.MARP_CORE_OPTIONS).use(this._imageAbsPath())
+    this.Marp = require("./marp-core.min.js").Marp
+    this.marp = new this.Marp(this.config.MARP_CORE_OPTIONS).use(this._imageAbsPath())
   }
 
   _imageAbsPath = () => {

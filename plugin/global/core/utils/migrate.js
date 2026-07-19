@@ -3,24 +3,6 @@ class Migrate {
     this.utils = utils
   }
 
-  deleteUselessPlugins = async () => {
-    const dirs = [
-      "scrollBookmarker", "markdownLint", "drawIO", "calendar", "wavedrom",
-      "chart", "echarts", "abc", "plantUML",
-    ]
-    const files = [
-      "fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode",
-      "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander", "resourceOperation",
-      "reopenClosedFiles", "sortableOutline", "blockSideBySide", "chineseSymbolAutoPairer", "redirectLocalRootUrl",
-      "scrollBookmarker", "imageReviewer", "quickButton", "toc", "templater",
-      "callouts", "marp", "timeline", "chat", "kanban",
-    ]
-    const toDir = name => this.utils.joinPluginPath("./plugin/custom/plugins", name)
-    const toFile = name => this.utils.joinPluginPath("./plugin/custom/plugins", `${name}.js`)
-    const promises = [...files.map(toFile), ...dirs.map(toDir)].map(path => this.utils.Package.FsExtra.remove(path))
-    await Promise.all(promises)
-  }
-
   cleanInvalidPlugins = async (files) => {
     const promises = files.map(({ configDefault, configUser }) => {
       const fixedNames = new Set([...Object.keys(configDefault), ...Object.keys(configUser)])
@@ -81,9 +63,8 @@ class Migrate {
 
   run = async () => {
     const files = await this.getConfigs()
-    await this.deleteUselessPlugins()
     await this.cleanInvalidPlugins(files)
-    await this.cleanPluginsAndKeys(files)
+    this.cleanPluginsAndKeys(files)
     await this.saveFiles(files)
     console.log("[Migrate] Migrated Typora Plugin setting files")
   }

@@ -5,7 +5,7 @@ Welcome! If you encounter any issues while installing or using the Typora-Plugin
 
 
 
-## 🇺🇸 English Version
+## English Version
 
 ### Common Problems & Solutions
 
@@ -16,11 +16,11 @@ If the console says "Installation Successful" but Typora cannot find the plugin,
 1. Check Typora version: The minimum supported Typora version for this plugin is **0.9.98** (the last free version). Please ensure your Typora is up to date.
 2. Fix permissions: This is usually caused by insufficient folder permissions. You have two ways to fix this:
    * Method 1 (Automatic): Right-click the `ensure_permissions.ps1` file in this directory and select "Run with PowerShell". This will automatically grant the necessary read/write permissions to the plugin folders.
-   * Method 2 (Manual): If the script fails or you prefer not to use PowerShell, you can configure permissions manually:
+   * Method 2 (Manual): If the script fails, or you prefer not to use PowerShell, you can configure permissions manually:
      1. Go to your Typora installation directory and locate the `plugin` folder (the parent folder of this `bin` directory).
      2. Right-click the `plugin` folder and select **Properties**.
      3. Switch to the **Security** tab and click the **Edit** button.
-     4. In the "Group or user names" list, select your current user account (or the "Users" group).
+     4. In the "Group or usernames" list, select your current user account (or the "Users" group).
      5. In the permissions list below, check the **Allow** box next to **Full control** (or at least Modify and Write).
      6. Click **OK** to save. *(For Linux users, you can manually run `sudo chmod -R 777 <path-to-plugin-folder>` in terminal).*
 3. Reinstall: If the issue persists, try a clean reinstallation:
@@ -55,7 +55,7 @@ Yes, you can run `install_windows_amd_x64.exe` located in this folder. However, 
 
 
 
-## 🇨🇳 简体中文版
+## 简体中文版
 
 ### 常见问题与解决方案
 

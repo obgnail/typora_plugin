@@ -22,9 +22,9 @@ class ContextMenu {
   }
 
   /**
-   * @param {Element} el: At which location right click will pop up the menu
-   * @param {function(ev): {key: value}} getMenuItems: Generates an object composed of context menu options
-   * @param {function(ev, key): null} onClickMenuItem: on click callback; the key parameter is the clicked option
+   * @param el {Element}: At which location right click will pop up the menu
+   * @param getMenuItems {function(ev): {key: value}}: Generates an object composed of context menu options
+   * @param onClickMenuItem {function(ev, key): null}: on click callback; the key parameter is the clicked option
    */
   register = (el, getMenuItems, onClickMenuItem) => {
     if (el && !this.menus.has(el)) {

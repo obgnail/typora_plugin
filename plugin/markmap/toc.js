@@ -241,7 +241,7 @@ class TOCMarkmap {
         } else {
           if (this.config.CLICK_TO_POSITION) {
             const { height, top } = this.entities.content.getBoundingClientRect()
-            this.utils.scroll(cid, {
+            this.utils.scrollTo(cid, {
               height: height * this.config.POSITIONING_VIEWPORT_HEIGHT + top,
               showHiddenEls: !this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD,
               moveCursor: true,

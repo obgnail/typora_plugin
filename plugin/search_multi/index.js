@@ -119,15 +119,20 @@ class SearchMultiPlugin extends BasePlugin {
       window-buttons="showGrammar|fa-question|${this.i18n.t("grammar")};close|fa-times">
       <div class="plugin-search-multi-header ${this.config.EXPLAIN_TRIGGER.map(t => `trigger-${t}`).join(" ")}">
         <form id="plugin-search-multi-form">
-          <input type="text">
-          <div class="plugin-search-multi-actions">
-            <div class="plugin-search-multi-case${(this.config.CASE_SENSITIVE) ? " select" : ""}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 18 6 6 12 18M3 14h7"/><circle cx="18" cy="14" r="4"/><path d="M22 10v8"/></svg>
+          <div class="plugin-search-multi-input-wrap">
+            <input type="text">
+            <div class="plugin-search-multi-modifiers">
+              <div class="plugin-search-multi-case${(this.config.CASE_SENSITIVE) ? " select" : ""}" ty-hint="${this.i18n.t("$label.CASE_SENSITIVE")}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 18 6 6 12 18M3 14h7"/><circle cx="18" cy="14" r="4"/><path d="M22 10v8"/></svg>
+              </div>
+              <div class="plugin-search-multi-anchor${this.config.HIGHLIGHTS_MATCH_ANCHOR ? " select" : ""}" ty-hint="${this.i18n.t("$label.HIGHLIGHTS_MATCH_ANCHOR")}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6H3v12h3"/><path d="M18 6h3v12h-3"/><path d="M9 10h6"/><path d="M9 14h4"/></svg>
+              </div>
             </div>
-            <div class="plugin-search-multi-trigger">
-              <svg class="sm-icon-run" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
-              <svg class="sm-icon-stop" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2.5" ry="2.5"/></svg>
-            </div>
+          </div>
+          <div class="plugin-search-multi-trigger">
+            <svg class="sm-icon-run" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+            <svg class="sm-icon-stop" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2.5" ry="2.5"/></svg>
           </div>
         </form>
         <div class="plugin-search-multi-explain"></div>
@@ -147,6 +152,7 @@ class SearchMultiPlugin extends BasePlugin {
       header: document.querySelector(".plugin-search-multi-header"),
       form: document.querySelector("#plugin-search-multi-form"),
       input: document.querySelector("#plugin-search-multi-form input"),
+      anchorBtn: document.querySelector(".plugin-search-multi-anchor"),
       caseBtn: document.querySelector(".plugin-search-multi-case"),
       triggerBtn: document.querySelector(".plugin-search-multi-trigger"),
       explain: document.querySelector(".plugin-search-multi-explain"),
@@ -188,6 +194,13 @@ class SearchMultiPlugin extends BasePlugin {
         this.search()
       }
     })
+    this.entities.anchorBtn.addEventListener("click", () => {
+      this.entities.anchorBtn.classList.toggle("select")
+      this.highlighter.options.matchAnchor = (this.config.HIGHLIGHTS_MATCH_ANCHOR = !this.config.HIGHLIGHTS_MATCH_ANCHOR)
+      if (!this.fsm.isSearching() && this.entities.input.value) {
+        this.highlightByAST()
+      }
+    })
     this.entities.caseBtn.addEventListener("click", () => {
       this.entities.caseBtn.classList.toggle("select")
       const sensitive = this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
@@ -209,7 +222,15 @@ class SearchMultiPlugin extends BasePlugin {
     this.entities.input.addEventListener("keydown", ev => {
       if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
         ev.preventDefault()
-        this.utils.scrollActiveItem(this.entities.files, ".plugin-search-item.active", ev.key === "ArrowDown")
+        const list = this.entities.files
+        if (list.childElementCount === 0) return
+        const origin = list.querySelector(".plugin-search-item.active")
+        const active = ev.key === "ArrowDown"
+          ? origin?.nextElementSibling ?? list.firstElementChild
+          : origin?.previousElementSibling ?? list.lastElementChild
+        origin?.classList.toggle("active")
+        active.classList.toggle("active")
+        active.scrollIntoView({ block: "nearest" })
       } else if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
         this.hide()
       }

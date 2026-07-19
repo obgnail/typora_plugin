@@ -117,7 +117,7 @@ class Highlighter {
       $(targetHit).closest("[cid]").addClass("md-focus")
     }
     if (targetHit) {
-      this.utils.scroll(targetHit)
+      this.utils.scrollTo(targetHit)
       this._highlightMarker(targetHit)
     }
     return currentPos

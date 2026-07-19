@@ -1,5 +1,7 @@
 const PATH = require("path")
 const FS_EXTRA = require("fs-extra")
+const TOML = require("../lib/smol-toml")
+
 const i18n = require("../i18n")
 
 const MIXINS = {
@@ -63,7 +65,7 @@ class utils {
   static isUnderMountFolder = path => {
     const mountFolder = PATH.resolve(this.getMountFolder())
     const p = PATH.resolve(path)
-    return p && mountFolder && p.startsWith(mountFolder)
+    return mountFolder && p && p.startsWith(mountFolder)
   }
   static openFile = (filepath, force = false) => {
     if (!filepath) return
@@ -155,12 +157,8 @@ class utils {
   static safeEval = x => new Function(`return (${x})`)()
   static unsafeEval = x => eval(`(${x})`)
 
-  /** @description NOT a foolproof solution. */
-  static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str)
   /** @description NOT a foolproof solution. The Promises/A+ specification is not a part of Node.js, so there is no foolproof solution at all */
-  static isPromise = obj => this.isObject(obj) && typeof obj.then === "function"
-  /** @description NOT a foolproof solution. Determine the "true" asynchronous functions */
-  static isAsyncFunction = fn => fn.constructor.name === "AsyncFunction"
+  static isPromise = obj => typeof obj?.then === "function"
   /** @description NOT a foolproof solution. */
   static isObject = value => {
     const type = typeof value
@@ -283,17 +281,15 @@ class utils {
   }
 
   static pick = (obj, props) => {
-    if (!obj || typeof obj !== "object") return {}
-    const entries = props
-      .map(prop => [prop, obj[prop]])
-      .filter(([_, val]) => val !== undefined)
-    return Object.fromEntries(entries)
+    return (!obj || typeof obj !== "object")
+      ? {}
+      : Object.fromEntries(props.map(prop => [prop, obj[prop]]).filter(([_, val]) => val !== undefined))
   }
 
   static pickBy = (obj, predicate) => {
-    if (!obj || typeof obj !== "object" || typeof predicate !== "function") return {}
-    const entries = Object.entries(obj).filter(([key, value]) => predicate(value, key, obj))
-    return Object.fromEntries(entries)
+    return (!obj || typeof obj !== "object" || typeof predicate !== "function")
+      ? {}
+      : Object.fromEntries(Object.entries(obj).filter(([key, value]) => predicate(value, key, obj)))
   }
 
   /**
@@ -306,25 +302,6 @@ class utils {
     }
     return Object.keys({ ...source, ...other }).reduce((obj, key) => {
       obj[key] = Array.isArray(other[key]) ? other[key] : this.merge(source[key], other[key])
-      return obj
-    }, Array.isArray(source) ? [] : {})
-  }
-
-  /**
-   * only merge keys that exist in source
-   * @example update({ o: { a: [1, 2] } }, { o: { a: [3, 4] }, d: { b: 4 } }) -> { o: { a: [ 3, 4 ] } } }
-   * @example update({ o: { a: 3, c: 1 } }, { o: { a: 2 }, d: { b: 4 } }) -> { o: { a: 2, c: 1 } } }
-   */
-  static update = (source, other) => {
-    if (!this.isObject(source) || !this.isObject(other)) {
-      return other === undefined ? source : other
-    }
-    return Object.keys(source).reduce((obj, key) => {
-      if (other[key]) {
-        obj[key] = Array.isArray(other[key]) ? other[key] : this.update(source[key], other[key])
-      } else {
-        obj[key] = source[key]
-      }
       return obj
     }, Array.isArray(source) ? [] : {})
   }
@@ -359,38 +336,6 @@ class utils {
       }
     }
     return result
-  }
-
-  static cloneDeep = (obj, memo = new WeakMap()) => {
-    if (obj == null || typeof obj !== "object") {
-      return obj
-    } else if (memo.has(obj)) {
-      return memo.get(obj)
-    } else if (obj instanceof Date) {
-      return new Date(obj.getTime())
-    } else if (obj instanceof RegExp) {
-      return new RegExp(obj.source, obj.flags)
-    } else if (obj instanceof Map) {
-      const clonedMap = new Map()
-      memo.set(obj, clonedMap)
-      obj.forEach((value, key) => {
-        clonedMap.set(this.cloneDeep(key, memo), this.cloneDeep(value, memo))
-      })
-      return clonedMap
-    } else if (obj instanceof Set) {
-      const clonedSet = new Set()
-      memo.set(obj, clonedSet)
-      obj.forEach(value => {
-        clonedSet.add(this.cloneDeep(value, memo))
-      })
-      return clonedSet
-    }
-    const clone = Array.isArray(obj) ? [] : Object.create(Object.getPrototypeOf(obj))
-    memo.set(obj, clone)
-    for (const key of [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)]) {
-      clone[key] = this.cloneDeep(obj[key], memo)
-    }
-    return clone
   }
 
   static naiveCloneDeep = (source) => {
@@ -476,7 +421,7 @@ class utils {
       a: () => new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true }).formatToParts(date).find(part => part.type === "dayPeriod")?.value || "",
     }
     const regex = /(yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a)/g
-    return format.replace(regex, (match) => fns[match] ? fns[match]() : match)
+    return format.replace(regex, match => fns[match] ? fns[match]() : match)
   }
 
   static nestedPropertyHelpers = {
@@ -630,44 +575,36 @@ class utils {
 
   // =========== Business File ===========
   static getLocalRootUrl = () => File.editor.docMenu.getLocalRootUrl() || this.getCurrentDirPath()
-  static toFileProtocol = (path) => path ? `file://${path}` : path
+  static toFileProtocol = (path) => (path && !path.startsWith("file://")) ? `file://${path}` : path
 
   static getCurrentFileContent = () => File.editor.getMarkdown()
   static editCurrentFile = async (replacement, persistence = File.option.enableAutoSave) => {
-    await this.fixScrollTop(async () => {
-      const bak = File.presentedItemChanged
-      File.presentedItemChanged = this.noop
-      try {
-        const filepath = this.getFilePath()
-        const content = this.getCurrentFileContent()
-        const replaced = typeof replacement === "function"
-          ? await replacement(content)
-          : replacement
-        if (replaced === content) return
-        if (persistence && filepath) {
-          const ok = await this.writeFile(filepath, replaced)
-          if (!ok) return
-        }
-        const op = persistence ? { delayRefresh: true, skipChangeCount: true, skipStore: true } : undefined
-        File.reloadContent(replaced, op)
-      } catch (e) {
-        console.error(e)
-      } finally {
-        File.presentedItemChanged = bak
-      }
-    })
-  }
-
-  static fixScrollTop = async fn => {
     const inSourceMode = File.editor.sourceView.inSourceMode
-    const scrollTop = inSourceMode
-      ? File.editor.sourceView.cm.getScrollInfo().top
-      : this.entities.eContent.scrollTop
-    await fn()
-    if (inSourceMode) {
-      File.editor.sourceView.cm.scrollTo(0, scrollTop)
-    } else {
-      this.entities.eContent.scrollTop = scrollTop
+    const scrollTop = inSourceMode ? File.editor.sourceView.cm.getScrollInfo().top : this.entities.eContent.scrollTop
+
+    const bak = File.presentedItemChanged
+    File.presentedItemChanged = this.noop
+
+    try {
+      const filepath = this.getFilePath()
+      const content = this.getCurrentFileContent()
+      const newContent = typeof replacement === "function" ? await replacement(content) : replacement
+      if (newContent === content) return
+      if (persistence && filepath) {
+        const ok = await this.writeFile(filepath, newContent)
+        if (!ok) return
+      }
+      const op = persistence ? { delayRefresh: true, skipChangeCount: true, skipStore: true } : undefined
+      File.reloadContent(newContent, op)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      File.presentedItemChanged = bak
+      if (inSourceMode) {
+        File.editor.sourceView.cm.scrollTo(0, scrollTop)
+      } else {
+        this.entities.eContent.scrollTop = scrollTop
+      }
     }
   }
 
@@ -757,8 +694,8 @@ class utils {
 
   static readYaml = content => require("../lib/js-yaml").load(content)
   static stringifyYaml = (obj, args) => require("../lib/js-yaml").dump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
-  static readToml = content => require("../lib/smol-toml").parse(content)
-  static stringifyToml = obj => require("../lib/smol-toml").stringify(obj)
+  static readToml = content => TOML.parse(content)
+  static stringifyToml = obj => TOML.stringify(obj)
   static readTomlFile = async filepath => this.readToml(await FS_EXTRA.readFile(filepath, "utf-8"))
 
   static unzip = async (buffer, workDir) => {
@@ -776,7 +713,7 @@ class utils {
       if (err) reject(err)
       else resolve()
     })
-    await promise.finally(() => FS_EXTRA.remove(zipPath).catch(err => console.error(err)))
+    await promise.finally(() => FS_EXTRA.remove(zipPath).catch(console.error))
     return entries
   }
 
@@ -952,25 +889,25 @@ class utils {
     return nodeFetch(url, { agent, signal, ...args })
   }
 
-  static splitFrontMatter = content => {
-    const result = { yamlObject: null, remainContent: content, yamlLineCount: 0 }
-    content = content.trimLeft()
-    if (!/^---\r?\n/.test(content)) {
-      return result
+  static splitFrontMatter = text => {
+    const ret = { yamlObject: null, remainContent: text, yamlLineCount: 0 }
+    text = text.trimStart()
+    if (!/^---\r?\n/.test(text)) {
+      return ret
     }
-    const endDelimiterMatch = /\n---\r?\n/.exec(content)
+    const endDelimiterMatch = /\n---\r?\n/.exec(text)
     if (!endDelimiterMatch) {
-      return result
+      return ret
     }
-    const yamlContent = content.slice(4, endDelimiterMatch.index)
-    result.remainContent = content.slice(endDelimiterMatch.index + endDelimiterMatch[0].length)
-    result.yamlLineCount = (yamlContent === "" ? 0 : (yamlContent.match(/\n/g) || []).length + 1) + 2
+    const content = text.slice(4, endDelimiterMatch.index)
+    ret.remainContent = text.slice(endDelimiterMatch.index + endDelimiterMatch[0].length)
+    ret.yamlLineCount = (content === "" ? 0 : (content.match(/\n/g) || []).length + 1) + 2
     try {
-      result.yamlObject = this.readYaml(yamlContent) ?? {}
+      ret.yamlObject = this.readYaml(content) ?? {}
     } catch (e) {
       console.error(e)
     }
-    return result
+    return ret
   }
 
   static getRecentFiles = async () => {
@@ -1067,7 +1004,7 @@ class utils {
     }
   }
 
-  static scroll = (target, options = {}) => {
+  static scrollTo = (target, options = {}) => {
     if (target instanceof Element) {
       target = $(target)
     } else if (typeof target === "string") {
@@ -1077,7 +1014,9 @@ class utils {
 
     const {
       height = (window.innerHeight || document.documentElement.clientHeight) / 2,
-      focus = true, moveCursor = false, showHiddenEls = true,
+      focus = true,
+      moveCursor = false,
+      showHiddenEls = true,
     } = options
 
     if (focus) File.editor.focusAndRestorePos()
@@ -1102,7 +1041,7 @@ class utils {
     cm.setCursor(cursor)
   }
 
-  // content: string type. \n represents a soft line break; \n\n represents a hard line break.
+  // content: \n represents a soft line break; \n\n represents a hard line break
   static insertText = (anchorNode, content, restoreLastCursor = true) => {
     if (restoreLastCursor) {
       File.editor.contextMenu.hide()
@@ -1114,7 +1053,6 @@ class utils {
 
   static createFragment = els => {
     if (!els) return null
-
     if (typeof els === "string") {
       const tpl = document.createElement("template")
       tpl.innerHTML = els
@@ -1136,7 +1074,7 @@ class utils {
   /** Backup before `File.editor.stylize.toggleFences()` as it uses `File.option` to set block code language. Restore after. */
   static insertFence = (lang = "") => {
     const lang1_ = File.option["default-code-lang"]  // Used for old versions
-    const lang2_ = File.option.defaultCodeLang       // Used for new versions
+    const lang2_ = File.option.defaultCodeLang  // Used for new versions
     const menu_ = File.option.DefaultCodeLangOptionMenu
     const op_ = File.option.defaultCodeLangOption
 
@@ -1157,15 +1095,6 @@ class utils {
   static insertBlockCode = (anchorNode, lang, content) => {
     const cnt = ["```", lang, "\n", content, "\n", "```"].join("")
     this.insertText(anchorNode, cnt)
-  }
-
-  static findActiveNode = range => {
-    range = range ?? File.editor.selection.getRangy()
-    if (range) {
-      const selection = window.getSelection()
-      const markElem = File.editor.getMarkElem(selection.anchorNode)
-      return File.editor.findNodeByElem(markElem)
-    }
   }
 
   static getRangy = () => {
@@ -1340,17 +1269,6 @@ class utils {
       document.addEventListener("mouseup", _onMouseUp)
     })
     targetEle.ondragstart = () => false
-  }
-
-  static scrollActiveItem = (list, activeSelector, isNext) => {
-    if (list.childElementCount === 0) return
-    const origin = list.querySelector(activeSelector)
-    const active = isNext
-      ? origin?.nextElementSibling ?? list.firstElementChild
-      : origin?.previousElementSibling ?? list.lastElementChild
-    origin?.classList.toggle("active")
-    active.classList.toggle("active")
-    active.scrollIntoView({ block: "nearest" })
   }
 
   static createSmartInputHandler = (inputEl, callback, options = {}) => {

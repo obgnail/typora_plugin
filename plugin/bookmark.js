@@ -6,10 +6,7 @@ class BookmarkPlugin extends BasePlugin {
     idx: -1,
     time: Date.now(),
     getEl: (idx) => [...document.querySelectorAll(this.recordSelector)][idx],
-    scroll: (idx) => {
-      const el = this.locateUtils.getEl(idx)
-      if (el) this.utils.scroll(el, { height: 20, moveCursor: true })
-    },
+    scrollTo: (idx) => this.utils.scrollTo(this.locateUtils.getEl(idx), { height: 20, moveCursor: true }),
   }
   recorder = {
     register: () => this.utils.stateRecorder.register({
@@ -19,7 +16,7 @@ class BookmarkPlugin extends BasePlugin {
       stateRestorer: el => el.classList.add(this.className),
       finalFn: () => {
         if (this.locateUtils.file && this.locateUtils.idx !== -1) {
-          this.locateUtils.scroll(this.locateUtils.idx)
+          this.locateUtils.scrollTo(this.locateUtils.idx)
           this.locateUtils.file = ""
           this.locateUtils.idx = -1
         }
@@ -76,7 +73,7 @@ class BookmarkPlugin extends BasePlugin {
           Object.assign(this.locateUtils, { file: targetFile, idx, time: Date.now() })
           this.utils.openFile(targetFile)
         } else {
-          this.locateUtils.scroll(idx)
+          this.locateUtils.scrollTo(idx)
         }
       }
     })

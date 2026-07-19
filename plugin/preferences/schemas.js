@@ -133,7 +133,7 @@ const schema_global = () => [
   Group(
     Action("updatePlugin").ActionTooltip("toggleDevTools", "fa fa-wrench"),
     Action("uninstallPlugin"),
-    Action("sendEmail"),
+    Action("sendEmail").ActionTooltip("copyEmail", "fa fa-clipboard"),
     Action("donate"),
     Static("pluginVersion"),
   ),

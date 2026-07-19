@@ -7,12 +7,12 @@ class StateRecorder {
 
   /**
    * @param {Object} options
-   * @param {string} options.name: Give it a name.
-   * @param {string} options.selector: Find the elements whose state you want to record using a selector.
-   * @param {function(Element): any} options.stateGetter: Record the state of the target element. Element is the element found by the selector.
-   * @param {function(Element, state): any} options.stateRestorer: Restore the state for the element. State is the return value of stateGetter.
-   * @param {function} options.finalFn: The function to execute last.
-   * @param {function(Function)} options.delayFn: The function to delay execute.
+   * @param options.name {string}: Give it a name.
+   * @param options.selector {string}: Find the elements whose state you want to record using a selector.
+   * @param options.stateGetter {function(Element): any}: Record the state of the target element. Element is the element found by the selector.
+   * @param options.stateRestorer {function(Element, state): any}: Restore the state for the element. State is the return value of stateGetter.
+   * @param options.finalFn {function}: The function to execute last.
+   * @param options.delayFn {function(Function)}: The function to delay execute.
    */
   register = (options) => this.recorders.set(options.name, { ...options, collections: new Map() })
   unregister = recorderName => this.recorders.delete(recorderName)

@@ -192,7 +192,7 @@ class CommandDispatcher {
       thumbnailNav: force => view.thumbnailNav(force),
       location: () => view.location(),
       download: () => view.download(),
-      scroll: () => view.scroll(gallery.getImages()),
+      scroll: () => view.scrollToTarget(),
       waterfall: () => view.waterfall(),
       close: () => view.close(),
       info: () => view.showInfo(),
@@ -231,8 +231,8 @@ class CommandDispatcher {
 }
 
 class ImageViewerPlugin extends BasePlugin {
+  gallery = new GalleryManager(this.utils, this.config)
   operations = null
-  gallery = null
   dispatcher = null
   opMap = Object.fromEntries(Object.entries({
     dummy: "", info: "fa fa-info-circle", thumbnailNav: "fa fa-caret-square-o-down",
@@ -303,7 +303,6 @@ class ImageViewerPlugin extends BasePlugin {
       close: root.querySelector(".viewer-close"),
     }
     this.operations = new ImageOperations(this.entities.image, this.entities.mask, this.config)
-    this.gallery = new GalleryManager(this.utils, this.config)
     this.dispatcher = new CommandDispatcher(this, this.operations, this.gallery)
   }
 
@@ -548,11 +547,11 @@ class ImageViewerPlugin extends BasePlugin {
     ok ? this.utils.showInFinder(filepath) : alert("Download Image Failed")
   }
 
-  scroll = (allImages) => {
+  scrollToTarget = () => {
     const idx = parseInt(this.entities.image.dataset.idx, 10)
-    const image = allImages[idx]
+    const image = this.gallery.getImages()[idx]
     this.close()
-    if (image) this.utils.scroll(image, { height: 30 })
+    this.utils.scrollTo(image, { height: 30 })
   }
 
   handleHotkey = (isRemove = false) => {

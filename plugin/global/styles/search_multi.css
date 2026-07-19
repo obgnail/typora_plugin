@@ -16,7 +16,6 @@
 
   --sm-border: rgba(0, 0, 0, 0.06);
   --sm-border-focus: #4285f4;
-  --sm-border-error: rgba(239, 68, 68, 0.3);
 
   --sm-text-main: #1e293b;
   --sm-text-sub: #475569;
@@ -86,13 +85,21 @@ body.unibody-window #plugin-search-multi {
 #plugin-search-multi-form {
   position: relative;
   width: 100%;
+  display: flex;
+  align-items: center;
 }
 
-#plugin-search-multi-form input {
+.plugin-search-multi-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.plugin-search-multi-input-wrap input {
   box-sizing: border-box;
   width: 100%;
   height: 36px;
-  padding: 0 64px 0 14px;
+  padding: 0 68px 0 14px;
   background-color: var(--sm-bg-input);
   border: 1px solid transparent;
   border-radius: var(--sm-radius);
@@ -103,42 +110,31 @@ body.unibody-window #plugin-search-multi {
   transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-#plugin-search-multi-form input::placeholder {
+.plugin-search-multi-input-wrap input::placeholder {
   color: var(--sm-text-placeholder);
 }
 
-#plugin-search-multi-form input:focus {
+.plugin-search-multi-input-wrap input:focus {
   border-color: var(--sm-border-focus);
   background-color: var(--sm-bg-surface);
   box-shadow: 0 0 0 3px var(--sm-shadow-focus);
 }
 
-.plugin-search-multi-actions {
+.plugin-search-multi-modifiers {
   position: absolute;
-  right: 6px;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
-  z-index: 2;
 }
 
-.plugin-search-multi-actions > div + div {
-  margin-left: 2px;
+.plugin-search-multi-modifiers > div + div {
+  margin-left: 3px;
 }
 
-#plugin-search-multi-form svg {
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  stroke: currentColor;
-  fill: none;
-  pointer-events: none;
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
-}
-
-#plugin-search-multi-form .plugin-search-multi-case,
-#plugin-search-multi-form .plugin-search-multi-trigger {
+.plugin-search-multi-anchor,
+.plugin-search-multi-case {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -148,35 +144,66 @@ body.unibody-window #plugin-search-multi {
   border-radius: 6px;
   cursor: pointer;
   transition: color 0.2s ease, background-color 0.2s ease;
-  overflow: hidden;
 }
 
-#plugin-search-multi-form .plugin-search-multi-case:hover,
-#plugin-search-multi-form .plugin-search-multi-trigger:hover {
+.plugin-search-multi-anchor:hover,
+.plugin-search-multi-case:hover {
   color: var(--sm-text-main);
   background-color: var(--sm-bg-hover);
 }
 
-#plugin-search-multi-form .plugin-search-multi-case.select {
+.plugin-search-multi-anchor.select,
+.plugin-search-multi-case.select {
   color: var(--sm-border-focus);
   background-color: var(--sm-shadow-focus);
 }
 
-#plugin-search-multi-form .plugin-search-multi-trigger.is-searching {
-  background-color: var(--sm-bg-error);
-  border-color: var(--sm-border-error);
+.plugin-search-multi-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin-left: 6px;
+  border-radius: var(--sm-radius);
+  color: var(--sm-text-sub);
+  background-color: var(--sm-bg-input);
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  position: relative;
 }
 
-#plugin-search-multi-form .plugin-search-multi-trigger.is-searching:hover {
+.plugin-search-multi-trigger:hover {
+  color: var(--sm-text-main);
+  background-color: var(--sm-bg-hover);
+}
+
+.plugin-search-multi-trigger.is-searching {
+  color: var(--sm-text-error);
+  background-color: var(--sm-bg-error);
+}
+
+.plugin-search-multi-trigger.is-searching:hover {
   background-color: rgba(239, 68, 68, 0.15);
 }
 
-#plugin-search-multi-form .plugin-search-multi-trigger .sm-icon-run {
+.plugin-search-multi-trigger svg {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+}
+
+.plugin-search-multi-trigger .sm-icon-run {
   opacity: 1;
   transform: rotate(0) scale(1);
 }
 
-#plugin-search-multi-form .plugin-search-multi-trigger .sm-icon-stop {
+.plugin-search-multi-trigger .sm-icon-stop {
   opacity: 0;
   transform: rotate(-90deg) scale(0.4);
   fill: currentColor;
@@ -184,12 +211,12 @@ body.unibody-window #plugin-search-multi {
   color: var(--sm-text-error);
 }
 
-#plugin-search-multi-form .plugin-search-multi-trigger.is-searching .sm-icon-run {
+.plugin-search-multi-trigger.is-searching .sm-icon-run {
   opacity: 0;
   transform: rotate(90deg) scale(0.4);
 }
 
-#plugin-search-multi-form .plugin-search-multi-trigger.is-searching .sm-icon-stop {
+.plugin-search-multi-trigger.is-searching .sm-icon-stop {
   opacity: 1;
   transform: rotate(0) scale(1.1);
 }
@@ -352,6 +379,8 @@ ${colors_style}
   align-content: flex-start;
   width: 100%;
   margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--sm-divider-line);
 }
 
 .plugin-search-files {
@@ -509,7 +538,6 @@ body.plugin-dark-mode #plugin-search-multi {
 
   --sm-border: rgba(255, 255, 255, 0.08);
   --sm-border-focus: #8ab4f8;
-  --sm-border-error: rgba(239, 68, 68, 0.3);
 
   --sm-text-main: #f3f4f6;
   --sm-text-sub: #9ca3af;

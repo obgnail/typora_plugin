@@ -84,7 +84,7 @@ const buildProviders = (utils, context) => [
       const headers = File?.editor?.nodeMap?.toc?.headers || []
       return headers.reduce((acc, h) => {
         if (h?.attributes && h?.cid) {
-          const jump = () => utils.scroll(h.cid)
+          const jump = () => utils.scrollTo(h.cid)
           acc.push({
             title: h.attributes.pattern.replace("{0}", h.attributes.text),
             action: jump,

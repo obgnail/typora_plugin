@@ -39,6 +39,10 @@ module.exports = (plugin) => {
     toggleDevTools: () => JSBridge.invoke("window.toggleDevTools"),
     togglePreferencePanel: () => File.megaMenu.togglePreferencePanel(),
     sendEmail: () => utils.sendEmail("nilheap@gmail.com", "Feedback"),
+    copyEmail: async () => {
+      await navigator.clipboard.writeText("nilheap@gmail.com")
+      utils.notification.show(i18n.t("success.copy"))
+    },
     importSettings: async () => {
       const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
         title: i18n.t("$label.importSettings"),

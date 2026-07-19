@@ -74,7 +74,7 @@ class CursorHistoryPlugin extends BasePlugin {
   jump = (cursor) => {
     if (!cursor) return
     File.editor.undo.exeCommand(cursor)
-    this.utils.scroll(cursor.id, { focus: false, moveCursor: false, showHiddenEls: false })
+    this.utils.scrollTo(cursor.id, { focus: false, moveCursor: false, showHiddenEls: false })
   }
 }
 

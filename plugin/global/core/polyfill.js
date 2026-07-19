@@ -30,6 +30,71 @@ const _isRegExp = (obj) => {
   return matchSym !== undefined ? !!matchSym : Object.prototype.toString.call(obj) === "[object RegExp]"
 }
 
+function globalThis_() {
+  globalThis = globalThis === undefined ? globalThis : global
+
+  // Pure JS cannot fully achieve the transfer of memory control rights for options.transfer
+  _impl(globalThis, "structuredClone", function (value, options) {
+    const cloneDeep = (obj, memo = new WeakMap()) => {
+      if (typeof obj === "function") {
+        throw new DOMException("Function object could not be cloned.", "DataCloneError")
+      }
+      if (obj == null || typeof obj !== "object") {
+        return obj
+      }
+      if (memo.has(obj)) {
+        return memo.get(obj)
+      }
+      let clone
+      if (obj instanceof Date) {
+        clone = new Date(obj.getTime())
+        memo.set(obj, clone)
+        return clone
+      }
+      if (obj instanceof RegExp) {
+        clone = new RegExp(obj.source, obj.flags)
+        memo.set(obj, clone)
+        return clone
+      }
+      if (obj instanceof Map) {
+        clone = new Map()
+        memo.set(obj, clone)
+        obj.forEach((val, key) => {
+          clone.set(cloneDeep(key, memo), cloneDeep(val, memo))
+        })
+        return clone
+      }
+      if (obj instanceof Set) {
+        clone = new Set()
+        memo.set(obj, clone)
+        obj.forEach(val => {
+          clone.add(cloneDeep(val, memo))
+        })
+        return clone
+      }
+      if (obj instanceof ArrayBuffer) {
+        clone = obj.slice(0)
+        memo.set(obj, clone)
+        return clone
+      }
+      if (ArrayBuffer.isView(obj)) {
+        const clonedBuffer = cloneDeep(obj.buffer, memo)
+        clone = new obj.constructor(clonedBuffer, obj.byteOffset, obj.length)
+        memo.set(obj, clone)
+        return clone
+      }
+      clone = Array.isArray(obj) ? [] : Object.create(Object.getPrototypeOf(obj))
+      memo.set(obj, clone)
+      const keys = [...Object.keys(obj), ...Object.getOwnPropertySymbols(obj)]
+      for (const key of keys) {
+        clone[key] = cloneDeep(obj[key], memo)
+      }
+      return clone
+    }
+    return cloneDeep(value)
+  })
+}
+
 function object() {
   _impl(Object, "hasOwn", function (obj, key) {
     return Object.prototype.hasOwnProperty.call(obj, key)
@@ -165,6 +230,7 @@ function abortSignal() {
   })
 }
 
+globalThis_()
 object()
 string()
 array()

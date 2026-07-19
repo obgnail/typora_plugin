@@ -1,8 +1,7 @@
 /**
  * @fileoverview Custom build script for typora_plugin.
  * Orchestrates dependency fetching, asset copying, and source bundling via esbuild.
- * Designed to maintain plugin independence by distributing dependencies locally
- * rather than relying on a centralized node_modules directory at runtime.
+ * Designed to maintain plugin independence by distributing dependencies locally.
  */
 const path = require("path")
 const fs = require("fs-extra")
@@ -265,9 +264,21 @@ const vendorExecutors = {
 }
 
 async function build() {
+  const options = { analyze: false, types: new Set(), targets: [] }
+
   const cliArgs = process.argv.slice(2)
-  const analyze = cliArgs.includes("--analyze")
-  const targetNames = cliArgs.filter(arg => !arg.startsWith("--"))
+  for (const arg of cliArgs) {
+    if (arg === "--analyze") {
+      options.analyze = true
+    } else if (arg.startsWith("--type=")) {
+      arg.split("=")[1].split(",").forEach(t => {
+        const normalized = (t === "copyNpm" || t === "copy") ? "dist" : t.trim()
+        if (normalized) options.types.add(normalized)
+      })
+    } else if (!arg.startsWith("--")) {
+      options.targets.push(arg.trim())
+    }
+  }
 
   const allVendors = {}
   const aliasRegistry = {}
@@ -279,23 +290,29 @@ async function build() {
     allVendors[name] = { ...cfg, name }
   })
 
-  const vendorsToRun = targetNames.length === 0
+  let vendorsToRun = options.targets.length === 0
     ? Object.values(allVendors)
-    : targetNames.map(name => {
+    : options.targets.map(name => {
       if (!allVendors[name]) console.warn(`\x1b[33mWarning: Vendor "${name}" not found. Skipping.\x1b[0m`)
       return allVendors[name]
     }).filter(Boolean)
 
+  if (options.types.size > 0) {
+    vendorsToRun = vendorsToRun.filter(vendor => options.types.has(vendor.type))
+  }
+
   if (!vendorsToRun.length) {
-    console.error("\x1b[31mError: No valid vendors specified.\x1b[0m")
+    console.error("\x1b[31mError: No valid vendors matched the specified criteria.\x1b[0m")
     process.exit(1)
   }
 
-  console.log(`\x1b[36mTargets: ${targetNames.length ? targetNames.join(", ") : "ALL"} (${vendorsToRun.length} vendors)\x1b[0m`)
+  const targetMsg = options.targets.length ? options.targets.join(", ") : "ALL"
+  const typeMsg = options.types.size ? Array.from(options.types).join(", ") : "ALL"
+  console.log(`\x1b[36mTargets: ${targetMsg} | Types: ${typeMsg} (${vendorsToRun.length} vendors)\x1b[0m`)
   console.time("Build Time")
 
   try {
-    await Promise.all(vendorsToRun.map(vendor => vendorExecutors[vendor.type](vendor, { analyze, aliasRegistry })))
+    await Promise.all(vendorsToRun.map(vendor => vendorExecutors[vendor.type](vendor, { analyze: options.analyze, aliasRegistry })))
     console.timeEnd("Build Time")
     console.log("\x1b[32m✔ Build success!\x1b[0m")
   } catch (err) {

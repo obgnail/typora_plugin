@@ -61,7 +61,7 @@ class RightOutlinePlugin extends BasePlugin {
         const ref = ev.target.closest(".toc-node")?.dataset.ref
         if (ref) {
           if (File.editor.sourceView.inSourceMode) File.toggleSourceMode()
-          this.utils.scroll(ref, { moveCursor: true })
+          this.utils.scrollTo(ref, { moveCursor: true })
           return
         }
 
@@ -221,7 +221,7 @@ class RightOutlinePlugin extends BasePlugin {
       // Bypass the visibility check and yield the main thread.
       // This ensures the browser completes layout reflows before rendering the outline,
       // preventing blank panels due to race conditions and smoothing the UI expansion.
-      setTimeout(() => this._refreshPanel(), 30)
+      setTimeout(() => this._refreshPanel(), 50)
     }
   }
 

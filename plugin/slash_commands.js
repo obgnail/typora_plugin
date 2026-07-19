@@ -187,7 +187,7 @@ class SlashCommandsPlugin extends BasePlugin {
   _normalizeAnchor = (anchor) => anchor.containerNode.normalize()
 
   _refresh = () => {
-    const node = this.utils.findActiveNode()
+    const { node } = this.utils.getRangy()
     if (!node) return
 
     const parsedNode = File.editor.simpleParse(node, true)

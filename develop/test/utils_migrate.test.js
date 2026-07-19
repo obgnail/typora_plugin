@@ -113,31 +113,6 @@ afterEach(() => {
 })
 
 describe("Migrate class functionality", () => {
-  describe("Plugin Management", () => {
-    it("deleteUselessPlugins should remove specified plugins and directories", async () => {
-      const removeSpy = mock.method(mockUtils.Package.FsExtra, "remove")
-      await migrate.deleteUselessPlugins()
-
-      assert.ok(removeSpy.mock.callCount() > 0, "Should attempt to remove plugins")
-
-      const removedPaths = removeSpy.mock.calls.map(call => call.arguments[0])
-      const hasExpectedRemovals = removedPaths.some(path => path.includes("openInTotalCommander"))
-      assert.ok(hasExpectedRemovals, "Should remove deprecated plugins")
-    })
-
-    it("deleteUselessPlugins should handle file system errors gracefully", async () => {
-      const errorMessage = "Permission denied"
-      mockUtils.Package.FsExtra.remove = async () => {
-        throw new Error(errorMessage)
-      }
-
-      await assert.rejects(
-        () => migrate.deleteUselessPlugins(),
-        new Error(errorMessage),
-      )
-    })
-  })
-
   describe("Configuration Cleaning", () => {
     describe("cleanInvalidPlugins", () => {
       it("should preserve valid plugins and remove invalid ones", async () => {
@@ -310,7 +285,6 @@ describe("Migrate class functionality", () => {
   describe("Workflow Integration", () => {
     it("run should execute complete migration workflow", async () => {
       const workflowSpies = {
-        deleteUselessPlugins: mock.method(migrate, "deleteUselessPlugins"),
         cleanInvalidPlugins: mock.method(migrate, "cleanInvalidPlugins"),
         cleanPluginsAndKeys: mock.method(migrate, "cleanPluginsAndKeys"),
         saveFiles: mock.method(migrate, "saveFiles"),
@@ -323,18 +297,6 @@ describe("Migrate class functionality", () => {
       Object.values(workflowSpies).forEach(spy => {
         assert.strictEqual(spy.mock.callCount(), 1, "Each step should be called once")
       })
-    })
-
-    it("run should handle workflow errors gracefully", async () => {
-      const errorMessage = "Workflow failed"
-      mock.method(migrate, "deleteUselessPlugins", async () => {
-        throw new Error(errorMessage)
-      })
-
-      await assert.rejects(
-        () => migrate.run(),
-        new Error(errorMessage),
-      )
     })
 
     it("postprocess should delay execution", () => {

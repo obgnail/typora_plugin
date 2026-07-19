@@ -132,7 +132,8 @@
     "$tooltip.openSettingsUserTomlExternally": "外部開啟用戶設定",
     "$tooltip.neverGonnaTellALie": "插件教程",
     "$tooltip.openPluginFolder": "插件目錄",
-    "$tooltip.toggleDevTools": "開發人員工具"
+    "$tooltip.toggleDevTools": "開發人員工具",
+    "$tooltip.copyEmail": "複製郵件地址"
   },
   "window_tab": {
     "pluginName": "標籤頁管理",

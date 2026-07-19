@@ -8,9 +8,9 @@ class ExportHelper {
   }
 
   /**
-   * @param {string} name: Give it a name.
-   * @param {function(exportOptions): string | null} beforeExportToHTML: If returns a string, it will be added to extraCSS.
-   * @param {function(html, exportOptions): html | null} afterExportToHTML: If returns a string, it will replace the HTML.
+   * @param name {string}: Give it a name.
+   * @param beforeExportToHTML {function(exportOptions): string | null}: If returns a string, it will be added to extraCSS.
+   * @param afterExportToHTML {function(html, exportOptions): html | null}: If returns a string, it will replace the HTML.
    */
   register = (name, beforeExportToHTML, afterExportToHTML) => this.htmlHelpers.set(name, { beforeExportToHTML, afterExportToHTML })
   unregister = name => this.htmlHelpers.delete(name)
@@ -75,7 +75,7 @@ class ExportHelper {
     // The exportToHTML function in older versions of Typora is not an AsyncFunction.
     // Make every effort to be compatible with older versions.
     this.utils.waitUntil(() => File?.editor?.export?.exportToHTML).then(fn => {
-      this.isAsync = this.utils.isAsyncFunction(fn)
+      this.isAsync = fn.constructor.name === "AsyncFunction"
       const after = this.isAsync ? afterAsync : afterSync
       this.utils.decorator.decorate(() => File.editor.export, "exportToHTML", { before, after, modifyResult: true })
     })

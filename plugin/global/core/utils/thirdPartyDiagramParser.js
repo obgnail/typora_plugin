@@ -9,23 +9,23 @@ class ThirdPartyDiagramParser {
   }
 
   /**
-   * @param {string} lang: Language.
-   * @param {string} mappingLang: Language to map to.
-   * @param {boolean} destroyWhenUpdate: Whether to clear the HTML in the preview before updating.
-   * @param {boolean} interactiveMode: When in interactive mode, code blocks will not automatically expand.
-   * @param {Object} metaConfigSchema: meta config schema.
-   * @param {string} checkSelector: Selector to check if the target Element exists under the current fence.
-   * @param {string|function($pre):string} wrapElement: If the target Element does not exist, create it.
-   * @param {function(): Promise<null>} lazyLoadFunc: Lazy load third-party resources.
-   * @param {function(cid, content, $pre)} beforeRenderFunc: Execute before rendering.
-   * @param {function(cid, content, $pre, meta)} renderStyleGetter: Get styles for render.
-   * @param {function($wrap, string, meta): instance} createFunc: Create a diagram instance, passing in the target Element and the content of the fence.
-   * @param {function($wrap, string, instance, meta): instance} updateFunc: Update the diagram instance when the content is updated.
-   * @param {function(Object): null} destroyFunc: Destroy the diagram instance, passing in the diagram instance.
-   * @param {function(Element, instance): null} beforeExportToNative: Preparation operations before Pandoc export (e.g., adjusting diagram size, color, etc.).
-   * @param {function(Element, instance): null} beforeExportToHTML: Preparation operations before HTML export (e.g., adjusting diagram size, color, etc.).
-   * @param {function(lang): string} exportStyleGetter: Get styles for export.
-   * @param {function(): string} versionGetter: Get the version.
+   * @param lang {string}: Language.
+   * @param mappingLang {string}: Language to map to.
+   * @param destroyWhenUpdate {boolean}: Whether to clear the HTML in the preview before updating.
+   * @param interactiveMode {boolean}: When in interactive mode, code blocks will not automatically expand.
+   * @param metaConfigSchema {Object}: meta config schema.
+   * @param checkSelector {string}: Selector to check if the target Element exists under the current fence.
+   * @param wrapElement {string|function($pre):string}: If the target Element does not exist, create it.
+   * @param lazyLoadFunc {function(): Promise<null>}: Lazy load third-party resources.
+   * @param beforeRenderFunc {function(cid, content, $pre)}: Execute before rendering.
+   * @param renderStyleGetter {function(cid, content, $pre, meta)}: Get styles for render.
+   * @param createFunc {function($wrap, string, meta): instance}: Create a diagram instance, passing in the target Element and the content of the fence.
+   * @param updateFunc {function($wrap, string, instance, meta): instance}: Update the diagram instance when the content is updated.
+   * @param destroyFunc {function(Object): null}: Destroy the diagram instance, passing in the diagram instance.
+   * @param beforeExportToNative {function(Element, instance): null}: Preparation operations before Pandoc export (e.g., adjusting diagram size, color, etc.).
+   * @param beforeExportToHTML {function(Element, instance): null}: Preparation operations before HTML export (e.g., adjusting diagram size, color, etc.).
+   * @param exportStyleGetter {function(lang): string}: Get styles for export.
+   * @param versionGetter {function(): string}: Get the version.
    */
   register = (
     {

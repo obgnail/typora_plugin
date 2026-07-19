@@ -2,6 +2,82 @@ const { describe, it } = require("node:test")
 const assert = require("node:assert")
 const polyfills = require("../../plugin/global/core/polyfill.js")
 
+describe("GlobalThis Polyfills", () => {
+  const { structuredClone } = polyfills.get(globalThis)
+  it("clones primitive values", () => {
+    assert.strictEqual(structuredClone(null), null)
+    assert.strictEqual(structuredClone(undefined), undefined)
+    assert.strictEqual(structuredClone(42), 42)
+    assert.strictEqual(structuredClone("string"), "string")
+    assert.strictEqual(structuredClone(true), true)
+  })
+  it("clones plain objects", () => {
+    const obj = { a: 1, b: { c: 2 } }
+    const cloned = structuredClone(obj)
+    assert.deepStrictEqual(cloned, obj)
+    assert.notStrictEqual(cloned, obj)
+    assert.notStrictEqual(cloned.b, obj.b)
+  })
+  it("clones arrays", () => {
+    const arr = [1, [2, 3], { a: 4 }]
+    const cloned = structuredClone(arr)
+    assert.deepStrictEqual(cloned, arr)
+    assert.notStrictEqual(cloned, arr)
+    assert.notStrictEqual(cloned[1], arr[1])
+    assert.notStrictEqual(cloned[2], arr[2])
+  })
+  it("clones Date objects", () => {
+    const date = new Date("2023-01-01")
+    const cloned = structuredClone(date)
+    assert.deepStrictEqual(cloned, date)
+    assert.notStrictEqual(cloned, date)
+    assert.strictEqual(cloned.getTime(), date.getTime())
+  })
+  it("clones RegExp objects", () => {
+    const regex = /test/g
+    const cloned = structuredClone(regex)
+    assert.deepStrictEqual(cloned, regex)
+    assert.notStrictEqual(cloned, regex)
+    assert.strictEqual(cloned.source, regex.source)
+    assert.strictEqual(cloned.flags, regex.flags)
+  })
+  it("clones Map objects", () => {
+    const map = new Map([["key", { value: 1 }]])
+    const cloned = structuredClone(map)
+    assert.deepStrictEqual(cloned, map)
+    assert.notStrictEqual(cloned, map)
+    assert.notStrictEqual(cloned.get("key"), map.get("key"))
+  })
+  it("clones Set objects", () => {
+    const set = new Set([{ value: 1 }])
+    const cloned = structuredClone(set)
+    assert.deepStrictEqual(cloned, set)
+    assert.notStrictEqual(cloned, set)
+    assert.notStrictEqual([...cloned][0], [...set][0])
+  })
+  it("handles circular references", () => {
+    const obj = { a: 1 }
+    obj.self = obj
+    const cloned = structuredClone(obj)
+    assert.strictEqual(cloned.a, 1)
+    assert.strictEqual(cloned.self, cloned)
+    assert.notStrictEqual(cloned, obj)
+  })
+  it("preserves prototype chain", () => {
+    class Custom {
+      constructor(value) {
+        this.value = value
+      }
+    }
+
+    const obj = new Custom(42)
+    const cloned = structuredClone(obj)
+    assert.strictEqual(cloned.value, 42)
+    assert(cloned instanceof Custom)
+    assert.notStrictEqual(cloned, obj)
+  })
+})
+
 describe("Object Polyfills", () => {
   const { hasOwn, groupBy } = polyfills.get(Object)
 
@@ -180,19 +256,16 @@ describe("Promise Polyfills", () => {
 describe("AbortSignal Polyfills", () => {
   const { timeout, any } = polyfills.get(AbortSignal)
 
-  it("AbortSignal.timeout should create timed signal", async () => {
-    const signal = timeout(10)
-
+  it("AbortSignal.timeout should create timed signal", (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] })
+    const signal = timeout(50)
     assert.ok(signal instanceof AbortSignal)
     assert.strictEqual(signal.aborted, false)
-
-    if (!signal.aborted) {
-      await new Promise(resolve => signal.addEventListener("abort", resolve, { once: true }))
-    }
-
+    t.mock.timers.tick(50)
     assert.strictEqual(signal.aborted, true)
     assert.ok(signal.reason instanceof DOMException)
     assert.strictEqual(signal.reason.name, "TimeoutError")
+    t.mock.timers.reset()
   })
 
   it("AbortSignal.timeout should validate input", () => {

@@ -73,11 +73,10 @@ class PreferencesPlugin extends BasePlugin {
         })
       }
       const highlightForm = (query) => this.entities.form.getApi("highlight")?.highlight(query)
-      const scroll = () => this.entities.menu.querySelector(".plugin-preferences-menu-item.active")?.scrollIntoView({ block: "center" })
       this.utils.createSmartInputHandler(this.entities.searchInput, (query) => {
         filterMenuItems(query)
         highlightForm(query)
-        if (!query) scroll()
+        if (!query) this.entities.menu.querySelector(".plugin-preferences-menu-item.active")?.scrollIntoView({ block: "center" })
       })
       this.entities.searchClear.addEventListener("click", () => {
         const inputEl = this.entities.searchInput
