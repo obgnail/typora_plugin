@@ -59,16 +59,20 @@ class AutoNumberPlugin extends BasePlugin {
   }
 
   _getCSS = (inExport = false) => {
+    // Workaround for `counter-reset` breaking change introduced in Chromium 126
+    // Ref: https://issues.chromium.org/issues/346974104
+    const prop = this.utils.compareVersion(this.utils.chromeVersion, "126") >= 0 ? "counter-set" : "counter-reset"
+
     const layout = (this.config.LAYOUTS.find(e => e.selected) ?? this.config.LAYOUTS[0]).layout
     const css = this._getNumberingCSS(layout)
 
     const baseCSS = `
       #write { counter-reset: content-h1 content-h2 image table fence; }
-      #write > h1 { counter-set: content-h2; }
-      #write > h2 { counter-set: content-h3; }
-      #write > h3 { counter-set: content-h4; }
-      #write > h4 { counter-set: content-h5; }
-      #write > h5 { counter-set: content-h6; }`
+      #write > h1 { ${prop}: content-h2; }
+      #write > h2 { ${prop}: content-h3; }
+      #write > h3 { ${prop}: content-h4; }
+      #write > h4 { ${prop}: content-h5; }
+      #write > h5 { ${prop}: content-h6; }`
 
     const contentCSS = `
       #write > h1:before, #write > h1.md-focus.md-heading:before {${css["content-h1"]}}
@@ -104,11 +108,11 @@ class AutoNumberPlugin extends BasePlugin {
 
     const outlineCSS = `
       .outline-content { counter-reset: outline-h1 outline-h2; }
-      .outline-h1 { counter-set: outline-h2; }
-      .outline-h2 { counter-set: outline-h3; }
-      .outline-h3 { counter-set: outline-h4; }
-      .outline-h4 { counter-set: outline-h5; }
-      .outline-h5 { counter-set: outline-h6; }
+      .outline-h1 { ${prop}: outline-h2; }
+      .outline-h2 { ${prop}: outline-h3; }
+      .outline-h3 { ${prop}: outline-h4; }
+      .outline-h4 { ${prop}: outline-h5; }
+      .outline-h5 { ${prop}: outline-h6; }
 
       .outline-content .outline-h1 .outline-label:before {${css["outline-h1"]}}
       .outline-content .outline-h2 .outline-label:before {${css["outline-h2"]}}
@@ -119,11 +123,11 @@ class AutoNumberPlugin extends BasePlugin {
 
     const tocCSS = `
       .md-toc-content { counter-reset: toc-h1 toc-h2; }
-      .md-toc-h1 { counter-set: toc-h2; }
-      .md-toc-h2 { counter-set: toc-h3; }
-      .md-toc-h3 { counter-set: toc-h4; }
-      .md-toc-h4 { counter-set: toc-h5; }
-      .md-toc-h5 { counter-set: toc-h6; }
+      .md-toc-h1 { ${prop}: toc-h2; }
+      .md-toc-h2 { ${prop}: toc-h3; }
+      .md-toc-h3 { ${prop}: toc-h4; }
+      .md-toc-h4 { ${prop}: toc-h5; }
+      .md-toc-h5 { ${prop}: toc-h6; }
 
       .md-toc-content .md-toc-h1 a:before {${css["toc-h1"]}}
       .md-toc-content .md-toc-h2 a:before {${css["toc-h2"]}}
