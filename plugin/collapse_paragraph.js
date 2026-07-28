@@ -187,7 +187,7 @@ class CollapseParagraphPlugin extends BasePlugin {
   dispatcher = new ActionDispatcher(this, this.navigator)
   staticActions = this.i18n.fillActions([{ act_value: "collapse_all" }, { act_value: "expand_all" }])
 
-  style = () => true
+  style = () => `#write .plugin-collapsed-paragraph::after { display: initial; content: "{\\2026}" !important; margin: 0 0.6rem; padding: 0 1px; color: white; opacity: 0.6; background-color: gray; }`
 
   process = () => {
     File.option.expandSimpleBlock = false  // This config option interferes with the plugin, disable it.

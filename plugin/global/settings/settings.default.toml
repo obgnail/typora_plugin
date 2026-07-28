@@ -168,9 +168,6 @@ CONCURRENCY_LIMIT = 20
 # Follow symbolic links during traversal. Note: High risk of infinite loops with circular symlinks
 FOLLOW_SYMBOLIC_LINKS = false
 
-# Stop searching on hiding window: Terminate active searches when the window is hidden to save resources
-STOP_SEARCHING_ON_HIDING = true
-
 # When to display the search explanation bubble
 #   focus: On Input / Focus
 #   hover: On Mouse Hover
@@ -257,15 +254,12 @@ BUILTIN = [
 ]
 
 # Post-Execution Script. JavaScript code to execute after the command finishes
-POST_SCRIPT = "({ command, cwd, options, code, error, stdout, stderr }) => null"
+POST_SCRIPT = "({ command, cwd, options, error, code, stdout, stderr }) => null"
 
 # Max capacity limit for command history
 MAX_HISTORY_ENTRIES = 20
 
 # =========== [ Advanced ] ===========
-# Auto-convert cross-platform variables (e.g., $f, $m) into the native format of the selected shell
-NORMALIZE_ENV_VARS = false
-
 # Maximum allowed execution time in milliseconds. Set to 0 for no limit
 TIMEOUT = 0
 

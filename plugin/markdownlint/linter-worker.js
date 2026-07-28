@@ -19,7 +19,7 @@ const linter = {
       RULE_CONFIG = ruleConfig
     }
     if (LIB) {
-      console.debug(`[Markdownlint] markdownlint@${LIB.getVersion()} worker is configured with rules`, RULE_CONFIG)
+      console.debug(`[ Markdownlint ] markdownlint@${LIB.getVersion()} worker is configured with rules`, RULE_CONFIG)
     }
     if (content) {
       return linter.check({ content })
@@ -46,7 +46,7 @@ self.onmessage = async (event) => {
 
   const fn = linter[action]
   if (!fn) {
-    console.error("[Markdownlint] Error action", action)
+    console.error("[ Markdownlint ] Error action", action)
     return
   }
   const result = await fn(payload)

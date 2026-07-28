@@ -1,7 +1,7 @@
 class MarpPlugin extends BasePlugin {
   marp = null
 
-  style = () => true
+  style = () => `#write .plugin-marp-content { all: initial; }`
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 

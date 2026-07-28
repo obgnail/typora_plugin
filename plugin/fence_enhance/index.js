@@ -9,10 +9,25 @@ const traverseAllFences = (visitor) => {
 class FenceEnhancePlugin extends BasePlugin {
   buttonHelper = new ButtonHelper(this)
 
-  style = () => ({
-    bgColorOnHover: this.config.HIGHLIGHT_ON_HOVER ? `.CodeMirror-line:hover { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_HOVER}; }` : "",
-    bgColorOnFocus: this.config.HIGHLIGHT_ON_FOCUS ? `.md-focus .CodeMirror-activeline { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_FOCUS}; }` : "",
-  })
+  style = () => `
+#write .CodeMirror-scroll { cursor: default; }
+#write .CodeMirror-lines { cursor: text; }
+#write .fence-enhance {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  position: absolute;
+  z-index: 8;
+  top: ${this.config.BUTTON_TOP};
+  right: ${this.config.BUTTON_RIGHT};
+  font-size: ${this.config.BUTTON_SIZE};
+  color: ${this.config.BUTTON_COLOR};
+}
+.fence-enhance .enhance-btn { cursor: pointer; opacity: ${this.config.BUTTON_OPACITY}; padding: 0 ${this.config.BUTTON_PADDING}; }
+.fence-enhance .enhance-btn:hover { opacity: ${this.config.BUTTON_OPACITY_HOVER}; }
+.plugin-fence-enhance-highlight { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_BY_LANGUAGE} !important; }
+${this.config.HIGHLIGHT_ON_HOVER ? `.CodeMirror-line:hover { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_HOVER}; }` : ""}
+${this.config.HIGHLIGHT_ON_FOCUS ? `.md-focus .CodeMirror-activeline { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_FOCUS}; }` : ""}
+`
 
   process = async () => {
     this.utils.settings.autoSave(this)

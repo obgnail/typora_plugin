@@ -1,5 +1,6 @@
 class StaticMarkersPlugin extends BasePlugin {
   enabled = this.config.STATIC_DEFAULT
+  STATIC_EFFECT = `display: inline !important; opacity: inherit !important;`
   SELECTORS = {
     strong: `.md-pair-s[md-inline="strong"] .md-meta`,
     em: `.md-pair-s[md-inline="em"] .md-meta`,
@@ -20,8 +21,8 @@ class StaticMarkersPlugin extends BasePlugin {
 
   style = () => {
     if (!this.enabled) return ""
-    const selector = this.config.STATIC_MARKERS.map(marker => this.SELECTORS[marker]).filter(Boolean).join(", ")
-    return selector ? `${selector} { display: inline !important; opacity: inherit !important; }` : ""
+    const sel = this.config.STATIC_MARKERS.map(marker => this.SELECTORS[marker]).filter(Boolean).join(", ")
+    return sel ? `${sel} { ${this.STATIC_EFFECT} }` : ""
   }
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]

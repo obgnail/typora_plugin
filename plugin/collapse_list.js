@@ -6,9 +6,23 @@
 class CollapseListPlugin extends BasePlugin {
   className = "plugin-collapsed-list"
   selector = `#write [mdtype="list"]`
-  TRIANGLE_STYLE = { left: -18, top: 0, height: 9, halfWidth: 7, color: this.config.TRIANGLE_COLOR || "var(--meta-content-color)" }
+  TRIANGLE_STYLE = { left: -18, top: 0, height: 9, halfWidth: 7 }
 
-  style = () => true
+  style = () => `
+#write .ul-list, #write .ol-list { position: relative !important; }
+#write .ul-list:before, #write .ol-list:before {
+  position: absolute;
+  content: "";
+  top: ${this.TRIANGLE_STYLE.top}px;
+  left: ${this.TRIANGLE_STYLE.left}px;
+  border-left: ${this.TRIANGLE_STYLE.halfWidth}px solid transparent;
+  border-right: ${this.TRIANGLE_STYLE.halfWidth}px solid transparent;
+  border-top: ${this.TRIANGLE_STYLE.height}px solid ${this.config.TRIANGLE_COLOR || "var(--meta-content-color)"};
+  transition: transform .1s ease-in-out;
+  cursor: pointer;
+}
+#write .${this.className}:before { transform: rotate(-90deg); }
+#write .${this.className} > li:nth-child(n+2) { display: none !important; }`
 
   process = () => {
     this.utils.settings.autoSave(this)

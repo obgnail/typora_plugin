@@ -39,10 +39,10 @@ const createHistoryManager = (maxLimit, storage, formatter) => {
   }
 }
 
-const createEnvManager = (defs, normalizeEnvVars, formatter) => ({
+const createEnvManager = (defs, formatter) => ({
   buildEnvVars: (norm) => Object.fromEntries(Object.entries(defs).map(([key, def]) => [key, def.get(norm)])),
   buildDropdownOptions: (shellExecutor) => Object.entries(defs).map(([key, def]) => {
-    const env = normalizeEnvVars ? `$${key}` : shellExecutor.formatEnvVar(key)
+    const env = shellExecutor.formatEnvVar(key)
     return { value: env, label: formatter(env, def.desc) }
   }),
 })
@@ -79,7 +79,6 @@ class CommanderPlugin extends BasePlugin {
       m: { desc: "Mount Dir", get: norm => norm(this.utils.getMountFolder()) },
       c: { desc: "File Content", get: () => this.utils.getCurrentFileContent() },
     },
-    this.config.NORMALIZE_ENV_VARS,
     (env, desc) => `${env} - ${desc}`,
   )
   builtinManager = createBuiltinManager(
@@ -89,16 +88,15 @@ class CommanderPlugin extends BasePlugin {
   )
   ACT_VALUE_PREFIX = "call_builtin@"
   DISPLAY_TYPES = { ALWAYS: "always", ERROR: "error", SILENT: "silent", ECHO: "echo" }
+  staticActions = [
+    { act_name: this.i18n.t("act.toggle_panel"), act_value: "toggle_panel", act_hotkey: this.config.HOTKEY },
+    ...this.builtinManager.getItems()
+      .filter(c => c.name && c.cmd)
+      .map(c => ({ act_name: c.name, act_value: this.ACT_VALUE_PREFIX + c.name, act_hotkey: c.hotkey })),
+  ]
   postScript = (() => {
     const hook = this.utils.safeEval(this.config.POST_SCRIPT)
     return (typeof hook === "function") ? hook : this.utils.noop
-  })()
-  staticActions = (() => {
-    const defaultAction = { act_name: this.i18n.t("act.toggle_panel"), act_value: "toggle_panel", act_hotkey: this.config.HOTKEY }
-    const customActions = this.builtinManager.getItems()
-      .filter(a => a.name && a.cmd)
-      .map(a => ({ act_name: a.name, act_value: this.ACT_VALUE_PREFIX + a.name, act_hotkey: a.hotkey }))
-    return [defaultAction, ...customActions]
   })()
 
   style = () => true
@@ -266,7 +264,6 @@ class CommanderPlugin extends BasePlugin {
     return {
       cwd: this.utils.getCurrentDirPath(),
       timeout: this.config.TIMEOUT,
-      normalizeEnvVars: this.config.NORMALIZE_ENV_VARS,
       envVars: (norm) => this.envManager.buildEnvVars(norm),
       hooks: {
         onStdout: isEchoOrAlways
@@ -312,10 +309,12 @@ class CommanderPlugin extends BasePlugin {
   call = (action = "toggle_panel") => {
     if (action === "toggle_panel") {
       this.togglePanel()
-    } else if (action.startsWith(this.ACT_VALUE_PREFIX)) {
+      return
+    }
+    if (action.startsWith(this.ACT_VALUE_PREFIX)) {
       const name = action.slice(this.ACT_VALUE_PREFIX.length)
-      const target = this.builtinManager.findByName(name)
-      if (target) this.quickExecute(target.shell, target.cmd)
+      const item = this.builtinManager.findByName(name)
+      if (item) this.quickExecute(item.shell, item.cmd)
     }
   }
 }

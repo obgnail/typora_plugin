@@ -323,7 +323,6 @@
     "$label.MAX_HIGHLIGHTS": "Highlight Limit",
     "$label.HIGHLIGHTS_MATCH_ANCHOR": "Highlights Match Anchor",
     "$label.CASE_SENSITIVE": "Case Sensitive",
-    "$label.STOP_SEARCHING_ON_HIDING": "Stop Searching When Window is Hidden",
     "$label.EXPLAIN_TRIGGER": "Explanation Bubble Trigger",
     "$label.TRAVERSE_STRATEGY": "Search Strategy",
     "$label.BACKSPACE_TO_HIDE": "Hide Window on Empty and Backspace",
@@ -367,9 +366,7 @@
     "$label.BUILTIN.shell": "Shell",
     "$label.BUILTIN.cmd": "Command",
     "$label.POST_SCRIPT": "Post-Execution Script",
-    "$label.NORMALIZE_ENV_VARS": "Normalize Env Vars",
     "$label.MAX_HISTORY_ENTRIES": "Max History Entries",
-    "$tooltip.normalizeEnvVars": "Auto-convert cross-platform variables (e.g., $f, $m) into the native format of the selected shell",
     "$title.cmdDisplay": "Output Display"
   },
   "md_padding": {

@@ -99,8 +99,8 @@ class RightOutlinePlugin extends BasePlugin {
         return { deltaX, deltaY }
       }
       this.utils.resizeElement({
-        targetEle: this.entities.grip,
-        resizeEle: this.entities.panel,
+        targetEl: this.entities.grip,
+        resizeEl: this.entities.panel,
         resizeWidth: true,
         resizeHeight: false,
         onMouseDown,

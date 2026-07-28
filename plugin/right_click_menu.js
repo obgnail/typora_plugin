@@ -49,24 +49,25 @@ class RightClickMenuPlugin extends BasePlugin {
   supportShortcut = !!document.querySelector(".ty-menu-shortcut")
   menuManager = new MenuManager()
 
-  style = () => ({
-    menu_min_width: this.config.MENU_MIN_WIDTH,
-    menu_option_display: this.config.HIDE_OTHER_OPTIONS ? "none" : "",
-  })
+  style = () => `
+.plugin-menu-second.ext-context-menu, .plugin-menu-third.ext-context-menu { min-width: ${this.config.MENU_MIN_WIDTH}; }
+#context-menu > li:not([data-key="typora-plugin"]) { display: ${this.config.HIDE_OTHER_OPTIONS ? "none" : ""}; }
+.context-menu .state-run:before { content: '\\2318'; margin-left: -10px; margin-right: 10px; }
+.ty-menu-shortcut { padding-left: 1em; }`
 
   process = () => {
     this.utils.settings.autoSave(this)
     this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
       setTimeout(() => {
-        this.insertLevel1()  // The 1st level menus group all plugins
-        this.insertLevel2()  // The 2nd level menus display grouped plugins
-        this.insertLevel3()  // The 3rd level menus display the actions of the plugin
-        this.listen()
+        this._insertLevel1()  // The 1st level menus group all plugins
+        this._insertLevel2()  // The 2nd level menus display grouped plugins
+        this._insertLevel3()  // The 3rd level menus display the actions of the plugin
+        this._listen()
       }, 500)
     })
   }
 
-  insertLevel1 = () => {
+  _insertLevel1 = () => {
     const items = this.config.MENUS.map(({ NAME, LIST = [] }, idx) => {
       if (LIST.length === 0) {
         return ""
@@ -83,7 +84,7 @@ class RightClickMenuPlugin extends BasePlugin {
     document.querySelector("#context-menu").insertAdjacentHTML("beforeend", html)
   }
 
-  insertLevel2 = () => {
+  _insertLevel2 = () => {
     const findLostPluginsIfNeed = () => {
       if (!this.config.FIND_LOST_PLUGINS) return
       const plugins = new Map(Object.entries(this.utils.getAllBasePlugins()))
@@ -122,7 +123,7 @@ class RightClickMenuPlugin extends BasePlugin {
     this.utils.entities.eContent.insertAdjacentHTML("beforeend", html.join(""))
   }
 
-  insertLevel3 = () => {
+  _insertLevel3 = () => {
     const className = "plugin-menu-third dropdown-menu context-menu ext-context-menu"
     const html = this.config.MENUS.flatMap(({ LIST = [] }, idx) => {
       return LIST
@@ -183,7 +184,7 @@ class RightClickMenuPlugin extends BasePlugin {
     return shortcut
   }
 
-  showMenuItem = (after, before) => {
+  _showMenuItem = (after, before) => {
     const margin = 6
     const { left, top, width, height } = before.getBoundingClientRect()
     let afterTop = top - height
@@ -199,7 +200,7 @@ class RightClickMenuPlugin extends BasePlugin {
     after.style.left = afterLeft + "px"
   }
 
-  listen = () => {
+  _listen = () => {
     const self = this
     const { menuManager } = this
 
@@ -211,7 +212,7 @@ class RightClickMenuPlugin extends BasePlugin {
       }
       self.utils.updatePluginDynamicActions(fixedName)
       self.callPluginDynamicAction(fixedName, action)
-      self.hideMenuIfNeed()
+      self._hideMenuIfNeed()
       // Display the second level menu
     }).on("mouseenter", "[data-key]", function () {
       if (self.groupName === this.dataset.key) {
@@ -221,7 +222,7 @@ class RightClickMenuPlugin extends BasePlugin {
         }
         const secondMenu = document.querySelector(`.plugin-menu-second[data-idx="${idx}"]`)
         menuManager.setSecondMenu(secondMenu, this)
-        self.showMenuItem(secondMenu, this)
+        self._showMenuItem(secondMenu, this)
       } else {
         menuManager.clearAll()
       }
@@ -245,7 +246,7 @@ class RightClickMenuPlugin extends BasePlugin {
       }
       if (this.querySelector(`span[data-lg="Menu"]`)) {
         menuManager.setThirdMenu(third, this)
-        self.showMenuItem(third, this)
+        self._showMenuItem(third, this)
       } else {
         menuManager.clearSecondItem()
       }
@@ -263,7 +264,7 @@ class RightClickMenuPlugin extends BasePlugin {
         }
         plugin.call?.()
       }
-      self.hideMenuIfNeed()
+      self._hideMenuIfNeed()
     })
 
     // Call plugins in the third level menu
@@ -275,17 +276,11 @@ class RightClickMenuPlugin extends BasePlugin {
       const action = this.dataset.key
       const fixedName = this.parentElement.dataset.plugin
       self.callPluginDynamicAction(fixedName, action)
-      self.hideMenuIfNeed(fixedName)
+      self._hideMenuIfNeed(fixedName)
     })
   }
 
-  callPluginDynamicAction = (fixedName, action) => {
-    if (action !== this.unavailableActValue) {
-      this.utils.callPluginDynamicAction(fixedName, action)
-    }
-  }
-
-  hideMenuIfNeed = key => {
+  _hideMenuIfNeed = key => {
     if (!this.config.RETAIN_ON_BLUR) {
       File.editor.contextMenu.hide()
       this.menuManager.clearAll()
@@ -296,18 +291,24 @@ class RightClickMenuPlugin extends BasePlugin {
     }
   }
 
+  callPluginDynamicAction = (fixedName, action) => {
+    if (action !== this.unavailableActValue) {
+      this.utils.callPluginDynamicAction(fixedName, action)
+    }
+  }
+
   getDynamicActions = () => this.i18n.fillActions([
     { act_value: "retain_on_blur", act_state: this.config.RETAIN_ON_BLUR, act_hint: this.i18n.t("actHint.retain_on_blur") },
     { act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY, act_hidden: !this.supportShortcut },
     { act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
   ])
 
-  call = async action => {
+  call = action => {
     const fns = {
       retain_on_blur: () => this.config.RETAIN_ON_BLUR = !this.config.RETAIN_ON_BLUR,
-      hide_other_options: async () => {
+      hide_other_options: () => {
         this.config.HIDE_OTHER_OPTIONS = !this.config.HIDE_OTHER_OPTIONS
-        await this.utils.styleManager.reset(this.fixedName, this.style())
+        this.utils.replaceStyle(this.fixedName, this.style())
       },
       toggle_hotkey: () => {
         this.config.SHOW_PLUGIN_HOTKEY = !this.config.SHOW_PLUGIN_HOTKEY
@@ -315,10 +316,7 @@ class RightClickMenuPlugin extends BasePlugin {
         document.querySelectorAll(".plugin-menu-second .ty-menu-shortcut, .plugin-menu-third .ty-menu-shortcut").forEach(toggle)
       },
     }
-    const fn = fns[action]
-    if (fn) {
-      await fn()
-    }
+    fns[action]?.()
   }
 }
 

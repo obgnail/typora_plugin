@@ -13,7 +13,26 @@ class DrawIOPlugin extends BasePlugin {
     return resp.text()
   }, { cap: this.config.CACHED_URL_COUNT, keyResolver: this.utils.identity })
 
-  style = () => true
+  style = () => `
+#write .plugin-drawio-content, .geDiagramContainer svg { line-height: initial; }
+@media print {
+  .fix-drawio-unlocked {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+  svg.fix-drawio-svg {
+    width: 100% !important;
+    height: auto !important;
+    background: transparent !important;
+    display: block !important;
+  }
+}`
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 

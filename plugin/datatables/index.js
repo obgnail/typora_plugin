@@ -5,7 +5,6 @@ class DataTablesPlugin extends BasePlugin {
   process = () => {
     this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.destroyAllDataTable)
     this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeToggleSourceMode, this.destroyAllDataTable)
-
     this.utils.decorator.preventCallIf(() => File?.editor?.tableEdit, "showTableEdit", (...args) => {
       const table = args[0]?.find?.("table")
       if (!table || table.length === 0) return false
@@ -43,12 +42,16 @@ class DataTablesPlugin extends BasePlugin {
   lazyLoad = async () => {
     if ($?.fn?.dataTable) return
     this.initDataTablesConfig()
-    await Promise.all([
-      $.getScript(this.utils.toFileProtocol(this.utils.joinPluginPath("./plugin/datatables/resource/js/dataTables.min.js"))),
-      this.utils.insertStyleFile("datatables-common", "./plugin/datatables/resource/css/dataTables.min.css"),
-      this.utils.styleManager.register(this.fixedName),
-    ])
+    this.utils.insertStyle(this.fixedName, this._buildCSS())
+    this.utils.insertStyleFile("datatables-common", "./plugin/datatables/resource/css/dataTables.min.css")
+    await $.getScript(this.utils.toFileProtocol(this.utils.joinPluginPath("./plugin/datatables/resource/js/dataTables.min.js")))
   }
+
+  _buildCSS = () => `
+#write figure select, #write figure input { border: 1px solid #ddd; box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075); border-radius: 2px; height: 27px; margin-top: 5px; margin-bottom: 1px; max-width: 10em; }
+.dataTables_wrapper .dataTables_paginate .paginate_button { padding: 0.05em 0.1em; }
+.dataTables_wrapper .dataTables_length, .dataTables_filter { margin-bottom: 0.25em; }
+.dataTables_wrapper .dataTables_info { padding-top: 0.25em; }`
 
   initDataTablesConfig = () => {
     this.dataTablesConfig = {

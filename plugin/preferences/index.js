@@ -47,8 +47,8 @@ class PreferencesPlugin extends BasePlugin {
     this.WATCHERS = require("./watchers.js")(this)
     this.ACTIONS = require("./actions.js")(this)
     this.PREPROCESSORS = require("./preprocessors.js")(this)
-    this.SCHEMAS = this._getSchemas()
-    this.META = this._getMeta()
+    this.SCHEMAS = require("./schemas.js")(this.entities.form.dsl, this.i18n.allData)
+    this.META = { $isBetaTypora: () => this.utils.isBetaVersion }
   }
 
   process = () => {
@@ -222,15 +222,6 @@ class PreferencesPlugin extends BasePlugin {
     await Promise.all(promises)
     return data
   }
-
-  _getSchemas = () => {
-    const compile = require("./schemas.js")
-    return compile(this.entities.form.dsl, this.i18n.allData)
-  }
-
-  _getMeta = () => ({
-    $isBetaTypora: () => this.utils.isBetaVersion,
-  })
 
   _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
   _hasDialogChanged = () => this.entities.dialog.hasAttribute("has-changed")

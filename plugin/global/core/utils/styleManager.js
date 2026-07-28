@@ -32,7 +32,15 @@ class StyleManager {
     this.utils.replaceStyle(name, css)
   }
 
-  process = async () => Promise.all(["common", "customize"].map(f => this.register(f)))
+  process = async () => {
+    await this.register("customize")
+    this.utils.insertStyle("common", `
+.plugin-common-panel { position: fixed; z-index: 9999; padding: 4px; background-color: var(--bg-color); color: var(--text-color); border-top: none; border-radius: 4px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15); }
+.plugin-common-hidden { display: none !important; }
+.dropdown-menu { z-index: 9998; }
+.md-notification-container { z-index: 99999 !important; background: var(--bg-color); }
+#md-searchpanel.searchpanel-replace-mode { z-index: 99999 !important; }`)
+  }
 }
 
 module.exports = StyleManager

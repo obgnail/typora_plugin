@@ -4,17 +4,7 @@ const { spawn, execSync } = require("child_process")
 
 const IS_WIN = process.platform === "win32"
 
-function _normalizeVars(cmd, vars, formatEnvVarFn) {
-  cmd = cmd.trim()
-  if (vars.length === 0) return cmd
-  const pattern = [...vars]
-    .sort((a, b) => b.length - a.length)
-    .map(str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-    .join("|")
-  return cmd.replace(new RegExp(`\\$(${pattern})\\b`, "g"), (_, key) => formatEnvVarFn(key))
-}
-
-function _prepare(shell, cmd, cwd, envVars, normalizeEnvVars) {
+function _prepare(shell, cmd, cwd, envVars) {
   const rawCwd = (typeof cwd === "function" ? cwd() : cwd) || process.cwd()
   const customEnv = typeof envVars === "function" ? envVars(shell.normalizePath) : (envVars || {})
   return {
@@ -22,9 +12,7 @@ function _prepare(shell, cmd, cwd, envVars, normalizeEnvVars) {
     customEnv,
     cwd: shell.normalizePath(rawCwd),
     env: { ...process.env, ...customEnv },
-    script: normalizeEnvVars
-      ? _normalizeVars(cmd, Object.keys(customEnv), shell.formatEnvVar)
-      : cmd.trim(),
+    script: cmd.trim(),
   }
 }
 
@@ -51,8 +39,8 @@ function _attachHooks(child, hooks, command, stderrFilterFn) {
 }
 
 function executeShell(shell, cmd, opts = {}) {
-  const { cwd, envVars, normalizeEnvVars = true, timeout = 0, hooks = {} } = opts
-  const config = _prepare(shell, cmd, cwd, envVars, normalizeEnvVars)
+  const { cwd, envVars, timeout = 0, hooks = {} } = opts
+  const config = _prepare(shell, cmd, cwd, envVars)
   const { command, args, options } = shell.getSpawnConfig(config)
   const child = spawn(command, args, { ...options, timeout })
   _attachHooks(child, hooks, cmd, shell.getStderrFilter?.())

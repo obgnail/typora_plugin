@@ -1,6 +1,40 @@
 class ActionButtonsPlugin extends BasePlugin {
   buttons = new Map()
 
+  style = () => `
+.ty-footer { z-index: 9999 !important; }
+#plugin-action-buttons {
+  --grid-cols: 2;
+  --grid-rows: 3;
+  position: fixed;
+  display: grid;
+  z-index: 9991;
+  text-align: center;
+  pointer-events: none;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  grid-template-rows: repeat(var(--grid-rows), 1fr);
+  gap: ${this.config.BUTTON_GAP};
+  right: ${this.config.POSITION_RIGHT};
+  bottom: ${this.config.POSITION_BOTTOM};
+}
+#plugin-action-buttons .action-item {
+  cursor: pointer;
+  color: var(--text-color);
+  background-color: initial;
+  transition: all 50ms ease-in 0s;
+  pointer-events: auto;
+  width: ${this.config.BUTTON_SIZE};
+  height: ${this.config.BUTTON_SIZE};
+  line-height: ${this.config.BUTTON_SIZE};
+  font-size: ${this.config.BUTTON_ICON_SIZE};
+  box-shadow: ${this.config.BUTTON_BOX_SHADOW};
+  border-radius: ${this.config.BUTTON_BORDER_RADIUS};
+}
+#plugin-action-buttons .action-item:hover { transform: translateY(-2px); box-shadow: ${this.config.BUTTON_BOX_SHADOW_ON_HOVER}; }
+#plugin-action-buttons .action-item:active { transform: scale(0.95); }
+#plugin-action-buttons .action-item i { opacity: 0.8; }
+#plugin-action-buttons .plu-hidden, #plugin-action-buttons .plu-unused { visibility: hidden; }`
+
   html = () => `<div id="plugin-action-buttons"></div>`
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -13,12 +47,13 @@ class ActionButtonsPlugin extends BasePlugin {
 
   process = () => {
     this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, this.toggle)
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, async () => {
+    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
       const buttons = this._registerButtons()
       if (buttons.size === 0) return
       const maxX = Math.max(-1, ...[...buttons.values()].map(c => c.x))
       const maxY = Math.max(-1, ...[...buttons.values()].map(c => c.y))
-      await this.utils.styleManager.register(this.fixedName, { rowCount: maxX + 1, colCount: maxY + 1, this: this })
+      this.buttonGroup.style.setProperty("--grid-cols", maxY + 1)
+      this.buttonGroup.style.setProperty("--grid-rows", maxX + 1)
       this.buttonGroup.append(...this._genButtons(maxX, maxY))
     })
     this.buttonGroup.addEventListener("mousedown", ev => {

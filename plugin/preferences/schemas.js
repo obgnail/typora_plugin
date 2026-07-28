@@ -185,7 +185,6 @@ const schema_search_multi = () => [
   FRAG.Base(true),
   Group("search",
     Switch("CASE_SENSITIVE"),
-    Switch("STOP_SEARCHING_ON_HIDING"),
     Switch("BACKSPACE_TO_HIDE"),
     Select("EXPLAIN_TRIGGER").Options(["focus", "hover"]),
   ),
@@ -235,7 +234,6 @@ const schema_commander = () => [
     }),
   Code("POST_SCRIPT").Tooltip("expertsOnly"),
   Group("advanced",
-    Switch("NORMALIZE_ENV_VARS").Tooltip("normalizeEnvVars"),
     Integer("TIMEOUT").Min(0).Unit(UNITS.millisecond).Tooltip("zeroForNoLimit"),
     Integer("MAX_HISTORY_ENTRIES").Min(1),
   ),
@@ -1442,12 +1440,11 @@ const schema_markdownlint = () => [
     Text("BUTTON_HEIGHT").ShowIf(When.true("USE_INDICATOR_BUTTON")),
     Text("BUTTON_RIGHT").ShowIf(When.true("USE_INDICATOR_BUTTON")),
     Text("BUTTON_BORDER_RADIUS").ShowIf(When.true("USE_INDICATOR_BUTTON")),
-    Range("BUTTON_OPACITY").Min(0).Max(1).Step(0.05).ShowIf(When.true("USE_INDICATOR_BUTTON")),
     Color("BUTTON_PASS_COLOR").ShowIf(When.true("USE_INDICATOR_BUTTON")),
     Color("BUTTON_ERROR_COLOR").ShowIf(When.true("USE_INDICATOR_BUTTON")),
+    Range("BUTTON_OPACITY").Min(0).Max(1).Step(0.05).ShowIf(When.true("USE_INDICATOR_BUTTON")),
   ),
-  Group(
-    "shortcuts",
+  Group("shortcuts",
     Select("LEFT_CLICK_ROW_ACTION").Options(OPTS.markdownlintRowActions).OptionScope("rowActions"),
     Select("RIGHT_CLICK_TABLE_ACTION").Options(OPTS.markdownlintActions).OptionScope("actions"),
     Select("RIGHT_CLICK_INDICATOR_ACTION").Options(OPTS.markdownlintActions).OptionScope("actions").ShowIf(When.true("USE_INDICATOR_BUTTON")),
@@ -1552,7 +1549,7 @@ const schema_repository = () => [
   FRAG.SettingHandler(),
 ]
 
-const RAW_SCHEMA_FNS = {
+const RAW_SCHEMAS = {
   global: schema_global,
   window_tab: schema_window_tab,
   search_multi: schema_search_multi,
@@ -1623,9 +1620,8 @@ const RAW_SCHEMA_FNS = {
 
 const mapTree = (schemas, visitBox = box => box, visitField = field => field, prefix = "") => schemas.map(box => {
   const newBox = visitBox(box, prefix)
-  return (!Array.isArray(newBox.fields))
-    ? newBox
-    : {
+  return Array.isArray(newBox.fields)
+    ? {
       ...newBox,
       fields: newBox.fields.map(field => {
         const newField = visitField(field, prefix)
@@ -1638,6 +1634,7 @@ const mapTree = (schemas, visitBox = box => box, visitField = field => field, pr
         }
       }),
     }
+    : newBox
 })
 
 const i18n = (boxes, t) => {
@@ -1681,10 +1678,10 @@ const i18n = (boxes, t) => {
   )
 }
 
-const compile = (dsl, i18nData = require("../global/locales/en.json")) => {
+const compile = (dsl, i18nData) => {
   initDSL(dsl)
   return Object.fromEntries(
-    Object.entries(RAW_SCHEMA_FNS).map(([plugin, fn]) => {
+    Object.entries(RAW_SCHEMAS).map(([plugin, fn]) => {
       const raw = dsl.define(fn)
       const translated = i18n(raw, key => i18nData[plugin]?.[key] ?? i18nData.settings?.[key] ?? key)
       return [plugin, translated]

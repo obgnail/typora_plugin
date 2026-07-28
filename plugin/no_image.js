@@ -3,12 +3,11 @@ class NoImageModePlugin extends BasePlugin {
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
-  enableNoImageMode = async () => {
-    await this.utils.styleManager.register(this.fixedName, {
-      transition_duration: this.config.TRANSITION_DURATION,
-      transition_delay: this.config.TRANSITION_DELAY,
-      opacity_on_hover: this.config.SHOW_ON_HOVER ? "100%" : "0",
-    })
+  enableNoImageMode = () => {
+    this.utils.insertStyle(this.fixedName, `
+#write .md-htmlblock-container img, #write .md-image { opacity: 0; transition: opacity ${this.config.TRANSITION_DURATION} ms ease ${this.config.TRANSITION_DELAY} ms; }
+#write .md-htmlblock-container img:hover, #write .md-image:hover { opacity: ${this.config.SHOW_ON_HOVER ? "100%" : "0"}; }`,
+    )
     this.isNoImageMode = true
   }
 

@@ -1,7 +1,9 @@
 class ReadOnlyPlugin extends BasePlugin {
   inReadOnlyMode = false
 
-  style = () => true
+  style = () => `
+#footer-word-count-label::before { content: attr(data-value) !important }
+.plu-disable-menu { color: rgb(196, 198, 204); pointer-events: none; }`
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 

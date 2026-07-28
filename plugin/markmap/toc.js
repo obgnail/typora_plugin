@@ -106,8 +106,8 @@ class TOCMarkmap {
     }
     const onMove = () => {
       this.utils.dragElement({
-        targetEle: this.entities.header,
-        moveEle: this.entities.panel,
+        targetEl: this.entities.header,
+        moveEl: this.entities.panel,
         onCheck: () => !this.entities.panel.classList.contains("pinned-window"),
         onMouseDown: null,
         onMouseMove: null,
@@ -133,8 +133,8 @@ class TOCMarkmap {
           return { deltaX, deltaY }
         }
         this.utils.resizeElement({
-          targetEle: this.entities.resize,
-          resizeEle: this.entities.panel,
+          targetEl: this.entities.resize,
+          resizeEl: this.entities.panel,
           resizeWidth: true,
           resizeHeight: true,
           onMouseDown,
@@ -160,8 +160,8 @@ class TOCMarkmap {
           return { deltaX, deltaY }
         }
         this.utils.resizeElement({
-          targetEle: this.entities.gripTop,
-          resizeEle: this.entities.panel,
+          targetEl: this.entities.gripTop,
+          resizeEl: this.entities.panel,
           resizeWidth: false,
           resizeHeight: true,
           onMouseDown,
@@ -196,8 +196,8 @@ class TOCMarkmap {
           return { deltaX, deltaY }
         }
         this.utils.resizeElement({
-          targetEle: this.entities.gripRight,
-          resizeEle: this.entities.panel,
+          targetEl: this.entities.gripRight,
+          resizeEl: this.entities.panel,
           resizeWidth: true,
           resizeHeight: false,
           onMouseDown,

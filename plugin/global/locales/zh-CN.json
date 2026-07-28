@@ -323,7 +323,6 @@
     "$label.MAX_HIGHLIGHTS": "高亮最大数量",
     "$label.HIGHLIGHTS_MATCH_ANCHOR": "高亮匹配锚点",
     "$label.CASE_SENSITIVE": "区分大小写",
-    "$label.STOP_SEARCHING_ON_HIDING": "隐藏窗口后立即停止搜索",
     "$label.EXPLAIN_TRIGGER": "显示说明气泡",
     "$label.TRAVERSE_STRATEGY": "遍历策略",
     "$label.BACKSPACE_TO_HIDE": "清空并按退格键隐藏窗口",
@@ -367,9 +366,7 @@
     "$label.BUILTIN.shell": "Shell",
     "$label.BUILTIN.cmd": "命令",
     "$label.POST_SCRIPT": "后置脚本",
-    "$label.NORMALIZE_ENV_VARS": "环境变量归一化",
     "$label.MAX_HISTORY_ENTRIES": "最大历史记录数",
-    "$tooltip.normalizeEnvVars": "自动将脚本中的跨平台变量（如 $f, $m）转换为当前 Shell 支持的原生格式",
     "$title.cmdDisplay": "输出显示"
   },
   "md_padding": {

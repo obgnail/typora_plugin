@@ -131,10 +131,10 @@ class utils {
   // Manually checking magic numbers is impractical and a library adds too much overhead.
   // This uses a simplified approach. Modern browsers can often infer the subtype reliably.
   static convertImageToBase64 = (bin) => {
-    const prefix = bin.slice(0, 5).toString()
-    const mime = ["<svg", "<?xml"].some(e => prefix.startsWith(e)) ? "image/svg+xml" : "image"
-    const base64 = bin.toString("base64")
-    return `data:${mime};base64,${base64}`
+    const head = bin.slice(0, 5).toString()
+    const mime = ["<svg", "<?xml"].some(e => head.startsWith(e)) ? "image/svg+xml" : "image"
+    const b64 = bin.toString("base64")
+    return `data:${mime};base64,${b64}`
   }
 
 
@@ -257,9 +257,9 @@ class utils {
     let shot
     const arm = fn => shot = fn
     const fire = function (...args) {
-      const fn = shot
+      const f = shot
       shot = null
-      return fn?.apply(this, args)
+      return f?.apply(this, args)
     }
     return [arm, fire]
   }
@@ -1172,21 +1172,11 @@ class utils {
     return promise
   }
 
-  static resizeElement = (
-    {
-      targetEle,
-      resizeEle,
-      resizeWidth = true,
-      resizeHeight = true,
-      onMouseDown = null,
-      onMouseMove = null,
-      onMouseUp = null,
-    },
-  ) => {
+  static resizeElement = ({ targetEl, resizeEl, onMouseDown, onMouseMove, onMouseUp, resizeWidth = true, resizeHeight = true }) => {
     const rafManager = this.getRafManager()
     let startX, startY, startWidth, startHeight
-    targetEle.addEventListener("mousedown", ev => {
-      const { width, height } = document.defaultView.getComputedStyle(resizeEle)
+    targetEl.addEventListener("mousedown", ev => {
+      const { width, height } = document.defaultView.getComputedStyle(resizeEl)
       startX = ev.clientX
       startY = ev.clientY
       startWidth = parseFloat(width)
@@ -1208,10 +1198,10 @@ class utils {
           deltaY = newDeltaY || deltaY
         }
         if (resizeWidth) {
-          resizeEle.style.width = startWidth + deltaX + "px"
+          resizeEl.style.width = startWidth + deltaX + "px"
         }
         if (resizeHeight) {
-          resizeEle.style.height = startHeight + deltaY + "px"
+          resizeEl.style.height = startHeight + deltaY + "px"
         }
       })
     }
@@ -1224,22 +1214,13 @@ class utils {
     }
   }
 
-  static dragElement = (
-    {
-      targetEle,
-      moveEle,
-      onCheck = null,
-      onMouseDown = null,
-      onMouseMove = null,
-      onMouseUp = null,
-    },
-  ) => {
+  static dragElement = ({ targetEl, moveEl, onCheck, onMouseDown, onMouseMove, onMouseUp }) => {
     const rafManager = this.getRafManager()
-    targetEle.addEventListener("mousedown", ev => {
+    targetEl.addEventListener("mousedown", ev => {
       if (onCheck && !onCheck(ev)) return
 
       ev.stopPropagation()
-      const { left, top } = moveEle.getBoundingClientRect()
+      const { left, top } = moveEl.getBoundingClientRect()
       const shiftX = ev.clientX - left
       const shiftY = ev.clientY - top
       onMouseDown?.()
@@ -1251,8 +1232,8 @@ class utils {
         const currentY = ev.clientY
         rafManager.schedule(() => {
           onMouseMove?.()
-          moveEle.style.left = currentX - shiftX + "px"
-          moveEle.style.top = currentY - shiftY + "px"
+          moveEl.style.left = currentX - shiftX + "px"
+          moveEl.style.top = currentY - shiftY + "px"
         })
       }
 
@@ -1268,7 +1249,7 @@ class utils {
       document.addEventListener("mousemove", _onMouseMove)
       document.addEventListener("mouseup", _onMouseUp)
     })
-    targetEle.ondragstart = () => false
+    targetEl.ondragstart = () => false
   }
 
   static createSmartInputHandler = (inputEl, callback, options = {}) => {

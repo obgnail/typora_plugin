@@ -323,7 +323,6 @@
     "$label.MAX_HIGHLIGHTS": "高亮最大數量",
     "$label.HIGHLIGHTS_MATCH_ANCHOR": "高亮匹配錨點",
     "$label.CASE_SENSITIVE": "區分大小寫",
-    "$label.STOP_SEARCHING_ON_HIDING": "隱藏視窗後立即停止搜尋",
     "$label.EXPLAIN_TRIGGER": "顯示說明氣泡",
     "$label.TRAVERSE_STRATEGY": "遍歷策略",
     "$label.BACKSPACE_TO_HIDE": "清空並按退格鍵隱藏視窗",
@@ -367,9 +366,7 @@
     "$label.BUILTIN.shell": "Shell",
     "$label.BUILTIN.cmd": "命令",
     "$label.POST_SCRIPT": "後置腳本",
-    "$label.NORMALIZE_ENV_VARS": "環境變數正規化",
     "$label.MAX_HISTORY_ENTRIES": "最大歷史記錄數",
-    "$tooltip.normalizeEnvVars": "自動將腳本中的跨平台變數（如 $f, $m）轉換為當前 Shell 支援的原生格式",
     "$title.cmdDisplay": "輸出顯示"
   },
   "md_padding": {

@@ -1,7 +1,9 @@
 class CollapseTablePlugin extends BasePlugin {
   className = "plugin-collapse-table"
 
-  style = () => true
+  style = () => `
+.plugin-collapse-table tbody { display: none !important; }
+.plugin-collapse-table thead { border: 1px solid #f22f27 !important; }`
 
   process = () => {
     this.utils.settings.autoSave(this)

@@ -23,7 +23,7 @@ class SlashCommandsPlugin extends BasePlugin {
     return this.commands.size ? undefined : this.utils.PLUGIN_LOAD_ABORT
   }
 
-  style = () => true
+  style = () => `.auto-suggest-container li.plugin-slash-command { padding-left: 10px; }`
 
   process = () => {
     if (this.config.SUGGESTION_TIMING === "on_input") {

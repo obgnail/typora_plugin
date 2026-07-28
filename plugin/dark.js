@@ -2,7 +2,7 @@ class DarkModePlugin extends BasePlugin {
   className = "plugin-dark"
   isDarkMode = this.config.DARK_DEFAULT
 
-  style = () => true
+  style = () => `@media (prefers-color-scheme: light) { .${this.className} { filter: invert(.9) hue-rotate(.5turn); } }`
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
