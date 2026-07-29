@@ -1,14 +1,23 @@
 #plugin-window-tab {
+  --wt-tab-height: 40px;
+  --wt-bg-color: var(--bg-color, white);
+  --wt-sidebar-bg-color: var(--side-bar-bg-color, gray);
+  --wt-active-bg-color: var(--active-file-bg-color, lightgray);
+  --wt-scrollbar-color: var(--active-file-bg-color, gray);
+  --wt-icon-color: var(--active-file-border-color, black);
+  --wt-border-light: rgba(0, 0, 0, 0.03);
+  --wt-border-dark: rgba(0, 0, 0, 0.07);
+
   position: fixed;
   top: 0;
   width: 100%;
-  height: 40px;
+  height: var(--wt-tab-height);
   z-index: 898;
   box-sizing: border-box;
 }
 
 #plugin-window-tab .tab-bar {
-  background-color: var(--bg-color, white);
+  background-color: var(--wt-bg-color);
   height: 100%;
   width: 100%;
   display: flex;
@@ -34,7 +43,7 @@ body.pin-outline #plugin-window-tab .tab-bar {
 
 #plugin-window-tab .tab-bar::-webkit-scrollbar-thumb {
   height: 5px;
-  background-color: var(--active-file-bg-color, gray);
+  background-color: var(--wt-scrollbar-color);
   visibility: hidden;
 }
 
@@ -46,19 +55,19 @@ body.pin-outline #plugin-window-tab .tab-bar {
   content: "";
   flex-grow: 1;
   height: 100%;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom: 1px solid var(--wt-border-dark);
   box-sizing: border-box;
 }
 
 #plugin-window-tab .tab-container {
-  background-color: var(--side-bar-bg-color, gray);
+  background-color: var(--wt-sidebar-bg-color);
   height: 100%;
   min-width: ${this.config.TAB_MIN_WIDTH};
   max-width: ${this.config.TAB_MAX_WIDTH};
   position: relative;
   padding: 0 10px 0 15px;
-  border: 1px solid rgba(0, 0, 0, 0.03);
-  border-bottom-color: rgba(0, 0, 0, 0.07);
+  border: 1px solid var(--wt-border-light);
+  border-bottom-color: var(--wt-border-dark);
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -68,7 +77,7 @@ body.pin-outline #plugin-window-tab .tab-bar {
 }
 
 #plugin-window-tab .tab-container.over {
-  background-color: var(--active-file-bg-color, lightgray);
+  background-color: var(--wt-active-bg-color);
 }
 
 #plugin-window-tab .window-tab-name {
@@ -90,7 +99,7 @@ body.pin-outline #plugin-window-tab .tab-bar {
 }
 
 #plugin-window-tab .close-button:hover {
-  background-color: var(--active-file-bg-color, lightgray);
+  background-color: var(--wt-active-bg-color);
 }
 
 #plugin-window-tab .tab-container:hover > .close-button {
@@ -112,7 +121,7 @@ body.pin-outline #plugin-window-tab .tab-bar {
   position: absolute;
   width: 100%;
   height: 1.5px;
-  background-color: var(--active-file-border-color, black);
+  background-color: var(--wt-icon-color);
 }
 
 #plugin-window-tab .close-icon::before {
@@ -124,9 +133,9 @@ body.pin-outline #plugin-window-tab .tab-bar {
 }
 
 #plugin-window-tab .tab-container.active {
-  border-color: rgba(0, 0, 0, 0.07);
+  border-color: var(--wt-border-dark);
   border-bottom-color: transparent;
-  background-color: var(--bg-color, white);
+  background-color: var(--wt-bg-color);
 }
 
 #plugin-window-tab .tab-container.active .active-indicator {
@@ -139,7 +148,7 @@ body.pin-outline #plugin-window-tab .tab-bar {
   left: -1px;
   right: -1px;
   height: 3px;
-  background-color: var(--active-file-border-color, black);
+  background-color: var(--wt-icon-color);
   display: none;
 }
 
@@ -164,7 +173,7 @@ body.pin-outline #plugin-window-tab .tab-bar {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom: 1px solid var(--wt-border-dark);
   box-sizing: border-box;
   cursor: pointer;
 }
@@ -181,7 +190,7 @@ body.pin-outline #plugin-window-tab .tab-bar {
 }
 
 #plugin-window-tab .add-button:hover .add-icon {
-  background-color: var(--active-file-bg-color, lightgray);
+  background-color: var(--wt-active-bg-color);
 }
 
 #plugin-window-tab .add-icon::before,
@@ -192,7 +201,7 @@ body.pin-outline #plugin-window-tab .tab-bar {
   left: 50%;
   width: 11px;
   height: 1.5px;
-  background-color: var(--active-file-border-color, black);
+  background-color: var(--wt-icon-color);
 }
 
 #plugin-window-tab .add-icon::before {
