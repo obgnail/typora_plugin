@@ -50,7 +50,7 @@ class TabManager {
     return this._tabs[idx]
   }
 
-  getTabPathByIdx(idx) {
+  getPathByIdx(idx) {
     return this._tabs[idx]?.path
   }
 
@@ -300,8 +300,94 @@ class TabManager {
   }
 }
 
+class TabMonitor {
+  timer = null
+  isRunning = false
+
+  constructor(tabManager, intervalFn) {
+    this.tab = tabManager
+    this.intervalFn = intervalFn
+    this._bindEvents()
+  }
+
+  _bindEvents() {
+    window.addEventListener("focus", async () => {
+      if (this.tab.count > 0) {
+        await this.tab.checkExist()
+        if (document.hasFocus()) this.start()
+      }
+    })
+    window.addEventListener("blur", () => this.pause())
+  }
+
+  start() {
+    if (this.isRunning) return
+    this.isRunning = true
+    this._scheduleNext()
+  }
+
+  pause() {
+    this.isRunning = false
+    if (this.timer) {
+      clearTimeout(this.timer)
+      this.timer = null
+    }
+  }
+
+  async _scheduleNext() {
+    if (!this.isRunning || this.tab.count === 0) {
+      this.pause()
+      return
+    }
+    this.timer = setTimeout(async () => {
+      await this.tab.checkExist()
+      this._scheduleNext()
+    }, this.intervalFn(this.tab.count))
+  }
+}
+
+class ScrollSynchronizer {
+  observer = null
+  fallbackTimer = null
+
+  constructor(utils) {
+    this.utils = utils
+  }
+
+  restore(filepath, targetScrollTop, contentEl) {
+    if (this.observer) {
+      this.observer.disconnect()
+      clearTimeout(this.fallbackTimer)
+    }
+
+    const finalizeScroll = () => {
+      if (this.observer) {
+        this.observer.disconnect()
+        this.observer = null
+      }
+      if (this.utils.getFilePath() === filepath) {
+        contentEl.scrollTop = targetScrollTop
+      }
+    }
+
+    this.fallbackTimer = setTimeout(finalizeScroll, 2000)
+    const debouncedFinalize = this.utils.debounce(() => {
+      clearTimeout(this.fallbackTimer)
+      finalizeScroll()
+    }, 100)
+
+    this.observer = new ResizeObserver(() => {
+      if (this.utils.getFilePath() !== filepath) {
+        this.observer.disconnect()
+        return
+      }
+      debouncedFinalize()
+    })
+    this.observer.observe(contentEl.firstElementChild || contentEl)
+  }
+}
+
 class WindowTabPlugin extends BasePlugin {
-  checkTabsInterval = null
   renderRafManager = this.utils.getRafManager()
   manualSaveStorage = this.utils.getStorage(`${this.fixedName}.manual`)
   autoSaveStorage = this.utils.getStorage(`${this.fixedName}.auto`)
@@ -316,13 +402,13 @@ class WindowTabPlugin extends BasePlugin {
     onRender: (wantOpenPath) => {
       this.renderRafManager.schedule(() => {
         this._showTabBar()
-        this._startCheckTabsInterval()
+        this.monitor.start()
         this._renderTabs(wantOpenPath)
       })
     },
     onEmpty: async () => {
       this._hideTabBar()
-      this._stopCheckTabsInterval()
+      this.monitor.pause()
       this.tab.reset()
       File.bundle = {
         filePath: "", originalPath: null, untitledId: +new Date,
@@ -338,14 +424,16 @@ class WindowTabPlugin extends BasePlugin {
     },
     onExit: () => this.utils.exitTypora(),
   })
+  monitor = new TabMonitor(this.tab, count => count > 30 ? 3000 : (count > 10 ? 2000 : 1000))
+  scrollSync = new ScrollSynchronizer(this.utils)
 
   prepare = () => {
+    if (this.config.LAST_TAB_CLOSE_ACTION === "blankPage" && this.utils.isBetaVersion) {
+      this.config.LAST_TAB_CLOSE_ACTION = "reconfirm"
+    }
     if (window._options.framelessWindow && this.config.HIDE_WINDOW_TITLE_BAR) {
       document.querySelector("header").style.zIndex = "897"
       document.getElementById("top-titlebar").style.display = "none"
-    }
-    if (this.config.LAST_TAB_CLOSE_ACTION === "blankPage" && this.utils.isBetaVersion) {
-      this.config.LAST_TAB_CLOSE_ACTION = "reconfirm"
     }
   }
 
@@ -376,347 +464,17 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   process = () => {
-    const handleLifeCycle = () => {
-      this._hideTabBar()
-      this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, path => this.tab.open(path))
-      this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this._scrollContent)
-      this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial")
-
-      const isHeaderReady = () => this.utils.isBetaVersion ? this.entities.header.getBoundingClientRect().height : true
-      const adjustTop = () => setTimeout(() => {
-        if (!this.config.HIDE_WINDOW_TITLE_BAR) {
-          const { height, top } = this.entities.header.getBoundingClientRect()
-          this.entities.windowTab.style.top = `${height + top}px`
-        }
-        // Adjust the top position of the content Tag to prevent it from being obscured by the tab.
-        this._adjustContentTop()
-      }, 200)
-      this.utils.waitUntil(isHeaderReady, 50, 1000).catch(this.utils.noop).finally(adjustTop)
-    }
-    const handleClick = () => {
-      this.entities.newTabButton.addEventListener("click", async ev => {
-        const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
-          properties: ["openFile"],
-          filters: [{ name: "Markdown Files", extensions: ["md", "markdown", "mdown", "mkd", "mdx"] }],
-        })
-        if (!canceled && filePaths?.length > 0) {
-          this.utils.openFile(filePaths[0], true)
-        }
-      })
-
-      this.entities.tabWrapper.addEventListener("click", async ev => {
-        const closeButton = ev.target.closest(".close-button")
-        const tabContainer = ev.target.closest(".tab-container")
-        if (!closeButton && !tabContainer) return
-        const el = closeButton ? closeButton.closest(".tab-container") : tabContainer
-        const idx = parseInt(el.dataset.idx)
-        if (this.config.CTRL_CLICK_TO_NEW_WINDOW && this.utils.metaKeyPressed(ev)) {
-          this.openFileNewWindow(this.tab.getTabPathByIdx(idx), false)
-        } else if (closeButton) {
-          this.tab.close(idx)
-          if (this.config.REOPEN_TABS_ON_STARTUP) this.saveTabs(this.autoSaveStorage)
-        } else {
-          this.tab.switch(idx)
-        }
-      })
-    }
-    const handleScroll = () => {
-      this.entities.content.addEventListener("scroll", this.utils.debounce(() => {
-        const cur = this.tab.current
-        if (cur) cur.scrollTop = this.entities.content.scrollTop
-      }), 100)
-    }
-    const handleDrag = () => {
-      const newWindowIfNeed = (offsetY, el) => {
-        if (this.config.TAB_DETACHMENT === "lockVertical" || this.config.DRAG_NEW_WINDOW_THRESHOLD <= 0) return
-        offsetY = Math.abs(offsetY)
-        const { height } = this.entities.tabBar.getBoundingClientRect()
-        if (offsetY > height * this.config.DRAG_NEW_WINDOW_THRESHOLD) {
-          const idx = parseInt(el.dataset.idx)
-          this.openFileNewWindow(this.tab.getTabPathByIdx(idx), false)
-        }
-      }
-
-      const sortJetBrains = () => {
-        const self = this
-        const preview = new Image()
-        const rafManager = self.utils.getRafManager()
-        const resetTabBar = () => {
-          const all = self.entities.windowTab.querySelectorAll(".tab-container")
-          const activePath = self.tab.current?.path
-          self.tab.reset(Array.from(all, el => self.tab.getByIdx(parseInt(el.dataset.idx))))
-          if (activePath) self.tab.open(activePath)
-        }
-        let dragged, cloned, offsetX, offsetY, startX, startY, axis, _axis, threshold, _offsetX
-
-        $("#plugin-window-tab .tab-wrapper").on("dragstart", ".tab-container", function (ev) {
-          dragged = this
-          _offsetX = ev.offsetX
-
-          axis = dragged.getAttribute("axis")
-          _axis = axis
-          ev.originalEvent.dataTransfer.setDragImage(preview, 0, 0)
-          ev.originalEvent.dataTransfer.effectAllowed = "move"
-          ev.originalEvent.dataTransfer.dropEffect = "move"
-          let { left, top, height } = dragged.getBoundingClientRect()
-          startX = ev.clientX
-          startY = ev.clientY
-          offsetX = startX - left
-          offsetY = startY - top
-          threshold = height * self.config.DETACHMENT_THRESHOLD
-
-          const faker = dragged.cloneNode(true)
-          faker.style.height = dragged.offsetHeight + "px" // dragBox uses height: 100%, needs to be reset.
-          faker.style.transform = "translate3d(0, 0, 0)"
-          faker.setAttribute("dragging", "")
-          cloned = document.createElement("div")
-          cloned.append(faker)
-          cloned.className = "drag-obj"
-          cloned.style.transform = `translate3d(${left}px, ${top}px, 0)`
-          self.entities.tabBar.append(cloned)
-        }).on("dragend", ".tab-container", function (ev) {
-          rafManager.cancel()
-          newWindowIfNeed(ev.offsetY, this)
-          if (!cloned) {
-            dragged = null
-            return
-          }
-          const { left, top } = this.getBoundingClientRect()
-          const resetAnimation = cloned.animate(
-            [{ transform: cloned.style.transform }, { transform: `translate3d(${left}px, ${top}px, 0)` }],
-            { duration: 70, easing: "ease-in-out" },
-          )
-          resetAnimation.onfinish = function () {
-            cloned?.remove()
-            cloned = null
-            dragged.style.visibility = "visible"
-            dragged = null
-            resetTabBar()
-          }
-        }).on("dragover", ".tab-container", function (ev) {
-          ev.preventDefault()
-          if (dragged) {
-            const fn = ev.offsetX > _offsetX ? "after" : "before"
-            this[fn](dragged)
-          }
-        }).on("dragenter", () => false)
-
-        document.addEventListener("dragover", function (ev) {
-          if (!cloned) return
-
-          ev.preventDefault()
-          ev.stopPropagation()
-          ev.dataTransfer.dropEffect = "move"
-          dragged.style.visibility = "hidden"
-          const currentX = ev.clientX
-          const currentY = ev.clientY
-          rafManager.schedule(() => {
-            let left = currentX - offsetX
-            let top = currentY - offsetY
-            if (axis) {
-              if (_axis === "X") {
-                top = startY - offsetY
-              } else if (_axis === "Y") {
-                left = startX - offsetX
-              } else {
-                const x = Math.abs(currentX - startX)
-                const y = Math.abs(currentY - startY)
-                _axis = (x > y && "X") || (x < y && "Y") || ""
-              }
-            } else {
-              _axis = ""
-            }
-            startX = left + offsetX
-            startY = top + offsetY
-
-            const detachment = self.config.TAB_DETACHMENT
-            if (detachment === "lockVertical" || (detachment === "resistant" && top < threshold)) {
-              top = 0
-            }
-            cloned.style.transform = `translate3d(${left}px, ${top}px, 0)`
-          })
-        })
-      }
-
-      const sortVscode = () => {
-        const self = this
-        let lastOver = null
-        const toggleOver = (target, isAdd) => {
-          if (isAdd) {
-            target.classList.add("over")
-            lastOver = target
-          } else {
-            target.classList.remove("over")
-          }
-        }
-
-        $("#plugin-window-tab .tab-wrapper").on("dragstart", ".tab-container", function (ev) {
-          ev.originalEvent.dataTransfer.effectAllowed = "move"
-          ev.originalEvent.dataTransfer.dropEffect = "move"
-          this.style.opacity = 0.5
-          lastOver = null
-        }).on("dragend", ".tab-container", function (ev) {
-          this.style.opacity = ""
-          newWindowIfNeed(ev.offsetY, this)
-          if (lastOver) {
-            lastOver.classList.remove("over")
-            const toIdx = parseInt(lastOver.dataset.idx)
-            const fromIdx = parseInt(this.dataset.idx)
-            self.tab.move(fromIdx, toIdx)
-            self.tab.hooks.onRender(self.tab.current.path)
-          }
-        }).on("dragover", ".tab-container", function () {
-          toggleOver(this, true)
-          return false
-        }).on("dragenter", ".tab-container", function () {
-          toggleOver(this, true)
-          return false
-        }).on("dragleave", ".tab-container", function () {
-          toggleOver(this, false)
-        })
-      }
-
-      if (this.config.DRAG_STYLE === "JetBrains") {
-        sortJetBrains()
-      } else {
-        sortVscode()
-      }
-    }
-    const handleRename = () => {
-      reqnode("electron").ipcRenderer.on("didRename", (sender, { oldPath, newPath }) => {
-        const isDir = this.utils.Package.FsExtra.statSync(newPath).isDirectory()
-        if (isDir) {
-          this.tab.tabs
-            .filter(t => t.path.startsWith(oldPath))
-            .forEach(t => t.path = newPath + t.path.slice(oldPath.length))
-        } else {
-          const toRenameTab = this.tab.tabs.find(t => t.path === oldPath)
-          if (toRenameTab) toRenameTab.path = newPath
-        }
-        if (this.tab.current) {
-          this.tab.open(this.tab.current.path)
-          // queueMicrotask(() => File.editor.library.refreshPanelCommand())
-        }
-      })
-    }
-    const handleFocusChange = () => {
-      window.addEventListener("focus", async () => {
-        if (this.tab.count > 0) {
-          await this.tab.checkExist()
-          this._startCheckTabsInterval()
-        }
-      })
-      window.addEventListener("blur", this._stopCheckTabsInterval)
-    }
-    const handleWheel = () => {
-      this.entities.tabBar.addEventListener("wheel", ev => ev.currentTarget.scrollLeft += ev.deltaY * 0.5, { passive: true })
-    }
-    const handleMiddleClick = () => {
-      this.entities.tabWrapper.addEventListener("mousedown", ev => {
-        if (ev.button === 1) {
-          const idx = parseInt(ev.target.closest(".tab-container")?.dataset.idx)
-          if (!isNaN(idx)) {
-            ev.stopPropagation()
-            ev.preventDefault()
-            this.tab.close(idx)
-            if (this.config.REOPEN_TABS_ON_STARTUP) this.saveTabs(this.autoSaveStorage)
-          }
-        }
-      })
-    }
-    const handleContextMenu = () => {
-      let tabIdx = -1
-      const getMenuItems = (ev) => {
-        const tabEl = ev.target.closest(".tab-container")
-        if (tabEl) {
-          tabIdx = parseInt(tabEl.dataset.idx)
-          const all = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"]
-          return this.utils.pick(this.i18n.entries(all, "$option.CONTEXT_MENU."), this.config.CONTEXT_MENU)
-        }
-      }
-      const onClickMenuItem = (ev, key) => {
-        const isCloseAction = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs"].includes(key)
-        const commands = {
-          closeTab: () => this.tab.close(tabIdx),
-          closeOtherTabs: () => this.tab.closeOthers(tabIdx),
-          closeLeftTabs: () => this.tab.closeLeft(tabIdx),
-          closeRightTabs: () => this.tab.closeRight(tabIdx),
-          sortTabs: () => this.tab.sort(),
-          copyPath: () => this.copyPath(tabIdx),
-          showInFinder: () => this.showInFinder(tabIdx),
-          openInNewWindow: () => this.openInNewWindow(tabIdx),
-        }
-        commands[key]?.()
-        if (isCloseAction && this.config.REOPEN_TABS_ON_STARTUP) this.saveTabs(this.autoSaveStorage)
-      }
-      this.utils.contextMenu.register(this.entities.tabWrapper, getMenuItems, onClickMenuItem)
-    }
-    const adjustQuickOpen = () => {
-      const openQuickTab = (item, ev) => {
-        ev.preventDefault()
-        ev.stopPropagation()
-        const path = item.dataset.path
-        if (item.dataset.isDir === "true") this.utils.openFolder(path)
-        else this.utils.openFile(path)
-        if (File.isMac && $("#typora-quick-open:visible").hide().length) {
-          bridge.callHandler("quickOpen.stopQuery")
-        }
-      }
-      document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
-        const target = ev.target.closest(".typora-quick-open-item")
-        // Changed the original click behavior to ctrl+click.
-        if (target && !this.utils.metaKeyPressed(ev)) openQuickTab(target, ev)
-      }, true)
-      document.querySelector("#typora-quick-open-input > input").addEventListener("keydown", ev => {
-        if (ev.key === "Enter") {
-          const el = document.querySelector(".typora-quick-open-item.active")
-          if (el) openQuickTab(el, ev)
-        }
-      }, true)
-    }
-    const reopenTabsWhenInit = () => {
-      this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-        // Redirection is disabled when opening specific files (isDiscardableUntitled === false).
-        // Register autoSave AFTER restoreSession completes, so the restore's fileContentLoaded
-        // does not overwrite the saved state with stale data.
-        this.utils.waitUntil(this.utils.isDiscardableUntitled, 50, 2000)
-          .then(() => this.openSaveTabs(this.autoSaveStorage, false))
-          .catch(this.utils.noop)
-          .finally(() => {
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage))
-          })
-      })
-    }
-
-    const interceptLink = () => {
-      let context = {}
-      this.utils.decorator.preventCallIf(() => JSBridge, "invoke", (cmd, file, options) => {
-        if (cmd !== "app.openFileOrFolder" || !file || typeof options?.anchor !== "string") return false
-        context = { ...options }
-        this.utils.openFile(file)
-        return true
-      })
-      this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
-        if (context.anchor?.startsWith("#")) {
-          const $target = File.editor.EditHelper.findAnchorElem(context.anchor)
-          this.utils.scrollTo($target, { height: 10 })
-          context = {}
-        }
-      })
-    }
-
-    handleLifeCycle()
-    handleClick()
-    handleScroll()
-    handleDrag()
-    handleRename()
-    handleFocusChange()
-    adjustQuickOpen()
-    if (this.utils.compareVersion(this.utils.typoraVersion, "1.1.0") >= 0) interceptLink()
-    if (this.config.WHEEL_TO_SCROLL_TAB_BAR) handleWheel()
-    if (this.config.MIDDLE_CLICK_TO_CLOSE) handleMiddleClick()
-    if (this.config.REOPEN_TABS_ON_STARTUP) reopenTabsWhenInit()
-    if (this.config.CONTEXT_MENU.length) handleContextMenu()
+    this._handleLifeCycle()
+    this._handleClick()
+    this._handleScroll()
+    this._handleDrag()
+    this._handleRename()
+    this._adjustQuickOpen()
+    if (this.utils.compareVersion(this.utils.typoraVersion, "1.1.0") >= 0) this._interceptLink()
+    if (this.config.WHEEL_TO_SCROLL_TAB_BAR) this._handleWheel()
+    if (this.config.MIDDLE_CLICK_TO_CLOSE) this._handleMiddleClick()
+    if (this.config.REOPEN_TABS_ON_STARTUP) this._reopenTabsWhenInit()
+    if (this.config.CONTEXT_MENU.length) this._handleContextMenu()
   }
 
   getDynamicActions = () => this.i18n.fillActions([
@@ -746,6 +504,336 @@ class WindowTabPlugin extends BasePlugin {
     }
     callMap[action]?.()
   }
+
+  _handleLifeCycle = () => {
+    this._hideTabBar()
+    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, path => this.tab.open(path))
+    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, path => {
+      const active = this.tab.tabs.find(e => e.path === path)
+      if (active) this.scrollSync.restore(path, active.scrollTop, this.entities.content)
+    })
+    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial")
+
+    const isHeaderReady = () => this.utils.isBetaVersion ? this.entities.header.getBoundingClientRect().height : true
+    const adjustTop = () => setTimeout(() => {
+      if (!this.config.HIDE_WINDOW_TITLE_BAR) {
+        const { height, top } = this.entities.header.getBoundingClientRect()
+        this.entities.windowTab.style.top = `${height + top}px`
+      }
+      // Adjust the top position of the content Tag to prevent it from being obscured by the tab.
+      this._adjustContentTop()
+    }, 200)
+    this.utils.waitUntil(isHeaderReady, 50, 1000).catch(this.utils.noop).finally(adjustTop)
+  }
+
+  _handleClick = () => {
+    this.entities.newTabButton.addEventListener("click", async ev => {
+      const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
+        properties: ["openFile"],
+        filters: [{ name: "Markdown Files", extensions: ["md", "markdown", "mdown", "mkd", "mdx"] }],
+      })
+      if (!canceled && filePaths?.length > 0) {
+        this.utils.openFile(filePaths[0], true)
+      }
+    })
+
+    this.entities.tabWrapper.addEventListener("click", async ev => {
+      const closeButton = ev.target.closest(".close-button")
+      const tabContainer = ev.target.closest(".tab-container")
+      if (!closeButton && !tabContainer) return
+      const el = closeButton ? closeButton.closest(".tab-container") : tabContainer
+      const idx = parseInt(el.dataset.idx)
+      if (this.config.CTRL_CLICK_TO_NEW_WINDOW && this.utils.metaKeyPressed(ev)) {
+        this.openInNewWindow(idx)
+      } else if (closeButton) {
+        this.tab.close(idx)
+        this._saveOnSwitch()
+      } else {
+        this.tab.switch(idx)
+      }
+    })
+  }
+
+  _handleScroll = () => {
+    this.entities.content.addEventListener("scroll", this.utils.debounce(() => {
+      const cur = this.tab.current
+      if (cur) cur.scrollTop = this.entities.content.scrollTop
+    }), 100)
+  }
+
+  _handleDrag = () => {
+    const newWindowIfNeed = (offsetY, el) => {
+      if (this.config.TAB_DETACHMENT === "lockVertical" || this.config.DRAG_NEW_WINDOW_THRESHOLD <= 0) return
+      offsetY = Math.abs(offsetY)
+      const { height } = this.entities.tabBar.getBoundingClientRect()
+      if (offsetY > height * this.config.DRAG_NEW_WINDOW_THRESHOLD) {
+        this.openInNewWindow(parseInt(el.dataset.idx))
+      }
+    }
+
+    const sortJetBrains = () => {
+      const self = this
+      const preview = new Image()
+      const rafManager = self.utils.getRafManager()
+      const resetTabBar = () => {
+        const all = self.entities.windowTab.querySelectorAll(".tab-container")
+        const activePath = self.tab.current?.path
+        self.tab.reset(Array.from(all, el => self.tab.getByIdx(parseInt(el.dataset.idx))))
+        if (activePath) self.tab.open(activePath)
+      }
+      let dragged, cloned, offsetX, offsetY, startX, startY, axis, _axis, threshold, _offsetX
+
+      $("#plugin-window-tab .tab-wrapper").on("dragstart", ".tab-container", function (ev) {
+        dragged = this
+        _offsetX = ev.offsetX
+
+        axis = dragged.getAttribute("axis")
+        _axis = axis
+        ev.originalEvent.dataTransfer.setDragImage(preview, 0, 0)
+        ev.originalEvent.dataTransfer.effectAllowed = "move"
+        ev.originalEvent.dataTransfer.dropEffect = "move"
+        let { left, top, height } = dragged.getBoundingClientRect()
+        startX = ev.clientX
+        startY = ev.clientY
+        offsetX = startX - left
+        offsetY = startY - top
+        threshold = height * self.config.DETACHMENT_THRESHOLD
+
+        const faker = dragged.cloneNode(true)
+        faker.style.height = dragged.offsetHeight + "px" // dragBox uses height: 100%, needs to be reset.
+        faker.style.transform = "translate3d(0, 0, 0)"
+        faker.setAttribute("dragging", "")
+        cloned = document.createElement("div")
+        cloned.append(faker)
+        cloned.className = "drag-obj"
+        cloned.style.transform = `translate3d(${left}px, ${top}px, 0)`
+        self.entities.tabBar.append(cloned)
+      }).on("dragend", ".tab-container", function (ev) {
+        rafManager.cancel()
+        newWindowIfNeed(ev.offsetY, this)
+        if (!cloned) {
+          dragged = null
+          return
+        }
+        const { left, top } = this.getBoundingClientRect()
+        const resetAnimation = cloned.animate(
+          [{ transform: cloned.style.transform }, { transform: `translate3d(${left}px, ${top}px, 0)` }],
+          { duration: 70, easing: "ease-in-out" },
+        )
+        resetAnimation.onfinish = function () {
+          cloned?.remove()
+          cloned = null
+          dragged.style.visibility = "visible"
+          dragged = null
+          resetTabBar()
+        }
+      }).on("dragover", ".tab-container", function (ev) {
+        ev.preventDefault()
+        if (dragged) {
+          const fn = ev.offsetX > _offsetX ? "after" : "before"
+          this[fn](dragged)
+        }
+      }).on("dragenter", () => false)
+
+      document.addEventListener("dragover", function (ev) {
+        if (!cloned) return
+
+        ev.preventDefault()
+        ev.stopPropagation()
+        ev.dataTransfer.dropEffect = "move"
+        dragged.style.visibility = "hidden"
+        const currentX = ev.clientX
+        const currentY = ev.clientY
+        rafManager.schedule(() => {
+          let left = currentX - offsetX
+          let top = currentY - offsetY
+          if (axis) {
+            if (_axis === "X") {
+              top = startY - offsetY
+            } else if (_axis === "Y") {
+              left = startX - offsetX
+            } else {
+              const x = Math.abs(currentX - startX)
+              const y = Math.abs(currentY - startY)
+              _axis = (x > y && "X") || (x < y && "Y") || ""
+            }
+          } else {
+            _axis = ""
+          }
+          startX = left + offsetX
+          startY = top + offsetY
+
+          const detachment = self.config.TAB_DETACHMENT
+          if (detachment === "lockVertical" || (detachment === "resistant" && top < threshold)) {
+            top = 0
+          }
+          cloned.style.transform = `translate3d(${left}px, ${top}px, 0)`
+        })
+      })
+    }
+
+    const sortVscode = () => {
+      const self = this
+      let lastOver = null
+      const toggleOver = (target, isAdd) => {
+        if (isAdd) {
+          target.classList.add("over")
+          lastOver = target
+        } else {
+          target.classList.remove("over")
+        }
+      }
+
+      $("#plugin-window-tab .tab-wrapper").on("dragstart", ".tab-container", function (ev) {
+        ev.originalEvent.dataTransfer.effectAllowed = "move"
+        ev.originalEvent.dataTransfer.dropEffect = "move"
+        this.style.opacity = 0.5
+        lastOver = null
+      }).on("dragend", ".tab-container", function (ev) {
+        this.style.opacity = ""
+        newWindowIfNeed(ev.offsetY, this)
+        if (lastOver) {
+          lastOver.classList.remove("over")
+          const toIdx = parseInt(lastOver.dataset.idx)
+          const fromIdx = parseInt(this.dataset.idx)
+          self.tab.move(fromIdx, toIdx)
+          self.tab.hooks.onRender(self.tab.current.path)
+        }
+      }).on("dragover", ".tab-container", function () {
+        toggleOver(this, true)
+        return false
+      }).on("dragenter", ".tab-container", function () {
+        toggleOver(this, true)
+        return false
+      }).on("dragleave", ".tab-container", function () {
+        toggleOver(this, false)
+      })
+    }
+
+    if (this.config.DRAG_STYLE === "JetBrains") {
+      sortJetBrains()
+    } else {
+      sortVscode()
+    }
+  }
+
+  _handleRename = () => {
+    reqnode("electron").ipcRenderer.on("didRename", (sender, { oldPath, newPath }) => {
+      const isDir = this.utils.Package.FsExtra.statSync(newPath).isDirectory()
+      if (isDir) {
+        this.tab.tabs
+          .filter(t => t.path.startsWith(oldPath))
+          .forEach(t => t.path = newPath + t.path.slice(oldPath.length))
+      } else {
+        const toRenameTab = this.tab.tabs.find(t => t.path === oldPath)
+        if (toRenameTab) toRenameTab.path = newPath
+      }
+      if (this.tab.current) {
+        this.tab.open(this.tab.current.path)
+        // queueMicrotask(() => File.editor.library.refreshPanelCommand())
+      }
+    })
+  }
+
+  _handleWheel = () => {
+    this.entities.tabBar.addEventListener("wheel", ev => ev.currentTarget.scrollLeft += ev.deltaY * 0.5, { passive: true })
+  }
+
+  _handleMiddleClick = () => {
+    this.entities.tabWrapper.addEventListener("mousedown", ev => {
+      if (ev.button !== 1) return
+      const idx = parseInt(ev.target.closest(".tab-container")?.dataset.idx)
+      if (!isNaN(idx)) {
+        ev.stopPropagation()
+        ev.preventDefault()
+        this.tab.close(idx)
+        this._saveOnSwitch()
+      }
+    })
+  }
+
+  _handleContextMenu = () => {
+    let tabIdx = -1
+    const getMenuItems = (ev) => {
+      const tabEl = ev.target.closest(".tab-container")
+      if (tabEl) {
+        tabIdx = parseInt(tabEl.dataset.idx)
+        const all = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"]
+        return this.utils.pick(this.i18n.entries(all, "$option.CONTEXT_MENU."), this.config.CONTEXT_MENU)
+      }
+    }
+    const onClickMenuItem = (ev, key) => {
+      const isCloseAction = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs"].includes(key)
+      const commands = {
+        closeTab: () => this.tab.close(tabIdx),
+        closeOtherTabs: () => this.tab.closeOthers(tabIdx),
+        closeLeftTabs: () => this.tab.closeLeft(tabIdx),
+        closeRightTabs: () => this.tab.closeRight(tabIdx),
+        sortTabs: () => this.tab.sort(),
+        copyPath: () => this.copyPath(tabIdx),
+        showInFinder: () => this.showInFinder(tabIdx),
+        openInNewWindow: () => this.openInNewWindow(tabIdx),
+      }
+      commands[key]?.()
+      if (isCloseAction) this._saveOnSwitch()
+    }
+    this.utils.contextMenu.register(this.entities.tabWrapper, getMenuItems, onClickMenuItem)
+  }
+
+  _adjustQuickOpen = () => {
+    const openQuickTab = (item, ev) => {
+      ev.preventDefault()
+      ev.stopPropagation()
+      const { path, isDir } = item.dataset
+      const fn = isDir === "true" ? "openFolder" : "openFile"
+      this.utils[fn](path)
+      if (File.isMac && $("#typora-quick-open:visible").hide().length) {
+        bridge.callHandler("quickOpen.stopQuery")
+      }
+    }
+    // Change Click to Ctrl+Click
+    document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
+      const target = ev.target.closest(".typora-quick-open-item")
+      if (target && !this.utils.metaKeyPressed(ev)) openQuickTab(target, ev)
+    }, true)
+    document.querySelector("#typora-quick-open-input > input").addEventListener("keydown", ev => {
+      if (ev.key === "Enter") {
+        const el = document.querySelector(".typora-quick-open-item.active")
+        if (el) openQuickTab(el, ev)
+      }
+    }, true)
+  }
+
+  _reopenTabsWhenInit = () => {
+    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+      // Redirection is disabled when opening specific files (isDiscardableUntitled === false).
+      // Register autoSave AFTER restoreSession completes, so the restore's fileContentLoaded
+      // does not overwrite the saved state with stale data.
+      this.utils.waitUntil(this.utils.isDiscardableUntitled, 50, 2000)
+        .then(() => this.openSaveTabs(this.autoSaveStorage, false))
+        .catch(this.utils.noop)
+        .finally(() => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage)))
+    })
+  }
+
+  _interceptLink = () => {
+    let context = {}
+    this.utils.decorator.preventCallIf(() => JSBridge, "invoke", (cmd, file, options) => {
+      if (cmd !== "app.openFileOrFolder" || !file || typeof options?.anchor !== "string") return false
+      context = { ...options }
+      this.utils.openFile(file)
+      return true
+    })
+    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
+      if (context.anchor?.startsWith("#")) {
+        const $target = File.editor.EditHelper.findAnchorElem(context.anchor)
+        this.utils.scrollTo($target, { height: 10 })
+        context = {}
+      }
+    })
+  }
+
+  _saveOnSwitch = () => this.config.REOPEN_TABS_ON_STARTUP && this.saveTabs(this.autoSaveStorage)
 
   _hideTabBar = () => {
     if (this.utils.isShown(this.entities.windowTab) && this.tab.count === 0) {
@@ -778,30 +866,13 @@ class WindowTabPlugin extends BasePlugin {
     this.entities.source.style.removeProperty("top")
   }
 
-  _startCheckTabsInterval = () => {
-    if (this.checkTabsInterval) return
-    const count = this.tab.count
-    const interval = count > 30 ? 3000 : (count > 10 ? 2000 : 1000)
-    this.checkTabsInterval = setInterval(() => this.tab.checkExist(), interval)
-  }
-
-  _stopCheckTabsInterval = () => {
-    if (this.checkTabsInterval) {
-      clearInterval(this.checkTabsInterval)
-      this.checkTabsInterval = null
-    }
-  }
-
-  _insertTabDiv = (filePath, showName, idx) => {
+  _insertTabEl = (filePath, showName, idx) => {
     const hint = this.config.SHOW_FULL_PATH_ON_HOVER ? `ty-hint="${filePath}"` : ""
     const btn = this.config.SHOW_TAB_CLOSE_BUTTON ? `<div class="close-button"><div class="close-icon"></div></div>` : ""
-    this.entities.tabWrapper.insertAdjacentHTML("beforeend",
-      `<div class="tab-container" data-idx="${idx}" draggable="true" ${hint}>
-          <div class="active-indicator"></div><div class="window-tab-name">${showName}</div>${btn}
-        </div>`)
+    this.entities.tabWrapper.insertAdjacentHTML("beforeend", `<div class="tab-container" data-idx="${idx}" draggable="true" ${hint}><div class="window-tab-name">${showName}</div>${btn}</div>`)
   }
 
-  _updateTabDiv = (tabDiv, filePath, showName, idx) => {
+  _updateTabEl = (tabDiv, filePath, showName, idx) => {
     tabDiv.dataset.idx = idx
     tabDiv.querySelector(".window-tab-name").innerText = showName
     if (this.config.SHOW_FULL_PATH_ON_HOVER) {
@@ -811,54 +882,16 @@ class WindowTabPlugin extends BasePlugin {
     }
   }
 
-  _scrollContent = filepath => {
-    const activeTab = this.tab.tabs.find(e => e.path === filepath)
-    if (!activeTab) return
-
-    const targetScrollTop = activeTab.scrollTop
-    const contentEl = this.entities.content
-
-    if (this._contentObserver) {
-      this._contentObserver.disconnect()
-      clearTimeout(this._scrollFallbackTimer)
-    }
-
-    const finalizeScroll = () => {
-      if (this._contentObserver) {
-        this._contentObserver.disconnect()
-        this._contentObserver = null
-      }
-      if (this.utils.getFilePath() === filepath) {
-        contentEl.scrollTop = targetScrollTop
-      }
-    }
-
-    this._scrollFallbackTimer = setTimeout(finalizeScroll, 2000)
-    const debouncedFinalize = this.utils.debounce(() => {
-      clearTimeout(this._scrollFallbackTimer)
-      finalizeScroll()
-    }, 100)
-
-    this._contentObserver = new ResizeObserver(() => {
-      if (this.utils.getFilePath() !== filepath) {
-        this._contentObserver.disconnect()
-        return
-      }
-      debouncedFinalize()
-    })
-    this._contentObserver.observe(contentEl.firstElementChild || contentEl)
-  }
-
   _renderTabs = wantOpenPath => {
     let currentTabEl = this.entities.tabWrapper.firstElementChild
 
     for (let idx = 0; idx < this.tab.tabs.length; idx++) {
       const tabObj = this.tab.tabs[idx]
       if (!currentTabEl) {
-        this._insertTabDiv(tabObj.path, tabObj.showName, idx)
+        this._insertTabEl(tabObj.path, tabObj.showName, idx)
         currentTabEl = this.entities.tabWrapper.lastElementChild
       } else {
-        this._updateTabDiv(currentTabEl, tabObj.path, tabObj.showName, idx)
+        this._updateTabEl(currentTabEl, tabObj.path, tabObj.showName, idx)
       }
       const isActive = tabObj.path === wantOpenPath
       currentTabEl.classList.toggle("active", isActive)
@@ -880,8 +913,6 @@ class WindowTabPlugin extends BasePlugin {
     else this._resetContentTop()
   }
 
-  openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
-
   OpenFileLocal = filePath => {
     this.tab.setLocalOpen(true)
     this.utils.openFile(filePath)
@@ -893,9 +924,9 @@ class WindowTabPlugin extends BasePlugin {
     this.utils.openFile(this.tab.current?.path)
   }
 
-  copyPath = idx => navigator.clipboard.writeText(this.tab.getTabPathByIdx(idx) || "")
-  showInFinder = idx => this.utils.showInFinder(this.tab.getTabPathByIdx(idx))
-  openInNewWindow = idx => this.openFileNewWindow(this.tab.getTabPathByIdx(idx), false)
+  copyPath = idx => navigator.clipboard.writeText(this.tab.getPathByIdx(idx) || "")
+  showInFinder = idx => this.utils.showInFinder(this.tab.getPathByIdx(idx))
+  openInNewWindow = idx => File.editor.library.openFileInNewWindow(this.tab.getPathByIdx(idx), false)
 
   saveTabs = (storage) => storage.set({
     mount_folder: this.utils.getMountFolder(),

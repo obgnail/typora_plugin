@@ -56,8 +56,8 @@ describe("TabManager Test Suite", () => {
     it("should return correct tab object and path by index", () => {
       manager.reset([{ path: "/a.md" }, { path: "/b.md" }])
       assert.strictEqual(manager.getByIdx(1).path, "/b.md")
-      assert.strictEqual(manager.getTabPathByIdx(0), "/a.md")
-      assert.strictEqual(manager.getTabPathByIdx(999), undefined)
+      assert.strictEqual(manager.getPathByIdx(0), "/a.md")
+      assert.strictEqual(manager.getPathByIdx(999), undefined)
     })
   })
 
@@ -77,19 +77,19 @@ describe("TabManager Test Suite", () => {
 
       context.config.NEW_TAB_POSITION = "end"
       manager.open("/end")
-      assert.strictEqual(manager.getTabPathByIdx(2), "/end")
+      assert.strictEqual(manager.getPathByIdx(2), "/end")
 
       context.config.NEW_TAB_POSITION = "start"
       manager.open("/start")
-      assert.strictEqual(manager.getTabPathByIdx(0), "/start")
+      assert.strictEqual(manager.getPathByIdx(0), "/start")
 
       context.config.NEW_TAB_POSITION = "right"
       manager.open("/right")
-      assert.strictEqual(manager.getTabPathByIdx(1), "/right")
+      assert.strictEqual(manager.getPathByIdx(1), "/right")
 
       context.config.NEW_TAB_POSITION = "left"
       manager.open("/left")
-      assert.strictEqual(manager.getTabPathByIdx(1), "/left")
+      assert.strictEqual(manager.getPathByIdx(1), "/left")
     })
 
     it("should trim tabs from left when overflow and inserting to right/end", () => {
@@ -229,7 +229,7 @@ describe("TabManager Test Suite", () => {
       manager.switch(1)
       manager.closeActive()
       assert.strictEqual(manager.count, 1)
-      assert.strictEqual(manager.getTabPathByIdx(0), "/a")
+      assert.strictEqual(manager.getPathByIdx(0), "/a")
     })
   })
 
@@ -324,7 +324,7 @@ describe("TabManager Test Suite", () => {
         manager.move(-1, 2) // Invalid from
         manager.move(0, 99) // Invalid to
         assert.strictEqual(manager.activeIdx, 1)
-        assert.strictEqual(manager.getTabPathByIdx(1), "/1")
+        assert.strictEqual(manager.getPathByIdx(1), "/1")
       })
 
       it("should move activeIdx when the active tab itself is moved", () => {
@@ -428,7 +428,7 @@ describe("TabManager Test Suite", () => {
       manager.open("/first.md") // Normally replaces current, but current is null
 
       assert.strictEqual(manager.count, 1)
-      assert.strictEqual(manager.getTabPathByIdx(0), "/first.md")
+      assert.strictEqual(manager.getPathByIdx(0), "/first.md")
     })
 
     it("should do nothing and not crash when closeActive() is called with zero tabs", () => {
@@ -473,9 +473,9 @@ describe("TabManager Test Suite", () => {
       manager.move(1, 1) // Moving to same place
 
       // Order should remain unchanged
-      assert.strictEqual(manager.getTabPathByIdx(0), "/0")
-      assert.strictEqual(manager.getTabPathByIdx(1), "/1")
-      assert.strictEqual(manager.getTabPathByIdx(2), "/2")
+      assert.strictEqual(manager.getPathByIdx(0), "/0")
+      assert.strictEqual(manager.getPathByIdx(1), "/1")
+      assert.strictEqual(manager.getPathByIdx(2), "/2")
     })
 
     it("should handle closeLeft() smoothly when index is exactly 0", () => {
