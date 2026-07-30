@@ -43,15 +43,14 @@ try {
     $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
     $rootDir = (Resolve-Path (Join-Path $scriptDir "..\..")).Path
     $paths = [PSCustomObject]@{
-        RootDir         = $rootDir
-        AppDir          = Join-Path -Path $rootDir -ChildPath "app"
-        AppSrcDir       = Join-Path -Path $rootDir -ChildPath "appsrc"
-        PluginDir       = Join-Path -Path $rootDir -ChildPath "plugin"
-        SettingsDir     = Join-Path -Path $rootDir -ChildPath "plugin\global\settings"
-        BasePluginCfg   = Join-Path -Path $rootDir -ChildPath "plugin\global\settings\settings.user.toml"
-        CustomPluginCfg = Join-Path -Path $rootDir -ChildPath "plugin\global\settings\custom_plugin.user.toml"
-        WindowHtml      = Join-Path -Path $rootDir -ChildPath "window.html"
-        WindowHtmlBak   = Join-Path -Path $rootDir -ChildPath "window.html.bak"
+        RootDir       = $rootDir
+        AppDir        = Join-Path -Path $rootDir -ChildPath "app"
+        AppSrcDir     = Join-Path -Path $rootDir -ChildPath "appsrc"
+        PluginDir     = Join-Path -Path $rootDir -ChildPath "plugin"
+        SettingsDir   = Join-Path -Path $rootDir -ChildPath "plugin\global\settings"
+        pluginCfg     = Join-Path -Path $rootDir -ChildPath "plugin\global\settings\settings.user.toml"
+        WindowHtml    = Join-Path -Path $rootDir -ChildPath "window.html"
+        WindowHtmlBak = Join-Path -Path $rootDir -ChildPath "window.html.bak"
     }
 
     Write-Host "[1/6] Validating paths" -ForegroundColor Yellow
@@ -113,8 +112,7 @@ try {
 
     Write-Host "      -> Processing permissions for settings files."
     $filesToProcess = @(
-        $paths.BasePluginCfg
-        $paths.CustomPluginCfg
+        $paths.pluginCfg
     )
     $fileAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
         $usersSid,

@@ -18,11 +18,6 @@
     "$label.ENABLE": "启用",
     "$label.NAME": "名称",
     "$label.HOTKEY": "快捷键",
-    "$label.enable": "启用",
-    "$label.name": "名称",
-    "$label.hide": "隐藏",
-    "$label.order": "排序",
-    "$label.hotkey": "快捷键",
     "$label.restoreSettings": "恢复默认配置",
     "$label.inspectRuntimeSettings": "当前配置",
     "$label.LANGUAGE": "语言",
@@ -886,11 +881,6 @@
     "$label.HOTKEY_CONVERT_LF_TO_CRLF": "换行符 LF 替换为 CRLF",
     "$label.HOTKEY_FILTER_INVISIBLE_CHARACTERS": "移除不可见字符",
     "$label.HOTKEY_TRAILING_WHITE_SPACE": "添加结尾空格"
-  },
-  "custom": {
-    "pluginName": "二级插件",
-    "actHint.disabledTemp": "光标于此位置不可用",
-    "$label.HIDE_DISABLE_PLUGINS": "隐藏右键菜单中临时不可用的二级插件"
   },
   "mouse_gestures": {
     "pluginName": "鼠标手势",

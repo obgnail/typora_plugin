@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Robustly move settings.user.toml and custom_plugin.user.toml
+# Robustly move settings.user.toml
 # between ../global/settings/ (relative to script) and $HOME/.config/typora_plugin/
 # Supports
 # - --force: overwrite existing files without prompting
@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-readonly FILES=("settings.user.toml" "custom_plugin.user.toml")
+readonly FILES=("settings.user.toml")
 readonly DEST_DIR="$HOME/.config/typora_plugin"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 SRC_DIR="$SCRIPT_DIR/../global/settings"

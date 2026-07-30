@@ -737,15 +737,6 @@ const schema_easy_modify = () => [
   FRAG.SettingHandler(),
 ]
 
-const schema_custom = () => [
-  Group(
-    Switch("ENABLE").Protect(),
-    Text("NAME").Placeholder("defaultIfEmpty"),
-  ),
-  Switch("HIDE_DISABLE_PLUGINS"),
-  FRAG.SettingHandler(),
-]
-
 const schema_mouse_gestures = () => [
   FRAG.Base(),
   Group(
@@ -1579,7 +1570,6 @@ const RAW_SCHEMAS = {
   cipher: schema_cipher,
   resource_manager: schema_resource_manager,
   easy_modify: schema_easy_modify,
-  custom: schema_custom,
   action_buttons: schema_action_buttons,
   mouse_gestures: schema_mouse_gestures,
   slash_commands: schema_slash_commands,

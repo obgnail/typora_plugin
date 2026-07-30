@@ -6,6 +6,7 @@ Object.assign(global, {
   File: { option: { wordsPerMinute: 300 } },
   $: () => ({}),
   _: require("lodash"),
+  dirname: require("os").tmpdir(),
 })
 
 const proxyquire = require("proxyquire")

@@ -1807,16 +1807,6 @@ HOTKEY_CONVERT_IMAGE_TO_BASE64 = ""
 HOTKEY_CONVERT_ALL_IMAGES_TO_BASE64 = ""
 
 
-[custom]
-# =========== [ Basic ] ===========
-ENABLE = true
-NAME = ""
-
-# =========== [ Hide Plugins ] ===========
-# Hide temporarily unavailable custom plugins from the Context Menu
-HIDE_DISABLE_PLUGINS = false
-
-
 [action_buttons]
 # =========== [ Basic ] ===========
 ENABLE = true
@@ -1922,14 +1912,14 @@ DEFAULT_COLOR = {
 #   cooldown: Cooldown time to prevent accidental rapid consecutive executions (ms, Defaults to 0)
 #   callback: Executable eval() statement
 GESTURES = [
-  { enable = true, button = "x1", path = "→", name = "Latest Tab", cooldown = 0, execute = "() => this.utils.getBasePlugin('window_tab')?.tab?.switchToLastActive()" },
-  { enable = true, button = "right", path = "→", name = "Next Tab", cooldown = 0, execute = "() => this.utils.getBasePlugin('window_tab')?.tab?.next()" },
-  { enable = true, button = "right", path = "←", name = "Previous Tab", cooldown = 0, execute = "() => this.utils.getBasePlugin('window_tab')?.tab?.previous()" },
-  { enable = true, button = "right", path = "→←", name = "First Tab", cooldown = 0, execute = "() => this.utils.getBasePlugin('window_tab')?.tab?.first()" },
-  { enable = true, button = "right", path = "←→", name = "Last Tab", cooldown = 0, execute = "() => this.utils.getBasePlugin('window_tab')?.tab?.last()" },
-  { enable = true, button = "right", path = "↓→", name = "Close Tab", cooldown = 0, execute = "() => this.utils.getBasePlugin('window_tab')?.tab?.closeActive()" },
-  { enable = true, button = "right", path = "→↓→", name = "Open In Finder", cooldown = 0, execute = "() => this.utils.showInFinder(this.utils.getBasePlugin('window_tab')?.tab?.current?.path)" },
-  { enable = true, button = "right", path = "↑→↓", name = "Toggle Tab Bar", cooldown = 0, execute = "() => this.utils.getBasePlugin('window_tab')?.forceToggleTabBar()" },
+  { enable = true, button = "x1", path = "→", name = "Latest Tab", cooldown = 0, execute = "() => this.utils.getPlugin('window_tab')?.tab?.switchToLastActive()" },
+  { enable = true, button = "right", path = "→", name = "Next Tab", cooldown = 0, execute = "() => this.utils.getPlugin('window_tab')?.tab?.next()" },
+  { enable = true, button = "right", path = "←", name = "Previous Tab", cooldown = 0, execute = "() => this.utils.getPlugin('window_tab')?.tab?.previous()" },
+  { enable = true, button = "right", path = "→←", name = "First Tab", cooldown = 0, execute = "() => this.utils.getPlugin('window_tab')?.tab?.first()" },
+  { enable = true, button = "right", path = "←→", name = "Last Tab", cooldown = 0, execute = "() => this.utils.getPlugin('window_tab')?.tab?.last()" },
+  { enable = true, button = "right", path = "↓→", name = "Close Tab", cooldown = 0, execute = "() => this.utils.getPlugin('window_tab')?.tab?.closeActive()" },
+  { enable = true, button = "right", path = "→↓→", name = "Open In Finder", cooldown = 0, execute = "() => this.utils.showInFinder(this.utils.getPlugin('window_tab')?.tab?.current?.path)" },
+  { enable = true, button = "right", path = "↑→↓", name = "Toggle Tab Bar", cooldown = 0, execute = "() => this.utils.getPlugin('window_tab')?.forceToggleTabBar()" },
   { enable = true, button = "right", path = "↗", name = "Maximize Window", cooldown = 0, execute = "() => JSBridge.invoke('window.maximize')" },
   { enable = true, button = "right", path = "↙", name = "Minimize Window", cooldown = 0, execute = "() => JSBridge.invoke('window.minimize')" },
   { enable = true, button = "right", path = "↓←", name = "Exit Typora", cooldown = 0, execute = "() => this.utils.exitTypora()" },
@@ -2241,7 +2231,6 @@ LIST = [
   "export_enhance",
   "mouse_gestures",
   "right_click_menu",
-  "custom",
   "---",
   "search_multi",
   "command_palette",
@@ -2341,7 +2330,7 @@ HOTKEY = ""
 CUSTOM_HOTKEYS = [
   { enable = false, hotkey = "ctrl+shift+e", desc = "Insert JavaScript BlockCode", evil = "() => this.utils.insertFence('javascript')" },
   { enable = false, hotkey = "ctrl+shift+e", desc = "Open Windows Calculator", evil = "() => require('child_process').exec('cmd /C calc')" },
-  { enable = false, hotkey = "ctrl+shift+e", desc = "Switch to the first window tab", evil = "() => this.utils.getBasePlugin('window_tab').tab.switch(0)" },
+  { enable = false, hotkey = "ctrl+shift+e", desc = "Switch to the first window tab", evil = "() => this.utils.getPlugin('window_tab').tab.switch(0)" },
   { enable = false, hotkey = "-", desc = "Pop up a prompt window", evil = "this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, filepath => window.confirm(`You opened the file: ${filepath}`))" },
   { enable = false, hotkey = "ctrl+shift+e", desc = "Insert Kanban BlockCode", plugin = "kanban", function = "callback" },
   { enable = false, hotkey = "ctrl+[", desc = "Folding/unfolding BlockCode", plugin = "fence_enhance", function = "foldFence", closestSelector = "#write .md-fences" },

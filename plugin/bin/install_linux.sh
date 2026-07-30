@@ -79,7 +79,6 @@ echo "[8/9] Adjusting permissions for plugin files"
 chmod 0777 "$PLUGIN_DIR" || panic "Failed to set permissions for '$PLUGIN_DIR'."
 chmod 0777 "$SETTINGS_DIR" || panic "Failed to set permissions for '$SETTINGS_DIR'."
 chmod 0777 "$SETTINGS_DIR/settings.user.toml" || panic "Failed to set permissions for settings.user.toml."
-chmod 0777 "$SETTINGS_DIR/custom_plugin.user.toml" || panic "Failed to set permissions for custom_plugin.user.toml."
 
 echo "[9/9] Updating window.html to inject plugin script"
 ESCAPED_FRAME_SCRIPT=$(escape_sed_regex "$FRAME_SCRIPT")

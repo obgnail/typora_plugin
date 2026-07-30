@@ -36,9 +36,12 @@ class MockUtilsFactory {
       },
       existPath: async (path) => localTestPaths.has(path),
       settings: {
+        USER_TOML: "settings.user.toml",
+        DEFAULT_TOML: "settings.default.toml",
         getActualPath: async (file) => `actual_path/${file}`,
-        getObjects: async (...files) => {
-          return files.map(file => MockUtilsFactory.configs[file] || {})
+        getObjects: async () => {
+          const { USER_TOML, DEFAULT_TOML } = defaultMocks.settings
+          return [DEFAULT_TOML, USER_TOML, USER_TOML].map(file => MockUtilsFactory.configs[file] || {})
         },
       },
       stringifyToml: (obj) => `toml:${JSON.stringify(obj)}`,
@@ -66,10 +69,7 @@ class MockUtilsFactory {
     const invalidPlugins = ["orphanedConfig", "missingImplementation"]
 
     MockUtilsFactory.initialTestPluginPaths = new Set()
-    existingPlugins.forEach(pluginName => {
-      MockUtilsFactory.initialTestPluginPaths.add(`./plugin/custom/plugins/${pluginName}.js`)
-      MockUtilsFactory.initialTestPluginPaths.add(`./plugin/${pluginName}.js`)
-    })
+    existingPlugins.forEach(pluginName => MockUtilsFactory.initialTestPluginPaths.add(`./plugin/${pluginName}.js`))
 
     const existingWithoutOptions = new PluginConfigBuilder()
       .withPlugins(existingPlugins.map(name => ({ name, enabled: true, options: { OPTION: "default" } })))
@@ -90,8 +90,6 @@ class MockUtilsFactory {
     MockUtilsFactory.configs = {
       "settings.default.toml": { ...existingWithoutOptions, ...removed },
       "settings.user.toml": { ...existingWithOptions, ...invalid },
-      "custom_plugin.default.toml": { customFileManager: { NAME: "customFileManager", ENABLE: true } },
-      "custom_plugin.user.toml": { customFileManager: { NAME: "customFileManager", ENABLE: true, CUSTOM_OPTION: "custom" } },
     }
   }
 }
@@ -114,103 +112,100 @@ afterEach(() => {
 
 describe("Migrate class functionality", () => {
   describe("Configuration Cleaning", () => {
-    describe("cleanInvalidPlugins", () => {
+    describe("cleanPlugins", () => {
       it("should preserve valid plugins and remove invalid ones", async () => {
-        const mockFiles = [{
-          configDefault: new PluginConfigBuilder()
+        const mockFiles = {
+          default: new PluginConfigBuilder()
             .withPlugin("fileManager")
             .withPlugin("markdownEnhancer")
             .build(),
-          configUser: new PluginConfigBuilder()
+          user: new PluginConfigBuilder()
             .withPlugin("fileManager")
             .withPlugin("markdownEnhancer")
             .withPlugin("orphanedConfig")
             .build(),
-        }]
+        }
 
-        await migrate.cleanInvalidPlugins(mockFiles)
+        await migrate.cleanPlugins(mockFiles)
 
-        assert.ok(mockFiles[0].configUser.fileManager, "Should keep existing plugin")
-        assert.ok(mockFiles[0].configUser.markdownEnhancer, "Should keep existing plugin")
-        assert.ok(mockFiles[0].configUser.orphanedConfig === undefined, "Should remove invalid plugin")
+        assert.ok(mockFiles.user.fileManager, "Should keep existing plugin")
+        assert.ok(mockFiles.user.markdownEnhancer, "Should keep existing plugin")
+        assert.ok(mockFiles.user.orphanedConfig === undefined, "Should remove invalid plugin")
       })
 
       it("should handle empty configuration files", async () => {
-        const mockFiles = [{
-          configDefault: {},
-          configUser: {},
-        }]
+        const mockFiles = { default: {}, user: {} }
 
-        await assert.doesNotReject(() => migrate.cleanInvalidPlugins(mockFiles))
+        await assert.doesNotReject(() => migrate.cleanPlugins(mockFiles))
       })
 
       it("should handle plugins with index.js files", async () => {
-        mockUtils._addTestPath("./plugin/custom/plugins/indexedPlugin/index.js")
+        mockUtils._addTestPath("./plugin/indexedPlugin/index.js")
 
-        const mockFiles = [{
-          configDefault: {},
-          configUser: { indexedPlugin: { NAME: "indexedPlugin", ENABLE: true } },
-        }]
+        const mockFiles = {
+          default: {},
+          user: { indexedPlugin: { NAME: "indexedPlugin", ENABLE: true } },
+        }
 
-        await migrate.cleanInvalidPlugins(mockFiles)
+        await migrate.cleanPlugins(mockFiles)
 
-        assert.ok(mockFiles[0].configUser.indexedPlugin, "Should keep plugin with index.js")
+        assert.ok(mockFiles.user.indexedPlugin, "Should keep plugin with index.js")
       })
     })
 
-    describe("cleanPluginsAndKeys", () => {
+    describe("cleanPluginKeys", () => {
       it("should remove redundant plugins and configurations", () => {
-        const mockFiles = [{
-          configDefault: {
+        const mockFiles = {
+          default: {
             markdownEnhancer: { ENABLE: false, MODE: "basic" },
             fileManager: { ENABLE: true, OPTION: "default", TYPE: 1, ACT: "find" },
           },
-          configUser: {
+          user: {
             markdownEnhancer: { ENABLE: false, MODE: "basic" },
             fileManager: { ENABLE: true, OPTION: "user", TYPE: 1, CUSTOM: "extra" },
             codeFormatter: { ENABLE: true, STYLE: "prettier" },
           },
-        }]
+        }
 
-        migrate.cleanPluginsAndKeys(mockFiles)
+        migrate.cleanPluginKeys(mockFiles)
 
         assert.ok(
-          mockFiles[0].configUser.markdownEnhancer === undefined,
+          mockFiles.user.markdownEnhancer === undefined,
           "Should remove redundant plugins",
         )
         assert.deepStrictEqual(
-          mockFiles[0].configUser.fileManager,
+          mockFiles.user.fileManager,
           { OPTION: "user" },
           "Should remove redundant default values",
         )
         assert.deepStrictEqual(
-          mockFiles[0].configUser.codeFormatter,
+          mockFiles.user.codeFormatter,
           { ENABLE: true, STYLE: "prettier" },
           "Should keep user-only configurations",
         )
       })
 
       it("should handle empty user configurations", () => {
-        const mockFiles = [{
-          configDefault: { testPlugin: { ENABLE: true } },
-          configUser: {},
-        }]
+        const mockFiles = {
+          default: { testPlugin: { ENABLE: true } },
+          user: {},
+        }
 
-        migrate.cleanPluginsAndKeys(mockFiles)
-        assert.deepStrictEqual(mockFiles[0].configUser, {}, "Should handle empty user config")
+        migrate.cleanPluginKeys(mockFiles)
+        assert.deepStrictEqual(mockFiles.user, {}, "Should handle empty user config")
       })
 
       it("should remove empty configuration objects", () => {
-        const mockFiles = [{
-          configDefault: { plugin1: { ENABLE: true } },
-          configUser: {
+        const mockFiles = {
+          default: { plugin1: { ENABLE: true } },
+          user: {
             plugin1: { ENABLE: true },
             plugin2: {},
           },
-        }]
+        }
 
-        migrate.cleanPluginsAndKeys(mockFiles)
-        assert.deepStrictEqual(mockFiles[0].configUser, {}, "Should remove empty config objects")
+        migrate.cleanPluginKeys(mockFiles)
+        assert.deepStrictEqual(mockFiles.user, {}, "Should remove empty config objects")
       })
     })
   })
@@ -218,44 +213,30 @@ describe("Migrate class functionality", () => {
   describe("File Operations", () => {
     describe("getConfigs", () => {
       it("should load and merge configuration files", async () => {
-        const files = await migrate.getConfigs()
-
-        assert.strictEqual(files.length, 2, "Should load both settings files")
-        assert.strictEqual(files[0].file, "settings.user.toml")
-        assert.strictEqual(files[1].file, "custom_plugin.user.toml")
-
-        files.forEach(file => {
-          assert.ok(file.configDefault, "Should have default config")
-          assert.ok(file.configUser, "Should have user config")
-        })
+        const conf = await migrate.getConfigs()
+        assert.ok(conf.default, "Should have default config")
+        assert.ok(conf.user, "Should have user config")
       })
 
       it("should handle missing configuration files", async () => {
-        mockUtils.settings.getObjects = async () => [null, null, null, null]
+        mockUtils.settings.getObjects = async () => [null, null]
 
-        const files = await migrate.getConfigs()
-
-        assert.strictEqual(files.length, 2, "Should still return two file objects")
-        files.forEach(file => {
-          assert.deepStrictEqual(file.configDefault, null, "Should handle missing default config")
-          assert.deepStrictEqual(file.configUser, {}, "Should handle missing user config")
-        })
+        const conf = await migrate.getConfigs()
+        assert.deepStrictEqual(conf.default, null, "Should handle missing default config")
+        assert.deepStrictEqual(conf.user, {}, "Should handle missing user config")
       })
     })
 
-    describe("saveFiles", () => {
+    describe("saveConfigs", () => {
       it("should persist configurations", async () => {
-        const mockFiles = [{
-          file: "test_settings.toml",
-          configUser: { fileManager: { ENABLE: true } },
-        }]
+        const mockFiles = { user: { fileManager: { ENABLE: true } } }
         const writeFileSpy = mock.method(mockUtils, "writeFile")
 
-        await migrate.saveFiles(mockFiles)
+        await migrate.saveConfigs(mockFiles)
 
         assert.strictEqual(writeFileSpy.mock.callCount(), 1)
         const [path, content] = writeFileSpy.mock.calls[0].arguments
-        assert.strictEqual(path, "actual_path/test_settings.toml")
+        assert.strictEqual(path, "actual_path/settings.user.toml")
         assert.ok(content.includes("fileManager"))
       })
 
@@ -264,20 +245,10 @@ describe("Migrate class functionality", () => {
         mockUtils.writeFile = async () => {
           throw new Error(errorMessage)
         }
-
-        const mockFiles = [{ file: "test.toml", configUser: {} }]
-
         await assert.rejects(
-          () => migrate.saveFiles(mockFiles),
+          () => migrate.saveConfigs({ user: {} }),
           new Error(errorMessage),
         )
-      })
-
-      it("should handle empty file list", async () => {
-        const writeFileSpy = mock.method(mockUtils, "writeFile")
-
-        await migrate.saveFiles([])
-        assert.strictEqual(writeFileSpy.mock.callCount(), 0, "Should not attempt to write files")
       })
     })
   })
@@ -285,9 +256,9 @@ describe("Migrate class functionality", () => {
   describe("Workflow Integration", () => {
     it("run should execute complete migration workflow", async () => {
       const workflowSpies = {
-        cleanInvalidPlugins: mock.method(migrate, "cleanInvalidPlugins"),
-        cleanPluginsAndKeys: mock.method(migrate, "cleanPluginsAndKeys"),
-        saveFiles: mock.method(migrate, "saveFiles"),
+        cleanPlugins: mock.method(migrate, "cleanPlugins"),
+        cleanPluginKeys: mock.method(migrate, "cleanPluginKeys"),
+        saveConfigs: mock.method(migrate, "saveConfigs"),
       }
       mock.method(console, "log", () => undefined)
 
@@ -317,16 +288,13 @@ describe("Migrate class functionality", () => {
         largeConfig[`plugin${i}`] = { ENABLE: true, OPTION: `value${i}` }
       }
 
-      const mockFiles = [{
-        configDefault: largeConfig,
-        configUser: { ...largeConfig },
-      }]
+      const mockFiles = { default: largeConfig, user: { ...largeConfig } }
 
       assert.doesNotThrow(
-        () => migrate.cleanPluginsAndKeys(mockFiles),
+        () => migrate.cleanPluginKeys(mockFiles),
         "Should process large configs without throwing errors",
       )
-      assert.deepStrictEqual(mockFiles[0].configUser, {}, "Should successfully clean large identical configs")
+      assert.deepStrictEqual(mockFiles.user, {}, "Should successfully clean large identical configs")
     })
   })
 })

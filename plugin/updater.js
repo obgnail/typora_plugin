@@ -85,7 +85,7 @@ class UpdaterPlugin extends BasePlugin {
   getUpdater = async (userProxy, timeout) => {
     const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest"
     const proxy = await this.getProxy(userProxy)
-    return new Updater(this, url, proxy, timeout)
+    return new Updater(this.utils, url, proxy, timeout)
   }
 }
 
@@ -94,17 +94,15 @@ class Updater {
   currentVersionInfo = null
   relpaths = {
     rootDir: "./plugin",
-    customPluginDir: "./plugin/custom/plugins",
   }
   userFiles = [
     "./plugin/global/user_space",
     "./plugin/global/user_styles",
     "./plugin/global/settings/settings.user.toml",
-    "./plugin/global/settings/custom_plugin.user.toml",
   ]
 
-  constructor(plugin, latestReleaseUrl, proxy, timeout) {
-    this.utils = plugin.utils
+  constructor(utils, latestReleaseUrl, proxy, timeout) {
+    this.utils = utils
     this.latestReleaseUrl = latestReleaseUrl
     this.requestOption = { proxy, timeout }
 
@@ -121,14 +119,8 @@ class Updater {
 
   async run() {
     try {
-      await this.prepare()
-      const need = await this.checkNeedUpdate()
-      if (!need) return "NO_NEED"
-      const buffer = await this.downloadLatestVersion()
-      await this.unzip(buffer)
-      await this.migrateUserFiles()
-      await this.atomicSync()
-      await this.utils.migrate.run()
+      const state = await this._performUpdate()
+      if (state === "NO_NEED") return "NO_NEED"
       console.log(`Updated successfully! Version: ${this.latestVersionInfo.tag_name}`)
       return "UPDATED"
     } catch (error) {
@@ -141,12 +133,7 @@ class Updater {
 
   async force(url) {
     try {
-      await this.prepare()
-      const buffer = await this.downloadLatestVersion(url)
-      await this.unzip(buffer)
-      await this.migrateUserFiles()
-      await this.atomicSync()
-      await this.utils.migrate.run()
+      await this._performUpdate({ url, force: true })
       console.log(`Force updated successfully!`)
       return "UPDATED"
     } catch (error) {
@@ -155,6 +142,21 @@ class Updater {
     } finally {
       await this.cleanup()
     }
+  }
+
+  async _performUpdate(options = {}) {
+    const { url, force = false } = options
+    await this.prepare()
+    if (!force) {
+      const need = await this.checkNeedUpdate(url)
+      if (!need) return "NO_NEED"
+    }
+    const buffer = await this.downloadLatestVersion(url)
+    await this.unzip(buffer)
+    await this.migrateUserFiles()
+    await this.atomicSync()
+    await this.utils.migrate.run()
+    return "UPDATED"
   }
 
   async runWithProgressBar() {
@@ -233,33 +235,33 @@ class Updater {
   }
 
   async migrateUserFiles() {
-    console.log("[5/6] Migrating user settings...")
-    const filesToMigrate = [...this.userFiles]
-    const oldCustomDir = this.utils.joinPluginPath(this.relpaths.customPluginDir)
-    const newCustomDir = this.path.join(this.paths.stagingDir, this.relpaths.customPluginDir)
+    console.log("[5/6] Migrating user files...")
+    const filesToMigrate = new Set(this.userFiles)
+    const oldPluginDir = this.utils.joinPluginPath(this.relpaths.rootDir)
+    const newPluginDir = this.path.join(this.paths.stagingDir, this.relpaths.rootDir)
     const normalizeName = (dirent) => {
       const name = dirent.name
       return (dirent.isFile() && this.path.extname(name) === ".js")
         ? this.path.basename(name, ".js")
         : name
     }
-    if (await this.utils.existPath(oldCustomDir) && await this.utils.existPath(newCustomDir)) {
+    if (await this.utils.existPath(oldPluginDir) && await this.utils.existPath(newPluginDir)) {
       const [oldDirents, newDirents] = await Promise.all([
-        this.fs.readdir(oldCustomDir, { withFileTypes: true }),
-        this.fs.readdir(newCustomDir, { withFileTypes: true }),
+        this.fs.readdir(oldPluginDir, { withFileTypes: true }),
+        this.fs.readdir(newPluginDir, { withFileTypes: true }),
       ])
-      const newVersionKeys = new Set(newDirents.map(normalizeName))
+      const newPluginKeys = new Set(newDirents.map(normalizeName))
       for (const oldEnt of oldDirents) {
-        const oldKey = normalizeName(oldEnt)
-        if (!newVersionKeys.has(oldKey)) {
-          const fileRelPath = this.path.join(this.relpaths.customPluginDir, oldEnt.name)
-          filesToMigrate.push(fileRelPath)
+        const oldPluginKey = normalizeName(oldEnt)
+        if (!newPluginKeys.has(oldPluginKey)) {
+          const relPath = this.path.join(this.relpaths.rootDir, oldEnt.name)
+          filesToMigrate.add(relPath)
         }
       }
     }
-    await Promise.all(filesToMigrate.map(async fileRelPath => {
-      const oldPath = this.utils.joinPluginPath(fileRelPath)
-      const newPath = this.path.join(this.paths.stagingDir, fileRelPath)
+    await Promise.all(Array.from(filesToMigrate).map(async relPath => {
+      const oldPath = this.utils.joinPluginPath(relPath)
+      const newPath = this.path.join(this.paths.stagingDir, relPath)
       if (await this.utils.existPath(oldPath)) {
         await this.fs.copy(oldPath, newPath, { overwrite: true })
       }
@@ -272,7 +274,7 @@ class Updater {
     const dst = this.utils.joinPluginPath(this.relpaths.rootDir)
     const backup = this.paths.backupDir
     if (this.latestVersionInfo) {
-      await this.fs.writeJson(this.path.join(src, "bin/version.json"), this.latestVersionInfo)
+      await this.fs.outputJson(this.path.join(src, "bin/version.json"), this.latestVersionInfo)
     }
     if (!(await this.utils.existPath(dst))) {
       throw new Error("Target plugin directory does not exist")
@@ -319,7 +321,8 @@ class Updater {
 }
 
 const getSysProxy = () => {
-  const envProxy = process.env.http_proxy || process.env.HTTP_PROXY || process.env.https_proxy || process.env.HTTPS_PROXY
+  const env = process.env
+  const envProxy = env.http_proxy || env.HTTP_PROXY || env.https_proxy || env.HTTPS_PROXY
   if (envProxy) return envProxy
   if (File.isLinux) {
     return new Promise(resolve => {
@@ -355,4 +358,5 @@ const getSysProxy = () => {
 
 module.exports = {
   plugin: UpdaterPlugin,
+  Updater,
 }

@@ -66,12 +66,12 @@ npm run rpc                                 # JSON-RPC connection to running Typ
 ### Entry Point Flow
 
 1. `plugin/index.js` -- loaded by modified `window.html`, requires `plugin/global/core/index.js`
-2. `plugin/global/core/index.js` -- `entry()` function: checks Typora version, reads TOML settings, sets up globals (`BasePlugin`, `BaseCustomPlugin`), initializes i18n, loads all plugins via mixin chain, publishes `allPluginsHadInjected` event
+2. `plugin/global/core/index.js` -- `entry()` function: checks Typora version, reads TOML settings, sets up globals, initializes i18n, loads all plugins via mixin chain, publishes `allPluginsHadInjected` event
 
 ### Core Framework (`plugin/global/core/`)
 
-- **`plugin.js`** -- Defines `IPlugin` (base interface), `BasePlugin`, `BaseCustomPlugin` classes, and `LoadPlugins()` which drives the plugin lifecycle
-- **`serviceContainer.js`** -- Singleton storing all plugin instances and settings; provides lookup APIs (`getBasePlugin()`, `tryGetPlugin()`)
+- **`plugin.js`** -- `BasePlugin` classes, and `LoadPlugins()` which drives the plugin lifecycle
+- **`serviceContainer.js`** -- Singleton storing all plugin instances and settings; provides lookup APIs (`getPlugin()`)
 - **`i18n.js`** -- i18n system supporting `en`, `zh-CN`, `zh-TW`; loads JSON locale files from `plugin/global/locales/`
 - **`polyfill.js`** -- Polyfills for older Electron/Node (`Object.hasOwn`, `Promise.withResolvers`, etc.)
 
@@ -87,18 +87,12 @@ npm run rpc                                 # JSON-RPC connection to running Typ
 
 ### Plugin System
 
-**Plugin Lifecycle** (in order): `prepare()` -> `style()` -> `html()` -> `hotkey()` -> `init()` -> `process()` -> `finalize()`
-
-**Two plugin types:**
-
-1. **Base Plugins** (in `plugin/`) -- Extend `BasePlugin`, implement `call(action, meta)`. Can be single-file (`plugin/{name}.js`) or directory-based (`plugin/{name}/index.js` with resources).
-2. **Custom Plugins** (in `plugin/custom/plugins/`) -- Extend `BaseCustomPlugin`, implement `selector()`, `hint()`, `callback()`. Managed by the `custom` base plugin (`plugin/custom/index.js`). User-populated, empty by default.
+**Plugin Lifecycle** (in order): `prepare()` -> `style()` -> `html()` -> `hotkey()` -> `init()` -> `process()` -> `postprocess()`
 
 ### Settings System (`plugin/global/settings/`)
 
 - `settings.default.toml` (~120KB) -- Default config for all base plugins. Each plugin has `[plugin_name]` section with `ENABLE`, `NAME`, and plugin-specific options.
 - `settings.user.toml` -- User overrides
-- `custom_plugin.default.toml` / `custom_plugin.user.toml` -- Same pattern for custom plugins
 - Supports home directory override (`~/.config/typora_plugin/`) for persistence across updates
 
 ### Key Patterns

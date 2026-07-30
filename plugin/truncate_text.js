@@ -13,7 +13,7 @@ class TruncateTextPlugin extends BasePlugin {
   ]
 
   callbackOtherPlugin = () => {
-    this.utils.callPluginFunction("right_outline", "refreshPanel")
+    this.utils.callPluginFn("right_outline", "refreshPanel")
   }
 
   hideFront = () => {

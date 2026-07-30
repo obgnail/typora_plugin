@@ -84,13 +84,13 @@ class DiagramParser {
   // Q: When the user is continuously typing, how to reduce rendering frequency while ensuring interactive experience?
   // A: Render immediately when the user types for the first time, then render once every X milliseconds, and finally render again based on the final input string.
   setRenderTiming = () => {
-    const batch = this.utils.getGlobalSetting()?.BATCH_RENDER_CHARTS
+    const batch = this.utils.getSetting("global", "BATCH_RENDER_CHARTS")
     this.renderDiagram = batch ? this._batchRenderDiagram : this._doRenderDiagram
   }
 
   /** If the fenceEnhance plugin is disabled and EXIT_CHART_INTERACTION === click_exit_button, then force all charts to disable interactive mode. */
   fixInteractiveMode = () => {
-    const cfg = this.utils.getGlobalSetting()?.EXIT_CHART_INTERACTION
+    const cfg = this.utils.getSetting("global", "EXIT_CHART_INTERACTION")
     if (Array.isArray(cfg)) {
       const arr = cfg.filter(e => e === "ctrl_click_fence" || e === "click_exit_button")
       if (arr.length) {
@@ -99,7 +99,7 @@ class DiagramParser {
     }
 
     const isClickBtn = this.exitInteractiveStrategies.length === 1 && this.exitInteractiveStrategies[0] === "click_exit_button"
-    const hasPlugin = this.utils.getBasePlugin("fence_enhance")
+    const hasPlugin = this.utils.getPlugin("fence_enhance")
     if (!hasPlugin && isClickBtn) {
       for (const p of this.parsers.values()) {
         p.interactiveMode = false
@@ -337,7 +337,7 @@ class DiagramParser {
       }, true)
     }
     if (useClickExit) {
-      const register = this.utils.getPluginFunction("fence_enhance", "registerButton")
+      const register = this.utils.getPluginFn("fence_enhance", "registerButton")
       register?.({
         action: "edit",
         hint: this.i18n.t("global", "edit"),

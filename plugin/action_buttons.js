@@ -85,7 +85,7 @@ class ActionButtonsPlugin extends BasePlugin {
       const [x, y] = coordinate
       const cb = evil
         ? eval(evil)
-        : this.utils.getPluginFunction(...callback.split("."))
+        : this.utils.getPluginFn(...callback.split("."))
       if (typeof cb === "function" && x >= 0 && y >= 0) {
         const action = `__${idx}`
         const btn = { x, y, action, hint, icon, size, color, bgColor, callback: cb }

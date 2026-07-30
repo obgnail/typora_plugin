@@ -89,7 +89,6 @@
 | :------------------------------------ | :--------------------------- | :------- |
 | [hotkeys](#hotkeys)                   | 快捷键注册中心               |          |
 | [action_buttons](#action_buttons)     | 于右下角添加功能按钮         |          |
-| [custom](#custom)                     | 开放平台，用户自定义插件     |          |
 | [remote_control](#remote_control)     | 外部操控 Typora              | ×        |
 | [cipher](#cipher)                     | 加密文件                     | ×        |
 | [ripgrep](#ripgrep)                   | 使用 ripgrep 搜索文件        | ×        |
@@ -103,7 +102,6 @@
 - **如何修改插件配置？** 右键菜单 -> 交互插件 -> 插件配置。**尊重用户的一切选择，所有的插件和功能皆可永久启用 / 禁用**。
 - **如何升级插件？** 右键菜单 -> 交互插件 -> 插件配置 -> 检查更新。
 - **如何卸载插件？** 右键菜单 -> 交互插件 -> 插件配置 -> 卸载插件。
-- **如何编写插件？** No Build Time，无需安装开发环境，详情请参考 [Readme](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README.md)。
 - **支持 Typora for Mac 吗？** 我没有 Mac 设备，暂不支持。
 - **还有其他问题？** 欢迎前往 [AI Wiki](https://deepwiki.com/obgnail/typora_plugin) 提问或查阅社区讨论。
 
@@ -483,16 +481,6 @@ docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 > 此插件是高级插件，仅对有 JavaScript 基础的用户开放。
 
 和 hotkeys 类似，以声明的形式，为【任意插件系统函数】设置快捷按钮。
-
-### custom
-
-> 此插件是高级插件，仅对有 JavaScript 基础的用户开放。
-
-提供开放能力，支持用户自己写插件。
-
-具体使用请参考 [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README.md)。
-
-
 
 ### remote_control
 

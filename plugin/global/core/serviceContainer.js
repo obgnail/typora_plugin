@@ -3,28 +3,25 @@ class ServiceContainer {
   settings = {}
 
   setPlugins = (plugins) => this.plugins = plugins
-
-  setSettings(settings) {
+  setSettings = (settings) => {
     // "global" is a general setting, not a specific plugin setting
     Object.defineProperty(settings, "global", { enumerable: false })
     this.settings = settings
   }
 
-  connect = (utils) => utils.setContainer(this)
+  connect = (utils, settings) => {
+    utils.setContainer(this)
+    this.setSettings(settings)
+  }
 
-  getAllBasePlugins = () => this.plugins
-  getAllCustomPlugins = () => this.plugins.custom?.plugins
-  getBasePlugin = (fixedName) => this.plugins[fixedName]
-  getCustomPlugin = (fixedName) => this.plugins.custom?.plugins[fixedName]
+  getAllPlugins = () => this.plugins
+  getPlugin = (name) => this.plugins[name]
 
-  getAllBasePluginSettings = () => this.settings
-  getAllCustomPluginSettings = () => this.plugins.custom?.settings
-  getGlobalSetting = () => this.settings.global
-  getBasePluginSetting = (fixedName) => this.settings[fixedName]
-  getCustomPluginSetting = (fixedName) => this.plugins.custom?.settings[fixedName]
-
-  tryGetPlugin = (fixedName) => this.plugins[fixedName] || this.plugins.custom?.plugins[fixedName]
-  tryGetPluginSetting = (fixedName) => this.settings[fixedName] || this.plugins.custom?.settings[fixedName]
+  getAllSettings = () => this.settings
+  getSetting = (name, key) => {
+    const setting = this.settings[name]
+    return key === undefined ? setting : setting?.[key]
+  }
 }
 
 module.exports = new ServiceContainer()

@@ -3,7 +3,7 @@ const buildProviders = (utils, context) => [
     prefix: "",
     name: "Tabs",
     fetch: async () => {
-      const manager = utils.getBasePlugin("window_tab")?.tab
+      const manager = utils.getPlugin("window_tab")?.tab
       return (manager?.tabs || []).map(t => ({ title: t.path, action: () => manager.switchByPath(t.path) }))
     },
   },
@@ -28,7 +28,7 @@ const buildProviders = (utils, context) => [
     name: "Plugins",
     fetch: async () => {
       const anchor = context.getAnchor()
-      const plugins = Object.entries(utils.getAllBasePlugins()).filter(([_, p]) => p.call)
+      const plugins = Object.entries(utils.getAllPlugins()).filter(([_, p]) => p.call)
       return plugins.flatMap(([fixedName, plugin]) => {
         const staticActions = plugin.staticActions || []
         const dynamicActions = utils.updatePluginDynamicActions(fixedName, anchor, true) || []

@@ -3,70 +3,52 @@ class Migrate {
     this.utils = utils
   }
 
-  cleanInvalidPlugins = async (files) => {
-    const promises = files.map(({ configDefault, configUser }) => {
-      const fixedNames = new Set([...Object.keys(configDefault), ...Object.keys(configUser)])
-      fixedNames.delete("global")
-      return [...fixedNames].map(async fixedName => {
-        const paths = [
-          `./plugin/custom/plugins/${fixedName}.js`,
-          `./plugin/custom/plugins/${fixedName}/index.js`,
-          `./plugin/${fixedName}.js`,
-          `./plugin/${fixedName}/index.js`,
-        ]
-        const promises = paths
-          .map(path => this.utils.joinPluginPath(path))
-          .map(path => this.utils.existPath(path))
-        const candidate = await Promise.all(promises)
-        if (!candidate.some(Boolean)) {
-          delete configUser[fixedName]
+  cleanPlugins = async (conf) => {
+    const fixedNames = new Set([...Object.keys(conf.default), ...Object.keys(conf.user)])
+    fixedNames.delete("global")
+    await Promise.all(
+      [...fixedNames].flatMap(async fixedName => {
+        const promises = [`./plugin/${fixedName}.js`, `./plugin/${fixedName}/index.js`]
+          .map(p => this.utils.joinPluginPath(p))
+          .map(p => this.utils.existPath(p))
+        const implemented = (await Promise.all(promises)).some(Boolean)
+        if (!implemented) {
+          delete conf.user[fixedName]
         }
-      })
-    })
-    await Promise.all(promises.flat())
+      }),
+    )
   }
 
-  cleanPluginsAndKeys = (files) => {
-    files.forEach(({ configDefault, configUser }) => {
-      Object.keys(configUser)
-        .filter(fixedName => Object.hasOwn(configDefault, fixedName))
-        .map(fixedName => {
-          const pluginUser = configUser[fixedName]
-          const pluginDefault = configDefault[fixedName]
-          const toDeleteKeys = Object.keys(pluginUser).filter(key => !Object.hasOwn(pluginDefault, key) || this.utils.deepEqual(pluginDefault[key], pluginUser[key]))
-          return [pluginUser, toDeleteKeys]
-        })
-        .forEach(([plugin, toDeleteKeys]) => toDeleteKeys.forEach(key => delete plugin[key]))
-    })
-    files.forEach(file => {
-      file.configUser = this.utils.pickBy(file.configUser, cfg => Object.keys(cfg).length !== 0)
-    })
+  cleanPluginKeys = (conf) => {
+    Object.keys(conf.user)
+      .filter(fixedName => Object.hasOwn(conf.default, fixedName))
+      .map(fixedName => {
+        const user_ = conf.user[fixedName]
+        const default_ = conf.default[fixedName]
+        const toDeleteKeys = Object.keys(user_).filter(key => !Object.hasOwn(default_, key) || this.utils.deepEqual(default_[key], user_[key]))
+        return [user_, toDeleteKeys]
+      })
+      .forEach(([plugin, toDeleteKeys]) => toDeleteKeys.forEach(key => delete plugin[key]))
+    conf.user = this.utils.pickBy(conf.user, cfg => Object.keys(cfg).length !== 0)
   }
 
   getConfigs = async () => {
-    const [baseDefault, baseUser, baseHome] = await this.utils.settings.getObjects("settings.default.toml", "settings.user.toml")
-    const [customDefault, customUser, customHome] = await this.utils.settings.getObjects("custom_plugin.default.toml", "custom_plugin.user.toml")
-    return [
-      { file: "settings.user.toml", configDefault: baseDefault, configUser: this.utils.merge(baseUser, baseHome) },
-      { file: "custom_plugin.user.toml", configDefault: customDefault, configUser: this.utils.merge(customUser, customHome) },
-    ]
+    const [Default, User, Home] = await this.utils.settings.getObjects()
+    return { default: Default, user: this.utils.merge(User, Home) }
   }
 
-  saveFiles = async (files) => {
-    const promises = files.map(async ({ file, configUser }) => {
-      const path = await this.utils.settings.getActualPath(file)
-      const content = this.utils.stringifyToml(configUser)
-      return this.utils.writeFile(path, content)
-    })
-    await Promise.all(promises)
+  saveConfigs = async (conf) => {
+    const p = await this.utils.settings.getActualPath(this.utils.settings.USER_TOML)
+    const cnt = this.utils.stringifyToml(conf.user)
+    return this.utils.writeFile(p, cnt)
   }
 
   run = async () => {
-    const files = await this.getConfigs()
-    await this.cleanInvalidPlugins(files)
-    this.cleanPluginsAndKeys(files)
-    await this.saveFiles(files)
-    console.log("[Migrate] Migrated Typora Plugin setting files")
+    const configs = await this.getConfigs()
+    await this.cleanPlugins(configs)
+    this.cleanPluginKeys(configs)
+    await this.saveConfigs(configs)
+    console.log("[ Migration ] Typora-Plugin setting files migration completed")
   }
 
   postprocess = () => {

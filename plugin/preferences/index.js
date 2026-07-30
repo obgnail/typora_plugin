@@ -193,21 +193,19 @@ class PreferencesPlugin extends BasePlugin {
   }
 
   _getAllPlugins = () => {
-    const basePlugins = Object.keys(this.utils.getAllBasePluginSettings())
-    const customPlugins = Object.keys(this.utils.getAllCustomPluginSettings())
-    const plugins = ["global", ...basePlugins, ...customPlugins]
-      .filter(name => Object.hasOwn(this.SCHEMAS, name))
-      .map(name => {
-        const pluginName = this.utils.tryGetPlugin(name)?.pluginName ?? this.i18n._t(name, "pluginName")
-        return [name, pluginName]
-      })
-    return Object.fromEntries(plugins)
+    const plugins = Object.keys(this.utils.getAllSettings())
+    return Object.fromEntries(
+      ["global", ...plugins]
+        .filter(name => Object.hasOwn(this.SCHEMAS, name))
+        .map(name => [
+          name,
+          this.utils.getPlugin(name)?.pluginName ?? this.i18n._t(name, "pluginName"),
+        ]),
+    )
   }
 
   _getSettings = async (fixedName) => {
-    const isBase = this.utils.getBasePluginSetting(fixedName)
-    const fn = isBase ? "readBase" : "readCustom"
-    const settings = await this.utils.settings[fn]()
+    const settings = await this.utils.settings.read()
     return settings[fixedName]
   }
 

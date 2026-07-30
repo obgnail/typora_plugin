@@ -102,7 +102,7 @@ class RemoteControlPlugin extends BasePlugin {
       })
       .registerNamespace(this.NAMESPACES.plugin, {
         list: async () => {
-          const plugins = this.utils.getAllBasePlugins()
+          const plugins = this.utils.getAllPlugins()
           return Object.entries(plugins).map(([name, plugin]) => ({
             fixedName: name,
             pluginName: plugin?.pluginName,
@@ -111,11 +111,11 @@ class RemoteControlPlugin extends BasePlugin {
         },
         call: async (params = []) => {
           const [{ plugin, method, args = [] } = {}] = params
-          return this.utils.callPluginFunction(plugin, method, ...args)
+          return this.utils.callPluginFn(plugin, method, ...args)
         },
         getMethods: async (params = []) => {
           const [{ plugin } = {}] = params
-          const pluginInstance = this.utils.tryGetPlugin(plugin)
+          const pluginInstance = this.utils.getPlugin(plugin)
           if (!pluginInstance) {
             throw new JSONRPCErrorException(`Plugin '${plugin}' not found`, JSONRPCErrorCode.MethodNotFound, { typoraCode: "PLUGIN_NOT_FOUND" })
           }

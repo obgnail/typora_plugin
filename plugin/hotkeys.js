@@ -9,7 +9,7 @@ class HotkeysPlugin extends BasePlugin {
       let callback = evil
         ? eval(evil)
         : (fixedName && funcName)
-          ? this.utils.getPluginFunction(fixedName, funcName)
+          ? this.utils.getPluginFn(fixedName, funcName)
           : null
       if (typeof callback !== "function") return
 

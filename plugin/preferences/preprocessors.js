@@ -92,7 +92,7 @@ module.exports = (plugin) => {
     },
     markmap: {
       AUTO_COLLAPSE_PARAGRAPH_ON_FOLD: (field, data) => {
-        if (!utils.getBasePlugin("collapse_paragraph")) {
+        if (!utils.getPlugin("collapse_paragraph")) {
           _disableSwitch(field, data, i18n._t("markmap", "$tooltip.experimental"))
         } else {
           _enableControl(field)
@@ -103,14 +103,14 @@ module.exports = (plugin) => {
       MENUS: (field) => {
         const subField = field.nestedBoxes.find(box => box.fields.some(field => field.key === "LIST"))?.fields[0]
         if (!subField?.options) {
-          const allBasePlugins = Object.fromEntries(
-            Object.entries(utils.getAllBasePluginSettings()).map(([name, p]) => {
+          const allPlugins = Object.fromEntries(
+            Object.entries(utils.getAllSettings()).map(([name, p]) => {
               const pluginName = p.NAME || i18n._t(name, "pluginName")
               return [name, pluginName]
             }),
           )
-          allBasePlugins["---"] = "--- DIVIDER ---"
-          subField.options = allBasePlugins
+          allPlugins["---"] = "--- DIVIDER ---"
+          subField.options = allPlugins
         }
       },
       SHOW_PLUGIN_HOTKEY: (field, data) => {
@@ -132,7 +132,7 @@ module.exports = (plugin) => {
     },
     markdownlint: {
       RULE_CONFIG: (field, data, box) => {
-        if (utils.getBasePlugin("markdownlint")) {
+        if (utils.getPlugin("markdownlint")) {
           box.title = undefined
           box.fields[0] = { type: "action", key: "invokeMarkdownlintSettings", tooltip: box.tooltip, label: i18n._t("markdownlint", "$label.invokeMarkdownlintSettings") }
         }

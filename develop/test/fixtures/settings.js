@@ -2,7 +2,7 @@ const path = require("node:path")
 const fs = require("node:fs/promises")
 const TOML = require("../../../plugin/global/core/lib/smol-toml.js")
 
-const getFiles = (files) => Promise.all(files.map(f => path.join("../plugin/global/settings", f)).map(f => fs.readFile(f, "utf-8")))
+const getFile = f => fs.readFile(path.join("../plugin/global/settings", f), "utf-8")
 
 const merge = (source, other) => {
   const isObject = value => {
@@ -20,18 +20,14 @@ const merge = (source, other) => {
 }
 
 const getDefaults = async () => {
-  const [base, custom] = await getFiles(["settings.default.toml", "custom_plugin.default.toml"])
-  return { base: TOML.parse(base), custom: TOML.parse(custom) }
+  const file = await getFile("settings.default.toml")
+  return TOML.parse(file)
 }
 
 const getMerged = async () => {
-  const loadSettings = async (files) => {
-    const tomlFiles = await getFiles(files)
-    return merge(...tomlFiles.map(f => TOML.parse(f)))
-  }
-  const base = await loadSettings(["settings.default.toml", "settings.user.toml"])
-  const custom = await loadSettings(["custom_plugin.default.toml", "custom_plugin.user.toml"])
-  return { base, custom }
+  const tomlFiles = await Promise.all(["settings.default.toml", "settings.user.toml"].map(getFile))
+  const tomlObjs = tomlFiles.map(f => TOML.parse(f))
+  return merge(...tomlObjs)
 }
 
 module.exports = {

@@ -88,7 +88,6 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | :------------------------------------ | :-------------------------------------------------------- | :------ |
 | [hotkeys](#hotkeys)                   | Hotkey registration center (Advanced)                     |         |
 | [action_buttons](#action_buttons)     | Add function buttons in the lower right corner (Advanced) |         |
-| [custom](#custom)                     | Open platform for user-defined plugins (Advanced)         |         |
 | [remote_control](#remote_control)     | Typora Automation (Advanced)                              | ×       |
 | [cipher](#cipher)                     | Encrypt files                                             | ×       |
 | [ripgrep](#ripgrep)                   | Search files using ripgrep                                | ×       |
@@ -102,7 +101,6 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 - **How to modify plugin configurations?** Right-click menu -> Interactive Plugins -> Preferences. **Respect all user choices**. Any plugin or feature can be permanently enabled/disabled.
 - **How to upgrade plugins?** Right-click menu -> Interactive Plugins -> Preferences -> Check for Updates.
 - **How to uninstall plugins?** Right-click menu -> Interactive Plugins -> Preferences -> Uninstall Plugins.
-- **How to develop plugins?** No Build Time, No need to install development environment. Please refer to [Readme](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README-en.md) for details.
 - **Does it support Typora for Mac?** I don't have a Mac device, so I haven't tested it.
 - **Any other questions?** Please ask [AI Wiki](https://deepwiki.com/obgnail/typora_plugin).
 
@@ -475,14 +473,6 @@ Bind hotkeys to [any plugin system function] or [any custom function] in a decla
 > This plugin is an advanced plugin, only available to users with a JavaScript background.
 
 Similar to hotkeys, set function buttons for [any plugin system function] in a declarative form.
-
-### custom
-
-> This plugin is an advanced plugin, only available to users with a JavaScript background.
-
-Provide open capabilities, support users to write their own plugins.
-
-For specific usage, please refer to [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README.md).
 
 ### remote_control
 

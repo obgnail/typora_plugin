@@ -41,26 +41,16 @@ class utils {
   // =========== Plugin ===========
   static container = null
   static setContainer = container => this.container = container
-  static getAllBasePlugins = () => this.container.getAllBasePlugins()
-  static getAllCustomPlugins = () => this.container.getAllCustomPlugins()
-  static getBasePlugin = fixedName => this.container.getBasePlugin(fixedName)
-  static getCustomPlugin = fixedName => this.container.getCustomPlugin(fixedName)
-  static getAllBasePluginSettings = () => this.container.getAllBasePluginSettings()
-  static getAllCustomPluginSettings = () => this.container.getAllCustomPluginSettings()
-  static getGlobalSetting = () => this.container.getGlobalSetting()
-  static getBasePluginSetting = fixedName => this.container.getBasePluginSetting(fixedName)
-  static getCustomPluginSetting = fixedName => this.container.getCustomPluginSetting(fixedName)
-  static tryGetPlugin = fixedName => this.container.tryGetPlugin(fixedName)
-  static tryGetPluginSetting = fixedName => this.container.tryGetPluginSetting(fixedName)
+  static getAllPlugins = () => this.container.getAllPlugins()
+  static getPlugin = fixedName => this.container.getPlugin(fixedName)
+  static getAllSettings = () => this.container.getAllSettings()
+  static getSetting = (fixedName, key) => this.container.getSetting(fixedName, key)
 
-  static getPluginFunction = (fixedName, fnName) => this.tryGetPlugin(fixedName)?.[fnName]
-  static callPluginFunction = (fixedName, fnName, ...args) => {
-    const plugin = this.tryGetPlugin(fixedName)
+  static getPluginFn = (fixedName, fnName) => this.getPlugin(fixedName)?.[fnName]
+  static callPluginFn = (fixedName, fnName, ...args) => {
+    const plugin = this.getPlugin(fixedName)
     return plugin?.[fnName]?.apply(plugin, args)
   }
-
-  static hasOverrideBasePluginFn = (plugin, fn) => plugin[fn] !== global.BasePlugin.prototype[fn]
-  static hasOverrideCustomPluginFn = (plugin, fn) => plugin[fn] !== global.BaseCustomPlugin.prototype[fn]
 
   static isUnderMountFolder = path => {
     const mountFolder = PATH.resolve(this.getMountFolder())
@@ -96,7 +86,7 @@ class utils {
 
   static _meta = {}  // Used to pass data in the context menu
   static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
-    const plugin = this.getBasePlugin(fixedName)
+    const plugin = this.getPlugin(fixedName)
     if (plugin && typeof plugin.getDynamicActions === "function") {
       anchorNode = anchorNode || this.getAnchorNode()
       const anchor = anchorNode[0]
@@ -107,7 +97,7 @@ class utils {
     }
   }
   static callPluginDynamicAction = (fixedName, action) => {
-    const plugin = this.getBasePlugin(fixedName)
+    const plugin = this.getPlugin(fixedName)
     if (plugin?.hasOwnProperty("call") && typeof plugin.call === "function") {
       plugin.call(action, this._meta)
     }
@@ -1021,7 +1011,7 @@ class utils {
 
     if (focus) File.editor.focusAndRestorePos()
     if (moveCursor) File.editor.selection.jumpIntoElemEnd(target)
-    if (showHiddenEls) ["collapse_paragraph", "collapse_table", "collapse_list", "truncate_text"].forEach(plu => this.callPluginFunction(plu, "rollback", target[0]))
+    if (showHiddenEls) ["collapse_paragraph", "collapse_table", "collapse_list", "truncate_text"].forEach(plu => this.callPluginFn(plu, "rollback", target[0]))
 
     if (File.isTypeWriterMode) {
       File.editor.selection.typeWriterScroll(target)

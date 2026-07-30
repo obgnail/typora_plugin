@@ -32,7 +32,7 @@ module.exports = (plugin) => {
     viewArticleUploaderReadme: openPath("./plugin/article_uploader/README.md"),
     viewRemoteControlReadme: openPath("./plugin/remote_control/README.md"),
     editStyles: openPath("./plugin/global/user_styles/README.md"),
-    developPlugins: openPath("./plugin/custom/README.md"),
+    developPlugins: openPath("./plugin/bin/DEVELOP_PLUGINS.md"),
     openLocaleFolder: openPath("./plugin/global/locales/en.json"),
     openPluginFolder: openPath("./plugin"),
     openSettingsFolder: async () => utils.settings.openFolder(),
@@ -71,7 +71,7 @@ module.exports = (plugin) => {
     }),
     restoreAllSettings: consecutive(async () => {
       await plugin.renewMenu(async () => {
-        const path = await utils.settings.getActualPath("settings.user.toml")
+        const path = await utils.settings.getActualPath(utils.settings.USER_TOML)
         await utils.writeFile(path, "")
       })
       utils.notification.show(i18n.t("success.restoreAll"))
@@ -81,25 +81,25 @@ module.exports = (plugin) => {
       await showSettings(i18n._t("settings", "$label.inspectRuntimeSettings"), settings)
     },
     inspectDefaultSettings: async () => {
-      const path = await utils.settings.getActualPath("settings.default.toml")
+      const path = await utils.settings.getActualPath(utils.settings.DEFAULT_TOML)
       const content = await utils.Package.FsExtra.readFile(path, "utf-8")
       const settings = utils.readToml(content)?.[plugin._getCurrentPlugin()]
       await showSettings(i18n._t("settings", "$tooltip.inspectDefaultSettings"), settings)
     },
     inspectAllDefaultSettings: async () => {
-      const path = await utils.settings.getActualPath("settings.default.toml")
+      const path = await utils.settings.getActualPath(utils.settings.DEFAULT_TOML)
       const settings = await utils.Package.FsExtra.readFile(path, "utf-8")
       await showSettings(i18n.t("$tooltip.inspectAllDefaultSettings"), settings)
     },
     openSettingsDefaultTomlExternally: async () => {
-      const path = await utils.settings.getActualPath("settings.default.toml")
+      const path = await utils.settings.getActualPath(utils.settings.DEFAULT_TOML)
       utils.openPath(path)
     },
     openSettingsUserTomlExternally: async () => {
-      const path = await utils.settings.getActualPath("settings.user.toml")
+      const path = await utils.settings.getActualPath(utils.settings.USER_TOML)
       utils.openPath(path)
     },
-    invokeMarkdownlintSettings: async () => utils.callPluginFunction("markdownlint", "settings"),
+    invokeMarkdownlintSettings: async () => utils.callPluginFn("markdownlint", "settings"),
     installPlantUMLServer: async () => {
       await utils.formDialog.modal({
         title: i18n._t("plantUML", "$tooltip.installPlantUMLServer"),
@@ -169,7 +169,7 @@ module.exports = (plugin) => {
       myopicDefocus.removeEffect()
     },
     updatePlugin: async () => {
-      const updater = utils.getBasePlugin("updater")
+      const updater = utils.getPlugin("updater")
       if (!updater) {
         const msg = i18n.t("error.pluginDisabled", { plugin: i18n._t("updater", "pluginName") })
         utils.notification.show(msg, "error")
@@ -243,7 +243,7 @@ module.exports = (plugin) => {
       const qrcodeCnt = `<div style="display: flex; justify-content: space-evenly; margin-top: 8px">${qrEls.join("")}</div>`
       const backers = (await FsExtra.readFile(utils.joinPluginPath("./plugin/preferences/backers.txt"), "utf-8"))
         .split("\n").filter(Boolean).map(e => `<div>${utils.escape(e)}</div>`).join("")
-      const backersCnt = `<div style="text-align: center; font-weight: bold; margin-bottom: 5px;">THANK YOU TO ALL THE BACKERS</div><div style="display: grid; grid-template-columns: repeat(10, auto);">${backers}</div>`
+      const backersCnt = `<div style="text-align: center; font-weight: bold; margin-bottom: 5px;">THANK YOU TO ALL THE BACKERS</div><div style="display: grid; grid-template-columns: repeat(8, auto);">${backers}</div>`
       await utils.formDialog.modal({
         title: i18n.t("$label.donate"),
         schema: ({ Controls }) => [

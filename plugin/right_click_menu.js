@@ -39,6 +39,8 @@ class MenuManager {
   }
 }
 
+const hasOverridePluginFn = (plugin, fn) => plugin[fn] !== BasePlugin.prototype[fn]
+
 class RightClickMenuPlugin extends BasePlugin {
   groupName = "typora-plugin"
   noExtraMenuGroupName = "typora-plugin-no-extra"
@@ -87,7 +89,7 @@ class RightClickMenuPlugin extends BasePlugin {
   _insertLevel2 = () => {
     const findLostPluginsIfNeed = () => {
       if (!this.config.FIND_LOST_PLUGINS) return
-      const plugins = new Map(Object.entries(this.utils.getAllBasePlugins()))
+      const plugins = new Map(Object.entries(this.utils.getAllPlugins()))
       this.config.MENUS.forEach(menu => menu.LIST.forEach(p => plugins.delete(p)))
       const lostPlugins = [...plugins.values()].map(p => p.fixedName)
       this.config.MENUS.at(-1).LIST.push(...lostPlugins)
@@ -102,8 +104,8 @@ class RightClickMenuPlugin extends BasePlugin {
     const Li = plugin => {
       const hasAction = plugin.staticActions || plugin.getDynamicActions
       const extraClass = hasAction ? "has-extra-menu" : ""
-      const clickable = hasAction || this.utils.hasOverrideBasePluginFn(plugin, "call")
-      const style = clickable ? "" : `style="opacity: 0.5; pointer-events: none;"`
+      const callable = hasAction || hasOverridePluginFn(plugin, "call")
+      const style = callable ? "" : `style="opacity: 0.5; pointer-events: none;"`
       const liAttrs = `class="plugin-menu-item ${extraClass}" ${style}`
       return this._liTemplate(plugin.fixedName, plugin.pluginName, plugin.config.HOTKEY, hasAction, "", liAttrs)
     }
@@ -114,7 +116,7 @@ class RightClickMenuPlugin extends BasePlugin {
       const children = LIST.map(item => {
         if (item === this.dividerValue) return `<li class="divider"></li>`
         const [fixedName, action] = item.split(".")
-        const plugin = this.utils.getBasePlugin(fixedName)
+        const plugin = this.utils.getPlugin(fixedName)
         if (!plugin) return ""
         return action ? LiWithAction(plugin, action) : Li(plugin)
       })
@@ -128,7 +130,7 @@ class RightClickMenuPlugin extends BasePlugin {
     const html = this.config.MENUS.flatMap(({ LIST = [] }, idx) => {
       return LIST
         .filter(item => item !== this.dividerValue)
-        .map(item => this.utils.getBasePlugin(item))
+        .map(item => this.utils.getPlugin(item))
         .filter(plugin => plugin && (plugin.staticActions || plugin.getDynamicActions))
         .map(plugin => {
           const children = (plugin.staticActions || []).map(act => this._thirdLiTemplate(act)).join("")
@@ -257,7 +259,7 @@ class RightClickMenuPlugin extends BasePlugin {
       if (action) {
         self.callPluginDynamicAction(fixedName, action)
       } else {
-        const plugin = self.utils.getBasePlugin(fixedName)
+        const plugin = self.utils.getPlugin(fixedName)
         // If there is a third level menu, clicking the second level menu is not allowed.
         if (!plugin || plugin.staticActions || plugin.getDynamicActions) {
           return false

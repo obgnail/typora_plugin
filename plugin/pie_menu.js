@@ -76,11 +76,7 @@ class PieMenuPlugin extends BasePlugin {
       if (ev.button === 0) {
         const cb = ev.target.closest(".plugin-pie-menu-item[data-callback]")?.dataset.callback
         if (cb) {
-          let [fixedName, action] = cb.split(".")
-          if (this.utils.getCustomPlugin(fixedName)) {
-            action = fixedName
-            fixedName = "custom"
-          }
+          const [fixedName, action] = cb.split(".")
           this.utils.updateAndCallPluginDynamicAction(fixedName, action)
           if (!this.isMenuPinned()) {
             this.hideMenu()

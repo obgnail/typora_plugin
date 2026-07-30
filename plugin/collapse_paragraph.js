@@ -253,7 +253,7 @@ class CollapseParagraphPlugin extends BasePlugin {
     }
   }
 
-  callbackOtherPlugin = () => this.utils.callPluginFunction("right_outline", "refreshPanel")
+  callbackOtherPlugin = () => this.utils.callPluginFn("right_outline", "refreshPanel")
 
   trigger = (node, shouldExpand) => this.navigator.toggleCollapse(node, shouldExpand)
   rollback = (startNode) => this.dispatcher.rollback(startNode)

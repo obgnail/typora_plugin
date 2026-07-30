@@ -4,12 +4,10 @@ const fs = require("fs-extra")
 const path = require("path")
 
 let i18n
-let basePluginSettings
-let customPluginSettings
+let settings
 let pluginNames
 
-const getSetting = (pluginName, isCustom = false) => {
-  const settings = isCustom ? customPluginSettings : basePluginSettings
+const getSetting = (pluginName) => {
   const setting = settings[pluginName]
   assert.ok(setting, `[Configuration Error] Settings for plugin '${pluginName}' not found`)
   return setting
@@ -28,26 +26,17 @@ const assertEvalFn = (str, errorMsg) => {
 }
 
 before(async () => {
-  ({ base: basePluginSettings, custom: customPluginSettings } = await require("./fixtures/settings.js").getDefaults())
+  settings = await require("./fixtures/settings.js").getDefaults()
   i18n = await require("./fixtures/i18n.js").get("zh-CN")
-  pluginNames = [...Object.keys(basePluginSettings), ...Object.keys(customPluginSettings)]
+  pluginNames = Object.keys(settings)
 })
 
 describe("Plugin Core Structure", () => {
   it("base plugins should have valid 'ENABLE' and 'NAME' attributes", () => {
-    for (const [fixedName, s] of Object.entries(basePluginSettings)) {
+    for (const [fixedName, s] of Object.entries(settings)) {
       assert.ok(
         typeof s.ENABLE === "boolean" && (typeof s.NAME === "string" || fixedName === "global"),
         `[Base Plugin] ${fixedName} is missing required attributes`,
-      )
-    }
-  })
-
-  it("custom plugins should have valid 'enable', 'name', 'hide', and 'order' attributes", () => {
-    for (const [fixedName, s] of Object.entries(customPluginSettings)) {
-      assert.ok(
-        typeof s.enable === "boolean" && typeof s.name === "string" && typeof s.hide === "boolean" && typeof s.order === "number",
-        `[Custom Plugin] ${fixedName} is missing required attributes`,
       )
     }
   })
@@ -71,11 +60,11 @@ describe("UI & Menus Configuration", () => {
       assert.ok(Object.hasOwn(i18n.data.settings, menu.NAME), `Menu NAME '${menu.NAME}' is missing from i18n translation`)
       assert.ok(Array.isArray(menu.LIST), `MENUS[${index}].LIST must be an array`)
 
-      menu.LIST.forEach((pluginName, pluginIndex) => {
-        if (pluginName === "---") return
-        assert.match(pluginName, /^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)?$/, `Invalid format in MENUS[${index}]: ${pluginName}`)
-        const basePluginName = pluginName.split(".")[0]
-        assert.ok(pluginNames.includes(basePluginName), `MENUS[${index}] references non-existent plugin: ${basePluginName}`)
+      menu.LIST.forEach((fixedName, pluginIndex) => {
+        if (fixedName === "---") return
+        assert.match(fixedName, /^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)?$/, `Invalid format in MENUS[${index}]: ${fixedName}`)
+        const pluginName = fixedName.split(".")[0]
+        assert.ok(pluginNames.includes(pluginName), `MENUS[${index}] references non-existent plugin: ${pluginName}`)
       })
     })
   })
@@ -86,8 +75,8 @@ describe("UI & Menus Configuration", () => {
     setting.BUTTONS.forEach((btn, index) => {
       assert.ok(btn.ICON && btn.CALLBACK, `BUTTONS[${index}] must have ICON and CALLBACK`)
       assert.match(btn.CALLBACK, /^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)?$/, `Invalid CALLBACK format in BUTTONS[${index}]`)
-      const basePluginName = btn.CALLBACK.split(".")[0]
-      assert.ok(pluginNames.includes(basePluginName), `BUTTONS[${index}] references non-existent plugin: ${basePluginName}`)
+      const pluginName = btn.CALLBACK.split(".")[0]
+      assert.ok(pluginNames.includes(pluginName), `BUTTONS[${index}] references non-existent plugin: ${pluginName}`)
     })
   })
 
@@ -193,7 +182,7 @@ describe("Scripts, Actions & File IO", () => {
         assertEvalFn(hotkey.evil, `hotkeys.CUSTOM_HOTKEYS[${index}].evil must be a function`)
       }
       if (hotkey.plugin && hotkey.function) {
-        assert.ok(basePluginSettings[hotkey.plugin], `hotkeys.CUSTOM_HOTKEYS[${index}] references non-existent plugin`)
+        assert.ok(settings[hotkey.plugin], `hotkeys.CUSTOM_HOTKEYS[${index}] references non-existent plugin`)
       }
     })
   })

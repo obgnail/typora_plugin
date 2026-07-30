@@ -18,11 +18,6 @@
     "$label.ENABLE": "Enable",
     "$label.NAME": "Name",
     "$label.HOTKEY": "Hotkey",
-    "$label.enable": "Enable",
-    "$label.name": "Name",
-    "$label.hide": "Hide",
-    "$label.order": "Order",
-    "$label.hotkey": "Hotkey",
     "$label.restoreSettings": "Restore Default Settings",
     "$label.inspectRuntimeSettings": "Current Settings",
     "$label.LANGUAGE": "Language",
@@ -886,11 +881,6 @@
     "$label.HOTKEY_CONVERT_LF_TO_CRLF": "Convert LF to CRLF",
     "$label.HOTKEY_FILTER_INVISIBLE_CHARACTERS": "Remove Invisible Characters",
     "$label.HOTKEY_TRAILING_WHITE_SPACE": "Add Trailing Whitespace"
-  },
-  "custom": {
-    "pluginName": "Custom Plugins",
-    "actHint.disabledTemp": "Unavailable at current cursor position",
-    "$label.HIDE_DISABLE_PLUGINS": "Hide unavailable plugins from the context menu"
   },
   "mouse_gestures": {
     "pluginName": "Mouse Gestures",

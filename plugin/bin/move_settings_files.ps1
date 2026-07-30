@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Robustly move settings.user.toml and custom_plugin.user.toml between
+    Robustly move settings.user.toml between
     ../global/settings/ (relative to script) and $env:USERPROFILE\.config\typora_plugin\
 .PARAMETER f
     Overwrite existing files without prompting
@@ -43,7 +43,7 @@ if ($f -and $n) {
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $GlobalSettingsDir = Join-Path $ScriptDir "..\global\settings" | Resolve-Path -ErrorAction Stop | Select-Object -ExpandProperty Path
 $TyporaPluginDir = Join-Path $env:USERPROFILE ".config\typora_plugin"
-$Files = @("settings.user.toml", "custom_plugin.user.toml")
+$Files = @("settings.user.toml")
 
 function Move-Or-CreateEmpty {
     param(

@@ -268,7 +268,7 @@ class MarkdownlintPlugin extends BasePlugin {
         timeWindow: 3000,
         onConfirmed: async () => {
           await this.utils.settings.handle(this.fixedName, pluginSettings => delete pluginSettings.RULE_CONFIG)
-          const settings = await this.utils.settings.readBase()
+          const settings = await this.utils.settings.read()
           this.config = settings[this.fixedName]
           this.utils.notification.show(this.i18n.t("success.restore"))
           await this.utils.formDialog.refresh(op => op.data = getData())

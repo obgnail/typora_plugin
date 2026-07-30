@@ -1,4 +1,6 @@
 class Settings {
+  USER_TOML = "settings.user.toml"
+  DEFAULT_TOML = "settings.default.toml"
   META = { $id: "https://github.com/obgnail/typora_plugin", $version: "1" }
 
   constructor(utils) {
@@ -13,14 +15,13 @@ class Settings {
     return exist ? homePath : this.getOriginPath(file)
   }
 
-  openFolder = async (file = "settings.user.toml") => {
-    const path = await this.getActualPath(file)
+  openFolder = async () => {
+    const path = await this.getActualPath(this.USER_TOML)
     this.utils.showInFinder(path)
   }
 
   handle = async (fixedName, handler) => {
-    const file = this.utils.getBasePluginSetting(fixedName) ? "settings.user.toml" : "custom_plugin.user.toml"
-    const path = await this.getActualPath(file)
+    const path = await this.getActualPath(this.USER_TOML)
     const allSettings = await this.utils.readTomlFile(path)
     if (!allSettings[fixedName]) {
       allSettings[fixedName] = {}
@@ -50,10 +51,10 @@ class Settings {
     })
   }
 
-  getObjects = async (defaultFile, userFile) => {
-    const default_ = this.getOriginPath(defaultFile)
-    const user_ = this.getOriginPath(userFile)
-    const home_ = this.getHomePath(userFile)
+  getObjects = async () => {
+    const default_ = this.getOriginPath(this.DEFAULT_TOML)
+    const user_ = this.getOriginPath(this.USER_TOML)
+    const home_ = this.getHomePath(this.USER_TOML)
     const contents = await this.utils.readFiles([default_, user_, home_])
     try {
       return contents.map(c => c ? this.utils.readToml(c) : {})
@@ -62,23 +63,21 @@ class Settings {
       await this.utils.showMessageBox({
         type: "error",
         buttons: ["Confirm", "Cancel"],
-        message: prefix + userFile,
+        message: prefix,
         detail: e.toString().replace(prefix, ""),
       })
       return contents.map(() => ({}))
     }
   }
 
-  read = async (defaultFile, userFile) => {
-    const objs = await this.getObjects(defaultFile, userFile)
+  read = async () => {
+    const objs = await this.getObjects()
     return objs.reduce(this.utils.merge)
   }
-  readBase = async () => this.read("settings.default.toml", "settings.user.toml")
-  readCustom = async () => this.read("custom_plugin.default.toml", "custom_plugin.user.toml")
 
   export = async (exportPath) => {
-    const [base, custom] = await Promise.all([this.readBase(), this.readCustom()])
-    await this.utils.Package.FsExtra.writeJson(exportPath, { ...this.META, ...base, ...custom })
+    const base = await this.read()
+    await this.utils.Package.FsExtra.writeJson(exportPath, { ...this.META, ...base })
   }
 
   import = async (importPath) => {
@@ -87,18 +86,12 @@ class Settings {
     if (mismatch) {
       throw new Error(`${importPath} is not the correct settings file.`)
     }
-    const basePlugins = this.utils.getAllBasePluginSettings()
+    const plugins = this.utils.getAllSettings()
     const isObject = x => x != null && !Array.isArray(x) && typeof x === "object"
-    const settingFiles = {
-      "settings.user.toml": this.utils.pickBy(settings, (obj, key) => isObject(obj) && Object.hasOwn(basePlugins, key)),
-      "custom_plugin.user.toml": this.utils.pickBy(settings, (obj, key) => isObject(obj) && !Object.hasOwn(basePlugins, key)),
-    }
-    const promises = Object.entries(settingFiles).map(async ([file, setting]) => {
-      const path = await this.getActualPath(file)
-      const content = this.utils.stringifyToml(setting).replace(/\r\n/g, "\n")
-      return this.utils.writeFile(path, content)
-    })
-    await Promise.all(promises)
+    const path = await this.getActualPath(this.USER_TOML)
+    const obj = this.utils.pickBy(settings, (obj, key) => isObject(obj) && Object.hasOwn(plugins, key))
+    const content = this.utils.stringifyToml(obj).replace(/\r\n/g, "\n")
+    return this.utils.writeFile(path, content)
   }
 }
 

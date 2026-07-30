@@ -185,7 +185,7 @@ const findResources = async (plugin, searchDir) => {
   const { utils, config } = plugin
   const { Package, isNetworkImage, isSpecialImage } = utils
   const dir = searchDir || utils.getMountFolder()
-  const redirectPlugin = utils.getBasePlugin("asset_root_redirect")
+  const redirectPlugin = utils.getPlugin("asset_root_redirect")
 
   const _resourceExt = new Set(config.RESOURCE_EXT)
   const _markdownExt = new Set(config.MARKDOWN_EXT)

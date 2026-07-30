@@ -57,11 +57,10 @@ try {
     $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
     $rootDir = (Resolve-Path (Join-Path $scriptDir "..\..")).Path
     $paths = [PSCustomObject]@{
-        RootDir         = $rootDir
-        PluginDir       = Join-Path -Path $rootDir -ChildPath "plugin"
-        SettingsDir     = Join-Path -Path $rootDir -ChildPath "plugin\global\settings"
-        BasePluginCfg   = Join-Path -Path $rootDir -ChildPath "plugin\global\settings\settings.user.toml"
-        CustomPluginCfg = Join-Path -Path $rootDir -ChildPath "plugin\global\settings\custom_plugin.user.toml"
+        RootDir     = $rootDir
+        PluginDir   = Join-Path -Path $rootDir -ChildPath "plugin"
+        SettingsDir = Join-Path -Path $rootDir -ChildPath "plugin\global\settings"
+        pluginCfg   = Join-Path -Path $rootDir -ChildPath "plugin\global\settings\settings.user.toml"
     }
 
     Write-Host "[1/3] Validating paths" -ForegroundColor Yellow
@@ -99,8 +98,7 @@ try {
     Write-Host "      -> Directory permissions set successfully."
     Write-Host "[3/3] Processing specific settings files" -ForegroundColor Yellow
     $filesToProcess = @(
-        $paths.BasePluginCfg
-        $paths.CustomPluginCfg
+        $paths.pluginCfg
     )
     $fileAccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
         $usersSid,

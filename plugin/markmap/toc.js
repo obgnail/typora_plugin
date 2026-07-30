@@ -233,7 +233,7 @@ class TOCMarkmap {
           if (this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD) {
             const head = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`)
             const isFold = node.classList.contains("markmap-fold")
-            this.utils.callPluginFunction("collapse_paragraph", "trigger", head, !isFold)
+            this.utils.callPluginFn("collapse_paragraph", "trigger", head, !isFold)
           }
           if (this.config.AUTO_FIT_WHEN_FOLD) {
             this.fit()
@@ -310,7 +310,7 @@ class TOCMarkmap {
     const T = (key) => this.i18n.t(`$tooltip.${key}`)
 
     const getSchema = () => {
-      const pluginEnabled = this.utils.getBasePlugin("collapse_paragraph")
+      const pluginEnabled = this.utils.getPlugin("collapse_paragraph")
       const colorOptions = Object.fromEntries(
         [...this.config.CANDIDATE_COLOR_SCHEMES, this.config.DEFAULT_TOC_OPTIONS.color].map(colorList => {
           const colors = colorList
@@ -445,7 +445,7 @@ class TOCMarkmap {
             await this.utils.settings.handle(fixedName, (pluginSettings, allSettings) => {
               allSettings[fixedName] = this.utils.pickBy(pluginSettings, (_, k) => !attrsToSave.includes(k))
             })
-            const settings = await this.utils.settings.readBase()
+            const settings = await this.utils.settings.read()
             this.config = settings[fixedName]
             this.utils.notification.show(this.i18n.t("success.restore"))
             await this.utils.formDialog.refresh(op => {
