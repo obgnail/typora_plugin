@@ -1,5 +1,145 @@
+const buildResourceScanner = ({ utils, config, i18n }) => {
+  const { Package, isNetworkImage, isSpecialImage } = utils
+
+  // This regular expression is from `File.editor.brush.inline.rules.image`
+  // Typora simplifies the image syntax from a context-free grammar to a regular grammar
+  const MD_IMG_REGEX = /(\!\[((?:\[[^\]]*\]|[^\[\]])*)\]\()(<?((?:\([^)]*\)|[^()])*?)>?[ \t]*((['"])((?:.|\n)*?)\6[ \t]*)?)(\)(?:\s*{([^{}\(\)]*)})?)/g
+  const HTML_IMG_REGEX = /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/gi
+  const extractImages = (text) => {
+    const findHtml = config.RESOURCE_GRAMMARS.includes("html")
+    const findMd = config.RESOURCE_GRAMMARS.includes("markdown")
+    const htmlImages = findHtml ? [...text.matchAll(HTML_IMG_REGEX)].map(m => m[2]) : []
+    const mdImages = findMd ? [...text.matchAll(MD_IMG_REGEX)].map(m => m[4]) : []
+    return [...htmlImages, ...mdImages]
+  }
+
+  const processMarkdownFile = async (mdPath, mdDir, redirectPlugin) => {
+    const md = await Package.FsExtra.readFile(mdPath, "utf-8")
+    const images = extractImages(md)
+      .map(img => {
+        try {
+          img = img.replace(/^\s*<\s*/, "").replace(/\s*>\s*$/, "")
+          img = decodeURIComponent(img).split("?")[0]
+          return img.replace(/^\s*([\\/])/, "")
+        } catch (e) {
+          console.warn(`[ResourceManager] Error parsing image path: ${img}`, e)
+          return null
+        }
+      })
+      .filter(img =>
+        img &&
+        !isNetworkImage(img) &&
+        !isSpecialImage(img) &&
+        config.RESOURCE_EXT.includes(Package.Path.extname(img).toLowerCase()),
+      )
+    if (images.length === 0) return []
+
+    const root = redirectPlugin?.getRootURL(md, mdPath, mdDir) ?? mdDir
+    return images.map(img => Package.Path.resolve(root, img))
+  }
+
+  const scan = async (dir) => {
+    dir = dir || utils.getMountFolder()
+    const redirectPlugin = utils.getPlugin("asset_root_redirect")
+    const resources = { inFolder: new Set(), inFile: new Set() }
+    const resourceExts = new Set(config.RESOURCE_EXT)
+    const markdownExts = new Set(config.MARKDOWN_EXT)
+    await utils.walkDir({
+      dir,
+      semaphore: config.CONCURRENCY_LIMIT,
+      maxEntities: config.MAX_ENTITIES,
+      maxDepth: config.MAX_DEPTH,
+      followSymlinks: config.FOLLOW_SYMBOLIC_LINKS,
+      strategy: config.TRAVERSE_STRATEGY,
+      signal: AbortSignal.timeout(config.TIMEOUT),
+      dirFilter: name => !config.IGNORE_FOLDERS.includes(name),
+      onFile: async ({ path, file, dir: fileDir }) => {
+        const ext = Package.Path.extname(file).toLowerCase()
+        if (resourceExts.has(ext)) {
+          resources.inFolder.add(path)
+        } else if (markdownExts.has(ext)) {
+          const images = await processMarkdownFile(path, fileDir, redirectPlugin)
+          images.forEach(img => resources.inFile.add(img))
+        }
+      },
+      onFinished: (err) => {
+        if (!err) return
+        console.error("[ResourceManager] Scan failed:", err)
+        const msg = err.name === "TimeoutError" ? i18n.t("error.timeout") : err.toString()
+        utils.notification.show(msg, "error")
+      },
+    })
+
+    return {
+      notInFile: [...resources.inFolder].filter(x => !resources.inFile.has(x)),
+      notInFolder: [...resources.inFile].filter(x => !resources.inFolder.has(x)),
+    }
+  }
+
+  return { scan }
+}
+
+const buildExportEngine = ({ utils, i18n }) => {
+  const exportReport = async (reportData, defaultDir) => {
+    const serializers = {
+      json: () => JSON.stringify(reportData, null, "  "),
+      yaml: () => utils.stringifyYaml(reportData),
+      toml: () => utils.stringifyToml(reportData),
+    }
+    const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
+      title: i18n.t("func.download"),
+      defaultPath: utils.Package.Path.join(defaultDir, "resource-report.json"),
+      properties: ["saveFile", "showOverwriteConfirmation"],
+      filters: [
+        { name: "All", extensions: ["json", "yaml", "toml"] },
+        { name: "JSON", extensions: ["json"] },
+        { name: "YAML", extensions: ["yaml"] },
+        { name: "TOML", extensions: ["toml"] },
+      ],
+    })
+    if (canceled) return
+    const format = utils.Package.Path.extname(filePath).toLowerCase().replace(/^\./, "")
+    const serializeFn = serializers[format] || serializers.json
+    const fileContent = serializeFn()
+    const ok = await utils.writeFile(filePath, fileContent)
+    if (ok) utils.showInFinder(filePath)
+  }
+  return { exportReport }
+}
+
+const buildTableActionController = ({ utils, i18n }) => {
+  let showWarnDialog = true
+  const handleAction = async (action, rowData, tableEntity) => {
+    if (action === "locate") {
+      utils.showInFinder(rowData.path)
+      return
+    }
+    if (action === "delete") {
+      if (showWarnDialog) {
+        const reconfirm = i18n.t("msgBox.reconfirmDeleteFile")
+        const filename = utils.getFileName(rowData.path, false)
+        const { response, checkboxChecked } = await utils.showMessageBox({
+          type: "warning",
+          message: `${reconfirm} ${filename}`,
+          checkboxLabel: i18n.t("disableReminder"),
+        })
+        if (response === 1) return
+        if (checkboxChecked) showWarnDialog = false
+      }
+      await utils.Package.FsExtra.remove(rowData.path)
+      tableEntity.deleteRow("idx", rowData.idx)
+      utils.notification.show(i18n.t("success.deleted"))
+    }
+  }
+
+  return { handleAction }
+}
+
 class ResourceManagerPlugin extends BasePlugin {
-  showWarnDialog = true
+  ctx = { utils: this.utils, config: this.config, i18n: this.i18n }
+  scannerEngine = buildResourceScanner(this.ctx)
+  exportEngine = buildExportEngine(this.ctx)
+  tableController = buildTableActionController(this.ctx)
 
   style = () => true
 
@@ -38,28 +178,9 @@ class ResourceManagerPlugin extends BasePlugin {
 
   process = () => {
     this.entities.panel.addEventListener("btn-click", ev => this[ev.detail.action]?.())
-    this.entities.fileTable.addEventListener("row-action", async ev => {
+    this.entities.fileTable.addEventListener("row-action", ev => {
       const { action, rowData } = ev.detail
-      if (action === "locate") {
-        this.utils.showInFinder(rowData.path)
-      } else if (action === "delete") {
-        if (this.showWarnDialog) {
-          const reconfirm = this.i18n.t("msgBox.reconfirmDeleteFile")
-          const filename = this.utils.getFileName(rowData.path, false)
-          const { response, checkboxChecked } = await this.utils.showMessageBox({
-            type: "warning",
-            message: `${reconfirm} ${filename}`,
-            checkboxLabel: this.i18n.t("disableReminder"),
-          })
-          if (response === 1) return
-          if (checkboxChecked) {
-            this.showWarnDialog = false
-          }
-        }
-        await this.utils.Package.FsExtra.remove(rowData.path)
-        this.entities.fileTable.deleteRow("idx", rowData.idx)
-        this.utils.notification.show(this.i18n.t("success.deleted"))
-      }
+      this.tableController.handleAction(action, rowData, this.entities.fileTable)
     })
   }
 
@@ -91,44 +212,19 @@ class ResourceManagerPlugin extends BasePlugin {
   }
 
   download = async () => {
-    const getOutput = (format) => {
-      const _obj = {
-        ...this._getConfig(),
-        resources_non_exist_in_file: this.entities.fileTable.getProcessedData().map(e => e.src),
-        resources_non_exist_in_folder: this.entities.folderTable.getProcessedData().map(e => e.src),
-      }
-      const json = () => JSON.stringify(_obj, null, "  ")
-      const yaml = () => this.utils.stringifyYaml(_obj)
-      const toml = () => this.utils.stringifyToml(_obj)
-      const fn = { json, yaml, toml }[format] || json
-      return fn()
+    const reportData = {
+      ...this._getConfig(),
+      resources_non_exist_in_file: this.entities.fileTable.getProcessedData().map(e => e.src),
+      resources_non_exist_in_folder: this.entities.folderTable.getProcessedData().map(e => e.src),
     }
-
-    let dir = this.utils.getCurrentDirPath()
-    dir = (dir === ".") ? this.utils.getMountFolder() : dir
-    dir = dir || this.utils.tempFolder
-
-    const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
-      title: this.i18n.t("func.download"),
-      defaultPath: this.utils.Package.Path.join(dir, "resource-report.json"),
-      properties: ["saveFile", "showOverwriteConfirmation"],
-      filters: [
-        { name: "All", extensions: ["json", "yaml", "toml"] },
-        { name: "JSON", extensions: ["json"] },
-        { name: "YAML", extensions: ["yaml"] },
-        { name: "TOML", extensions: ["toml"] },
-      ],
-    })
-    if (canceled) return
-
-    const format = this.utils.Package.Path.extname(filePath).toLowerCase().replace(/^\./, "")
-    const fileContent = getOutput(format)
-    const ok = await this.utils.writeFile(filePath, fileContent)
-    if (ok) this.utils.showInFinder(filePath)
+    let defaultDir = this.utils.getCurrentDirPath()
+    defaultDir = (defaultDir === ".") ? this.utils.getMountFolder() : defaultDir
+    defaultDir = defaultDir || this.utils.tempFolder
+    await this.exportEngine.exportReport(reportData, defaultDir)
   }
 
   _runWithProgressBar = async (dir) => {
-    return this.utils.runWithFakeProgressBar(() => findResources(this, dir), this.config.TIMEOUT)
+    return this.utils.runWithFakeProgressBar(() => this.scannerEngine.scan(dir), this.config.TIMEOUT)
   }
 
   _initPanelRect = (resetLeft = true) => {
@@ -179,83 +275,6 @@ class ResourceManagerPlugin extends BasePlugin {
     resource_extensions: this.config.RESOURCE_EXT,
     markdown_extensions: this.config.MARKDOWN_EXT,
   })
-}
-
-const findResources = async (plugin, searchDir) => {
-  const { utils, config } = plugin
-  const { Package, isNetworkImage, isSpecialImage } = utils
-  const dir = searchDir || utils.getMountFolder()
-  const redirectPlugin = utils.getPlugin("asset_root_redirect")
-
-  const _resourceExt = new Set(config.RESOURCE_EXT)
-  const _markdownExt = new Set(config.MARKDOWN_EXT)
-  const isResourceExt = (ext) => _resourceExt.has(ext)
-  const isMarkdownExt = (ext) => _markdownExt.has(ext)
-
-  // This regular expression is from `File.editor.brush.inline.rules.image`
-  // Typora simplifies the image syntax from a context-free grammar to a regular grammar
-  const IMG_REGEX = /(\!\[((?:\[[^\]]*\]|[^\[\]])*)\]\()(<?((?:\([^)]*\)|[^()])*?)>?[ \t]*((['"])((?:.|\n)*?)\6[ \t]*)?)(\)(?:\s*{([^{}\(\)]*)})?)/g
-  const IMG_TAG_REGEX = /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/gi
-  const _findHTML = config.RESOURCE_GRAMMARS.includes("html")
-  const _findMD = config.RESOURCE_GRAMMARS.includes("markdown")
-  const findImagesInText = (text) => {
-    const md = _findMD ? [...text.matchAll(IMG_TAG_REGEX)].map(m => m[2]) : []
-    const html = _findHTML ? text.split("\n").flatMap(e => [...e.matchAll(IMG_REGEX)]).map(e => e[4]) : []
-    return [...md, ...html]
-  }
-
-  const findImagesInFile = async (mdPath, mdDir) => {
-    const md = await Package.FsExtra.readFile(mdPath, "utf-8")
-    const images = findImagesInText(md)
-      .map(img => {
-        try {
-          img = img.replace(/^\s*<\s*/, "").replace(/\s*>\s*$/, "")
-          img = decodeURIComponent(img).split("?")[0]
-          return img.replace(/^\s*([\\/])/, "")
-        } catch (e) {
-          console.warn("Error Image Path:", img)
-        }
-      })
-      .filter(img => img
-        && !isNetworkImage(img)
-        && !isSpecialImage(img)
-        && isResourceExt(Package.Path.extname(img).toLowerCase()),
-      )
-    if (images.length === 0) return
-
-    const root = redirectPlugin?.getRootURL(md, mdPath, mdDir) ?? mdDir
-    return images.map(img => Package.Path.resolve(root, img))
-  }
-
-  const resources = { inFolder: new Set(), inFile: new Set() }
-  await utils.walkDir({
-    dir,
-    semaphore: config.CONCURRENCY_LIMIT,
-    maxEntities: config.MAX_ENTITIES,
-    maxDepth: config.MAX_DEPTH,
-    followSymlinks: config.FOLLOW_SYMBOLIC_LINKS,
-    strategy: config.TRAVERSE_STRATEGY,
-    signal: AbortSignal.timeout(config.TIMEOUT),
-    dirFilter: name => !config.IGNORE_FOLDERS.includes(name),
-    onFile: async ({ path, file, dir }) => {
-      const ext = Package.Path.extname(file).toLowerCase()
-      if (isResourceExt(ext)) {
-        resources.inFolder.add(path)
-      } else if (isMarkdownExt(ext)) {
-        const images = await findImagesInFile(path, dir)
-        if (images) images.forEach(img => resources.inFile.add(img))
-      }
-    },
-    onFinished: (err) => {
-      if (!err) return
-      console.error(err)
-      const msg = err.name === "TimeoutError" ? plugin.i18n.t("error.timeout") : err.toString()
-      utils.notification.show(msg, "error")
-    },
-  })
-  const notInFile = [...resources.inFolder].filter(x => !resources.inFile.has(x))
-  const notInFolder = [...resources.inFile].filter(x => !resources.inFolder.has(x))
-  return { notInFile, notInFolder }
 }
 
 module.exports = {
