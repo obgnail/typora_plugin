@@ -753,18 +753,11 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   _handleContextMenu = () => {
-    let tabIdx = -1
-    const getMenuItems = (ev) => {
+    this.utils.contextMenu.register(this.entities.tabWrapper, ev => {
       const tabEl = ev.target.closest(".tab-container")
-      if (tabEl) {
-        tabIdx = parseInt(tabEl.dataset.idx)
-        const all = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"]
-        return this.utils.pick(this.i18n.entries(all, "$option.CONTEXT_MENU."), this.config.CONTEXT_MENU)
-      }
-    }
-    const onClickMenuItem = (ev, key) => {
-      const isCloseAction = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs"].includes(key)
-      const commands = {
+      if (!tabEl) return null
+      const tabIdx = parseInt(tabEl.dataset.idx, 10)
+      const actions = {
         closeTab: () => this.tab.close(tabIdx),
         closeOtherTabs: () => this.tab.closeOthers(tabIdx),
         closeLeftTabs: () => this.tab.closeLeft(tabIdx),
@@ -774,10 +767,15 @@ class WindowTabPlugin extends BasePlugin {
         showInFinder: () => this.showInFinder(tabIdx),
         openInNewWindow: () => this.openInNewWindow(tabIdx),
       }
-      commands[key]?.()
-      if (isCloseAction) this._saveOnSwitch()
-    }
-    this.utils.contextMenu.register(this.entities.tabWrapper, getMenuItems, onClickMenuItem)
+      const availableItems = this.utils.pick(this.i18n.entries(Object.keys(actions), "$option.CONTEXT_MENU."), this.config.CONTEXT_MENU)
+      return Object.entries(availableItems).map(([key, label]) => ({
+        label,
+        action: () => {
+          actions[key]?.()
+          if (key.startsWith("close")) this._saveOnSwitch()
+        },
+      }))
+    })
   }
 
   _adjustQuickOpen = () => {

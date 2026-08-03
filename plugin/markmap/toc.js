@@ -519,20 +519,18 @@ class TOCMarkmap {
   toggleContextMenu = (register = this.config.USE_CONTEXT_MENU) => {
     if (!register) {
       this.utils.contextMenu.unregister(this.entities.svg)
-    } else {
-      this.utils.contextMenu.register(
-        this.entities.svg,
-        () => {
-          const all = ["expand", "shrink", "hideToolbar", "showToolbar", "fit", "unfold", "pinTop", "pinRight", "settings", "download", "close"]
-          const menuItems = this.i18n.entries(all, "$option.TITLE_BAR_BUTTONS.")
-          const fullScreen = this.entities.fullScreen.getAttribute("action")
-          const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar"
-          const attrs = [toolbarVisibility, fullScreen, "fit", "unfold", "pinTop", "pinRight", "settings", "download", "close"]
-          return this.utils.pick(menuItems, attrs)
-        },
-        (ev, key) => this.doAction(key),
-      )
+      return
     }
+    this.utils.contextMenu.register(this.entities.svg, () => {
+      const allKeys = ["expand", "shrink", "hideToolbar", "showToolbar", "fit", "unfold", "pinTop", "pinRight", "settings", "download", "close"]
+      const activeKeys = [
+        this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar",
+        this.entities.fullScreen.getAttribute("action"),
+        "fit", "unfold", "pinTop", "pinRight", "settings", "download", "close",
+      ]
+      const availableItems = this.utils.pick(this.i18n.entries(allKeys, "$option.TITLE_BAR_BUTTONS."), activeKeys)
+      return Object.entries(availableItems).map(([key, label]) => ({ label, action: () => this.doAction(key) }))
+    })
   }
 
   pinTop = (fit = true) => {
