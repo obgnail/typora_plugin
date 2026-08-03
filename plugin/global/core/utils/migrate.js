@@ -38,7 +38,7 @@ class Migrate {
   }
 
   saveConfigs = async (conf) => {
-    const p = await this.utils.settings.getActualPath(this.utils.settings.USER_TOML)
+    const p = await this.utils.settings.getUserTomlPath()
     const cnt = this.utils.stringifyToml(conf.user)
     return this.utils.writeFile(p, cnt)
   }

@@ -7,39 +7,37 @@ class Settings {
     this.utils = utils
   }
 
-  getOriginPath = file => this.utils.joinPluginPath("./plugin/global/settings", file)
-  getHomePath = file => this.utils.Package.Path.join(this.utils.getHomeDir(), ".config", "typora_plugin", file)
-  getActualPath = async file => {
-    const homePath = this.getHomePath(file)
-    const exist = await this.utils.existPath(homePath)
-    return exist ? homePath : this.getOriginPath(file)
+  get defaultTomlPath() {
+    return this.utils.joinPluginPath("./plugin/global/settings", this.DEFAULT_TOML)
   }
 
-  openFolder = async () => {
-    const path = await this.getActualPath(this.USER_TOML)
-    this.utils.showInFinder(path)
+  get userTomlOriginPath() {
+    return this.utils.joinPluginPath("./plugin/global/settings", this.USER_TOML)
+  }
+
+  get userTomlHomePath() {
+    return this.utils.Package.Path.join(this.utils.getHomeDir(), ".config", "typora_plugin", this.USER_TOML)
+  }
+
+  getUserTomlPath = async () => {
+    const homePath = this.userTomlHomePath
+    const exist = await this.utils.existPath(homePath)
+    return exist ? homePath : this.userTomlOriginPath
   }
 
   handle = async (fixedName, handler) => {
-    const path = await this.getActualPath(this.USER_TOML)
-    const allSettings = await this.utils.readTomlFile(path)
-    if (!allSettings[fixedName]) {
-      allSettings[fixedName] = {}
+    const path = await this.getUserTomlPath()
+    const all = await this.utils.readTomlFile(path)
+    if (!all[fixedName]) {
+      all[fixedName] = {}
     }
-    handler(allSettings[fixedName], allSettings)
-    const content = this.utils.stringifyToml(allSettings).replace(/\r\n/g, "\n")
+    handler(all[fixedName], all)
+    const content = this.utils.stringifyToml(all).replace(/\r\n/g, "\n")
     return this.utils.writeFile(path, content)
   }
 
-  clear = async (fixedName) => {
-    return this.handle(fixedName, (_, allSettings) => delete allSettings[fixedName])
-  }
-
-  save = async (fixedName, updateObject) => {
-    return this.handle(fixedName, (pluginSettings, allSettings) => {
-      allSettings[fixedName] = this.utils.merge(pluginSettings, updateObject)
-    })
-  }
+  clear = async (fixedName) => this.handle(fixedName, (_, all) => delete all[fixedName])
+  save = async (fixedName, updateObject) => this.handle(fixedName, (target, all) => all[fixedName] = this.utils.merge(target, updateObject))
 
   autoSave = (plugin) => {
     const save = this.save
@@ -52,11 +50,9 @@ class Settings {
   }
 
   getObjects = async () => {
-    const default_ = this.getOriginPath(this.DEFAULT_TOML)
-    const user_ = this.getOriginPath(this.USER_TOML)
-    const home_ = this.getHomePath(this.USER_TOML)
-    const contents = await this.utils.readFiles([default_, user_, home_])
+    const paths = [this.defaultTomlPath, this.userTomlOriginPath, this.userTomlHomePath]
     try {
+      const contents = await this.utils.readFiles(paths)
       return contents.map(c => c ? this.utils.readToml(c) : {})
     } catch (e) {
       const prefix = "Invalid TOML document: "
@@ -66,7 +62,7 @@ class Settings {
         message: prefix,
         detail: e.toString().replace(prefix, ""),
       })
-      return contents.map(() => ({}))
+      return paths.map(() => ({}))
     }
   }
 
@@ -75,9 +71,11 @@ class Settings {
     return objs.reduce(this.utils.merge)
   }
 
+  openFolder = async () => this.utils.showInFinder(await this.getUserTomlPath())
+
   export = async (exportPath) => {
     const base = await this.read()
-    await this.utils.Package.FsExtra.writeJson(exportPath, { ...this.META, ...base })
+    await this.utils.Package.FsExtra.outputJson(exportPath, { ...this.META, ...base })
   }
 
   import = async (importPath) => {
@@ -88,10 +86,9 @@ class Settings {
     }
     const plugins = this.utils.getAllSettings()
     const isObject = x => x != null && !Array.isArray(x) && typeof x === "object"
-    const path = await this.getActualPath(this.USER_TOML)
     const obj = this.utils.pickBy(settings, (obj, key) => isObject(obj) && Object.hasOwn(plugins, key))
     const content = this.utils.stringifyToml(obj).replace(/\r\n/g, "\n")
-    return this.utils.writeFile(path, content)
+    return this.utils.writeFile(await this.getUserTomlPath(), content)
   }
 }
 

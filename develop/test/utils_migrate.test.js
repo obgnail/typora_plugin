@@ -38,7 +38,7 @@ class MockUtilsFactory {
       settings: {
         USER_TOML: "settings.user.toml",
         DEFAULT_TOML: "settings.default.toml",
-        getActualPath: async (file) => `actual_path/${file}`,
+        getUserTomlPath: async () => `actual_path/settings.user.toml`,
         getObjects: async () => {
           const { USER_TOML, DEFAULT_TOML } = defaultMocks.settings
           return [DEFAULT_TOML, USER_TOML, USER_TOML].map(file => MockUtilsFactory.configs[file] || {})

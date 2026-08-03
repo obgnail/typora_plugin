@@ -70,10 +70,7 @@ module.exports = (plugin) => {
       utils.notification.show(i18n.t("success.restore"))
     }),
     restoreAllSettings: consecutive(async () => {
-      await plugin.renewMenu(async () => {
-        const path = await utils.settings.getActualPath(utils.settings.USER_TOML)
-        await utils.writeFile(path, "")
-      })
+      await plugin.renewMenu(async () => utils.writeFile(await utils.settings.getUserTomlPath(), ""))
       utils.notification.show(i18n.t("success.restoreAll"))
     }),
     inspectRuntimeSettings: async () => {
@@ -81,24 +78,16 @@ module.exports = (plugin) => {
       await showSettings(i18n._t("settings", "$label.inspectRuntimeSettings"), settings)
     },
     inspectDefaultSettings: async () => {
-      const path = await utils.settings.getActualPath(utils.settings.DEFAULT_TOML)
-      const content = await utils.Package.FsExtra.readFile(path, "utf-8")
+      const content = await utils.Package.FsExtra.readFile(utils.settings.defaultTomlPath, "utf-8")
       const settings = utils.readToml(content)?.[plugin._getCurrentPlugin()]
       await showSettings(i18n._t("settings", "$tooltip.inspectDefaultSettings"), settings)
     },
     inspectAllDefaultSettings: async () => {
-      const path = await utils.settings.getActualPath(utils.settings.DEFAULT_TOML)
-      const settings = await utils.Package.FsExtra.readFile(path, "utf-8")
+      const settings = await utils.Package.FsExtra.readFile(utils.settings.defaultTomlPath, "utf-8")
       await showSettings(i18n.t("$tooltip.inspectAllDefaultSettings"), settings)
     },
-    openSettingsDefaultTomlExternally: async () => {
-      const path = await utils.settings.getActualPath(utils.settings.DEFAULT_TOML)
-      utils.openPath(path)
-    },
-    openSettingsUserTomlExternally: async () => {
-      const path = await utils.settings.getActualPath(utils.settings.USER_TOML)
-      utils.openPath(path)
-    },
+    openSettingsDefaultTomlExternally: async () => utils.openPath(utils.settings.defaultTomlPath),
+    openSettingsUserTomlExternally: async () => utils.openPath(await utils.settings.getUserTomlPath()),
     invokeMarkdownlintSettings: async () => utils.callPluginFn("markdownlint", "settings"),
     installPlantUMLServer: async () => {
       await utils.formDialog.modal({
