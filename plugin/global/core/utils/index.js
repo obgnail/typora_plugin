@@ -1,4 +1,5 @@
 const PATH = require("path")
+const UTIL = require("util")
 const FS_EXTRA = require("fs-extra")
 const TOML = require("../lib/smol-toml")
 
@@ -6,6 +7,7 @@ const i18n = require("../i18n")
 
 const MIXINS = {
   settings: require("./settings"),
+  logger: require("./logger"),
   migrate: require("./migrate"),
   hotkeyHub: require("./hotkeyHub"),
   eventHub: require("./eventHub"),
@@ -31,7 +33,7 @@ class utils {
   static separator = File.isWin ? "\\" : "/"
   static supportHasSelector = CSS.supports("selector(:has(*))")
   static tempFolder = window._options.tempPath || require("os").tmpdir()
-  static Package = Object.freeze({ Path: PATH, FsExtra: FS_EXTRA })
+  static Package = Object.freeze({ Path: PATH, FsExtra: FS_EXTRA, Util: UTIL })
   static mixins = Object.fromEntries(
     Object.entries(MIXINS).map(([name, cls]) => [[name], new cls(this, i18n)]),
   )
@@ -337,32 +339,7 @@ class utils {
       : Object.fromEntries(Object.entries(source).map(([key, val]) => [key, this.naiveCloneDeep(val)]))
   }
 
-  static deepEqual = (a, b, visited = new WeakMap()) => {
-    if (Object.is(a, b)) return true
-    if (typeof a !== "object" || !a || typeof b !== "object" || !b) return false
-
-    if (visited.has(a)) return visited.get(a) === b
-    visited.set(a, b)
-
-    const type = Object.prototype.toString.call(a)
-    if (type !== Object.prototype.toString.call(b)) return false
-    if (["[object Date]", "[object String]", "[object Number]", "[object Boolean]"].includes(type)) {
-      return Object.is(a.valueOf(), b.valueOf())
-    }
-    if (type === "[object RegExp]") return a.toString() === b.toString()
-    if (type === "[object Set]" || type === "[object Map]") {
-      const arrA = [...a], arrB = [...b], matched = new Set()
-      if (arrA.length !== arrB.length) return false
-      return arrA.every(valA => arrB.some((valB, i) => !matched.has(i) && this.deepEqual(valA, valB, visited) && matched.add(i)))
-    }
-    if (type === "[object Array]" || type === "[object Object]") {
-      const keys = Object.keys(a)
-      if (keys.length !== Object.keys(b).length) return false
-      return keys.every(k => Object.hasOwn(b, k) && this.deepEqual(a[k], b[k], visited))
-    }
-
-    return false
-  }
+  static deepEqual = (a, b) => UTIL.isDeepStrictEqual(a, b)
 
   static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 

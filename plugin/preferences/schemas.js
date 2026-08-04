@@ -109,8 +109,11 @@ const OPTS = {
 const schema_global = () => [
   Group(
     Switch("ENABLE").Protect(),
-    Select("LOCALE").Options(["auto", "en", "zh-CN", "zh-TW"]).ActionTooltip("openLocaleFolder", "fa fa-language"),
+    Select("LOCALE").Options(["auto", "en", "zh-CN", "zh-TW"]).ActionTooltip("openLocaleFolder", "fa fa-folder"),
+  ),
+  Group(
     Switch("DARK_MODE"),
+    Switch("LOGGING").ActionTooltip("openLogFolder", "fa fa-folder"),
   ),
   Group(
     Switch("BATCH_RENDER_CHARTS"),
@@ -187,6 +190,8 @@ const schema_search_multi = () => [
     Switch("CASE_SENSITIVE"),
     Switch("BACKSPACE_TO_HIDE"),
     Select("EXPLAIN_TRIGGER").Options(["focus", "hover"]),
+    Array_("ALLOW_EXT"),
+    Array_("IGNORE_FOLDERS"),
   ),
   Group("searchResult",
     Switch("RELATIVE_PATH"),
@@ -195,8 +200,6 @@ const schema_search_multi = () => [
     Integer("MAX_HIGHLIGHTS").Min(1).Max(5000),
     Palette("HIGHLIGHT_COLORS"),
   ),
-  Array_("ALLOW_EXT"),
-  Array_("IGNORE_FOLDERS"),
   Group("advanced",
     Switch("FOLLOW_SYMBOLIC_LINKS"),
     Segment("TRAVERSE_STRATEGY").Options(["bfs", "dfs"]),

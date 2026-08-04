@@ -22,6 +22,9 @@ LOCALE = "auto"
 # Dark Mode
 DARK_MODE = false
 
+# Debug Logging
+LOGGING = false
+
 # =========== [ Chart Interaction ] ===========
 # Exit methods for chart interaction mode (e.g., kanban, markmap)
 # Note: At least one exit method must be specified to prevent lock-in

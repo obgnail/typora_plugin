@@ -43,12 +43,12 @@ async function loadMixins(loadFn) {
   const invoke = (mixins, method) => Promise.all(mixins.map(m => m[method]?.()))
 
   const {
-    unstableRequire, styleManager,
+    logger, unstableRequire, styleManager,
     contextMenu, notification, formDialog, stateRecorder, hotkeyHub, exportHelper,
     eventHub, diagramParser, thirdPartyDiagramParser,
   } = utils.mixins
 
-  await invoke([unstableRequire, styleManager], "process")
+  await invoke([logger, unstableRequire, styleManager], "process")
   await invoke([contextMenu, notification, formDialog, stateRecorder, hotkeyHub, exportHelper], "process")
 
   await loadFn()
