@@ -5,7 +5,6 @@ Object.assign(global, {
   CSS: { supports: () => true, escape: s => s },
   File: { option: { wordsPerMinute: 300 } },
   $: () => ({}),
-  _: require("lodash"),
   dirname: require("os").tmpdir(),
 })
 
