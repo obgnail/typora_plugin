@@ -3303,13 +3303,17 @@ NAME = ""
 HOTKEY = ""
 
 # =========== [ Rendering Service ] ===========
-# Rendering Server URL. Recommended to install via Docker and enable the service:
+# Rendering Server URL
+# Recommended to install via Docker and enable the service:
 #   docker pull plantuml/plantuml-server:jetty
 #   docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
-SERVER_URL = "http://localhost:8080"
+# You can also choose online rendering services, such as:
+#   https://kroki.io/plantuml
+#   https://www.plantuml.com/plantuml
+SERVER_URL = "https://kroki.io/plantuml"
 
 # Output Format: Generated image format returned
-#  svg: recommended for best distortion control
+#  svg: recommended
 #  png
 #  txt
 OUTPUT_FORMAT = "svg"

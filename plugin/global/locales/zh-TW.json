@@ -1283,7 +1283,8 @@
     "$option.OUTPUT_FORMAT.svg": "SVG",
     "$option.OUTPUT_FORMAT.png": "PNG",
     "$option.OUTPUT_FORMAT.txt": "TXT",
-    "$tooltip.installPlantUMLServer": "安裝渲染服務"
+    "$tooltip.installPlantUMLServer": "安裝渲染服務",
+    "$tooltip.testPlantUMLServer": "測試渲染服務"
   },
   "marp": {
     "pluginName": "Marp",

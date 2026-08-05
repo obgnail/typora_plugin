@@ -1292,13 +1292,9 @@ const schema_drawIO = () => [
 ]
 
 const schema_plantUML = () => [
+  FRAG.Base(true),
   Group(
-    Switch("ENABLE").ActionTooltip("installPlantUMLServer", "fa fa-flask"),
-    Text("NAME").Placeholder("defaultIfEmpty"),
-    Hotkey("HOTKEY"),
-  ),
-  Group(
-    Text("SERVER_URL"),
+    Text("SERVER_URL").ActionTooltip("installPlantUMLServer", "fa fa-flask").ActionTooltip("testPlantUMLServer", "fa fa-check-square-o"),
     Integer("SERVER_TIMEOUT").Unit(UNITS.millisecond).Min(1000),
     Text("PROXY"),
     Integer("CACHED_URL_COUNT").Min(1),

@@ -108,6 +108,17 @@ module.exports = (plugin) => {
         },
       })
     },
+    testPlantUMLServer: async () => {
+      try {
+        const { testServer } = require("../plantUML/server.js")
+        const { plantUML: { SERVER_URL, PROXY, SERVER_TIMEOUT, OUTPUT_FORMAT } } = await utils.settings.read()
+        const options = { url: SERVER_URL, proxy: PROXY, timeout: SERVER_TIMEOUT, format: OUTPUT_FORMAT, fetch: utils.fetch }
+        const { success, message } = await utils.runWithFakeProgressBar(() => testServer(options), SERVER_TIMEOUT)
+        utils.notification.show(message, success ? "success" : "error")
+      } catch (err) {
+        utils.notification.show(err.message, "error")
+      }
+    },
     myopicDefocusEffectDemo: async () => {
       const { MyopicDefocus } = require("../myopic_defocus.js")
       const myopicDefocus = new MyopicDefocus({ svgContainerId: "myopic-defocus-svg-demo", blurLayerId: "myopic-defocus-layer-demo" })

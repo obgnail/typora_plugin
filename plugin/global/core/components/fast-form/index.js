@@ -2522,15 +2522,16 @@ function Try(fn, buildErr = utils.identity) {
 
 const Validator_Url = ({ value }) => {
   if (!value) return true
-  const pattern = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/
-  return pattern.test(value) ? true : i18n.t("global", "error.invalidURL")
+  return Try(() => Boolean(new URL(value)), () => i18n.t("global", "error.invalidURL"))
 }
 
 const Validator_Regex = ({ value }) => {
+  if (!value) return true
   return Try(() => value && new RegExp(value), () => `Error Regex: ${value}`)
 }
 
 const Validator_Path = ({ value }) => {
+  if (!value) return true
   const base = utils.resolvePluginPath(value)
   return Try(() => value && utils.Package.FsExtra.accessSync(base), () => `No such path: ${base}`)
 }

@@ -59,10 +59,10 @@ module.exports = (plugin) => {
     echarts: rendererConstraints,
     plantUML: [{
       name: "showPlantUMLServerHint",
-      when: { $and: [{ enable: true }, { $meta: { $isMounting: false } }] },
+      when: { $and: [{ ENABLE: true }, { $meta: { $isMounting: false } }] },
       affects: [],
-      effect: (isConditionMet, context) => {
-        if (isConditionMet) utils.notification.show(`Plugin Enabled!\nPlease ensure server ${context.getValue("SERVER_URL")} is available.`)
+      effect: (isMet, context) => {
+        if (isMet) utils.notification.show(`Plugin Enabled!\nPlease ensure server ${context.getValue("SERVER_URL")} is available.`)
       },
     }],
     remote_control: [{
