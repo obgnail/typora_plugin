@@ -103,7 +103,7 @@ class ResizeTablePlugin extends BasePlugin {
     return { target: null, direction: null }
   }
 
-  getDynamicActions = anchorNode => [{ act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE, act_name: this.i18n.t("$label.RECORD_RESIZE") }]
+  getDynamicActions = () => [{ act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE, act_name: this.i18n.t("$label.RECORD_RESIZE") }]
 
   call = action => action === "record_resize_state" && this.toggleRecorder()
 

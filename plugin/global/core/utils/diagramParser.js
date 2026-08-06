@@ -50,13 +50,13 @@ class DiagramParser {
     this.fixInteractiveMode()
     this.registerLangTooltip()
     this.registerLangModeMapping()
-    this.onAddCodeBlock()           // When adding code blocks
-    this.onTryAddLangUndo()         // When modifying the language
-    this.onUpdateDiagram()          // When updating
-    this.onExport()                 // When exporting
-    this.onFocus()                  // When focusing
-    this.onChangeFile()             // When switching files
-    this.onCheckIsDiagramType()     // When determining whether it is a Diagram
+    this.onAddCodeBlock()        // When adding code blocks
+    this.onTryAddLangUndo()      // When modifying the language
+    this.onUpdateDiagram()       // When updating
+    this.onExport()              // When exporting
+    this.onFocus()               // When focusing
+    this.onChangeFile()          // When switching file
+    this.onCheckIsDiagramType()  // When determining whether it is a Diagram
     console.debug(`[ Diagram Parser ] [ ${this.parsers.size} ]:`, this.parsers)
   }
 
@@ -84,18 +84,14 @@ class DiagramParser {
   // Q: When the user is continuously typing, how to reduce rendering frequency while ensuring interactive experience?
   // A: Render immediately when the user types for the first time, then render once every X milliseconds, and finally render again based on the final input string.
   setRenderTiming = () => {
-    const batch = this.utils.getSetting("global", "BATCH_RENDER_CHARTS")
-    this.renderDiagram = batch ? this._batchRenderDiagram : this._doRenderDiagram
+    this.renderDiagram = this.utils.getSetting("global", "BATCH_RENDER_CHARTS") ? this._batchRenderDiagram : this._doRenderDiagram
   }
 
   /** If the fenceEnhance plugin is disabled and EXIT_CHART_INTERACTION === click_exit_button, then force all charts to disable interactive mode. */
   fixInteractiveMode = () => {
-    const cfg = this.utils.getSetting("global", "EXIT_CHART_INTERACTION")
-    if (Array.isArray(cfg)) {
-      const arr = cfg.filter(e => e === "ctrl_click_fence" || e === "click_exit_button")
-      if (arr.length) {
-        this.exitInteractiveStrategies = arr
-      }
+    const cfg = this.utils.getSetting("global", "EXIT_CHART_INTERACTION").filter(e => e === "ctrl_click_fence" || e === "click_exit_button")
+    if (cfg.length) {
+      this.exitInteractiveStrategies = cfg
     }
 
     const isClickBtn = this.exitInteractiveStrategies.length === 1 && this.exitInteractiveStrategies[0] === "click_exit_button"
@@ -263,6 +259,31 @@ class DiagramParser {
   onUpdateDiagram = () => this.utils.decorator.afterCall(() => File?.editor?.diagrams, "updateDiagram", (_, cid) => this.renderDiagram(cid))
 
   onExport = () => {
+    const beforeToHTML = () => {
+      const css = []
+      this.parsers.forEach((parser, lang) => {
+        this.renderAllLangFence(lang)
+        if (typeof parser.exportStyleGetter === "function" && !!this.utils.entities.querySelectorInWrite(`.md-fences[lang="${lang}"]`)) {
+          css.push(parser.exportStyleGetter(lang))
+        }
+      })
+      if (css.length) {
+        css.unshift(`.md-diagram-panel, svg { page-break-inside: avoid }`)
+        return css.join(" ")
+      }
+    }
+    // Make `frame.js` happy. To avoid null pointer exceptions
+    // There is a line of code in `frame.js` in exporting logic:
+    //    document.querySelector("[cid='" + t.cid + "'] svg").getBoundingClientRect()
+    const beforeToNative = () => {
+      this.parsers.forEach((parser, lang) => {
+        this.renderAllLangFence(lang)
+        this.utils.entities.querySelectorAllInWrite(`.md-fences[lang="${lang}"] .md-diagram-panel-preview`).forEach(preview => {
+          const svg = preview.querySelector("svg")
+          if (!svg) preview.innerHTML = "<svg></svg>"
+        })
+      })
+    }
     const afterExport = () => {
       setTimeout(() => {
         for (const lang of this.parsers.keys()) {
@@ -271,37 +292,8 @@ class DiagramParser {
       }, 300)
     }
 
-    const callback = () => {
-      const beforeToHTML = () => {
-        const extraCSSs = []
-        this.parsers.forEach((parser, lang) => {
-          this.renderAllLangFence(lang)
-          if (typeof parser.exportStyleGetter === "function" && !!this.utils.entities.querySelectorInWrite(`.md-fences[lang="${lang}"]`)) {
-            extraCSSs.push(parser.exportStyleGetter(lang))
-          }
-        })
-        if (extraCSSs.length) {
-          const base = ` .md-diagram-panel, svg { page-break-inside: avoid } `
-          return base + extraCSSs.join(" ")
-        }
-      }
-      // Make `frame.js` happy. To avoid null pointer exceptions
-      // There is a line of code in `frame.js` in exporting logic:
-      //    document.querySelector("[cid='" + t.cid + "'] svg").getBoundingClientRect()
-      const beforeToNative = () => {
-        this.parsers.forEach((parser, lang) => {
-          this.renderAllLangFence(lang)
-          this.utils.entities.querySelectorAllInWrite(`.md-fences[lang="${lang}"] .md-diagram-panel-preview`).forEach(preview => {
-            const svg = preview.querySelector("svg")
-            if (!svg) preview.innerHTML = "<svg></svg>"
-          })
-        })
-      }
-      this.utils.exportHelper.register("diagram-parser", beforeToHTML, afterExport)
-      this.utils.exportHelper.registerNative("diagram-parser", beforeToNative, afterExport)
-    }
-
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, callback)
+    this.utils.exportHelper.register("diagram-parser", beforeToHTML, afterExport)
+    this.utils.exportHelper.registerNative("diagram-parser", beforeToNative, afterExport)
   }
 
   onFocus = () => {

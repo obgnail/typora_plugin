@@ -51,7 +51,7 @@ ${this.config.HIGHLIGHT_ON_FOCUS ? `.md-focus .CodeMirror-activeline { backgroun
   foldFence = (fence) => this.buttonHelper?.foldCode(fence.getAttribute("cid"), true, fence.querySelector(`.enhance-btn[action="fold"]`))
   expandFence = (fence) => this.buttonHelper?.expandFence(fence)
 
-  getDynamicActions = (anchorNode, meta) => this.i18n.fillActions([
+  getDynamicActions = () => this.i18n.fillActions([
     { act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
     { act_value: "toggle_state_copy", act_state: this.config.ENABLE_COPY },
     { act_value: "toggle_state_indent", act_state: this.buttonHelper?.enableIndent, act_hidden: !this.buttonHelper?.supportIndent },

@@ -98,17 +98,11 @@ async function loadPlugin(fixedName, config) {
   }
 
   const instance = new PluginClass(fixedName, config, i18n.bind(fixedName))
-
   if (await instance.prepare() === utils.PLUGIN_LOAD_ABORT) return null
 
   await loadStyle(instance, instance.style())
-
-  const html = instance.html()
-  if (html) utils.insertElements(html)
-
-  const hotkey = instance.hotkey()
-  if (hotkey) utils.hotkeyHub.register(hotkey)
-
+  utils.insertElements(instance.html())
+  utils.hotkeyHub.register(instance.hotkey())
   instance.init()
   instance.process()
   instance.postprocess()

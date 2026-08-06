@@ -12,6 +12,9 @@ describe("Updater", () => {
   beforeEach(() => {
     updater = new Updater(mockUtils, "https://api.example.com/latest", "http://proxy", 5000)
 
+    mock.method(console, "log", () => undefined)
+    mock.method(console, "error", () => undefined)
+
     updater.fs = {
       emptyDir: mock.fn(async () => undefined),
       remove: mock.fn(async () => undefined),

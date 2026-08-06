@@ -206,16 +206,16 @@ class RightClickMenuPlugin extends BasePlugin {
     const self = this
     const { menuManager } = this
 
-    // Click on the first level menu
+    // Click on the 1st level menu
     $("#context-menu").on("click", `[data-key="${this.noExtraMenuGroupName}"]`, function () {
       const [fixedName, action] = (this.dataset.value || "").split(".")
       if (!fixedName || !action) {
         return false
       }
       self.utils.updatePluginDynamicActions(fixedName)
-      self.callPluginDynamicAction(fixedName, action)
+      self.callPluginAction(fixedName, action)
       self._hideMenuIfNeed()
-      // Display the second level menu
+      // Display the 2nd level menu
     }).on("mouseenter", "[data-key]", function () {
       if (self.groupName === this.dataset.key) {
         const idx = this.dataset.idx
@@ -230,7 +230,7 @@ class RightClickMenuPlugin extends BasePlugin {
       }
     })
 
-    // Display the third level menu
+    // Display the 3rd level menu
     $(".plugin-menu-second").on("mouseenter", "[data-key]", function () {
       menuManager.clearThirdMenu()
       document.querySelectorAll(".plugin-dynamic-act").forEach(el => el.remove())
@@ -252,32 +252,28 @@ class RightClickMenuPlugin extends BasePlugin {
       } else {
         menuManager.clearSecondItem()
       }
-      // Call plugins in the second level menu
+      // Call plugins in the 2nd level menu
     }).on("click", "[data-key]", function () {
       const fixedName = this.dataset.key
       const action = this.dataset.value
       if (action) {
-        self.callPluginDynamicAction(fixedName, action)
+        self.callPluginAction(fixedName, action)
       } else {
         const plugin = self.utils.getPlugin(fixedName)
-        // If there is a third level menu, clicking the second level menu is not allowed.
-        if (!plugin || plugin.staticActions || plugin.getDynamicActions) {
-          return false
-        }
+        // If there is a 3rd level menu, clicking the second level menu is not allowed.
+        if (!plugin || plugin.staticActions || plugin.getDynamicActions) return false
         plugin.call?.()
       }
       self._hideMenuIfNeed()
     })
 
-    // Call plugins in the third level menu
+    // Call plugins in the 3rd level menu
     $(".plugin-menu-third").on("click", "[data-key]", function () {
-      // Click on the disabled option
-      if (this.classList.contains("disabled")) {
-        return false
-      }
+      if (this.classList.contains("disabled")) return false
+
       const action = this.dataset.key
       const fixedName = this.parentElement.dataset.plugin
-      self.callPluginDynamicAction(fixedName, action)
+      self.callPluginAction(fixedName, action)
       self._hideMenuIfNeed(fixedName)
     })
   }
@@ -289,13 +285,13 @@ class RightClickMenuPlugin extends BasePlugin {
       return
     }
     if (key) {
-      $(`.plugin-menu-item[data-key="${key}"]`).trigger("mouseenter") // refresh third menu
+      $(`.plugin-menu-item[data-key="${key}"]`).trigger("mouseenter") // refresh 3rd menu
     }
   }
 
-  callPluginDynamicAction = (fixedName, action) => {
+  callPluginAction = (fixedName, action) => {
     if (action !== this.unavailableActValue) {
-      this.utils.callPluginDynamicAction(fixedName, action)
+      this.utils.callPluginAction(fixedName, action)
     }
   }
 

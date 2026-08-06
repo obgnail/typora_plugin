@@ -4,15 +4,14 @@ class Migrate {
   }
 
   cleanPlugins = async (conf) => {
-    const fixedNames = new Set([...Object.keys(conf.default), ...Object.keys(conf.user)])
-    fixedNames.delete("global")
+    const userKeys = Object.keys(conf.user).filter(key => key !== "global")
     await Promise.all(
-      [...fixedNames].flatMap(async fixedName => {
-        const promises = [`./plugin/${fixedName}.js`, `./plugin/${fixedName}/index.js`]
-          .map(p => this.utils.joinPluginPath(p))
-          .map(p => this.utils.existPath(p))
-        const implemented = (await Promise.all(promises)).some(Boolean)
-        if (!implemented) {
+      userKeys.map(async fixedName => {
+        const [hasJs, hasIndexJs] = await Promise.all([
+          this.utils.existPath(this.utils.joinPluginPath(`./plugin/${fixedName}.js`)),
+          this.utils.existPath(this.utils.joinPluginPath(`./plugin/${fixedName}/index.js`)),
+        ])
+        if (!hasJs && !hasIndexJs) {
           delete conf.user[fixedName]
         }
       }),
@@ -20,16 +19,19 @@ class Migrate {
   }
 
   cleanPluginKeys = (conf) => {
-    Object.keys(conf.user)
-      .filter(fixedName => Object.hasOwn(conf.default, fixedName))
-      .map(fixedName => {
-        const user_ = conf.user[fixedName]
-        const default_ = conf.default[fixedName]
-        const toDeleteKeys = Object.keys(user_).filter(key => !Object.hasOwn(default_, key) || this.utils.deepEqual(default_[key], user_[key]))
-        return [user_, toDeleteKeys]
-      })
-      .forEach(([plugin, toDeleteKeys]) => toDeleteKeys.forEach(key => delete plugin[key]))
-    conf.user = this.utils.pickBy(conf.user, cfg => Object.keys(cfg).length !== 0)
+    for (const [pluginName, userPlugin] of Object.entries(conf.user)) {
+      if (Object.hasOwn(conf.default, pluginName)) {
+        const defaultPlugin = conf.default[pluginName]
+        for (const key of Object.keys(userPlugin)) {
+          if (!Object.hasOwn(defaultPlugin, key) || this.utils.deepEqual(defaultPlugin[key], userPlugin[key])) {
+            delete userPlugin[key]
+          }
+        }
+      }
+      if (Object.keys(userPlugin).length === 0) {
+        delete conf.user[pluginName]
+      }
+    }
   }
 
   getConfigs = async () => {

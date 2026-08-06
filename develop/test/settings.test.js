@@ -26,7 +26,7 @@ const assertEvalFn = (str, errorMsg) => {
 }
 
 before(async () => {
-  settings = await require("./fixtures/settings.js").getDefaults()
+  settings = await require("./fixtures/settings.js").load()
   i18n = await require("./fixtures/i18n.js").get("zh-CN")
   pluginNames = Object.keys(settings)
 })

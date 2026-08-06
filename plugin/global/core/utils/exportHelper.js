@@ -23,7 +23,7 @@ class ExportHelper {
 
   processExportHTML = () => {
     const before = (...args) => {
-      if (!this.utils.isObject(args[0])) return
+      if (args[0] == null || typeof args[0] !== "object") return
 
       for (const helper of this.htmlHelpers.values()) {
         if (!helper.beforeExportToHTML) continue
@@ -62,7 +62,7 @@ class ExportHelper {
         if (!helper.afterExportToHTML) continue
         try {
           const newHtml = helper.afterExportToHTML(html, ...args)
-          if (newHtml && !this.utils.isPromise(newHtml)) {
+          if (newHtml && typeof newHtml.then !== "function") {
             html = newHtml
           }
         } catch (e) {

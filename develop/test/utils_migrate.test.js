@@ -219,7 +219,7 @@ describe("Migrate class functionality", () => {
       })
 
       it("should handle missing configuration files", async () => {
-        mockUtils.settings.getObjects = async () => [null, null]
+        mockUtils.settings.getObjects = async () => [null, null, null]
 
         const conf = await migrate.getConfigs()
         assert.deepStrictEqual(conf.default, null, "Should handle missing default config")

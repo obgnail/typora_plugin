@@ -54,7 +54,7 @@ const flattenKeys = (obj, prefix = [], result = new Set()) => {
 }
 
 before(async () => {
-  settings = await require("./fixtures/settings.js").getDefaults()
+  settings = await require("./fixtures/settings.js").load()
 
   rawSchemas = require("./fixtures/schemas.js").get(undefined)
   filteredRawSchemas = Object.fromEntries(

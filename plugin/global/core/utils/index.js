@@ -87,10 +87,9 @@ class utils {
   }
 
   static _meta = {}  // Used to pass data in the context menu
-  static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
+  static updatePluginDynamicActions = (fixedName, anchorNode = this.getAnchorNode(), notInContextMenu = false) => {
     const plugin = this.getPlugin(fixedName)
-    if (plugin && typeof plugin.getDynamicActions === "function") {
-      anchorNode = anchorNode || this.getAnchorNode()
+    if (plugin?.getDynamicActions === "function") {
       const anchor = anchorNode[0]
       if (anchor) {
         this._meta = {}
@@ -98,15 +97,10 @@ class utils {
       }
     }
   }
-  static callPluginDynamicAction = (fixedName, action) => {
-    const plugin = this.getPlugin(fixedName)
-    if (plugin?.hasOwnProperty("call") && typeof plugin.call === "function") {
-      plugin.call(action, this._meta)
-    }
-  }
+  static callPluginAction = (fixedName, action) => this.getPlugin(fixedName)?.call?.(action, this._meta)
   static updateAndCallPluginDynamicAction = (fixedName, action, anchorNode, notInContextMenu) => {
     this.updatePluginDynamicActions(fixedName, anchorNode, notInContextMenu)
-    this.callPluginDynamicAction(fixedName, action)
+    this.callPluginAction(fixedName, action)
   }
 
   static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
@@ -148,14 +142,6 @@ class utils {
 
   static safeEval = x => new Function(`return (${x})`)()
   static unsafeEval = x => eval(`(${x})`)
-
-  /** @description NOT a foolproof solution. The Promises/A+ specification is not a part of Node.js, so there is no foolproof solution at all */
-  static isPromise = obj => typeof obj?.then === "function"
-  /** @description NOT a foolproof solution. */
-  static isObject = value => {
-    const type = typeof value
-    return value != null && (type === "object" || type === "function")
-  }
 
   static randomString = (len = 8) => Math.random().toString(36).substring(2, 2 + len).padEnd(len, "0")
   static randomInt = (min, max) => {
@@ -289,7 +275,7 @@ class utils {
    * @example merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
    */
   static merge = (source, other) => {
-    if (!this.isObject(source) || !this.isObject(other)) {
+    if (source == null || typeof source !== "object" || other == null || typeof other !== "object") {
       return other === undefined ? source : other
     }
     return Object.keys({ ...source, ...other }).reduce((obj, key) => {
@@ -331,9 +317,8 @@ class utils {
   }
 
   static naiveCloneDeep = (source) => {
-    if (source == null || typeof source !== "object") {
-      return source
-    }
+    if (source == null || typeof source !== "object") return source
+
     return Array.isArray(source)
       ? source.map(this.naiveCloneDeep)
       : Object.fromEntries(Object.entries(source).map(([key, val]) => [key, this.naiveCloneDeep(val)]))
@@ -343,9 +328,9 @@ class utils {
 
   static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-  static waitUntil = async (conditionFn, interval = 50, timeout = 10000) => {
-    const endTime = Date.now() + timeout
-    while (Date.now() < endTime) {
+  static waitUntil = async (conditionFn, interval = 50, timeout = 10_000) => {
+    const end = Date.now() + timeout
+    while (Date.now() < end) {
       const result = await conditionFn()
       if (result) {
         return result
@@ -402,7 +387,7 @@ class utils {
       d: () => date.getDate().toString(),
       HH: () => date.getHours().toString().padStart(2, "0"),
       H: () => date.getHours().toString(),
-      hh: () => ((date.getHours() % 12 || 12)).toString().padStart(2, "0"),
+      hh: () => (date.getHours() % 12 || 12).toString().padStart(2, "0"),
       h: () => (date.getHours() % 12 || 12).toString(),
       mm: () => date.getMinutes().toString().padStart(2, "0"),
       m: () => date.getMinutes().toString(),
@@ -413,7 +398,7 @@ class utils {
       a: () => new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true }).formatToParts(date).find(part => part.type === "dayPeriod")?.value || "",
     }
     const regex = /(yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a)/g
-    return format.replace(regex, match => fns[match] ? fns[match]() : match)
+    return format.replace(regex, match => fns[match]?.() ?? match)
   }
 
   static nestedPropertyHelpers = {
@@ -904,8 +889,7 @@ class utils {
 
   static getRecentFiles = async () => {
     const recent = await JSBridge.invoke("setting.getRecentFiles")
-    const ret = typeof recent === "string" ? JSON.parse(recent || "{}") : (recent || {})
-    const { files = [], folders = [] } = ret
+    const { files = [], folders = [] } = typeof recent === "string" ? JSON.parse(recent || "{}") : (recent || {})
     return { files, folders }
   }
 

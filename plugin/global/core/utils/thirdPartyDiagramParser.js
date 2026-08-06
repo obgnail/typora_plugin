@@ -83,9 +83,9 @@ class ThirdPartyDiagramParser {
         $wrap.css({ ...this.DEFAULT_CSS, ...userCss })
       }
       let instance = this.createOrUpdate(parser, cid, content, $wrap, lang, meta)
-      // Q: Why not use `await this.createOrUpdate` instead of `isPromise`?
+      // Q: Why not use `await this.createOrUpdate`?
       // A: Some parsers' createFunc might preempt the element, causing a race condition if await is used.
-      if (this.utils.isPromise(instance)) {
+      if (typeof instance?.then === "function") {
         instance = await instance
       }
       if (instance) {
