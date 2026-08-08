@@ -8,5 +8,11 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 
+[*.{c,h}]
+indent_size = 4
+
+[*.ps1]
+indent_size = 4
+
 [*.md]
 trim_trailing_whitespace = false

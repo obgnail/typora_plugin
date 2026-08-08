@@ -15,7 +15,11 @@ Write-Host ""
 
 try {
     $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-    $rootDir = (Resolve-Path (Join-Path $scriptDir "..\..")).Path
+    $expectedParent = Join-Path $scriptDir "..\.."
+    if (-not (Test-Path $expectedParent)) {
+        throw "Execution context error. Please manually move the 'plugin' folder to Typora's installation directory before running this script."
+    }
+    $rootDir = (Resolve-Path $expectedParent).Path
     $paths = [PSCustomObject]@{
         RootDir       = $rootDir
         AppDir        = Join-Path -Path $rootDir -ChildPath "app"
@@ -27,7 +31,7 @@ try {
     Write-Host "[1/5] Validating paths" -ForegroundColor Yellow
     Write-Host "      -> Assuming Typora root is at '$($paths.RootDir)'."
     if (!(Test-Path $paths.WindowHtml)) {
-        throw "Could not find 'window.html' at the expected location: '$($paths.WindowHtml)'."
+        throw "Could not find 'window.html' at the expected location: '$($paths.WindowHtml)'. Please verify that you are running this script in the correct Typora installation path."
     }
 
     Write-Host "[2/5] Checking Typora version" -ForegroundColor Yellow
@@ -39,7 +43,7 @@ try {
         $frameScript = '<script src="./app/window/frame.js" defer="defer"></script>'
         Write-Host "      -> 'app' folder found. Using old version."
     } else {
-        throw "Neither 'app' nor 'appsrc' directory could be found in '$($paths.RootDir)'."
+        throw "Neither 'app' nor 'appsrc' directory could be found in '$($paths.RootDir)'. Please verify that you are running this script in the correct Typora installation path."
     }
 
     Write-Host "[3/5] Reading and validating 'window.html'" -ForegroundColor Yellow
@@ -57,8 +61,10 @@ try {
 
     Write-Host "[4/5] Removing plugin script from 'window.html'" -ForegroundColor Yellow
     $newFileContent = $fileContent -replace [Regex]::Escape($pluginScript), ''
-    $newFileContent = $newFileContent -replace '(?m)^\s*$', ''
-    Set-Content -Path $paths.WindowHtml -Value $newFileContent -Encoding UTF8 -NoNewline
+
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($paths.WindowHtml, $newFileContent, $utf8NoBom)
+
     Write-Host "      -> File updated successfully."
 
     Write-Host "[5/5] Removing backup file '$($paths.WindowHtmlBak)'" -ForegroundColor Yellow

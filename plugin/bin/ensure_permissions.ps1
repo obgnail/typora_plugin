@@ -55,7 +55,11 @@ if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Adm
 
 try {
     $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-    $rootDir = (Resolve-Path (Join-Path $scriptDir "..\..")).Path
+    $expectedParent = Join-Path $scriptDir "..\.."
+    if (-not (Test-Path $expectedParent)) {
+        throw "Execution context error. Please manually move the 'plugin' folder to Typora's installation directory before running this script."
+    }
+    $rootDir = (Resolve-Path $expectedParent).Path
     $paths = [PSCustomObject]@{
         RootDir     = $rootDir
         PluginDir   = Join-Path -Path $rootDir -ChildPath "plugin"
@@ -71,7 +75,7 @@ try {
     )
     foreach ($dir in $dirsToValidate) {
         if (!(Test-Path -Path $dir -PathType Container)) {
-            throw "Could not determine '$dir' directory."
+            throw "Could not determine '$dir' directory. Please verify that you are running this script in the correct Typora installation path."
         }
     }
 
