@@ -109,7 +109,6 @@
     "$label.visitRepo": "Source Code",
     "$label.viewDeepWiki": "AI Wiki",
     "$label.viewGithubImageBed": "GitHub Image Bed",
-    "$label.editStyles": "Custom Styles",
     "$label.developPlugins": "Develop a Plugin",
     "$label.updatePlugin": "Check for Updates",
     "$label.uninstallPlugin": "Uninstall Plugins",
@@ -1178,7 +1177,12 @@
     "$tooltip.waitInterval": "Waits this long after startup before checking for updates"
   },
   "test": {
-    "pluginName": "Test"
+    "pluginName": "Test",
+    "$label.SINGLETON": "Singleton",
+    "$label.AUTO_OPEN_DEVTOOLS": "Auto Open DevTools",
+    "$label.EXPOSE_CJS_VARIABLES": "Expose CommonJS Variables",
+    "$label.EXPOSE_PLUGIN_VARIABLES": "Expose Plugin Variables",
+    "$label.RUN_CUSTOM_SCRIPT": "Run Custom Script"
   },
   "kanban": {
     "pluginName": "Kanban",

@@ -1,27 +1,139 @@
+const getMatchStrategy = (type) => {
+  const prefix = {
+    match: (target, input) => target.startsWith(input),
+    highlight: (target, input) => `<b>${target.slice(0, input.length)}</b>` + target.slice(input.length),
+  }
+  const substr = {
+    match: (target, input) => target.includes(input),
+    highlight: (target, input) => target.replace(new RegExp(`(${input})`, "i"), "<b>$1</b>"),
+  }
+  const abbr = {
+    match: (target, input) => {
+      let from = 0
+      for (const char of input) {
+        from = target.indexOf(char, from)
+        if (from === -1) {
+          return false
+        }
+        from++
+      }
+      return true
+    },
+    highlight: (target, input) => {
+      const result = []
+      let hit = []
+      let idx = 0
+      for (const char of target) {
+        if (char.toLowerCase() === input[idx]) {
+          hit.push(char)
+          idx++
+        } else {
+          if (hit.length) {
+            result.push(`<b>${hit.join("")}</b>`)
+            hit = []
+          }
+          result.push(char)
+        }
+      }
+      if (hit.length) {
+        result.push(`<b>${hit.join("")}</b>`)
+      }
+      return result.join("")
+    },
+  }
+  return { prefix, substr, abbr }[type] || abbr
+}
+
+const getOrderStrategy = (type) => {
+  const _getIndexScore = (keyword, input) => {
+    let score = 0
+    let from = 0
+    for (const char of input) {
+      from = keyword.indexOf(char, from)
+      score = input.length * score + from
+      from++
+    }
+    return score
+  }
+  const predefined = (commands) => commands
+  const lexicographic = (commands) => commands.sort()
+  const length_based = (commands) => commands.sort((a, b) => a.length - b.length)
+  const earliest_hit = (commands, input) => {
+    return input
+      ? commands.sort((a, b) => _getIndexScore(a, input) - _getIndexScore(b, input))
+      : commands
+  }
+  return { predefined, lexicographic, length_based, earliest_hit }[type] || predefined
+}
+
+const evalFn = (fnString, ...args) => {
+  const ret = eval(fnString)
+  return (typeof ret === "function") ? (ret(...args) || "").toString() : fnString
+}
+
+const defaultOffset = [0, 0]
+
 class SlashCommandsPlugin extends BasePlugin {
   REGEX = new RegExp(this.config.TRIGGER_REGEXP)
   SCOPE = { INLINE_MATH: "inline_math", PLAIN: "plain" }
   TYPE = { COMMAND: "command", SNIPPET: "snippet", GENERATE_SNIPPET: "gen-snp" }
   inputs = { kw: "", command: "", params: [], textBefore: "", textAfter: "", scope: "", bookmark: null }
+  matchStrategy = getMatchStrategy(this.config.MATCH_STRATEGY)
+  orderStrategy = getOrderStrategy(this.config.ORDER_STRATEGY)
+  commands = new Map(
+    this.config.COMMANDS
+      .filter(c => c.enable && c.keyword && /[A-Za-z0-9]+/.test(c.keyword))
+      .map(c => [
+        c.keyword.toLowerCase(),
+        {
+          ...c,
+          scope: c.scope || this.SCOPE.PLAIN,
+          icon: c.icon || (c.type === this.TYPE.COMMAND ? "🧰" : "🧩"),
+          cursorOffset: c.cursorOffset || defaultOffset,
+          hint: this.utils.escape(c.hint || ""),
+        },
+      ]),
+  )
   matched = new Map()
-
-  prepare = () => {
-    const defaultOffset = [0, 0]
-    const { COMMANDS, MATCH_STRATEGY, ORDER_STRATEGY } = this.config
-    COMMANDS.forEach(c => {
-      c.scope = c.scope || this.SCOPE.PLAIN
-      c.icon = c.icon || (c.type === this.TYPE.COMMAND ? "🧰" : "🧩")
-      c.cursorOffset = c.cursorOffset || defaultOffset
-      c.hint = this.utils.escape(c.hint || "")
-    })
-
-    this.matchStrategy = this._getMatchStrategy(MATCH_STRATEGY)
-    this.orderStrategy = this._getOrderStrategy(ORDER_STRATEGY)
-    this.commands = new Map(COMMANDS.filter(c => c.enable && c.keyword && /[A-Za-z0-9]+/.test(c.keyword)).map(c => [c.keyword.toLowerCase(), c]))
-    this.handler = { search: this._search, render: this._render, beforeApply: this._beforeApply }
-
-    return this.commands.size ? undefined : this.utils.PLUGIN_LOAD_ABORT
+  handler = {
+    search: input => this.orderStrategy([...this.matched.keys()], input),
+    render: (suggest, isActive) => {
+      const cmd = this.matched.get(suggest)
+      if (!cmd) return ""
+      const { keyword, icon, hint } = cmd
+      const { token } = File.editor.autoComplete.state
+      const command = this.matchStrategy.highlight(keyword, token)
+      const hint_ = hint ? `- ${hint}` : ""
+      const active = isActive ? "active" : ""
+      return `<li class="plugin-slash-command ${active}" data-content="${suggest}">${icon} ${command} ${hint_}</li>`
+    },
+    beforeApply: suggest => {
+      let ret = ""
+      try {
+        const cmd = this.matched.get(suggest)
+        if (!cmd) return ret
+        const { anchor } = File.editor.autoComplete.state
+        if (cmd.type === this.TYPE.SNIPPET) {
+          ret = cmd.callback
+        } else if (cmd.type === this.TYPE.GENERATE_SNIPPET) {
+          ret = evalFn(cmd.callback, ...this.inputs.params)
+        } else if (cmd.type === this.TYPE.COMMAND) {
+          this._clearAnchor(anchor)
+          setTimeout(() => evalFn(cmd.callback, ...this.inputs.params), 50)
+        }
+        setTimeout(() => {
+          this._normalizeAnchor(anchor)
+          this._refresh()
+          this._selectRange(cmd.cursorOffset)
+        }, 100)
+      } finally {
+        this.matched.clear()
+      }
+      return ret
+    },
   }
+
+  prepare = () => this.commands.size ? undefined : this.utils.PLUGIN_LOAD_ABORT
 
   style = () => `.auto-suggest-container li.plugin-slash-command { padding-left: 10px; }`
 
@@ -76,74 +188,6 @@ class SlashCommandsPlugin extends BasePlugin {
     File.editor.autoComplete.show([], bookmark, lowerCommand, this.handler)
   }
 
-  _getMatchStrategy = (type) => {
-    const prefix = {
-      match: (target, input) => target.startsWith(input),
-      highlight: (target, input) => `<b>${target.slice(0, input.length)}</b>` + target.slice(input.length),
-    }
-    const substr = {
-      match: (target, input) => target.includes(input),
-      highlight: (target, input) => target.replace(new RegExp(`(${input})`, "i"), "<b>$1</b>"),
-    }
-    const abbr = {
-      match: (target, input) => {
-        let from = 0
-        for (const char of input) {
-          from = target.indexOf(char, from)
-          if (from === -1) {
-            return false
-          }
-          from++
-        }
-        return true
-      },
-      highlight: (target, input) => {
-        const result = []
-        let hit = []
-        let idx = 0
-        for (const char of target) {
-          if (char.toLowerCase() === input[idx]) {
-            hit.push(char)
-            idx++
-          } else {
-            if (hit.length) {
-              result.push(`<b>${hit.join("")}</b>`)
-              hit = []
-            }
-            result.push(char)
-          }
-        }
-        if (hit.length) {
-          result.push(`<b>${hit.join("")}</b>`)
-        }
-        return result.join("")
-      },
-    }
-    return { prefix, substr, abbr }[type] || abbr
-  }
-
-  _getOrderStrategy = (type) => {
-    const _getIndexScore = (keyword, input) => {
-      let score = 0
-      let from = 0
-      for (const char of input) {
-        from = keyword.indexOf(char, from)
-        score = input.length * score + from
-        from++
-      }
-      return score
-    }
-    const predefined = (commands, input) => commands
-    const lexicographic = (commands) => commands.sort()
-    const length_based = (commands) => commands.sort((a, b) => a.length - b.length)
-    const earliest_hit = (commands, input) => {
-      return input
-        ? commands.sort((a, b) => _getIndexScore(a, input) - _getIndexScore(b, input))
-        : commands
-    }
-    return { predefined, lexicographic, length_based, earliest_hit }[type] || predefined
-  }
-
   _match = (scope, input) => {
     this.matched.clear()
     for (const [kw, cmd] of this.commands.entries()) {
@@ -154,34 +198,14 @@ class SlashCommandsPlugin extends BasePlugin {
     return this.matched
   }
 
-  _search = input => this.orderStrategy([...this.matched.keys()], input)
-
-  _render = (suggest, isActive) => {
-    const cmd = this.matched.get(suggest)
-    if (!cmd) return ""
-
-    const { keyword, icon, hint } = cmd
-    const { token } = File.editor.autoComplete.state
-    const command = this.matchStrategy.highlight(keyword, token)
-    const hint_ = hint ? `- ${hint}` : ""
-    const active = isActive ? "active" : ""
-    return `<li class="plugin-slash-command ${active}" data-content="${suggest}">${icon} ${command} ${hint_}</li>`
-  }
-
-  _evalFunction = (fnString, ...args) => {
-    const ret = eval(fnString)
-    return (typeof ret === "function") ? (ret(...args) || "").toString() : fnString
-  }
-
   _clearAnchor = (anchor) => {
     const range = File.editor.selection.getRangy()
-    if (range) {
-      const textNode = anchor.containerNode.firstChild
-      range.setStart(textNode, anchor.start)
-      range.setEnd(textNode, anchor.end)
-      File.editor.selection.setRange(range, true)
-      File.editor.UserOp.pasteHandler(File.editor, "", true)
-    }
+    if (!range) return
+    const textNode = anchor.containerNode.firstChild
+    range.setStart(textNode, anchor.start)
+    range.setEnd(textNode, anchor.end)
+    File.editor.selection.setRange(range, true)
+    File.editor.UserOp.pasteHandler(File.editor, "", true)
   }
 
   _normalizeAnchor = (anchor) => anchor.containerNode.normalize()
@@ -189,7 +213,6 @@ class SlashCommandsPlugin extends BasePlugin {
   _refresh = () => {
     const { node } = this.utils.getRangy()
     if (!node) return
-
     const parsedNode = File.editor.simpleParse(node, true)
     if (!parsedNode) return
 
@@ -207,41 +230,11 @@ class SlashCommandsPlugin extends BasePlugin {
   _selectRange = (offset) => {
     const [start, end] = offset
     if (start === 0 && end === 0) return
-
     const { range, bookmark } = this.utils.getRangy()
     bookmark.start += start
     bookmark.end += end
     range.moveToBookmark(bookmark)
     range.select()
-  }
-
-  _beforeApply = suggest => {
-    let result = ""
-
-    try {
-      const cmd = this.matched.get(suggest)
-      if (!cmd) {
-        return result
-      }
-      const { anchor } = File.editor.autoComplete.state
-      if (cmd.type === this.TYPE.SNIPPET) {
-        result = cmd.callback
-      } else if (cmd.type === this.TYPE.GENERATE_SNIPPET) {
-        result = this._evalFunction(cmd.callback, ...this.inputs.params)
-      } else if (cmd.type === this.TYPE.COMMAND) {
-        this._clearAnchor(anchor)
-        setTimeout(() => this._evalFunction(cmd.callback, ...this.inputs.params), 50)
-      }
-      setTimeout(() => {
-        this._normalizeAnchor(anchor)
-        this._refresh()
-        this._selectRange(cmd.cursorOffset)
-      }, 100)
-    } finally {
-      this.matched.clear()
-    }
-
-    return result
   }
 }
 

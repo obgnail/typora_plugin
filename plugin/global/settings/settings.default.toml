@@ -3461,3 +3461,19 @@ TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE
 # Developers only. Do NOT enable
 ENABLE = false
 NAME = ""
+
+# =========== [ Functions ] ===========
+# Singleton
+SINGLETON = true
+
+# Auto open DevTools
+AUTO_OPEN_DEVTOOLS = true
+
+# Expose CommonJS Variables
+EXPOSE_CJS_VARIABLES = true
+
+# Expose Plugin Variables
+EXPOSE_PLUGIN_VARIABLES = true
+
+# Run custom script
+RUN_CUSTOM_SCRIPT = true

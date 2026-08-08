@@ -32,6 +32,7 @@ class PlantUMLPlugin extends BasePlugin {
   }
 
   create = async ($wrap, content) => {
+    $wrap[0].textContent = "Querying..."
     const result = await this._memorizedRender(content)
     if (result instanceof Error) throw result
     $wrap[0].innerHTML = this._buildHTML(result)

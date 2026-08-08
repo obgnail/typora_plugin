@@ -41,6 +41,8 @@ class utils {
   static PLUGIN_LOAD_ABORT = Symbol.for("plugin:load-abort")  // For plugin's prepare method; return this to stop loading the plugin
 
   // =========== Plugin ===========
+  static i18n = i18n
+
   static container = null
   static setContainer = container => this.container = container
   static getAllPlugins = () => this.container.getAllPlugins()
@@ -83,9 +85,10 @@ class utils {
   }
 
   static _meta = {}  // Used to pass data in the context menu
+  static callPluginAction = (fixedName, action) => this.getPlugin(fixedName)?.call?.(action, this._meta)
   static updatePluginDynamicActions = (fixedName, anchorNode = this.getAnchorNode(), notInContextMenu = false) => {
     const plugin = this.getPlugin(fixedName)
-    if (plugin?.getDynamicActions === "function") {
+    if (typeof plugin?.getDynamicActions === "function") {
       const anchor = anchorNode[0]
       if (anchor) {
         this._meta = {}
@@ -93,7 +96,6 @@ class utils {
       }
     }
   }
-  static callPluginAction = (fixedName, action) => this.getPlugin(fixedName)?.call?.(action, this._meta)
   static updateAndCallPluginDynamicAction = (fixedName, action, anchorNode, notInContextMenu) => {
     this.updatePluginDynamicActions(fixedName, anchorNode, notInContextMenu)
     this.callPluginAction(fixedName, action)
@@ -109,12 +111,25 @@ class utils {
     return { ok: state === "completed", filepath: PATH.join(folder, filename) }
   }
 
-  // MIME type detection should use magic number checks or a dedicated library.
-  // Manually checking magic numbers is impractical and a library adds too much overhead.
-  // This uses a simplified approach. Modern browsers can often infer the subtype reliably.
   static convertImageToBase64 = (bin) => {
-    const head = bin.slice(0, 5).toString()
-    const mime = ["<svg", "<?xml"].some(e => head.startsWith(e)) ? "image/svg+xml" : "image"
+    let mime = "image"
+    if (Buffer.isBuffer(bin) && bin.length >= 4) {
+      const hexHeader = bin.toString("hex", 0, 4)
+      if (hexHeader === "89504e47") {
+        mime = "image/png"
+      } else if (hexHeader.startsWith("ffd8ff")) {
+        mime = "image/jpeg"
+      } else if (hexHeader.startsWith("47494638")) {
+        mime = "image/gif"
+      } else if (bin.length >= 12 && bin.toString("utf8", 0, 4) === "RIFF" && bin.toString("utf8", 8, 12) === "WEBP") {
+        mime = "image/webp"
+      } else {
+        const textHead = bin.subarray(0, 100).toString("utf8").trim()
+        if (textHead.includes("<svg") || textHead.includes("<?xml")) {
+          mime = "image/svg+xml"
+        }
+      }
+    }
     const b64 = bin.toString("base64")
     return `data:${mime};base64,${b64}`
   }
@@ -314,7 +329,6 @@ class utils {
 
   static naiveCloneDeep = (source) => {
     if (source == null || typeof source !== "object") return source
-
     return Array.isArray(source)
       ? source.map(this.naiveCloneDeep)
       : Object.fromEntries(Object.entries(source).map(([key, val]) => [key, this.naiveCloneDeep(val)]))

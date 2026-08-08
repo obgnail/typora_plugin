@@ -17,4 +17,4 @@ You can think of this directory as your personal "documents folder" within the p
 
 ## Development Support
 
-If you plan to develop on typora_plugin, you can place the required files here and obtain the target file through `__plugin_utils__.getUserSpaceFile(fileName)`.
+If you plan to develop on typora_plugin, you can place the required files here and obtain the target file through `utils.getUserSpaceFile(fileName)`.

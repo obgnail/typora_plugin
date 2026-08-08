@@ -22,12 +22,7 @@ async function entry() {
 }
 
 function setGlobalVars() {
-  Object.assign(global, {
-    BasePlugin,
-    __plugin_i18n__: i18n,
-    __plugin_utils__: utils,
-    __plugin_container__: container,
-  })
+  global.BasePlugin = BasePlugin
 }
 
 async function setup(settings) {

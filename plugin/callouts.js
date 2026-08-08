@@ -4,8 +4,7 @@ class CalloutsPlugin extends BasePlugin {
       .map(c => `.plugin-callout[callout-type="${c.type}"] { --callout-bg-color: ${c.background_color}; --callout-left-line-color: ${c.left_line_color}; --callout-icon: "${c.icon}"; }`)
       .join("\n")
     const hoverCss = `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }`
-    const colorCss = `.plugin-callout > p:first-child span:first-child { color: var(--callout-left-line-color); }
-      .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`
+    const colorCss = `.plugin-callout > p:first-child span:first-child { color: var(--callout-left-line-color); } .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`
     const hover = this.config.HOVER_TO_SHOW_FOLD_CALLOUT ? hoverCss : ""
     const color = this.config.SET_TITLE_COLOR ? colorCss : ""
     return { callouts, hover, color }

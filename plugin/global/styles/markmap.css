@@ -70,19 +70,17 @@
 }
 
 .plugin-markmap-header {
-  writing-mode: vertical-lr;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   align-content: center;
-  /*gap: 4px;*/
   min-width: 40px;
   padding: 8px 6px;
   background: var(--bg-toolbar);
-  border-right: 1px solid var(--border);
   border-top-left-radius: var(--radius-dialog);
   border-bottom-left-radius: var(--radius-dialog);
   z-index: 2;
+  writing-mode: vertical-lr;
   transition: background-color 0.3s, border-radius 0.3s;
 }
 
@@ -91,7 +89,6 @@
 }
 
 .plugin-markmap-icon {
-  writing-mode: horizontal-tb;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -103,6 +100,7 @@
   border-radius: 8px;
   cursor: pointer;
   pointer-events: auto;
+  writing-mode: horizontal-tb;
   transition: background 0.15s, color 0.15s;
 }
 

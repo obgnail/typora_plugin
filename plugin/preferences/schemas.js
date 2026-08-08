@@ -130,7 +130,6 @@ const schema_global = () => [
     Action("visitRepo").ActionTooltip("openPluginFolder", "fa fa-folder"),
     Action("viewDeepWiki").ActionTooltip("neverGonnaTellALie", "fa fa-book"),
     Action("developPlugins"),
-    Action("editStyles"),
     Action("viewGithubImageBed"),
   ),
   Group(
@@ -1158,6 +1157,13 @@ const schema_updater = () => [
 
 const schema_test = () => [
   FRAG.Base(),
+  Group(
+    Switch("SINGLETON"),
+    Switch("AUTO_OPEN_DEVTOOLS"),
+    Switch("EXPOSE_CJS_VARIABLES"),
+    Switch("EXPOSE_PLUGIN_VARIABLES"),
+    Switch("RUN_CUSTOM_SCRIPT"),
+  ),
   FRAG.SettingHandler(),
 ]
 
@@ -1440,7 +1446,7 @@ const schema_markdownlint = () => [
     Select("RIGHT_CLICK_INDICATOR_ACTION").Options(OPTS.markdownlintActions).OptionScope("actions").ShowIf(When.true("USE_INDICATOR_BUTTON")),
     Hotkey("HOTKEY_FIX_LINT"),
   ),
-  Array_("CUSTOM_RULE_FILES"),
+  Array_("CUSTOM_RULE_FILES").Tooltip("expertsOnly"),
   Dict("RULE_CONFIG").ActionTooltip("viewMarkdownlintRules"),
   FRAG.SettingHandler(),
 ]

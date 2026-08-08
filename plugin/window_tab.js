@@ -780,6 +780,7 @@ class WindowTabPlugin extends BasePlugin {
 
   _adjustQuickOpen = () => {
     const openQuickTab = (item, ev) => {
+      if (!item) return
       ev.preventDefault()
       ev.stopPropagation()
       const { path, isDir } = item.dataset
@@ -794,14 +795,10 @@ class WindowTabPlugin extends BasePlugin {
     }
     // Change Click to Ctrl+Click
     document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
-      const target = ev.target.closest(".typora-quick-open-item")
-      if (target && !this.utils.metaKeyPressed(ev)) openQuickTab(target, ev)
+      if (!this.utils.metaKeyPressed(ev)) openQuickTab(ev.target.closest(".typora-quick-open-item"), ev)
     }, true)
     document.querySelector("#typora-quick-open-input > input").addEventListener("keydown", ev => {
-      if (ev.key === "Enter") {
-        const el = document.querySelector(".typora-quick-open-item.active")
-        if (el) openQuickTab(el, ev)
-      }
+      if (ev.key === "Enter") openQuickTab(document.querySelector(".typora-quick-open-item.active"), ev)
     }, true)
   }
 
@@ -828,7 +825,7 @@ class WindowTabPlugin extends BasePlugin {
     this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
       if (context.anchor?.startsWith("#")) {
         const $target = File.editor.EditHelper.findAnchorElem(context.anchor)
-        this.utils.scrollTo($target, { height: 10 })
+        if ($target.length) this.utils.scrollTo($target, { height: 10 })
         context = {}
       }
     })
@@ -914,7 +911,7 @@ class WindowTabPlugin extends BasePlugin {
     else this._resetContentTop()
   }
 
-  OpenFileLocal = filePath => {
+  openFileLocal = filePath => {
     this.tab.setLocalOpen(true)
     this.utils.openFile(filePath)
     this.tab.setLocalOpen(false)

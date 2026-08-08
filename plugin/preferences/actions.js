@@ -31,7 +31,6 @@ module.exports = (plugin) => {
     viewMarpOptions: openUrl("https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options"),
     viewArticleUploaderReadme: openPath("./plugin/article_uploader/README.md"),
     viewRemoteControlReadme: openPath("./plugin/remote_control/README.md"),
-    editStyles: openPath("./plugin/global/user_styles/README.md"),
     developPlugins: openPath("./plugin/bin/DEVELOP_PLUGINS.md"),
     openLocaleFolder: openPath("./plugin/global/locales/en.json"),
     openPluginFolder: openPath("./plugin"),

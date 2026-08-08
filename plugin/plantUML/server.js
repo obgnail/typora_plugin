@@ -56,12 +56,11 @@ const createRenderEngine = (context) => {
     if (mode === RENDER_MODE.GET) {
       return await executeGet(content, req)
     }
-
     if (mode === RENDER_MODE.POST) {
       try {
         return await executePost(content, req)
       } catch (e) {
-        return new Error(`POST rendering strategy failed abruptly.\nDetails: ${e.message}`)
+        return new Error(`POST rendering strategy failed.\nDetails: ${e.stack}`)
       }
     }
 
@@ -70,7 +69,7 @@ const createRenderEngine = (context) => {
       probeCache[req.url] = RENDER_MODE.POST
       return result
     } catch (err) {
-      const shouldDowngrade = err.message.includes("405") || err.message.includes("404")
+      const shouldDowngrade = err.message.includes("HTTP 405") || err.message.includes("HTTP 404")
       if (shouldDowngrade) {
         probeCache[req.url] = RENDER_MODE.GET
         return await executeGet(content, req)

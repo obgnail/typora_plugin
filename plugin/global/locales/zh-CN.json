@@ -109,7 +109,6 @@
     "$label.visitRepo": "源代码",
     "$label.viewDeepWiki": "AI 文档",
     "$label.viewGithubImageBed": "GitHub 图床",
-    "$label.editStyles": "自定义样式",
     "$label.developPlugins": "开发插件",
     "$label.updatePlugin": "检查更新",
     "$label.uninstallPlugin": "卸载插件",
@@ -1178,7 +1177,12 @@
     "$tooltip.waitInterval": "启动 Typora 后延迟检查更新的时间"
   },
   "test": {
-    "pluginName": "测试专用"
+    "pluginName": "测试专用",
+    "$label.SINGLETON": "单例",
+    "$label.AUTO_OPEN_DEVTOOLS": "自动打开 DevTools",
+    "$label.EXPOSE_CJS_VARIABLES": "暴露 CommonJS 变量",
+    "$label.EXPOSE_PLUGIN_VARIABLES": "暴露插件变量",
+    "$label.RUN_CUSTOM_SCRIPT": "运行自定义脚本"
   },
   "kanban": {
     "pluginName": "Kanban",
