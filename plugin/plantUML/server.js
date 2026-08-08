@@ -1,6 +1,7 @@
 const RENDER_MODE = { AUTO: 0, POST: 1, GET: 2 }
 
 const createRenderEngine = (context) => {
+  const { Readable } = require("stream")
   const { fetch, getBaseUrl, getFormat, getTimeout, getProxy, resolveMode } = context
   const headers = { "User-Agent": "Typora-Plugin/1.0.0" }
   const probeCache = Object.create(null)
@@ -28,9 +29,17 @@ const createRenderEngine = (context) => {
     return { contentType, buffer: Buffer.from(await resp.arrayBuffer()) }
   }
 
+  /**
+   * WORKAROUND: The `body` is explicitly wrapped in a native Readable stream containing a single Buffer.
+   * This mitigates a compatibility issue between `node-fetch` v3 and legacy Node.js/Electron environments.
+   * It prevents `node-fetch` from treating cross-context `Uint8Array` payloads as basic iterables,
+   * which would otherwise feed individual byte numbers to Node's underlying `http.ClientRequest.write()`
+   * and trigger a "Received type number" TypeError.
+   */
   const executePost = async (content, req) => {
     const resp = await fetch(`${req.url}/${req.format}/`, {
-      method: "POST", body: content,
+      method: "POST",
+      body: Readable.from([Buffer.from(content)]),
       headers: { ...headers, "Content-Type": "text/plain; charset=utf-8" },
       timeout: req.timeout, proxy: req.proxy, redirect: "error",
     })
@@ -60,9 +69,13 @@ const createRenderEngine = (context) => {
       const result = await executePost(content, req)
       probeCache[req.url] = RENDER_MODE.POST
       return result
-    } catch (e) {
-      probeCache[req.url] = RENDER_MODE.GET
-      return await executeGet(content, req)
+    } catch (err) {
+      const shouldDowngrade = err.message.includes("405") || err.message.includes("404")
+      if (shouldDowngrade) {
+        probeCache[req.url] = RENDER_MODE.GET
+        return await executeGet(content, req)
+      }
+      return err
     }
   }
 }
