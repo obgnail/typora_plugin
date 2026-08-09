@@ -783,8 +783,11 @@ class WindowTabPlugin extends BasePlugin {
       ev.preventDefault()
       ev.stopPropagation()
       const { path, isDir } = item.dataset
-      const fn = isDir === "true" ? "openFolder" : "openFile"
-      this.utils[fn](path)
+      if (isDir === "true") {
+        this.utils.openFolder(path)
+      } else {
+        this.utils.openFile(path, true)
+      }
       if (File.isMac && $("#typora-quick-open:visible").hide().length) {
         bridge.callHandler("quickOpen.stopQuery")
       }
