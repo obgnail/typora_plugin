@@ -201,6 +201,7 @@ class CommanderPlugin extends BasePlugin {
       if (!option?.cmd) return
       this.entities.badgeShell.setValue(option.shell)
       this.entities.badgeBuiltin.setValue("")
+      this._updateEnvOptions(option.shell)
       this._setCmdValue(option.cmd, true)
     })
     this.entities.badgeHistory.addEventListener("change", ev => {
@@ -208,6 +209,7 @@ class CommanderPlugin extends BasePlugin {
       if (!option?.cmd) return
       this.entities.badgeShell.setValue(option.shell)
       this.entities.badgeHistory.setValue("")
+      this._updateEnvOptions(option.shell)
       this._setCmdValue(option.cmd, true)
     })
     this.entities.badgeEnv.addEventListener("change", ev => {
