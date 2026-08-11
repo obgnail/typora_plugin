@@ -466,7 +466,7 @@ class ImageViewerPlugin extends BasePlugin {
     this.utils.toggleInvisible(waterfall)
 
     if (isHidden) {
-      columns.forEach(col => col.innerHTML = "")
+      columns.forEach(col => col.replaceChildren())
       toggleSiblings(true)
       const getMinHeightCol = () => columns.reduce((min, col) => col.offsetHeight < min.offsetHeight ? col : min, columns[0])
       ;[...nav.children].forEach(img => {

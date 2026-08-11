@@ -38,7 +38,7 @@ test("uses theme-safe controls and the shared dropdown", () => {
 
   assert.doesNotMatch(instance.html(), /<\/?(?:select|option|button)\b/i)
   assert.match(instance.html(), /<fast-dropdown class="repository-sort"/)
-  assert.doesNotMatch(instance.style(), /\breplaceChildren\b|\binset\s*:/)
+  assert.doesNotMatch(instance.style(), /\binset\s*:/)
 })
 
 test("stores repository data through utils.getStorage", async () => {

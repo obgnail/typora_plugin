@@ -39,7 +39,7 @@ class MarpPlugin extends BasePlugin {
     return shadowRoot
   }
 
-  destroy = shadowRoot => shadowRoot.innerHTML = ""
+  destroy = shadowRoot => shadowRoot.replaceChildren()
 
   getVersion = () => "marp-core@4.3.0"
 

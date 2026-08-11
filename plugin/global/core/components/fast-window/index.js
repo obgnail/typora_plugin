@@ -74,7 +74,7 @@ customElements.define("fast-window", class extends HTMLElement {
 
   setContent = (content, unsafe = false) => {
     const area = this.entities.contentArea
-    area.innerHTML = ""
+    area.replaceChildren()
     if (typeof content === "string") {
       if (unsafe) {
         area.innerHTML = content
@@ -146,9 +146,8 @@ customElements.define("fast-window", class extends HTMLElement {
   }
 
   _updateButtons = () => {
-    this.entities.titleButtons.innerHTML = ""
-
-    const buttonEls = this._parseButtonConfig().map(({ action, icon, hint }) => {
+    const cfg = this._parseButtonConfig()
+    this.entities.titleButtons.replaceChildren(...cfg.map(({ action, icon, hint }) => {
       const el = document.createElement("div")
       el.className = `button fa ${icon}`
       el.dataset.action = action
@@ -156,9 +155,7 @@ customElements.define("fast-window", class extends HTMLElement {
         el.dataset.hint = hint
       }
       return el
-    })
-
-    this.entities.titleButtons.append(...buttonEls)
+    }))
   }
 
   _applyInitialPosAndSize = () => {

@@ -178,8 +178,8 @@ class SearchMultiPlugin extends BasePlugin {
 
     const resetUI = (isSearching) => {
       this.entities.counter.textContent = isSearching ? "0" : ""
-      this.entities.files.innerHTML = ""
-      this.entities.highlights.innerHTML = ""
+      this.entities.files.replaceChildren()
+      this.entities.highlights.replaceChildren()
     }
     this.fsm = new SearchStateMachine({
       onStateChange: (newState, oldState) => {
@@ -261,7 +261,7 @@ class SearchMultiPlugin extends BasePlugin {
   }
 
   highlightByAST = (ast = this._getAST()) => {
-    this.entities.highlights.innerHTML = ""
+    this.entities.highlights.replaceChildren()
     if (!ast) return
 
     try {
@@ -301,7 +301,7 @@ class SearchMultiPlugin extends BasePlugin {
     const el = this.entities.explain
     const val = this.entities.input.value.trim()
     if (!val) {
-      el.innerHTML = ""
+      el.replaceChildren()
       el.classList.remove("is-error")
       return
     }

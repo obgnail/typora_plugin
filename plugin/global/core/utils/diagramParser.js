@@ -280,7 +280,7 @@ class DiagramParser {
         this.renderAllLangFence(lang)
         this.utils.entities.querySelectorAllInWrite(`.md-fences[lang="${lang}"] .md-diagram-panel-preview`).forEach(preview => {
           const svg = preview.querySelector("svg")
-          if (!svg) preview.innerHTML = "<svg></svg>"
+          if (!svg) preview.replaceChildren(document.createElement("svg"))
         })
       })
     }

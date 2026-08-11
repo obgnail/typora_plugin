@@ -79,11 +79,11 @@ class DrawIOPlugin extends BasePlugin {
       graphConfig.xml = await this._getResource(
         graphConfig.source,
         async (source) => {
-          $wrap[0].innerHTML = "Fetching Network Resource..."
+          $wrap[0].textContent = "Fetching Network Resource..."
           return this._memorizedFetch(source)
         },
         async (source) => {
-          // $wrap[0].innerHTML = "Fetching Local Resource..."
+          // $wrap[0].textContent = "Fetching Local Resource..."
           const dir = this.utils.getLocalRootUrl()
           const path = this.utils.Package.Path.resolve(dir, source)
           return this.utils.Package.FsExtra.readFile(path, "utf-8")
@@ -110,13 +110,11 @@ class DrawIOPlugin extends BasePlugin {
   _refresh = this.utils.debounce(() => window.GraphViewer.processElements(), 100)
 
   _render = (container, mxGraphData) => {
-    container.innerHTML = ""
-
-    const viewerDiv = document.createElement("div")
-    viewerDiv.className = "mxgraph"
-    viewerDiv.style.cssText = "max-width:100%; margin: 26px auto 0;"
-    viewerDiv.dataset.mxgraph = JSON.stringify(mxGraphData)
-    container.appendChild(viewerDiv)
+    const viewer = document.createElement("div")
+    viewer.className = "mxgraph"
+    viewer.style.cssText = "max-width: 100%; margin: 26px auto 0;"
+    viewer.dataset.mxgraph = JSON.stringify(mxGraphData)
+    container.replaceChildren(viewer)
     this._refresh()
 
     return container

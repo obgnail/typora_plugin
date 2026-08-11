@@ -124,16 +124,14 @@ class FastDropdown extends HTMLElement {
   }
 
   _renderMenu = () => {
-    this.entities.menu.innerHTML = ""
-    const els = this.state.options.map(opt => {
+    this.entities.menu.replaceChildren(...this.state.options.map(opt => {
       const el = document.createElement("div")
       el.classList.add("dropdown-item")
       el.classList.toggle("active", this.state.value === opt.value)
       el.dataset.value = opt.value
       el.textContent = opt.label || opt.value
       return el
-    })
-    this.entities.menu.append(...els)
+    }))
   }
 
   _updateActiveItem = () => {

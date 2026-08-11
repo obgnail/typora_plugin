@@ -419,7 +419,7 @@ class WindowTabPlugin extends BasePlugin {
         fileMissingWhenOpen: false, bundleFile: null, zip: null,
       }
       await this.utils.reload()
-      document.getElementById("title-text").innerHTML = "Typora"
+      document.getElementById("title-text").textContent = "Typora"
       document.querySelector(".file-library-node.active")?.classList.remove("active")
     },
     onExit: () => this.utils.exitTypora(),
@@ -921,7 +921,7 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   rerenderTabBar = () => {
-    this.entities.tabWrapper.innerHTML = ""
+    this.entities.tabWrapper.replaceChildren()
     this.utils.openFile(this.tab.current?.path)
   }
 

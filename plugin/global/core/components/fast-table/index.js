@@ -190,9 +190,7 @@ customElements.define("fast-table", class extends HTMLElement {
   }
 
   _renderHeader = (columns) => {
-    this.entities.theadRow.innerHTML = ""
-
-    const thElements = columns.map(col => {
+    this.entities.theadRow.replaceChildren(...columns.map(col => {
       const th = document.createElement("div")
       th.className = "th" + (col.sortable ? " sortable" : "")
       th.dataset.key = col.key
@@ -213,19 +211,17 @@ customElements.define("fast-table", class extends HTMLElement {
         th.append(icon)
       }
       return th
-    })
-
-    this.entities.theadRow.append(...thElements)
+    }))
   }
 
   // TODO: too expensive, introducing DOM Diffing may be a good solution
   _renderBody = (data, columns) => {
-    this.entities.tbody.innerHTML = ""
-    const trElements = data.map(rowData => {
+    const frag = document.createDocumentFragment()
+    for (const rowData of data) {
       const tr = document.createElement("div")
       tr.className = "tr"
       tr._rowData = rowData
-      const tdElements = columns.map(col => {
+      for (const col of columns) {
         const td = document.createElement("div")
         td.className = "td"
         if (typeof col.render === "function") {
@@ -233,12 +229,11 @@ customElements.define("fast-table", class extends HTMLElement {
         } else {
           td.textContent = rowData[col.key] ?? ""
         }
-        return td
-      })
-      tr.append(...tdElements)
-      return tr
-    })
-    this.entities.tbody.append(...trElements)
+        tr.append(td)
+      }
+      frag.append(tr)
+    }
+    this.entities.tbody.replaceChildren(frag)
   }
 
   _onBodyClick = (ev) => {
@@ -273,8 +268,8 @@ customElements.define("fast-table", class extends HTMLElement {
   }
 
   _clearTable = () => {
-    this.entities.theadRow.innerHTML = ""
-    this.entities.tbody.innerHTML = ""
+    this.entities.theadRow.replaceChildren()
+    this.entities.tbody.replaceChildren()
   }
 
   _showNoData = () => {

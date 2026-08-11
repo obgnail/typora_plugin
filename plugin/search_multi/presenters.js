@@ -28,11 +28,8 @@ class ExplainPresenter {
   }
 
   render(container, ast) {
-    container.innerHTML = ""
     const dnf = this.searcher.toDNF(ast)
-    if (!dnf?.length) return
-
-    const nodes = dnf.flatMap((path, pathIdx) => {
+    const children = (dnf || []).flatMap((path, pathIdx) => {
       const tokens = path.flatMap((token, tokenIdx) => {
         const isLast = tokenIdx === path.length - 1
         const tokenEl = this._createToken(token)
@@ -43,13 +40,11 @@ class ExplainPresenter {
       const isLastPath = pathIdx === dnf.length - 1
       return isLastPath ? [pathEl] : [pathEl, divider]
     })
-
-    container.append(...nodes)
+    container.replaceChildren(...children)
   }
 
   renderError(container, error) {
-    container.innerHTML = ""
-    container.append(el("div", "sme-error-text", error.message || error.toString()))
+    container.replaceChildren(el("div", "sme-error-text", error.message || error.toString()))
   }
 
   _createToken({ node, negated, isBoolean }) {

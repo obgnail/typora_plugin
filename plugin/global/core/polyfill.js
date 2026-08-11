@@ -230,6 +230,24 @@ function abortSignal() {
   })
 }
 
+function dom() {
+  if (!global.Element) return
+
+  const replaceChildren = function (...nodes) {
+    // Element or DocumentFragment
+    if (this.nodeType === 1 || this.nodeType === 11) {
+      this.textContent = ""
+    } else {
+      while (this.firstChild) this.removeChild(this.firstChild)
+    }
+    if (nodes.length) this.append(...nodes)
+  }
+
+  for (const target of [Element, Document, DocumentFragment]) {
+    _impl(target.prototype, "replaceChildren", replaceChildren)
+  }
+}
+
 globalThis_()
 object()
 string()
@@ -237,5 +255,6 @@ array()
 typedArray()
 promise()
 abortSignal()
+dom()
 
 module.exports = __POLYFILLS__

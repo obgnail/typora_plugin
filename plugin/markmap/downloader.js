@@ -84,7 +84,7 @@ class Downloader {
         // TODO: handle math
         const katex = foreign.querySelector(".katex")
         if (katex) {
-          katex.innerHTML = katex.querySelector(".katex-html")?.textContent ?? ""
+          katex.textContent = katex.querySelector(".katex-html")?.textContent ?? ""
         }
 
         text.textContent = foreign.textContent

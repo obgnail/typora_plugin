@@ -23,7 +23,7 @@ Because this project must support Typora 0.9.98, any code injected into the Typo
 ### Legacy Runtime Compatibility
 
 - Code running inside Typora must remain compatible with Typora 0.9.98 and Chrome 84. Avoid JavaScript, DOM, and CSS features introduced after that browser version.
-- In particular, do not use `Element.replaceChildren` or Flexbox `gap`. Use compatible DOM operations and spacing techniques instead.
+- In particular, do not use Flexbox `gap`. Use compatible DOM operations and spacing techniques instead.
 - If a newer JavaScript or DOM API is truly needed, add an appropriate compatibility implementation to `plugin/global/core/polyfill.js`. CSS features still require a compatible CSS fallback.
 
 ### Theme-safe Plugin UI

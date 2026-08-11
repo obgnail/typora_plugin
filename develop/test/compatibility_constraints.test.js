@@ -37,7 +37,6 @@ test("the three new plugin UIs avoid native select, option, and button elements"
 
 test("the three new plugins stay within the Chrome 84 compatibility boundary", () => {
   const forbidden = [
-    /\breplaceChildren\s*\(/g,
     /\bcounter-set\s*:/g,
     /\bcolor-mix\s*\(/g,
     /:focus-visible\b/g,
