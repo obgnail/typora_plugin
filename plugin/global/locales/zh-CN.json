@@ -129,7 +129,7 @@
     "$tooltip.neverGonnaTellALie": "插件教程",
     "$tooltip.openPluginFolder": "插件目录",
     "$tooltip.toggleDevTools": "开发者工具",
-    "$tooltip.copyEmail": "复制邮箱地址"
+    "$tooltip.copyEmail": "nilheap@gmail.com"
   },
   "window_tab": {
     "pluginName": "标签页管理",
@@ -931,13 +931,13 @@
     "$option.GESTURES.button.right": "右键",
     "$option.GESTURES.button.x1": "X1",
     "$option.GESTURES.button.x2": "X2",
-    "$tooltip.STRATEGY": "智能自适应：优先识别 8 方向；当轨迹较为复杂时自动降级为 4 方向，以提升识别准确率",
+    "$tooltip.STRATEGY": "智能自适应：优先识别 8 方向，当轨迹较为复杂时自动降级为 4 方向，以提升识别准确率",
     "$tooltip.HYSTERESIS": "适当提高转向判定的阈值，能有效过滤微小手抖带来的错误变向",
     "$tooltip.START_TIMEOUT": "如果在按下触发键后该时间内鼠标未移动，将视为普通点击并取消手势。设置为 0 则禁用此机制",
     "$tooltip.IDLE_TIMEOUT": "在划动过程中，如果鼠标中途停顿超时，则提前中断本次手势的录制。设置为 0 则禁用此机制",
     "$tooltip.COOLDOWN": "触发成功后的等待时间，防止由于用户操作过快造成的重复误触",
-    "$tooltip.MACRO_RADIUS": "判定动作切换方向所需跨越的最小滑动距离（像素）。该值越大，越不容易因手抖产生误判，但需要大幅度甩动鼠标",
-    "$tooltip.TAIL_RADIUS": "用于精确识别松开按键前最后一小段运动方向的半径阈值。通常建议小于“宏观采样半径”，以保证动作收尾干脆灵敏"
+    "$tooltip.MACRO_RADIUS": "判定动作切换方向所需跨越的最小滑动距离（像素）。值越大，越不容易因手抖产生误判，但需要大幅度甩动鼠标",
+    "$tooltip.TAIL_RADIUS": "用于精确识别松开按键前最后一小段运动方向的半径阈值。建议小于“宏观采样半径”，以保证动作收尾干脆灵敏"
   },
   "slash_commands": {
     "pluginName": "斜杠命令",

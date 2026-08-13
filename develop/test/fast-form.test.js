@@ -17,7 +17,7 @@ before(async () => {
   dom = require("./mocks/dom.mock.js")
 
   proxyquire("../../plugin/global/core/components/fast-form/index.js", {
-    "../common": { sharedSheets: [new CSSStyleSheet()], "@noCallThru": true },
+    "../common": require("./mocks/component_common.mock.js"),
     "../../utils": { ...utils, "@noCallThru": true },
     "../../i18n": { ...i18n, "@noCallThru": true },
   })

@@ -163,17 +163,17 @@ class RightClickMenuPlugin extends BasePlugin {
   _liTemplate = (key, showName, shortcut, hasExtraMenu, aClassName = "", liExtraAttrs = "") => {
     shortcut = this._cleanShortcut(shortcut)
     const hasShortcut = this.supportShortcut && this.config.SHOW_PLUGIN_HOTKEY && shortcut
-    let innerHTML = ""
+    let inner = ""
     let aAttrs = `data-lg="Menu"`
     if (hasExtraMenu) {
-      innerHTML = `<span data-lg="Menu" data-localize="${showName}">${showName}</span><i class="fa fa-caret-right"></i>`
+      inner = `<span data-lg="Menu" data-localize="${showName}">${showName}</span><i class="fa fa-caret-right"></i>`
     } else if (hasShortcut) {
-      innerHTML = `<span data-localize="${showName}">${showName}</span><span class="ty-menu-shortcut">${shortcut}</span>`
+      inner = `<span data-localize="${showName}">${showName}</span><span class="ty-menu-shortcut">${shortcut}</span>`
     } else {
-      innerHTML = showName
+      inner = showName
       aAttrs += ` data-localize="${showName}"`
     }
-    return `<li data-key="${key}" ${liExtraAttrs.trim()}><a role="menuitem" class="${aClassName}" ${aAttrs}>${innerHTML}</a></li>`.trim()
+    return `<li data-key="${key}" ${liExtraAttrs.trim()}><a role="menuitem" class="${aClassName}" ${aAttrs}>${inner}</a></li>`.trim()
   }
 
   _cleanShortcut = shortcut => {
@@ -310,8 +310,8 @@ class RightClickMenuPlugin extends BasePlugin {
       },
       toggle_hotkey: () => {
         this.config.SHOW_PLUGIN_HOTKEY = !this.config.SHOW_PLUGIN_HOTKEY
-        const toggle = el => el.classList.toggle("plugin-common-hidden", !this.config.SHOW_PLUGIN_HOTKEY)
-        document.querySelectorAll(".plugin-menu-second .ty-menu-shortcut, .plugin-menu-third .ty-menu-shortcut").forEach(toggle)
+        document.querySelectorAll(".plugin-menu-second .ty-menu-shortcut, .plugin-menu-third .ty-menu-shortcut")
+          .forEach(el => el.classList.toggle("plugin-common-hidden", !this.config.SHOW_PLUGIN_HOTKEY))
       },
     }
     fns[action]?.()

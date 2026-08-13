@@ -257,7 +257,7 @@ class ResourceManagerPlugin extends BasePlugin {
     const isInPreview = this.entities.panel.getAttribute("window-buttons").includes("fa-eye-slash")
     const columns = [
       { key: "idx", title: "No.", width: "max-content", sortable: true },
-      { key: "src", title: "Resources", sortable: true },
+      { key: "path", title: "Resources", sortable: true },
       { key: "image", title: "Preview", sortable: true, ignore: !isInPreview, render: resourceRender },
       { key: "operations", title: "Operations", width: "max-content", render: operationsRender },
     ]
@@ -265,7 +265,7 @@ class ResourceManagerPlugin extends BasePlugin {
   }
 
   _getFolderTableSchema = () => ({
-    columns: [{ key: "idx", title: "No.", width: "max-content", sortable: true }, { key: "src", title: "Resources", sortable: true }],
+    columns: [{ key: "idx", title: "No.", width: "max-content", sortable: true }, { key: "path", title: "Resources", sortable: true }],
   })
 
   _getConfig = () => ({

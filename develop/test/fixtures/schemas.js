@@ -9,7 +9,7 @@ function createMockDslContext() {
     },
   })
   const FF = proxyquire("../../../plugin/global/core/components/fast-form/index.js", {
-    "../common": { sharedSheets: [], "@noCallThru": true },
+    "../common": require("../mocks/component_common.mock.js"),
     "../../utils": { ...require("../mocks/utils.mock.js"), "@noCallThru": true },
     "../../i18n": { t: (s) => s, "@noCallThru": true },
   })

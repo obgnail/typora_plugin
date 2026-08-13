@@ -82,9 +82,8 @@ class View {
       return
     }
     if (state.items.length === 0) {
-      this.entities.results.innerHTML = state.loading
-        ? `<div class="plugin-command-palette-empty">Searching...</div>`
-        : `<div class="plugin-command-palette-empty">No matching results</div>`
+      const text = state.loading ? "Searching..." : "No matching results"
+      this.entities.results.innerHTML = `<div class="plugin-command-palette-empty">${text}</div>`
       return
     }
 

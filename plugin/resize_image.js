@@ -43,19 +43,18 @@ class ResizeImagePlugin extends BasePlugin {
 
   resetImageSize = () => {
     this.config.ALLOW_EXCEED_LIMIT = !this.config.ALLOW_EXCEED_LIMIT
-    if (!this.config.ALLOW_EXCEED_LIMIT) {
-      this.utils.entities.querySelectorAllInWrite("img").forEach(img => {
-        if (img.style.maxWidth) {
-          const maxSize = img.parentElement.offsetWidth
-          if (this.getWidth(img) > maxSize) {
-            img.style.removeProperty("width")
-          }
-          img.style.removeProperty("maxWidth")
+    if (this.config.ALLOW_EXCEED_LIMIT) return
+    this.utils.entities.querySelectorAllInWrite("img").forEach(img => {
+      if (img.style.maxWidth) {
+        const maxSize = img.parentElement.offsetWidth
+        if (this.getWidth(img) > maxSize) {
+          img.style.removeProperty("width")
         }
-        img.style.removeProperty("left")
-        img.style.removeProperty("position")
-      })
-    }
+        img.style.removeProperty("maxWidth")
+      }
+      img.style.removeProperty("left")
+      img.style.removeProperty("position")
+    })
   }
 
   getWidth = img => img.style.width ? parseFloat(img.style.width) : img.getBoundingClientRect().width

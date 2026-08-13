@@ -52,10 +52,9 @@ class ExportEnhancePlugin extends BasePlugin {
     const srcList = [...html.matchAll(this.REGEX)]
       .filter(match => match.length === 2 && this.utils.isNetworkImage(match[1]))
       .map(match => match[1])
-    const chunks = this.utils.chunk(srcList, this.config.DOWNLOAD_THREADS)
+    const chunks = this.utils.chunk(Array.from(new Set(srcList)), this.config.DOWNLOAD_THREADS)
     for (const chunk of chunks) {
       const promises = chunk.map(async src => {
-        if (Object.hasOwn(imageMap, src)) return
         try {
           const { ok, filepath } = await this.utils.downloadImage(src)
           if (ok) {

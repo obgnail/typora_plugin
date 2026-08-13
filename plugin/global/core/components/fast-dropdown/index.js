@@ -1,10 +1,10 @@
-const { sharedSheets } = require("../common")
+const { sharedSheets, createTemplate } = require("../common")
 
 class FastDropdown extends HTMLElement {
-  static _template = `
+  static _template = createTemplate(`
     <link rel="stylesheet" href="./plugin/global/core/components/fast-dropdown/index.css" crossorigin="anonymous">
     <div class="dropdown-trigger"><i class="dropdown-icon"></i><span class="dropdown-label"></span></div>
-    <div class="dropdown-menu"></div>`
+    <div class="dropdown-menu"></div>`)
 
   state = {
     isOpen: false,
@@ -17,7 +17,7 @@ class FastDropdown extends HTMLElement {
     super()
     const root = this.attachShadow({ mode: "open" })
     root.adoptedStyleSheets = sharedSheets
-    root.innerHTML = this.constructor._template
+    root.appendChild(this.constructor._template.content.cloneNode(true))
 
     this.entities = {
       trigger: root.querySelector(".dropdown-trigger"),

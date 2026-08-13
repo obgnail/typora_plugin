@@ -11,7 +11,19 @@
  */
 
 const OPTION_SCOPE = Symbol("Schema:OptionScope")
-const I18N_DICT = Symbol("Schema:I18nDict")
+const I18N_PROP = Symbol("Schema:I18nProp")
+
+const UNITS = {
+  byte: "byte", centimeter: "centimeter", degree: "degree", em: "em", inch: "inch", item: "item",
+  line: "line", millisecond: "millisecond", percent: "percent", pixel: "pixel", second: "second",
+}
+
+const OPTS = {
+  textStylizeTools: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush"],
+  imageViewerTools: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterfall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fitScreen", "autoSize", "restore", "info", "dummy"],
+  markdownlintActions: ["settings", "detailAll", "fixAll", "toggleSourceMode", "refresh", "close"],
+  markdownlintRowActions: ["detailSingle", "jumpToLine", "fixSingle"],
+}
 
 let Group, When
 let Switch, Text, Password, Color, Integer, Float, Icon, Range, Action, Static,
@@ -38,7 +50,7 @@ const initDSL = (dsl) => {
     const control = builder(key, ...args)
     if (key !== undefined) {
       control.Label(key)
-      control[I18N_DICT] = "label"
+      control[I18N_PROP] = "label"
     }
     return control
   }
@@ -92,18 +104,6 @@ const initDSL = (dsl) => {
     ),
     Template: () => Code("TEMPLATE"),
   }
-}
-
-const UNITS = {
-  byte: "byte", centimeter: "centimeter", degree: "degree", em: "em", inch: "inch", item: "item",
-  line: "line", millisecond: "millisecond", percent: "percent", pixel: "pixel", second: "second",
-}
-
-const OPTS = {
-  textStylizeTools: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush"],
-  imageViewerTools: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterfall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fitScreen", "autoSize", "restore", "info", "dummy"],
-  markdownlintActions: ["settings", "detailAll", "fixAll", "toggleSourceMode", "refresh", "close"],
-  markdownlintRowActions: ["detailSingle", "jumpToLine", "fixSingle"],
 }
 
 const schema_global = () => [
@@ -1648,11 +1648,11 @@ const i18n = (boxes, t) => {
 
   return mapTree(
     boxes,
-    ({ label, title, tooltip, [I18N_DICT]: dictType, ...box }, prefix) => {
+    ({ label, title, tooltip, [I18N_PROP]: prop, ...box }, prefix) => {
       const titleKey = label || title
       return {
         ...box,
-        ...(titleKey != null && { title: t(`$${dictType || "title"}.${prefix ? `${prefix}.${titleKey}` : titleKey}`) }),
+        ...(titleKey != null && { title: t(`$${prop || "title"}.${prefix ? `${prefix}.${titleKey}` : titleKey}`) }),
         ...(tooltip != null && { tooltip: mapTooltip(tooltip) }),
       }
     },

@@ -80,9 +80,9 @@ body.pin-outline #plugin-window-tab .tab-bar {
   background-color: var(--wt-active-bg-color);
 }
 
-#plugin-window-tab .window-tab-name {
+#plugin-window-tab .tab-name {
   max-width: 350px;
-  padding-right: 10px;
+  padding-right: 6px;
   font-size: 14px;
   overflow: hidden;
   white-space: nowrap;

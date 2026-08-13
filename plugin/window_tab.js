@@ -428,7 +428,7 @@ class WindowTabPlugin extends BasePlugin {
   scrollSync = new ScrollSynchronizer(this.utils)
 
   prepare = () => {
-    if (this.config.LAST_TAB_CLOSE_ACTION === "blankPage" && this.utils.isBetaVersion) {
+    if (this.utils.isBetaVersion && this.config.LAST_TAB_CLOSE_ACTION === "blankPage") {
       this.config.LAST_TAB_CLOSE_ACTION = "reconfirm"
     }
     if (window._options.framelessWindow && this.config.HIDE_WINDOW_TITLE_BAR) {
@@ -448,7 +448,7 @@ class WindowTabPlugin extends BasePlugin {
     { hotkey: this.config.SORT_TABS_HOTKEY, callback: () => this.tab.sort() },
     { hotkey: this.config.CLOSE_HOTKEY, callback: () => this.tab.closeActive() },
     { hotkey: this.config.COPY_PATH_HOTKEY, callback: () => this.copyPath(this.tab.activeIdx) },
-    { hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY, callback: this.forceToggleTabBar },
+    { hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY, callback: () => this.forceToggleTabBar() },
   ]
 
   init = () => {
@@ -743,12 +743,11 @@ class WindowTabPlugin extends BasePlugin {
     this.entities.tabWrapper.addEventListener("mousedown", ev => {
       if (ev.button !== 1) return
       const idx = parseInt(ev.target.closest(".tab-container")?.dataset.idx)
-      if (!isNaN(idx)) {
-        ev.stopPropagation()
-        ev.preventDefault()
-        this.tab.close(idx)
-        this._saveOnSwitch()
-      }
+      if (isNaN(idx)) return
+      ev.stopPropagation()
+      ev.preventDefault()
+      this.tab.close(idx)
+      this._saveOnSwitch()
     })
   }
 
@@ -867,16 +866,16 @@ class WindowTabPlugin extends BasePlugin {
   _insertTabEl = (filePath, showName, idx) => {
     const hint = this.config.SHOW_FULL_PATH_ON_HOVER ? `ty-hint="${filePath}"` : ""
     const btn = this.config.SHOW_TAB_CLOSE_BUTTON ? `<div class="close-button"><div class="close-icon"></div></div>` : ""
-    this.entities.tabWrapper.insertAdjacentHTML("beforeend", `<div class="tab-container" data-idx="${idx}" draggable="true" ${hint}><div class="window-tab-name">${showName}</div>${btn}</div>`)
+    this.entities.tabWrapper.insertAdjacentHTML("beforeend", `<div class="tab-container" data-idx="${idx}" draggable="true" ${hint}><div class="tab-name">${showName}</div>${btn}</div>`)
   }
 
-  _updateTabEl = (tabDiv, filePath, showName, idx) => {
-    tabDiv.dataset.idx = idx
-    tabDiv.querySelector(".window-tab-name").innerText = showName
+  _updateTabEl = (tabEl, filePath, showName, idx) => {
+    tabEl.dataset.idx = idx
+    tabEl.querySelector(".tab-name").textContent = showName
     if (this.config.SHOW_FULL_PATH_ON_HOVER) {
-      tabDiv.setAttribute("ty-hint", filePath)
+      tabEl.setAttribute("ty-hint", filePath)
     } else {
-      tabDiv.removeAttribute("ty-hint")
+      tabEl.removeAttribute("ty-hint")
     }
   }
 
@@ -928,9 +927,7 @@ class WindowTabPlugin extends BasePlugin {
 
   saveTabs = (storage) => storage.set({
     mount_folder: this.utils.getMountFolder(),
-    save_tabs: this.tab.tabs.map((tab, idx) => ({
-      idx, path: tab.path, scrollTop: tab.scrollTop, active: idx === this.tab.activeIdx,
-    })),
+    save_tabs: this.tab.tabs.map((tab, idx) => ({ idx, path: tab.path, scrollTop: tab.scrollTop, active: idx === this.tab.activeIdx })),
   })
 
   openSaveTabs = (storage, matchMountFolder = false) => {

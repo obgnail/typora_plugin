@@ -220,7 +220,6 @@ function patchMathjaxGlobalDetect() {
     name: "patch-mathjax-global-detect",
     setup(build) {
       build.onLoad({ filter: /[\\/]mathjax-full[\\/]js[\\/]input[\\/]tex[\\/]AllPackages\.js$/ }, async (args) => {
-        const fs = require("fs")
         let code = fs.readFileSync(args.path, "utf8")
         const original = code
         code = code.replace(

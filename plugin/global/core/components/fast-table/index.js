@@ -1,21 +1,21 @@
-const { sharedSheets } = require("../common")
+const { sharedSheets, createTemplate } = require("../common")
 
 customElements.define("fast-table", class extends HTMLElement {
   static observedAttributes = ["max-height"]
 
-  static _template =
-    `<link rel="stylesheet" href="./plugin/global/core/components/fast-table/index.css" crossorigin="anonymous">
+  static _template = createTemplate(`
+    <link rel="stylesheet" href="./plugin/global/core/components/fast-table/index.css" crossorigin="anonymous">
     <div class="table-wrapper"><div class="table"><div class="thead"><div class="tr"></div></div><div class="tbody"></div></div></div>
     <div class="no-data hidden">
       <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
       <span>No Data</span>
-    </div>`
+    </div>`)
 
   constructor() {
     super()
     const root = this.attachShadow({ mode: "open" })
     root.adoptedStyleSheets = sharedSheets
-    root.innerHTML = this.constructor._template
+    root.appendChild(this.constructor._template.content.cloneNode(true))
 
     this.entities = {
       wrapper: root.querySelector(".table-wrapper"),

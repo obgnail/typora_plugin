@@ -1,28 +1,28 @@
+const { createTemplate } = require("../common")
 const i18n = require("../../i18n")
 
 const show = (el) => el.style.display = ""
 const hide = (el) => el.style.display = "none"
 
 customElements.define("fast-dialog", class extends HTMLElement {
-  static get _template() {
-    return `
-      <link rel="stylesheet" href="./plugin/global/core/components/fast-dialog/index.css" crossorigin="anonymous">
-      <div class="overlay" style="display: none;">
-        <div class="dialog">
-          <div class="header"><div class="title">Title</div></div>
-          <div class="body"><fast-form class="form"></fast-form></div>
-          <div class="footer">
-            <button class="cancel-btn">${i18n.t("global", "cancel")}</button>
-            <button class="submit-btn">${i18n.t("global", "confirm")}</button>
-          </div>
-        </div>
-      </div>`
-  }
+  static _template = createTemplate(`
+    <link rel="stylesheet" href="./plugin/global/core/components/fast-dialog/index.css" crossorigin="anonymous">
+    <div class="overlay" style="display: none;">
+      <div class="dialog">
+        <div class="header"><div class="title">Title</div></div>
+        <div class="body"><fast-form class="form"></fast-form></div>
+        <div class="footer"><button class="cancel-btn"></button><button class="submit-btn"></button></div>
+      </div>
+    </div>`)
 
   constructor() {
     super()
     const root = this.attachShadow({ mode: "open" })
-    root.innerHTML = this.constructor._template
+
+    const cloned = this.constructor._template.content.cloneNode(true)
+    cloned.querySelector(".submit-btn").textContent = i18n.t("global", "confirm")
+    cloned.querySelector(".cancel-btn").textContent = i18n.t("global", "cancel")
+    root.appendChild(cloned)
 
     this.entities = {
       overlay: root.querySelector(".overlay"),

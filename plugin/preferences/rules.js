@@ -122,6 +122,7 @@ module.exports = {
   updater: {
     UPDATE_LOOP_INTERVAL: notZero,
     START_UPDATE_INTERVAL: notZero,
+    PROXY: url,
   },
   kanban: {
     KANBAN_TASK_DESC_MAX_HEIGHT: notZero,
@@ -156,10 +157,12 @@ module.exports = {
   drawIO: {
     ...chartStyles,
     RESOURCE_URI: [required, url],
+    PROXY: url,
   },
   plantUML: {
     ...chartStyles,
     SERVER_URL: [required, url],
+    PROXY: url,
   },
   marp: {
     TEMPLATE: required,

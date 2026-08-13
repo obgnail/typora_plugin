@@ -38,7 +38,7 @@ class utils {
     Object.entries(MIXINS).map(([name, cls]) => [[name], new cls(this, i18n)]),
   )
 
-  static PLUGIN_LOAD_ABORT = Symbol.for("plugin:load-abort")  // For plugin's prepare method; return this to stop loading the plugin
+  static PLUGIN_LOAD_ABORT = Symbol.for("plugin:load-abort")  // For plugins prepare method; return this to stop loading the plugin
 
   // =========== Plugin ===========
   static i18n = i18n
@@ -597,7 +597,7 @@ class utils {
 
   static getStyleId = name => `plu-style-${name}`
   static getStyleEl = name => document.getElementById(this.getStyleId(name))
-  static getStyleText = name => this.getStyleEl(name)?.innerHTML
+  static getStyleText = name => this.getStyleEl(name)?.textContent
   static removeStyle = name => this.getStyleEl(name)?.remove()
   static replaceStyle = (name, css) => this.getStyleEl(name).textContent = css
   static insertStyle = (name, css) => {

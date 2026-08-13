@@ -66,11 +66,6 @@ const getOrderStrategy = (type) => {
   return { predefined, lexicographic, length_based, earliest_hit }[type] || predefined
 }
 
-const evalFn = (fnString, ...args) => {
-  const ret = eval(fnString)
-  return (typeof ret === "function") ? (ret(...args) || "").toString() : fnString
-}
-
 const defaultOffset = [0, 0]
 
 class SlashCommandsPlugin extends BasePlugin {
@@ -116,10 +111,10 @@ class SlashCommandsPlugin extends BasePlugin {
         if (cmd.type === this.TYPE.SNIPPET) {
           ret = cmd.callback
         } else if (cmd.type === this.TYPE.GENERATE_SNIPPET) {
-          ret = evalFn(cmd.callback, ...this.inputs.params)
+          ret = this._evalFn(cmd.callback, ...this.inputs.params)
         } else if (cmd.type === this.TYPE.COMMAND) {
           this._clearAnchor(anchor)
-          setTimeout(() => evalFn(cmd.callback, ...this.inputs.params), 50)
+          setTimeout(() => this._evalFn(cmd.callback, ...this.inputs.params), 50)
         }
         setTimeout(() => {
           this._normalizeAnchor(anchor)
@@ -235,6 +230,11 @@ class SlashCommandsPlugin extends BasePlugin {
     bookmark.end += end
     range.moveToBookmark(bookmark)
     range.select()
+  }
+
+  _evalFn = (fnString, ...args) => {
+    const ret = eval(fnString)
+    return (typeof ret === "function") ? (ret(...args) || "").toString() : fnString
   }
 }
 

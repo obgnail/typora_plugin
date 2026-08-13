@@ -1,22 +1,17 @@
-const { sharedSheets } = require("../common")
+const { sharedSheets, createTemplate } = require("../common")
 const utils = require("../../utils")
 
 customElements.define("fast-window", class extends HTMLElement {
-  static _template =
-    `<link rel="stylesheet" href="./plugin/global/core/components/fast-window/index.css" crossorigin="anonymous">
-    <div class="title-bar" part="title-bar">
-      <div class="title-name"></div>
-      <div class="title-buttons"></div>
-    </div>
-    <div class="content-area" part="content-area">
-      <slot></slot>
-    </div>`
+  static _template = createTemplate(`
+    <link rel="stylesheet" href="./plugin/global/core/components/fast-window/index.css" crossorigin="anonymous">
+    <div class="title-bar" part="title-bar"><div class="title-name"></div><div class="title-buttons"></div></div>
+    <div class="content-area" part="content-area"><slot></slot></div>`)
 
   constructor() {
     super()
     const root = this.attachShadow({ mode: "open" })
     root.adoptedStyleSheets = sharedSheets
-    root.innerHTML = this.constructor._template
+    root.appendChild(this.constructor._template.content.cloneNode(true))
 
     this.entities = {
       titleBar: root.querySelector(".title-bar"),

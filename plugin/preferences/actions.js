@@ -123,7 +123,7 @@ module.exports = (plugin) => {
       }
     },
     myopicDefocusEffectDemo: async () => {
-      const { MyopicDefocus } = require("../myopic_defocus.js")
+      const MyopicDefocus = require("../myopic_defocus/myopic_defocus.js")
       const myopicDefocus = new MyopicDefocus({ svgContainerId: "myopic-defocus-svg-demo", blurLayerId: "myopic-defocus-layer-demo" })
 
       const t = (x) => i18n._t("myopic_defocus", x)

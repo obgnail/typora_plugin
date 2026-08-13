@@ -129,7 +129,7 @@
     "$tooltip.neverGonnaTellALie": "插件教程",
     "$tooltip.openPluginFolder": "插件目錄",
     "$tooltip.toggleDevTools": "開發人員工具",
-    "$tooltip.copyEmail": "複製郵件地址"
+    "$tooltip.copyEmail": "nilheap@gmail.com"
   },
   "window_tab": {
     "pluginName": "標籤頁管理",
@@ -931,13 +931,13 @@
     "$option.GESTURES.button.right": "右鍵",
     "$option.GESTURES.button.x1": "X1",
     "$option.GESTURES.button.x2": "X2",
-    "$tooltip.STRATEGY": "智慧自適應：優先識別 8 方向；當軌跡較為複雜時自動降級為 4 方向，以提升識別準確率",
+    "$tooltip.STRATEGY": "智慧自適應：優先識別 8 方向，當軌跡較為複雜時自動降級為 4 方向，以提升識別準確率",
     "$tooltip.HYSTERESIS": "適當提高轉向判定的閾值，能有效過濾微小手震帶來的錯誤變向",
     "$tooltip.START_TIMEOUT": "如果在按下觸發鍵後該時間內滑鼠未移動，將視為普通點擊並取消手勢。設定為 0 則停用此機制",
     "$tooltip.IDLE_TIMEOUT": "在滑動過程中，如果滑鼠中途停頓逾時，則提前中斷本次手勢的錄製。設定為 0 則停用此機制",
     "$tooltip.COOLDOWN": "觸發成功後的等待時間，防止由於使用者操作過快造成的重複誤觸",
-    "$tooltip.MACRO_RADIUS": "判定動作切換方向所需跨越的最小滑動距離 (像素)。該值越大，越不容易因手震產生誤判，但需要大幅度甩動滑鼠",
-    "$tooltip.TAIL_RADIUS": "用於精確識別放開按鍵前最後一小段運動方向的半徑閾值。通常建議小於「宏觀採樣半徑」，以保證動作收尾乾脆靈敏"
+    "$tooltip.MACRO_RADIUS": "判定動作切換方向所需跨越的最小滑動距離 (像素)。值越大，越不容易因手震產生誤判，但需要大幅度甩動滑鼠",
+    "$tooltip.TAIL_RADIUS": "用於精確識別放開按鍵前最後一小段運動方向的半徑閾值。建議小於「宏觀採樣半徑」，以保證動作收尾乾脆靈敏"
   },
   "slash_commands": {
     "pluginName": "斜線指令",
