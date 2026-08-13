@@ -36,14 +36,28 @@ function Show-Usage {
 }
 
 if ($f -and $n) {
-    Write-Host "Cannot use both -f and -n"
+    Write-Host "[ERROR] Cannot use both -f and -n" -ForegroundColor Red
     exit 1
 }
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$GlobalSettingsDir = Join-Path $ScriptDir "..\global\settings" | Resolve-Path -ErrorAction Stop | Select-Object -ExpandProperty Path
+$GlobalSettingsDir = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($ScriptDir, "..\global\settings"))
 $TyporaPluginDir = Join-Path $env:USERPROFILE ".config\typora_plugin"
 $Files = @("settings.user.toml")
+
+function Set-TargetAcl {
+    param([string]$FilePath)
+    try {
+        $acl = Get-Acl $FilePath
+        $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+        $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($user, "Read,Write", "Allow")
+        $acl.SetAccessRule($accessRule)
+        Set-Acl $FilePath $acl
+        Write-Host ("  -> [ACL] Permissions granted for {0}" -f $user) -ForegroundColor DarkGray
+    } catch {
+        Write-Host ("  -> [WARN] Failed to set ACL for {0}. Details: {1}" -f $FilePath, $_.Exception.Message) -ForegroundColor Yellow
+    }
+}
 
 function Move-Or-CreateEmpty {
     param(
@@ -58,35 +72,31 @@ function Move-Or-CreateEmpty {
             if (-not (Test-Path $To)) {
                 try {
                     New-Item -Path $To -ItemType File -Force | Out-Null
-                    # Set user permissions
-                    $acl = Get-Acl $To
-                    $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-                    $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($user, "Read,Write", "Allow")
-                    $acl.SetAccessRule($accessRule)
-                    Set-Acl $To $acl
-                    Write-Host "Notice: $From not found, created empty file at $To"
+                    Set-TargetAcl -FilePath $To
+                    Write-Host ("[NOTICE] '{0}' not found. Created empty template at '{1}'." -f $From, $To) -ForegroundColor Cyan
                 } catch {
-                    Write-Host "Error: Failed to create empty file at $To"
+                    Write-Host ("[ERROR] Failed to create empty file at '{0}'." -f $To) -ForegroundColor Red
                 }
             } else {
-                Write-Host "Notice: $From not found, $To already exists."
+                Write-Host ("[NOTICE] '{0}' not found, but target '{1}' already exists. Skipped." -f $From, $To) -ForegroundColor DarkGray
             }
         } else {
-            Write-Host "Skipped: Source file $From does not exist."
+            Write-Host ("[SKIP] Source file '{0}' does not exist." -f $From) -ForegroundColor DarkGray
         }
         return
     }
 
     if (Test-Path $To) {
         if ($f) {
-            # Force overwrite, do nothing
+            Write-Host ("[INFO] Force flag (-f) detected. Overwriting '{0}'." -f $To) -ForegroundColor Cyan
         } elseif ($n) {
-            Write-Host "Skipped: $To already exists (-n)"
+            Write-Host ("[SKIP] Target '{0}' already exists (-n)." -f $To) -ForegroundColor DarkGray
             return
         } else {
-            $ans = Read-Host "Target file $To exists. Overwrite? [y/N]"
+            Write-Host ("[PROMPT] Target file '{0}' exists." -f $To) -ForegroundColor Magenta
+            $ans = Read-Host "Overwrite? [y/N]"
             if ($ans -notmatch '^[Yy]$') {
-                Write-Host "Skipped: $FileDesc"
+                Write-Host ("[SKIP] User cancelled overwrite for '{0}'." -f $FileDesc) -ForegroundColor DarkGray
                 return
             }
         }
@@ -94,25 +104,22 @@ function Move-Or-CreateEmpty {
 
     try {
         Move-Item -Force -Path $From -Destination $To -ErrorAction Stop
-        # Set user permissions
-        $acl = Get-Acl $To
-        $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-        $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($user, "Read,Write", "Allow")
-        $acl.SetAccessRule($accessRule)
-        Set-Acl $To $acl
-        Write-Host "Success: $Direction and set permissions for $FileDesc → $To"
+        Write-Host ("[SUCCESS] {0}: '{1}'" -f $Direction, $FileDesc) -ForegroundColor Green
+        Write-Host ("  -> Path: {0}" -f $To) -ForegroundColor DarkGray
+        Set-TargetAcl -FilePath $To
     } catch {
-        Write-Host "Error: Failed to $Direction $FileDesc. Details: $($_.Exception.Message)"
+        Write-Host ("[ERROR] Failed to {0} '{1}'. Details: {2}" -f $Direction, $FileDesc, $_.Exception.Message) -ForegroundColor Red
     }
 }
 
 function Move-To-ConfigDir {
+    Write-Host "[START] Moving settings to Plugin config directory..." -ForegroundColor Cyan
     if (-not (Test-Path $TyporaPluginDir)) {
         try {
             New-Item -Path $TyporaPluginDir -ItemType Directory -Force | Out-Null
-            Write-Host "Created destination directory: $TyporaPluginDir"
+            Write-Host ("[SUCCESS] Created destination directory: {0}" -f $TyporaPluginDir) -ForegroundColor Green
         } catch {
-            Write-Host "Error: Failed to create directory $TyporaPluginDir. Check your permissions."
+            Write-Host ("[ERROR] Failed to create directory {0}. Check permissions." -f $TyporaPluginDir) -ForegroundColor Red
             if (-not $NoPause) { Write-Host ""; pause }
             exit 1
         }
@@ -120,17 +127,18 @@ function Move-To-ConfigDir {
     foreach ($File in $Files) {
         $Src = Join-Path $GlobalSettingsDir $File
         $Dest = Join-Path $TyporaPluginDir $File
-        Move-Or-CreateEmpty -From $Src -To $Dest -FileDesc $File -Direction "Moved" -CreateEmptyIfMissing:$false
+        Move-Or-CreateEmpty -From $Src -To $Dest -FileDesc $File -Direction "Moved" -CreateEmptyIfMissing $false
     }
 }
 
 function Restore-To-GlobalSettings {
+    Write-Host "[START] Restoring settings back to Global settings directory..." -ForegroundColor Cyan
     if (-not (Test-Path $GlobalSettingsDir)) {
         try {
             New-Item -Path $GlobalSettingsDir -ItemType Directory -Force | Out-Null
-            Write-Host "Created directory: $GlobalSettingsDir"
+            Write-Host ("[SUCCESS] Created directory: {0}" -f $GlobalSettingsDir) -ForegroundColor Green
         } catch {
-            Write-Host "Error: Failed to create directory $GlobalSettingsDir. Check your permissions."
+            Write-Host ("[ERROR] Failed to create directory {0}. Check permissions." -f $GlobalSettingsDir) -ForegroundColor Red
             if (-not $NoPause) { Write-Host ""; pause }
             exit 1
         }
@@ -138,7 +146,7 @@ function Restore-To-GlobalSettings {
     foreach ($File in $Files) {
         $From = Join-Path $TyporaPluginDir $File
         $To = Join-Path $GlobalSettingsDir $File
-        Move-Or-CreateEmpty -From $From -To $To -FileDesc $File -Direction "Restored" -CreateEmptyIfMissing:$true
+        Move-Or-CreateEmpty -From $From -To $To -FileDesc $File -Direction "Restored" -CreateEmptyIfMissing $true
     }
 }
 

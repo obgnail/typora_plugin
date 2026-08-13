@@ -24,7 +24,7 @@ function Pause-And-Exit {
     }
     Write-Host "`nPress any key to exit..."
     if ($Host.Name -eq 'ConsoleHost') {
-        $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | Out-Null
+        try { $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | Out-Null } catch {}
     } else {
         Read-Host "Script finished. Press Enter to exit"
     }
@@ -56,10 +56,10 @@ if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Adm
 try {
     $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
     $expectedParent = Join-Path $scriptDir "..\.."
-    if (-not (Test-Path $expectedParent)) {
+    if (-not (Test-Path -LiteralPath $expectedParent)) {
         throw "Execution context error. Please manually move the 'plugin' folder to Typora's installation directory before running this script."
     }
-    $rootDir = (Resolve-Path $expectedParent).Path
+    $rootDir = [System.IO.Path]::GetFullPath($expectedParent)
     $paths = [PSCustomObject]@{
         RootDir     = $rootDir
         PluginDir   = Join-Path -Path $rootDir -ChildPath "plugin"
@@ -74,8 +74,8 @@ try {
         $paths.SettingsDir
     )
     foreach ($dir in $dirsToValidate) {
-        if (!(Test-Path -Path $dir -PathType Container)) {
-            throw "Could not determine '$dir' directory. Please verify that you are running this script in the correct Typora installation path."
+        if (!(Test-Path -LiteralPath $dir -PathType Container)) {
+            throw ("Could not determine '{0}' directory. Please verify that you are running this script in the correct Typora installation path." -f $dir)
         }
     }
 
@@ -90,12 +90,12 @@ try {
     )
 
     Write-Host "      -> Setting 'FullControl' for 'plugin' directory."
-    $pluginAcl = Get-Acl -Path $paths.PluginDir
+    $pluginAcl = Get-Acl -LiteralPath $paths.PluginDir
     $pluginAcl.SetAccessRule($directoryAccessRule)
     Set-Acl -Path $paths.PluginDir -AclObject $pluginAcl
 
     Write-Host "      -> Setting 'FullControl' for 'settings' directory."
-    $settingsAcl = Get-Acl -Path $paths.SettingsDir
+    $settingsAcl = Get-Acl -LiteralPath $paths.SettingsDir
     $settingsAcl.SetAccessRule($directoryAccessRule)
     Set-Acl -Path $paths.SettingsDir -AclObject $settingsAcl
 
@@ -111,21 +111,21 @@ try {
     )
     foreach ($file in $filesToProcess) {
         $fileName = Split-Path $file -Leaf
-        if (Test-Path -Path $file -PathType Leaf) {
-            Write-Host "     -> Processing permissions for '$fileName'."
-            $acl = Get-Acl -Path $file
+        if (Test-Path -LiteralPath $file -PathType Leaf) {
+            Write-Host ("     -> Processing permissions for '{0}'." -f $fileName)
+            $acl = Get-Acl -LiteralPath $file
             Write-Host "          -> Resetting permissions and applying 'FullControl'."
             $acl.ResetAccessRule($fileAccessRule)
             Set-Acl -Path $file -AclObject $acl
-            Write-Host "          -> Permissions set successfully for '$fileName'."
+            Write-Host ("          -> Permissions set successfully for '{0}'." -f $fileName)
         } else {
-            Write-Warning "     -> $fileName file not found. Skipping permission set for it."
+            Write-Warning ("     -> {0} file not found. Skipping permission set for it." -f $fileName)
         }
     }
 
     Pause-And-Exit -ExitCode 0 -Message "Permissions-Ensurer finished successfully! Please restart Typora."
 } catch {
-    $errorMessage = "[ERROR] An error occurred: $($_.Exception.Message)"
-    $errorLocation = "Error on line: $($_.InvocationInfo.ScriptLineNumber) in script: $($_.InvocationInfo.ScriptName)"
+    $errorMessage = "[ERROR] An error occurred: {0}" -f $_.Exception.Message
+    $errorLocation = "Error on line: {0} in script: {1}" -f $_.InvocationInfo.ScriptLineNumber, $_.InvocationInfo.ScriptName
     Pause-And-Exit -ExitCode 1 -Message "$errorMessage`n$errorLocation"
 }
