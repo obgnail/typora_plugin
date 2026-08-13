@@ -3,5 +3,5 @@
 /.vscode
 /temp
 /develop/node_modules
-/plugin/bin/version.json
+/plugin/VERSION.json
 /plugin/global/user_styles/*.css

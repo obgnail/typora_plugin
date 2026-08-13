@@ -43,7 +43,7 @@ describe("Updater", () => {
     updater.utils.fetch = mock.fn(async () => ({
       ok: true,
       status: 200,
-      json: async () => ({ tag_name: "2.0.0", assets: [{ browser_download_url: "https://dl.url" }] }),
+      json: async () => ({ tag_name: "2.0.0", published_at: "2026-08-11T00:00:00Z", assets: [{ browser_download_url: "https://dl.url" }] }),
       buffer: async () => Buffer.from("mock-zip-data"),
     }))
     updater.utils.unzip = mock.fn(async () => [
@@ -53,9 +53,7 @@ describe("Updater", () => {
     updater.utils.joinPluginPath = mock.fn((p) => `/app/plugin/${p}`)
     updater.utils.existPath = mock.fn(async () => true)
     updater.utils.compareVersion = mock.fn((a, b) => (a === b ? 0 : 1))
-    updater.utils.migrate = {
-      run: mock.fn(async () => undefined),
-    }
+    updater.utils.migrate = { run: mock.fn(async () => undefined) }
     updater.utils.runWithFakeProgressBar = mock.fn(async (cb) => cb())
   })
 
@@ -65,7 +63,7 @@ describe("Updater", () => {
     it("should initialize correct properties", () => {
       assert.equal(updater.latestReleaseUrl, "https://api.example.com/latest")
       assert.deepEqual(updater.requestOption, { proxy: "http://proxy", timeout: 5000 })
-      assert.ok(updater.paths.versionFile.includes("version.json"))
+      assert.ok(updater.paths.versionFile.includes("VERSION.json"))
     })
 
     it("should handle empty proxy and timeout", () => {
@@ -91,11 +89,9 @@ describe("Updater", () => {
     })
 
     it("should not throw if remove fails", async () => {
-      updater.fs.remove = mock.fn(async () => {
-        throw new Error("Mock error")
-      })
+      updater.fs.remove = mock.fn(() => Promise.reject(new Error("Mock error")))
       await assert.doesNotReject(() => updater.cleanup())
-      assert.equal(updater.fs.remove.mock.calls.length, 1)
+      assert.ok(updater.fs.remove.mock.calls.length >= 1)
     })
   })
 
@@ -165,12 +161,12 @@ describe("Updater", () => {
 
   describe("getDownloadURL", () => {
     it("should return browser_download_url if available", () => {
-      updater.latestVersionInfo = { assets: [{ browser_download_url: "https://dl.url" }] }
+      updater.latestVersionInfo = { published_at: "2026-08-11", assets: [{ browser_download_url: "https://dl.url" }] }
       assert.equal(updater.getDownloadURL(), "https://dl.url")
     })
 
     it("should fallback to zipball_url if assets are empty", () => {
-      updater.latestVersionInfo = { assets: [], zipball_url: "https://zip.url" }
+      updater.latestVersionInfo = { published_at: "2026-08-11", assets: [], zipball_url: "https://zip.url" }
       assert.equal(updater.getDownloadURL(), "https://zip.url")
     })
 
@@ -178,18 +174,27 @@ describe("Updater", () => {
       updater.latestVersionInfo = null
       assert.equal(updater.getDownloadURL(), null)
     })
+
+    it("should throw error with JSON string if published_at is missing", () => {
+      const malformedData = { tag_name: "2.0.0", assets: [] }
+      updater.latestVersionInfo = malformedData
+      assert.throws(
+        () => updater.getDownloadURL(),
+        new Error(JSON.stringify(malformedData)),
+      )
+    })
   })
 
   describe("downloadLatestVersion", () => {
     it("should fetch buffer from valid URL", async () => {
-      updater.latestVersionInfo = { assets: [{ browser_download_url: "https://dl.url" }] }
+      updater.latestVersionInfo = { published_at: "2026-08-11", assets: [{ browser_download_url: "https://dl.url" }] }
       const buffer = await updater.downloadLatestVersion()
       assert.deepEqual(buffer, Buffer.from("mock-zip-data"))
       assert.equal(updater.utils.fetch.mock.calls[0].arguments[0], "https://dl.url")
     })
 
     it("should throw when response is not ok", async () => {
-      updater.latestVersionInfo = { zipball_url: "https://zip.url" }
+      updater.latestVersionInfo = { published_at: "2026-08-11", zipball_url: "https://zip.url" }
       updater.utils.fetch = mock.fn(async () => ({ ok: false, status: 404 }))
       await assert.rejects(
         () => updater.downloadLatestVersion(),
@@ -198,7 +203,7 @@ describe("Updater", () => {
     })
 
     it("should throw when no download URL is available", async () => {
-      updater.latestVersionInfo = {}
+      updater.latestVersionInfo = { published_at: "2026-08-11" }
       await assert.rejects(
         () => updater.downloadLatestVersion(),
         /No download URL found/,
@@ -337,7 +342,7 @@ describe("Updater", () => {
       await updater.atomicSync()
 
       assert.equal(updater.fs.outputJson.mock.calls.length, 1)
-      assert.ok(updater.fs.outputJson.mock.calls[0].arguments[0].includes("version.json"))
+      assert.ok(updater.fs.outputJson.mock.calls[0].arguments[0].includes("VERSION.json"))
 
       const moveCalls = updater.fs.move.mock.calls
       assert.equal(moveCalls.length, 2)

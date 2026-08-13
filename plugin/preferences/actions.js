@@ -31,7 +31,7 @@ module.exports = (plugin) => {
     viewMarpOptions: openUrl("https://github.com/marp-team/marp-core?tab=readme-ov-file#constructor-options"),
     viewArticleUploaderReadme: openPath("./plugin/article_uploader/README.md"),
     viewRemoteControlReadme: openPath("./plugin/remote_control/README.md"),
-    developPlugins: openPath("./plugin/bin/DEVELOP_PLUGINS.md"),
+    developPlugins: openPath("./plugin/DEVELOP_PLUGINS.md"),
     openLocaleFolder: openPath("./plugin/global/locales/en.json"),
     openPluginFolder: openPath("./plugin"),
     openLogFolder: () => {
@@ -103,7 +103,7 @@ module.exports = (plugin) => {
             Controls.Action("viewGithub").Label("Github"),
           ),
         ],
-        data: { dockerCommand: "docker pull plantuml/plantuml-server:jetty\ndocker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty" },
+        data: { dockerCommand: "docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty" },
         actions: {
           viewDockerHub: () => utils.openUrl("https://hub.docker.com/r/plantuml/plantuml-server"),
           viewGithub: () => utils.openUrl("https://github.com/plantuml/plantuml-server"),

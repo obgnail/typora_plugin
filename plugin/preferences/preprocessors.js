@@ -15,13 +15,11 @@ module.exports = (plugin) => {
   const _disableOptions = (field, ...options) => field.disabledOptions = options
   return {
     global: {
-      pluginVersion: async (field, data) => {
+      pluginVersion: (field, data) => {
         if (!data[field.key]) {
           let version = "Unknown"
           try {
-            const file = utils.joinPluginPath("./plugin/bin/version.json")
-            const json = await utils.Package.FsExtra.readJson(file)
-            version = json.tag_name
+            version = require("../VERSION.json").tag_name
           } catch (e) {
             console.error(e)
           }

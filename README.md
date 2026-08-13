@@ -106,7 +106,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 
 ## How to Use: Windows/Linux Platform
 
-Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/issues/847)
+Visit [Installation Tutorial](https://github.com/obgnail/typora_plugin/issues/847)
 
 1. [Download](https://github.com/obgnail/typora_plugin/releases/latest) the plugin source code package and unzip it.
 
@@ -124,6 +124,8 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
    - Linux: Run `install_linux.sh` as administrator.
 
 5. Verification: Restart Typora, right-click in the main text area, and if you see the plugin items, everything is fine.
+
+![install](assets/install.gif)
 
 |           | Official Version                             | Beta Version                                 |
 | --------- | -------------------------------------------- | -------------------------------------------- |

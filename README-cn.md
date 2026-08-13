@@ -107,7 +107,7 @@
 
 ## 如何使用：Windows/Linux 平台
 
-前往 [视频安装教程](https://github.com/obgnail/typora_plugin/issues/847)
+前往 [安装教程](https://github.com/obgnail/typora_plugin/issues/847)
 
 1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压
 
@@ -126,6 +126,8 @@
    - Linux 系统：以管理员运行 `install_linux.sh`
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到插件栏目，说明一切顺利
+
+![install](assets/install.gif)
 
 |          | 正式版                                       | 免费版                                       |
 | -------- | -------------------------------------------- | -------------------------------------------- |

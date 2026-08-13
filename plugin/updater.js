@@ -111,7 +111,7 @@ class Updater {
 
     this.paths = {
       stagingDir: "",
-      versionFile: this.utils.joinPluginPath("./plugin/bin/version.json"),
+      versionFile: this.utils.joinPluginPath("./plugin/VERSION.json"),
       workDir: this.path.join(this.utils.tempFolder, "typora-plugin-updater"),
       backupDir: this.path.join(this.utils.tempFolder, "typora-plugin-updater-backup"),
     }
@@ -172,8 +172,7 @@ class Updater {
 
   async cleanup() {
     try {
-      await this.fs.remove(this.paths.workDir)
-      await this.fs.remove(this.paths.backupDir)
+      await Promise.all([this.fs.remove(this.paths.workDir), this.fs.remove(this.paths.backupDir)])
     } catch (e) {
       console.warn("Cleanup warning:", e.message)
     }
@@ -212,8 +211,10 @@ class Updater {
   }
 
   getDownloadURL() {
-    if (!this.latestVersionInfo) return null
-    return this.latestVersionInfo.assets?.[0]?.browser_download_url || this.latestVersionInfo.zipball_url
+    const info = this.latestVersionInfo
+    if (!info) return null
+    if (!Object.hasOwn(info, "published_at")) throw new Error(JSON.stringify(info))
+    return info.assets?.[0]?.browser_download_url || info.zipball_url
   }
 
   async downloadLatestVersion(url) {
@@ -273,11 +274,11 @@ class Updater {
     const src = this.path.join(this.paths.stagingDir, this.relpaths.rootDir)
     const dst = this.utils.joinPluginPath(this.relpaths.rootDir)
     const backup = this.paths.backupDir
-    if (this.latestVersionInfo) {
-      await this.fs.outputJson(this.path.join(src, "bin/version.json"), this.latestVersionInfo)
-    }
     if (!(await this.utils.existPath(dst))) {
       throw new Error("Target plugin directory does not exist")
+    }
+    if (this.latestVersionInfo) {
+      await this.fs.outputJson(this.path.join(src, "VERSION.json"), this.latestVersionInfo)
     }
 
     const moveContent = async (fromDir, toDir) => {

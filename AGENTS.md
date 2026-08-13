@@ -135,4 +135,4 @@ The build (`develop/build/index.cjs`) uses esbuild to bundle NPM dependencies in
 ## CI/CD
 
 - `TestOnCommit.yaml` -- Runs `npm ci && npm test` on push to `develop/**`, `plugin/**`, `.github/**` (Node 20.x and 24.x matrix)
-- `PublishOnTag.yaml` -- On tag `X.Y.Z`, creates version.json, zips `plugin/`, publishes GitHub Release
+- `PublishOnTag.yaml` -- On tag `X.Y.Z`, creates VERSION.json, zips `plugin/`, publishes GitHub Release

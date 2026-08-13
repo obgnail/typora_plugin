@@ -51,7 +51,7 @@ describe("i18n locale files", () => {
       return
     }
     if (filesToTest.length === 0) {
-      t.skip("Only one i18n file found. No comparisons needed.")
+      it.skip("Only one i18n file found. No comparisons needed.")
       return
     }
 

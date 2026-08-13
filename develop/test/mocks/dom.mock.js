@@ -7,6 +7,8 @@ const dom = new JSDOM(root, { url: "http://localhost/", runScripts: "dangerously
 global.window = dom.window
 global.document = dom.window.document
 global.navigator = { userAgent: "node.js" }
+global.requestAnimationFrame = async (fn) => Promise.resolve(fn)
+
 const globalsToForceOverwrite = ["Event", "CustomEvent", "HTMLElement", "customElements", "Node"]
 globalsToForceOverwrite.forEach(key => {
   global[key] = dom.window[key]
