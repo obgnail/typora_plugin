@@ -96,7 +96,7 @@ describe("plantUML/server.js - executeGet (via RENDER_MODE.GET)", () => {
     const result = await engine("content")
     assert.ok(result instanceof Error)
     assert.match(result.message, /414 URI Too Long/)
-    assert.match(result.message, /Deploy a local PlantUML server/)
+    assert.match(result.message, /Deploy a PlantUML server/)
   })
 
   it("returns a generic HTTP error for other failing statuses, including response body text", async () => {

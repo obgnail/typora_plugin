@@ -10,17 +10,16 @@ const createRenderEngine = (context) => {
     const zlib = require("zlib")
     const b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
     const uml = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
-    const buffer = zlib.deflateRawSync(text)
-    return buffer.toString("base64").replace(/[A-Za-z0-9+/]/g, c => uml[b64.indexOf(c)]).replace(/=/g, "")
+    const str = zlib.deflateRawSync(text).toString("base64")
+    return str.replace(/=/g, "").replace(/[A-Za-z0-9+/]/g, c => uml[b64.indexOf(c)])
   }
 
   const executeGet = async (content, req) => {
-    const resp = await fetch(`${req.url}/${req.format}/${encodeUML(content)}`, {
-      method: "GET", headers, timeout: req.timeout, proxy: req.proxy, redirect: "follow",
-    })
+    const url = `${req.url}/${req.format}/${encodeUML(content)}`
+    const resp = await fetch(url, { method: "GET", headers, timeout: req.timeout, proxy: req.proxy, redirect: "follow" })
     if (!resp.ok) {
       const msg = resp.status === 414
-        ? `[HTTP 414 URI Too Long]\nFatal: Server DOES NOT support large diagrams via GET.\nDeploy a local PlantUML server (supports POST).`
+        ? `[HTTP 414 URI Too Long]\nFatal: Server DOES NOT support large diagrams via GET.\nDeploy a PlantUML server (supports POST).`
         : `HTTP ${resp.status}: ${await resp.text()}`
       return new Error(msg)
     }
@@ -41,7 +40,9 @@ const createRenderEngine = (context) => {
       method: "POST",
       body: Readable.from([Buffer.from(content)]),
       headers: { ...headers, "Content-Type": "text/plain; charset=utf-8" },
-      timeout: req.timeout, proxy: req.proxy, redirect: "error",
+      timeout: req.timeout,
+      proxy: req.proxy,
+      redirect: "error",
     })
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     const contentType = resp.headers.get("content-type") || ""

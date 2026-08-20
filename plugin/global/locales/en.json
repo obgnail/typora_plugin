@@ -208,7 +208,7 @@
     "and": "AND",
     "or": "OR",
     "explain": "Find files matching ANY of the following conditions",
-    "matchRegex": "Use Regex",
+    "matchRegex": "match",
     "operator.colon": "contains",
     "operator.equal": "equals",
     "operator.notEqual": "does not equal",
@@ -216,7 +216,7 @@
     "operator.lte": "is less than or equal to",
     "operator.gt": "is greater than",
     "operator.lt": "is less than",
-    "scope.default": "Content or Path",
+    "scope.default": "Path or Content",
     "scope.path": "File Path",
     "scope.dir": "Directory",
     "scope.folder": "Folder",
@@ -1241,6 +1241,9 @@
     "$label.LOCALE": "Locale",
     "$label.RENDERER": "Renderer",
     "$label.EXPORT_TYPE": "Export Format",
+    "$label.DECAL_PATTERN": "Decal Pattern",
+    "$label.USE_DIRTY_RECT": "Dirty Rect",
+    "$label.AUTO_RESIZE": "Auto Resize Chart",
     "$option.THEME.light": "Light",
     "$option.THEME.dark": "Dark",
     "$option.LOCALE.en": "EN",
@@ -1266,8 +1269,8 @@
   },
   "abc": {
     "pluginName": "ABC",
-    "$label.VISUAL_OPTIONS": "Visual Options",
-    "$tooltip.viewAbcVisualOptionsManual": "View Documentation"
+    "$label.RENDER_OPTIONS": "Render Options",
+    "$tooltip.viewAbcRenderOptionsDocs": "Docs"
   },
   "drawIO": {
     "pluginName": "Draw.io",

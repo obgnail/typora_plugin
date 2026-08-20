@@ -36,7 +36,7 @@ class FenceMarkmap {
 
   callback = type => {
     const empty = "# empty"
-    const frontMatter = `---\nmarkmap:\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n`
+    const frontMatter = `---\nmarkmap:\n  height: 300px\n  backgroundColor: transparent\n---\n`
     const content = type === "draw_fence_template" ? this.config.FENCE_TEMPLATE : `${frontMatter}\n${this.plugin.getToc() || empty}`
     this.utils.insertBlockCode(null, this.config.FENCE_LANGUAGE, content)
   }

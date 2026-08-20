@@ -1,14 +1,12 @@
 /**
  * Wavedrom's API requires an element ID string in the 'prefix+index' format,
  * but it separates the numeric index and string prefix into distinct arguments
- * rather than accepting the full ID as a single string representing a DOM element.
- *
- * This unconventional approach is illustrated below:
+ * rather than accepting the full ID as a single string representing a DOM element:
  *   const wavedrom = require('wavedrom');
  *   const div = document.createElement('div');
  *   div.id = 'a0';
  *   document.body.appendChild(div);
- *   let notFirstSignal = false;
+ *   const notFirstSignal = false;
  *   wavedrom.renderWaveForm(0, { signal:[] }, 'a', notFirstSignal);  // Index (0) and prefix ('a') are passed separately
  *
  * The rationale behind this design, as explained by the author, is:
@@ -32,19 +30,23 @@
  */
 class WavedromPlugin extends BasePlugin {
   Wavedrom = null
-  skins = null
+  skins = {}
   PREFIX = "WaveDrom_Display_"
-  evalFunc = this.config.SAFE_MODE ? this.utils.safeEval : this.utils.unsafeEval
+  evalFn = this.config.SAFE_MODE ? this.utils.safeEval : this.utils.unsafeEval
 
   prepare = async () => {
     const { FsExtra, Path } = this.utils.Package
-    const folder = this.utils.resolvePluginPath(this.config.SKIN_FOLDER)
-    const modules = await FsExtra.readdir(folder)
-    this.skins = Object.fromEntries(
-      modules
-        .map(file => this.utils.resolvePluginPath(folder, file))
-        .map(path => [Path.parse(path).name, path]),
-    )
+    try {
+      const folder = this.utils.resolvePluginPath(this.config.SKIN_FOLDER)
+      const modules = await FsExtra.readdir(folder)
+      this.skins = Object.fromEntries(
+        modules
+          .map(file => this.utils.resolvePluginPath(folder, file))
+          .map(path => [Path.parse(path).name, path]),
+      )
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -84,10 +86,8 @@ class WavedromPlugin extends BasePlugin {
   }
 
   create = ($wrap, content, meta) => {
-    const metaConfig = { skin: meta.skin, hscale: meta.hscale }
-    const id = $wrap.attr("id")
-    const index = parseInt(id.slice(this.PREFIX.length))
-    const waveJson = Object.assign({ config: metaConfig }, this.evalFunc(content))
+    const index = parseInt($wrap.attr("id").slice(this.PREFIX.length))
+    const waveJson = Object.assign({ config: { skin: meta.skin, hscale: meta.hscale } }, this.evalFn(content))
     const notFirstSignal = false
     this.Wavedrom.renderWaveForm(index, waveJson, this.PREFIX, notFirstSignal)
   }

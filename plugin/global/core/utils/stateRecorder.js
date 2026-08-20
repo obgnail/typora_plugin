@@ -3,6 +3,9 @@ class StateRecorder {
 
   constructor(utils) {
     this.utils = utils
+
+    this._collect = () => this.collect()
+    this._restore = (p) => this.restore(p)
   }
 
   /**
@@ -55,15 +58,15 @@ class StateRecorder {
 
   process = () => {
     const { eventHub } = this.utils
-    eventHub.addEventListener(eventHub.eventType.beforeFileOpen, () => this.collect())
-    eventHub.addEventListener(eventHub.eventType.fileContentLoaded, this.restore)
+    eventHub.addEventListener(eventHub.eventType.beforeFileOpen, this._collect)
+    eventHub.addEventListener(eventHub.eventType.fileContentLoaded, this._restore)
   }
 
   postprocess = () => {
     if (this.recorders.size !== 0) return
     const { eventHub } = this.utils
-    eventHub.removeEventListener(eventHub.eventType.beforeFileOpen, () => this.collect())
-    eventHub.removeEventListener(eventHub.eventType.fileContentLoaded, this.restore)
+    eventHub.removeEventListener(eventHub.eventType.beforeFileOpen, this._collect)
+    eventHub.removeEventListener(eventHub.eventType.fileContentLoaded, this._restore)
   }
 }
 

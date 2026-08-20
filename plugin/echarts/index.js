@@ -1,5 +1,6 @@
 class EchartsPlugin extends BasePlugin {
-  echartsPkg = null
+  ECharts = null
+  DECAL_OPTIONS = { aria: { enabled: true, decal: { show: true } } }
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
@@ -20,6 +21,9 @@ class EchartsPlugin extends BasePlugin {
         locale: { type: "string", enum: ["en", "zh"], default: this.config.LOCALE },
         theme: { type: "string", enum: ["light", "dark"], default: this.config.THEME },
         renderer: { type: "string", enum: ["svg", "canvas"], default: this.config.RENDERER },
+        useDirtyRect: { type: "boolean", default: this.config.USE_DIRTY_RECT },
+        decal: { type: "boolean", default: this.config.DECAL_PATTERN },
+        resize: { type: "boolean", default: this.config.AUTO_RESIZE },
       },
       checkSelector: ".plugin-echarts-content",
       wrapElement: `<div class="plugin-echarts-content"></div>`,
@@ -37,23 +41,22 @@ class EchartsPlugin extends BasePlugin {
   }
 
   create = ($wrap, content, meta) => {
-    const { theme, locale, renderer } = meta
-    const myChart = this.echartsPkg.init($wrap[0], theme, { locale, renderer })
-    this.drawChart(myChart, content)
+    const { theme, locale, renderer, useDirtyRect, decal, resize } = meta
+    const myChart = this.ECharts.init($wrap[0], theme, { locale, renderer, useDirtyRect })
+    this._draw(myChart, content, decal, resize)
     return myChart
   }
 
-  drawChart = (myChart, content, resize = false) => {
-    // chart.showLoading()
-    let echarts = this.echartsPkg
+  _draw = (myChart, content, decal, resize) => {
+    // myChart.showLoading()
+    let echarts = this.ECharts
     let option = {}
     eval(content)
+    if (decal) Object.assign(option, this.DECAL_OPTIONS)
     myChart.clear()
     myChart.setOption(option)
-    if (resize) {
-      myChart.resize()
-    }
-    // chart.hideLoading()
+    if (resize) myChart.resize()
+    // myChart.hideLoading()
   }
 
   destroy = instance => {
@@ -75,9 +78,9 @@ class EchartsPlugin extends BasePlugin {
     }
   }
 
-  getVersion = () => this.echartsPkg?.version
+  getVersion = () => this.ECharts?.version
 
-  lazyLoad = () => this.echartsPkg = require("./echarts.min.js")
+  lazyLoad = () => this.ECharts = require("./echarts.min.js")
 }
 
 module.exports = {

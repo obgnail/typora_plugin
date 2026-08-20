@@ -21,8 +21,9 @@ class Logger {
   }
 
   process() {
-    this.logDirPath = this.utils.Package.Path.join(this.utils.tempFolder, "typora-plugin-logs")
-    this.logFilePath = this.utils.Package.Path.join(this.logDirPath, "errors.log")
+    const { Path } = this.utils.Package
+    this.logDirPath = Path.join(this.utils.tempFolder, "typora-plugin-logs")
+    this.logFilePath = Path.join(this.logDirPath, "errors.log")
 
     if (this.utils.getSetting("global", "LOGGING")) this.start()
   }

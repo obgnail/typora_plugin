@@ -19,7 +19,7 @@ module.exports = (plugin) => {
     viewVitePressLineHighlighting: openUrl(`https://vitepress.dev/${i18n.locale === "zh-CN" ? "zh/" : ""}guide/markdown#line-highlighting-in-code-blocks`),
     viewVuePressCodeTitle: openUrl("https://vuepress.vuejs.org/guide/markdown.html#code-title"),
     viewFocusLineHighlightingEffect: openUrl("https://codemirror.net/5/demo/activeline.html"),
-    viewAbcVisualOptionsManual: openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
+    viewAbcRenderOptionsDocs: openUrl("https://docs.abcjs.net/visual/render-abc-options.html"),
     viewVisibleTabsEffect: openUrl("https://codemirror.net/5/demo/visibletabs.html"),
     viewCodeFoldingEffect: openUrl("https://codemirror.net/5/demo/folding.html"),
     viewSideBySideEffect: openUrl("https://github.com/obgnail/typora_plugin/blob/master/assets/sideBySideView.png"),

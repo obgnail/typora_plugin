@@ -822,7 +822,7 @@ INTERACTIVE_MODE = true
 DEFAULT_FENCE_HEIGHT = "300px"
 
 # Default background color for the Fence Diagram
-DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 
 # Default Fence Options: Customize appearance and behavior
 #   height         : structural height for the Fence Diagram
@@ -843,7 +843,7 @@ DEFAULT_FENCE_OPTIONS = {
   paddingX = 8,
   fitRatio = 0.95,
   height = "300px",
-  backgroundColor = "#F8F8F8",
+  backgroundColor = "#FFFFFF",
   color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"],
 }
 
@@ -867,7 +867,7 @@ markmap:
   color: ["#4E79A7", "#F28E2C", "#E15759", "#76B7B2", "#59A14F", "#EDC949", "#AF7AA1", "#FF9DA7", "#9C755F", "#BAB0AB"]
   duration: 500
   height: 300px
-  backgroundColor: "#F8F8F8"
+  backgroundColor: transparent
 ---
 
 ## Links
@@ -2972,6 +2972,9 @@ RENDERER = "svg"
 #   svg: (Requires SVG renderer)
 EXPORT_TYPE = "svg"
 
+# Use Dirty Rect (Requires Canvas renderer)
+USE_DIRTY_RECT = false
+
 # =========== [ Chart Default Params ] ===========
 # Theme (light / dark)
 THEME = "light"
@@ -2983,15 +2986,24 @@ LOCALE = "en"
 DEFAULT_FENCE_HEIGHT = "300px"
 
 # Default Fence Background Color
-DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
+
+# Decal Pattern
+DECAL_PATTERN = false
+
+# Auto Resize
+AUTO_RESIZE = false
 
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting a code block
 TEMPLATE = """
 // ==BlockCodeConfig==
+// @renderer         svg
+// @useDirtyRect     false
 // @locale           en
 // @theme            light
-// @renderer         svg
+// @decal            false
+// @resize           false
 // @width            auto
 // @height           300px
 // @backgroundColor  transparent
@@ -3048,7 +3060,7 @@ CHART_ALIGN = "center"
 DEFAULT_FENCE_HEIGHT = "300px"
 
 # Default Fence Background Color
-DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting a code block
@@ -3061,9 +3073,9 @@ TEMPLATE = """
 // ==/BlockCodeConfig==
 
 // Built-in variables:
-//   1. Chart:   chart Class
-//   2. config:  chart option object
-//   3. this:    chart plugin instance
+//   1. Chart:  chart Class
+//   2. config: chart option object
+//   3. this:   chart plugin instance
 // API:  https://chart.nodejs.cn/docs/latest/configuration/
 // NOTE: Code within this block will be evaluated. Exercise caution
 
@@ -3112,7 +3124,7 @@ CHART_ALIGN = "center"
 DEFAULT_FENCE_HEIGHT = "auto"
 
 # Default Fence Background Color
-DEFAULT_FENCE_BACKGROUND_COLOR = "#FFFFFF"
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 
 # Skin Files
 # Download Skin Files: https://github.com/wavedrom/wavedrom/tree/trunk/skins
@@ -3166,7 +3178,7 @@ INTERACTIVE_MODE = true
 DEFAULT_FENCE_HEIGHT = "800px"
 
 # Default Fence Background Color
-DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting a code block
@@ -3211,26 +3223,33 @@ LANGUAGE = "abc"
 INTERACTIVE_MODE = true
 
 # =========== [ Rendering Control ] ===========
-# Visual options for the music sheet, reference: https://paulrosen.github.io/abcjs/visual/render-abc-options.html
-# Common Configurations:
-#   scale     : Zoom scale
-#   staffwidth: Staff width
-#   responsive: Responsive resizing behavior
-VISUAL_OPTIONS = {
+# Render options for the music sheet, reference: https://docs.abcjs.net/visual/render-abc-options.html
+RENDER_OPTIONS = {
   scale = 1.0,
   staffwidth = 400,
   responsive = "resize",
+  selectionColor = "#ff0000",
 }
 
 # Default Fence Height, if 'auto' it adapts to the content
 DEFAULT_FENCE_HEIGHT = "auto"
 
 # Default Fence Background Color
-DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 
 # =========== [ Template ] ===========
 # Template: Default sample padding content when inserting a code block
 TEMPLATE = """
+// ==BlockCodeConfig==
+// @scale            1.0
+// @staffwidth       400
+// @responsive       resize
+// @selectionColor   #FF0000
+// @width            auto
+// @height           auto
+// @backgroundColor  transparent
+// ==/BlockCodeConfig==
+
 X:1
 T:Twinkle, Twinkle, Little Star
 M:4/4
@@ -3308,7 +3327,6 @@ HOTKEY = ""
 # =========== [ Rendering Service ] ===========
 # Rendering Server URL
 # Recommended to install via Docker and enable the service:
-#   docker pull plantuml/plantuml-server:jetty
 #   docker run -d --name plantuml-server -p 8080:8080 plantuml/plantuml-server:jetty
 # You can also choose online rendering services, such as:
 #   https://kroki.io/plantuml

@@ -1,5 +1,5 @@
 class ChartPlugin extends BasePlugin {
-  ChartPkg = null
+  Chart = null
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
@@ -35,10 +35,9 @@ class ChartPlugin extends BasePlugin {
   }
 
   create = ($wrap, content) => {
-    const $canvas = $wrap.find("canvas")
-    if ($canvas.length) {
-      const ctx = $canvas[0].getContext("2d")
-      return this.drawChart(ctx, content)
+    const canvas = $wrap.find("canvas")?.[0]
+    if (canvas) {
+      return this.drawChart(canvas.getContext("2d"), content)
     }
   }
 
@@ -49,7 +48,7 @@ class ChartPlugin extends BasePlugin {
 
   drawChart = (ctx, content) => {
     let config = {}
-    const Chart = this.ChartPkg.Chart
+    const Chart = this.Chart.Chart
     eval(content)
     return new Chart(ctx, config)
   }
@@ -60,9 +59,9 @@ class ChartPlugin extends BasePlugin {
     $(preview).html(img)
   }
 
-  getVersion = () => this.ChartPkg?.version
+  getVersion = () => this.Chart?.version
 
-  lazyLoad = () => this.ChartPkg = require("./chart.min.js")
+  lazyLoad = () => this.Chart = require("./chart.min.js")
 }
 
 module.exports = {

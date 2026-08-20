@@ -262,7 +262,7 @@ class GrammarPresenter {
             _to(expression, async ast => {
               const definition = this.buildMermaid(ast, translate, textStyle, direction)
               const svg = await utils.renderMermaid(definition)
-              return `<div style="font-size:initial; line-height: initial; text-align:center;">${svg}</div>`
+              return `<div style="font-size:initial; line-height:initial; text-align:center; user-select:none">${svg}</div>`
             }).then(data => ctx.setValue("_displayGraph", { hintDetail: data }))
           }
         },

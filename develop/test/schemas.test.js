@@ -30,7 +30,7 @@ const ALLOWED_UNUSED_KEYS = {
 }
 
 const isIgnored = (fixedName, key) => (
-  (fixedName === "abc" && key.startsWith("VISUAL_OPTIONS"))
+  (fixedName === "abc" && key.startsWith("RENDER_OPTIONS"))
   || (fixedName === "marp" && key.startsWith("MARP_CORE_OPTIONS"))
   || (fixedName === "markdownlint" && key.startsWith("RULE_CONFIG"))
   || (fixedName === "remote_control" && key.startsWith("ALLOWED_METHODS"))

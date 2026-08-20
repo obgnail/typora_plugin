@@ -208,7 +208,7 @@
     "and": "且",
     "or": "或",
     "explain": "搜尋符合以下任一條件的檔案",
-    "matchRegex": "符合正規表示式",
+    "matchRegex": "符合正規式",
     "operator.colon": "包含",
     "operator.equal": "等於",
     "operator.notEqual": "不等於",
@@ -216,7 +216,7 @@
     "operator.lte": "小於等於",
     "operator.gt": "大於",
     "operator.lt": "小於",
-    "scope.default": "內容或路徑",
+    "scope.default": "路徑或內容",
     "scope.path": "路徑",
     "scope.dir": "目錄",
     "scope.folder": "目錄",
@@ -1241,6 +1241,9 @@
     "$label.LOCALE": "語言環境",
     "$label.RENDERER": "渲染器",
     "$label.EXPORT_TYPE": "匯出格式",
+    "$label.DECAL_PATTERN": "無障礙花紋",
+    "$label.USE_DIRTY_RECT": "髒矩形優化",
+    "$label.AUTO_RESIZE": "自動調整圖表大小",
     "$option.THEME.light": "Light",
     "$option.THEME.dark": "Dark",
     "$option.LOCALE.en": "EN",
@@ -1266,8 +1269,8 @@
   },
   "abc": {
     "pluginName": "ABC",
-    "$label.VISUAL_OPTIONS": "可視化選項",
-    "$tooltip.viewAbcVisualOptionsManual": "可視化選項文檔"
+    "$label.RENDER_OPTIONS": "渲染選項",
+    "$tooltip.viewAbcRenderOptionsDocs": "文檔"
   },
   "drawIO": {
     "pluginName": "DrawIO",

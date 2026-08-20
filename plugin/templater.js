@@ -13,7 +13,11 @@ class TemplaterPlugin extends BasePlugin {
       const fileFilter = (name) => extname(name).toLowerCase() === ".md"
       const fileParamsGetter = async (path, file) => ({ file, content: await readFile(path, "utf-8") })
       const onFile = ({ file, content }) => TEMPLATE.push({ name: file.replace(/\.md$/i, ""), text: content })
-      TEMPLATE_FOLDERS.forEach(folder => this.utils.walkDir({ dir: this.utils.resolvePluginPath(folder), fileFilter, fileParamsGetter, onFile, maxDepth, signal }))
+      try {
+        TEMPLATE_FOLDERS.forEach(folder => this.utils.walkDir({ dir: this.utils.resolvePluginPath(folder), fileFilter, fileParamsGetter, onFile, maxDepth, signal }))
+      } catch (err) {
+        console.error(err)
+      }
     })
   }
 

@@ -1230,13 +1230,16 @@ const schema_echarts = () => [
   FRAG.Base(true),
   FRAG.LangMode(),
   FRAG.ChartStyle(),
-  FRAG.Template(),
   Group("advanced",
     Segment("LOCALE").Options(["en", "zh"]),
     Segment("THEME").Options(["light", "dark"]),
     Segment("RENDERER").Options(["svg", "canvas"]).ActionTooltip("chooseEchartsRenderer"),
     Select("EXPORT_TYPE").Options(["svg", "png", "jpg"]),
+    Switch("USE_DIRTY_RECT").ShowIf(When.eq("RENDERER", "canvas")),
+    Switch("DECAL_PATTERN"),
+    Switch("AUTO_RESIZE"),
   ),
+  FRAG.Template(),
   FRAG.SettingHandler(),
 ]
 
@@ -1281,8 +1284,8 @@ const schema_abc = () => [
   FRAG.Base(true),
   FRAG.LangMode(),
   FRAG.ChartStyle(),
+  Dict("RENDER_OPTIONS").ActionTooltip("viewAbcRenderOptionsDocs"),
   FRAG.Template(),
-  Dict("VISUAL_OPTIONS").ActionTooltip("viewAbcVisualOptionsManual"),
   FRAG.SettingHandler(),
 ]
 
@@ -1290,13 +1293,13 @@ const schema_drawIO = () => [
   FRAG.Base(true),
   FRAG.LangMode(),
   FRAG.ChartStyle(),
-  FRAG.Template(),
   Group("advanced",
     Text("RESOURCE_URI"),
     Text("PROXY"),
     Integer("SERVER_TIMEOUT").Unit(UNITS.millisecond).Min(1000),
     Integer("CACHED_URL_COUNT").Min(1),
   ),
+  FRAG.Template(),
   FRAG.SettingHandler(),
 ]
 

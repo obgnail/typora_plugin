@@ -82,6 +82,7 @@ module.exports = {
     CODE_TITLE_PATTERN: [required, regex],
   },
   sidebar_enhance: {
+    FONT_WEIGHT: required,
     HIDDEN_NODE_PATTERNS: each([required, regex]),
     COUNT_EXT: each(fileExt),
     IGNORE_FOLDERS: each(required),

@@ -241,11 +241,11 @@ function metaConfigParserFactory(customCasters = {}) {
 
   function normalizeRule(def) {
     const rule = typeof def === "string" ? { type: def } : { ...def }
-    return {
+    const hasDefault = Object.hasOwn(rule, "default")
+    const compiled = {
       type: rule.type || "string",
       items: rule.items || "string",
-      default: rule.default,
-      required: Object.hasOwn(rule, "default") ? false : (rule.required ?? false),
+      required: hasDefault ? false : (rule.required ?? false),
       enum: Array.isArray(rule.enum) ? rule.enum : null,
       aliases: Array.isArray(rule.aliases) ? rule.aliases : null,
       valueAliases: (rule.valueAliases && typeof rule.valueAliases === "object") ? rule.valueAliases : null,
@@ -255,6 +255,20 @@ function metaConfigParserFactory(customCasters = {}) {
       transform: typeof rule.transform === "function" ? rule.transform : null,
       validator: typeof rule.validator === "function" ? rule.validator : null,
     }
+    if (hasDefault) compiled.default = rule.default
+    return compiled
+  }
+
+  function coerceUnknownValue(value) {
+    if (Array.isArray(value)) return value.map(coerceUnknownValue)
+    if (typeof value !== "string") return value
+    const v = value.trim()
+    if (v === "undefined") return undefined
+    if (v === "null") return null
+    if (v === "true") return true
+    if (v === "false") return false
+    if (v !== "" && !Number.isNaN(Number(v))) return Number(v)
+    return value
   }
 
   return function createConfigParser(schema = {}) {
@@ -342,7 +356,8 @@ function metaConfigParserFactory(customCasters = {}) {
       // Handle undefined header keys
       for (const [key, rawValues] of Object.entries(rawData)) {
         if (Object.hasOwn(compiledSchema, key)) continue
-        meta[key] = rawValues.length === 1 ? rawValues[0] : rawValues
+        const raw = rawValues.length === 1 ? rawValues[0] : rawValues
+        meta[key] = coerceUnknownValue(raw)
       }
 
       if (errors.length > 0) {
