@@ -15,7 +15,7 @@
  *
  * 3. Two-Phase Lazy Validation (Zero-Overhead Probe)
  *    DOM mapping via Rangy is extremely expensive. We decouple validation into
- *    Text Domain and Spatial Domain (`_isAnchorMatch`).
+ *    Text Domain and Spatial Domain (`_isAnchorMatched`).
  *    The engine naturally short-circuits via Control Flow: it checks text limits
  *    first, and ONLY computes the DOM Range if the text strictly matches.
  * ============================================================================
@@ -40,20 +40,33 @@ class ScannerEngine {
       const validConditions = conditions.filter(cond => {
         return cond.isRegex
           ? cond.strictReg.test(matchText)
-          : options.caseSensitive ? matchText === cond.rawPattern : matchText.toLowerCase() === cond.rawPattern.toLowerCase()
+          : (options.caseSensitive ? matchText === cond.rawPattern : matchText.toLowerCase() === cond.rawPattern.toLowerCase())
       })
 
-      // Provide caller with a localized rewind action to combat Greedy Swallowing
-      const rewind = () => pattern.lastIndex = start + 1
+      const control = {
+        _stopped: false,
+        _skipped: false,
+        stop() {
+          this._stopped = true
+        },
+        skip() {
+          this._skipped = true
+        },
+        // Provide caller with a localized rewind action to combat Greedy Swallowing
+        rewind() {
+          this._skipped = true
+          pattern.lastIndex = start + 1
+        },
+      }
 
       if (!validConditions.length) {
-        rewind()
+        control.rewind()
         continue
       }
 
-      const status = onMatch({ text: matchText, start, end, conditions: validConditions, rewind })
-      if (status === "break") break
-      if (status) hasMatch = true
+      onMatch({ text: matchText, start, end, conditions: validConditions, control })
+      if (control._stopped) break
+      if (!control._skipped) hasMatch = true
     }
 
     return hasMatch
@@ -165,15 +178,153 @@ class DocWalker {
   }
 }
 
+const DEFAULT_HOOKS = {
+  shouldContinue: () => true,
+  validateMatch: () => true,
+  onDOMHit: () => undefined,
+  onCMHit: () => undefined,
+  onFutureCMHit: () => undefined,
+  getCMHighlightClass: () => null,
+  onCMReady: () => undefined,
+}
+
+class TextEngine {
+  cmOverlays = new Map()
+
+  constructor(utils) {
+    this.walker = new DocWalker(utils)
+  }
+
+  scanAll({ conditions, options, hooks }) {
+    this.clearAll()
+    if (!conditions?.length) return
+
+    const pattern = new RegExp(
+      conditions.map(c => `(?:${c.pattern})`).join("|"),
+      (!options.caseSensitive || conditions.some(c => c.isRegex && c.flags.toLowerCase().includes("i"))) ? "gi" : "g",
+    )
+    this.ctx = { conditions, options, pattern, hooks: { ...DEFAULT_HOOKS, ...hooks } }
+
+    this.walker.walk({
+      shouldContinue: this.ctx.hooks.shouldContinue,
+      onStandardNode: this._processStandardNode,
+      onCodeMirror: this._processCodeMirror,
+      onFutureCodeMirror: this._processFutureCodeMirror,
+      onFutureCodeMirrorReady: this._processFutureCodeMirrorReady,
+    })
+  }
+
+  clearAll() {
+    this.walker.cancel()
+    for (const [cm, overlay] of this.cmOverlays.entries()) {
+      cm.removeOverlay(overlay)
+    }
+    this.cmOverlays.clear()
+  }
+
+  removeFutureCid(cid) {
+    this.walker.removePendingFutureCid(cid)
+  }
+
+  _scan = (text, onMatch) => {
+    return ScannerEngine.scan({ text, pattern: this.ctx.pattern, conditions: this.ctx.conditions, options: this.ctx.options, onMatch })
+  }
+
+  _processStandardNode = ({ cid, node, text, offset }) => {
+    this._scan(text, ({ start: rawStart, end: rawEnd, conditions, control }) => {
+      const start = Math.max(0, rawStart - offset)
+      const end = rawEnd - offset
+      if (start >= end) {
+        return control.rewind()
+      }
+
+      const hitContext = { cid, containerNode: node, start, end }
+      const range = File.editor.selection.rangy.createRange()
+      range.moveToBookmark(hitContext)
+
+      if (node.classList?.contains("md-htmlblock-container") && range.commonAncestorContainer.nodeType !== document.TEXT_NODE) {
+        return control.skip()
+      }
+
+      const ctxContainer = range.commonAncestorContainer
+      const contextNode = ctxContainer?.nodeType === document.TEXT_NODE ? ctxContainer.parentNode : ctxContainer
+      const rule = conditions.find(cond => this.ctx.hooks.validateMatch(cond, contextNode))
+      if (!rule) {
+        return control.rewind()
+      }
+      this.ctx.hooks.onDOMHit({ rule, range, contextNode, hitContext, control })
+    })
+  }
+
+  _processCodeMirror = ({ cid, cm, wrapper }) => {
+    const oldOverlay = this.cmOverlays.get(cm)
+    if (oldOverlay) cm.removeOverlay(oldOverlay)
+
+    const matched = this._scan(cm.getValue(), ({ start, end, conditions, control }) => {
+      const rule = conditions.find(cond => this.ctx.hooks.validateMatch(cond, wrapper))
+      if (!rule) {
+        return control.rewind()
+      }
+      this.ctx.hooks.onCMHit({ rule, cm, cid, start, end, control })
+    })
+
+    if (matched) this._applyCodeMirrorOverlay(cm, wrapper)
+  }
+
+  _processFutureCodeMirror = ({ cid, node, text }) => {
+    this._scan(text, ({ start, end, conditions, control }) => {
+      const rule = conditions.find(cond => this.ctx.hooks.validateMatch(cond, node))
+      if (!rule) {
+        return control.rewind()
+      }
+      this.ctx.hooks.onFutureCMHit({ rule, cid, containerNode: node, start, end, control })
+    })
+  }
+
+  _processFutureCodeMirrorReady = ({ cid, cm, wrapper }) => {
+    this._applyCodeMirrorOverlay(cm, wrapper)
+    this.ctx.hooks.onCMReady(cid, cm)
+  }
+
+  _applyCodeMirrorOverlay(cm, wrapper) {
+    const overlayRegexp = new RegExp(this.ctx.pattern.source, this.ctx.pattern.flags)
+    const overlay = {
+      token: (cmState) => {
+        overlayRegexp.lastIndex = cmState.pos
+        const match = overlayRegexp.exec(cmState.string)
+        if (match && match.index === cmState.pos) {
+          const matchText = match[0]
+          const validRule = this.ctx.conditions
+            .filter(cond => {
+              return cond.isRegex
+                ? cond.strictReg.test(matchText)
+                : (this.ctx.options.caseSensitive ? matchText === cond.rawPattern : matchText.toLowerCase() === cond.rawPattern.toLowerCase())
+            })
+            .find(cond => this.ctx.hooks.validateMatch(cond, wrapper))
+
+          if (validRule) {
+            cmState.pos += matchText.length || 1
+            return this.ctx.hooks.getCMHighlightClass(validRule)
+          } else {
+            cmState.pos += 1
+            return null
+          }
+        }
+        if (match) cmState.pos = match.index
+        else cmState.skipToEnd()
+        return null
+      },
+    }
+    cm.addOverlay(overlay)
+    this.cmOverlays.set(cm, overlay)
+  }
+}
+
 class Highlighter {
   constructor({ utils, config }) {
     this.utils = utils
-    this.options = {
-      caseSensitive: config.CASE_SENSITIVE,
-      maxHighlights: config.MAX_HIGHLIGHTS,
-      matchAnchor: config.HIGHLIGHTS_MATCH_ANCHOR,
-    }
-    this.walker = new DocWalker(utils)
+    this.options = { caseSensitive: config.CASE_SENSITIVE, maxHighlights: config.MAX_HIGHLIGHTS, matchAnchor: config.HIGHLIGHTS_MATCH_ANCHOR }
+    this.engine = new TextEngine(utils)
     this.searchStatus = this._createInitialStatus()
   }
 
@@ -205,12 +356,35 @@ class Highlighter {
 
     this._initializeSearchStatus(conditions)
 
-    this.walker.walk({
-      shouldContinue: () => this.searchStatus.hits.length <= this.options.maxHighlights,
-      onStandardNode: this._processStandardNode,
-      onCodeMirror: this._processCodeMirror,
-      onFutureCodeMirror: this._processFutureCodeMirror,
-      onFutureCodeMirrorReady: this._processFutureCodeMirrorReady,
+    this.engine.scanAll({
+      conditions: this.searchStatus.conditions,
+      options: this.options,
+      pattern: this.searchStatus.regexp,
+      hooks: {
+        shouldContinue: () => this.searchStatus.hits.length <= this.options.maxHighlights,
+        validateMatch: (rule, contextNode) => this._isAnchorMatched(rule, contextNode),
+        onDOMHit: ({ rule, range, hitContext, control }) => {
+          hitContext.highlightCls = `cm-sm-hit-${rule.id}`
+          const highlight = File.editor.EditHelper.markRange(range, hitContext.highlightCls)
+          this._expandInlineParents(highlight)
+          this._pushHit(highlight, hitContext.highlightCls, control)
+        },
+        getCMHighlightClass: (rule) => `sm-hit-${rule.id}`,
+        onCMHit: ({ rule, cm, cid, start, end, control }) => {
+          const hitCls = `cm-sm-hit-${rule.id}`
+          this._pushHit({ isCm: cm, cid, start, end, highlightCls: hitCls }, hitCls, control)
+        },
+        onFutureCMHit: ({ rule, cid, containerNode, start, end, control }) => {
+          const hitCls = `cm-sm-hit-${rule.id}`
+          this._pushHit({ cid, containerNode, start, end, highlightCls: hitCls, isFutureCm: true }, hitCls, control)
+        },
+        onCMReady: (cid, cm) => {
+          this.searchStatus.hits.filter(h => h.cid === cid).forEach(h => {
+            h.isCm = cm
+            h.isFutureCm = false
+          })
+        },
+      },
     })
 
     this._registerAutoClearSearch()
@@ -237,7 +411,7 @@ class Highlighter {
     // JIT init for lazy CodeMirror elements
     if (targetHit.isFutureCm) {
       const cm = File.editor.fences.addCodeBlock(targetHit.cid)
-      this.walker.removePendingFutureCid(targetHit.cid)
+      this.engine.removeFutureCid(targetHit.cid)
       this.searchStatus.hits.filter(h => h.cid === targetHit.cid).forEach(h => {
         h.isCm = cm
         h.isFutureCm = false
@@ -266,7 +440,7 @@ class Highlighter {
   clearSearch = () => {
     if (this.isClosed()) return
 
-    this.walker.cancel()
+    this.engine.clearAll()
     this.utils.entities.querySelectorAllInWrite(".plugin-hl-bar").forEach(el => el.remove())
     if (File.editor.sourceView.inSourceMode) {
       if (this.searchStatus?.hits.length) {
@@ -286,164 +460,32 @@ class Highlighter {
 
   isClosed = () => this.searchStatus.regexp === null
 
-  _scan = (text, onMatch) => {
-    const ops = { text, onMatch, pattern: this.searchStatus.regexp, conditions: this.searchStatus.conditions, options: this.options }
-    return ScannerEngine.scan(ops)
-  }
-
-  _processStandardNode = ({ cid, node, text, offset }) => {
-    this._scan(text, ({ start: rawStart, end: rawEnd, conditions, rewind }) => {
-      const start = Math.max(0, rawStart - offset)
-      const end = rawEnd - offset
-      if (start >= end) {
-        rewind()
-        return false
-      }
-
-      const hit = { cid, containerNode: node, start, end }
-      const range = File.editor.selection.rangy.createRange()
-      range.moveToBookmark(hit)
-
-      if (node.classList?.contains("md-htmlblock-container") && range.commonAncestorContainer.nodeType !== document.TEXT_NODE) {
-        return false
-      }
-
-      const ctxContainer = range.commonAncestorContainer
-      const ctxNode = ctxContainer?.nodeType === document.TEXT_NODE ? ctxContainer.parentNode : ctxContainer
-      const matchedCond = conditions.find(c => this._isAnchorMatch(c, ctxNode))
-      if (!matchedCond) {
-        rewind()
-        return false
-      }
-
-      hit.highlightCls = `cm-sm-hit-${matchedCond.id}`
-      const highlight = File.editor.EditHelper.markRange(range, hit.highlightCls)
-      this._expandInlineParents(highlight)
-
-      return this._pushHit(highlight, hit.highlightCls) ? true : "break"
-    })
-  }
-
-  _processCodeMirror = ({ cid, cm, wrapper }) => {
-    this._removeCodeMirrorOverlay(cm)
-
-    const matched = this._scan(cm.getValue(), ({ start, end, conditions, rewind }) => {
-      const matchedCond = conditions.find(c => this._isAnchorMatch(c, wrapper))
-      if (!matchedCond) {
-        rewind()
-        return false
-      }
-      const hitCls = `cm-sm-hit-${matchedCond.id}`
-      return this._pushHit({ isCm: cm, cid, start, end, highlightCls: hitCls }, hitCls) ? true : "break"
-    })
-
-    if (matched) {
-      this._applyCodeMirrorOverlay(cid, cm)
-    }
-  }
-
-  _processFutureCodeMirror = ({ cid, node, text }) => {
-    this._scan(text, ({ start, end, conditions, rewind }) => {
-      const matchedCond = conditions.find(c => this._isAnchorMatch(c, node))
-      if (!matchedCond) {
-        rewind()
-        return false
-      }
-      const hitCls = `cm-sm-hit-${matchedCond.id}`
-      const hit = { cid, containerNode: node, start, end, highlightCls: hitCls, isFutureCm: true }
-      return this._pushHit(hit, hitCls) ? true : "break"
-    })
-  }
-
-  _processFutureCodeMirrorReady = ({ cid, cm }) => {
-    this._applyCodeMirrorOverlay(cid, cm)
-    this.searchStatus.hits.filter(h => h.cid === cid).forEach(h => {
-      h.isCm = cm
-      h.isFutureCm = false
-    })
-  }
-
-  _applyCodeMirrorOverlay = (cid, cm) => {
-    this._removeCodeMirrorOverlay(cm)
-
-    const fences = File.editor.fences
-    fences.searchStatus = fences.searchStatus || {}
-    fences.searchStatus.overlay = fences.searchStatus.overlay || {}
-    fences.searchStatus.queue = fences.searchStatus.queue || []
-
-    const editorId = cid || "source"
-    const overlay = { searchExpression: this.searchStatus.regexp, token: this._createOverlayToken(cm) }
-    fences.searchStatus.overlay[editorId] = overlay
-    cm.addOverlay(overlay)
-    fences.searchStatus.queue.push(cm)
-  }
-
-  _removeCodeMirrorOverlay = (cm) => {
-    const fence = File.editor.fences
-    if (fence.searchStatus?.overlay) {
-      const cid = cm.cid || "source"
-      const overlay = fence.searchStatus.overlay[cid]
-      if (overlay) cm.removeOverlay(overlay)
-      fence.searchStatus.queue?.remove(cm)
-    }
-  }
-
-  _createOverlayToken = (cm) => {
-    const wrapper = cm.getWrapperElement?.()
-    const overlayRegexp = new RegExp(this.searchStatus.regexp.source, this.searchStatus.regexp.flags)
-    return (cmState) => {
-      overlayRegexp.lastIndex = cmState.pos
-      const match = overlayRegexp.exec(cmState.string)
-      if (match && match.index === cmState.pos) {
-        const matchText = match[0]
-        const matchedCond = this.searchStatus.conditions
-          .filter(cond => {
-            return cond.isRegex
-              ? cond.strictReg.test(matchText)
-              : this.options.caseSensitive ? matchText === cond.rawPattern : matchText.toLowerCase() === cond.rawPattern.toLowerCase()
-          })
-          .find(cond => this._isAnchorMatch(cond, wrapper))
-
-        if (matchedCond) {
-          cmState.pos += matchText.length || 1
-          return `sm-hit-${matchedCond.id}`
-        } else {
-          cmState.pos += 1
-          return null
-        }
-      }
-
-      if (match) cmState.pos = match.index
-      else cmState.skipToEnd()
-
-      return null
-    }
-  }
-
   _createInitialStatus = (keepConditions = false) => ({
     regexp: null,
-    conditions: keepConditions ? (this.searchStatus?.conditions || []) : [],
     hits: [],
     hitGroups: {},
     curSelection: null,
+    conditions: keepConditions ? (this.searchStatus?.conditions || []) : [],
   })
 
   _initializeSearchStatus = (conditions) => {
-    const pattern = conditions.map(c => `(?:${c.pattern})`).join("|")
-    const ignoreCase = !this.options.caseSensitive || conditions.some(c => c.isRegex && c.flags.toLowerCase().includes("i"))
-
     this.searchStatus.conditions = conditions
-    this.searchStatus.regexp = new RegExp(pattern, ignoreCase ? "gi" : "g")
     this.searchStatus.hitGroups = Object.fromEntries(conditions.map(c => [`cm-sm-hit-${c.id}`, { name: c.name, hits: [] }]))
+    this.searchStatus.regexp = new RegExp(
+      conditions.map(c => `(?:${c.pattern})`).join("|"),
+      (!this.options.caseSensitive || conditions.some(c => c.isRegex && c.flags.toLowerCase().includes("i"))) ? "gi" : "g",
+    )
   }
 
-  _pushHit = (hit, highlightCls) => {
+  _pushHit = (hit, highlightCls, control) => {
     this.searchStatus.hits.push(hit)
     this.searchStatus.hitGroups[highlightCls].hits.push(hit)
-    return this.searchStatus.hits.length <= this.options.maxHighlights
+    if (this.searchStatus.hits.length > this.options.maxHighlights) {
+      control.stop()
+    }
   }
 
-  _isAnchorMatch(cond, contextNode) {
+  _isAnchorMatched(cond, contextNode) {
     if (!this.options.matchAnchor || !cond.anchor) return true
     if (typeof contextNode?.closest !== "function") return cond.anchor === "#write"
     if (!contextNode.closest(cond.anchor)) return cond.anchor === "#write" && contextNode.closest("#typora-source") !== null
@@ -466,7 +508,6 @@ class Highlighter {
     const writeRect = this.utils.entities.eWrite.getBoundingClientRect()
     const markerRect = marker.getBoundingClientRect()
     const bar = document.createElement("div")
-
     bar.className = "plugin-hl-bar"
     bar.style.height = `${markerRect.height}px`
     bar.style.width = `${writeRect.width}px`
