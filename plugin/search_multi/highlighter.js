@@ -1,330 +1,15 @@
+const { TextEngine } = require("./typora_text_engine.js")
+
 /**
- * ============================================================================
- * ARCHITECTURAL CONTEXT: THE HIGHLIGHTER ENGINE
- * ============================================================================
- *
- * 1. The Monkey Patch Base
- *    Relies on `this.searchStatus` mimicking Typora's native search object
- *    to leverage the official `clearSearch`/`unmarkSpan` cleanup routines.
- *
- * 2. The Sliding Window Scanner (Anti-Greedy-Swallow)
- *    Instead of complex capture groups, we compile a flat, non-capturing
- *    Mega-RegExp (`(?:pat1)|(?:pat2)`). To prevent the regex engine from
- *    swallowing valid sub-matches when spatial/DOM validation fails, we use a
- *    centralized scanner that exposes a `rewind` pointer.
- *
- * 3. Two-Phase Lazy Validation (Zero-Overhead Probe)
- *    DOM mapping via Rangy is extremely expensive. We decouple validation into
- *    Text Domain and Spatial Domain (`_isAnchorMatched`).
- *    The engine naturally short-circuits via Control Flow: it checks text limits
- *    first, and ONLY computes the DOM Range if the text strictly matches.
- * ============================================================================
+ * The Monkey Patch Base
+ * Relies on `this.searchStatus` mimicking Typora's native search object
+ * to leverage the official `clearSearch`/`unmarkSpan` cleanup routines.
  */
-
-class ScannerEngine {
-  static scan({ text, pattern, conditions, options, onMatch }) {
-    pattern.lastIndex = 0
-    let match, hasMatch = false
-
-    while ((match = pattern.exec(text)) !== null) {
-      const start = match.index
-      const end = start + match[0].length
-
-      // Prevent infinite loops on empty matches
-      if (start === end) {
-        pattern.lastIndex = start + 1
-        continue
-      }
-
-      const matchText = match[0]
-      const validConditions = conditions.filter(cond => {
-        return cond.isRegex
-          ? cond.strictReg.test(matchText)
-          : (options.caseSensitive ? matchText === cond.rawPattern : matchText.toLowerCase() === cond.rawPattern.toLowerCase())
-      })
-
-      const control = {
-        _stopped: false,
-        _skipped: false,
-        stop() {
-          this._stopped = true
-        },
-        skip() {
-          this._skipped = true
-        },
-        // Provide caller with a localized rewind action to combat Greedy Swallowing
-        rewind() {
-          this._skipped = true
-          pattern.lastIndex = start + 1
-        },
-      }
-
-      if (!validConditions.length) {
-        control.rewind()
-        continue
-      }
-
-      onMatch({ text: matchText, start, end, conditions: validConditions, control })
-      if (control._stopped) break
-      if (!control._skipped) hasMatch = true
-    }
-
-    return hasMatch
-  }
-}
-
-class DocWalker {
-  _isCancelled = false
-  _handlers = {}
-  _pendingFutureCids = new Set()
-
-  constructor(utils) {
-    this.utils = utils
-  }
-
-  walk(handlers) {
-    if (!global.NodeDef) global.NodeDef = global.Node  // Polyfill
-
-    this.cancel() // Enforce single active session
-    this._isCancelled = false
-    this._handlers = handlers
-
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this._onAsyncCMReady, 999)
-
-    if (File.editor.sourceView.inSourceMode) {
-      const cm = File.editor.sourceView.cm
-      this._handlers.onCodeMirror?.({ cid: "source", cm, wrapper: cm.getWrapperElement?.() })
-      return
-    }
-
-    let node = File.editor.nodeMap.getFirst()
-    while (node && !this._isCancelled) {
-      if (this._handlers.shouldContinue && !this._handlers.shouldContinue()) break
-      this._visitNode(node)
-      node = node.get("after")
-    }
-  }
-
-  cancel() {
-    this._isCancelled = true
-    this._pendingFutureCids.clear()
-    this._handlers = {}
-    this.utils.eventHub.removeEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this._onAsyncCMReady)
-  }
-
-  removePendingFutureCid(cid) {
-    this._pendingFutureCids.delete(cid)
-  }
-
-  _onAsyncCMReady = (cid, cm) => {
-    if (this._isCancelled || !this._pendingFutureCids.has(cid)) return
-    this._pendingFutureCids.delete(cid)
-    this._handlers.onFutureCodeMirrorReady?.({ cid, cm, wrapper: cm.getWrapperElement?.() })
-  }
-
-  _visitNode(node) {
-    if (this._isCancelled || (this._handlers.shouldContinue && !this._handlers.shouldContinue())) return
-
-    const children = node.get("children")
-    if (children.length) {
-      children.sortedForEach(child => this._visitNode(child))
-      return
-    }
-
-    const TYPE = global.NodeDef.TYPE
-    const $node = File.editor.findElemById(node.cid)
-    const containerNode = $node[0]
-
-    if (!containerNode) return
-
-    if (global.NodeDef.isType(node, TYPE.fences)) {
-      const cm = File.editor.fences.queue[node.cid]
-      if (cm) {
-        this._handlers.onCodeMirror?.({ cid: node.cid, cm, wrapper: cm.getWrapperElement?.() })
-      } else {
-        try {
-          const text = node.getText().replace(/\r?\n/g, File.useCRLF ? "\r\n" : "\n")
-          this._pendingFutureCids.add(node.cid)
-          this._handlers.onFutureCodeMirror?.({ cid: node.cid, node: containerNode, text })
-        } catch (err) {
-          console.error("Failed to parse future fence node:", err)
-        }
-      }
-    } else if (global.NodeDef.isType(node, TYPE.math_block)) {
-      const cm = File.editor.mathBlock.currentCm
-      if (cm?.cid === node.cid) {
-        this._handlers.onCodeMirror?.({ cid: node.cid, cm, wrapper: cm.getWrapperElement?.() })
-      }
-    } else if (global.NodeDef.isType(node, TYPE.html_block)) {
-      const cm = File.editor.mathBlock.currentCm // Typora renders HTML via CM sometimes
-      if (cm?.cid === node.cid) {
-        this._handlers.onCodeMirror?.({ cid: node.cid, cm, wrapper: cm.getWrapperElement?.() })
-      } else {
-        const htmlContainer = containerNode.querySelector(".md-htmlblock-container")
-        if (htmlContainer) {
-          this._handlers.onStandardNode?.({ cid: node.cid, node: htmlContainer, text: htmlContainer.textContent, offset: 0 })
-        }
-      }
-    } else if (!global.NodeDef.isType(node, TYPE.toc, TYPE.hr)) {
-      let text = $node.rawText()
-      let offset = 0
-      if (global.NodeDef.isType(node, TYPE.heading)) {
-        const prefix = "#".repeat(node.get("depth") || 1) + " "
-        text = prefix + text
-        offset = prefix.length
-      }
-      this._handlers.onStandardNode?.({ cid: node.cid, node: containerNode, text, offset })
-    }
-  }
-}
-
-const DEFAULT_HOOKS = {
-  shouldContinue: () => true,
-  validateMatch: () => true,
-  onDOMHit: () => undefined,
-  onCMHit: () => undefined,
-  onFutureCMHit: () => undefined,
-  getCMHighlightClass: () => null,
-  onCMReady: () => undefined,
-}
-
-class TextEngine {
-  cmOverlays = new Map()
-
-  constructor(utils) {
-    this.walker = new DocWalker(utils)
-  }
-
-  scanAll({ conditions, options, hooks }) {
-    this.clearAll()
-    if (!conditions?.length) return
-
-    const pattern = new RegExp(
-      conditions.map(c => `(?:${c.pattern})`).join("|"),
-      (!options.caseSensitive || conditions.some(c => c.isRegex && c.flags.toLowerCase().includes("i"))) ? "gi" : "g",
-    )
-    this.ctx = { conditions, options, pattern, hooks: { ...DEFAULT_HOOKS, ...hooks } }
-
-    this.walker.walk({
-      shouldContinue: this.ctx.hooks.shouldContinue,
-      onStandardNode: this._processStandardNode,
-      onCodeMirror: this._processCodeMirror,
-      onFutureCodeMirror: this._processFutureCodeMirror,
-      onFutureCodeMirrorReady: this._processFutureCodeMirrorReady,
-    })
-  }
-
-  clearAll() {
-    this.walker.cancel()
-    for (const [cm, overlay] of this.cmOverlays.entries()) {
-      cm.removeOverlay(overlay)
-    }
-    this.cmOverlays.clear()
-  }
-
-  removeFutureCid(cid) {
-    this.walker.removePendingFutureCid(cid)
-  }
-
-  _scan = (text, onMatch) => {
-    return ScannerEngine.scan({ text, pattern: this.ctx.pattern, conditions: this.ctx.conditions, options: this.ctx.options, onMatch })
-  }
-
-  _processStandardNode = ({ cid, node, text, offset }) => {
-    this._scan(text, ({ start: rawStart, end: rawEnd, conditions, control }) => {
-      const start = Math.max(0, rawStart - offset)
-      const end = rawEnd - offset
-      if (start >= end) {
-        return control.rewind()
-      }
-
-      const hitContext = { cid, containerNode: node, start, end }
-      const range = File.editor.selection.rangy.createRange()
-      range.moveToBookmark(hitContext)
-
-      if (node.classList?.contains("md-htmlblock-container") && range.commonAncestorContainer.nodeType !== document.TEXT_NODE) {
-        return control.skip()
-      }
-
-      const ctxContainer = range.commonAncestorContainer
-      const contextNode = ctxContainer?.nodeType === document.TEXT_NODE ? ctxContainer.parentNode : ctxContainer
-      const rule = conditions.find(cond => this.ctx.hooks.validateMatch(cond, contextNode))
-      if (!rule) {
-        return control.rewind()
-      }
-      this.ctx.hooks.onDOMHit({ rule, range, contextNode, hitContext, control })
-    })
-  }
-
-  _processCodeMirror = ({ cid, cm, wrapper }) => {
-    const oldOverlay = this.cmOverlays.get(cm)
-    if (oldOverlay) cm.removeOverlay(oldOverlay)
-
-    const matched = this._scan(cm.getValue(), ({ start, end, conditions, control }) => {
-      const rule = conditions.find(cond => this.ctx.hooks.validateMatch(cond, wrapper))
-      if (!rule) {
-        return control.rewind()
-      }
-      this.ctx.hooks.onCMHit({ rule, cm, cid, start, end, control })
-    })
-
-    if (matched) this._applyCodeMirrorOverlay(cm, wrapper)
-  }
-
-  _processFutureCodeMirror = ({ cid, node, text }) => {
-    this._scan(text, ({ start, end, conditions, control }) => {
-      const rule = conditions.find(cond => this.ctx.hooks.validateMatch(cond, node))
-      if (!rule) {
-        return control.rewind()
-      }
-      this.ctx.hooks.onFutureCMHit({ rule, cid, containerNode: node, start, end, control })
-    })
-  }
-
-  _processFutureCodeMirrorReady = ({ cid, cm, wrapper }) => {
-    this._applyCodeMirrorOverlay(cm, wrapper)
-    this.ctx.hooks.onCMReady(cid, cm)
-  }
-
-  _applyCodeMirrorOverlay(cm, wrapper) {
-    const overlayRegexp = new RegExp(this.ctx.pattern.source, this.ctx.pattern.flags)
-    const overlay = {
-      token: (cmState) => {
-        overlayRegexp.lastIndex = cmState.pos
-        const match = overlayRegexp.exec(cmState.string)
-        if (match && match.index === cmState.pos) {
-          const matchText = match[0]
-          const validRule = this.ctx.conditions
-            .filter(cond => {
-              return cond.isRegex
-                ? cond.strictReg.test(matchText)
-                : (this.ctx.options.caseSensitive ? matchText === cond.rawPattern : matchText.toLowerCase() === cond.rawPattern.toLowerCase())
-            })
-            .find(cond => this.ctx.hooks.validateMatch(cond, wrapper))
-
-          if (validRule) {
-            cmState.pos += matchText.length || 1
-            return this.ctx.hooks.getCMHighlightClass(validRule)
-          } else {
-            cmState.pos += 1
-            return null
-          }
-        }
-        if (match) cmState.pos = match.index
-        else cmState.skipToEnd()
-        return null
-      },
-    }
-    cm.addOverlay(overlay)
-    this.cmOverlays.set(cm, overlay)
-  }
-}
-
 class Highlighter {
   constructor({ utils, config }) {
     this.utils = utils
-    this.options = { caseSensitive: config.CASE_SENSITIVE, maxHighlights: config.MAX_HIGHLIGHTS, matchAnchor: config.HIGHLIGHTS_MATCH_ANCHOR }
     this.engine = new TextEngine(utils)
+    this.options = { caseSensitive: config.CASE_SENSITIVE, maxHighlights: config.MAX_HIGHLIGHTS, matchAnchor: config.HIGHLIGHTS_MATCH_ANCHOR }
     this.searchStatus = this._createInitialStatus()
   }
 
@@ -357,17 +42,17 @@ class Highlighter {
     this._initializeSearchStatus(conditions)
 
     this.engine.scanAll({
-      conditions: this.searchStatus.conditions,
       options: this.options,
+      conditions: this.searchStatus.conditions,
       pattern: this.searchStatus.regexp,
       hooks: {
         shouldContinue: () => this.searchStatus.hits.length <= this.options.maxHighlights,
         validateMatch: (rule, contextNode) => this._isAnchorMatched(rule, contextNode),
         onDOMHit: ({ rule, range, hitContext, control }) => {
           hitContext.highlightCls = `cm-sm-hit-${rule.id}`
-          const highlight = File.editor.EditHelper.markRange(range, hitContext.highlightCls)
-          this._expandInlineParents(highlight)
-          this._pushHit(highlight, hitContext.highlightCls, control)
+          const hit = File.editor.EditHelper.markRange(range, hitContext.highlightCls)
+          this._expandInlineParents(hit)
+          this._pushHit(hit, hitContext.highlightCls, control)
         },
         getCMHighlightClass: (rule) => `sm-hit-${rule.id}`,
         onCMHit: ({ rule, cm, cid, start, end, control }) => {
@@ -492,12 +177,12 @@ class Highlighter {
     return true
   }
 
-  _expandInlineParents = (highlight) => {
-    const isMetaContent = highlight.closest(".md-meta, .md-content, script")
+  _expandInlineParents = (hit) => {
+    const isMetaContent = hit.closest(".md-meta, .md-content, script")
     if (isMetaContent) {
-      highlight.closest("[md-inline]")?.classList.add("md-search-expand")
+      hit.closest("[md-inline]")?.classList.add("md-search-expand")
     } else {
-      highlight.querySelectorAll(".md-meta, .md-content, script").forEach(el => el.closest("[md-inline]")?.classList.add("md-search-expand"))
+      hit.querySelectorAll(".md-meta, .md-content, script").forEach(el => el.closest("[md-inline]")?.classList.add("md-search-expand"))
     }
   }
 
