@@ -328,3 +328,199 @@ describe("Schema watchers and Settings Key Synchronization", () => {
     })
   })
 })
+
+describe("Schema i18n Key Redundancy: plugin-level duplicates of shared 'settings' values", () => {
+  it("should not have plugin-specific i18n keys that duplicate the 'settings' fallback value across ALL locales", () => {
+    const I18N_FILES = require("./fixtures/i18n_files.js")
+    const localeNames = Object.keys(I18N_FILES)
+
+    // Collect every (fixedName, key) pair actually referenced by the schemas,
+    // using the same extraction logic as the "Schemas Translate" test above.
+    const pairs = new Set()
+    Object.entries(SCHEMAS).forEach(([fixedName, boxes]) => {
+      extractI18nKeys(boxes, (key) => {
+        if (typeof key === "string") pairs.add(JSON.stringify([fixedName, key]))
+      })
+    })
+
+    const errors = []
+
+    for (const pairStr of pairs) {
+      const [fixedName, key] = JSON.parse(pairStr)
+
+      let comparableLocales = 0
+      let matchingLocales = 0
+      const perLocaleValues = []
+
+      for (const localeName of localeNames) {
+        const data = I18N_FILES[localeName].obj
+        const pluginValue = data[fixedName]?.[key]
+        const settingsValue = data.settings?.[key]
+
+        // Only comparable when BOTH namespaces define this key in this locale.
+        if (pluginValue === undefined || settingsValue === undefined) continue
+
+        comparableLocales++
+        perLocaleValues.push(`${localeName}: "${pluginValue}"`)
+        if (pluginValue === settingsValue) matchingLocales++
+      }
+
+      // Flag only if it's redundant in EVERY locale where a comparison was possible.
+      if (comparableLocales > 0 && comparableLocales === matchingLocales) {
+        errors.push(
+          `"${fixedName}.${key}" duplicates "settings.${key}" in ALL ${comparableLocales} checked locale(s) [${perLocaleValues.join(", ")}]. ` +
+          `Since compile() resolves via i18nData[plugin]?.[key] ?? i18nData.settings?.[key] ?? key, ` +
+          `this plugin-level entry is dead weight and can be removed from the "${fixedName}" section of every locales/*.json file, ` +
+          `relying on the "settings" fallback instead.`,
+        )
+      }
+    }
+
+    assert.strictEqual(
+      errors.length,
+      0,
+      `[i18n Redundancy] Found ${errors.length} plugin-level key(s) fully duplicating the shared "settings" namespace and safe to remove:\n  - ${errors.join("\n  - ")}`,
+    )
+  })
+})
+
+describe("Schema watchers - deep key validation", () => {
+  const OPERATOR_KEYS = new Set(["$and", "$or", "$ne", "$typeof", "$follow", "$meta"])
+
+  function extractConditionKeys(when, out = new Set()) {
+    if (when == null || typeof when !== "object") return out
+    if (Array.isArray(when)) {
+      when.forEach(w => extractConditionKeys(w, out))
+      return out
+    }
+    for (const [key, value] of Object.entries(when)) {
+      if (key === "$meta") continue // virtual runtime namespace, not a settings key
+      if (OPERATOR_KEYS.has(key)) {
+        extractConditionKeys(value, out)
+        continue
+      }
+      out.add(key)
+      // value may itself be an operator object like { $ne: null } / { $typeof: "boolean" } - no further key to extract there
+    }
+    return out
+  }
+
+  it("every field key referenced in a watcher's `when` condition should exist in Settings", () => {
+    const errors = []
+
+    Object.entries(WATCHERS).forEach(([fixedName, watcherList]) => {
+      const setting = SETTINGS[fixedName]
+      if (!setting) return // absence of top-level key is already covered by the existing "Schema watchers -> Settings" test
+
+      watcherList.forEach(watcher => {
+        const keys = extractConditionKeys(watcher.when)
+        keys.forEach(key => {
+          if (!nestedPropertyHelpers.has(setting, key)) {
+            errors.push(`Watcher "${watcher.name || "(unnamed)"}" in "${fixedName}" references key "${key}" in its \`when\` condition, but it does NOT exist in Settings.`)
+          }
+        })
+      })
+    })
+
+    assert.deepStrictEqual(errors, [], `[Watcher Key Error] Found ${errors.length} dangling key reference(s) in watcher \`when\` conditions:`)
+  })
+
+  it("createBidirectionalConstraint pairs should reference existing Settings keys on both sides", () => {
+    // Bidirectional constraints (e.g. echarts.RENDERER <-> echarts.EXPORT_TYPE) produce two
+    // watchers named `_sync_<target>_from_<source>`; both keyX and keyY must be real settings keys.
+    const errors = []
+    Object.entries(WATCHERS).forEach(([fixedName, watcherList]) => {
+      const setting = SETTINGS[fixedName]
+      if (!setting) return
+
+      watcherList
+        .filter(w => typeof w.name === "string" && w.name.startsWith("_sync_"))
+        .forEach(w => {
+          // name pattern: _sync_<target>_from_<source>
+          const match = w.name.match(/^_sync_(.+)_from_(.+)$/)
+          if (!match) return
+          const [, target, source] = match
+          if (!nestedPropertyHelpers.has(setting, target)) {
+            errors.push(`Bidirectional watcher "${w.name}" in "${fixedName}": target key "${target}" not found in Settings.`)
+          }
+          if (!nestedPropertyHelpers.has(setting, source)) {
+            errors.push(`Bidirectional watcher "${w.name}" in "${fixedName}": source key "${source}" not found in Settings.`)
+          }
+        })
+    })
+
+    assert.deepStrictEqual(errors, [], `[Bidirectional Watcher Error] Found ${errors.length} error(s):`)
+  })
+})
+
+describe("Schema compilation with real locale data", () => {
+  it("should compile without throwing for every real locale file", () => {
+    const getSchemas = require("./fixtures/schemas.js").get
+    const I18N_FILES = require("./fixtures/i18n_files.js")
+    Object.keys(I18N_FILES).forEach(localeName => {
+      assert.doesNotThrow(() => getSchemas(localeName), `compile() threw while compiling schemas with locale "${localeName}"`)
+    })
+  })
+
+  it("should produce structurally identical box/field trees across all locales (only text should differ)", () => {
+    const getSchemas = require("./fixtures/schemas.js").get
+    const I18N_FILES = require("./fixtures/i18n_files.js")
+    const localeNames = Object.keys(I18N_FILES)
+    if (localeNames.length < 2) return
+
+    // Strip out translatable text fields, keep only structural shape (types/keys/nesting).
+    const stripText = (node) => {
+      if (Array.isArray(node)) return node.map(stripText)
+      if (node && typeof node === "object") {
+        const clone = {}
+        for (const [k, v] of Object.entries(node)) {
+          if (["title", "label", "explain", "placeholder", "tooltip", "hintHeader", "hintDetail", "divider", "unit", "options", "thMap"].includes(k)) continue
+          clone[k] = stripText(v)
+        }
+        return clone
+      }
+      return node
+    }
+
+    const baseLocale = localeNames[0]
+    const baseSchemas = getSchemas(baseLocale)
+    const baseShape = JSON.stringify(stripText(baseSchemas))
+
+    const errors = []
+    localeNames.slice(1).forEach(localeName => {
+      const schemas = getSchemas(localeName)
+      const shape = JSON.stringify(stripText(schemas))
+      if (shape !== baseShape) {
+        errors.push(`Structural shape mismatch between "${baseLocale}" and "${localeName}" (non-text schema structure differs).`)
+      }
+    })
+
+    assert.deepStrictEqual(errors, [], `[Locale Structural Mismatch] ${errors.length} error(s):`)
+  })
+})
+
+describe("Schema field key uniqueness", () => {
+  it("should not have duplicate field.key values within the same box/nestedBoxes/subSchema/tab level", () => {
+    const errors = []
+
+    const checkLevel = (boxes, fixedName, levelLabel) => {
+      boxes?.forEach(box => {
+        const seenInBox = new Map()
+        box.fields?.forEach(field => {
+          if (!field.key) return
+          if (seenInBox.has(field.key)) {
+            errors.push(`Duplicate field key "${field.key}" in "${fixedName}" at ${levelLabel} (box title: "${box.title || "(untitled)"}").`)
+          }
+          seenInBox.set(field.key, true)
+          if (field.nestedBoxes) checkLevel(field.nestedBoxes, fixedName, `${levelLabel} -> ${field.key}.nestedBoxes`)
+          if (field.subSchema) checkLevel(field.subSchema, fixedName, `${levelLabel} -> ${field.key}.subSchema`)
+          field.tabs?.forEach((tab, idx) => checkLevel(tab.schema, fixedName, `${levelLabel} -> ${field.key}.tabs[${idx}]`))
+        })
+      })
+    }
+
+    Object.entries(SCHEMAS).forEach(([fixedName, boxes]) => checkLevel(boxes, fixedName, "root"))
+
+    assert.deepStrictEqual(errors, [], `[Duplicate Key Error] Found ${errors.length} duplicate field key(s):`)
+  })
+})

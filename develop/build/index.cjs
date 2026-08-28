@@ -212,9 +212,9 @@ function createAliasPlugin(registry, currentAbsOutfile) {
   }
 }
 
+// Fix: #1203
 // Patch mathjax-full's AllPackages.js: remove the global MathJax detection block so
 // marp-core uses its own bundled MathJax without touching Typora's global MathJax.
-// See docs/issue-notes/1203-marp-mathjax-conflict/solution-build-patch.md
 function patchMathjaxGlobalDetect() {
   return {
     name: "patch-mathjax-global-detect",

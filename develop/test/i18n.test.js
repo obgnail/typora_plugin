@@ -181,6 +181,98 @@ describe("i18n.t - Variable Interpolation", () => {
   })
 })
 
+describe("i18n.t - Field vs Global Priority", () => {
+  beforeEach(resetI18n)
+
+  it("should prefer field-level value over global when both define the same key", () => {
+    // global.confirm = "Confirm" (from mockEN); give window_tab its own "confirm" with a different value
+    i18n.data.window_tab.confirm = "Field-Level Confirm"
+    assert.strictEqual(i18n.t("window_tab", "confirm"), "Field-Level Confirm")
+    // sanity check: global itself is untouched
+    assert.strictEqual(i18n.t("global", "confirm"), "Confirm")
+  })
+
+  it("should fallback to global value when field defines the key as undefined-equivalent (key absent)", () => {
+    // window_tab has no "cancel" key at all -> falls back to global's "Cancel"
+    assert.strictEqual(i18n.data.window_tab.cancel, undefined)
+    assert.strictEqual(i18n.t("window_tab", "cancel"), "Cancel")
+  })
+
+  it("should not let global leak through when field explicitly overrides with a different string", () => {
+    i18n.data.window_tab.pluginName = "Overridden Name"
+    assert.strictEqual(i18n.t("window_tab", "pluginName"), "Overridden Name")
+    assert.notStrictEqual(i18n.t("window_tab", "pluginName"), i18n.data.global.pluginName)
+  })
+})
+
+describe("i18n.t - Falsy-but-defined values (?? semantics)", () => {
+  beforeEach(resetI18n)
+
+  it("should return field value `false` instead of falling back to global", () => {
+    i18n.data.window_tab.flag = false
+    i18n.data.global.flag = "Global Flag Text"
+    assert.strictEqual(i18n.t("window_tab", "flag"), false)
+  })
+
+  it("should return field value `0` instead of falling back to global", () => {
+    i18n.data.window_tab.count = 0
+    i18n.data.global.count = "Global Count Text"
+    assert.strictEqual(i18n.t("window_tab", "count"), 0)
+  })
+
+  it("should return field value `\"\"` (empty string) instead of falling back to global", () => {
+    i18n.data.window_tab.emptyStr = ""
+    i18n.data.global.emptyStr = "Global Empty Text"
+    assert.strictEqual(i18n.t("window_tab", "emptyStr"), "")
+  })
+
+  it("should only fall back to global when field value is strictly undefined (key missing)", () => {
+    delete i18n.data.window_tab.missingKey
+    i18n.data.global.missingKey = "Global Fallback"
+    assert.strictEqual(i18n.t("window_tab", "missingKey"), "Global Fallback")
+  })
+
+  it("should return key itself when both field and global values are undefined", () => {
+    assert.strictEqual(i18n.t("window_tab", "totally_missing_key"), "totally_missing_key")
+  })
+})
+
+describe("i18n.t - Missing global namespace entirely", () => {
+  beforeEach(resetI18n)
+
+  it("should not throw and should return key when i18n.data.global is entirely absent", () => {
+    delete i18n.data.global
+    assert.doesNotThrow(() => i18n.t("global", "confirm"))
+    assert.strictEqual(i18n.t("global", "confirm"), "confirm")
+  })
+
+  it("should not throw and should return key when falling back to a missing global from another field", () => {
+    delete i18n.data.global
+    assert.doesNotThrow(() => i18n.t("window_tab", "nonexistent_key"))
+    assert.strictEqual(i18n.t("window_tab", "nonexistent_key"), "nonexistent_key")
+  })
+
+  it("should still resolve field-level keys normally even when global is absent", () => {
+    delete i18n.data.global
+    assert.strictEqual(i18n.t("window_tab", "act.sort_tabs"), "Sort Tabs")
+  })
+})
+
+describe("i18n.t - pluginName contract used by IPlugin", () => {
+  beforeEach(resetI18n)
+
+  it("should resolve pluginName via the bound t(), matching IPlugin's constructor usage", () => {
+    const bound = i18n.bind("window_tab")
+    assert.strictEqual(bound.t("pluginName"), "Window Tab Bar")
+  })
+
+  it("should fall back to global's pluginName if a field has none (documents current fallback behavior)", () => {
+    delete i18n.data.window_tab.pluginName
+    const bound = i18n.bind("window_tab")
+    assert.strictEqual(bound.t("pluginName"), i18n.data.global.pluginName)
+  })
+})
+
 describe("i18n link function", () => {
   it("should join with spaces for English", async () => {
     await i18n.init("en")
@@ -221,6 +313,23 @@ describe("i18n link function", () => {
     const result = i18n.link(longArray)
     assert.ok(result.length > 0)
     assert.ok(result.includes("word"))
+  })
+})
+
+describe("i18n link function - zh-TW and empty locale", () => {
+  it("should join without spaces for Traditional Chinese", async () => {
+    await i18n.init("zh-TW")
+    assert.strictEqual(i18n.link(["你好", "世界"]), "你好世界")
+  })
+
+  it("should join with spaces when locale is empty string (pre-init state)", () => {
+    i18n.locale = ""
+    assert.strictEqual(i18n.link(["Hello", "World"]), "Hello World")
+  })
+
+  it("should join with spaces for a locale not in noSpaceLanguages (e.g. residual/unnormalized value)", () => {
+    i18n.locale = "ja"
+    assert.strictEqual(i18n.link(["A", "B"]), "A B")
   })
 })
 
@@ -294,6 +403,90 @@ describe("i18n bind function", () => {
     const result = bound.fillActions(actions)
     assert.strictEqual(result[0].act_name, "Sort Tabs")
     assert.strictEqual(result[1].act_name, "Custom Action")
+  })
+})
+
+describe("i18n bind function - allData/link/_t fields", () => {
+  beforeEach(resetI18n)
+
+  it("should expose allData as a reference to the full i18n.data object", () => {
+    const bound = i18n.bind("window_tab")
+    assert.strictEqual(bound.allData, i18n.data)
+    assert.strictEqual(bound.allData.global.confirm, "Confirm")
+  })
+
+  it("should expose link as the same unbound i18n.link function reference", () => {
+    const bound = i18n.bind("window_tab")
+    assert.strictEqual(bound.link, i18n.link)
+    assert.strictEqual(bound.link(["Hello", "World"]), "Hello World")
+  })
+
+  it("should expose _t as the raw unbound t function, requiring an explicit field argument", () => {
+    const bound = i18n.bind("window_tab")
+    assert.strictEqual(bound._t, i18n.t)
+    // _t is NOT pre-bound to "window_tab" -> must pass field explicitly to hit a different namespace
+    assert.strictEqual(bound._t("global", "confirm"), "Confirm")
+    assert.strictEqual(bound._t("window_tab", "act.sort_tabs"), "Sort Tabs")
+  })
+
+  it("should allow _t to cross into other fields, unlike the bound t()", () => {
+    const bound = i18n.bind("window_tab")
+    // bound.t is locked to "window_tab" and cannot see a key that only exists in another field
+    i18n.data.someOtherField = { onlyHere: "Only Here Value" }
+    assert.strictEqual(bound.t("onlyHere"), "onlyHere") // not found in window_tab or global -> returns key
+    assert.strictEqual(bound._t("someOtherField", "onlyHere"), "Only Here Value")
+  })
+})
+
+describe("i18n bind function - fillActions mutation and empty act_name edge case", () => {
+  beforeEach(resetI18n)
+
+  it("should mutate the original array in place (same reference returned)", () => {
+    const bound = i18n.bind("window_tab")
+    const actions = [{ act_value: "sort_tabs" }]
+
+    const result = bound.fillActions(actions)
+
+    assert.strictEqual(result, actions) // same reference, not a copy
+    assert.strictEqual(actions[0].act_name, "Sort Tabs") // original array was mutated
+  })
+
+  it("should overwrite act_name when it is an empty string (falsy but present)", () => {
+    const bound = i18n.bind("window_tab")
+    const actions = [{ act_name: "", act_value: "sort_tabs" }]
+
+    const result = bound.fillActions(actions)
+
+    // "" is falsy, so `!act.act_name` is true -> gets filled despite key being "present"
+    assert.strictEqual(result[0].act_name, "Sort Tabs")
+  })
+
+  it("should NOT overwrite act_name when it is a non-empty string, even if act_value is also present", () => {
+    const bound = i18n.bind("window_tab")
+    const actions = [{ act_name: "Keep Me", act_value: "sort_tabs" }]
+
+    const result = bound.fillActions(actions)
+
+    assert.strictEqual(result[0].act_name, "Keep Me")
+  })
+
+  it("should leave act_name untouched (undefined) when act_value is also missing/falsy", () => {
+    const bound = i18n.bind("window_tab")
+    const actions = [{}]
+
+    const result = bound.fillActions(actions)
+
+    assert.strictEqual(result[0].act_name, undefined)
+  })
+
+  it("should respect a custom prefix argument instead of the default 'act.'", () => {
+    const bound = i18n.bind("window_tab")
+    i18n.data.window_tab["custom.sort_tabs"] = "Custom Prefixed Label"
+    const actions = [{ act_value: "sort_tabs" }]
+
+    const result = bound.fillActions(actions, "custom.")
+
+    assert.strictEqual(result[0].act_name, "Custom Prefixed Label")
   })
 })
 

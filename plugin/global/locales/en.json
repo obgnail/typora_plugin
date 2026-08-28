@@ -293,7 +293,7 @@
     "modal.hintDetail.operand.quotes": "Text enclosed in double quotes signifies an exact match for the entire phrase. E.g., {{eg}}",
     "modal.hintDetail.operand.regex": "Text enclosed in slashes indicates the use of a JavaScript-style regular expression for advanced pattern matching. E.g., {{eg}}",
     "modal.hintHeader.syntacticSugar": "Syntactic Sugar",
-    "modal.hintDetail.syntacticSugar": "You can omit the Scope and Operator. The default scope is {{scope}} (path or content), and the default operator is {{operator}} (contains). Typing {{shortCond}} is exactly the same as typing {{longCond}}.",
+    "modal.hintDetail.syntacticSugar": "You can omit the Scope and Operator. The default scope is {{scope}} (path or content), and the default operator is {{operator}} (contains). Typing {{shortCond}} is exactly the same as typing {{normalCond}} or {{longCond}}.",
     "modal.example.expression": "Query",
     "modal.example.query": "Search Files",
     "modal.example.equivalentTo": "Equivalent to",
