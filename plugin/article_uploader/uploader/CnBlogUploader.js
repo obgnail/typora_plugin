@@ -1,9 +1,6 @@
-const BaseUploaderInterface = require("./BaseUploaderInterface");
+const BaseUploader = require("./BaseUploader")
 
-/**
- * 上传到博客园的插件实现
- */
-class CnBlogUploader extends BaseUploaderInterface {
+class CnBlogUploader extends BaseUploader {
     getName() {
         return "cnblog";
     }
@@ -11,8 +8,6 @@ class CnBlogUploader extends BaseUploaderInterface {
     async upload(title, content, extraData, options) {
         const { Builder, By, Key, until } = require('selenium-webdriver');
         require('chromedriver');
-        const Notification = require('../utils/customNotification.js').plugin;
-        const notification = new Notification();
 
         const SELENIUM_WAIT_FIX_TIME_LEVEL1 = 2000;
         const SELENIUM_WAIT_FIX_TIME_LEVEL2 = 4000;
@@ -53,9 +48,9 @@ class CnBlogUploader extends BaseUploaderInterface {
             await driver.wait(until.elementIsVisible(publishButton), SELENIUM_EXPLICIT_WAIT_TIME);
             await publishButton.click();
             await driver.sleep(SELENIUM_WAIT_FIX_TIME_LEVEL2);
-            notification.showNotification("博客园博客发布流程已完毕", "success");
+            this.utils.plugin.utils.notification.show("博客园博客发布流程已完毕", "success");
         } catch (e) {
-            notification.showNotification("博客园发布博客失败", "error");
+            this.utils.plugin.utils.notification.show("博客园发布博客失败", "error");
             console.log(e);
         } finally {
             await driver.quit();

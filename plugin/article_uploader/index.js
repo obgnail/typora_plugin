@@ -27,10 +27,51 @@ class ArticleUploaderPlugin extends BasePlugin {
   }
 
   upload = async action => {
-    const uploader = require("./Plugin2UploadBridge")
-    this.uploader = new uploader(this)
-    const filePath = this.utils.getFilePath()
-    await this.uploader.uploadProxy(filePath, action)
+    this.uploader = new Bridge(this)
+    await this.uploader.upload(this.utils.getFilePath(), action)
+  }
+}
+
+class Bridge {
+  constructor(plugin) {
+    this.plugin = plugin
+    this.config = plugin.config
+    this.sites = ["cnblog", "csdn", "wordpress"]
+    this.utils = null
+    this.controller = null
+  }
+
+  lazyLoad = () => {
+    if (!this.utils) {
+      const Utils = require("./utils/uploadUtils")
+      this.utils = new Utils(this.plugin)
+    }
+    if (!this.controller) {
+      const controller = require("./UploadController")
+      this.controller = new controller(this)
+      this.sites.forEach(site => this.controller.register(site))
+    }
+  }
+
+  upload = async (filePath, type = "all") => {
+    if (this.config.upload.reconfirm) {
+      const { response } = await this.plugin.utils.showMessageBox({ type: "info", title: "上传提示", message: "你确定要上传文章吗" })
+      if (response === 1) return
+    }
+
+    this.lazyLoad()
+    this.plugin.utils.notification.show("开始上传，请不要关闭软件", "info")
+    const startTime = new Date()
+
+    if (type === "all") {
+      await this.controller.uploadToAllPlatforms(filePath)
+    } else {
+      await this.controller.upload(type, filePath)
+    }
+
+    const endTime = new Date()
+    const duration = ((endTime - startTime) / 1000).toFixed(1)
+    this.plugin.utils.notification.show(`上传成功，耗时${duration}秒`, "success")
   }
 }
 

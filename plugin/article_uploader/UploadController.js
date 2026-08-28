@@ -1,9 +1,5 @@
-/**
- * 控制器，转发请求，注册插件，设置配置
- */
 class UploadController {
     constructor(bridge) {
-        this.bridge = bridge;
         this.config = bridge.config;
         this.utils = bridge.utils;
         this.uploaders = new Map();
@@ -19,10 +15,7 @@ class UploadController {
     }
 
     init = () => {
-        const needSelenium = this.seleniumSites.some(site => {
-            const cfg = this.config.upload[site]
-            return cfg && cfg.enabled
-        })
+        const needSelenium = this.seleniumSites.some(site => this.config.upload[site]?.enabled)
         if (needSelenium) {
             if (!this.options) {
                 const chrome = require('selenium-webdriver/chrome');
@@ -48,8 +41,7 @@ class UploadController {
         if (path) {
             const uploader = require(path);
             const instance = new uploader(this);
-            const name = instance.getName();
-            this.uploaders.set(name, instance);
+            this.uploaders.set(instance.getName(), instance);
         }
     }
 
@@ -67,8 +59,7 @@ class UploadController {
     uploadToAllPlatforms = async (filePath) => {
         const { title, content, extraData } = this.utils.readAndSplitFile(filePath);
         for (let [name, uploader] of this.uploaders) {
-            const c = this.config.upload[name];
-            if (c && c.enabled) {
+            if (this.config.upload[name]?.enabled) {
                 await uploader.upload(title, content, extraData, this.options);
             }
         }

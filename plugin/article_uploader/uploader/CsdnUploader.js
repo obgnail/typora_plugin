@@ -1,9 +1,6 @@
-const BaseUploaderInterface = require("./BaseUploaderInterface");
+const BaseUploader = require("./BaseUploader")
 
-/**
- * 上传到CSDN的插件实现
- */
-class CsdnUploader extends BaseUploaderInterface {
+class CsdnUploader extends BaseUploader {
     getName() {
         return "csdn";
     }
@@ -12,11 +9,9 @@ class CsdnUploader extends BaseUploaderInterface {
         return new Promise((resolve, reject) => {
             const https = require('https');
             const { marked } = require('marked');
-            const Notification = require('../utils/customNotification.js').plugin;
-            const notification = new Notification();
 
             let articleId = 0;
-            const uuid = this.utils.generateUUID();
+            const uuid = this.utils.plugin.utils.getUUID();
             const url = "https://bizapi.csdn.net/blog-console-api/v1/postedit/saveArticle";
             const signature = this.utils.getSign(uuid, url);
             const xCaKey = "203803574";
@@ -60,7 +55,7 @@ class CsdnUploader extends BaseUploaderInterface {
                         console.log(body.toString());
                         articleId = JSON.parse(body.toString()).data.article_id;
 
-                        const uuid2 = this.utils.generateUUID();
+                        const uuid2 = this.utils.plugin.utils.getUUID();
                         const url2 = "https://bizapi.csdn.net/blog/phoenix/console/v1/history-version/save";
                         const signature2 = this.utils.getSign(uuid2, url2);
 
@@ -105,7 +100,7 @@ class CsdnUploader extends BaseUploaderInterface {
 
                             res.on('error', (error) => {
                                 console.error(error);
-                                notification.showNotification("CSDN第二次请求失败", "error");
+                                this.utils.plugin.utils.notification.show("CSDN第二次请求失败", "error");
                                 reject(error);
                             });
                         });
@@ -119,14 +114,14 @@ class CsdnUploader extends BaseUploaderInterface {
                         req2.end();
                     } catch (error) {
                         console.error(error);
-                        notification.showNotification("CSDN读取返回数据失败", "error");
+                        this.utils.plugin.utils.notification.show("CSDN读取返回数据失败", "error");
                         reject(error);
                     }
                 });
 
                 res.on('error', (error) => {
                     console.error(error);
-                    notification.showNotification("CSDN第一次请求失败", "error");
+                    this.utils.plugin.utils.notification.show("CSDN第一次请求失败", "error");
                     reject(error);
                 });
             });

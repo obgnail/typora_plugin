@@ -1,9 +1,6 @@
-const BaseUploaderInterface = require("./BaseUploaderInterface");
+const BaseUploader = require("./BaseUploader")
 
-/**
- * 上传到wordpress的插件实现
- */
-class WordpressUploader extends BaseUploaderInterface {
+class WordpressUploader extends BaseUploader {
     getName() {
         return "wordpress";
     }
@@ -12,8 +9,6 @@ class WordpressUploader extends BaseUploaderInterface {
         const { Builder, By, Key, until } = require('selenium-webdriver');
         const chrome = require('selenium-webdriver/chrome');
         require('chromedriver');
-        const Notification = require('../utils/customNotification.js').plugin;
-        const notification = new Notification();
         const { marked } = require('marked');
 
         const SELENIUM_WAIT_FIX_TIME_LEVEL1 = 2000;
@@ -52,10 +47,10 @@ class WordpressUploader extends BaseUploaderInterface {
             let publishButton = await driver.findElement(By.id('publish'));
             await publishButton.click();
             console.log("wordpress博客发布流程已完毕");
-            notification.showNotification("WordPress博客发布流程已完毕", "success");
+            this.utils.plugin.utils.notification.show("WordPress博客发布流程已完毕", "success");
         } catch (error) {
             console.log(error);
-            notification.showNotification('WordPress博客发布失败', 'error');
+            this.utils.plugin.utils.notification.show('WordPress博客发布失败', 'error');
         } finally {
             await driver.quit();
         }

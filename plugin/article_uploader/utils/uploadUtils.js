@@ -5,7 +5,6 @@ class UploadUtils {
         this.yaml = null;
     }
 
-    // 懒加载 CryptoJS 模块
     lazyLoadCryptoJS = () => {
         if (!this.CryptoJS) {
             this.CryptoJS = require('./crypto-js/core');
@@ -15,18 +14,7 @@ class UploadUtils {
         }
     }
 
-    // 生成UUID
-    generateUUID() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }
-
-    // 处理文件
     readAndSplitFile = (filePath) => {
-        const Notification = require('../utils/customNotification.js').plugin;
-        const notification = new Notification();
         try {
             const data = this.plugin.utils.Package.FsExtra.readFileSync(filePath, 'utf-8')
             const lines = data.split('\n');
@@ -38,13 +26,12 @@ class UploadUtils {
             const extraData = "";  // TODO: 取出标签，分类，封面图等
             return { title, content, extraData };
         } catch (error) {
-            notification.showNotification('文件格式读取失败', "error");
+            this.plugin.utils.notification.show('文件格式读取失败', "error");
             console.error('Error reading file:', error);
             return null;
         }
     }
 
-    // 获取签名
     getSign = (uuid, url) => {
         this.lazyLoadCryptoJS();
         const parsedUrl = new URL(url);
