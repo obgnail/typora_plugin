@@ -61,7 +61,7 @@ void get_root_dir(char *path) {
             break;
         }
     }
-    if (strlen(path) == 0) strcpy(path, ".");
+    if (strlen(path) == 0) { path[0] = '.'; path[1] = '\0'; }
 }
 
 int main() {
@@ -72,7 +72,7 @@ int main() {
 
     if (!getcwd(cwd, PATH_MAX)) finish("Failed to get current directory", NULL);
 
-    strncpy(root_path, cwd, PATH_MAX);
+    snprintf(root_path, PATH_MAX, "%s", cwd);
     get_root_dir(root_path);
 
     printf("[1/5] Checking if window.html exists in %s\n", root_path);
