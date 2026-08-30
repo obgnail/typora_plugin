@@ -372,6 +372,20 @@ const buildPreviewBridgeSource = ({ bridgeToken = "", splitSync = true } = {}) =
       event.preventDefault();
       post("html-editor:navigate", { href, resolvedHref: anchor.href || "" });
     }, true);
+    document.addEventListener("click", event => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const link = event.target && event.target.closest ? event.target.closest("a[href]") : null;
+      if (!link) return;
+      const raw = link.getAttribute("href") || "";
+      if (!raw.startsWith("#") || raw === "#") return;
+      let id = raw.slice(1);
+      try { id = decodeURIComponent(id); } catch (e) {}
+      const target = document.getElementById(id) || document.getElementsByName(id)[0];
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     window.addEventListener("message", event => {
       const data = event.data || {};
       if (data.channel !== CHANNEL || data.token !== TOKEN) return;
