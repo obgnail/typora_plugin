@@ -18,13 +18,14 @@ describe("ThirdPartyDiagramParser.createConfigParser", () => {
     assert.strictEqual(typeof parse, "function")
   })
 
-  it("returns defaults when there is no BlockCodeConfig block", () => {
+  it("returns defaults and original content when there is no BlockCodeConfig block", () => {
     const parse = parser.createConfigParser({
       width: { type: "string", default: "100%" },
       count: { type: "number", default: 1 },
     })
-    const meta = parse("no config block here")
+    const { meta, content } = parse("no config block here")
     assert.deepStrictEqual(meta, { width: "100%", count: 1 })
+    assert.strictEqual(content, "no config block here")
   })
 
   it("parses simple string/number/boolean fields from the config block", () => {
@@ -38,7 +39,7 @@ describe("ThirdPartyDiagramParser.createConfigParser", () => {
       "// @hscale 2",
       "// @interactive true",
     ])
-    const meta = parse(code)
+    const { meta } = parse(code)
     assert.deepStrictEqual(meta, { title: "Hello World", hscale: 2, interactive: true })
   })
 
@@ -49,7 +50,7 @@ describe("ThirdPartyDiagramParser.createConfigParser", () => {
       "// @flagB 0",
       "// @flagC yes",
     ])
-    const meta = parse(code)
+    const { meta } = parse(code)
     assert.deepStrictEqual(meta, { flagA: false, flagB: false, flagC: true })
   })
 
@@ -60,7 +61,7 @@ describe("ThirdPartyDiagramParser.createConfigParser", () => {
       "// @tags bar",
       "// @tags baz",
     ])
-    const meta = parse(code)
+    const { meta } = parse(code)
     assert.deepStrictEqual(meta.tags, ["foo", "bar", "baz"])
   })
 
@@ -70,21 +71,21 @@ describe("ThirdPartyDiagramParser.createConfigParser", () => {
       "// @align left",
       "// @align right",
     ])
-    const meta = parse(code)
+    const { meta } = parse(code)
     assert.strictEqual(meta.align, "right")
   })
 
   it("applies valueAliases before casting", () => {
     const parse = parser.createConfigParser({ align: { type: "string", valueAliases: { l: "left", c: "center", r: "right" } } })
     const code = wrapBlock(["// @align l"])
-    const meta = parse(code)
+    const { meta } = parse(code)
     assert.strictEqual(meta.align, "left")
   })
 
   it("resolves keys via aliases", () => {
     const parse = parser.createConfigParser({ backgroundColor: { type: "string", aliases: ["gbc", "background-color"] } })
     const code = wrapBlock(["// @gbc red"])
-    const meta = parse(code)
+    const { meta } = parse(code)
     assert.strictEqual(meta.backgroundColor, "red")
   })
 
@@ -95,7 +96,7 @@ describe("ThirdPartyDiagramParser.createConfigParser", () => {
 
   it("does not require a field if a default is provided, even if 'required' is set", () => {
     const parse = parser.createConfigParser({ name: { type: "string", required: true, default: "anon" } })
-    const meta = parse(wrapBlock([]))
+    const { meta } = parse(wrapBlock([]))
     assert.strictEqual(meta.name, "anon")
   })
 
@@ -124,37 +125,52 @@ describe("ThirdPartyDiagramParser.createConfigParser", () => {
 
   it("applies a custom transform to each processed value", () => {
     const parse = parser.createConfigParser({ tags: { type: "array", items: "string", transform: v => v.toUpperCase() } })
-    const meta = parse(wrapBlock(["// @tags foo"]))
+    const { meta } = parse(wrapBlock(["// @tags foo"]))
     assert.deepStrictEqual(meta.tags, ["FOO"])
   })
 
   it("passes through unknown keys found in the block that are not part of the schema", () => {
     const parse = parser.createConfigParser({})
-    const meta = parse(wrapBlock(["// @custom something"]))
+    const { meta } = parse(wrapBlock(["// @custom something"]))
     assert.strictEqual(meta.custom, "something")
   })
 
-  it("ignores lines outside the BlockCodeConfig markers", () => {
+  it("ignores empty-valued @key lines", () => {
+    const parse = parser.createConfigParser({ title: { type: "string", default: "fallback" } })
+    const { meta } = parse(wrapBlock(["// @title   "]))
+    assert.strictEqual(meta.title, "fallback")
+  })
+
+  it("ignores lines outside the BlockCodeConfig markers and correctly outputs pure content", () => {
     const parse = parser.createConfigParser({ title: { type: "string", default: "none" } })
     const code = [
       "// @title outside",
       "// ==BlockCodeConfig==",
       "// @title inside",
       "// ==/BlockCodeConfig==",
+      "graph TD;",
     ].join("\n")
-    const meta = parse(code)
+    const { meta, content } = parse(code)
     assert.strictEqual(meta.title, "inside")
+    assert.strictEqual(content, "// @title outside\ngraph TD;")
   })
 
-  it("ignores empty-valued @key lines", () => {
-    const parse = parser.createConfigParser({ title: { type: "string", default: "fallback" } })
-    const meta = parse(wrapBlock(["// @title   "]))
-    assert.strictEqual(meta.title, "fallback")
-  })
-
-  it("returns an empty object when code is null/undefined and there are no schema fields", () => {
+  it("strictly removes the config block AND its trailing newline from the pure content", () => {
     const parse = parser.createConfigParser({})
-    assert.deepStrictEqual(parse(null), {})
-    assert.deepStrictEqual(parse(undefined), {})
+    const code = [
+      "// ==BlockCodeConfig==",
+      "// @dummy 123",
+      "// ==/BlockCodeConfig==",
+      "const a = 1;",
+    ].join("\n")
+
+    const { content } = parse(code)
+    assert.strictEqual(content, "const a = 1;")
+  })
+
+  it("returns empty object for meta and empty string for content when code is null/undefined", () => {
+    const parse = parser.createConfigParser({})
+    assert.deepStrictEqual(parse(null), { meta: {}, content: "" })
+    assert.deepStrictEqual(parse(undefined), { meta: {}, content: "" })
   })
 })

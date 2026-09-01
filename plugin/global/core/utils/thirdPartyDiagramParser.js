@@ -14,11 +14,12 @@ class ThirdPartyDiagramParser {
    * @param destroyWhenUpdate {boolean}: Whether to clear the HTML in the preview before updating.
    * @param interactiveMode {boolean}: When in interactive mode, code blocks will not automatically expand.
    * @param metaConfigSchema {Object}: meta config schema.
+   * @param metaExtractor {function(string): {rawData: Object, cleanContent: string}}: Custom metadata extraction strategy.
    * @param checkSelector {string}: Selector to check if the target Element exists under the current fence.
    * @param wrapElement {string|function($pre):string}: If the target Element does not exist, create it.
    * @param lazyLoadFunc {function(): Promise<null>}: Lazy load third-party resources.
    * @param beforeRenderFunc {function(cid, content, $pre)}: Execute before rendering.
-   * @param renderStyleGetter {function(cid, content, $pre, meta)}: Get styles for render.
+   * @param renderStyleGetter {function($pre, $wrap, content, meta)}: Get styles for render.
    * @param createFunc {function($wrap, string, meta): instance}: Create a diagram instance, passing in the target Element and the content of the fence.
    * @param updateFunc {function($wrap, string, instance, meta): instance}: Update the diagram instance when the content is updated.
    * @param destroyFunc {function(Object): null}: Destroy the diagram instance, passing in the diagram instance.
@@ -34,9 +35,11 @@ class ThirdPartyDiagramParser {
       destroyWhenUpdate,
       interactiveMode = true,
       metaConfigSchema,
+      metaExtractor,
       checkSelector,
       wrapElement,
-      lazyLoadFunc, beforeRenderFunc,
+      lazyLoadFunc,
+      beforeRenderFunc,
       renderStyleGetter,
       createFunc,
       updateFunc,
@@ -50,7 +53,7 @@ class ThirdPartyDiagramParser {
     lang = lang.toLowerCase()
     lazyLoadFunc = this.utils.once(lazyLoadFunc)
     const settingMsg = null
-    const metaConfigParser = metaConfigSchema ? this.createConfigParser(metaConfigSchema) : null
+    const metaConfigParser = metaConfigSchema ? this.createConfigParser(metaConfigSchema, metaExtractor) : null
     this.parsers.set(lang, {
       lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg, metaConfigSchema, metaConfigParser,
       checkSelector, wrapElement, lazyLoadFunc, beforeRenderFunc, renderStyleGetter,
@@ -68,22 +71,16 @@ class ThirdPartyDiagramParser {
     this.utils.diagramParser.unregister(lang)
   }
 
-  render = async (cid, content, $pre, lang) => {
+  render = async (cid, rawContent, $pre, lang) => {
     const parser = this.parsers.get(lang)
     if (!parser) return
 
-    await parser.lazyLoadFunc()
-    const $wrap = this.getWrap(parser, $pre)
     try {
-      const rawMeta = typeof parser.beforeRenderFunc === "function" ? parser.beforeRenderFunc(cid, content, $pre) : {}
-      const extractedMeta = typeof parser.metaConfigParser === "function" ? parser.metaConfigParser(content) : {}
-      const meta = { ...rawMeta, ...extractedMeta }
-      if (typeof parser.renderStyleGetter === "function") {
-        const userCss = parser.renderStyleGetter($pre, $wrap, content, meta)
-        $wrap.css({ ...this.DEFAULT_CSS, ...userCss })
-      }
-      let instance = this.createOrUpdate(parser, cid, content, $wrap, lang, meta)
-      // Q: Why not use `await this.createOrUpdate`?
+      await parser.lazyLoadFunc()
+      const payload = this._extractPayload(parser, cid, rawContent, $pre)
+      const $wrap = this._mountView(parser, $pre, payload)
+      let instance = this._createOrUpdate(parser, cid, payload.content, $wrap, lang, payload.meta)
+      // Q: Why not use `await this._createOrUpdate`?
       // A: Some parsers' createFunc might preempt the element, causing a race condition if await is used.
       if (typeof instance?.then === "function") {
         instance = await instance
@@ -92,12 +89,35 @@ class ThirdPartyDiagramParser {
         parser.instanceMap.set(cid, instance)
       }
     } catch (e) {
-      const reason = `${e.stack}\n\nDiagram Parser Settings:\n${this.getSettingMsg(parser)}`
+      const reason = `${e.stack}\n\nDiagram Parser Settings:\n${this._getSettingMsg(parser)}`
       this.utils.diagramParser.throwParseError(null, reason)
     }
   }
 
-  createOrUpdate = (parser, cid, content, $wrap, lang, meta) => {
+  _extractPayload = (parser, cid, rawContent, $pre) => {
+    let cleanContent = rawContent
+    let extractedMeta = {}
+    if (typeof parser.metaConfigParser === "function") {
+      const parsed = parser.metaConfigParser(rawContent)
+      extractedMeta = parsed.meta || {}
+      cleanContent = parsed.content ?? rawContent
+    }
+    const rawMeta = typeof parser.beforeRenderFunc === "function" ? parser.beforeRenderFunc(cid, cleanContent, $pre) : {}
+    return { content: cleanContent, meta: { ...rawMeta, ...extractedMeta } }
+  }
+
+  _mountView = (parser, $pre, payload) => {
+    const $wrap = this._getWrap(parser, $pre)
+    let cssConfig = { ...this.DEFAULT_CSS }
+    if (typeof parser.renderStyleGetter === "function") {
+      const userCss = parser.renderStyleGetter($pre, $wrap, payload.content, payload.meta)
+      cssConfig = { ...cssConfig, ...userCss }
+    }
+    $wrap.css(cssConfig)
+    return $wrap
+  }
+
+  _createOrUpdate = (parser, cid, content, $wrap, lang, meta) => {
     const oldInstance = parser.instanceMap.get(cid)
     if (oldInstance && parser.updateFunc) {
       const newInstance = parser.updateFunc($wrap, content, oldInstance, meta)
@@ -110,7 +130,7 @@ class ThirdPartyDiagramParser {
     }
   }
 
-  getSettingMsg = parser => {
+  _getSettingMsg = parser => {
     if (!parser.settingMsg) {
       const settings = {
         language: parser.lang,
@@ -126,12 +146,10 @@ class ThirdPartyDiagramParser {
     return parser.settingMsg
   }
 
-  getWrap = (parser, $pre) => {
+  _getWrap = (parser, $pre) => {
     let $wrap = $pre.find(parser.checkSelector)
     if ($wrap.length === 0) {
-      const wrap = typeof parser.wrapElement === "function"
-        ? parser.wrapElement($pre)
-        : parser.wrapElement
+      const wrap = typeof parser.wrapElement === "function" ? parser.wrapElement($pre) : parser.wrapElement
       $wrap = $(wrap)
       $pre.find(".md-diagram-panel-preview").html($wrap)
     }
@@ -221,57 +239,76 @@ class ThirdPartyDiagramParser {
   }
 }
 
-function metaConfigParserFactory(customCasters = {}) {
-  const BLOCK_REGEX = /^(?:\u00EF\u00BB\u00BF)?\s*\/\/ ==BlockCodeConfig==([\s\S]*?)^\/\/ ==\/BlockCodeConfig==/im
+const DEFAULT_CASTERS = {
+  string: String,
+  number: (v) => Number.isNaN(Number(v)) ? v : Number(v),
+  boolean: (v) => v.toLowerCase() !== "false" && v !== "0",
+}
+
+function getLiteralFallback(type) {
+  if (type === "array") return []
+  if (type === "number") return 0
+  if (type === "boolean") return false
+  return ""
+}
+
+function normalizeRule(def) {
+  const rule = typeof def === "string" ? { type: def } : { ...def }
+  const hasDefault = Object.hasOwn(rule, "default")
+  const compiled = {
+    type: rule.type || "string",
+    items: rule.items || "string",
+    required: hasDefault ? false : (rule.required ?? false),
+    enum: Array.isArray(rule.enum) ? rule.enum : null,
+    aliases: Array.isArray(rule.aliases) ? rule.aliases : null,
+    valueAliases: (rule.valueAliases && typeof rule.valueAliases === "object") ? rule.valueAliases : null,
+    pattern: rule.pattern instanceof RegExp ? rule.pattern : null,
+    minItems: typeof rule.minItems === "number" ? Math.max(0, Math.floor(rule.minItems)) : null,
+    maxItems: typeof rule.maxItems === "number" ? Math.max(0, Math.floor(rule.maxItems)) : null,
+    transform: typeof rule.transform === "function" ? rule.transform : null,
+    validator: typeof rule.validator === "function" ? rule.validator : null,
+  }
+  if (hasDefault) compiled.default = rule.default
+  return compiled
+}
+
+function coerceUnknownValue(value) {
+  if (Array.isArray(value)) return value.map(coerceUnknownValue)
+  if (typeof value !== "string") return value
+  const v = value.trim()
+  if (v === "undefined") return undefined
+  if (v === "null") return null
+  if (v === "true") return true
+  if (v === "false") return false
+  if (v !== "" && !Number.isNaN(Number(v))) return Number(v)
+  return value
+}
+
+function defaultMetaExtractor(code) {
+  const BLOCK_REGEX = /^(?:\u00EF\u00BB\u00BF)?\s*\/\/ ==BlockCodeConfig==([\s\S]*?)^\/\/ ==\/BlockCodeConfig==[ \t]*(?:\r?\n)?/im
   const KV_REGEX = /^\s*\/\/\s+@([a-zA-Z0-9_\-$]+)(?:\s+(.*))?$/gm
 
-  const CASTERS = {
-    string: String,
-    number: (v) => isNaN(v) ? v : Number(v),
-    boolean: (v) => v.toLowerCase() !== "false" && v !== "0",
-    ...customCasters,
-  }
+  const rawData = Object.create(null)
+  let cleanContent = code || ""
 
-  function getLiteralFallback(type) {
-    if (type === "array") return []
-    if (type === "number") return 0
-    if (type === "boolean") return false
-    return ""
-  }
-
-  function normalizeRule(def) {
-    const rule = typeof def === "string" ? { type: def } : { ...def }
-    const hasDefault = Object.hasOwn(rule, "default")
-    const compiled = {
-      type: rule.type || "string",
-      items: rule.items || "string",
-      required: hasDefault ? false : (rule.required ?? false),
-      enum: Array.isArray(rule.enum) ? rule.enum : null,
-      aliases: Array.isArray(rule.aliases) ? rule.aliases : null,
-      valueAliases: (rule.valueAliases && typeof rule.valueAliases === "object") ? rule.valueAliases : null,
-      pattern: rule.pattern instanceof RegExp ? rule.pattern : null,
-      minItems: typeof rule.minItems === "number" ? Math.max(0, Math.floor(rule.minItems)) : null,
-      maxItems: typeof rule.maxItems === "number" ? Math.max(0, Math.floor(rule.maxItems)) : null,
-      transform: typeof rule.transform === "function" ? rule.transform : null,
-      validator: typeof rule.validator === "function" ? rule.validator : null,
+  const match = code?.match(BLOCK_REGEX)
+  if (match) {
+    cleanContent = code.replace(match[0], "")
+    const blockText = match[1] || ""
+    for (const [, rawKey, rawVal] of blockText.matchAll(KV_REGEX)) {
+      const val = (rawVal || "").trim()
+      if (val === "") continue
+      if (!rawData[rawKey]) rawData[rawKey] = []
+      rawData[rawKey].push(val)
     }
-    if (hasDefault) compiled.default = rule.default
-    return compiled
   }
+  return { rawData, cleanContent }
+}
 
-  function coerceUnknownValue(value) {
-    if (Array.isArray(value)) return value.map(coerceUnknownValue)
-    if (typeof value !== "string") return value
-    const v = value.trim()
-    if (v === "undefined") return undefined
-    if (v === "null") return null
-    if (v === "true") return true
-    if (v === "false") return false
-    if (v !== "" && !Number.isNaN(Number(v))) return Number(v)
-    return value
-  }
-
-  return function createConfigParser(schema = {}) {
+function metaConfigParserFactory(customCasters = {}) {
+  const mergedCasters = { ...DEFAULT_CASTERS, ...customCasters }
+  return function createConfigParser(schema = {}, customExtractor = null) {
+    const extractor = customExtractor || defaultMetaExtractor
     const compiledSchema = Object.create(null)
     const keyAliases = Object.create(null)
     for (const [key, def] of Object.entries(schema)) {
@@ -285,25 +322,21 @@ function metaConfigParserFactory(customCasters = {}) {
     }
 
     return function parse(code) {
-      const rawData = Object.create(null)
-      const blockText = code?.match(BLOCK_REGEX)?.[1] || ""
-      if (blockText) {
-        for (const [, rawKey, rawVal] of blockText.matchAll(KV_REGEX)) {
-          const val = (rawVal || "").trim()
-          if (val === "") continue
-          const key = keyAliases[rawKey] || rawKey
-          if (!rawData[key]) rawData[key] = []
-          rawData[key].push(val)
-        }
+      const { rawData = {}, cleanContent = code } = extractor(code) || {}
+      const normalizedRawData = Object.create(null)
+      for (const [rawKey, rawValues] of Object.entries(rawData)) {
+        const canonicalKey = keyAliases[rawKey] || rawKey
+        if (!normalizedRawData[canonicalKey]) normalizedRawData[canonicalKey] = []
+        normalizedRawData[canonicalKey].push(...rawValues)
       }
 
       const meta = {}
       const errors = []
       for (const [key, rule] of Object.entries(compiledSchema)) {
-        const rawValues = rawData[key] || []
+        const rawValues = normalizedRawData[key] || []
         const isArray = rule.type === "array"
         const itemType = isArray ? rule.items : rule.type
-        const castFn = CASTERS[itemType] || CASTERS.string
+        const castFn = mergedCasters[itemType] || mergedCasters.string
 
         let processedValues = rawValues.map(v => (rule.valueAliases && Object.hasOwn(rule.valueAliases, v)) ? rule.valueAliases[v] : v).map(castFn)
         if (rule.transform) {
@@ -354,7 +387,7 @@ function metaConfigParserFactory(customCasters = {}) {
       }
 
       // Handle undefined header keys
-      for (const [key, rawValues] of Object.entries(rawData)) {
+      for (const [key, rawValues] of Object.entries(normalizedRawData)) {
         if (Object.hasOwn(compiledSchema, key)) continue
         const raw = rawValues.length === 1 ? rawValues[0] : rawValues
         meta[key] = coerceUnknownValue(raw)
@@ -363,7 +396,7 @@ function metaConfigParserFactory(customCasters = {}) {
       if (errors.length > 0) {
         throw new Error("Meta Config Validation Failed:\n- " + [...new Set(errors)].join("\n- "))
       }
-      return meta
+      return { meta, content: cleanContent }
     }
   }
 }
