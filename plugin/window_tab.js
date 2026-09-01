@@ -99,6 +99,16 @@ class TabManager {
     this.utils.openFile(this.current?.path, true)
   }
 
+  /**
+   * Redraw the tab bar for the current state, without touching the document.
+   * Labels are recomputed because they depend on TRIM_FILE_EXT and
+   * SHOW_DIR_ON_DUPLICATE, which the caller may have just changed.
+   */
+  refresh() {
+    this._formatShowNames()
+    this.hooks.onRender(this.current?.path)
+  }
+
   switchByPath(path) {
     const idx = this._findIndexByPath(path)
     if (idx !== -1) this.switch(idx)
@@ -918,7 +928,7 @@ class WindowTabPlugin extends BasePlugin {
 
   rerenderTabBar = () => {
     this.entities.tabWrapper.replaceChildren()
-    this.utils.openFile(this.tab.current?.path)
+    this.tab.refresh()
   }
 
   copyPath = idx => navigator.clipboard.writeText(this.tab.getPathByIdx(idx) || "")
