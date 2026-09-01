@@ -136,7 +136,7 @@ class SlashCommandsPlugin extends BasePlugin {
     if (this.config.SUGGESTION_TIMING === "on_input") {
       this.utils.decorator.afterCall(() => File?.editor?.brush, "triggerAutoComplete", this._onEdit)
     } else {
-      this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this._onEdit)
+      this.utils.eventHub.on(this.utils.eventHub.eventType.fileEdited, this._onEdit)
     }
   }
 

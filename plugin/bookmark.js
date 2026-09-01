@@ -82,7 +82,7 @@ class BookmarkPlugin extends BasePlugin {
       if (ev.detail.action === "close") this.entities.panel.hide()
     })
 
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileEdited, () => {
       if (Date.now() > this.locateUtils.time + 2000) {
         const needRefresh = !!this.recorder.getState()?.get(this.utils.getFilePath())?.size
         if (needRefresh) this.refresh()

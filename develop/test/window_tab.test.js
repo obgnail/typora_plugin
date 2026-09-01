@@ -613,4 +613,81 @@ describe("TabManager Test Suite", () => {
       assert.strictEqual(manager.activeIdx, 0)
     })
   })
+
+  describe("14. Rename Logic (Files and Directories)", () => {
+    beforeEach(() => context.onRender.mock.resetCalls())
+
+    it("should rename a single file correctly and trigger onRender", () => {
+      manager.reset([{ path: "/project/a.md" }, { path: "/project/b.md" }])
+      manager.switch(0)
+
+      manager.rename("/project/a.md", "/project/new.md", false)
+
+      assert.strictEqual(manager.tabs[0].path, "/project/new.md")
+      assert.strictEqual(manager.tabs[1].path, "/project/b.md")
+      assert.strictEqual(manager.current.path, "/project/new.md")
+      assert.strictEqual(context.onRender.mock.callCount(), 1)
+      assert.strictEqual(context.onRender.mock.calls[0].arguments[0], "/project/new.md")
+    })
+
+    it("should rename multiple files under a directory correctly", () => {
+      manager.reset([
+        { path: "/project/docs/1.md" },
+        { path: "/project/docs/2.md" },
+        { path: "/other/3.md" },
+      ])
+
+      manager.rename("/project/docs", "/project/new-docs", true)
+
+      assert.strictEqual(manager.tabs[0].path, "/project/new-docs/1.md")
+      assert.strictEqual(manager.tabs[1].path, "/project/new-docs/2.md")
+      assert.strictEqual(manager.tabs[2].path, "/other/3.md")
+      assert.strictEqual(context.onRender.mock.callCount(), 1)
+    })
+
+    it("should safely avoid false positive prefix matches when renaming a directory", () => {
+      manager.reset([
+        { path: "/root/folder1/a.md" },
+        { path: "/root/folder11/b.md" },
+        { path: "/root/folder1.md" },
+      ])
+
+      manager.rename("/root/folder1", "/root/newFolder", true)
+
+      assert.strictEqual(manager.tabs[0].path, "/root/newFolder/a.md")
+      assert.strictEqual(manager.tabs[1].path, "/root/folder11/b.md")
+      assert.strictEqual(manager.tabs[2].path, "/root/folder1.md")
+    })
+
+    it("should do nothing and not trigger onRender if the renamed path is not opened", () => {
+      manager.reset([{ path: "/project/a.md" }])
+
+      manager.rename("/project/ghost.md", "/project/new.md", false)
+
+      assert.strictEqual(manager.tabs[0].path, "/project/a.md")
+      assert.strictEqual(context.onRender.mock.callCount(), 0)
+    })
+
+    it("should handle directory rename when the tab path is exactly the directory itself", () => {
+      manager.reset([{ path: "/project/docs" }])
+
+      manager.rename("/project/docs", "/project/new-docs", true)
+
+      assert.strictEqual(manager.tabs[0].path, "/project/new-docs")
+      assert.strictEqual(context.onRender.mock.callCount(), 1)
+    })
+
+    it("should properly reformat showNames after renaming", () => {
+      context.config.SHOW_DIR_ON_DUPLICATE = true
+      manager.reset([
+        { path: "/folderA/index.md" },
+        { path: "/folderB/index.md" },
+      ])
+
+      manager.rename("/folderB/index.md", "/folderB/readme.md", false)
+
+      assert.strictEqual(manager.tabs[0].showName, "index.md")
+      assert.strictEqual(manager.tabs[1].showName, "readme.md")
+    })
+  })
 })

@@ -46,8 +46,8 @@ class ActionButtonsPlugin extends BasePlugin {
   call = () => this.toggle()
 
   process = () => {
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, this.toggle)
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.toggleSettingPage, this.toggle)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
       const buttons = this._registerButtons()
       if (buttons.size === 0) return
       const maxX = Math.max(-1, ...[...buttons.values()].map(c => c.x))

@@ -577,11 +577,11 @@ class LifecycleHooks {
         }
         return allImpls.flatMap(fn => getResult(fn(...initialArgs)))
       // case "bail":
-      //     for (const fn of allImpls) {
-      //         const ret = fn(...initialArgs)
-      //         if (ret !== undefined) return ret
-      //     }
-      //     return
+      //   for (const fn of allImpls) {
+      //     const ret = fn(...initialArgs)
+      //     if (ret !== undefined) return ret
+      //   }
+      //   return
       case "broadcast":
       default:
         return allImpls.forEach(fn => fn(...initialArgs))
@@ -801,7 +801,7 @@ const Feature_EventDelegation = {
           if (!selector) {
             ret = handler.call(ev.currentTarget, ev)
           } else {
-            const target = ev.target.closest(selector)
+            const target = ev.target.closest?.(selector)
             if (target) {
               ret = handler.call(target, ev)
             }
@@ -1416,7 +1416,7 @@ const Feature_StandardDSL = {
       Array: defineField("array", { ...BLOCK, allowDuplicates: INNER, dataType: INNER }),
       Dict: defineField("dict", { ...BLOCK, keyPlaceholder: INNER, valuePlaceholder: INNER, allowAddItem: INNER }),
       Palette: defineField("palette", { ...BLOCK, defaultColor: INNER, dimensions: INNER, allowJagged: INNER }),
-      Table: defineField("table", { ...BLOCK, thMap: INNER, nestedBoxes: SCHEMA, defaultValues: INNER, subFormOptions: MERGE_INNER }),
+      Table: defineField("table", { ...BLOCK_INPUT, thMap: INNER, nestedBoxes: SCHEMA, defaultValues: INNER, subFormOptions: MERGE_INNER }),
       Tabs: defineField("tabs", { ...BLOCK, tabs: TABS, tab: TAB_APPEND, tabStyle: INNER, tabPosition: INNER, defaultSelectedTab: INNER, defaultTabLabel: INNER }),
     }
     const dsl = { Group: defineBox(), Controls, When, Extend: engine }
@@ -4243,17 +4243,21 @@ const Control_Palette = {
 const Control_Table = {
   setup: ({ field }) => defaultBlockLayout(field),
   create: ({ field }) => {
-    const addButton = `<div class="table-add fa fa-plus"></div>`
-    const th = [...Object.values(field.thMap), addButton]
-    const table = utils.buildTable([th])
+    const isReadonly = !!field.readonly
+    const lines = Object.values(field.thMap || {})
+    if (!isReadonly) {
+      lines.push(`<div class="table-add fa fa-plus"></div>`)
+    }
+    const table = Control_Table._buildTable([lines])
     const { key } = getCommonHTMLAttrs(field)
-    return `<div class="table" ${key}>${table}</div>`
+    return `<div class="table ${isReadonly ? 'is-readonly' : ''}" ${key}>${table}</div>`
   },
   update: ({ element, value, field }) => {
     const tbodyEl = element.querySelector("tbody")
     if (!tbodyEl) return
+    const isReadonly = !!field.readonly
     tbodyEl.innerHTML = (value || [])
-      .map(item => `<tr>${Control_Table._createTableRow(field.thMap, item).map(e => `<td>${e}</td>`).join("")}</tr>`)
+      .map(item => `<tr>${Control_Table._createTableRow(field.thMap, item, isReadonly).map(e => `<td>${e}</td>`).join("")}</tr>`)
       .join("")
   },
   bindEvents: ({ form }) => {
@@ -4304,12 +4308,21 @@ const Control_Table = {
       },
     }))
   },
-  _createTableRow: (thMap, item) => {
-    const header = utils.pick(item, Object.keys(thMap))
+  _createTableRow: (thMap, item, isReadonly) => {
+    const header = utils.pick(item, Object.keys(thMap || {}))
     const headerValues = Object.values(header).map(headerValue => typeof headerValue === "string" ? utils.escape(headerValue) : headerValue)
+    if (isReadonly) {
+      return headerValues
+    }
     const editButtons = `<div class="table-edit fa fa-pencil"></div><div class="table-del fa fa-trash-o"></div>`
     return [...headerValues, editButtons]
   },
+  _buildTable: ([headers = [], ...bodyRows] = []) => {
+    if (headers.length === 0) return "<table></table>"
+    const thead = `<tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr>`
+    const tbody = bodyRows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("")
+    return `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`
+  }
 }
 
 const Control_Composite = {

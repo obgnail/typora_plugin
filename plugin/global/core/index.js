@@ -51,7 +51,7 @@ async function loadMixins(loadFn) {
   await invoke([eventHub], "process")
   await invoke([diagramParser, thirdPartyDiagramParser], "process")
 
-  eventHub.publishEvent(eventHub.eventType.allPluginsHadInjected)
+  eventHub.emit(eventHub.eventType.allPluginsHadInjected)
 
   await invoke(Object.values(utils.mixins), "postprocess")
 }

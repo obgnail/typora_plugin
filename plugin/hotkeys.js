@@ -25,7 +25,7 @@ class HotkeysPlugin extends BasePlugin {
     }
 
     if (this.config.CUSTOM_HOTKEYS.length) {
-      this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+      this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
         const hotkeys = this.config.CUSTOM_HOTKEYS.map(toHotkey).filter(Boolean)
         this.utils.hotkeyHub.register(hotkeys)
       })

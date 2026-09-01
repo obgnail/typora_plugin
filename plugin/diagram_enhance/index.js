@@ -54,11 +54,10 @@ class DiagramEnhancePlugin extends BasePlugin {
   style = buildStyle
 
   process = () => {
-    this.write = this.utils.entities?.eWrite || document.querySelector("#write")
-    if (!this.write) return
+    this.write = this.utils.entities.eWrite
 
-    this.utils.exportHelper?.register?.(this.fixedName, this._exportStyle)
-    this.utils.exportHelper?.registerNative?.(
+    this.utils.exportHelper.register(this.fixedName, this._exportStyle)
+    this.utils.exportHelper.registerNative(
       this.fixedName,
       this._beforeNativeExport,
       this._afterNativeExport,
@@ -67,17 +66,13 @@ class DiagramEnhancePlugin extends BasePlugin {
     this._bindInteractionRoot(this.write)
     this._scan(this.write)
 
-    if (typeof MutationObserver === "function") {
-      this.observer = new MutationObserver(this._handleMutations)
-      this.observer.observe(this.write, { childList: true, subtree: true })
-    }
+    this.observer = new MutationObserver(this._handleMutations)
+    this.observer.observe(this.write, { childList: true, subtree: true })
 
     document.addEventListener("fullscreenchange", this._syncFullscreenButtons)
     document.addEventListener("webkitfullscreenchange", this._syncFullscreenButtons)
 
-    const eventType = this.utils.eventHub?.eventType
-    const fileOpened = eventType?.fileOpened
-    if (fileOpened) this.utils.eventHub.addEventListener(fileOpened, this._deferScan)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileOpened, this._deferScan)
   }
 
   _bindInteractionRoot = root => {
@@ -581,7 +576,7 @@ class DiagramEnhancePlugin extends BasePlugin {
 
   _beforeNativeExport = () => {
     this.nativeExportState = []
-    this.write?.querySelectorAll(`${PREVIEW_SELECTOR}${SURFACE_SELECTOR}`).forEach(surface => {
+    this.write.querySelectorAll(`${PREVIEW_SELECTOR}${SURFACE_SELECTOR}`).forEach(surface => {
       const state = this.states.get(surface)
       if (!state) return
       this.nativeExportState.push({

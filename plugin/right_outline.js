@@ -237,9 +237,9 @@ class RightOutlinePlugin extends BasePlugin {
 
   _onEvent = () => {
     const { eventHub } = this.utils
-    eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.refreshPanel())
-    eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isPanelShown() && this.hidePanel())
-    eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.refreshPanel, 300))
+    eventHub.on(eventHub.eventType.outlineUpdated, () => this.refreshPanel())
+    eventHub.on(eventHub.eventType.toggleSettingPage, hide => hide && this.isPanelShown() && this.hidePanel())
+    eventHub.on(eventHub.eventType.fileEdited, this.utils.debounce(this.refreshPanel, 300))
     this.utils.decorator.afterCall(() => File?.editor?.library?.outline, "highlightVisibleHeader", () => {
       if (this.isPanelShown() && this._getCurrentType() === "header") this.scrollSyncer.highlight()
     })
@@ -248,10 +248,10 @@ class RightOutlinePlugin extends BasePlugin {
       const { right: panelRight } = this.entities.panel.getBoundingClientRect()
       Object.assign(this.entities.panel.style, { left: `${contentRight}px`, width: `${panelRight - contentRight}px` })
     }
-    eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition)
-    eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition)
+    eventHub.on(eventHub.eventType.afterToggleSidebar, resetPosition)
+    eventHub.on(eventHub.eventType.afterSetSidebarWidth, resetPosition)
     if (this.config.DEFAULT_SHOW_OUTLINE) {
-      eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, this.togglePanel)
+      eventHub.on(eventHub.eventType.allPluginsHadInjected, this.togglePanel)
     }
   }
 

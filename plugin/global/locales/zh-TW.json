@@ -297,16 +297,16 @@
     "modal.example.expression": "查詢表達式",
     "modal.example.query": "搜尋檔案",
     "modal.example.equivalentTo": "等同於",
-    "modal.example.desc1": "包含 pear。",
-    "modal.example.desc2": "不包含 pear。",
-    "modal.example.desc3": "包含 sour 和 pear。",
-    "modal.example.desc4": "包含 sour 或 pear。",
-    "modal.example.desc5": "包含短語 sour pear",
-    "modal.example.desc6": "符合正規表示式 \\bsour\\b（全字匹配 sour），且包含 pear，且檔案修改時間早於 2024-05-16",
-    "modal.example.desc7": "YAML Front Matter 包含 dev，或標題內容為 plugin，或粗體文字包含 MIT",
-    "modal.example.desc8": "檔案大小超過 10KB，且檔案要么至少有 1000 行，要么包含圖片",
-    "modal.example.desc9": "檔案路徑不含 warn 和 err，且副檔名不含 md",
-    "modal.example.desc10": "表頭包含 k8s，二級標題包含 prometheus，程式碼區塊內容包含 kubectl apply",
+    "modal.example.desc0": "包含 pear。",
+    "modal.example.desc1": "不包含 pear。",
+    "modal.example.desc2": "包含 sour 和 pear。",
+    "modal.example.desc3": "包含 sour 或 pear。",
+    "modal.example.desc4": "包含短語 sour pear",
+    "modal.example.desc5": "符合正規表示式 \\bsour\\b（全字匹配 sour），且包含 pear，且檔案修改時間早於 2024-05-16",
+    "modal.example.desc6": "YAML Front Matter 包含 dev，或標題內容為 plugin，或粗體文字包含 MIT",
+    "modal.example.desc7": "檔案大小超過 10KB，且檔案要么至少有 1000 行，要么包含圖片",
+    "modal.example.desc8": "檔案路徑不含 warn 和 err，且副檔名不含 md",
+    "modal.example.desc9": "表頭包含 k8s，二級標題包含 prometheus，程式碼區塊內容包含 kubectl apply",
     "modal.playground.presentation": "解釋方式",
     "modal.playground.presentation.ast": "抽象語法樹",
     "modal.playground.presentation.graph": "流程圖",
@@ -817,7 +817,7 @@
     "$label.ACTION_HOTKEYS.hotkey": "快捷鍵",
     "$label.ACTION_HOTKEYS.action": "動作",
     "$title.buttonDefaultOptions": "按鈕的預設值",
-    "$tooltip.brushExample": "例如：color:#FFF; font-weight:bold;"
+    "$placeholder.brush": "color:#FFF; font-weight:bold;"
   },
   "cipher": {
     "pluginName": "加密檔案",
@@ -880,6 +880,7 @@
     "$label.HOTKEY_INSERT_MERMAID_GRAPH": "插入心智圖 (graph)",
     "$label.HOTKEY_CONVERT_CRLF_TO_LF": "換行符 CRLF 替換為 LF",
     "$label.HOTKEY_CONVERT_LF_TO_CRLF": "換行符 LF 替換為 CRLF",
+    "$label.HOTKEY_REFORMAT_ALL_TABLES": "格式化所有表格",
     "$label.HOTKEY_FILTER_INVISIBLE_CHARACTERS": "移除不可見字元",
     "$label.HOTKEY_TRAILING_WHITE_SPACE": "新增結尾空格"
   },
@@ -1335,7 +1336,8 @@
     "$label.TEMPLATE_VARIABLES.callback": "回呼",
     "$label.TEMPLATE": "自訂模板",
     "$label.TEMPLATE.name": "名稱",
-    "$label.TEMPLATE.text": "模板"
+    "$label.TEMPLATE.text": "模板",
+    "$tooltip.inspectBuiltinTemplateVars": "內建模板變數"
   },
   "right_outline": {
     "pluginName": "右側大綱",

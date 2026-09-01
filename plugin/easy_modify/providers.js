@@ -108,6 +108,17 @@ const buildFormatTextTool = ({ utils, i18n }, act) => ({
   execute: async () => utils.editCurrentFile(content => content.replace(act.regex, act.replacement)),
 })
 
+const buildReformatTableTool = () => ({
+  action: "reformat_all_tables",
+  configKey: "HOTKEY_REFORMAT_ALL_TABLES",
+  isStatic: true,
+  execute: () => {
+    $("[mdtype='table']").each(function () {
+      File.editor.tableEdit.reformatTable($(this))
+    })
+  }
+})
+
 const buildTrailingWhiteSpaceTool = ({ utils, i18n }) => {
   let showWarnDialog = true
   return {
@@ -285,6 +296,7 @@ module.exports = {
   buildFormatTextTool,
   buildTrailingWhiteSpaceTool,
   buildExtractRangeTool,
+  buildReformatTableTool,
   buildInsertMermaidTool,
   buildImageBase64Tool,
 }

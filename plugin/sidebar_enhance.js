@@ -86,7 +86,7 @@ class SidebarEnhancePlugin extends BasePlugin {
       hideFolders($node, info)
     })
 
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => File.editor.library.refreshPanelCommand())
+    this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => File.editor.library.refreshPanelCommand())
   }
 
   _setOutlineState = () => {
@@ -98,7 +98,7 @@ class SidebarEnhancePlugin extends BasePlugin {
       case "alwaysFold":
         return
       case "alwaysUnfold":
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => {
+        this.utils.eventHub.on(this.utils.eventHub.eventType.outlineUpdated, () => {
           this.entities.outline.querySelectorAll(`.outline-item-wrapper:not(.${singleItemClass})`).forEach(openItem)
         })
         return
@@ -111,7 +111,7 @@ class SidebarEnhancePlugin extends BasePlugin {
           stateRestorer: (el, isOpen) => isOpen && openItem(el),
           delayFn: (task) => arm(task),
         })
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, fire)
+        this.utils.eventHub.on(this.utils.eventHub.eventType.outlineUpdated, fire)
         return
     }
   }
@@ -128,7 +128,7 @@ class SidebarEnhancePlugin extends BasePlugin {
     )
 
     const fresh = this.utils.debounce(() => this.entities.outline.querySelectorAll(".outline-item").forEach(e => e.draggable = true), 200)
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, fresh)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.outlineUpdated, fresh)
     this.utils.decorator.afterCall(() => File, "freshMenu", fresh)
     this.utils.decorator.afterCall(() => File?.editor?.library?.outline, "renderOutline", fresh)
 
@@ -291,7 +291,7 @@ class SidebarEnhancePlugin extends BasePlugin {
           font-weight: ${this.config.FONT_WEIGHT};
         }`,
     )
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
       File.editor.library.refreshPanelCommand()
       countAllDirs()
     })

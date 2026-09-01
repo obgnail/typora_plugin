@@ -63,23 +63,21 @@ const toBase64Url = buffer => buffer.toString("base64")
   .replace(/=+$/g, "")
 
 class HtmlEditorPlugin extends BasePlugin {
-  prepare = () => {
-    this.options = normalizeOptions(this.config)
-    this.sourceCache = new Map()
-    this.activeFile = ""
-    this.currentStat = null
-    this.savedSource = ""
-    this.viewMode = this.options.defaultView
-    this.previewTimer = null
-    this.previewUrl = ""
-    this.previewRenderToken = 0
-    this.previewBridgeToken = ""
-    this.remoteImageCache = new Map()
-    this.inspectorEnabled = false
-    this.syncingSourceScroll = false
-    this.activationToken = 0
-    this.bypassOpenGuard = false
-  }
+  options = normalizeOptions(this.config)
+  sourceCache = new Map()
+  activeFile = ""
+  currentStat = null
+  savedSource = ""
+  viewMode = this.options.defaultView
+  previewTimer = null
+  previewUrl = ""
+  previewRenderToken = 0
+  previewBridgeToken = ""
+  remoteImageCache = new Map()
+  inspectorEnabled = false
+  syncingSourceScroll = false
+  activationToken = 0
+  bypassOpenGuard = false
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
@@ -438,11 +436,9 @@ class HtmlEditorPlugin extends BasePlugin {
 
   init = () => {
     const root = document.querySelector("#plugin-html-file-view")
-    const content = this.utils.entities.eContent
-    content.appendChild(root)
     this.entities = {
-      content,
       root,
+      content: this.utils.entities.eContent,
       title: root.querySelector(".html-editor-title"),
       path: root.querySelector(".html-editor-path"),
       source: root.querySelector(".html-editor-source"),
@@ -492,13 +488,8 @@ class HtmlEditorPlugin extends BasePlugin {
     window.addEventListener("beforeunload", this._handleBeforeUnload)
     window.addEventListener("message", this._handlePreviewMessage)
 
-    const eventType = this.utils.eventHub?.eventType
-    if (eventType?.fileContentLoaded) {
-      this.utils.eventHub.addEventListener(eventType.fileContentLoaded, this._handleFileContentLoaded)
-    }
-    if (eventType?.allPluginsHadInjected) {
-      this.utils.eventHub.addEventListener(eventType.allPluginsHadInjected, () => this._registerFileTypes(true))
-    }
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileContentLoaded, this._handleFileContentLoaded)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => this._registerFileTypes(true))
   }
 
   call = () => {
@@ -832,7 +823,7 @@ class HtmlEditorPlugin extends BasePlugin {
 
   _resolveLocalResourcePath = resource => {
     const path = this.utils.Package.Path
-    const mountFolder = this.utils.getMountFolder?.() || ""
+    const mountFolder = this.utils.getMountFolder() || ""
     try {
       if (/^file:/i.test(resource)) return fileURLToPath(new URL(resource))
       if (/^https?:/i.test(resource) || /^[A-Za-z][A-Za-z\d+.-]*:/.test(resource) && !/^[A-Za-z]:[\\/]/.test(resource)) return ""
@@ -987,9 +978,7 @@ class HtmlEditorPlugin extends BasePlugin {
     const maximum = Math.max(0, source.scrollHeight - source.clientHeight)
     this.syncingSourceScroll = true
     source.scrollTop = maximum * clampRatio(payload.ratio)
-    const release = () => { this.syncingSourceScroll = false }
-    if (typeof requestAnimationFrame === "function") requestAnimationFrame(release)
-    else release()
+    requestAnimationFrame(() => this.syncingSourceScroll = false)
   }
 
   _handlePreviewNavigation = async payload => {

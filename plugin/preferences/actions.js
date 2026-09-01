@@ -122,6 +122,31 @@ module.exports = (plugin) => {
         utils.notification.show(err.message, "error")
       }
     },
+    inspectBuiltinTemplateVars: async () => {
+      const vars = Object.entries({
+        "formatDate(format, locale)": "Formatted current datetime",
+        "dateOffset(offset, format, locale)": "Formatted date adjusted by offset",
+        "date()": "Current date. Equivalent to formatDate('yyyy-MM-dd')",
+        "time()": "Current time. Equivalent to formatDate('HH')",
+        "datetime()": "Current datetime. Equivalent to formatDate('yyyy-MM-dd HH')",
+        "weekday()": "Current weekday. Equivalent to formatDate('ddd')",
+        "yesterday()": "Yesterday's date. Equivalent to dateOffset(-1)",
+        "tomorrow()": "Tomorrow's date. Equivalent to dateOffset(1)",
+        "timestamp()": "Current timestamp (ms)",
+        "randomInt(min, max)": "Random integer within range",
+        "randomStr(length)": "Random string of specified length",
+        "title()": "Title of the newly created file",
+        "filepath()": "Path of the newly created file",
+        "folder()": "Directory containing the current file",
+        "mountFolder()": "Current mount directory",
+        "uuid()": "UUID",
+      }).map(([name, desc]) => ({ name, desc }))
+      await utils.formDialog.modal({
+        title: i18n._t("templater", "$tooltip.inspectBuiltinTemplateVars"),
+        schema: ({ Controls }) => [Controls.Table("vars").ThMap({ name: "Variables", desc: "Desc" }).Readonly(true)],
+        data: { vars },
+      })
+    },
     myopicDefocusEffectDemo: async () => {
       const MyopicDefocus = require("../myopic_defocus/myopic_defocus.js")
       const myopicDefocus = new MyopicDefocus({ svgContainerId: "myopic-defocus-svg-demo", blurLayerId: "myopic-defocus-layer-demo" })
@@ -241,7 +266,7 @@ module.exports = (plugin) => {
       const qrEls = QR_CONFIG.map(qr => {
         const svg = _toSVG(_decompress(qr.data), qr.color)
         const label = `<div style="font-weight: bold">${qr.label}</div>`
-        return `<div style="display: flex; flex-direction: column; align-items: center">${svg}${label}</div>`
+        return `<div style="display: flex; flex-direction: column; align-items: center; gap: 5px">${svg}${label}</div>`
       })
       const qrcodeCnt = `<div style="display: flex; justify-content: space-evenly; margin-top: 8px">${qrEls.join("")}</div>`
       const backers = (await FsExtra.readFile(utils.joinPluginPath("./plugin/preferences/backers.txt"), "utf-8"))

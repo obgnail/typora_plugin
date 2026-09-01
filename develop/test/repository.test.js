@@ -86,7 +86,7 @@ test("registers repository search with the smart input handler", () => {
     getMountFolder: () => "",
     eventHub: {
       eventType: { fileOpened: "fileOpened" },
-      addEventListener: () => undefined,
+      on: () => undefined,
     },
   }
 

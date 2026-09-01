@@ -378,11 +378,11 @@ class ButtonHelper {
         this.foldCode(cid, true, btn)
       })
     })
-    const eventHub = this.utils.eventHub
-    eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => {
+    const { eventHub } = this.utils
+    eventHub.on(eventHub.eventType.allPluginsHadInjected, () => {
       this.buttons.filter(btn => btn.enable && typeof btn.initFunc === "function").forEach(btn => btn.initFunc(this.plugin))
     })
-    eventHub.addEventListener(eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+    eventHub.on(eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
       if (this.buttons.length === 0) return
       const fence = cm?.display.wrapper.parentElement ?? this.utils.entities.querySelectorInWrite(`.md-fences[cid="${cid}"]`)
       if (!fence) return
@@ -450,7 +450,7 @@ class HotkeyHelper {
 
   process = () => {
     const hotkeys = this.getHotkeys()
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => cm?.addKeyMap(hotkeys))
+    this.utils.eventHub.on(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => cm?.addKeyMap(hotkeys))
   }
 
   getHotkeys = () => {
@@ -617,13 +617,13 @@ class HighlightHelper {
       return mode
     }
     this.utils.decorator.decorate(() => window, "getCodeMirrorMode", { before, after, modifyResult: true, modifyArgs: true })
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
       if (!cm) return
       this._rerender(cm)
       cm.off("change", handleLineChange)
       cm.on("change", handleLineChange)
     })
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => {
       const cid = node?.cid
       if (!cid) return
       const cm = File.editor.fences.queue[cid]
@@ -635,7 +635,7 @@ class HighlightHelper {
 const preloadAllFences = ({ utils }) => {
   const preload = () => traverseAllFences(utils.noop)
   utils.eventHub.once(utils.eventHub.eventType.fileOpened, () => setTimeout(preload, 3000))
-  utils.eventHub.addEventListener(utils.eventHub.eventType.fileContentLoaded, preload)
+  utils.eventHub.on(utils.eventHub.eventType.fileContentLoaded, preload)
 }
 
 // Credit: https://github.com/gruvw/typora-side-by-side
@@ -657,7 +657,7 @@ const indentWrappedLine = ({ utils }) => {
     elt.style.textIndent = "-" + off + "px"
     elt.style.paddingLeft = (codeIndentSize + off) + "px"
   }
-  utils.eventHub.addEventListener(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+  utils.eventHub.on(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
     if (cm) {
       charWidth = charWidth || cm.defaultCharWidth()
       cm.on("renderLine", callback)
@@ -679,7 +679,7 @@ const foldLanguage = async ({ utils }) => {
 
   const handle = () => {
     const gutter = "CodeMirror-foldgutter"
-    utils.eventHub.addEventListener(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+    utils.eventHub.on(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
       if (!cm) return
       if (!cm.options.gutters.includes(gutter)) {
         cm.setOption("gutters", [...cm.options.gutters, gutter])
@@ -723,8 +723,8 @@ const codeTitle = ({ utils, config }) => {
     `.md-fences .${className} { padding: 6px 14px; margin-bottom: 6px; border-bottom: 1px solid #d0d0d0; color: currentColor; user-select: none; }`,
   )
 
-  utils.eventHub.addEventListener(utils.eventHub.eventType.afterAddCodeBlock, cid => rerender(cid))
-  utils.eventHub.addEventListener(utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => rerender(node?.cid))
+  utils.eventHub.on(utils.eventHub.eventType.afterAddCodeBlock, cid => rerender(cid))
+  utils.eventHub.on(utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => rerender(node?.cid))
 }
 
 module.exports = {

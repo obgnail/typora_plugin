@@ -679,7 +679,7 @@ const schema_text_stylize = () => [
     Color("DEFAULT_COLORS.FOREGROUND"),
     Color("DEFAULT_COLORS.BACKGROUND"),
     Color("DEFAULT_COLORS.BORDER"),
-    Text("DEFAULT_FORMAT_BRUSH").Tooltip("brushExample"),
+    Text("DEFAULT_FORMAT_BRUSH").Placeholder("brush"),
   ),
   Palette("COLOR_TABLE").Dimensions(2).AllowJagged(false),
   FRAG.SettingHandler(),
@@ -731,6 +731,7 @@ const schema_easy_modify = () => [
     Hotkey("HOTKEY_INSERT_MERMAID_GRAPH"),
     Hotkey("HOTKEY_CONVERT_CRLF_TO_LF"),
     Hotkey("HOTKEY_CONVERT_LF_TO_CRLF"),
+    Hotkey("HOTKEY_REFORMAT_ALL_TABLES"),
     Hotkey("HOTKEY_FILTER_INVISIBLE_CHARACTERS"),
     Hotkey("HOTKEY_TRAILING_WHITE_SPACE"),
     Hotkey("HOTKEY_CONVERT_IMAGE_TO_BASE64"),
@@ -996,7 +997,8 @@ const schema_templater = () => [
       enable: true,
       name: "",
       callback: "(...args) => console.log(`Invoke with params: ${args}`)",
-    }),
+    })
+    .ActionTooltip("inspectBuiltinTemplateVars", "fa fa-dollar"),
   Table("TEMPLATE")
     .Headers(["name", "text"])
     .NestedBoxes([

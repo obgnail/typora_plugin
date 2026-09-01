@@ -1096,49 +1096,6 @@ describe("Formatting & Presentation Utilities", () => {
       assert.strictEqual(result, currentYear)
     })
   })
-
-  describe("utils.buildTable", () => {
-    it("builds basic HTML table from rows", () => {
-      const rows = [
-        ["Name", "Age", "City"],
-        ["John", "25", "New York"],
-        ["Jane", "30", "London"],
-      ]
-      const result = utils.buildTable(rows)
-      assert.ok(result.includes("<table>"))
-      assert.ok(result.includes("<thead>"))
-      assert.ok(result.includes("<tbody>"))
-      assert.ok(result.includes("<th>Name</th>"))
-      assert.ok(result.includes("<td>John</td>"))
-      assert.ok(result.includes("</table>"))
-    })
-
-    it("handles single row table", () => {
-      const rows = [["Header1", "Header2"]]
-      const result = utils.buildTable(rows)
-      assert.ok(result.includes("<th>Header1</th>"))
-      assert.ok(result.includes("<th>Header2</th>"))
-      assert.ok(result.includes("<tbody>"))
-    })
-
-    it("handles empty rows array", () => {
-      const rows = []
-      const result = utils.buildTable(rows)
-      assert.ok(result.includes("<table>"))
-      assert.ok(!result.includes("<thead>"))
-      assert.ok(!result.includes("<tbody>"))
-    })
-
-    it("handles numeric values", () => {
-      const rows = [
-        ["Count", "Value"],
-        [1, 2.5],
-      ]
-      const result = utils.buildTable(rows)
-      assert.ok(result.includes("<td>1</td>"))
-      assert.ok(result.includes("<td>2.5</td>"))
-    })
-  })
 })
 
 describe("File System Utilities", () => {

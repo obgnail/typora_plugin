@@ -1,10 +1,12 @@
 class TestPlugin extends BasePlugin {
+  style = () => ``
+
   process = () => {
     if (this.config.SINGLETON) {
       this.utils.decorator.afterCall(() => File?.editor?.library, "openFileInNewWindow", () => setTimeout(() => ClientCommand.close(), 500))
     }
     if (this.config.AUTO_OPEN_DEVTOOLS) {
-      this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => JSBridge.invoke("window.toggleDevTools"))
+      this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => JSBridge.invoke("window.toggleDevTools"))
     }
     if (this.config.EXPOSE_CJS_VARIABLES) {
       global.__require__ = require
@@ -16,7 +18,7 @@ class TestPlugin extends BasePlugin {
       global.__plugin_container__ = this.utils.container
     }
     if (this.config.RUN_CUSTOM_SCRIPT) {
-      this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.test)
+      this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, this.test)
     }
   }
 
@@ -50,7 +52,7 @@ class TestPlugin extends BasePlugin {
 
   traceEvents = (types = Object.values(this.utils.eventHub.eventType), order = 9999) => {
     for (const type of types) {
-      this.utils.eventHub.addEventListener(
+      this.utils.eventHub.on(
         type,
         (...payload) => {
           console.groupCollapsed(`[Event] ${type} @ ${new Date().toLocaleTimeString()}`)

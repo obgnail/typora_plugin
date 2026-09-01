@@ -5,6 +5,7 @@ const {
   buildFormatTextTool,
   buildTrailingWhiteSpaceTool,
   buildExtractRangeTool,
+  buildReformatTableTool,
   buildInsertMermaidTool,
   buildImageBase64Tool,
 } = require("./providers.js")
@@ -30,6 +31,7 @@ class EasyModifyPlugin extends BasePlugin {
     buildImageBase64Tool(this.ctx, "single"),
     buildImageBase64Tool(this.ctx, "all"),
     buildExtractRangeTool(this.ctx),
+    buildReformatTableTool(this.ctx),
   ]
   staticActions = this.tools.filter(t => t.isStatic).map(tool => ({
     act_value: tool.action,

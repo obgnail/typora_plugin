@@ -2,7 +2,7 @@ class TemplaterPlugin extends BasePlugin {
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
   process = () => {
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
       const { TEMPLATE_FOLDERS, TEMPLATE } = this.config
       const { Path: { extname }, FsExtra: { readFile } } = this.utils.Package
 

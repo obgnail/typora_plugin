@@ -1,6 +1,6 @@
 const fixDiagramForExport = require("./fix_export.js")
 
-const INTERACTION_TYPE = {
+const INTERACTION = {
   default: {},
   showOnly: { highlight: "#0000ff", nav: false, resize: false, edit: null, editable: false, lightbox: false, zoom: "1", toolbar: null, "toolbar-nohide": true },
   clickable: { highlight: "#0000ff", nav: false, resize: true, edit: null, editable: false, toolbar: null, "toolbar-nohide": true },
@@ -53,7 +53,7 @@ class DrawIOPlugin extends BasePlugin {
           height: this.config.DEFAULT_FENCE_HEIGHT,
           backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
         }),
-        interaction: { type: "string", enum: Object.keys(INTERACTION_TYPE), default: "showOnly" },
+        interaction: { type: "string", enum: Object.keys(INTERACTION), default: "showOnly" },
       },
       checkSelector: ".plugin-drawio-content",
       wrapElement: `<div class="plugin-drawio-content"></div>`,
@@ -75,28 +75,22 @@ class DrawIOPlugin extends BasePlugin {
     if (!graphConfig.source && !graphConfig.xml) {
       throw new Error(this.i18n.t("error.missingSource"))
     }
-    if (!graphConfig.xml) {
-      graphConfig.xml = await this._getResource(
-        graphConfig.source,
-        async (source) => {
-          $wrap[0].textContent = "Fetching Network Resource..."
-          return this._memorizedFetch(source)
-        },
-        async (source) => {
-          // $wrap[0].textContent = "Fetching Local Resource..."
-          const dir = this.utils.getLocalRootUrl()
-          const path = this.utils.Package.Path.resolve(dir, source)
-          return this.utils.Package.FsExtra.readFile(path, "utf-8")
-        },
-      )
-    }
+    graphConfig.xml = graphConfig.xml || await this._getXML(
+      graphConfig.source,
+      async (source) => {
+        $wrap[0].textContent = "Fetching Network Resource..."
+        return this._memorizedFetch(source)
+      },
+      async (source) => {
+        // $wrap[0].textContent = "Fetching Local Resource..."
+        return this.utils.Package.FsExtra.readFile(this.utils.resolveLocalPath(source), "utf-8")
+      },
+    )
 
-    const presetConfig = INTERACTION_TYPE[meta.interaction]
-    const mxGraphData = { ...presetConfig, ...graphConfig }
-    return this._render($wrap[0], mxGraphData)
+    return this._render($wrap[0], { ...INTERACTION[meta.interaction], ...graphConfig })
   }
 
-  _getResource = async (source, onRemote, onLocal) => {
+  _getXML = async (source, onRemote, onLocal) => {
     const isNetwork = this.utils.isNetworkURI(source)
     try {
       const fetchFn = isNetwork ? onRemote : onLocal

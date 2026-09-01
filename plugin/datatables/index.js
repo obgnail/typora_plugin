@@ -3,8 +3,8 @@ class DataTablesPlugin extends BasePlugin {
   tableList = []
 
   process = () => {
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.destroyAllDataTable)
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeToggleSourceMode, this.destroyAllDataTable)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.otherFileOpened, this.destroyAllDataTable)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.beforeToggleSourceMode, this.destroyAllDataTable)
     this.utils.decorator.preventCallIf(() => File?.editor?.tableEdit, "showTableEdit", (...args) => {
       const table = args[0]?.find?.("table")
       if (!table || table.length === 0) return false
@@ -21,10 +21,10 @@ class DataTablesPlugin extends BasePlugin {
   }
 
   // addTfoot = $table => {
-  //     const th = $table.find("thead th")
-  //     const list = [...th].map(el => `<td>${el.textContent}: </td>`)
-  //     const tfoot = `<tfoot><tr>${list.join("")}</tr></tfoot>`
-  //     $table.append(tfoot)
+  //   const th = $table.find("thead th")
+  //   const list = [...th].map(el => `<td>${el.textContent}: </td>`)
+  //   const tfoot = `<tfoot><tr>${list.join("")}</tr></tfoot>`
+  //   $table.append(tfoot)
   // }
 
   appendFilter = dataTable => {

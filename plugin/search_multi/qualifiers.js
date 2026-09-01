@@ -119,7 +119,7 @@ const CASTERS = {
       throw new Error(`Operand must be a number followed by a unit: ${units}`)
     }
     const unit = match[3].toLowerCase()
-    if (!UNITS.hasOwnProperty(unit)) {
+    if (!Object.hasOwn(UNITS, unit)) {
       throw new Error(`Only supports unit: ${units}`)
     }
     return parseFloat(match[1]) * UNITS[unit]

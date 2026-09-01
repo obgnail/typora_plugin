@@ -153,7 +153,7 @@ class AutoNumberPlugin extends BasePlugin {
     if (this.config.ENABLE_WHEN_EXPORT) {
       this._fixExportToPDF()
     }
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileEdited, () => {
       if (!this.config.ENABLE_IMAGE || !this.config.SHOW_IMAGE_NAME) return
       const images = this.utils.entities.querySelectorAllInWrite(".md-image:not([data-alt]) > img")
       for (const image of images) {

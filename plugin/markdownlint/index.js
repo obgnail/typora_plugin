@@ -149,9 +149,9 @@ class MarkdownlintPlugin extends BasePlugin {
 
   process = () => {
     const { eventHub } = this.utils
-    eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.linter.check, 500))
-    eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => this.linter.configure())
-    eventHub.addEventListener(eventHub.eventType.toggleSettingPage, force => {
+    eventHub.on(eventHub.eventType.fileEdited, this.utils.debounce(this.linter.check, 500))
+    eventHub.on(eventHub.eventType.allPluginsHadInjected, () => this.linter.configure())
+    eventHub.on(eventHub.eventType.toggleSettingPage, force => {
       if (force) this.entities.panel.toggle(force)
       if (this.entities.indicator) this.utils.toggleInvisible(this.entities.indicator, force)
     })

@@ -252,9 +252,9 @@ class DiagramParser {
     }
   }
 
-  onAddCodeBlock = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.renderDiagram)
+  onAddCodeBlock = () => this.utils.eventHub.on(this.utils.eventHub.eventType.afterAddCodeBlock, this.renderDiagram)
 
-  onTryAddLangUndo = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => node && this.renderDiagram(node.cid))
+  onTryAddLangUndo = () => this.utils.eventHub.on(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => node && this.renderDiagram(node.cid))
 
   onUpdateDiagram = () => this.utils.decorator.afterCall(() => File?.editor?.diagrams, "updateDiagram", (_, cid) => this.renderDiagram(cid))
 
@@ -274,7 +274,7 @@ class DiagramParser {
     }
     // Make `frame.js` happy. To avoid null pointer exceptions
     // There is a line of code in `frame.js` in exporting logic:
-    //    document.querySelector("[cid='" + t.cid + "'] svg").getBoundingClientRect()
+    //   document.querySelector("[cid='" + t.cid + "'] svg").getBoundingClientRect()
     const beforeToNative = () => {
       this.parsers.forEach((parser, lang) => {
         this.renderAllLangFence(lang)
@@ -361,7 +361,7 @@ class DiagramParser {
   }
 
   onChangeFile = () => {
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.otherFileOpened, () => {
       for (const p of this.parsers.values()) {
         p.destroyAllFunc?.()
       }

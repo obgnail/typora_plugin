@@ -54,7 +54,7 @@ class ReadOnlyPlugin extends BasePlugin {
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
   process = () => {
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
       this._injectReactiveLockObserver()
       this.utils.decorator.afterCall(() => File, "freshLock", this._syncDOMState)
       if (this.config.READ_ONLY_DEFAULT) {

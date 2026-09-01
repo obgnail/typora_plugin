@@ -4,6 +4,7 @@ const os = require("node:os")
 const path = require("node:path")
 const test = require("node:test")
 
+global.requestAnimationFrame = async (fn) => Promise.resolve(fn)
 global.BasePlugin = class {
   i18n = { t: key => key }
 }
@@ -14,7 +15,6 @@ test("renders an integrated main-area HTML view instead of a separate modal", ()
   const instance = new HtmlEditorPlugin()
   instance.pluginName = "HTML 编辑器"
   instance.config = { HOTKEY: "ctrl+alt+h" }
-  instance.prepare()
 
   const html = instance.html()
   assert.match(html, /id="plugin-html-file-view"/)
@@ -33,8 +33,6 @@ test("renders an integrated main-area HTML view instead of a separate modal", ()
 
 test("replaces the Typora writing surface for source, preview, and split layouts", () => {
   const instance = new HtmlEditorPlugin()
-  instance.config = {}
-  instance.prepare()
 
   const style = instance.style()
   assert.match(style, /content\.plugin-html-file-active > #write/)
@@ -73,8 +71,6 @@ test("renders preview through one blob URL owner and releases retired URLs", asy
     removeAttribute: name => removedAttributes.push(name),
   }
   const instance = new HtmlEditorPlugin()
-  instance.config = {}
-  instance.prepare()
   instance.utils = { Package: { Path: path, FsExtra: {} } }
   instance.activeFile = "C:/docs/demo.html"
   instance.entities = {
@@ -109,8 +105,6 @@ test("loads and saves the active HTML source through the host filesystem boundar
 
   const instance = new HtmlEditorPlugin()
   instance.pluginName = "HTML 编辑器"
-  instance.config = {}
-  instance.prepare()
   instance.utils = {
     Package: {
       Path: path,
@@ -144,8 +138,6 @@ test("registers HTML extensions in Typora's file tree without duplicates", t => 
   }
 
   const instance = new HtmlEditorPlugin()
-  instance.config = {}
-  instance.prepare()
   instance._registerFileTypes()
 
   assert.deepEqual(global.File.SupportedFiles, ["md", "html", "htm"])
@@ -154,8 +146,6 @@ test("registers HTML extensions in Typora's file tree without duplicates", t => 
 
 test("masks HTML before Typora's Markdown parser while retaining source for preview", async () => {
   const instance = new HtmlEditorPlugin()
-  instance.config = {}
-  instance.prepare()
 
   const buffer = Buffer.from("<h1>demo</h1>")
   const masked = await instance._maskHtmlReadResult(
@@ -190,8 +180,6 @@ test("activates the integrated surface for HTML and restores Typora for Markdown
     }
   }
   const instance = new HtmlEditorPlugin()
-  instance.config = {}
-  instance.prepare()
   instance.entities = {
     content: { classList: createClassList([]) },
     root: { classList: createClassList(["plugin-common-hidden"]) },
@@ -221,8 +209,6 @@ test("inlines a readable local image before building the blob preview", async t 
   await fs.promises.writeFile(imagePath, Buffer.from([0x89, 0x50, 0x4e, 0x47]))
 
   const instance = new HtmlEditorPlugin()
-  instance.config = {}
-  instance.prepare()
   instance.activeFile = htmlPath
   instance.utils = {
     Package: { Path: path, FsExtra: { readFile: fs.promises.readFile, stat: fs.promises.stat } },
@@ -237,8 +223,7 @@ test("inlines a readable local image before building the blob preview", async t 
 test("downloads a missing relative image from canonical online metadata only when network is enabled", async () => {
   const requested = []
   const instance = new HtmlEditorPlugin()
-  instance.config = { PREVIEW_ALLOW_NETWORK: true }
-  instance.prepare()
+  instance.options.allowNetwork = true
   instance.activeFile = path.join(os.tmpdir(), "missing", "page.html")
   instance.utils = {
     Package: { Path: path, FsExtra: { stat: async () => { throw new Error("missing") } } },
@@ -263,8 +248,6 @@ test("downloads a missing relative image from canonical online metadata only whe
 
 test("validates preview bridge messages before selecting the original source tag", () => {
   const instance = new HtmlEditorPlugin()
-  instance.config = {}
-  instance.prepare()
   const sourceWindow = {}
   let inspected = null
   instance.previewBridgeToken = "bridge-token"
@@ -303,8 +286,6 @@ test("jumps to inspected source offsets and routes related local documents throu
     setSelectionRange(start, end) { this.selectionStart = start; this.selectionEnd = end },
   }
   const instance = new HtmlEditorPlugin()
-  instance.config = {}
-  instance.prepare()
   instance.activeFile = htmlPath
   instance.entities = { source }
   instance._setViewMode = mode => { instance.viewMode = mode }
@@ -326,8 +307,7 @@ test("jumps to inspected source offsets and routes related local documents throu
 
 test("synchronizes source and preview scroll ratios only in enabled split mode", () => {
   const instance = new HtmlEditorPlugin()
-  instance.config = { SPLIT_SYNC: true }
-  instance.prepare()
+  instance.options.splitSync = true
   const sent = []
   instance.viewMode = "split"
   instance.entities = {

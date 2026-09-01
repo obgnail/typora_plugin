@@ -297,16 +297,16 @@
     "modal.example.expression": "Query",
     "modal.example.query": "Search Files",
     "modal.example.equivalentTo": "Equivalent to",
-    "modal.example.desc1": "Contains 'pear'",
-    "modal.example.desc2": "Does not contain 'pear'",
-    "modal.example.desc3": "Contains both 'sour' and 'pear'",
-    "modal.example.desc4": "Contains either 'sour' or 'pear'",
-    "modal.example.desc5": "Contains the exact phrase 'sour pear'",
-    "modal.example.desc6": "Matches the regex \\bsour\\b (whole word match for sour), and was modified before 2024-05-16",
-    "modal.example.desc7": "YAML Front Matter contains 'dev', OR a heading is exactly 'plugin', OR bold text contains 'MIT'",
-    "modal.example.desc8": "File is larger than 10KB AND (has over 1000 lines OR contains an image)",
-    "modal.example.desc9": "Path excludes 'warn' and 'err', AND extension is not 'md'",
-    "modal.example.desc10": "Table header contains 'k8s', H2 contains 'prometheus', and a code block contains 'kubectl apply'",
+    "modal.example.desc0": "Contains 'pear'",
+    "modal.example.desc1": "Does not contain 'pear'",
+    "modal.example.desc2": "Contains both 'sour' and 'pear'",
+    "modal.example.desc3": "Contains either 'sour' or 'pear'",
+    "modal.example.desc4": "Contains the exact phrase 'sour pear'",
+    "modal.example.desc5": "Matches the regex \\bsour\\b (whole word match for sour), and was modified before 2024-05-16",
+    "modal.example.desc6": "YAML Front Matter contains 'dev', OR a heading is exactly 'plugin', OR bold text contains 'MIT'",
+    "modal.example.desc7": "File is larger than 10KB AND (has over 1000 lines OR contains an image)",
+    "modal.example.desc8": "Path excludes 'warn' and 'err', AND extension is not 'md'",
+    "modal.example.desc9": "Table header contains 'k8s', H2 contains 'prometheus', and a code block contains 'kubectl apply'",
     "modal.playground.presentation": "View Mode",
     "modal.playground.presentation.ast": "Abstract Syntax Tree",
     "modal.playground.presentation.graph": "Flowchart",
@@ -574,7 +574,7 @@
     "$option.TITLE_BAR_BUTTONS.hideToolbar": "Hide Toolbar",
     "$option.TITLE_BAR_BUTTONS.showToolbar": "Show Toolbar",
     "$option.TITLE_BAR_BUTTONS.download": "Export",
-    "$tooltip.zero": "0 means unlimited",
+    "$tooltip.zero": "0 for no limit",
     "$tooltip.tempDir": "If empty, the system TEMP directory is used",
     "$tooltip.experimental": "Experimental. Requires 'Chapter Folding' plugin to be enabled",
     "$tooltip.removeForeignObj": "Improves compatibility at the cost of styling. Enable if exports look broken",
@@ -817,7 +817,7 @@
     "$label.ACTION_HOTKEYS.hotkey": "Hotkey",
     "$label.ACTION_HOTKEYS.action": "Action",
     "$title.buttonDefaultOptions": "Button Defaults",
-    "$tooltip.brushExample": "E.g., color:#FFF; font-weight:bold;"
+    "$placeholder.brush": "color:#FFF; font-weight:bold;"
   },
   "cipher": {
     "pluginName": "File Encryption",
@@ -857,7 +857,7 @@
     "act.extract_range_to_new_file.positionEmptyLine": "Please place your cursor on an empty line",
     "act.extract_range_to_new_file.filename": "New File Name",
     "act.extract_range_to_new_file.filenameHint": "Leave blank to create a duplicate",
-    "act.extract_range_to_new_file.autoOpenFile": "Open file automatically after creation",
+    "act.extract_range_to_new_file.autoOpenFile": "Auto-Open file after creation",
     "act.trailing_white_space.hint": "Appends trailing whitespace to all lines in the document",
     "act.copy_full_path.H1": "H1",
     "act.copy_full_path.H2": "H2",
@@ -880,6 +880,7 @@
     "$label.HOTKEY_INSERT_MERMAID_GRAPH": "Insert Graph (Mermaid)",
     "$label.HOTKEY_CONVERT_CRLF_TO_LF": "Convert CRLF to LF",
     "$label.HOTKEY_CONVERT_LF_TO_CRLF": "Convert LF to CRLF",
+    "$label.HOTKEY_REFORMAT_ALL_TABLES": "Reformat All Tables",
     "$label.HOTKEY_FILTER_INVISIBLE_CHARACTERS": "Remove Invisible Characters",
     "$label.HOTKEY_TRAILING_WHITE_SPACE": "Add Trailing Whitespace"
   },
@@ -1028,7 +1029,7 @@
     "$option.OBJECT_SETTINGS_FORMAT.TOML": "TOML",
     "$option.OBJECT_SETTINGS_FORMAT.YAML": "YAML",
     "$option.DEPENDENCIES_FAILURE_BEHAVIOR.readonly": "Read-Only",
-    "$option.DEPENDENCIES_FAILURE_BEHAVIOR.hide": "Hide Entirely"
+    "$option.DEPENDENCIES_FAILURE_BEHAVIOR.hide": "Hide"
   },
   "hotkeys": {
     "pluginName": "Hotkeys",
@@ -1173,7 +1174,7 @@
     "$label.UPDATE_LOOP_INTERVAL": "Polling Interval",
     "$label.START_UPDATE_INTERVAL": "Startup Delay",
     "$title.autoUpdate": "Auto Update",
-    "$tooltip.loopInterval": "Checks for updates automatically at this interval",
+    "$tooltip.loopInterval": "Checks for updates at this interval",
     "$tooltip.waitInterval": "Waits this long after startup before checking for updates"
   },
   "test": {
@@ -1327,7 +1328,7 @@
     "filename": "File Name",
     "preview": "Preview",
     "createCopyIfEmpty": "Leave blank to create a duplicate",
-    "$label.AUTO_OPEN": "Open automatically after creation",
+    "$label.AUTO_OPEN": "Auto-Open After Creation",
     "$label.TEMPLATE_FOLDERS": "Template Folders",
     "$label.TEMPLATE_VARIABLES": "Custom Variables",
     "$label.TEMPLATE_VARIABLES.enable": "Enable",
@@ -1335,7 +1336,8 @@
     "$label.TEMPLATE_VARIABLES.callback": "Callback",
     "$label.TEMPLATE": "Custom Templates",
     "$label.TEMPLATE.name": "Name",
-    "$label.TEMPLATE.text": "Template Content"
+    "$label.TEMPLATE.text": "Template Content",
+    "$tooltip.inspectBuiltinTemplateVars": "Builtin Variables"
   },
   "right_outline": {
     "pluginName": "Right Outline",
@@ -1858,7 +1860,7 @@
     "dialog.addTitle": "Add Repository Folder",
     "notify.unavailable": "This repository path is currently unavailable",
     "error.add": "Failed to add repository",
-    "error.autoSave": "Failed to save repository automatically",
+    "error.autoSave": "Failed to auto-save repository",
     "error.save": "Failed to save repository data",
     "warning.corrupt": "Repository data was corrupt. The original file was backed up and a new empty repository was created.",
     "warning.unsupportedVersion": "The repository data version is newer than this plugin supports. Writes have stopped to protect the original data.",

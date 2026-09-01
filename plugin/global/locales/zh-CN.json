@@ -297,16 +297,16 @@
     "modal.example.expression": "查询表达式",
     "modal.example.query": "搜索文件",
     "modal.example.equivalentTo": "等同于",
-    "modal.example.desc1": "包含 pear。",
-    "modal.example.desc2": "不包含 pear。",
-    "modal.example.desc3": "包含 sour 和 pear。",
-    "modal.example.desc4": "包含 sour 或 pear。",
-    "modal.example.desc5": "包含短语 sour pear",
-    "modal.example.desc6": "匹配正则 \\bsour\\b（全字匹配 sour），且包含 pear，且文件修改时间早于 2024-05-16",
-    "modal.example.desc7": "YAML Front Matter 包含 dev，或标题内容为 plugin，或加粗文字包含 MIT",
-    "modal.example.desc8": "文件大小超过 10KB，且文件要么至少有 1000 行，要么包含图片",
-    "modal.example.desc9": "文件路径不含 warn 和 err，且扩展名不含 md",
-    "modal.example.desc10": "表头包含 k8s，二级标题包含 prometheus，代码块内容包含 kubectl apply",
+    "modal.example.desc0": "包含 pear。",
+    "modal.example.desc1": "不包含 pear。",
+    "modal.example.desc2": "包含 sour 和 pear。",
+    "modal.example.desc3": "包含 sour 或 pear。",
+    "modal.example.desc4": "包含短语 sour pear",
+    "modal.example.desc5": "匹配正则 \\bsour\\b（全字匹配 sour），且包含 pear，且文件修改时间早于 2024-05-16",
+    "modal.example.desc6": "YAML Front Matter 包含 dev，或标题内容为 plugin，或加粗文字包含 MIT",
+    "modal.example.desc7": "文件大小超过 10KB，且文件要么至少有 1000 行，要么包含图片",
+    "modal.example.desc8": "文件路径不含 warn 和 err，且扩展名不含 md",
+    "modal.example.desc9": "表头包含 k8s，二级标题包含 prometheus，代码块内容包含 kubectl apply",
     "modal.playground.presentation": "解释方式",
     "modal.playground.presentation.ast": "抽象语法树",
     "modal.playground.presentation.graph": "流程图",
@@ -817,7 +817,7 @@
     "$label.ACTION_HOTKEYS.hotkey": "快捷键",
     "$label.ACTION_HOTKEYS.action": "动作",
     "$title.buttonDefaultOptions": "按钮的默认值",
-    "$tooltip.brushExample": "例如：color:#FFF; font-weight:bold;"
+    "$placeholder.brush": "color:#FFF; font-weight:bold;"
   },
   "cipher": {
     "pluginName": "加密文件",
@@ -880,6 +880,7 @@
     "$label.HOTKEY_INSERT_MERMAID_GRAPH": "插入思维导图 (graph)",
     "$label.HOTKEY_CONVERT_CRLF_TO_LF": "换行符 CRLF 替换为 LF",
     "$label.HOTKEY_CONVERT_LF_TO_CRLF": "换行符 LF 替换为 CRLF",
+    "$label.HOTKEY_REFORMAT_ALL_TABLES": "格式化所有表格",
     "$label.HOTKEY_FILTER_INVISIBLE_CHARACTERS": "移除不可见字符",
     "$label.HOTKEY_TRAILING_WHITE_SPACE": "添加结尾空格"
   },
@@ -1335,7 +1336,8 @@
     "$label.TEMPLATE_VARIABLES.callback": "回调",
     "$label.TEMPLATE": "自定义模板",
     "$label.TEMPLATE.name": "名称",
-    "$label.TEMPLATE.text": "模板"
+    "$label.TEMPLATE.text": "模板",
+    "$tooltip.inspectBuiltinTemplateVars": "内置模板变量"
   },
   "right_outline": {
     "pluginName": "右侧大纲",

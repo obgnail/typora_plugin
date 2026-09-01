@@ -196,7 +196,7 @@ class SearchMultiPlugin extends BasePlugin {
   process = () => {
     this.highlighter.process()
 
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.resetHighlight())
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileContentLoaded, () => this.resetHighlight())
     this.utils.createSmartInputHandler(this.entities.input, () => this._updateExplain(true))
 
     this.entities.files.addEventListener("click", ev => this.utils.openFile(ev.target.closest(".plugin-search-item")?.dataset.path))

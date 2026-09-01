@@ -282,7 +282,7 @@ class RepositoryPlugin extends BasePlugin {
     <div id="plugin-repository" class="repository-mask plugin-common-hidden">
       <div class="repository-dialog" role="dialog" aria-modal="true" aria-labelledby="plugin-repository-title">
         <div class="repository-header">
-          <div id="plugin-repository-title" class="repository-title"></div>
+          <div id="plugin-repository-title" class="repository-title">${this.pluginName}</div>
           <div class="repository-button repository-close ion-close-round" role="button" tabindex="0" title="${this.i18n.t("action.close")}" aria-label="${this.i18n.t("action.close")}"></div>
         </div>
         <div class="repository-main">
@@ -312,7 +312,6 @@ class RepositoryPlugin extends BasePlugin {
       status: document.querySelector("#plugin-repository .repository-status"),
       list: document.querySelector("#plugin-repository .repository-list"),
     }
-    this.entities.title.textContent = this.pluginName
     this.entities.sort
       .setOptions([
         { value: "recent", label: this.i18n.t("sort.recent") },
@@ -337,7 +336,7 @@ class RepositoryPlugin extends BasePlugin {
     })
 
     const capture = () => void this._captureCurrentMount()
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, capture)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileOpened, capture)
     capture()
 
     if (this.loadError) {
@@ -347,9 +346,7 @@ class RepositoryPlugin extends BasePlugin {
     }
   }
 
-  call = () => {
-    void this.toggle()
-  }
+  call = () => this.toggle()
 
   toggle = async () => {
     if (this.utils.isShown(this.entities.panel)) {

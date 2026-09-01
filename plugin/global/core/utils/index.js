@@ -561,8 +561,9 @@ class utils {
   }
 
   // =========== Business File ===========
-  static getLocalRootUrl = () => File.editor.docMenu.getLocalRootUrl() || this.getCurrentDirPath()
   static toFileProtocol = (path) => (path && !path.startsWith("file://")) ? `file://${path}` : path
+  static getLocalRootUrl = () => File.editor.docMenu.getLocalRootUrl() || this.getCurrentDirPath()
+  static resolveLocalPath = (path) => PATH.resolve(this.getLocalRootUrl(), path)
 
   static getCurrentFileContent = () => File.editor.getMarkdown()
   static editCurrentFile = async (replacement, persistence = File.option.enableAutoSave) => {
@@ -972,13 +973,6 @@ class utils {
         }
         return `<img alt="${alt}" src="${src}">`
       })
-  }
-
-  static buildTable = ([headers = [], ...bodyRows] = []) => {
-    if (headers.length === 0) return "<table></table>"
-    const thead = `<tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr>`
-    const tbody = bodyRows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("")
-    return `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`
   }
 
   static jumpToEdge = (toTop = true) => {

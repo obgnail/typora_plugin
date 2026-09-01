@@ -181,19 +181,18 @@ class GrammarPresenter {
       }),
     }
 
-    const example = utils.buildTable([
-      [t("modal.example.expression"), t("modal.example.query")],
-      [em("pear"), `${t("modal.example.desc1")} ${t("modal.example.equivalentTo")} ${em("default:pear")}`],
-      [em("-pear"), `${t("modal.example.desc2")} ${t("modal.example.equivalentTo")} ${em("NOT pear")}`],
-      [em("sour pear"), `${t("modal.example.desc3")} ${t("modal.example.equivalentTo")} ${em("sour AND pear")}`],
-      [em("sour | pear"), `${t("modal.example.desc4")} ${t("modal.example.equivalentTo")} ${em("sour OR pear")}`],
-      [em(`"sour pear"`), t("modal.example.desc5")],
-      [em("/\\bsour\\b/ pear mtime<2024-05-16"), t("modal.example.desc6")],
-      [em("frontmatter:dev | head=plugin | strong:MIT"), t("modal.example.desc7")],
-      [em("size>10kb (linenum>=1000 | hasimage=true)"), t("modal.example.desc8")],
-      [em("-(path:warn | path:err) -ext:md"), t("modal.example.desc9")],
-      [em(`thead:k8s h2:prometheus blockcode:"kubectl apply"`), t("modal.example.desc10")],
-    ])
+    const example = [
+      ["pear", `${t("modal.example.desc0")} ${t("modal.example.equivalentTo")} default:pear`],
+      ["-pear", `${t("modal.example.desc1")} ${t("modal.example.equivalentTo")} NOT pear`],
+      ["sour pear", `${t("modal.example.desc2")} ${t("modal.example.equivalentTo")} sour AND pear`],
+      ["sour | pear", `${t("modal.example.desc3")} ${t("modal.example.equivalentTo")} sour OR pear`],
+      [`"sour pear"`, t("modal.example.desc4")],
+      ["/\\bsour\\b/ pear mtime<2024-05-16", t("modal.example.desc5")],
+      ["frontmatter:dev | head=plugin | strong:MIT", t("modal.example.desc6")],
+      ["size>10kb (linenum>=1000 | hasimage=true)", t("modal.example.desc7")],
+      ["-(path:warn | path:err) -ext:md", t("modal.example.desc8")],
+      [`thead:k8s h2:prometheus blockcode:"kubectl apply"`, t("modal.example.desc9")],
+    ].map(([expression, desc]) => ({ expression, desc }))
 
     const PRESENT = { graph: "graph", text: "text", ast: "ast" }
 
@@ -206,7 +205,7 @@ class GrammarPresenter {
         Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.combineCond")).HintDetail(I18N.combineCond),
         Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.syntacticSugar")).HintDetail(I18N.syntacticSugar),
       ),
-      Controls.Custom().Label(t("modal.title.example")).Unsafe(true).Content(example),
+      Controls.Table("example").ThMap({ expression: t("modal.example.expression"), desc: t("modal.example.query") }).Readonly(true),
       Group(t("modal.title.playground"),
         Controls.Textarea("expression").Rows(3).NoResize(true).IsBlockLayout(true),
         Controls.Code("_displayAST").Readonly(true).ShowIf(When.eq("presentation", PRESENT.ast)).DependencyUnmetAction("hide").IsBlockLayout(true),
@@ -238,6 +237,7 @@ class GrammarPresenter {
       title: t("grammar"),
       schema,
       data: {
+        example,
         grammar: searcher.getGrammar(),
         expression: `h2:"foo bar"  ( linenum<200 | blockcodelang=java | abc )  -file:/baz/`,
         presentation: PRESENT.graph, direction: "LR", textStyle: true, translate: true,

@@ -86,10 +86,10 @@ class TOCMarkmap {
         this.pinUtils.recordContentRect(newContentRect)
         this._setPanelRect(newPanelRect)
       }
-      eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, repositioning)
-      eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, repositioning)
-      eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this.close())
-      eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => {
+      eventHub.on(eventHub.eventType.afterToggleSidebar, repositioning)
+      eventHub.on(eventHub.eventType.afterSetSidebarWidth, repositioning)
+      eventHub.on(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this.close())
+      eventHub.on(eventHub.eventType.outlineUpdated, () => {
         if (!this.utils.isShown(panel)) return
         this.draw()
         if (this.config.AUTO_FIT_ON_UPDATE) this.fit()

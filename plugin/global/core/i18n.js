@@ -11,10 +11,10 @@ const normalizeLocale = (locale) => {
       return "zh-TW"
     // case "ko":
     // case "ko-KR":
-    //     return "ko"
+    //   return "ko"
     // case "ja":
     // case "ja-JP":
-    //     return "ja"
+    //   return "ja"
     case "Base":
     case "en-US":
     case "en-BG":
@@ -47,16 +47,9 @@ const i18n = {
     }
     return text
   },
-  link: (parts) => {
-    const joiner = noSpaceLanguages.includes(i18n.locale) ? "" : " "
-    return parts.join(joiner)
-  },
-  array: (field, keys, prefix = "") => {
-    return keys.map(k => i18n.t(field, prefix + k))
-  },
-  entries: (field, keys, prefix = "") => {
-    return Object.fromEntries(keys.map(k => [k, i18n.t(field, prefix + k)]))
-  },
+  link: (parts) => parts.join(noSpaceLanguages.includes(i18n.locale) ? "" : " "),
+  array: (field, keys, prefix = "") => keys.map(k => i18n.t(field, prefix + k)),
+  entries: (field, keys, prefix = "") => Object.fromEntries(keys.map(k => [k, i18n.t(field, prefix + k)])),
   bind: (field) => ({
     locale: i18n.locale,
     allData: i18n.data,

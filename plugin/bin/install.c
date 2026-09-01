@@ -61,7 +61,9 @@ void get_root_dir(char *path) {
             break;
         }
     }
-    if (strlen(path) == 0) { path[0] = '.'; path[1] = '\0'; }
+    if (path[0] == '\0') {
+        snprintf(path, PATH_MAX, ".");
+    }
 }
 
 int main() {

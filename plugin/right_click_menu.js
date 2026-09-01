@@ -59,7 +59,7 @@ class RightClickMenuPlugin extends BasePlugin {
 
   process = () => {
     this.utils.settings.autoSave(this)
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
       setTimeout(() => {
         this._insertLevel1()  // The 1st level menus group all plugins
         this._insertLevel2()  // The 2nd level menus display grouped plugins

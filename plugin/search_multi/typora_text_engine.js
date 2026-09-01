@@ -105,7 +105,7 @@ class DocWalker {
     this._isCancelled = false
     this._handlers = handlers
 
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this._onAsyncCMReady, 999)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.afterAddCodeBlock, this._onAsyncCMReady, 999)
 
     if (File.editor.sourceView.inSourceMode) {
       const cm = File.editor.sourceView.cm
@@ -125,7 +125,7 @@ class DocWalker {
     this._isCancelled = true
     this._pendingFutureCids.clear()
     this._handlers = {}
-    this.utils.eventHub.removeEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this._onAsyncCMReady)
+    this.utils.eventHub.off(this.utils.eventHub.eventType.afterAddCodeBlock, this._onAsyncCMReady)
   }
 
   removePendingFutureCid(cid) {

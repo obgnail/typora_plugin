@@ -13,8 +13,8 @@ class CalloutsPlugin extends BasePlugin {
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
   process = () => {
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => setTimeout(this.setCallouts, 100))
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.setCallouts)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => setTimeout(this.setCallouts, 100))
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileEdited, this.setCallouts)
     this.utils.exportHelper.register(this.fixedName, this.beforeExport, this.afterExport)
   }
 

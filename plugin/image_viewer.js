@@ -309,7 +309,7 @@ class ImageViewerPlugin extends BasePlugin {
   process = () => {
     this._handleImageInteraction()
 
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close())
+    this.utils.eventHub.on(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close())
 
     if (this.config.CLICK_MASK_TO_EXIT) {
       this.entities.mask.addEventListener("click", this.call)
@@ -516,8 +516,8 @@ class ImageViewerPlugin extends BasePlugin {
 
     await this.utils.formDialog.modal({
       title: this.i18n.t("$option.operations.info"),
-      schema: ({ Controls }) => [Controls.Textarea("info").Readonly().Rows(14)],
-      data: { info: JSON.stringify(details, null, "  ") },
+      schema: ({ Controls }) => [Controls.Table("info").ThMap({ name: "Action", desc: "Desc" }).Readonly(true)],
+      data: { info: Object.entries(details).map(([name, desc]) => ({ name, desc })) },
     })
   }
 

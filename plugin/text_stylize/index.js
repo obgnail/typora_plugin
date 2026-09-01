@@ -124,7 +124,7 @@ class TextStylizePlugin extends BasePlugin {
   }
 
   process = () => {
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.entities.panel.hide())
+    this.utils.eventHub.on(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.entities.panel.hide())
 
     $(this.entities.toolbar).on("mouseenter", "[action]", ev => {
       const target = ev.currentTarget

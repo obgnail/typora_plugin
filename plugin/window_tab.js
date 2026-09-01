@@ -50,23 +50,31 @@ class TabManager {
     return this._tabs[idx]
   }
 
+  getByPath(path) {
+    return this._tabs.find(e => e.path === path)
+  }
+
   getPathByIdx(idx) {
     return this._tabs[idx]?.path
   }
 
-  _findIndexByPath(path) {
+  getIdxByPath(path) {
     return this._tabs.findIndex(tab => tab.path === path)
   }
 
-  reset(tabList = []) {
-    this._tabs = [...tabList]
-    this._activeIdx = 0
+  _clamp(idx) {
+    return Math.min(Math.max(0, idx), this.maxIdx)
+  }
+
+  reset(tabs = [], activeIdx = 0) {
+    this._tabs = [...tabs]
+    this._activeIdx = this._clamp(activeIdx)
     this._formatShowNames()
   }
 
   open(wantOpenPath) {
     const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config
-    const isNewTab = this._findIndexByPath(wantOpenPath) === -1
+    const isNewTab = this.getIdxByPath(wantOpenPath) === -1
     if (isNewTab) {
       if (this._localOpen && this.current) {
         this.current.path = wantOpenPath
@@ -86,31 +94,25 @@ class TabManager {
       }
     }
 
-    this._activeIdx = this._findIndexByPath(wantOpenPath)
+    this._activeIdx = this.getIdxByPath(wantOpenPath)
     if (this.current) {
       this.current.timestamp = Date.now()
     }
+    this.refresh(wantOpenPath)
+  }
+
+  refresh(path = this.current?.path) {
     this._formatShowNames()
-    this.hooks.onRender(wantOpenPath)
+    this.hooks.onRender(path)
   }
 
   switch(idx) {
-    this._activeIdx = Math.min(Math.max(0, idx), this.maxIdx)
+    this._activeIdx = this._clamp(idx)
     this.utils.openFile(this.current?.path, true)
   }
 
-  /**
-   * Redraw the tab bar for the current state, without touching the document.
-   * Labels are recomputed because they depend on TRIM_FILE_EXT and
-   * SHOW_DIR_ON_DUPLICATE, which the caller may have just changed.
-   */
-  refresh() {
-    this._formatShowNames()
-    this.hooks.onRender(this.current?.path)
-  }
-
   switchByPath(path) {
-    const idx = this._findIndexByPath(path)
+    const idx = this.getIdxByPath(path)
     if (idx !== -1) this.switch(idx)
   }
 
@@ -154,7 +156,7 @@ class TabManager {
       if (isClosingLeftOrActive) {
         this._activeIdx--
       }
-      this._activeIdx = Math.min(this._activeIdx, this.maxIdx)
+      this._activeIdx = this._clamp(this._activeIdx)
     }
 
     this.switch(this._activeIdx)
@@ -193,7 +195,7 @@ class TabManager {
   closeLeft(idx) {
     const originPath = this.current?.path
     this._tabs.splice(0, idx)
-    if (!originPath || this._findIndexByPath(originPath) === -1) {
+    if (!originPath || this.getIdxByPath(originPath) === -1) {
       this.switch(0)
     } else {
       this.switchByPath(originPath)
@@ -203,18 +205,18 @@ class TabManager {
   closeRight(idx) {
     const originPath = this.current?.path
     this._tabs.splice(idx + 1)
-    if (!originPath || this._findIndexByPath(originPath) === -1) {
+    if (!originPath || this.getIdxByPath(originPath) === -1) {
       this.switch(this.maxIdx)
     } else {
       this.switchByPath(originPath)
     }
   }
 
-  sort() {
+  sort(compareFn = (a, b) => (a.showName || "").localeCompare(b.showName || "")) {
     if (this.count <= 1) return
     this._formatShowNames()
     const cur = this.current
-    this._tabs.sort(({ showName: n1 }, { showName: n2 }) => (n1 || "").localeCompare(n2 || ""))
+    this._tabs.sort(compareFn)
     if (cur) this.switch(this._tabs.indexOf(cur))
   }
 
@@ -252,12 +254,38 @@ class TabManager {
     if (isClosingActive && this.config.TAB_SWITCH_ON_CLOSE !== "left") {
       this._activeIdx++
     }
-    this._activeIdx = Math.min(Math.max(0, this._activeIdx), this.maxIdx)
+    this._activeIdx = this._clamp(this._activeIdx)
 
     if (this.count === 0) {
       await this.hooks.onEmpty()
     } else {
       this.switch(this._activeIdx)
+    }
+  }
+
+  updateScroll(scrollTop) {
+    if (this.current) this.current.scrollTop = scrollTop
+  }
+
+  rename(oldPath, newPath, isDir) {
+    let isMutated = false
+    if (isDir) {
+      const dirPrefix = oldPath + this.utils.separator
+      for (const tab of this._tabs) {
+        if (tab.path === oldPath || tab.path.startsWith(dirPrefix)) {
+          tab.path = newPath + tab.path.slice(oldPath.length)
+          isMutated = true
+        }
+      }
+    } else {
+      const targetTab = this.getByPath(oldPath)
+      if (targetTab) {
+        targetTab.path = newPath
+        isMutated = true
+      }
+    }
+    if (isMutated) {
+      this.refresh()
     }
   }
 
@@ -275,6 +303,15 @@ class TabManager {
     } else if (this.count) {
       this.switch(this._activeIdx)
     }
+  }
+
+  exportSession() {
+    return this._tabs.map((tab, idx) => ({
+      idx,
+      path: tab.path,
+      scrollTop: tab.scrollTop || 0,
+      active: idx === this._activeIdx,
+    }))
   }
 
   _formatShowNames() {
@@ -397,6 +434,172 @@ class ScrollSynchronizer {
   }
 }
 
+class TabDragManager {
+  constructor(plugin) {
+    this.plugin = plugin
+    this.tab = plugin.tab
+    this.config = plugin.config
+    this.utils = plugin.utils
+    this.entities = plugin.entities
+  }
+
+  init() {
+    if (this.config.DRAG_STYLE === "JetBrains") {
+      this._sortJetBrains()
+    } else {
+      this._sortVscode()
+    }
+  }
+
+  _newWindowIfNeed(offsetY, el) {
+    if (this.config.TAB_DETACHMENT === "lockVertical" || this.config.DRAG_NEW_WINDOW_THRESHOLD <= 0) return
+    offsetY = Math.abs(offsetY)
+    const { height } = this.entities.tabBar.getBoundingClientRect()
+    if (offsetY > height * this.config.DRAG_NEW_WINDOW_THRESHOLD) {
+      this.plugin.openInNewWindow(parseInt(el.dataset.idx))
+    }
+  }
+
+  _sortJetBrains() {
+    const self = this
+    const preview = new Image()
+    const rafManager = self.utils.getRafManager()
+    const resetTabBar = () => {
+      const all = self.entities.windowTab.querySelectorAll(".tab-container")
+      const activePath = self.tab.current?.path
+      self.tab.reset(Array.from(all, el => self.tab.getByIdx(parseInt(el.dataset.idx))))
+      if (activePath) self.tab.open(activePath)
+    }
+    let dragged, cloned, offsetX, offsetY, startX, startY, axis, _axis, threshold, _offsetX
+
+    $("#plugin-window-tab .tab-wrapper").on("dragstart", ".tab-container", function (ev) {
+      dragged = this
+      _offsetX = ev.offsetX
+
+      axis = dragged.getAttribute("axis")
+      _axis = axis
+      ev.originalEvent.dataTransfer.setDragImage(preview, 0, 0)
+      ev.originalEvent.dataTransfer.effectAllowed = "move"
+      ev.originalEvent.dataTransfer.dropEffect = "move"
+      let { left, top, height } = dragged.getBoundingClientRect()
+      startX = ev.clientX
+      startY = ev.clientY
+      offsetX = startX - left
+      offsetY = startY - top
+      threshold = height * self.config.DETACHMENT_THRESHOLD
+
+      const faker = dragged.cloneNode(true)
+      faker.style.height = dragged.offsetHeight + "px" // dragBox uses height: 100%, needs to be reset.
+      faker.style.transform = "translate3d(0, 0, 0)"
+      faker.setAttribute("dragging", "")
+      cloned = document.createElement("div")
+      cloned.append(faker)
+      cloned.className = "drag-obj"
+      cloned.style.transform = `translate3d(${left}px, ${top}px, 0)`
+      self.entities.tabBar.append(cloned)
+    }).on("dragend", ".tab-container", function (ev) {
+      rafManager.cancel()
+      self._newWindowIfNeed(ev.offsetY, this)
+      if (!cloned) {
+        dragged = null
+        return
+      }
+      const { left, top } = this.getBoundingClientRect()
+      const resetAnimation = cloned.animate(
+        [{ transform: cloned.style.transform }, { transform: `translate3d(${left}px, ${top}px, 0)` }],
+        { duration: 70, easing: "ease-in-out" },
+      )
+      resetAnimation.onfinish = function () {
+        cloned?.remove()
+        cloned = null
+        dragged.style.visibility = "visible"
+        dragged = null
+        resetTabBar()
+      }
+    }).on("dragover", ".tab-container", function (ev) {
+      ev.preventDefault()
+      if (dragged) {
+        const fn = ev.offsetX > _offsetX ? "after" : "before"
+        this[fn](dragged)
+      }
+    }).on("dragenter", () => false)
+
+    document.addEventListener("dragover", function (ev) {
+      if (!cloned) return
+
+      ev.preventDefault()
+      ev.stopPropagation()
+      ev.dataTransfer.dropEffect = "move"
+      dragged.style.visibility = "hidden"
+      const currentX = ev.clientX
+      const currentY = ev.clientY
+      rafManager.schedule(() => {
+        let left = currentX - offsetX
+        let top = currentY - offsetY
+        if (axis) {
+          if (_axis === "X") {
+            top = startY - offsetY
+          } else if (_axis === "Y") {
+            left = startX - offsetX
+          } else {
+            const x = Math.abs(currentX - startX)
+            const y = Math.abs(currentY - startY)
+            _axis = (x > y && "X") || (x < y && "Y") || ""
+          }
+        } else {
+          _axis = ""
+        }
+        startX = left + offsetX
+        startY = top + offsetY
+
+        const detachment = self.config.TAB_DETACHMENT
+        if (detachment === "lockVertical" || (detachment === "resistant" && top < threshold)) {
+          top = 0
+        }
+        cloned.style.transform = `translate3d(${left}px, ${top}px, 0)`
+      })
+    })
+  }
+
+  _sortVscode() {
+    const self = this
+    let lastOver = null
+    const toggleOver = (target, isAdd) => {
+      if (isAdd) {
+        target.classList.add("over")
+        lastOver = target
+      } else {
+        target.classList.remove("over")
+      }
+    }
+
+    $("#plugin-window-tab .tab-wrapper").on("dragstart", ".tab-container", function (ev) {
+      ev.originalEvent.dataTransfer.effectAllowed = "move"
+      ev.originalEvent.dataTransfer.dropEffect = "move"
+      this.style.opacity = 0.5
+      lastOver = null
+    }).on("dragend", ".tab-container", function (ev) {
+      this.style.opacity = ""
+      self._newWindowIfNeed(ev.offsetY, this)
+      if (lastOver) {
+        lastOver.classList.remove("over")
+        const toIdx = parseInt(lastOver.dataset.idx)
+        const fromIdx = parseInt(this.dataset.idx)
+        self.tab.move(fromIdx, toIdx)
+        self.tab.refresh()
+      }
+    }).on("dragover", ".tab-container", function () {
+      toggleOver(this, true)
+      return false
+    }).on("dragenter", ".tab-container", function () {
+      toggleOver(this, true)
+      return false
+    }).on("dragleave", ".tab-container", function () {
+      toggleOver(this, false)
+    })
+  }
+}
+
 class WindowTabPlugin extends BasePlugin {
   renderRafManager = this.utils.getRafManager()
   manualSaveStorage = this.utils.getStorage(`${this.fixedName}.manual`)
@@ -510,19 +713,19 @@ class WindowTabPlugin extends BasePlugin {
       save_tabs: () => this.saveTabs(this.manualSaveStorage),
       open_save_tabs: () => this.openSaveTabs(this.manualSaveStorage),
       sort_tabs: () => this.tab.sort(),
-      toggle_tab_bar: this.forceToggleTabBar,
+      toggle_tab_bar: () => this.forceToggleTabBar(),
     }
     callMap[action]?.()
   }
 
   _handleLifeCycle = () => {
     this._hideTabBar()
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, path => this.tab.open(path))
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, path => {
-      const active = this.tab.tabs.find(e => e.path === path)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileOpened, path => this.tab.open(path))
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileContentLoaded, path => {
+      const active = this.tab.getByPath(path)
       if (active) this.scrollSync.restore(path, active.scrollTop, this.entities.content)
     })
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial")
+    this.utils.eventHub.on(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial")
 
     const isHeaderReady = () => this.utils.isBetaVersion ? this.entities.header.getBoundingClientRect().height : true
     const adjustTop = () => setTimeout(() => {
@@ -565,182 +768,18 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   _handleScroll = () => {
-    this.entities.content.addEventListener("scroll", this.utils.debounce(() => {
-      const cur = this.tab.current
-      if (cur) cur.scrollTop = this.entities.content.scrollTop
-    }), 100)
+    this.entities.content.addEventListener("scroll", this.utils.debounce(() => this.tab.updateScroll(this.entities.content.scrollTop)), 100)
   }
 
-  _handleDrag = () => {
-    const newWindowIfNeed = (offsetY, el) => {
-      if (this.config.TAB_DETACHMENT === "lockVertical" || this.config.DRAG_NEW_WINDOW_THRESHOLD <= 0) return
-      offsetY = Math.abs(offsetY)
-      const { height } = this.entities.tabBar.getBoundingClientRect()
-      if (offsetY > height * this.config.DRAG_NEW_WINDOW_THRESHOLD) {
-        this.openInNewWindow(parseInt(el.dataset.idx))
-      }
-    }
-
-    const sortJetBrains = () => {
-      const self = this
-      const preview = new Image()
-      const rafManager = self.utils.getRafManager()
-      const resetTabBar = () => {
-        const all = self.entities.windowTab.querySelectorAll(".tab-container")
-        const activePath = self.tab.current?.path
-        self.tab.reset(Array.from(all, el => self.tab.getByIdx(parseInt(el.dataset.idx))))
-        if (activePath) self.tab.open(activePath)
-      }
-      let dragged, cloned, offsetX, offsetY, startX, startY, axis, _axis, threshold, _offsetX
-
-      $("#plugin-window-tab .tab-wrapper").on("dragstart", ".tab-container", function (ev) {
-        dragged = this
-        _offsetX = ev.offsetX
-
-        axis = dragged.getAttribute("axis")
-        _axis = axis
-        ev.originalEvent.dataTransfer.setDragImage(preview, 0, 0)
-        ev.originalEvent.dataTransfer.effectAllowed = "move"
-        ev.originalEvent.dataTransfer.dropEffect = "move"
-        let { left, top, height } = dragged.getBoundingClientRect()
-        startX = ev.clientX
-        startY = ev.clientY
-        offsetX = startX - left
-        offsetY = startY - top
-        threshold = height * self.config.DETACHMENT_THRESHOLD
-
-        const faker = dragged.cloneNode(true)
-        faker.style.height = dragged.offsetHeight + "px" // dragBox uses height: 100%, needs to be reset.
-        faker.style.transform = "translate3d(0, 0, 0)"
-        faker.setAttribute("dragging", "")
-        cloned = document.createElement("div")
-        cloned.append(faker)
-        cloned.className = "drag-obj"
-        cloned.style.transform = `translate3d(${left}px, ${top}px, 0)`
-        self.entities.tabBar.append(cloned)
-      }).on("dragend", ".tab-container", function (ev) {
-        rafManager.cancel()
-        newWindowIfNeed(ev.offsetY, this)
-        if (!cloned) {
-          dragged = null
-          return
-        }
-        const { left, top } = this.getBoundingClientRect()
-        const resetAnimation = cloned.animate(
-          [{ transform: cloned.style.transform }, { transform: `translate3d(${left}px, ${top}px, 0)` }],
-          { duration: 70, easing: "ease-in-out" },
-        )
-        resetAnimation.onfinish = function () {
-          cloned?.remove()
-          cloned = null
-          dragged.style.visibility = "visible"
-          dragged = null
-          resetTabBar()
-        }
-      }).on("dragover", ".tab-container", function (ev) {
-        ev.preventDefault()
-        if (dragged) {
-          const fn = ev.offsetX > _offsetX ? "after" : "before"
-          this[fn](dragged)
-        }
-      }).on("dragenter", () => false)
-
-      document.addEventListener("dragover", function (ev) {
-        if (!cloned) return
-
-        ev.preventDefault()
-        ev.stopPropagation()
-        ev.dataTransfer.dropEffect = "move"
-        dragged.style.visibility = "hidden"
-        const currentX = ev.clientX
-        const currentY = ev.clientY
-        rafManager.schedule(() => {
-          let left = currentX - offsetX
-          let top = currentY - offsetY
-          if (axis) {
-            if (_axis === "X") {
-              top = startY - offsetY
-            } else if (_axis === "Y") {
-              left = startX - offsetX
-            } else {
-              const x = Math.abs(currentX - startX)
-              const y = Math.abs(currentY - startY)
-              _axis = (x > y && "X") || (x < y && "Y") || ""
-            }
-          } else {
-            _axis = ""
-          }
-          startX = left + offsetX
-          startY = top + offsetY
-
-          const detachment = self.config.TAB_DETACHMENT
-          if (detachment === "lockVertical" || (detachment === "resistant" && top < threshold)) {
-            top = 0
-          }
-          cloned.style.transform = `translate3d(${left}px, ${top}px, 0)`
-        })
-      })
-    }
-
-    const sortVscode = () => {
-      const self = this
-      let lastOver = null
-      const toggleOver = (target, isAdd) => {
-        if (isAdd) {
-          target.classList.add("over")
-          lastOver = target
-        } else {
-          target.classList.remove("over")
-        }
-      }
-
-      $("#plugin-window-tab .tab-wrapper").on("dragstart", ".tab-container", function (ev) {
-        ev.originalEvent.dataTransfer.effectAllowed = "move"
-        ev.originalEvent.dataTransfer.dropEffect = "move"
-        this.style.opacity = 0.5
-        lastOver = null
-      }).on("dragend", ".tab-container", function (ev) {
-        this.style.opacity = ""
-        newWindowIfNeed(ev.offsetY, this)
-        if (lastOver) {
-          lastOver.classList.remove("over")
-          const toIdx = parseInt(lastOver.dataset.idx)
-          const fromIdx = parseInt(this.dataset.idx)
-          self.tab.move(fromIdx, toIdx)
-          self.tab.hooks.onRender(self.tab.current.path)
-        }
-      }).on("dragover", ".tab-container", function () {
-        toggleOver(this, true)
-        return false
-      }).on("dragenter", ".tab-container", function () {
-        toggleOver(this, true)
-        return false
-      }).on("dragleave", ".tab-container", function () {
-        toggleOver(this, false)
-      })
-    }
-
-    if (this.config.DRAG_STYLE === "JetBrains") {
-      sortJetBrains()
-    } else {
-      sortVscode()
-    }
-  }
+  _handleDrag = () => new TabDragManager(this).init()
 
   _handleRename = () => {
     reqnode("electron").ipcRenderer.on("didRename", (sender, { oldPath, newPath }) => {
-      const isDir = this.utils.Package.FsExtra.statSync(newPath).isDirectory()
-      if (isDir) {
-        this.tab.tabs
-          .filter(t => t.path.startsWith(oldPath))
-          .forEach(t => t.path = newPath + t.path.slice(oldPath.length))
-      } else {
-        const toRenameTab = this.tab.tabs.find(t => t.path === oldPath)
-        if (toRenameTab) toRenameTab.path = newPath
-      }
-      if (this.tab.current) {
-        this.tab.open(this.tab.current.path)
-        // queueMicrotask(() => File.editor.library.refreshPanelCommand())
+      try {
+        const isDir = this.utils.Package.FsExtra.statSync(newPath).isDirectory()
+        this.tab.rename(oldPath, newPath, isDir)
+      } catch (err) {
+        console.error("Rename failed to stat file", err)
       }
     })
   }
@@ -802,7 +841,7 @@ class WindowTabPlugin extends BasePlugin {
         bridge.callHandler("quickOpen.stopQuery")
       }
     }
-    // Change Click to Ctrl+Click
+    // Change click to Ctrl-click
     document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
       if (!this.utils.metaKeyPressed(ev)) openQuickTab(ev.target.closest(".typora-quick-open-item"), ev)
     }, true)
@@ -812,14 +851,14 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   _reopenTabsWhenInit = () => {
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
       // Redirection is disabled when opening specific files (isDiscardableUntitled === false).
       // Register autoSave AFTER restoreSession completes, so the restore's fileContentLoaded
       // does not overwrite the saved state with stale data.
       this.utils.waitUntil(this.utils.isDiscardableUntitled, 50, 2000)
         .then(() => this.openSaveTabs(this.autoSaveStorage, false))
         .catch(this.utils.noop)
-        .finally(() => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage)))
+        .finally(() => this.utils.eventHub.on(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage)))
     })
   }
 
@@ -831,7 +870,7 @@ class WindowTabPlugin extends BasePlugin {
       this.utils.openFile(file)
       return true
     })
-    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileContentLoaded, () => {
       if (context.anchor?.startsWith("#")) {
         const $target = File.editor.EditHelper.findAnchorElem(context.anchor)
         if ($target.length) this.utils.scrollTo($target, { height: 10 })
@@ -921,9 +960,12 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   openFileLocal = filePath => {
-    this.tab.setLocalOpen(true)
-    this.utils.openFile(filePath)
-    this.tab.setLocalOpen(false)
+    try {
+      this.tab.setLocalOpen(true)
+      this.utils.openFile(filePath)
+    } finally {
+      this.tab.setLocalOpen(false)
+    }
   }
 
   rerenderTabBar = () => {
@@ -935,11 +977,7 @@ class WindowTabPlugin extends BasePlugin {
   showInFinder = idx => this.utils.showInFinder(this.tab.getPathByIdx(idx))
   openInNewWindow = idx => File.editor.library.openFileInNewWindow(this.tab.getPathByIdx(idx), false)
 
-  saveTabs = (storage) => storage.set({
-    mount_folder: this.utils.getMountFolder(),
-    save_tabs: this.tab.tabs.map((tab, idx) => ({ idx, path: tab.path, scrollTop: tab.scrollTop, active: idx === this.tab.activeIdx })),
-  })
-
+  saveTabs = (storage) => storage.set({ mount_folder: this.utils.getMountFolder(), save_tabs: this.tab.exportSession() })
   openSaveTabs = (storage, matchMountFolder = false) => {
     const { save_tabs, mount_folder } = storage.get() || {}
     this.tab.restoreSession(save_tabs, mount_folder, this.utils.getMountFolder(), matchMountFolder)
