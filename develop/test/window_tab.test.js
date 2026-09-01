@@ -61,6 +61,37 @@ describe("TabManager Test Suite", () => {
     })
   })
 
+  describe("1b. refresh() - Redraw Without Reopening", () => {
+    it("should render the active path without opening any file", () => {
+      manager.reset([{ path: "/a.md" }, { path: "/b.md" }])
+      manager._activeIdx = 1
+      context.utils.openFile.mock.resetCalls()
+
+      manager.refresh()
+
+      assert.strictEqual(context.onRender.mock.callCount(), 1)
+      assert.strictEqual(context.onRender.mock.calls[0].arguments[0], "/b.md")
+      assert.strictEqual(context.utils.openFile.mock.callCount(), 0)
+    })
+
+    it("should recompute labels so a config change takes effect", () => {
+      context.config.SHOW_DIR_ON_DUPLICATE = false
+      manager.reset([{ path: "/x/a.md" }, { path: "/y/a.md" }])
+      assert.deepStrictEqual(manager.tabs.map(t => t.showName), ["a.md", "a.md"])
+
+      context.config.SHOW_DIR_ON_DUPLICATE = true
+      manager.refresh()
+
+      assert.deepStrictEqual(manager.tabs.map(t => t.showName), ["x/a.md", "y/a.md"])
+    })
+
+    it("should not throw when there is no tab left", () => {
+      manager.reset([])
+      manager.refresh()
+      assert.strictEqual(context.onRender.mock.calls[0].arguments[0], undefined)
+    })
+  })
+
   describe("2. open() - Tab Insertion and Trimming", () => {
     it("should modify current tab path when local open is true", () => {
       manager.reset([{ path: "/original.md" }])
