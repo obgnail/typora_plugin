@@ -5,37 +5,21 @@ const utils = require("./utils")
 const container = require("./serviceContainer")
 const BasePlugin = require("./plugin")
 
-const PLUGIN_COLORS = { enable: "32", disable: "33", stop: "34", error: "31", unconfigure: "35" }
-
 async function entry() {
   if (utils.compareVersion(utils.typoraVersion, "0.9.98") < 0) return
 
   const settings = await utils.settings.read()
   if (!settings?.global?.ENABLE) return
 
-  setGlobalVars()
-  container.connect(utils, settings)
-  toggleDark(settings.global.DARK_MODE)
-
-  await i18n.init(settings.global.LOCALE)
-  await setup(settings)
-}
-
-function setGlobalVars() {
   global.BasePlugin = BasePlugin
+  container.connect(utils, settings)
+  utils.setDarkMode(settings.global.DARK_MODE)
+  await i18n.init(settings.global.LOCALE)
+  await bootstrap(settings)
 }
 
-async function setup(settings) {
-  await loadMixins(async () => {
-    const plugins = await loadPlugins(settings)
-    logging(plugins)
-    container.setPlugins(plugins.enable)
-  })
-  reemit()
-}
-
-async function loadMixins(loadFn) {
-  const invoke = (mixins, method) => Promise.all(mixins.map(m => m[method]?.()))
+async function bootstrap(settings) {
+  const invoke = (mixins, method) => Promise.all(mixins.map(mixin => mixin[method]?.()))
 
   const {
     logger, unstableRequire, styleManager,
@@ -46,7 +30,7 @@ async function loadMixins(loadFn) {
   await invoke([logger, unstableRequire, styleManager], "process")
   await invoke([contextMenu, notification, formDialog, stateRecorder, hotkeyHub, exportHelper], "process")
 
-  await loadFn()
+  container.setPlugins(await loadPlugins(settings))
 
   await invoke([eventHub], "process")
   await invoke([diagramParser, thirdPartyDiagramParser], "process")
@@ -54,36 +38,51 @@ async function loadMixins(loadFn) {
   eventHub.emit(eventHub.eventType.allPluginsHadInjected)
 
   await invoke(Object.values(utils.mixins), "postprocess")
+
+  // Re-emit events (e.g., afterAddCodeBlock) that may have been missed due to async execution.
+  if (File.getMountFolder() != null) {
+    setTimeout(() => {
+      const queue = File.editor.fences.queue || {}
+      Object.keys(queue).forEach(cid => File.editor.fences.addCodeBlock(cid))
+      const path = utils.getFilePath()
+      if (path) File.editor.library.openFile(path)
+    }, 80)
+  }
 }
 
 async function loadPlugins(configs) {
-  const plugins = { enable: {}, disable: {}, stop: {}, error: {}, unconfigure: {} }
+  const STATE = { enable: "enable", disable: "disable", abort: "abort", error: "error", unconfigure: "unconfigure" }
+  const COLORS = { [STATE.enable]: "32", [STATE.disable]: "33", [STATE.abort]: "34", [STATE.error]: "31", [STATE.unconfigure]: "35" }
+  const PLUGINS = Object.fromEntries(Object.keys(STATE).map(key => [key, {}]))
+  const record = (state, name, data) => PLUGINS[state][name] = data
 
-  const promises = Object.entries(configs).map(async ([fixedName, config]) => {
-    if (!config) {
-      plugins.unconfigure[fixedName] = fixedName
-      return
-    }
-    if (!config.ENABLE) {
-      plugins.disable[fixedName] = config
-      return
-    }
+  const logging = (plugins) => {
+    console.group("Typora-Plugin")
+    Object.entries(plugins).forEach(([typ, p]) => console.debug(`[ \x1B[${COLORS[typ]}m${typ}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p))
+    console.groupEnd()
+  }
 
-    try {
-      const instance = await loadPlugin(fixedName, config)
-      if (instance) {
-        plugins.enable[fixedName] = instance
-      } else {
-        plugins.stop[fixedName] = config
+  await Promise.all(
+    Object.entries(configs).map(async ([fixedName, config]) => {
+      if (!config) {
+        return record(STATE.unconfigure, fixedName, fixedName)
       }
-    } catch (error) {
-      console.error(`[Plugin Error] ${fixedName}:`, error)
-      plugins.error[fixedName] = error
-    }
-  })
+      if (!config.ENABLE) {
+        return record(STATE.disable, fixedName, config)
+      }
+      try {
+        const instance = await loadPlugin(fixedName, config)
+        const status = instance ? STATE.enable : STATE.abort
+        record(status, fixedName, instance)
+      } catch (err) {
+        console.error(`[Plugin Error] ${fixedName}:`, err)
+        record(STATE.error, fixedName, err)
+      }
+    }),
+  )
 
-  await Promise.all(promises)
-  return plugins
+  logging(PLUGINS)
+  return PLUGINS
 }
 
 async function loadPlugin(fixedName, config) {
@@ -94,7 +93,6 @@ async function loadPlugin(fixedName, config) {
 
   const instance = new PluginClass(fixedName, config, i18n.bind(fixedName))
   if (await instance.prepare() === utils.PLUGIN_LOAD_ABORT) return null
-
   await loadStyle(instance, instance.style())
   utils.insertElements(instance.html())
   utils.hotkeyHub.register(instance.hotkey())
@@ -112,30 +110,6 @@ async function loadStyle(instance, style) {
   } else {
     await utils.styleManager.register(instance.fixedName, { ...style, this: instance })
   }
-}
-
-// Re-emit events (e.g., afterAddCodeBlock) that may have been missed due to async execution.
-function reemit() {
-  if (File.getMountFolder() == null) return
-  setTimeout(() => {
-    const queue = File.editor.fences.queue || {}
-    Object.keys(queue).forEach(cid => File.editor.fences.addCodeBlock(cid))
-    const path = utils.getFilePath()
-    if (path) File.editor.library.openFile(path)
-  }, 80)
-}
-
-function logging(plugins) {
-  console.group("Typora-Plugin")
-  Object.entries(plugins).forEach(([type, plugin]) => {
-    const count = Object.keys(plugin).length
-    console.debug(`[ \x1B[${PLUGIN_COLORS[type]}m${type}\x1b[0m ] [ ${count} ]:`, plugin)
-  })
-  console.groupEnd()
-}
-
-function toggleDark(dark) {
-  document.body.classList.toggle("plugin-dark-mode", Boolean(dark))
 }
 
 module.exports = entry

@@ -53,7 +53,7 @@ module.exports = (plugin) => {
       when: { $and: [{ DARK_MODE: { $typeof: "boolean" } }, { $meta: { $isMounting: false } }] },
       affects: [],
       effect: (isMet, context) => {
-        if (isMet) document.body.classList.toggle("plugin-dark-mode", context.getValue("DARK_MODE"))
+        if (isMet) utils.setDarkMode(context.getValue("DARK_MODE"))
       },
     }],
     echarts: rendererConstraints,

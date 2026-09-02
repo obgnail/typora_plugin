@@ -128,8 +128,12 @@ SWITCH_NEXT_TAB_HOTKEY = ["Ctrl+PageDown", "Ctrl+Tab"]
 SWITCH_PREVIOUS_TAB_HOTKEY = ["Ctrl+PageUp", "Ctrl+Shift+Tab"]
 # Switch to last active tab
 SWITCH_LAST_ACTIVE_TAB_HOTKEY = ["Ctrl+`"]
-# Sort tabs by filename
+# Sort tabs
 SORT_TABS_HOTKEY = []
+# Save tabs
+SAVE_TABS_HOTKEY = []
+# Open saved tabs
+OPEN_SAVED_TABS_HOTKEY = []
 # Temporarily show/hide tab bar
 TOGGLE_TAB_BAR_HOTKEY = []
 # Copy current file path

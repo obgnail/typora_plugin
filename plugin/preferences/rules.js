@@ -34,6 +34,8 @@ module.exports = {
     SWITCH_NEXT_TAB_HOTKEY: hotkeys,
     SWITCH_LAST_ACTIVE_TAB_HOTKEY: hotkeys,
     SORT_TABS_HOTKEY: hotkeys,
+    SAVE_TABS_HOTKEY: hotkeys,
+    OPEN_SAVED_TABS_HOTKEY: hotkeys,
     COPY_PATH_HOTKEY: hotkeys,
     TOGGLE_TAB_BAR_HOTKEY: hotkeys,
   },

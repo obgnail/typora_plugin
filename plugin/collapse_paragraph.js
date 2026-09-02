@@ -272,7 +272,7 @@ class CollapseParagraphPlugin extends BasePlugin {
       { act_value: "toggle_recursive", act_disabled, act_hotkey: getHotkey("COLLAPSE_RECURSIVE") },
       { act_value: "toggle_siblings", act_disabled, act_hotkey: getHotkey("COLLAPSE_SIBLINGS") },
       { act_value: "toggle_all_siblings", act_disabled, act_hotkey: getHotkey("COLLAPSE_ALL_SIBLINGS") },
-      { act_value: "record_collapse_state", act_state: !!this.config.RECORD_COLLAPSE },
+      { act_value: "record_collapse_state", act_state: !!this.config.RECORD_COLLAPSE, act_name: this.i18n.t("$label.RECORD_COLLAPSE") },
     ])
   }
 

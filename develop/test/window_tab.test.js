@@ -42,15 +42,15 @@ describe("TabManager Test Suite", () => {
       assert.strictEqual(manager.count, 0)
       assert.strictEqual(manager.activeIdx, 0)
       assert.strictEqual(manager.current, null)
-      assert.strictEqual(manager.isLocalOpen, false)
+      assert.strictEqual(manager.inPlace, false)
       assert.strictEqual(manager.maxIdx, 0)
     })
 
-    it("should toggle and set local open state correctly", () => {
-      manager.toggleLocalOpen()
-      assert.strictEqual(manager.isLocalOpen, true)
-      manager.setLocalOpen(false)
-      assert.strictEqual(manager.isLocalOpen, false)
+    it("should toggle and set in-place open state correctly", () => {
+      manager.toggleInPlace()
+      assert.strictEqual(manager.inPlace, true)
+      manager.setInPlace(false)
+      assert.strictEqual(manager.inPlace, false)
     })
 
     it("should return correct tab object and path by index", () => {
@@ -93,9 +93,9 @@ describe("TabManager Test Suite", () => {
   })
 
   describe("2. open() - Tab Insertion and Trimming", () => {
-    it("should modify current tab path when local open is true", () => {
+    it("should modify current tab path when in-place open is true", () => {
       manager.reset([{ path: "/original.md" }])
-      manager.setLocalOpen(true)
+      manager.setInPlace(true)
       manager.open("/new.md")
 
       assert.strictEqual(manager.count, 1)
@@ -454,8 +454,8 @@ describe("TabManager Test Suite", () => {
   })
 
   describe("9. Operations on Empty States", () => {
-    it("should handle open() safely when isLocalOpen is true but current is null", () => {
-      manager.setLocalOpen(true)
+    it("should handle open() safely when inPlace is true but current is null", () => {
+      manager.setInPlace(true)
       manager.open("/first.md") // Normally replaces current, but current is null
 
       assert.strictEqual(manager.count, 1)

@@ -2,7 +2,7 @@ class ServiceContainer {
   plugins = {}
   settings = {}
 
-  setPlugins = (plugins) => this.plugins = plugins
+  setPlugins = (plugins) => this.plugins = plugins.enable
   setSettings = (settings) => {
     // "global" is a general setting, not a specific plugin setting
     Object.defineProperty(settings, "global", { enumerable: false })

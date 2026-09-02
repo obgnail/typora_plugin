@@ -1,7 +1,7 @@
 class TabManager {
   _tabs = []
   _activeIdx = 0
-  _localOpen = false
+  _inPlace = false
 
   constructor(context) {
     this.utils = context.utils
@@ -34,16 +34,16 @@ class TabManager {
     return Math.max(0, this._tabs.length - 1)
   }
 
-  get isLocalOpen() {
-    return this._localOpen
+  get inPlace() {
+    return this._inPlace
   }
 
-  toggleLocalOpen() {
-    this._localOpen = !this._localOpen
+  toggleInPlace() {
+    this._inPlace = !this._inPlace
   }
 
-  setLocalOpen(isOpen) {
-    this._localOpen = isOpen
+  setInPlace(inPlace) {
+    this._inPlace = inPlace
   }
 
   getByIdx(idx) {
@@ -76,7 +76,7 @@ class TabManager {
     const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config
     const isNewTab = this.getIdxByPath(wantOpenPath) === -1
     if (isNewTab) {
-      if (this._localOpen && this.current) {
+      if (this._inPlace && this.current) {
         this.current.path = wantOpenPath
       } else {
         const newTab = { path: wantOpenPath, scrollTop: 0 }
@@ -188,7 +188,7 @@ class TabManager {
     const targetTab = this._tabs[idx]
     if (targetTab) {
       this._tabs = [targetTab]
-      this.switch(0)
+      this.first()
     }
   }
 
@@ -196,7 +196,7 @@ class TabManager {
     const originPath = this.current?.path
     this._tabs.splice(0, idx)
     if (!originPath || this.getIdxByPath(originPath) === -1) {
-      this.switch(0)
+      this.first()
     } else {
       this.switchByPath(originPath)
     }
@@ -206,7 +206,7 @@ class TabManager {
     const originPath = this.current?.path
     this._tabs.splice(idx + 1)
     if (!originPath || this.getIdxByPath(originPath) === -1) {
-      this.switch(this.maxIdx)
+      this.last()
     } else {
       this.switchByPath(originPath)
     }
@@ -605,8 +605,8 @@ class WindowTabPlugin extends BasePlugin {
   manualSaveStorage = this.utils.getStorage(`${this.fixedName}.manual`)
   autoSaveStorage = this.utils.getStorage(`${this.fixedName}.auto`)
   staticActions = this.i18n.fillActions([
-    { act_value: "sort_tabs", act_hotkey: this.config.SORT_TABS_HOTKEY },
-    { act_value: "save_tabs" },
+    { act_value: "sort_tabs", act_hotkey: this.config.SORT_TABS_HOTKEY, act_name: this.i18n.t("$label.SORT_TABS_HOTKEY") },
+    { act_value: "save_tabs", act_hotkey: this.config.SAVE_TABS_HOTKEY, act_name: this.i18n.t("$label.SAVE_TABS_HOTKEY") },
   ])
   tab = new TabManager({
     utils: this.utils,
@@ -658,10 +658,12 @@ class WindowTabPlugin extends BasePlugin {
     { hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: () => this.tab.next() },
     { hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: () => this.tab.previous() },
     { hotkey: this.config.SWITCH_LAST_ACTIVE_TAB_HOTKEY, callback: () => this.tab.switchToLastActive() },
-    { hotkey: this.config.SORT_TABS_HOTKEY, callback: () => this.tab.sort() },
     { hotkey: this.config.CLOSE_HOTKEY, callback: () => this.tab.closeActive() },
     { hotkey: this.config.COPY_PATH_HOTKEY, callback: () => this.copyPath(this.tab.activeIdx) },
-    { hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY, callback: () => this.forceToggleTabBar() },
+    { hotkey: this.config.SORT_TABS_HOTKEY, callback: () => this.call("sort_tabs") },
+    { hotkey: this.config.SAVE_TABS_HOTKEY, callback: () => this.call("save_tabs") },
+    { hotkey: this.config.OPEN_SAVED_TABS_HOTKEY, callback: () => this.call("open_saved_tabs") },
+    { hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY, callback: () => this.call("toggle_tab_bar") },
   ]
 
   init = () => {
@@ -691,12 +693,12 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   getDynamicActions = () => this.i18n.fillActions([
-    { act_value: "open_save_tabs", act_hidden: !this.manualSaveStorage.exist() },
-    { act_value: "toggle_file_ext", act_state: this.config.TRIM_FILE_EXT },
-    { act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_ON_DUPLICATE },
-    { act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
+    { act_value: "open_saved_tabs", act_hidden: !this.manualSaveStorage.exist(), act_hotkey: this.config.OPEN_SAVED_TABS_HOTKEY, act_name: this.i18n.t("$label.OPEN_SAVED_TABS_HOTKEY") },
+    { act_value: "toggle_file_ext", act_state: this.config.TRIM_FILE_EXT, act_name: this.i18n.t("$label.TRIM_FILE_EXT") },
+    { act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_ON_DUPLICATE, act_name: this.i18n.t("$label.SHOW_DIR_ON_DUPLICATE") },
+    { act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON, act_name: this.i18n.t("$label.SHOW_TAB_CLOSE_BUTTON") },
     { act_value: "toggle_tab_bar", act_state: this.entities.windowTab.style.display === "none", act_hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY },
-    { act_value: "toggle_local", act_state: !this.tab.isLocalOpen },
+    { act_value: "toggle_in_place", act_state: !this.tab.inPlace },
   ])
 
   call = action => {
@@ -706,13 +708,13 @@ class WindowTabPlugin extends BasePlugin {
       this.rerenderTabBar()
     }
     const callMap = {
-      toggle_local: () => this.tab.toggleLocalOpen(),
+      toggle_in_place: () => this.tab.toggleInPlace(),
       toggle_show_dir: () => toggleConfig("SHOW_DIR_ON_DUPLICATE"),
       toggle_file_ext: () => toggleConfig("TRIM_FILE_EXT"),
       toggle_show_close_button: () => toggleConfig("SHOW_TAB_CLOSE_BUTTON"),
-      save_tabs: () => this.saveTabs(this.manualSaveStorage),
-      open_save_tabs: () => this.openSaveTabs(this.manualSaveStorage),
       sort_tabs: () => this.tab.sort(),
+      save_tabs: () => this.saveTabs(this.manualSaveStorage),
+      open_saved_tabs: () => this.openSavedTabs(this.manualSaveStorage),
       toggle_tab_bar: () => this.forceToggleTabBar(),
     }
     callMap[action]?.()
@@ -856,7 +858,7 @@ class WindowTabPlugin extends BasePlugin {
       // Register autoSave AFTER restoreSession completes, so the restore's fileContentLoaded
       // does not overwrite the saved state with stale data.
       this.utils.waitUntil(this.utils.isDiscardableUntitled, 50, 2000)
-        .then(() => this.openSaveTabs(this.autoSaveStorage, false))
+        .then(() => this.openSavedTabs(this.autoSaveStorage))
         .catch(this.utils.noop)
         .finally(() => this.utils.eventHub.on(this.utils.eventHub.eventType.fileContentLoaded, () => this.saveTabs(this.autoSaveStorage)))
     })
@@ -959,12 +961,12 @@ class WindowTabPlugin extends BasePlugin {
     else this._resetContentTop()
   }
 
-  openFileLocal = filePath => {
+  openInPlace = filePath => {
     try {
-      this.tab.setLocalOpen(true)
+      this.tab.setInPlace(true)
       this.utils.openFile(filePath)
     } finally {
-      this.tab.setLocalOpen(false)
+      this.tab.setInPlace(false)
     }
   }
 
@@ -978,7 +980,7 @@ class WindowTabPlugin extends BasePlugin {
   openInNewWindow = idx => File.editor.library.openFileInNewWindow(this.tab.getPathByIdx(idx), false)
 
   saveTabs = (storage) => storage.set({ mount_folder: this.utils.getMountFolder(), save_tabs: this.tab.exportSession() })
-  openSaveTabs = (storage, matchMountFolder = false) => {
+  openSavedTabs = (storage, matchMountFolder = false) => {
     const { save_tabs, mount_folder } = storage.get() || {}
     this.tab.restoreSession(save_tabs, mount_folder, this.utils.getMountFolder(), matchMountFolder)
   }

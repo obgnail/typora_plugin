@@ -154,38 +154,38 @@ class GrammarPresenter {
     const ul = (...li) => `<ul style="padding-left: 1.2em; margin: 0; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
 
     const I18N = {
-      syntax: t("modal.hintDetail.syntax", { eg: em("size>2kb") }),
+      syntax: t("modal.syntax.desc", { eg: em("size>2kb") }),
       scope: ul(
-        bold(t("modal.hintDetail.scope.meta")) + ": " + joinEm(scopes.isMeta.map(e => e.scope)),
-        bold(t("modal.hintDetail.scope.content")) + ": " + joinEm(scopes.notMeta.map(e => e.scope)),
+        bold(t("modal.syntax.scope.meta")) + ": " + joinEm(scopes.isMeta.map(e => e.scope)),
+        bold(t("modal.syntax.scope.content")) + ": " + joinEm(scopes.notMeta.map(e => e.scope)),
       ),
       operator: ul(
-        bold(joinEm([":"])) + " " + t("modal.hintDetail.operator.colon"),
-        bold(joinEm(["=", "!="])) + " " + t("modal.hintDetail.operator.equal"),
-        bold(joinEm([">", "<", ">=", "<="])) + " " + t("modal.hintDetail.operator.compare"),
+        bold(joinEm([":"])) + " " + t("modal.syntax.operator.colon"),
+        bold(joinEm(["=", "!="])) + " " + t("modal.syntax.operator.equal"),
+        bold(joinEm([">", "<", ">=", "<="])) + " " + t("modal.syntax.operator.compare"),
       ),
       operand: ul(
-        t("modal.hintDetail.operand.text"),
-        t("modal.hintDetail.operand.quotes", { eg: em(`"sour pear"`) }),
-        t("modal.hintDetail.operand.regex", { eg: em("/\\bsour\\b/") }),
+        t("modal.syntax.operand.text"),
+        t("modal.syntax.operand.quotes", { eg: em(`"sour pear"`) }),
+        t("modal.syntax.operand.regex", { eg: em("/\\bsour\\b/") }),
       ),
-      combineCond: ul(
-        t("modal.hintDetail.combineCond.and", { eg: em("size>2kb AND ext:txt") }),
-        t("modal.hintDetail.combineCond.or", { eg: em("size>2kb OR ext:txt") }),
-        t("modal.hintDetail.combineCond.not", { eg: em("NOT size>2kb") }),
-        t("modal.hintDetail.combineCond.parentheses", { eg: em("size>2kb OR (ext:txt AND hasimage=true)") }),
+      combine: ul(
+        t("modal.syntax.combine.and", { eg: em("size>2kb AND ext:txt") }),
+        t("modal.syntax.combine.or", { eg: em("size>2kb OR ext:txt") }),
+        t("modal.syntax.combine.not", { eg: em("NOT size>2kb") }),
+        t("modal.syntax.combine.parentheses", { eg: em("size>2kb OR (ext:txt AND hasimage=true)") }),
       ),
-      syntacticSugar: t("modal.hintDetail.syntacticSugar", {
+      sugar: t("modal.syntax.sugarDesc", {
         scope: em("default"), operator: em(":"), shortCond: em("pear"),
         normalCond: em("default:pear"), longCond: em("path:pear OR content:pear"),
       }),
     }
 
     const example = [
-      ["pear", `${t("modal.example.desc0")} ${t("modal.example.equivalentTo")} default:pear`],
-      ["-pear", `${t("modal.example.desc1")} ${t("modal.example.equivalentTo")} NOT pear`],
-      ["sour pear", `${t("modal.example.desc2")} ${t("modal.example.equivalentTo")} sour AND pear`],
-      ["sour | pear", `${t("modal.example.desc3")} ${t("modal.example.equivalentTo")} sour OR pear`],
+      ["pear", `${t("modal.example.desc0")} ${t("modal.example.equivalent")} default:pear`],
+      ["-pear", `${t("modal.example.desc1")} ${t("modal.example.equivalent")} NOT pear`],
+      ["sour pear", `${t("modal.example.desc2")} ${t("modal.example.equivalent")} sour AND pear`],
+      ["sour | pear", `${t("modal.example.desc3")} ${t("modal.example.equivalent")} sour OR pear`],
       [`"sour pear"`, t("modal.example.desc4")],
       ["/\\bsour\\b/ pear mtime<2024-05-16", t("modal.example.desc5")],
       ["frontmatter:dev | head=plugin | strong:MIT", t("modal.example.desc6")],
@@ -198,15 +198,15 @@ class GrammarPresenter {
 
     const schema = ({ Group, Controls, When }) => [
       Group(
-        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.syntax")).HintDetail(I18N.syntax),
-        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.scope")).HintDetail(I18N.scope),
-        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.operator")).HintDetail(I18N.operator),
-        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.operand")).HintDetail(I18N.operand),
-        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.combineCond")).HintDetail(I18N.combineCond),
-        Controls.Hint().Unsafe(true).HintHeader(t("modal.hintHeader.syntacticSugar")).HintDetail(I18N.syntacticSugar),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.syntax.base")).HintDetail(I18N.syntax),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.syntax.scope")).HintDetail(I18N.scope),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.syntax.operator")).HintDetail(I18N.operator),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.syntax.operand")).HintDetail(I18N.operand),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.syntax.combine")).HintDetail(I18N.combine),
+        Controls.Hint().Unsafe(true).HintHeader(t("modal.syntax.sugar")).HintDetail(I18N.sugar),
       ),
-      Controls.Table("example").ThMap({ expression: t("modal.example.expression"), desc: t("modal.example.query") }).Readonly(true),
-      Group(t("modal.title.playground"),
+      Controls.Table("example").ThMap({ expression: t("modal.example.expression"), desc: t("modal.example.desc") }).Readonly(true),
+      Group(t("modal.playground.title"),
         Controls.Textarea("expression").Rows(3).NoResize(true).IsBlockLayout(true),
         Controls.Code("_displayAST").Readonly(true).ShowIf(When.eq("presentation", PRESENT.ast)).DependencyUnmetAction("hide").IsBlockLayout(true),
         Controls.Hint("_displayGraph").Unsafe(true).ShowIf(When.eq("presentation", PRESENT.graph)).DependencyUnmetAction("hide"),
@@ -220,7 +220,7 @@ class GrammarPresenter {
         Controls.Switch("textStyle").Label(t("modal.playground.textStyle")).ShowIf(When.includes("presentation", [PRESENT.graph, PRESENT.text])),
         Controls.Switch("translate").Label(t("modal.playground.translate")).ShowIf(When.follow("textStyle")),
       ),
-      Controls.Action("_grammar_box_visible").Label(t("modal.title.grammar")).ActionType("toggle"),
+      Controls.Action("_grammar_box_visible").Label(t("modal.grammar.title")).ActionType("toggle"),
       Controls.Code("grammar").Readonly(true).ShowIf(When.true("_grammar_box_visible")),
     ]
 

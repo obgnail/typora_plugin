@@ -107,13 +107,13 @@ class ResizeImagePlugin extends BasePlugin {
     const other = [
       { act_value: "zoom_out_20_percent", act_hidden: true },
       { act_value: "zoom_in_20_percent", act_hidden: true },
-      { act_value: "set_align_left", act_hidden: true },
-      { act_value: "set_align_center", act_hidden: true },
-      { act_value: "set_align_right", act_hidden: true },
+      { act_value: "set_align_left", act_hidden: true, act_name: this.i18n.t("$option.IMAGE_ALIGN.left") },
+      { act_value: "set_align_center", act_hidden: true, act_name: this.i18n.t("$option.IMAGE_ALIGN.center") },
+      { act_value: "set_align_right", act_hidden: true, act_name: this.i18n.t("$option.IMAGE_ALIGN.right") },
     ]
     const actions = this.i18n.fillActions([
-      { act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE },
-      { act_value: "allow_exceed_limit", act_state: this.config.ALLOW_EXCEED_LIMIT },
+      { act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE, act_name: this.i18n.t("$label.RECORD_RESIZE") },
+      { act_value: "allow_exceed_limit", act_state: this.config.ALLOW_EXCEED_LIMIT, act_name: this.i18n.t("$label.ALLOW_EXCEED_LIMIT") },
       ...other,
     ])
 

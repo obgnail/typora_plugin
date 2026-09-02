@@ -177,6 +177,8 @@ const schema_window_tab = () => [
     Array_("SWITCH_NEXT_TAB_HOTKEY"),
     Array_("SWITCH_LAST_ACTIVE_TAB_HOTKEY"),
     Array_("SORT_TABS_HOTKEY"),
+    Array_("SAVE_TABS_HOTKEY"),
+    Array_("OPEN_SAVED_TABS_HOTKEY"),
     Array_("COPY_PATH_HOTKEY"),
     Array_("TOGGLE_TAB_BAR_HOTKEY"),
   ),

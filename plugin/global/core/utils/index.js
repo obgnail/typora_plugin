@@ -1116,6 +1116,8 @@ class utils {
   static getRafManager = () => new AnimationFrameManager()
   static getSingleTaskRunner = () => new SingleTaskRunner()
 
+  static setDarkMode = dark => document.body.classList.toggle("plugin-dark-mode", Boolean(dark))
+
   static renderMermaid = async (definition) => {
     const graph = await window.mermaidAPI.render("plugin-common-mermaid", definition)
     return (typeof graph === "string") ? graph : graph.svg
