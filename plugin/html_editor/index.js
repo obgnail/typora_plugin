@@ -79,6 +79,11 @@ class HtmlEditorPlugin extends BasePlugin {
   activationToken = 0
   bypassOpenGuard = false
 
+  prepare = async () => {
+    await this.utils.waitUntil(() => File)
+    return Object.hasOwn(File, "readContentFrom") ? undefined : this.utils.PLUGIN_LOAD_ABORT
+  }
+
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
   style = () => `
@@ -470,11 +475,11 @@ class HtmlEditorPlugin extends BasePlugin {
     this._installOpenGuard()
     this._installSaveRedirect()
 
-    this.entities.open.addEventListener("click", () => void this._chooseFile())
+    this.entities.open.addEventListener("click", () => this._chooseFile())
     this.entities.save.addEventListener("click", () => {
-      if (this.entities.save.getAttribute("aria-disabled") !== "true") void this._save()
+      if (this.entities.save.getAttribute("aria-disabled") !== "true") this._save()
     })
-    this.entities.reload.addEventListener("click", () => void this._reload())
+    this.entities.reload.addEventListener("click", () => this._reload())
     this.entities.external.addEventListener("click", () => this.activeFile && this.utils.openPath(this.activeFile))
     this.entities.inspect.addEventListener("click", () => this._toggleInspector())
     this.entities.closeInspector.addEventListener("click", () => this._toggleInspector(false))
@@ -496,7 +501,7 @@ class HtmlEditorPlugin extends BasePlugin {
     if (this.activeFile) {
       this._setViewMode(this.viewMode === "preview" ? "source" : "preview")
     } else {
-      void this._chooseFile()
+      this._chooseFile()
     }
   }
 
@@ -509,7 +514,7 @@ class HtmlEditorPlugin extends BasePlugin {
         changed = true
       }
     }
-    if (refresh) File.editor?.library?.refreshPanelCommand?.()
+    if (refresh) File.editor.library.refreshPanelCommand()
     return changed
   }
 
@@ -547,7 +552,7 @@ class HtmlEditorPlugin extends BasePlugin {
       target => {
         if (this.bypassOpenGuard || !this._isDirty() || this._samePath(target, this.activeFile)) return false
         const name = this.utils.Package.Path.basename(target || "")
-        void this._confirmDiscard(this.i18n.t("action.openTarget", { name })).then(confirmed => {
+        this._confirmDiscard(this.i18n.t("action.openTarget", { name })).then(confirmed => {
           if (!confirmed) return
           this.bypassOpenGuard = true
           try {
@@ -568,7 +573,7 @@ class HtmlEditorPlugin extends BasePlugin {
       "saveUseNode",
       () => {
         if (!this.activeFile || !this._samePath(this.utils.getFilePath(), this.activeFile)) return false
-        void this._save()
+        this._save()
         return true
       },
       { priority: -200 },
@@ -578,7 +583,7 @@ class HtmlEditorPlugin extends BasePlugin {
   _handleFileContentLoaded = filePath => {
     const target = filePath || this.utils.getFilePath()
     if (isHtmlFile(target)) {
-      void this._activateFile(target)
+      this._activateFile(target)
     } else {
       this._deactivateFile()
     }
@@ -606,7 +611,6 @@ class HtmlEditorPlugin extends BasePlugin {
     this.activationToken++
     this.previewRenderToken++
     clearTimeout(this.previewTimer)
-    if (!this.entities) return
     this.entities.content.classList.remove("plugin-html-file-active")
     this.entities.root.classList.add("plugin-common-hidden")
     this.activeFile = ""
@@ -713,11 +717,11 @@ class HtmlEditorPlugin extends BasePlugin {
     if (key === "s") {
       event.preventDefault()
       event.stopImmediatePropagation()
-      void this._save()
+      this._save()
     } else if (key === "o") {
       event.preventDefault()
       event.stopImmediatePropagation()
-      void this._chooseFile()
+      this._chooseFile()
     } else if (key === "e") {
       event.preventDefault()
       event.stopImmediatePropagation()
@@ -734,28 +738,26 @@ class HtmlEditorPlugin extends BasePlugin {
   _setViewMode = (mode, shouldRender = true) => {
     if (!["source", "preview", "split"].includes(mode)) mode = "preview"
     this.viewMode = mode
-    if (!this.entities?.root) return
     this.entities.root.classList.remove("is-source", "is-preview", "is-split")
     this.entities.root.classList.add(`is-${mode}`)
     this.entities.views.forEach(button => button.setAttribute("aria-pressed", String(button.dataset.view === mode)))
     if (mode === "source" && this.inspectorEnabled) this._toggleInspector(false)
-    if (shouldRender && mode !== "source") void this._renderPreview()
+    if (shouldRender && mode !== "source") this._renderPreview()
     this._postPreviewMessage("html-editor:set-sync", { enabled: this.options.splitSync && mode === "split" })
     if (mode !== "preview") this.entities.source.focus()
   }
 
   _schedulePreview = () => {
     clearTimeout(this.previewTimer)
-    this.previewTimer = setTimeout(() => void this._renderPreview(), this.options.previewDelay)
+    this.previewTimer = setTimeout(() => this._renderPreview(), this.options.previewDelay)
   }
 
   _renderPreview = async () => {
-    if (!this.entities?.preview) return false
     const renderToken = ++this.previewRenderToken
     const source = this.entities.source.value
     this._syncUI(this.i18n.t("status.preparingPreview"))
     const preparedSource = await this._preparePreviewSource(source, renderToken)
-    if (renderToken !== this.previewRenderToken || !this.entities?.preview) return false
+    if (renderToken !== this.previewRenderToken || !this.entities.preview) return false
     const path = this.utils.Package.Path
     const baseHref = this.activeFile
       ? pathToFileURL(path.dirname(this.activeFile) + path.sep).href
@@ -839,7 +841,6 @@ class HtmlEditorPlugin extends BasePlugin {
 
   _readLocalImage = async filePath => {
     const fs = this.utils.Package.FsExtra
-    if (!fs?.stat || !fs?.readFile) return ""
     try {
       const stat = await fs.stat(filePath)
       if (stat.isFile && !stat.isFile() || stat.size > MAX_IMAGE_BYTES) return ""
@@ -893,8 +894,8 @@ class HtmlEditorPlugin extends BasePlugin {
   _toggleInspector = (enabled = !this.inspectorEnabled) => {
     this.inspectorEnabled = Boolean(enabled)
     if (this.inspectorEnabled && this.viewMode === "source") this._setViewMode("split", false)
-    this.entities?.inspect?.setAttribute("aria-pressed", String(this.inspectorEnabled))
-    this.entities?.inspector?.classList.toggle("plugin-common-hidden", !this.inspectorEnabled)
+    this.entities.inspect.setAttribute("aria-pressed", String(this.inspectorEnabled))
+    this.entities.inspector.classList.toggle("plugin-common-hidden", !this.inspectorEnabled)
     this._postPreviewMessage("html-editor:set-inspector", { enabled: this.inspectorEnabled })
   }
 
@@ -905,20 +906,20 @@ class HtmlEditorPlugin extends BasePlugin {
   }
 
   _postPreviewMessage = (type, payload = {}) => {
-    const target = this.entities?.preview?.contentWindow
+    const target = this.entities.preview.contentWindow
     if (!target || !this.previewBridgeToken) return false
     target.postMessage({ channel: "typora-html-editor", token: this.previewBridgeToken, type, payload }, "*")
     return true
   }
 
   _handlePreviewMessage = event => {
-    if (!this.entities?.preview || event.source !== this.entities.preview.contentWindow) return
+    if (!this.entities.preview || event.source !== this.entities.preview.contentWindow) return
     const data = event.data || {}
     if (data.channel !== "typora-html-editor" || data.token !== this.previewBridgeToken) return
     if (data.type === "html-editor:inspect") {
       this._showInspectedElement(data.payload || {})
     } else if (data.type === "html-editor:navigate") {
-      void this._handlePreviewNavigation(data.payload || {})
+      this._handlePreviewNavigation(data.payload || {})
     } else if (data.type === "html-editor:scroll") {
       this._handlePreviewScroll(data.payload || {})
     } else if (data.type === "html-editor:ready") {
@@ -928,25 +929,21 @@ class HtmlEditorPlugin extends BasePlugin {
 
   _showInspectedElement = payload => {
     this._toggleInspector(true)
-    if (this.entities.inspectorTag) this.entities.inspectorTag.textContent = `<${payload.tagName || "element"}>`
-    if (this.entities.inspectorSelector) this.entities.inspectorSelector.textContent = payload.selector || ""
-    if (this.entities.inspectorBox) {
-      const box = payload.box || {}
-      this.entities.inspectorBox.textContent = Number.isFinite(box.width)
-        ? `${box.width} × ${box.height}px · x ${box.x}, y ${box.y}`
-        : ""
-    }
-    if (this.entities.inspectorAttributes) {
-      this.entities.inspectorAttributes.textContent = (payload.attributes || [])
-        .map(attribute => `${attribute.name}="${attribute.value}"`)
-        .join("\n") || this.i18n.t("inspector.noAttributes")
-    }
-    if (this.entities.inspectorText) this.entities.inspectorText.textContent = payload.text || this.i18n.t("inspector.noText")
+    this.entities.inspectorTag.textContent = `<${payload.tagName || "element"}>`
+    this.entities.inspectorSelector.textContent = payload.selector || ""
+    const box = payload.box || {}
+    this.entities.inspectorBox.textContent = Number.isFinite(box.width)
+      ? `${box.width} × ${box.height}px · x ${box.x}, y ${box.y}`
+      : ""
+    this.entities.inspectorAttributes.textContent = (payload.attributes || [])
+      .map(attribute => `${attribute.name}="${attribute.value}"`)
+      .join("\n") || this.i18n.t("inspector.noAttributes")
+    this.entities.inspectorText.textContent = payload.text || this.i18n.t("inspector.noText")
     this._jumpToSource(payload.offset, payload.end)
   }
 
   _jumpToSource = (offset, end) => {
-    const source = this.entities?.source
+    const source = this.entities.source
     if (!source) return false
     const start = Math.max(0, Math.min(source.value.length, Number(offset) || 0))
     const finish = Math.max(start, Math.min(source.value.length, Number(end) || start))
@@ -965,7 +962,7 @@ class HtmlEditorPlugin extends BasePlugin {
 
   _handleSourceScroll = () => {
     if (!this.options.splitSync || this.viewMode !== "split" || this.syncingSourceScroll) return
-    const source = this.entities?.source
+    const source = this.entities.source
     if (!source) return
     const maximum = Math.max(0, source.scrollHeight - source.clientHeight)
     this._postPreviewMessage("html-editor:set-scroll-ratio", { ratio: maximum ? source.scrollTop / maximum : 0 })
@@ -973,7 +970,7 @@ class HtmlEditorPlugin extends BasePlugin {
 
   _handlePreviewScroll = payload => {
     if (!this.options.splitSync || this.viewMode !== "split") return
-    const source = this.entities?.source
+    const source = this.entities.source
     if (!source) return
     const maximum = Math.max(0, source.scrollHeight - source.clientHeight)
     this.syncingSourceScroll = true
@@ -989,7 +986,7 @@ class HtmlEditorPlugin extends BasePlugin {
       this.utils.openFile(localTarget)
       return true
     }
-    const remoteBase = discoverRemoteBase(this.entities?.source?.value || "")
+    const remoteBase = discoverRemoteBase(this.entities.source.value || "")
     const external = this._resolveRemoteResourceUrl(payload.resolvedHref || href, remoteBase)
       || this._resolveRemoteResourceUrl(href, remoteBase)
     if (external) {
@@ -1024,7 +1021,7 @@ class HtmlEditorPlugin extends BasePlugin {
     addHrefCandidate(href)
     addHrefCandidate(resolvedHref)
 
-    const remoteBase = discoverRemoteBase(this.entities?.source?.value || "")
+    const remoteBase = discoverRemoteBase(this.entities.source.value || "")
     if (remoteBase && this.activeFile) {
       try {
         const baseUrl = new URL(remoteBase)
@@ -1052,7 +1049,7 @@ class HtmlEditorPlugin extends BasePlugin {
   }
 
   _syncUI = message => {
-    if (!this.entities || !this.activeFile) return
+    if (!this.activeFile) return
     const dirty = this._isDirty()
     this.entities.title.textContent = `${this.utils.Package.Path.basename(this.activeFile)}${dirty ? " *" : ""}`
     this.entities.path.textContent = this.activeFile
@@ -1081,7 +1078,7 @@ class HtmlEditorPlugin extends BasePlugin {
     control.tabIndex = isDisabled ? -1 : 0
   }
 
-  _isDirty = () => Boolean(this.activeFile) && this.entities?.source?.value !== this.savedSource
+  _isDirty = () => Boolean(this.activeFile) && this.entities.source.value !== this.savedSource
 
   _confirmDiscard = async action => {
     if (!this._isDirty()) return true
@@ -1120,9 +1117,7 @@ class HtmlEditorPlugin extends BasePlugin {
     return response === 0
   }
 
-  _normalizedPath = filePath => this.utils?.Package?.Path?.resolve
-    ? this.utils.Package.Path.resolve(String(filePath || ""))
-    : String(filePath || "")
+  _normalizedPath = filePath => this.utils.Package.Path.resolve(String(filePath || ""))
 
   _samePath = (first, second) => {
     if (!first || !second) return false
@@ -1131,7 +1126,7 @@ class HtmlEditorPlugin extends BasePlugin {
     return process.platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b
   }
 
-  _notify = (message, type = "info") => this.utils.notification?.show(message, type, 4500)
+  _notify = (message, type = "info") => this.utils.notification.show(message, type, 4500)
 
   _showError = (message, error) => {
     console.error(`[html_editor] ${message}`, error)

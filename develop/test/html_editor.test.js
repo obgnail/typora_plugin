@@ -7,6 +7,7 @@ const test = require("node:test")
 global.requestAnimationFrame = async (fn) => Promise.resolve(fn)
 global.BasePlugin = class {
   i18n = { t: key => key }
+  utils = require("./mocks/utils.mock.js")
 }
 
 const { plugin: HtmlEditorPlugin } = require("../../plugin/html_editor")
@@ -71,7 +72,6 @@ test("renders preview through one blob URL owner and releases retired URLs", asy
     removeAttribute: name => removedAttributes.push(name),
   }
   const instance = new HtmlEditorPlugin()
-  instance.utils = { Package: { Path: path, FsExtra: {} } }
   instance.activeFile = "C:/docs/demo.html"
   instance.entities = {
     content: { classList: { remove: () => {} } },
@@ -105,17 +105,7 @@ test("loads and saves the active HTML source through the host filesystem boundar
 
   const instance = new HtmlEditorPlugin()
   instance.pluginName = "HTML 编辑器"
-  instance.utils = {
-    Package: {
-      Path: path,
-      FsExtra: {
-        readFile: fs.promises.readFile,
-        writeFile: fs.promises.writeFile,
-        stat: fs.promises.stat,
-      },
-    },
-    notification: { show: () => {} },
-  }
+  test.mock.method(instance.utils.notification, "show", () => {})
   instance.entities = { source: { value: "", focus: () => {} } }
   instance._renderPreview = () => {}
   instance._syncUI = () => {}
@@ -130,7 +120,7 @@ test("loads and saves the active HTML source through the host filesystem boundar
 
 test("registers HTML extensions in Typora's file tree without duplicates", t => {
   const previousFile = global.File
-  t.after(() => { global.File = previousFile })
+  t.after(() => global.File = previousFile)
   let refreshCount = 0
   global.File = {
     SupportedFiles: ["md", "html"],
@@ -168,7 +158,7 @@ test("masks HTML before Typora's Markdown parser while retaining source for prev
 
 test("activates the integrated surface for HTML and restores Typora for Markdown", async t => {
   const previousFile = global.File
-  t.after(() => { global.File = previousFile })
+  t.after(() => global.File = previousFile)
   global.File = { bundle: {}, UNSUPPORTED_REASON: { OTHER_FILE: "OTHER_FILE" } }
 
   const createClassList = initial => {
@@ -210,10 +200,7 @@ test("inlines a readable local image before building the blob preview", async t 
 
   const instance = new HtmlEditorPlugin()
   instance.activeFile = htmlPath
-  instance.utils = {
-    Package: { Path: path, FsExtra: { readFile: fs.promises.readFile, stat: fs.promises.stat } },
-    getMountFolder: () => dir,
-  }
+  test.mock.method(instance.utils, "getMountFolder", () => dir)
 
   const output = await instance._preparePreviewSource('<main><img src="./logo.png"></main>', 1)
   assert.match(output, /src="data:image\/png;base64,iVBORw=="/)
@@ -289,11 +276,8 @@ test("jumps to inspected source offsets and routes related local documents throu
   instance.activeFile = htmlPath
   instance.entities = { source }
   instance._setViewMode = mode => { instance.viewMode = mode }
-  instance.utils = {
-    Package: { Path: path, FsExtra: { stat: fs.promises.stat } },
-    openFile: target => opened.push(target),
-    openUrl: target => opened.push(target),
-  }
+  test.mock.method(instance.utils, "openFile", target => opened.push(target))
+  test.mock.method(instance.utils, "openUrl", target => opened.push(target))
 
   instance._jumpToSource(6, 18)
   assert.equal(instance.viewMode, "split")

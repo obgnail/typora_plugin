@@ -72,6 +72,11 @@ module.exports = (plugin) => {
         if (!utils.exportHelper.isAsync) _disableSwitch(field, data)
       },
     },
+    html_editor: {
+      ENABLE: (field, data) => {
+        if (!Object.hasOwn(File, "readContentFrom")) _disableSwitch(field, data)
+      },
+    },
     sidebar_enhance: {
       DISPLAY_NON_MARKDOWN_FILES: (field, data) => {
         if (!File.SupportedFiles) _disableSwitch(field, data)
