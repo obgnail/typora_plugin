@@ -265,7 +265,7 @@ yay -S typora-plugin
 
 提供内嵌的轻量级命令行环境，支持快速执行自定义 Shell 指令及简单的交互式脚本操作。
 
-![commander](./assets/commander.gif)
+![commander](./assets/commander.png)
 
 ### command_palette
 
@@ -332,13 +332,15 @@ yay -S typora-plugin
 
 ![text_stylize](./assets/text_stylize.gif)
 
+### markdownlint
+
+Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自动化修复。
+
+![markdownlint](./assets/markdownlint.png)
+
 ### resource_manager
 
 工作区静态资源管理器。执行依赖性分析并安全清除当前目录下未被任何 Markdown 文档引用的冗余图片。
-
-### markdownlint
-
-集成 Markdown 规范静态分析器。侦测偏离最佳实践规范的语法特征并提供自动化修复逻辑。
 
 ### export_enhance
 

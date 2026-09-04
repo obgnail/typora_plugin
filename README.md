@@ -264,7 +264,7 @@ Injects an independent outline directory view on the right side of the editing a
 
 Provides an embedded lightweight command-line environment for executing custom Shell instructions and interactive script operations.
 
-![commander](./assets/commander.gif)
+![commander](./assets/commander.png)
 
 ### command_palette
 
@@ -331,13 +331,15 @@ Quickly applies custom or preset rich text styles to the currently selected text
 
 ![text_stylize](./assets/text_stylize.gif)
 
+### markdownlint
+
+Markdown specification analyzer. Detects syntax patterns deviating from best practices and provides automated remediation.
+
+![markdownlint](./assets/markdownlint.png)
+
 ### resource_manager
 
 Workspace static resource manager. Executes dependency analysis and safely clears redundant images in the current directory that are not referenced by any Markdown documents.
-
-### markdownlint
-
-Integrates a Markdown specification static analyzer. Detects syntax patterns deviating from best practices and provides automated remediation logic.
 
 ### export_enhance
 
