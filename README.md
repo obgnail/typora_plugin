@@ -27,6 +27,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [updater](#updater)                         | One-Click Plugin Update    |         |
 | [asset_root_redirect](#asset_root_redirect) | Local Resource Redirection | ×       |
 | [repository](#repository)                   | Workspace Manager          | ×       |
+| [ripgrep](#ripgrep)                         | File Retrieval             | ×       |
 
 | Plugin: Enhance Editing                     | Feature                                      | Default |
 | :------------------------------------------ | :------------------------------------------- | :------ |
@@ -54,44 +55,44 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [markdownlint](#markdownlint)               | Markdownlint Static Analysis                 |         |
 | [export_enhance](#export_enhance)           | Base64 Image Conversion for HTML/PDF Exports | ×       |
 | [html_editor](#html_editor)                 | Native HTML Preview and Editor               | ×       |
+| [assets_storage](#assets_storage)           | Modify resource storage location             | ×       |
+| [cipher](#cipher)                           | Document Encryption and Decryption           | ×       |
 
-| Plugin: Component     | Feature                        | Default |
-| :-------------------- | :----------------------------- | :------ |
-| [markmap](#markmap)   | Integrates Markmap engine      |         |
-| [echarts](#echarts)   | Integrates ECharts engine      |         |
-| [chart](#chart)       | Integrates Chart.js engine     |         |
-| [drawIO](#drawIO)     | Integrates DrawIO component    |         |
-| [abc](#abc)           | Integrates abc.js component    |         |
-| [calendar](#calendar) | Integrates tui.calendar engine |         |
-| [wavedrom](#wavedrom) | Integrates WaveDrom engine     |         |
-| [marp](#marp)         | Integrates Marp presentation   |         |
-| [plantUML](#plantUML) | Integrates PlantUML component  |         |
-| [callouts](#callouts) | Integrates Callouts block      |         |
-| [kanban](#kanban)     | Kanban View Rendering          |         |
-| [timeline](#timeline) | Timeline View Rendering        |         |
-| [chat](#chat)         | Chat Bubble View Rendering     |         |
+| Plugin: Component     | Feature                 | Default |
+| :-------------------- | :---------------------- | :------ |
+| [markmap](#markmap)   | Integrates Markmap      |         |
+| [echarts](#echarts)   | Integrates ECharts      |         |
+| [chart](#chart)       | Integrates Chart.js     |         |
+| [drawIO](#drawIO)     | Integrates DrawIO       |         |
+| [abc](#abc)           | Integrates abc.js       |         |
+| [calendar](#calendar) | Integrates tui.calendar |         |
+| [wavedrom](#wavedrom) | Integrates WaveDrom     |         |
+| [marp](#marp)         | Integrates Marp         |         |
+| [plantUML](#plantUML) | Integrates PlantUML     |         |
+| [callouts](#callouts) | Integrates Callouts     |         |
+| [kanban](#kanban)     | Kanban component        |         |
+| [timeline](#timeline) | Timeline component      |         |
+| [chat](#chat)         | Chat Bubble component   |         |
 
-| Plugin: View & Theme                | Feature                                                      | Default |
-| :---------------------------------- | :----------------------------------------------------------- | :------ |
-| [dark](#dark)                       | Dark Mode Rendering                                          |         |
-| [no_image](#no_image)               | Image-Free / Text-First Mode                                 |         |
-| [blur](#blur)                       | Focus Management (Gaussian Blur for Inactive Nodes)          |         |
-| [myopic_defocus](#myopic_defocus)   | Defocus Visual Relief Filter                                 |         |
-| [read_only](#read_only)             | Read-Only State Lock                                         |         |
-| [truncate_text](#truncate_text)     | Viewport Offloading for Large File Rendering Optimization    | ×       |
-| [image_viewer](#image_viewer)       | Independent Image Viewer                                     |         |
-| [diagram_enhance](#diagram_enhance) | Diagram Zoom, Pan, Fullscreen, and Container Resizing        | ×       |
-| [static_markers](#static_markers)   | Persistent Markdown Syntax Markers                           | ×       |
-| [sidebar_enhance](#sidebar_enhance) | Sidebar Extensions (Drag Sorting, Non-MD Files, Fold States) |         |
+| Plugin: View & Theme                | Feature                                                   | Default |
+| :---------------------------------- |:----------------------------------------------------------| :------ |
+| [dark](#dark)                       | Dark Mode Rendering                                       |         |
+| [no_image](#no_image)               | Image-Free / Text-First Mode                              |         |
+| [blur](#blur)                       | Focus Management (Gaussian Blur for Inactive Nodes)       |         |
+| [myopic_defocus](#myopic_defocus)   | Defocus Visual Relief Filter                              |         |
+| [read_only](#read_only)             | Read-Only State Lock                                      |         |
+| [image_viewer](#image_viewer)       | Independent Image Viewer                                  |         |
+| [truncate_text](#truncate_text)     | Viewport Offloading for Large File Rendering Optimization | ×       |
+| [diagram_enhance](#diagram_enhance) | Diagram Zoom, Pan, Fullscreen, and Container Resizing     | ×       |
+| [static_markers](#static_markers)   | Persistent Markdown Syntax Markers                        |         |
+| [sidebar_enhance](#sidebar_enhance) | Drag Sorting, Non-MD Files, Fold States                   |         |
 
-| Plugin: Advanced                      | Feature                                      | Default |
-| :------------------------------------ | :------------------------------------------- | :------ |
-| [hotkeys](#hotkeys)                   | Declarative Hotkey Registration Center       |         |
-| [action_buttons](#action_buttons)     | Floating Action Buttons Injection            |         |
-| [remote_control](#remote_control)     | JSON-RPC External Automation Interface       | ×       |
-| [cipher](#cipher)                     | Document Encryption and Decryption           | ×       |
-| [ripgrep](#ripgrep)                   | File Retrieval Powered by Integrated Ripgrep | ×       |
-| [article_uploader](#article_uploader) | Cross-Platform Document Publishing Engine    | ×       |
+| Plugin: Advanced                      | Feature                                   | Default |
+| :------------------------------------ | :---------------------------------------- | :------ |
+| [hotkeys](#hotkeys)                   | Declarative Hotkey Registration Center    |         |
+| [action_buttons](#action_buttons)     | Floating Action Buttons Injection         |         |
+| [remote_control](#remote_control)     | JSON-RPC External Automation Interface    | ×       |
+| [article_uploader](#article_uploader) | Cross-Platform Document Publishing Engine | ×       |
 
 > Welcome to submit an [Issue](https://github.com/obgnail/typora_plugin/issues/new) to report bugs or discuss features, and Pull Requests are always welcome. If this project enhances your workflow, please consider leaving a Star ⭐.
 
@@ -117,20 +118,12 @@ Refer to the [Installation Tutorial](https://github.com/obgnail/typora_plugin/is
 3. **Deploy files:** Copy the extracted `plugin` folder and paste it entirely into Directory A.
 
 4. **Execute installation script:** Enter the `A/plugin/bin/` directory.
-   - **Windows Environment:** Right-click on `install_windows.ps1` and select **Run with PowerShell**.
-   - **Linux Environment:** Execute `install_linux.sh` in the terminal with administrator privileges.
+   - **Windows:** Right-click on `install_windows.ps1` and select **Run with PowerShell**.
+   - **Linux:** Execute `install_linux.sh` in the terminal with administrator privileges.
 
 5. **Verify installation status:** Restart Typora, right-click within the main editor area to open the context menu. If plugin-related options are displayed, the underlying logic injection is successful.
 
 ![install](./assets/install.gif)
-
-|           | Official Version                               | Beta Version                                   |
-| --------- | ---------------------------------------------- | ---------------------------------------------- |
-| Steps 2-3 | ![typora_dir_new](./assets/typora_dir_new.png) | ![typora_dir_old](./assets/typora_dir_old.png) |
-
-|        | Windows Environment                              | Linux Environment                            |
-| ------ | ------------------------------------------------ | -------------------------------------------- |
-| Step 4 | ![install_windows](./assets/install_windows.png) | ![install_linux](./assets/install_linux.png) |
 
 ## How to Use: Archlinux Platform
 
@@ -190,8 +183,6 @@ Records cursor activity trajectories to support contextual navigation.
 - Navigate to the previous cursor position: `Alt + ←`
 - Navigate to the next cursor position: `Alt + →`
 
-> Note: This plugin is disabled by default and must be manually enabled in the preferences.
-
 ### preferences
 
 Provides a centralized graphical control panel for global plugin configurations.
@@ -204,13 +195,13 @@ Supports one-click online detection and fetching of update packages to upgrade t
 
 Resolves local static resource parsing anomalies caused by cross-platform collaboration tools (such as Obsidian or Joplin). These tools typically enforce specific resource root paths, causing broken links when the files are opened independently in Typora. This plugin allows users to forcibly redirect the local resource root directory within Typora.
 
-> Note: This plugin is disabled by default and must be manually enabled in the preferences.
-
 ### repository
 
 Tracks and persists records of directories opened by Typora. Provides a dedicated management panel for retrieving, sorting, aliasing, removing, and quickly reopening historical workspaces.
 
-> Note: This plugin is disabled by default. You can configure a dedicated hotkey in the settings or invoke `repository.call` via `action_buttons`.
+### ripgrep
+
+Encapsulates and integrates the native `ripgrep` retrieval engine within Typora, achieving ultra-fast global text matching and file searching.
 
 ## Enhance Editing
 
@@ -351,7 +342,13 @@ Directly loads and renders `.html` / `.htm` files within Typora's core editing a
 
 Preview mode strictly blocks script execution and external network requests by default. It is recommended to explicitly enable `PREVIEW_ALLOW_SCRIPTS` or `PREVIEW_ALLOW_NETWORK` only when operating on files within a trusted environment.
 
-> Note: This plugin is disabled by default and must be manually enabled in the preferences.
+### assets_storage
+
+Modify resource storage location.
+
+### cipher
+
+Provides a document security module based on standard cryptographic algorithms, supporting local file encryption storage and decryption mounting.
 
 ## Component
 
@@ -399,8 +396,6 @@ Provides an image-free (text-first) rendering mode.
 
 Focus management optimization: Only the currently active and focused node area remains clearly rendered; surrounding inactive areas automatically apply a Gaussian blur effect to minimize visual interference.
 
-> Note: This feature relies on specific environmental contexts and is exclusively supported in the official version of Typora.
-
 ### myopic_defocus
 
 Provides a defocus visual relief filter.
@@ -423,8 +418,6 @@ Integrates a standalone built-in image browser module, supporting full-screen di
 
 Enhances interaction for charts generated by Typora's rendering engine: Supports cursor-centered scrolling zoom, viewport drag panning, touch gesture recognition, original DOM full-screen viewing mechanisms, and eight-direction adaptive container boundary adjustments. The right-click context menu quickly triggers view position and scale resets.
 
-> Note: This plugin is disabled by default and must be manually enabled in the preferences.
-
 ### static_markers
 
 Forces the retention of Markdown syntax markers (persistent rendering).
@@ -432,8 +425,6 @@ Forces the retention of Markdown syntax markers (persistent rendering).
 Disables the auto-hide callback logic for syntax markers in WYSIWYG mode, ensuring that formatting markers like `**`, `##`, and `_` remain explicitly rendered, functioning exactly as they would in a source code editor.
 
 ![static_markers](./assets/static_markers.png)
-
-> Note: This plugin is disabled by default and must be manually enabled in the preferences.
 
 ### sidebar_enhance
 
@@ -461,27 +452,11 @@ Provides an external communication layer based on the `JSON-RPC` protocol, expos
 
 For specific interface definitions and technical specifications, please refer to the sub-document: [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/remote_control/README.md).
 
-> Note: This plugin is disabled by default and must be manually enabled in the preferences.
-
-### cipher
-
-Provides a document security module based on standard cryptographic algorithms, supporting local file encryption storage and decryption mounting.
-
-> Note: This plugin is disabled by default and must be manually enabled in the preferences.
-
-### ripgrep
-
-Encapsulates and integrates the native `ripgrep` retrieval engine within Typora, achieving ultra-fast global text matching and file searching.
-
-> Note: This module requires users to possess basic operational experience with the `ripgrep` command-line tool. The plugin is disabled by default and must be manually enabled in the preferences.
-
 ### article_uploader
 
 A cross-platform document publishing engine. Supports automated pushing of rendered Markdown documents from the current workspace to pre-configured third-party content platforms via trigger behaviors (e.g., hotkeys or UI interactions).
 
 For detailed platform support lists and configuration guidelines, please refer to the sub-document: [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/article_uploader/README.md).
-
-> Note: This plugin is disabled by default and must be manually enabled in the preferences.
 
 ## Acknowledgements
 
@@ -494,4 +469,4 @@ For detailed platform support lists and configuration guidelines, please refer t
 
 **This project follows the MIT license, feel free to enjoy it.**
 
-If this toolset significantly enhances your productivity, please consider leaving a Star ⭐ on GitHub to support us, and feel free to share it with developers who share similar workflow needs.
+If this toolset enhances your productivity, please consider leaving a Star ⭐ on GitHub, and feel free to share it with friends who share similar needs.

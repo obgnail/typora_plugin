@@ -28,6 +28,7 @@
 | [updater](#updater)                         | 一键升级插件                       |          |
 | [asset_root_redirect](#asset_root_redirect) | 资源重定向                         | ×        |
 | [repository](#repository)                   | 管理 Typora 打开过的文件夹         | ×        |
+| [ripgrep](#ripgrep)                         | 基于 ripgrep 的文件检索            | ×        |
 
 | 插件：编辑增强                              | 功能                                 | 默认启用 |
 | :------------------------------------------ | :----------------------------------- | :------- |
@@ -55,22 +56,24 @@
 | [markdownlint](#markdownlint)               | markdown 格式检查                    |          |
 | [export_enhance](#export_enhance)           | 导出 HTML/PDF 时避免图片丢失         | ×        |
 | [html_editor](#html_editor)                 | 在主编辑区预览和编辑 HTML 文件       | ×        |
+| [assets_storage](#assets_storage)           | 修改资源存储位置                     | ×        |
+| [cipher](#cipher)                           | 文件加密与解密                       | ×        |
 
-| 插件：组件            | 功能                   | 默认启用 |
-| :-------------------- | :--------------------- | :------- |
-| [markmap](#markmap)   | 集成 Markmap 组件      |          |
-| [echarts](#echarts)   | 集成 Echarts 组件      |          |
-| [chart](#chart)       | 集成 Chart.js 组件     |          |
-| [drawIO](#drawIO)     | 集成 DrawIO 组件       |          |
-| [abc](#abc)           | 集成 abc.js 组件       |          |
-| [calendar](#calendar) | 集成 tui.calendar 组件 |          |
-| [wavedrom](#wavedrom) | 集成 Wavedrom 组件     |          |
-| [marp](#marp)         | 集成 Marp 组件         |          |
-| [plantUML](#plantUML) | 集成 PlantUML 组件     |          |
-| [callouts](#callouts) | 集成 Callouts          |          |
-| [kanban](#kanban)     | 看板组件               |          |
-| [timeline](#timeline) | 时间线组件             |          |
-| [chat](#chat)         | 对话视图组件           |          |
+| 插件：组件            | 功能              | 默认启用 |
+| :-------------------- | :---------------- | :------- |
+| [markmap](#markmap)   | 集成 Markmap      |          |
+| [echarts](#echarts)   | 集成 Echarts      |          |
+| [chart](#chart)       | 集成 Chart.js     |          |
+| [drawIO](#drawIO)     | 集成 DrawIO       |          |
+| [abc](#abc)           | 集成 abc.js       |          |
+| [calendar](#calendar) | 集成 tui.calendar |          |
+| [wavedrom](#wavedrom) | 集成 Wavedrom     |          |
+| [marp](#marp)         | 集成 Marp         |          |
+| [plantUML](#plantUML) | 集成 PlantUML     |          |
+| [callouts](#callouts) | 集成 Callouts     |          |
+| [kanban](#kanban)     | 看板组件          |          |
+| [timeline](#timeline) | 时间线组件        |          |
+| [chat](#chat)         | 对话组件          |          |
 
 | 插件：视图与主题                    | 功能                                       | 默认启用 |
 | :---------------------------------- | :----------------------------------------- | :------- |
@@ -79,20 +82,18 @@
 | [blur](#blur)                       | 模糊模式                                   |          |
 | [myopic_defocus](#myopic_defocus)   | 离焦视力舒缓                               |          |
 | [read_only](#read_only)             | 只读模式                                   |          |
-| [truncate_text](#truncate_text)     | 暂时隐藏内容，提高大文件渲染性能           | ×        |
 | [image_viewer](#image_viewer)       | 图片查看器                                 |          |
+| [truncate_text](#truncate_text)     | 暂时隐藏内容，提高大文件渲染性能           | ×        |
 | [diagram_enhance](#diagram_enhance) | 图表缩放、平移、全屏与尺寸调整             | ×        |
-| [static_markers](#static_markers)   | Markdown 标记常显                          | ×        |
+| [static_markers](#static_markers)   | Markdown 标记常显                          |          |
 | [sidebar_enhance](#sidebar_enhance) | 显示其他扩展名文件、记忆折叠状态、拖拽排序 |          |
 
-| 插件：高级功能                        | 功能                        | 默认启用 |
-| :------------------------------------ | :-------------------------- | :------- |
-| [hotkeys](#hotkeys)                   | 快捷键注册中心              |          |
-| [action_buttons](#action_buttons)     | 悬浮功能按钮注入            |          |
-| [remote_control](#remote_control)     | JSON-RPC 外部控制接口       | ×        |
-| [cipher](#cipher)                     | 文件加密与解密              | ×        |
-| [ripgrep](#ripgrep)                   | 封装基于 ripgrep 的文件检索 | ×        |
-| [article_uploader](#article_uploader) | 跨平台文档发布引擎          | ×        |
+| 插件：高级功能                        | 功能                  | 默认启用 |
+| :------------------------------------ | :-------------------- | :------- |
+| [hotkeys](#hotkeys)                   | 快捷键注册中心        |          |
+| [action_buttons](#action_buttons)     | 悬浮功能按钮注入      |          |
+| [remote_control](#remote_control)     | JSON-RPC 外部控制接口 | ×        |
+| [article_uploader](#article_uploader) | 跨平台文档发布引擎    | ×        |
 
 > 欢迎提交 [Issue](https://github.com/obgnail/typora_plugin/issues/new) 报告异常或探讨需求，欢迎发起 Pull Request。若本项目为您的工作流程带来提升，欢迎点亮 Star ⭐ 支持。
 
@@ -118,20 +119,12 @@
 3. **部署文件**：将解压后得到的 `plugin` 文件夹整体复制并粘贴至目录 A 内部。
 
 4. **执行安装脚本**：进入 `A/plugin/bin/` 目录。
-   - Windows 环境：右键点击 `install_windows.ps1`，选择 **使用 PowerShell 运行**。
-   - Linux 环境：在终端以管理员权限执行 `install_linux.sh`。
+   - Windows 平台：右键点击 `install_windows.ps1`，选择 **使用 PowerShell 运行**。
+   - Linux 平台：在终端以管理员权限执行 `install_linux.sh`。
 
 5. **验证安装状态**：重启 Typora，在编辑器正文区域单击右键调出上下文菜单。若菜单面板中呈现插件相关选项，即表示底层逻辑注入与初始化成功。
 
 ![install](./assets/install.gif)
-
-|          | 正式版 Typora                                | 免费版 Typora                                |
-| -------- | -------------------------------------------- | -------------------------------------------- |
-| 步骤 2-3 | ![typora_dir_new](./assets/typora_dir_new.png) | ![typora_dir_old](./assets/typora_dir_old.png) |
-
-|        | Windows 环境                                   | Linux 环境                                 |
-| ------ | ---------------------------------------------- | ------------------------------------------ |
-| 步骤 4 | ![install_windows](./assets/install_windows.png) | ![install_linux](./assets/install_linux.png) |
 
 ## 如何使用：archlinux 平台
 
@@ -191,8 +184,6 @@ yay -S typora-plugin
 - 跳转至上一个光标位置：`Alt + ←`
 - 跳转至下一个光标位置：`Alt + →`
 
-> 提示：此插件默认禁用，需手动在配置选项中开启。
-
 ### preferences
 
 提供统一的图形化控制面板，用于调整全局插件配置。
@@ -205,13 +196,13 @@ yay -S typora-plugin
 
 解决跨端工具（如 Obsidian 或 Joplin）协同管理 Markdown 文件时引发的本地静态资源解析异常。此类工具通常设定了特定的资源根路径，直接使用 Typora 独立打开往往导致链接失效。本插件允许用户在 Typora 内强制重定向本地资源引用的根目录。
 
-> 提示：此插件默认禁用，需手动在配置选项中开启。
-
 ### repository
 
 追踪并持久化记录 Typora 打开过的工作区目录。支持在专用的管理面板中对历史记录执行检索、排序、设置别名、移除及快捷重新打开操作。
 
-> 提示：此插件默认禁用，需手动在配置选项中开启。可在设置内绑定特定快捷键，或通过 `action_buttons` 触发 `repository.call` 接口。
+### ripgrep
+
+在 Typora 内部封装并集成原生的 `ripgrep` 检索引擎，实现极速的全局文本匹配与文件搜索。
 
 ## 编辑增强
 
@@ -352,7 +343,13 @@ Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自�
 
 预览模式默认实行严格策略（拦截页面内脚本执行与外部网络请求）；建议仅在操作受信环境下的文件时显式开启 `PREVIEW_ALLOW_SCRIPTS` 或 `PREVIEW_ALLOW_NETWORK` 标记。
 
-> 提示：此插件默认禁用，需手动在配置选项中开启。
+### assets_storage
+
+修改资源存储位置。
+
+### cipher
+
+提供基于标准密码学算法的文档安全模块，支持本地文件的加密存储与解密挂载。
 
 ## 组件渲染
 
@@ -400,8 +397,6 @@ Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自�
 
 焦点管理优化：仅当前活跃且聚焦的节点区域保持清晰渲染，周围非活动区域自动应用高斯模糊效果以屏蔽视觉干扰。
 
-> 提示：此功能依赖特定的环境上下文，仅支持于正式版 Typora 中启用。
-
 ### myopic_defocus
 
 提供离焦视力舒缓视觉滤镜支持。
@@ -424,8 +419,6 @@ Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自�
 
 为基于 Typora 渲染引擎的图表提供交互增强：支持以鼠标指针为中心的滚轮缩放、拖拽平移视口、触屏手势识别、拉起原始 DOM 全屏查看机制，以及八向容器边界自适应调整。右键上下文菜单可快速触发视图位置与比例重置。
 
-> 提示：此插件默认禁用，需手动在配置选项中开启。
-
 ### static_markers
 
 强制保留 Markdown 语法标记符（标记常驻）。
@@ -433,8 +426,6 @@ Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自�
 禁用所见即所得（WYSIWYG）模式下的标记符自动隐藏回调逻辑，确保 `**`、`##`、`_` 等所有源码排版标记始终处于显式渲染状态。
 
 ![static_markers](./assets/static_markers.png)
-
-> 提示：此插件默认禁用，需手动在配置选项中开启。
 
 ### sidebar_enhance
 
@@ -463,27 +454,11 @@ Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自�
 
 具体接口定义与技术规约，请参阅子文档：[README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/remote_control/README.md)。
 
-> 提示：此插件默认禁用，需手动在配置选项中开启。
-
-### cipher
-
-提供基于标准密码学算法的文档安全模块，支持本地文件的加密存储与解密挂载。
-
-> 提示：此插件默认禁用，需手动在配置选项中开启。
-
-### ripgrep
-
-在 Typora 内部封装并集成原生的 `ripgrep` 检索引擎，实现极速的全局文本匹配与文件搜索。
-
-> 提示：此功能模块要求使用者具备基础的 `ripgrep` 命令行工具使用经验。该插件默认禁用，需手动在配置选项中开启。
-
 ### article_uploader
 
 跨平台文档发布引擎。支持通过触发行为（如快捷键或界面交互），将当前工作区渲染完毕的 Markdown 文档自动化推送至预先配置的各第三方内容平台。
 
 详细的平台支持列表与配置指南请参阅子文档：[README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/article_uploader/README.md)。
-
-> 提示：此插件默认禁用，需手动在配置选项中开启。
 
 ## 致谢
 
@@ -496,4 +471,4 @@ Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自�
 
 **本项目遵循 MIT 协议，请自由地享受。**
 
-若本工具集对您的生产力有实质性提升，欢迎在 GitHub 点亮 Star ⭐ 支持，并将其分享给具有同等工作流需求的开发者。
+若本工具集对您的生产力有实质性提升，欢迎在 GitHub 点亮 Star ⭐ 支持，并将其分享给具有同等需求的朋友。
