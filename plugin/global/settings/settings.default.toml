@@ -148,7 +148,7 @@ COPY_PATH_HOTKEY = []
 #   copyPath       : Copy current file path
 #   showInFinder   : Show in File Explorer
 #   openInNewWindow: Open in a new window
-#   sortTabs       : Sort tabs by filename
+#   sortTabs       : Sort tabs
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
 
 
@@ -247,13 +247,14 @@ COMMIT_RUN_DISPLAY = "echo"
 # Predefined command list
 #   name   : Unique identifier for the plugin menu
 #   disable: Switch for this specific command
-#   shell  : Target shell (Supported: cmd/bash, powershell, gitbash, wsl, sh, zsh, nushell, python, nodejs, r, julia)
+#   shell  : Target shell (cmd/bash, powershell, gitbash, wsl, sh, zsh, nushell, python, nodejs, r, julia)
 #   hotkey : (Optional) Execution shortcut
 #   cmd    : Execution string
 # Built-in environment variables:
 #   f: Absolute path of the current file
 #   d: Directory of the current file
 #   m: Current mount directory in Typora's sidebar
+#   c: Current file content
 BUILTIN = [
   { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $env:d" },
   { name = "VScode", disable = false, shell = "cmd/bash", cmd = "code %f%" },
@@ -277,7 +278,7 @@ ENABLE = true
 NAME = ""
 HOTKEY = "ctrl+shift+p"
 
-# =========== [ Window Appearance & Interaction ] ===========
+# =========== [ Window Interaction ] ===========
 # Hide window when pressing Backspace on an empty input
 BACKSPACE_TO_HIDE = true
 
@@ -487,7 +488,7 @@ BLUR_DEFAULT = false
 # =========== [ Blur Effects ] ===========
 # Blur type
 #   blur: Apply Gaussian blur to unfocused components
-#   hide: Directly hide unfocused components
+#   hide: Hide unfocused components
 BLUR_TYPE = "blur"
 
 # Restore visibility on hover: Auto-focus components on mouse hover (Disabled if BLUR_TYPE is "hide")
@@ -531,13 +532,13 @@ TRANSITION_DELAY = 0
 
 [static_markers]
 # =========== [ Basic ] ===========
-ENABLE = false
+ENABLE = true
 NAME = ""
 HOTKEY = ""
 
 # =========== [ Mode Toggle ] ===========
 # Enter Static Markers mode automatically on Typora startup
-STATIC_DEFAULT = true
+STATIC_DEFAULT = false
 
 # =========== [ Static Markers ] ===========
 # Static markers
@@ -604,9 +605,9 @@ MODIFIER_KEY = {
 ALLOW_EXCEED_LIMIT = true
 
 # Image alignment
-#   center: Align center
-#   left  : Align left
-#   right : Align right
+#   left
+#   right
+#   center
 IMAGE_ALIGN = "center"
 
 # Remember resize state: Retain proportional image sizing across document switches within the same Typora session
@@ -923,9 +924,9 @@ SHOW_IMAGE_NAME = false
 FONT_FAMILY = "monospace"
 
 # Subscript alignment relative to the element
-#   left  : Align Left
-#   right : Align Right
-#   center: Align Center
+#   left
+#   right
+#   center
 ALIGN = "center"
 
 # Table numbering injection position
@@ -1353,7 +1354,7 @@ RECORD_COLLAPSE = true
 #   COLLAPSE_SIBLINGS    : Fold/Expand all sibling sections under parent
 #   COLLAPSE_ALL_SIBLINGS: Fold/Expand all sibling sections in current file
 #   COLLAPSE_RECURSIVE   : Recursively fold/expand current section
-# Avoid "alt" (used by Bookmark plugin) and "shift" (used by OS selection)
+# Avoid "alt" (used by `bookmark` plugin) and "shift" (used by OS selection)
 MODIFIER_KEY = {
   COLLAPSE_SINGLE = "ctrl",
   COLLAPSE_SIBLINGS = "ctrl+alt",
@@ -1402,8 +1403,8 @@ SKIP_BROKEN_IMAGES = true
 SHOW_THUMBNAIL_NAV = true
 
 # Toolbar position
-#   bottom: Bottom
-#   top   : Top
+#   bottom
+#   top
 TOOL_POSITION = "top"
 
 # Initial image selection strategy when opening the gallery
@@ -1413,9 +1414,9 @@ TOOL_POSITION = "top"
 FIRST_IMAGE_STRATEGIES = ["inViewBoxImage", "closestViewBoxImage"]
 
 # Image information displayed on the left side of the toolbar
-#   index: Image Index
-#   title: Image Title
-#   size : Image Size
+#   index
+#   title
+#   size
 SHOW_MESSAGE = ["index", "title", "size"]
 
 # =========== [ Image Operations ] ===========
@@ -2586,7 +2587,7 @@ ENABLE = false
 NAME = ""
 HOTKEY = ""
 
-# =========== [ Interaction ] ===========
+# =========== [ Window Interaction ] ===========
 # Hide window when pressing Backspace on an empty input
 BACKSPACE_TO_HIDE = true
 
@@ -2753,7 +2754,7 @@ NETWORK_REQUEST_TIMEOUT = 180000
 AUTO_UPDATE = false
 
 # Startup offset interval before initiating the silent update check (ms, minimum 60000)
-START_UPDATE_INTERVAL = 300000   # 1000 * 60 * 5
+START_UPDATE_INTERVAL = 300000
 
 # Looping interval frequency for periodic update checks (ms, minimum 3600000. Set to -1 to disable)
 UPDATE_LOOP_INTERVAL = -1
@@ -3050,7 +3051,7 @@ LANGUAGE = "chart"
 INTERACTIVE_MODE = true
 
 # =========== [ Chart Display ] ===========
-# Chart Align: (left / center / right)
+# Chart Align (left / center / right)
 CHART_ALIGN = "center"
 
 # Default Fence Height
@@ -3114,7 +3115,7 @@ INTERACTIVE_MODE = true
 SAFE_MODE = true
 
 # =========== [ Style & Skin ] ===========
-# Chart Align: (left / center / right)
+# Chart Align (left / center / right)
 CHART_ALIGN = "center"
 
 # Default Fence Height, if 'auto' it adapts to the content
@@ -3489,17 +3490,17 @@ ENABLE = false
 NAME = ""
 
 # =========== [ Functions ] ===========
-# Singleton
-SINGLETON = true
-
-# Auto open DevTools
-AUTO_OPEN_DEVTOOLS = true
-
 # Expose CommonJS Variables
 EXPOSE_CJS_VARIABLES = true
 
 # Expose Plugin Variables
 EXPOSE_PLUGIN_VARIABLES = true
+
+# Singleton
+SINGLETON = true
+
+# Auto open DevTools
+AUTO_OPEN_DEVTOOLS = true
 
 # Run custom script
 RUN_CUSTOM_SCRIPT = true

@@ -9,6 +9,14 @@ Object.assign(global, {
 })
 
 const proxyquire = require("proxyquire")
-module.exports = proxyquire("../../../plugin/global/core/utils", {
+const mockUtils = proxyquire("../../../plugin/global/core/utils", {
   "fs-extra": { ...require("fs-extra"), "@noCallThru": true },
 })
+
+Object.values(mockUtils.mixins).forEach(mixin => {
+  ["process", "postprocess"].forEach(name => {
+    if (Object.hasOwn(mixin, name)) mixin[name] = () => undefined
+  })
+})
+
+module.exports = mockUtils

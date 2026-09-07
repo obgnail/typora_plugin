@@ -59,7 +59,7 @@ class utils {
   static isUnderMountFolder = path => {
     const mountFolder = PATH.resolve(this.getMountFolder())
     const p = PATH.resolve(path)
-    return mountFolder && p && p.startsWith(mountFolder)
+    return mountFolder && p && p.startsWith(mountFolder + this.separator)
   }
   static openFile = (filepath, force = false) => {
     if (!filepath) return
@@ -608,6 +608,7 @@ class utils {
     el.appendChild(document.createTextNode(css))
     document.head.append(el)
   }
+  static upsertStyle = (name, css) => this[this.getStyleEl(name) ? "replaceStyle": "insertStyle"](name, css)
   static insertStyleFile = (name, href) => {
     const el = document.createElement("link")
     el.id = this.getStyleId(name)

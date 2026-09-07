@@ -50,7 +50,7 @@ class StaticMarkersPlugin extends BasePlugin {
     }
     await this.utils.settings.save(this.fixedName, toSave)
 
-    this.utils.replaceStyle(this.fixedName, this.style())
+    this.utils.upsertStyle(this.fixedName, this.style())
   }
 }
 

@@ -2,7 +2,7 @@ require("./polyfill")
 require("./components")
 const i18n = require("./i18n")
 const utils = require("./utils")
-const container = require("./serviceContainer")
+const container = require("./container")
 const BasePlugin = require("./plugin")
 
 async function entry() {

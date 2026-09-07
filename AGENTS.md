@@ -43,22 +43,22 @@ All commands run from the `develop/` directory. Requires Node.js >= 22.
 
 ```bash
 cd develop
-npm install          # Install dev dependencies
+npm install             # Install dev dependencies
 
 # Testing (uses Node.js built-in test runner: node:test + node:assert)
-npm test                                    # Run all tests
+npm test                # Run all tests
 node --require ../plugin/global/core/polyfill.js --test test/utils.test.js   # Run single test file
 
 # Building vendored dependencies (esbuild bundles NPM packages into plugin/global/core/lib/)
-npm run build:all                           # Build all vendors
-npm run build:single                        # Build a single vendor (edit arg in package.json, e.g. "katex")
-npm run build:download                      # Build download-type vendors (js-yaml, markdown-it, etc.)
+npm run build:all       # Build all vendors
+npm run build:single    # Build a single vendor (edit arg in package.json, e.g. "katex")
+npm run build:download  # Build download-type vendors (js-yaml, markdown-it, etc.)
 
 # Development (requires TYPORA_PATH set in develop/.env)
-npm run dev                                 # Development mode
-npm run sync                                # Watch plugin/ for changes, sync to Typora install dir
-npm run serve                               # Sync + auto-restart Typora via JSON-RPC
-npm run rpc                                 # JSON-RPC connection to running Typora
+npm run dev             # Development mode
+npm run sync            # Watch plugin/ for changes, sync to Typora install dir
+npm run serve           # Sync + auto-restart Typora via JSON-RPC
+npm run rpc             # JSON-RPC connection to running Typora
 ```
 
 ## Architecture
@@ -71,7 +71,7 @@ npm run rpc                                 # JSON-RPC connection to running Typ
 ### Core Framework (`plugin/global/core/`)
 
 - **`plugin.js`** -- `BasePlugin` classes, and `LoadPlugins()` which drives the plugin lifecycle
-- **`serviceContainer.js`** -- Singleton storing all plugin instances and settings; provides lookup APIs (`getPlugin()`)
+- **`container.js`** -- Singleton storing all plugin instances and settings; provides lookup APIs (`getPlugin()`)
 - **`i18n.js`** -- i18n system supporting `en`, `zh-CN`, `zh-TW`; loads JSON locale files from `plugin/global/locales/`
 - **`polyfill.js`** -- Polyfills for older Electron/Node (`Object.hasOwn`, `Promise.withResolvers`, etc.)
 
@@ -97,7 +97,7 @@ npm run rpc                                 # JSON-RPC connection to running Typ
 
 ### Key Patterns
 
-- **Service Container / DI**: `ServiceContainer` singleton holds all plugin instances, accessible via `utils.container`
+- **Service Container / DI**: `Container` singleton holds all plugin instances, accessible via `utils.container`
 - **AOP (Aspect-Oriented Programming)**: `decorator.js` wraps Typora internals without modifying source. Used by `eventHub`, `exportHelper`, and many plugins.
 - **Mixin Architecture**: Core features (eventHub, hotkeyHub, styleManager, etc.) are mixins on the `utils` class, each with `process()` and optional `postprocess()` lifecycle methods
 - **Vendored Dependencies**: All NPM dependencies are pre-bundled via esbuild into `plugin/global/core/lib/` -- no runtime `npm install` needed in `plugin/`

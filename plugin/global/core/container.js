@@ -1,4 +1,4 @@
-class ServiceContainer {
+class Container {
   plugins = {}
   settings = {}
 
@@ -24,4 +24,4 @@ class ServiceContainer {
   }
 }
 
-module.exports = new ServiceContainer()
+module.exports = new Container()
