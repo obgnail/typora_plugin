@@ -4,7 +4,10 @@ global.BasePlugin = class {
 
 const { describe, it, beforeEach, mock } = require("node:test")
 const assert = require("node:assert")
+const mockUtils = require("./mocks/utils.mock.js")
 const { TabManager } = require("../../plugin/window_tab.js")
+
+File.getMountFolder = () => ""
 
 describe("TabManager Test Suite", () => {
   let context
@@ -13,6 +16,7 @@ describe("TabManager Test Suite", () => {
   beforeEach(() => {
     context = {
       utils: {
+        ...mockUtils,
         openFile: mock.fn(),
         existPath: mock.fn(),
         showMessageBox: mock.fn(),

@@ -12,6 +12,15 @@ class TabManager {
       onEmpty: context.onEmpty,
       onExit: context.onExit,
     }
+
+    // NOTE: DO NOT run on open()/fileOpened, because getMountFolder() lags behind that event.
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileContentLoaded, path => {
+      const tab = this.getByPath(path)
+      if (!tab) return
+      if (!tab.mountFolder || !this.utils.isUnderMountFolder(tab.path)) {
+        tab.mountFolder = this.utils.getMountFolder()
+      }
+    })
   }
 
   get tabs() {
@@ -108,7 +117,18 @@ class TabManager {
 
   switch(idx) {
     this._activeIdx = this._clamp(idx)
+    this._restoreMountFolder(this.current)
     this.utils.openFile(this.current?.path, true)
+  }
+
+  _restoreMountFolder(tab) {
+    if (!tab || !tab.mountFolder) return
+    const mountFolder = this.utils.getMountFolder()
+    if (!mountFolder || tab.mountFolder === mountFolder || this.utils.isUnderMountFolder(tab.path, mountFolder)) return
+    requestAnimationFrame(() => {
+      File.setMountFolder(tab.mountFolder)
+      File.editor.library.refreshPanelCommand()
+    })
   }
 
   switchByPath(path) {
@@ -294,7 +314,11 @@ class TabManager {
     if (matchMountFolder && mountFolder !== currentMountFolder) return
 
     const activePath = saveTabs.find(tab => tab.active)?.path
-    this._tabs = saveTabs.map(({ path, scrollTop }) => ({ path, scrollTop: scrollTop || 0 }))
+    this._tabs = saveTabs.map(({ path, scrollTop, mountFolder: tabMountFolder }) => ({
+      path,
+      scrollTop: scrollTop || 0,
+      mountFolder: tabMountFolder || mountFolder,
+    }))
 
     this._formatShowNames()
 
@@ -310,6 +334,7 @@ class TabManager {
       idx,
       path: tab.path,
       scrollTop: tab.scrollTop || 0,
+      mountFolder: tab.mountFolder || null,
       active: idx === this._activeIdx,
     }))
   }
