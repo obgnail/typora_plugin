@@ -47,6 +47,7 @@
     "$title.style": "样式",
     "$title.shortcuts": "快捷方式",
     "$title.advanced": "高级",
+    "$title.experimental": "实验性特性",
     "$option.CHART_ALIGN.left": "靠左",
     "$option.CHART_ALIGN.center": "居中",
     "$option.CHART_ALIGN.right": "靠右"
@@ -166,6 +167,7 @@
     "$label.COPY_PATH_HOTKEY": "复制当前文件路径",
     "$label.TOGGLE_TAB_BAR_HOTKEY": "临时显示/隐藏标签栏",
     "$label.CONTEXT_MENU": "标签页菜单选项",
+    "$label.ENFORCE_SINGLETON": "强制单例",
     "$tooltip.detachThreshold": "拖拽垂直距离少于 X 倍标签页高度视为无垂直移动",
     "$tooltip.newWindow": "拖拽垂直距离超过 X 倍标签页高度视为新建窗口",
     "$title.appearance": "标签页外观",

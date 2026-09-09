@@ -151,6 +151,10 @@ COPY_PATH_HOTKEY = []
 #   sortTabs       : Sort tabs
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
 
+# =========== [ experimental ] ===========
+# Enforce Singleton
+ENFORCE_SINGLETON = false
+
 
 [search_multi]
 # =========== [ Basic ] ===========

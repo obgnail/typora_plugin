@@ -47,6 +47,7 @@
     "$title.style": "Style",
     "$title.shortcuts": "Shortcuts",
     "$title.advanced": "Advanced",
+    "$title.experimental": "Experimental",
     "$option.CHART_ALIGN.left": "Left",
     "$option.CHART_ALIGN.center": "Center",
     "$option.CHART_ALIGN.right": "Right"
@@ -166,6 +167,7 @@
     "$label.COPY_PATH_HOTKEY": "Copy File Path",
     "$label.TOGGLE_TAB_BAR_HOTKEY": "Toggle Tab Bar Visibility",
     "$label.CONTEXT_MENU": "Context Menu Options",
+    "$label.ENFORCE_SINGLETON": "Enforce Singleton",
     "$tooltip.detachThreshold": "Vertical drag < X * tab height: No detachment",
     "$tooltip.newWindow": "Vertical drag > X * tab height: Creates a new window",
     "$title.appearance": "Appearance",

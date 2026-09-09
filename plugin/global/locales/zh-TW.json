@@ -47,6 +47,7 @@
     "$title.style": "樣式",
     "$title.shortcuts": "快捷方式",
     "$title.advanced": "進階",
+    "$title.experimental": "實驗性功能",
     "$option.CHART_ALIGN.left": "靠左",
     "$option.CHART_ALIGN.center": "居中",
     "$option.CHART_ALIGN.right": "靠右"
@@ -166,6 +167,7 @@
     "$label.COPY_PATH_HOTKEY": "複製目前檔案路徑",
     "$label.TOGGLE_TAB_BAR_HOTKEY": "臨時顯示/隱藏標籤列",
     "$label.CONTEXT_MENU": "標籤頁選單選項",
+    "$label.ENFORCE_SINGLETON": "強制單例",
     "$tooltip.detachThreshold": "拖曳垂直距離少於 X 倍標籤頁高度視為無垂直移動",
     "$tooltip.newWindow": "拖曳垂直距離超過 X 倍標籤頁高度視為建立新視窗",
     "$title.appearance": "標籤頁外觀",

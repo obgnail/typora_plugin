@@ -625,6 +625,24 @@ class TabDragManager {
   }
 }
 
+// NOTE: Experimental. It works, but it's likely to be a bad idea.
+function enforceSingleton(utils) {
+  const TYPE = { STARTUP: "STARTUP", KILL: "KILL" }
+  const id = performance.now()
+  const chan = new BroadcastChannel("plugin:window-tab")
+  chan.onmessage = (ev) => {
+    const { type, id: senderId, path: senderPath } = ev.data
+    if (type === TYPE.STARTUP && senderId > id && !!senderPath) {
+      utils.openFile(senderPath, true)
+      chan.postMessage({ type: TYPE.KILL, id: senderId })
+    } else if (type === TYPE.KILL && senderId === id) {
+      chan.close()
+      utils.exitTypora()
+    }
+  }
+  utils.eventHub.on(utils.eventHub.eventType.allPluginsHadInjected, () => chan.postMessage({ type: TYPE.STARTUP, id, path: utils.getFilePath() }))
+}
+
 class WindowTabPlugin extends BasePlugin {
   renderRafManager = this.utils.getRafManager()
   manualSaveStorage = this.utils.getStorage(`${this.fixedName}.manual`)
@@ -715,6 +733,7 @@ class WindowTabPlugin extends BasePlugin {
     if (this.config.MIDDLE_CLICK_TO_CLOSE) this._handleMiddleClick()
     if (this.config.REOPEN_TABS_ON_STARTUP) this._reopenTabsWhenInit()
     if (this.config.CONTEXT_MENU.length) this._handleContextMenu()
+    if (this.config.ENFORCE_SINGLETON) enforceSingleton(this.utils)
   }
 
   getDynamicActions = () => this.i18n.fillActions([

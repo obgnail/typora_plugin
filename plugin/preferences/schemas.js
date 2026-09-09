@@ -182,6 +182,9 @@ const schema_window_tab = () => [
     Array_("COPY_PATH_HOTKEY"),
     Array_("TOGGLE_TAB_BAR_HOTKEY"),
   ),
+  Group("experimental",
+    Switch("ENFORCE_SINGLETON"),
+  ).Tooltip("expertsOnly"),
   FRAG.SettingHandler(),
 ]
 
