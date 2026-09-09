@@ -285,6 +285,138 @@ describe("Search Parser: ASTUtils (Stateless Traversal & Reduction)", () => {
   })
 })
 
+describe("Search Parser: ASTUtils.collectSameOperatorChildren()", () => {
+  const parse = (query) => stripRange(parser.parse(lexer.tokenize(query), query.length))
+
+  it("Leaf node (non-LogicalExpression) returns itself wrapped in array", () => {
+    const leaf = literal("a")
+    assert.deepStrictEqual(ASTUtils.collectSameOperatorChildren(leaf, "AND"), [leaf])
+  })
+
+  it("FilterExpression leaf returns itself wrapped in array", () => {
+    const leaf = filterExpr("size", ">=", literal("10kb"))
+    assert.deepStrictEqual(ASTUtils.collectSameOperatorChildren(leaf, "AND"), [leaf])
+  })
+
+  it("UnaryExpression (NOT) is treated as an opaque leaf, not recursed into", () => {
+    const node = { type: AST.UnaryExpression, operator: "NOT", argument: literal("a") }
+    assert.deepStrictEqual(ASTUtils.collectSameOperatorChildren(node, "AND"), [node])
+  })
+
+  it("Single-level same-operator AND flattens both sides", () => {
+    const ast = parse("a AND b")
+    const children = ASTUtils.collectSameOperatorChildren(ast, "AND")
+    assert.deepStrictEqual(children, [literal("a"), literal("b")])
+  })
+
+  it("Single-level same-operator OR flattens both sides", () => {
+    const ast = parse("a OR b")
+    const children = ASTUtils.collectSameOperatorChildren(ast, "OR")
+    assert.deepStrictEqual(children, [literal("a"), literal("b")])
+  })
+
+  it("Left-leaning chain AND(AND(a,b),c) flattens to [a,b,c]", () => {
+    // Implicit AND via "a b c" produces a left-leaning tree
+    const ast = parse("a b c")
+    const children = ASTUtils.collectSameOperatorChildren(ast, "AND")
+    assert.deepStrictEqual(children, [literal("a"), literal("b"), literal("c")])
+  })
+
+  it("Right-leaning chain AND(a,AND(b,c)) flattens to [a,b,c]", () => {
+    const ast = {
+      type: AST.LogicalExpression,
+      operator: "AND",
+      left: literal("a"),
+      right: {
+        type: AST.LogicalExpression,
+        operator: "AND",
+        left: literal("b"),
+        right: literal("c"),
+      },
+    }
+    const children = ASTUtils.collectSameOperatorChildren(ast, "AND")
+    assert.deepStrictEqual(children, [literal("a"), literal("b"), literal("c")])
+  })
+
+  it("Deep 4-term chain flattens fully regardless of nesting shape", () => {
+    const ast = {
+      type: AST.LogicalExpression,
+      operator: "AND",
+      left: {
+        type: AST.LogicalExpression,
+        operator: "AND",
+        left: literal("a"),
+        right: literal("b"),
+      },
+      right: {
+        type: AST.LogicalExpression,
+        operator: "AND",
+        left: literal("c"),
+        right: literal("d"),
+      },
+    }
+    const children = ASTUtils.collectSameOperatorChildren(ast, "AND")
+    assert.deepStrictEqual(children, [literal("a"), literal("b"), literal("c"), literal("d")])
+  })
+
+  it("Stops flattening at an operator boundary (mixed AND/OR)", () => {
+    // AND(OR(a,b), c) -- collecting "AND" children should NOT descend into the OR subtree
+    const ast = parse("(a OR b) AND c")
+    const children = ASTUtils.collectSameOperatorChildren(ast, "AND")
+    assert.strictEqual(children.length, 2)
+    assert.deepStrictEqual(children[0], {
+      type: AST.LogicalExpression,
+      operator: "OR",
+      left: literal("a"),
+      right: literal("b"),
+    })
+    assert.deepStrictEqual(children[1], literal("c"))
+  })
+
+  it("Stops flattening at a NOT boundary inside an AND chain", () => {
+    const ast = parse("a AND -b")
+    const children = ASTUtils.collectSameOperatorChildren(ast, "AND")
+    assert.strictEqual(children.length, 2)
+    assert.deepStrictEqual(children[0], literal("a"))
+    assert.deepStrictEqual(children[1], {
+      type: AST.UnaryExpression,
+      operator: "NOT",
+      argument: literal("b"),
+    })
+  })
+
+  it("Requesting a different operator than the node's own operator does not flatten", () => {
+    // Node itself is OR, but we ask to collect "AND" children -> node itself is returned unflattened
+    const ast = parse("a OR b")
+    const children = ASTUtils.collectSameOperatorChildren(ast, "AND")
+    assert.deepStrictEqual(children, [ast])
+  })
+
+  it("Original example (789 OR 12) - ABC preserves nested structure per level", () => {
+    const ast = parse(`(789 OR 12) - ABC`)
+    // Top level is AND: [OR(789, 12), NOT(ABC)]
+    const topChildren = ASTUtils.collectSameOperatorChildren(ast, "AND")
+    assert.strictEqual(topChildren.length, 2)
+    // Descending one more level into the OR branch flattens 789/12
+    const orChildren = ASTUtils.collectSameOperatorChildren(topChildren[0], "OR")
+    assert.deepStrictEqual(orChildren, [literal("789"), literal("12")])
+    // NOT branch remains a single UnaryExpression, unaffected by AND-flattening
+    assert.deepStrictEqual(topChildren[1], {
+      type: AST.UnaryExpression,
+      operator: "NOT",
+      argument: literal("ABC"),
+    })
+  })
+
+  it("Idempotence: collecting on an already-flat leaf array element returns itself", () => {
+    const ast = parse("a b c")
+    const children = ASTUtils.collectSameOperatorChildren(ast, "AND")
+    children.forEach(child => {
+      assert.deepStrictEqual(ASTUtils.collectSameOperatorChildren(child, "AND"), [child])
+    })
+  })
+})
+
 describe("Search Parser: Edge Cases", () => {
   const parse = (query) => stripRange(parser.parse(lexer.tokenize(query), query.length))
 

@@ -214,6 +214,13 @@ RELATIVE_PATH = true
 # Show file extension: Display extensions (e.g., .md) after file titles
 SHOW_EXT = true
 
+# The metadata shown next to the file name
+#   size
+#   mtime
+#   atime
+#   birthtime
+META_FIELD = "size"
+
 # Highlight colors: Background colors for highlights
 HIGHLIGHT_COLORS = [
   "#BBEEFF", "#FFBBCC", "#88EE88", "#CCBBFF", "#FFEE88", "#FFFFA0", "#88CCCC", "#FFBB88", "#CCCCCC", "#FFAABB",

@@ -1,7 +1,7 @@
 const FileContext = require("./file_context")
 const Searcher = require("./searcher")
 const Highlighter = require("./highlighter")
-const { ExplainPresenter, GrammarPresenter } = require("./presenters")
+const { ExplainPresenter, getGrammarModal } = require("./presenters")
 
 const h = (tag, attrs = {}, ...children) => {
   const el = document.createElement(tag)
@@ -109,13 +109,29 @@ class SearchStateMachine {
   isSearching = () => this.state === "searching"
 }
 
+const FILE_META_FORMATTERS = {
+  size: (fileCtx) => {
+    const bytes = fileCtx.stats.size
+    if (bytes < 1024) return `${bytes} B`
+    return bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`
+  },
+  ext: (fileCtx, utils) => utils.Package.Path.extname(fileCtx.file),
+  mtime: (fileCtx, utils) => utils.dateTimeFormat(fileCtx.stats.mtime, "yy/MM/dd"),
+  atime: (fileCtx, utils) => utils.dateTimeFormat(fileCtx.stats.atime, "yy/MM/dd"),
+  birthtime: (fileCtx, utils) => utils.dateTimeFormat(fileCtx.stats.birthtime, "yy/MM/dd"),
+}
+
 class SearchMultiPlugin extends BasePlugin {
   ctx = { config: this.config, utils: this.utils, i18n: this.i18n }
   searcher = new Searcher(this.ctx)
   highlighter = new Highlighter(this.ctx)
   executor = new SearchExecutor({ ...this.ctx, searcher: this.searcher })
   explainPresenter = new ExplainPresenter({ ...this.ctx, searcher: this.searcher })
-  grammarPresenter = new GrammarPresenter({ ...this.ctx, searcher: this.searcher })
+  grammarModal = getGrammarModal({ ...this.ctx, searcher: this.searcher })
+  formatMeta = (() => {
+    const getMeta = Object.hasOwn(FILE_META_FORMATTERS, this.config.META_FIELD) ? FILE_META_FORMATTERS[this.config.META_FIELD] : FILE_META_FORMATTERS.size
+    return (fileCtx) => getMeta(fileCtx, this.utils)
+  })()
 
   style = () => ({
     counter_prefix_text: this.i18n.t("matchedFiles") + "：",
@@ -224,7 +240,7 @@ class SearchMultiPlugin extends BasePlugin {
     })
     this.entities.panel.addEventListener("btn-click", ev => {
       if (ev.detail.action === "showGrammar") {
-        this.grammarPresenter.show()
+        this.grammarModal()
       } else if (ev.detail.action === "close") {
         this.hide()
       }
@@ -249,7 +265,7 @@ class SearchMultiPlugin extends BasePlugin {
     await this.executor.execute(ast, rootPath, {
       onEmpty: () => this.fsm.reset(),
       onStart: () => this.fsm.start(),
-      onItem: this._createResultAppender(rootPath),
+      onItem: this._createOnItemHandler(rootPath),
       onSuccess: () => this.fsm.success() && this.highlightByAST(ast),
       onError: (err) => {
         const msg = err.name === "TimeoutError" ? this.i18n.t("error.timeout") : err.toString()
@@ -316,36 +332,31 @@ class SearchMultiPlugin extends BasePlugin {
     }
   }
 
-  _createResultAppender = (rootPath) => {
-    const formatBytes = (bytes) => {
-      if (bytes < 1024) return `${bytes} B`
-      return bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`
-    }
-
-    const newItem = (rootPath, fileCtx) => {
-      const { dir, base, name } = this.utils.Package.Path.parse(fileCtx.path)
-      const dirPath = this.config.RELATIVE_PATH ? dir.replace(rootPath, ".") : dir
-      return h("div", { className: "plugin-search-item", "data-path": fileCtx.path },
-        h("div", { className: "plugin-search-item-title" },
-          h("div", { className: "plugin-search-item-name", textContent: this.config.SHOW_EXT ? base : name }),
-          h("div", { className: "plugin-search-item-meta", textContent: formatBytes(fileCtx.stats.size) }),
-        ),
-        h("div", { className: "plugin-search-item-path", textContent: dirPath + this.utils.separator }),
-      )
-    }
-
+  _createOnItemHandler = (rootPath) => {
     let count = 0
     const rafManager = this.utils.getRafManager()
     const fragment = document.createDocumentFragment()
     return (fileCtx, signal) => {
       count++
-      fragment.appendChild(newItem(rootPath, fileCtx))
+      fragment.appendChild(this._toItemEl(rootPath, fileCtx))
       rafManager.schedule(() => {
         if (signal?.aborted) return
         this.entities.files.appendChild(fragment)
         this.entities.counter.textContent = String(count)
       })
     }
+  }
+
+  _toItemEl = (rootPath, fileCtx) => {
+    const { dir, base, name } = this.utils.Package.Path.parse(fileCtx.path)
+    const dirPath = this.config.RELATIVE_PATH ? dir.replace(rootPath, ".") : dir
+    return h("div", { className: "plugin-search-item", "data-path": fileCtx.path },
+      h("div", { className: "plugin-search-item-title" },
+        h("div", { className: "plugin-search-item-name", textContent: this.config.SHOW_EXT ? base : name }),
+        h("div", { className: "plugin-search-item-meta", textContent: this.formatMeta(fileCtx) }),
+      ),
+      h("div", { className: "plugin-search-item-path", textContent: dirPath + this.utils.separator }),
+    )
   }
 
   hide = () => {

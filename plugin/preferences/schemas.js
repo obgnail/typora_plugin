@@ -127,8 +127,8 @@ const schema_global = () => [
     Action("importSettings"),
   ),
   Group(
-    Action("visitRepo").ActionTooltip("openPluginFolder", "fa fa-folder"),
-    Action("viewDeepWiki").ActionTooltip("neverGonnaTellALie", "fa fa-book"),
+    Action("visitRepo").ActionTooltip("openPluginFolder", "fa fa-folder").ActionTooltip("neverGonnaTellALie", "fa fa-book"),
+    Action("viewDeepWiki"),
     Action("developPlugins"),
     Action("viewGithubImageBed"),
   ),
@@ -203,6 +203,7 @@ const schema_search_multi = () => [
     Switch("HIGHLIGHTS_MATCH_ANCHOR").Tooltip("matchAnchor"),
     Integer("MAX_HIGHLIGHTS").Min(1).Max(5000),
     Palette("HIGHLIGHT_COLORS"),
+    Select("META_FIELD").Options(["size", "ext", "mtime", "atime", "birthtime"]),
   ),
   Group("advanced",
     Switch("FOLLOW_SYMBOLIC_LINKS"),
@@ -1165,10 +1166,12 @@ const schema_updater = () => [
 const schema_test = () => [
   FRAG.Base(),
   Group(
-    Switch("SINGLETON"),
-    Switch("AUTO_OPEN_DEVTOOLS"),
     Switch("EXPOSE_CJS_VARIABLES"),
     Switch("EXPOSE_PLUGIN_VARIABLES"),
+  ),
+  Group(
+    Switch("SINGLETON"),
+    Switch("AUTO_OPEN_DEVTOOLS"),
     Switch("RUN_CUSTOM_SCRIPT"),
   ),
   FRAG.SettingHandler(),

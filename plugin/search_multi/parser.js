@@ -364,6 +364,12 @@ const ASTUtils = {
       terminal: (node, negated) => [[{ node, negated }]],
     })
   },
+
+  collectSameOperatorChildren(node, operator) {
+    return node?.type === AST.LogicalExpression && node?.operator === operator
+      ? [...this.collectSameOperatorChildren(node.left, operator), ...this.collectSameOperatorChildren(node.right, operator)]
+      : [node]
+  },
 }
 
 module.exports = { Lexer, Parser, ASTUtils, TOK, AST }

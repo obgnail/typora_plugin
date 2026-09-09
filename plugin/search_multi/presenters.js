@@ -1,4 +1,4 @@
-const { ASTUtils } = require("./parser")
+const { ASTUtils, AST } = require("./parser")
 
 const el = (tag, className, children) => {
   const e = document.createElement(tag)
@@ -48,7 +48,7 @@ class ExplainPresenter {
   }
 
   _createToken({ node, negated, isBoolean }) {
-    const { qualifier, scope, operator, operand, matchType } = node.semantic
+    const { qualifier, scope, operator, operand, operandType } = node.semantic
 
     const notEl = negated ? el("div", "sme-not", this.i18n.t("not")) : null
     const scopeEl = el("div", "sme-scope", qualifier.name ?? scope)
@@ -57,7 +57,7 @@ class ExplainPresenter {
     if (isBoolean) {
       els.push(notEl, scopeEl)
     } else {
-      const isRegex = matchType === "REGEX"
+      const isRegex = operandType === "REGEX"
       const opEl = el("div", "sme-operator", this.i18n.t(isRegex ? "matchRegex" : OP_I18N[operator]))
       const valEl = el("div", "sme-operand", isRegex ? `/${operand.pattern}/${operand.flags}` : operand)
       els.push(scopeEl, notEl, opEl, valEl)
@@ -76,8 +76,8 @@ class GrammarPresenter {
 
   _formatNodeText({ node, negated }, { translate, textStyle }) {
     const { i18n } = this
-    const { qualifier, scope, operator, operand, matchType, castResult } = node.semantic
-    const isRegex = matchType === "REGEX"
+    const { qualifier, scope, operator, operand, operandType, castResult } = node.semantic
+    const isRegex = operandType === "REGEX"
 
     const operandTxt = isRegex ? `/${operand.pattern}/${operand.flags}` : operand
     const finalOperandTxt = textStyle ? `<u>${operandTxt}</u>` : operandTxt
@@ -130,6 +130,26 @@ class GrammarPresenter {
     return `${this.i18n.t("explain")}：\n${txt}`
   }
 
+  buildTreeExplain(ast, translate, textStyle) {
+    const build = (node, depth) => {
+      const pad = "&nbsp;".repeat(6 * depth)
+      if (node.type === AST.LogicalExpression) {
+        const header = translate ? this.i18n.t(node.operator === "AND" ? "matchAll" : "matchAny") : node.operator
+        const children = ASTUtils.collectSameOperatorChildren(node, node.operator)
+        const lines = children.map(c => build(c, depth + 1))
+        return `${pad}${header}：\n${lines.join("\n")}`
+      }
+      if (node.type === AST.UnaryExpression) {
+        const header = translate ? this.i18n.t("exclude") : "NOT"
+        const inner = build(node.argument, depth + 1)
+        return `${pad}${header}：\n${inner}`
+      }
+      const txt = this._formatNodeText({ node, negated: false }, { translate, textStyle })
+      return `${pad}${txt}`
+    }
+    return build(ast, 0)
+  }
+
   buildMermaid(ast, translate, textStyle, direction) {
     const graphData = this._toGraphData(ast)
     const nodes = graphData.nodes.map(n => {
@@ -143,9 +163,12 @@ class GrammarPresenter {
     const styles = ["S", "E"].map(id => `style ${id} fill:#bbf,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 0 1`)
     return [`graph ${direction}`, "S((START))", "E((END))", ...nodes, ...edges, ...start, ...end, ...styles].join("\n")
   }
+}
 
-  async show() {
-    const { searcher, utils, i18n: { t } } = this
+const getGrammarModal = ({ i18n, utils, searcher }) => {
+  const { t } = i18n
+  const presenter = new GrammarPresenter({ i18n, utils, searcher })
+  return async function show() {
     const scopes = Object.groupBy(searcher.qualifiers.values(), s => s.is_meta ? "isMeta" : "notMeta")
 
     const bold = x => `<b>${x}</b>`
@@ -194,7 +217,7 @@ class GrammarPresenter {
       [`thead:k8s h2:prometheus blockcode:"kubectl apply"`, t("modal.example.desc9")],
     ].map(([expression, desc]) => ({ expression, desc }))
 
-    const PRESENT = { graph: "graph", text: "text", ast: "ast" }
+    const PRESENT = { graph: "graph", text: "text", tree: "tree", ast: "ast" }
 
     const schema = ({ Group, Controls, When }) => [
       Group(
@@ -210,14 +233,15 @@ class GrammarPresenter {
         Controls.Textarea("expression").Rows(3).NoResize(true).IsBlockLayout(true),
         Controls.Code("_displayAST").Readonly(true).ShowIf(When.eq("presentation", PRESENT.ast)).DependencyUnmetAction("hide").IsBlockLayout(true),
         Controls.Hint("_displayGraph").Unsafe(true).ShowIf(When.eq("presentation", PRESENT.graph)).DependencyUnmetAction("hide"),
-        Controls.Hint("_displayText").Unsafe(true).ShowIf(When.eq("presentation", PRESENT.text)).DependencyUnmetAction("hide"),
+        Controls.Hint("_displayText").Unsafe(true).ShowIf(When.includes("presentation", [PRESENT.text, PRESENT.tree])).DependencyUnmetAction("hide"),
         Controls.Select("presentation").Label(t("modal.playground.presentation")).Options({
           [PRESENT.graph]: t("modal.playground.presentation.graph"),
+          [PRESENT.tree]: t("modal.playground.presentation.tree"),
           [PRESENT.text]: t("modal.playground.presentation.text"),
           [PRESENT.ast]: t("modal.playground.presentation.ast"),
         }),
         Controls.Select("direction").Label(t("modal.playground.direction")).Options(["TB", "BT", "RL", "LR"]).ShowIf(When.eq("presentation", PRESENT.graph)),
-        Controls.Switch("textStyle").Label(t("modal.playground.textStyle")).ShowIf(When.includes("presentation", [PRESENT.graph, PRESENT.text])),
+        Controls.Switch("textStyle").Label(t("modal.playground.textStyle")).ShowIf(When.includes("presentation", [PRESENT.graph, PRESENT.text, PRESENT.tree])),
         Controls.Switch("translate").Label(t("modal.playground.translate")).ShowIf(When.follow("textStyle")),
       ),
       Controls.Action("_grammar_box_visible").Label(t("modal.grammar.title")).ActionType("toggle"),
@@ -233,7 +257,7 @@ class GrammarPresenter {
       }
     }
 
-    await utils.formDialog.modal({
+    return await utils.formDialog.modal({
       title: t("grammar"),
       schema,
       data: {
@@ -257,10 +281,12 @@ class GrammarPresenter {
           if (presentation === PRESENT.ast) {
             _to(expression, ast => JSON.stringify(ast, null, "  ")).then(data => ctx.setValue("_displayAST", data))
           } else if (presentation === PRESENT.text) {
-            _to(expression, ast => this.buildExplain(ast, translate, textStyle)).then(data => ctx.setValue("_displayText", { hintDetail: data }))
+            _to(expression, ast => presenter.buildExplain(ast, translate, textStyle)).then(data => ctx.setValue("_displayText", { hintDetail: data }))
+          } else if (presentation === PRESENT.tree) {
+            _to(expression, ast => presenter.buildTreeExplain(ast, translate, textStyle)).then(data => ctx.setValue("_displayText", { hintDetail: data }))
           } else if (presentation === PRESENT.graph) {
             _to(expression, async ast => {
-              const definition = this.buildMermaid(ast, translate, textStyle, direction)
+              const definition = presenter.buildMermaid(ast, translate, textStyle, direction)
               const svg = await utils.renderMermaid(definition)
               return `<div style="font-size:initial; line-height:initial; text-align:center; user-select:none">${svg}</div>`
             }).then(data => ctx.setValue("_displayGraph", { hintDetail: data }))
@@ -272,4 +298,4 @@ class GrammarPresenter {
   }
 }
 
-module.exports = { ExplainPresenter, GrammarPresenter }
+module.exports = { ExplainPresenter, GrammarPresenter, getGrammarModal }

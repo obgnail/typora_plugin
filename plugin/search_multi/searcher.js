@@ -38,15 +38,15 @@ class Searcher {
 
     const valNode = isFilter ? node.value : node
     const isRegex = valNode.type === AST.RegexLiteral
-    const matchType = isRegex ? "REGEX" : (valNode.isPhrase ? "PHRASE" : "KEYWORD")
+    const operandType = isRegex ? "REGEX" : (valNode.isPhrase ? "PHRASE" : "KEYWORD")
     const operand = isRegex ? { pattern: valNode.pattern, flags: valNode.flags } : valNode.value
 
     const qualifier = this.qualifiers.get(scope)
     if (!qualifier) {
       throw new Error(`Unknown scope: ${scope}`)
     }
-    const normalizedOperand = qualifier.normalize(operand, matchType)
-    const errorMsg = qualifier.validate(operator, normalizedOperand, matchType)
+    const normalizedOperand = qualifier.normalize(operand, operandType)
+    const errorMsg = qualifier.validate(operator, normalizedOperand, operandType)
     if (errorMsg) {
       throw new Error(`In ${scope}: ${errorMsg}`)
     }
@@ -55,10 +55,10 @@ class Searcher {
       scope,
       operator,
       operand: normalizedOperand,
-      matchType,
+      operandType,
       qualifier,
-      cost: qualifier.cost + (matchType === "REGEX" ? 0.5 : 0),
-      castResult: qualifier.cast(normalizedOperand, matchType, this.options),
+      cost: qualifier.cost + (isRegex ? 0.5 : 0),
+      castResult: qualifier.cast(normalizedOperand, operandType, this.options),
       anchor: qualifier.anchor,
     }
   }
@@ -67,33 +67,18 @@ class Searcher {
   optimize(ast) {
     if (!ast) return null
 
-    const getCost = n => n?.semantic?.cost || 0
+    const getCost = (node) => node?.semantic?.cost || 0
     const rebuild = (node) => {
       if (!node) return null
       if (node.type === AST.UnaryExpression) {
         const argument = rebuild(node.argument)
         return argument ? { ...node, argument, semantic: { cost: getCost(argument) } } : null
       }
-
       if (node.type !== AST.LogicalExpression) {
         return node
       }
 
-      const dataNodes = []
-      const extract = (n) => {
-        if (!n) return
-        if (n.type === node.type && n.operator === node.operator) {
-          extract(n.left)
-          extract(n.right)
-        } else {
-          dataNodes.push(rebuild(n))
-        }
-      }
-
-      extract(node.left)
-      extract(node.right)
-
-      const nodes = dataNodes.filter(Boolean)
+      const nodes = ASTUtils.collectSameOperatorChildren(node, node.operator).map(rebuild).filter(Boolean)
       if (nodes.length === 0) return null
       if (nodes.length === 1) return nodes[0]
 
@@ -116,7 +101,7 @@ class Searcher {
   compile(ast) {
     if (!ast) return async (ctx) => true
 
-    const transform = this.options.caseSensitive
+    const foldCase = this.options.caseSensitive
       ? v => v
       : v => {
         if (typeof v === "string") return v.toLowerCase()
@@ -130,10 +115,10 @@ class Searcher {
       or: (left, right) => async (ctx) => (await left(ctx)) || (await right(ctx)),
       not: node => node,
       terminal: (node, negated) => {
-        const { scope, operator, castResult, matchType, qualifier } = node.semantic
-        const matchFn = qualifier.match[matchType]
+        const { scope, operator, operandType, castResult, qualifier } = node.semantic
+        const matchFn = qualifier.match[operandType]
         return async (ctx) => {
-          const queryResult = await ctx.compute(scope, async () => transform(await qualifier.query(ctx)))
+          const queryResult = await ctx.compute(scope, async () => foldCase(await qualifier.query(ctx)))
           const isMatch = matchFn(operator, castResult, queryResult)
           return negated ? !isMatch : isMatch
         }
@@ -146,13 +131,13 @@ class Searcher {
     const conds = []
     ASTUtils.walkLeaves(ast, (node, negated) => {
       if (negated || isMeta.has(node.semantic.scope)) return
-      const { matchType, operand, anchor } = node.semantic
-      const isRegex = matchType === "REGEX"
+      const { scope, operandType, operand, anchor } = node.semantic
+      const isRegex = operandType === "REGEX"
       const rawPattern = isRegex ? operand.pattern : String(operand)
       const pattern = isRegex ? operand.pattern : rawPattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
       const flags = isRegex ? operand.flags : ""
       const strictReg = isRegex ? new RegExp(`^(${pattern})$`, flags.replace(/[gy]/ig, "")) : null
-      conds.push({ id: conds.length, name: rawPattern, anchor, isRegex, rawPattern, pattern, flags, strictReg })
+      conds.push({ id: conds.length, name: rawPattern, scope, anchor, isRegex, rawPattern, pattern, flags, strictReg })
     })
     return conds
   }
