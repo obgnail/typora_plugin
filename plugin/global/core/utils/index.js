@@ -861,7 +861,12 @@ class utils {
     return JSBridge.invoke("dialog.showMessageBox", op)
   }
 
-  static getMarkdownIt = this.once(() => require("../lib/markdown-it")({ html: true, linkify: true, typographer: true }))
+  static getMarkdownIt = this.once(() => {
+    const { footnote, mark, tasklist, alert, sub, sup, ins } = require("../lib/markdown-it-plugins")
+    return require("../lib/markdown-it")({ html: true, linkify: true, typographer: true })
+      .use(footnote).use(mark).use(tasklist).use(alert, { deep: true })
+    // .use(sub).use(sup).use(ins)
+  })
   static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
   static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
 

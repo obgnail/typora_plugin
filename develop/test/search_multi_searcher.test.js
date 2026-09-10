@@ -135,10 +135,6 @@ describe("Searcher: Dual-Index Architecture & Rendered Text Defense", () => {
     await assertMatch(`h1:/^Bold/`, "torture", true)
     await assertMatch(`blockquote:/^NestedLink$/`, "torture", true)
   })
-  it("should correctly handle specific Transformer regex limitations", async () => {
-    await assertMatch(`tasktodo:/^Todo \\*\\*urgent\\*\\*$/`, "torture", true)
-    await assertMatch(`tasktodo:/^urgent$/`, "torture", false)
-  })
   it("should correctly handle specific Filter limitations", async () => {
     await assertMatch(`image:img.png`, "torture", true)
     await assertMatch(`image:AltImage`, "torture", true)

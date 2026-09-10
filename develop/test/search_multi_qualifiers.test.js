@@ -777,6 +777,8 @@ describe("getQualifiers — scope coverage", () => {
     "ol", "ul", "task", "taskdone", "tasktodo",
     "head", "h1", "h2", "h3", "h4", "h5", "h6",
     "image", "code", "link", "strong", "em", "del", "highlight",
+    "footnoteref", "footnote", "footnotename", "footnotecontent",
+    "alert", "alertname", "alertcontent",
   ]
 
   it("includes all expected markdown qualifier scopes", () => {

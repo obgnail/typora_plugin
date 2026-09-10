@@ -289,6 +289,14 @@ const createMarkdownQualifiers = (ctx) => {
         return isInside || wasInside
       }
     },
+    withinType: (containerType, targetType) => () => {
+      const isWithin = FILTER.within(containerType)()
+      return node => isWithin(node) && node.type === targetType
+    },
+    withinExcept: (containerType, excludeType) => () => {
+      const isWithin = FILTER.within(containerType)()
+      return node => isWithin(node) && node.type !== excludeType
+    },
     withinTag: (type, tag) => () => {
       const openType = `${type}_open`
       const closeType = `${type}_close`
@@ -324,41 +332,27 @@ const createMarkdownQualifiers = (ctx) => {
         return isWrapped || wasWrapped
       }
     },
+    task: matchChecked => () => {
+      const isInLabel = FILTER.withinPath("bullet_list", "list_item", "label")()
+      let checked = false
+      return node => {
+        const inLabel = isInLabel(node)
+        if (node.type === "checkbox_input") {
+          checked = (node.attrs || []).some(([name]) => name === "checked")
+        }
+        return inLabel && matchChecked(checked)
+      }
+    },
   }
-
-  const REGEX_TASK_CONTENT = /^\[([xX ])]\s+(.+)/
-  const REGEX_HIGHLIGHT = /==(.+)==/g
 
   const TRANSFORMER = {
     content: node => node.content,
     info: node => node.info,
     infoAndContent: node => `${node.info}\n${node.content}`,
-    attrAndContent: node => {
-      const attrs = node.attrs || []
-      const attrContent = attrs.map(attr => attr.at(-1)).join(" ")
-      return `${attrContent}${node.content}`
-    },
-    regexContent: regex => {
-      return node => [...node.content.trim().matchAll(regex)].map(([_, text]) => text).join(" ")
-    },
+    attrAndContent: node => `${(node.attrs || []).map(attr => attr.at(-1)).join(" ")}${node.content}`,
+    meta: key => node => node.meta?.[key],
+    metaOrContent: metaKey => node => node.meta?.[metaKey] || node.content,
     contentLine: node => node.content.split("\n"),
-    taskContent: (selectType = 0) => {
-      return node => {
-        const hit = node.content.trim().match(REGEX_TASK_CONTENT)
-        if (!hit) return ""
-        const [_, selectText, taskText] = hit
-        switch (selectType) {
-          case 0:
-            return taskText
-          case 1:
-            return (selectText === "x" || selectText === "X") ? taskText : ""
-          case -1:
-            return selectText === " " ? taskText : ""
-          default:
-            return ""
-        }
-      }
-    },
   }
 
   const collectNodes = (ast = [], filter) => {
@@ -403,24 +397,9 @@ const createMarkdownQualifiers = (ctx) => {
     tbody: { anchor: `.md-table tbody`, parser: PARSER.block, filter: FILTER.within("tbody"), transformer: TRANSFORMER.content },
     ol: { anchor: `.ol-list`, parser: PARSER.block, filter: FILTER.within("ordered_list"), transformer: TRANSFORMER.content },
     ul: { anchor: `.ul-list`, parser: PARSER.block, filter: FILTER.within("bullet_list"), transformer: TRANSFORMER.content },
-    task: {
-      anchor: ".task-list-item",
-      parser: PARSER.block,
-      filter: FILTER.withinPath("bullet_list", "list_item", "paragraph"),
-      transformer: TRANSFORMER.taskContent(0),
-    },
-    taskdone: {
-      anchor: ".task-list-item.task-list-done",
-      parser: PARSER.block,
-      filter: FILTER.withinPath("bullet_list", "list_item", "paragraph"),
-      transformer: TRANSFORMER.taskContent(1),
-    },
-    tasktodo: {
-      anchor: ".task-list-item.task-list-not-done",
-      parser: PARSER.block,
-      filter: FILTER.withinPath("bullet_list", "list_item", "paragraph"),
-      transformer: TRANSFORMER.taskContent(-1),
-    },
+    task: { anchor: ".task-list-item", parser: PARSER.block, filter: FILTER.task(() => true), transformer: TRANSFORMER.content },
+    taskdone: { anchor: ".task-list-item.task-list-done", parser: PARSER.block, filter: FILTER.task(c => c), transformer: TRANSFORMER.content },
+    tasktodo: { anchor: ".task-list-item.task-list-not-done", parser: PARSER.block, filter: FILTER.task(c => !c), transformer: TRANSFORMER.content },
     head: { anchor: `.md-heading`, parser: PARSER.block, filter: FILTER.within("heading"), transformer: TRANSFORMER.content },
     h1: { anchor: `h1.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h1"), transformer: TRANSFORMER.content },
     h2: { anchor: `h2.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h2"), transformer: TRANSFORMER.content },
@@ -428,6 +407,33 @@ const createMarkdownQualifiers = (ctx) => {
     h4: { anchor: `h4.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h4"), transformer: TRANSFORMER.content },
     h5: { anchor: `h5.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h5"), transformer: TRANSFORMER.content },
     h6: { anchor: `h6.md-heading`, parser: PARSER.block, filter: FILTER.withinTag("heading", "h6"), transformer: TRANSFORMER.content },
+    footnoteref: {
+      anchor: ".md-footnote",
+      parser: PARSER.block,
+      filter: FILTER.ofType("footnote_ref"),
+      transformer: TRANSFORMER.meta("label"),
+    },
+    footnote: {
+      anchor: ".md-def-footnote",
+      parser: PARSER.block,
+      filter: FILTER.within("footnote"),
+      transformer: TRANSFORMER.metaOrContent("label"),
+    },
+    footnotename: { anchor: ".md-def-name", parser: PARSER.block, filter: FILTER.ofType("footnote_open"), transformer: TRANSFORMER.meta("label") },
+    footnotecontent: { anchor: ".md-def-content", parser: PARSER.block, filter: FILTER.within("footnote"), transformer: TRANSFORMER.content },
+    alert: { anchor: ".md-alert", parser: PARSER.block, filter: FILTER.within("alert"), transformer: TRANSFORMER.content },
+    alertname: {
+      anchor: ".md-alert-text",
+      parser: PARSER.block,
+      filter: FILTER.withinType("alert", "alert_title"),
+      transformer: TRANSFORMER.content,
+    },
+    alertcontent: {
+      anchor: ".md-alert :not(.md-alert-text)",
+      parser: PARSER.block,
+      filter: FILTER.withinExcept("alert", "alert_title"),
+      transformer: TRANSFORMER.content,
+    },
     image: { anchor: `.md-image`, parser: PARSER.inline, filter: FILTER.ofType("image"), transformer: TRANSFORMER.attrAndContent },
     code: {
       anchor: `[md-inline="code"]`,
@@ -439,12 +445,7 @@ const createMarkdownQualifiers = (ctx) => {
     strong: { anchor: `[md-inline="strong"]`, parser: PARSER.inline, filter: FILTER.within("strong"), transformer: TRANSFORMER.content },
     em: { anchor: `[md-inline="em"]`, parser: PARSER.inline, filter: FILTER.within("em"), transformer: TRANSFORMER.content },
     del: { anchor: `[md-inline="del"]`, parser: PARSER.inline, filter: FILTER.within("s"), transformer: TRANSFORMER.content },
-    highlight: {
-      anchor: `[md-inline="highlight"]`,
-      parser: PARSER.block,
-      filter: FILTER.ofType("text"),
-      transformer: TRANSFORMER.regexContent(REGEX_HIGHLIGHT),
-    },
+    highlight: { anchor: `[md-inline="highlight"]`, parser: PARSER.inline, filter: FILTER.within("mark"), transformer: TRANSFORMER.content },
   }
 
   return Object.entries(DEFINITIONS).map(([scope, def]) => ({
