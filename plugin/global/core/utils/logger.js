@@ -68,7 +68,10 @@ class Logger {
   }
 
   ensureDir = () => this.utils.Package.FsExtra.ensureDirSync(this.logDirPath)
-  showInFinder = () => this.utils.showInFinder(this.logDirPath)
+  showInFinder = () => {
+    this.ensureDir()
+    this.utils.showInFinder(this.logDirPath)
+  }
 
   _onWindowError = (ev) => this._write(TYPES.uncaughtException, ev.error || `${ev.message} at ${ev.filename}:${ev.lineno}`)
   _onPromiseRejection = (ev) => this._write(TYPES.unhandledPromise, ev.reason)

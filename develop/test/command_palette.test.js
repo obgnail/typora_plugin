@@ -55,7 +55,7 @@ function makeUtilsMock(overrides = {}) {
     getPlugin: () => undefined,
     getAllPlugins: () => ({}),
     updatePluginDynamicActions: () => [],
-    updateAndCallPluginDynamicAction: () => undefined,
+    callPluginDynamicAction: () => undefined,
     getRecentFiles: async () => ({ files: [], folders: [] }),
     getFilePath: () => "/current/file.md",
     openFolder: () => undefined,
@@ -841,7 +841,7 @@ describe("buildProviders", () => {
         { act_name: "Dyn1", act_value: "d1" },
         { act_name: "Dyn2", act_value: "d2", act_disabled: true },
       ],
-      updateAndCallPluginDynamicAction: (fixedName, actValue, anchor) => calledWith = [fixedName, actValue, anchor],
+      callPluginDynamicAction: (fixedName, actValue, anchor) => calledWith = [fixedName, actValue, anchor],
     })
     const providers = buildProviders(utils, { getAnchor: () => "ANCHOR" })
     const items = await getProvider(providers, "Plugins").fetch()

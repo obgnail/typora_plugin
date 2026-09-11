@@ -164,7 +164,6 @@ describe("Searcher: Full Stats & Metadata Matchers", () => {
     await assertMatch("linenum>10", "torture")
     await assertMatch("charnum>100", "torture")
     await assertMatch("wordnum>=1", "torture")
-    await assertMatch("readminutes>0", "torture")
     await assertMatch("chinesenum>=4", "torture")
     await assertMatch("imagenum=1", "torture")
     await assertMatch("imgtagnum=1", "torture")
@@ -476,7 +475,7 @@ describe("Searcher: Feature Utilities (extractHighlightConditions)", () => {
 describe("Presenter: Visualization Methods", () => {
   it("should generate localized explain text", () => {
     const ast = searcher.parse("size>10k -ext:md")
-    const explanation = grammarPresenter.buildExplain(ast, true)
+    const explanation = grammarPresenter.buildList(ast, true)
     assert.ok(explanation.includes("explain"))
     assert.ok(explanation.includes("size"))
     assert.ok(explanation.includes("operator.gt"))

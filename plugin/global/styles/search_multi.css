@@ -491,10 +491,14 @@ ${colors_style}
 .plugin-hl-bar {
   display: inline;
   position: absolute;
-  left: 0;
+  top: var(--hl-top);
+  left: var(--hl-left);
+  width: var(--hl-width);
+  height: var(--hl-height);
   background-color: rgba(29, 163, 63, 0.25);
   z-index: 99999;
   animation: fadeit 3s forwards;
+  pointer-events: none;
 }
 
 @keyframes fadeit {

@@ -174,7 +174,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px 20px;
+  padding: 60px 0;
   color: var(--text-placeholder);
   background-color: var(--bg-dialog);
   border: 1px dashed var(--border);

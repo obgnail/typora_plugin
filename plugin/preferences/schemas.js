@@ -133,11 +133,11 @@ const schema_global = () => [
     Action("viewGithubImageBed"),
   ),
   Group(
-    Action("updatePlugin").ActionTooltip("toggleDevTools", "fa fa-wrench"),
+    Action("updatePlugin"),
     Action("uninstallPlugin"),
     Action("sendEmail").ActionTooltip("copyEmail", "fa fa-clipboard"),
     Action("donate"),
-    Static("pluginVersion"),
+    Static("pluginVersion").ActionTooltip("toggleDevTools", "fa fa-wrench"),
   ),
 ]
 
@@ -579,7 +579,7 @@ const schema_fence_enhance = () => [
     .NestedBoxes([
       Group(
         Switch("DISABLE"),
-        Text("HOTKEY"),
+        Text("HOTKEY").Tooltip("viewCodeMirrorKeymapsManual"),
       ),
       Code("CALLBACK"),
     ])
@@ -731,6 +731,8 @@ const schema_easy_modify = () => [
     Hotkey("HOTKEY_COPY_FULL_PATH"),
     Hotkey("HOTKEY_INCREASE_HEADERS_LEVEL"),
     Hotkey("HOTKEY_DECREASE_HEADERS_LEVEL"),
+    Hotkey("HOTKEY_ADD_FENCE_LANG"),
+    Hotkey("HOTKEY_REPLACE_FENCE_LANG"),
     Hotkey("HOTKEY_UNWRAP_OUTERMOST_BLOCK"),
     Hotkey("HOTKEY_EXTRACT_RANGE_TO_NEW_FILE"),
     Hotkey("HOTKEY_INSERT_MERMAID_MINDMAP"),
@@ -1365,7 +1367,7 @@ const schema_callouts = () => [
         Color("left_line_color"),
       ),
     ])
-    .DefaultValues({ type: "", icon: "", background_color: "", left_line_color: "" }),
+    .DefaultValues({ type: "", icon: "", background_color: "#FFFFFF", left_line_color: "#FFFFFF" }),
   FRAG.Template(),
   FRAG.SettingHandler(),
 ]
@@ -1479,7 +1481,7 @@ const schema_action_buttons = () => [
     Text("POSITION_BOTTOM"),
   ),
   Table("BUTTONS")
-    .Headers(["coordinate", "icon"])
+    .Headers(["enable", "coordinate", "icon"])
     .NestedBoxes([
       Group(
         Switch("enable"),
@@ -1490,8 +1492,8 @@ const schema_action_buttons = () => [
         Text("color"),
         Text("bgColor"),
         Text("hint"),
+        Text("callback").Tooltip("exclusive").ShowIf(When.bool("evil", false)),
       ),
-      Code("callback").Tooltip("exclusive").ShowIf(When.bool("evil", false)),
       Code("evil").Placeholder("customCallback").ShowIf(When.bool("callback", false)),
     ])
     .DefaultValues({
@@ -1517,11 +1519,11 @@ const schema_assets_storage = () => [
 const schema_diagram_enhance = () => [
   FRAG.Base(),
   Group("zoom",
+    Switch("WHEEL_ZOOM_DEFAULT"),
+    Switch("DOUBLE_CLICK_TO_EDIT"),
     Float("ZOOM_STEP").Min(0.05).Max(1).Step(0.05),
     Float("MIN_SCALE").Min(0.05).Max(1).Step(0.05),
     Float("MAX_SCALE").Min(1).Max(10).Step(0.1),
-    Switch("WHEEL_ZOOM_DEFAULT"),
-    Switch("DOUBLE_CLICK_TO_EDIT"),
   ),
   Group("interaction",
     Switch("SHOW_FULLSCREEN"),
@@ -1530,8 +1532,8 @@ const schema_diagram_enhance = () => [
     Switch("RESIZABLE"),
   ),
   Group("container",
-    Integer("MIN_CONTAINER_WIDTH").Min(100).Max(1000),
-    Integer("MIN_CONTAINER_HEIGHT").Min(80).Max(1000),
+    Integer("MIN_CONTAINER_WIDTH").Unit(UNITS.pixel).Min(100).Max(1000),
+    Integer("MIN_CONTAINER_HEIGHT").Unit(UNITS.pixel).Min(80).Max(1000),
   ),
   FRAG.SettingHandler(),
 ]
@@ -1540,16 +1542,16 @@ const schema_html_editor = () => [
   FRAG.Base(true),
   Group("editor",
     Switch("SHOW_IN_FILE_TREE"),
-    Select("DEFAULT_VIEW").Options(["source", "preview", "split"]),
     Switch("AUTO_PREVIEW"),
-    Integer("PREVIEW_DELAY").Min(100).Max(2000),
-    Integer("EDITOR_FONT_SIZE").Min(10).Max(28),
     Switch("SPLIT_SYNC"),
+    Select("DEFAULT_VIEW").Options(["source", "preview", "split"]),
+    Integer("PREVIEW_DELAY").Unit(UNITS.millisecond).Min(100).Max(2000),
+    Integer("EDITOR_FONT_SIZE").Min(10).Max(28),
   ),
   Group("security",
     Switch("PREVIEW_ALLOW_SCRIPTS"),
     Switch("PREVIEW_ALLOW_NETWORK"),
-  ),
+  ).Tooltip("expertsOnly"),
   FRAG.SettingHandler(),
 ]
 

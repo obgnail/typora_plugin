@@ -281,15 +281,15 @@ class SidebarEnhancePlugin extends BasePlugin {
 
     this.utils.insertStyle("count-file",
       `.file-node-content:after {
-          content: attr(data-count);
-          position: absolute;
-          right: 10px;
-          padding: 0 3px;
-          border-radius: 3px;
-          color: ${this.config.TEXT_COLOR || "var(--active-file-text-color)"};
-          background: ${this.config.BACKGROUND_COLOR || "var(--active-file-bg-color)"};
-          font-weight: ${this.config.FONT_WEIGHT};
-        }`,
+        content: attr(data-count);
+        position: absolute;
+        right: 10px;
+        padding: 0 3px;
+        border-radius: 3px;
+        color: ${this.config.TEXT_COLOR || "var(--active-file-text-color)"};
+        background: ${this.config.BACKGROUND_COLOR || "var(--active-file-bg-color)"};
+        font-weight: ${this.config.FONT_WEIGHT};
+      }`,
     )
     this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
       File.editor.library.refreshPanelCommand()

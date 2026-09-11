@@ -15,7 +15,7 @@ const decoratorChain = {
     return meta
   },
   recompile(meta) {
-    const sorted = [...meta.decorators].sort((a, b) => a.priority - b.priority)
+    const sorted = meta.decorators.toSorted((a, b) => a.priority - b.priority)
     meta.beforeHooks = sorted.filter(d => d.before)
     meta.afterHooks = sorted.filter(d => d.after).reverse()
   },

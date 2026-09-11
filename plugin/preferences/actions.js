@@ -34,10 +34,7 @@ module.exports = (plugin) => {
     developPlugins: openPath("./plugin/DEVELOP_PLUGINS.md"),
     openLocaleFolder: openPath("./plugin/global/locales/en.json"),
     openPluginFolder: openPath("./plugin"),
-    openLogFolder: () => {
-      utils.logger.ensureDir()
-      utils.logger.showInFinder()
-    },
+    openLogFolder: () => utils.logger.showInFinder(),
     openSettingsFolder: async () => utils.settings.openFolder(),
     toggleDevTools: () => JSBridge.invoke("window.toggleDevTools"),
     togglePreferencePanel: () => File.megaMenu.togglePreferencePanel(),

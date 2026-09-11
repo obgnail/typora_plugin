@@ -57,64 +57,10 @@ ${this.config.HIGHLIGHT_ON_FOCUS ? `.md-focus .CodeMirror-activeline { backgroun
     { act_value: "toggle_state_indent", act_state: this.buttonHelper?.enableIndent, act_hidden: !this.buttonHelper?.supportIndent },
     { act_value: "toggle_state_auto_hide", act_state: this.config.AUTO_HIDE },
     { act_value: "toggle_state_default_fold", act_state: this.config.DEFAULT_FOLD },
-    { act_value: "add_fences_lang" },
-    { act_value: "replace_fences_lang" },
     { act_value: "indent_all_fences", act_hint: this.i18n.t("$tooltip.dangerous"), act_hidden: !this.buttonHelper?.supportIndent },
   ])
 
-  call = (action, meta) => {
-    const handleAllFences = async (filterFn, handleFn) => {
-      await this.utils.editCurrentFile(content => {
-        const lines = content.split(/\r?\n/g)
-        this.utils.parseMarkdownBlock(content)
-          .filter(token => token.type === "fence")
-          .filter(filterFn)
-          .map(token => token.map[0])
-          .forEach(idx => lines[idx] = handleFn(lines[idx].trimEnd()))
-        const joiner = content.includes("\r\n") ? "\r\n" : "\n"
-        return lines.join(joiner)
-      })
-      this.utils.notification.show(this.i18n.t("success"))
-    }
-
-    const callMap = {
-      add_fences_lang: async () => {
-        const { response, data: { targetLang } } = await this.utils.formDialog.modal({
-          title: this.i18n.t("modal.add_fences_lang.title"),
-          schema: ({ Controls }) => [Controls.Text("targetLang").Label(this.i18n.t("modal.add_fences_lang.targetLang"))],
-          data: { targetLang: "javascript" },
-        })
-        if (response === 1 && targetLang) {
-          await handleAllFences(
-            token => token.info === "",
-            line => line.endsWith("```") ? line + targetLang : line,
-          )
-        }
-      },
-      replace_fences_lang: async () => {
-        const { response, data: { sourceLang, targetLang } } = await this.utils.formDialog.modal({
-          title: this.i18n.t("modal.replace_fences_lang.title"),
-          schema: ({ Group, Controls }) => [Group(
-            Controls.Text("sourceLang").Label(this.i18n.t("modal.replace_fences_lang.sourceLang")),
-            Controls.Text("targetLang").Label(this.i18n.t("modal.replace_fences_lang.targetLang")),
-          )],
-          data: { sourceLang: "js", targetLang: "javascript" },
-        })
-        if (response === 1 && sourceLang && targetLang) {
-          const regex = new RegExp(`(?<=\`\`\`)${sourceLang}$`)
-          await handleAllFences(
-            token => token.info === sourceLang,
-            line => line.replace(regex, targetLang),
-          )
-        }
-      },
-    }
-    if (callMap[action]) {
-      callMap[action]()
-    } else {
-      this.buttonHelper?.actionCall(action, meta)
-    }
-  }
+  call = (action, meta) => this.buttonHelper?.actionCall(action, meta)
 }
 
 class ButtonHelper {

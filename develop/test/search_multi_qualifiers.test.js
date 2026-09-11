@@ -633,9 +633,9 @@ describe("buildQualifier — default value injection", () => {
   it("cost is preserved when explicitly set (default qualifier has cost=2)", () => {
     assert.strictEqual(byScope.default.cost, 2)
   })
-  it("is_meta is always a boolean", () => {
+  it("isMeta is always a boolean", () => {
     for (const q of qualifiers) {
-      assert.strictEqual(typeof q.is_meta, "boolean", `is_meta of "${q.scope}" should be boolean`)
+      assert.strictEqual(typeof q.isMeta, "boolean", `isMeta of "${q.scope}" should be boolean`)
     }
   })
   it("anchor defaults to null (ANCESTORS.none) for path qualifier", () => {
@@ -670,7 +670,7 @@ describe("buildQualifier — default value injection", () => {
     assert.strictEqual(byScope.path.match.REGEX(":", /^hello$/, "hello world"), false)
   })
   it("every qualifier has all required fields", () => {
-    const required = ["scope", "name", "cost", "is_meta", "anchor", "normalize", "validate", "cast", "query", "match"]
+    const required = ["scope", "name", "cost", "isMeta", "anchor", "normalize", "validate", "cast", "query", "match"]
     for (const q of qualifiers) {
       for (const field of required) {
         assert.ok(field in q, `Qualifier "${q.scope}" is missing required field "${field}"`)
@@ -701,9 +701,9 @@ describe("Markdown qualifiers — shared structure", () => {
   ]
   const mdQualifiers = MARKDOWN_SCOPES.map(s => byScope[s])
 
-  it("all markdown qualifiers have is_meta=false", () => {
+  it("all markdown qualifiers have isMeta=false", () => {
     for (const q of mdQualifiers) {
-      assert.strictEqual(q.is_meta, false, `"${q.scope}" should have is_meta=false`)
+      assert.strictEqual(q.isMeta, false, `"${q.scope}" should have isMeta=false`)
     }
   })
   it("all markdown qualifiers have cost=3", () => {
@@ -767,7 +767,7 @@ describe("getQualifiers — scope coverage", () => {
   const EXPECTED_BASE_SCOPES = [
     "default", "path", "dir", "folder", "file", "name", "ext", "content",
     "frontmatter", "size", "birthtime", "mtime", "atime", "linenum", "charnum",
-    "wordnum", "readminutes", "chinesenum", "imagenum", "imgtagnum",
+    "wordnum", "chinesenum", "imagenum", "imgtagnum",
     "hasimage", "hasimgtag", "haschinese", "hasemoji", "hasinvisiblechar",
     "isempty", "crlf",
   ]

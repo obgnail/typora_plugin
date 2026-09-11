@@ -190,14 +190,19 @@ class Highlighter {
     document.querySelectorAll(".plugin-hl-outline").forEach(el => el.classList.remove("plugin-hl-outline"))
     marker.classList.add("plugin-hl-outline")
 
-    const writeRect = this.utils.entities.eWrite.getBoundingClientRect()
-    const markerRect = marker.getBoundingClientRect()
     const bar = document.createElement("div")
     bar.className = "plugin-hl-bar"
-    bar.style.height = `${markerRect.height}px`
-    bar.style.width = `${writeRect.width}px`
+    marker.append(bar)
 
-    marker.appendChild(bar)
+    const markerRect = marker.getBoundingClientRect()
+    const writeRect = this.utils.entities.eWrite.getBoundingClientRect()
+    const cbRect = (bar.offsetParent || document.documentElement).getBoundingClientRect()
+
+    bar.style.setProperty("--hl-left", `${writeRect.left - cbRect.left}px`)
+    bar.style.setProperty("--hl-top", `${markerRect.top - cbRect.top}px`)
+    bar.style.setProperty("--hl-width", `${writeRect.width}px`)
+    bar.style.setProperty("--hl-height", `${markerRect.height}px`)
+
     setTimeout(() => bar?.remove(), 3000)
   }
 

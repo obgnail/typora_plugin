@@ -31,17 +31,17 @@ const buildProviders = (utils, context) => [
       const plugins = Object.entries(utils.getAllPlugins()).filter(([_, p]) => p.call)
       return plugins.flatMap(([fixedName, plugin]) => {
         const staticActions = plugin.staticActions || []
-        const dynamicActions = utils.updatePluginDynamicActions(fixedName, anchor, true) || []
+        const dynamicActions = utils.updatePluginDynamicActions(fixedName, anchor) || []
         const actions = [...staticActions, ...dynamicActions].filter(act => !act.act_disabled && !act.act_hidden)
         if (actions.length === 0) {
           return [{
             title: `${plugin.pluginName} ( ${fixedName} )`,
-            action: () => utils.updateAndCallPluginDynamicAction(fixedName, undefined, anchor),
+            action: () => utils.callPluginDynamicAction(fixedName, undefined, anchor),
           }]
         }
         return actions.map(act => ({
           title: `${plugin.pluginName} - ${act.act_name} ( ${fixedName} - ${act.act_value} )`,
-          action: () => utils.updateAndCallPluginDynamicAction(fixedName, act.act_value, anchor),
+          action: () => utils.callPluginDynamicAction(fixedName, act.act_value, anchor),
         }))
       })
     },

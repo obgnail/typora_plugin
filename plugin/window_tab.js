@@ -82,22 +82,22 @@ class TabManager {
   }
 
   open(wantOpenPath) {
-    const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config
+    const { NEW_TAB_POSITION: at, MAX_TAB_NUM: maxTab } = this.config
     const isNewTab = this.getIdxByPath(wantOpenPath) === -1
     if (isNewTab) {
       if (this._inPlace && this.current) {
         this.current.path = wantOpenPath
       } else {
         const newTab = { path: wantOpenPath, scrollTop: 0 }
-        if (NEW_TAB_POSITION === "end") this._tabs.push(newTab)
-        else if (NEW_TAB_POSITION === "start") this._tabs.unshift(newTab)
-        else if (NEW_TAB_POSITION === "right") this._tabs.splice(this._activeIdx + 1, 0, newTab)
-        else if (NEW_TAB_POSITION === "left") this._tabs.splice(this._activeIdx, 0, newTab)
+        if (at === "end") this._tabs.push(newTab)
+        else if (at === "start") this._tabs.unshift(newTab)
+        else if (at === "right") this._tabs.splice(this._activeIdx + 1, 0, newTab)
+        else if (at === "left") this._tabs.splice(this._activeIdx, 0, newTab)
       }
 
-      if (MAX_TAB_NUM > 0 && this.count > MAX_TAB_NUM) {
-        const overflowCount = this.count - MAX_TAB_NUM
-        const isInsertLeft = NEW_TAB_POSITION === "start" || NEW_TAB_POSITION === "left"
+      if (maxTab > 0 && this.count > maxTab) {
+        const overflowCount = this.count - maxTab
+        const isInsertLeft = at === "start" || at === "left"
         const trimStartIndex = isInsertLeft ? this.count - overflowCount : 0
         this._tabs.splice(trimStartIndex, overflowCount)
       }
@@ -124,11 +124,8 @@ class TabManager {
   _restoreMountFolder(tab) {
     if (!tab || !tab.mountFolder) return
     const mountFolder = this.utils.getMountFolder()
-    if (!mountFolder || tab.mountFolder === mountFolder || this.utils.isUnderMountFolder(tab.path, mountFolder)) return
-    requestAnimationFrame(() => {
-      File.setMountFolder(tab.mountFolder)
-      File.editor.library.refreshPanelCommand()
-    })
+    if (!mountFolder || tab.mountFolder === mountFolder || this.utils.isUnderMountFolder(tab.path)) return
+    requestAnimationFrame(() => this.utils.setMountFolder(tab.mountFolder))
   }
 
   switchByPath(path) {

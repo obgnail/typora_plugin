@@ -273,7 +273,7 @@ BUILTIN = [
 ]
 
 # Post-Execution Script. JavaScript code to execute after the command finishes
-POST_SCRIPT = "({ command, cwd, options, error, code, stdout, stderr }) => null"
+POST_SCRIPT = "({ command, cwd, options, error, code, stdout, stderr }) => void 0"
 
 # Max capacity limit for command history
 MAX_HISTORY_ENTRIES = 20
@@ -366,7 +366,6 @@ RULE_CONFIG = {
   MD033 = false,
   MD041 = false,
   MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "Python", "Rust", "SQL", "TypeScript"] },
-  MD060 = false,
 }
 
 # =========== [ UI Elements & Styling ] ===========
@@ -1407,7 +1406,7 @@ HOTKEY = ""
 # Click mask to exit image viewing mode
 CLICK_MASK_TO_EXIT = true
 
-# Silently ignore broken/invalid images
+# Silently ignore broken images
 SKIP_BROKEN_IMAGES = true
 
 # Display the thumbnail navigation strip at the bottom of the viewport
@@ -1705,7 +1704,7 @@ HOTKEY = ""
 #   decreaseSize         : Decrease Font Size
 #   increaseLetterSpacing: Increase Letter Spacing
 #   decreaseLetterSpacing: Decrease Letter Spacing
-#   family               : Font
+#   family               : Font Family
 #   foregroundColor      : Foreground Color
 #   backgroundColor      : Background Color
 #   borderColor          : Border Color
@@ -1795,6 +1794,12 @@ HOTKEY_INCREASE_HEADERS_LEVEL = ""
 # Decrease the heading level of the selected text
 HOTKEY_DECREASE_HEADERS_LEVEL = ""
 
+# Apply language to unnamed fences
+HOTKEY_ADD_FENCE_LANG = ""
+
+# Batch replace gence languages
+HOTKEY_REPLACE_FENCE_LANG = ""
+
 # Unwrap the outermost block (Reduces nesting level)
 HOTKEY_UNWRAP_OUTERMOST_BLOCK = ""
 
@@ -1873,15 +1878,15 @@ POSITION_BOTTOM = "50px"
 #   color     : (Optional) Icon color (Defaults to current theme)
 #   bgColor   : (Optional) Background color (Defaults to current theme)
 #   hint      : (Optional) Tooltip text
-#   callback  : System Callback. Format: "PluginName.MethodName"
+#   callback  : System Callback. Format: "PluginName.MethodName" or "PluginName" (the default `call` method is omitted)
 #   evil      : Custom Callback. Executable eval() statement. Overrides 'callback' if configured
 BUTTONS = [
-  { enable = true, coordinate = [0, 0], size = "16px", icon = "fa fa-indent", callback = "md_padding.call" },
-  { enable = true, coordinate = [1, 0], size = "16px", icon = "fa fa-search", callback = "search_multi.call" },
-  { enable = true, coordinate = [2, 0], size = "16px", icon = "fa fa-gear", callback = "preferences.call" },
+  { enable = true, coordinate = [0, 0], size = "16px", icon = "fa fa-indent", callback = "md_padding" },
+  { enable = true, coordinate = [1, 0], size = "16px", icon = "fa fa-search", callback = "search_multi" },
+  { enable = true, coordinate = [2, 0], size = "16px", icon = "fa fa-gear", callback = "preferences" },
   { enable = true, coordinate = [0, 1], size = "16px", icon = "fa fa-sitemap fa-rotate-270", callback = "markmap.onButtonClick" },
-  { enable = true, coordinate = [1, 1], size = "16px", icon = "fa fa-image", callback = "image_viewer.call" },
-  { enable = true, coordinate = [2, 1], size = "16px", icon = "fa fa-th-list", callback = "right_outline.call" },
+  { enable = true, coordinate = [1, 1], size = "16px", icon = "fa fa-image", callback = "image_viewer" },
+  { enable = true, coordinate = [2, 1], size = "16px", icon = "fa fa-th-list", callback = "right_outline" },
 ]
 
 
@@ -1911,10 +1916,10 @@ ENABLE_SENSORY = false
 POINTER_TYPES = ["mouse"]
 
 # Trigger Mouse Buttons: Mouse buttons that support triggering gestures. Modifying is not recommended
-#   middle: Middle Button
-#   right : Right Button
-#   x1    : X1 Button
-#   x2    : X2 Button
+#   middle
+#   right
+#   x1
+#   x2
 TRIGGER_BUTTONS = ["middle", "right", "x1", "x2"]
 
 # The color of trajectory and hud during a gesture movement
@@ -2327,7 +2332,10 @@ COLLAPSIBLE_BOX = true
 DEPENDENCIES_FAILURE_BEHAVIOR = "readonly"
 
 # =========== [ Data ] ===========
-# Serialized format for object settings display (Supported: JSON / TOML / YAML)
+# Serialized format for object settings display
+#   JSON
+#   TOML
+#   YAML
 OBJECT_SETTINGS_FORMAT = "JSON"
 
 # Hook function for custom form rendering (Developers only)
@@ -2573,7 +2581,7 @@ wordpress = {
   password = "demo1",
 }
 
-# Authentication parameters for CNBlog integration
+# Authentication parameters for CnBlog integration
 #   enabled : Enabled
 #   username: Account Username
 #   password: Account Password
@@ -2985,10 +2993,14 @@ EXPORT_TYPE = "svg"
 USE_DIRTY_RECT = false
 
 # =========== [ Chart Default Params ] ===========
-# Theme (light / dark)
+# Theme
+#   light
+#   dark
 THEME = "light"
 
-# Locale (en / zh)
+# Locale
+#   en
+#   zh
 LOCALE = "en"
 
 # Default Fence Height: Spatial height the initial chart occupies in the page
@@ -3019,10 +3031,10 @@ TEMPLATE = """
 // ==/BlockCodeConfig==
 
 // Built-in variables:
-//   1. myChart: ECharts instance
-//   2. echarts: ECharts module
-//   3. option:  ECharts option object
-//   4. this:    ECharts plugin instance
+//   myChart: ECharts instance
+//   echarts: ECharts module
+//   option:  ECharts option object
+//   this:    ECharts plugin instance
 // Examples: https://echarts.apache.org/examples/en/index.html#chart-type-line
 // NOTE:     Code within this block will be evaluated. Exercise caution
 
@@ -3062,7 +3074,10 @@ LANGUAGE = "chart"
 INTERACTIVE_MODE = true
 
 # =========== [ Chart Display ] ===========
-# Chart Align (left / center / right)
+# Chart Align
+#   left
+#   center
+#   right
 CHART_ALIGN = "center"
 
 # Default Fence Height
@@ -3082,9 +3097,9 @@ TEMPLATE = """
 // ==/BlockCodeConfig==
 
 // Built-in variables:
-//   1. Chart:  chart Class
-//   2. config: chart option object
-//   3. this:   chart plugin instance
+//   Chart:  chart Class
+//   config: chart option object
+//   this:   chart plugin instance
 // API:  https://chart.nodejs.cn/docs/latest/configuration/
 // NOTE: Code within this block will be evaluated. Exercise caution
 
@@ -3126,7 +3141,10 @@ INTERACTIVE_MODE = true
 SAFE_MODE = true
 
 # =========== [ Style & Skin ] ===========
-# Chart Align (left / center / right)
+# Chart Align
+#   left
+#   center
+#   right
 CHART_ALIGN = "center"
 
 # Default Fence Height, if 'auto' it adapts to the content
@@ -3199,10 +3217,10 @@ TEMPLATE = """
 // ==/BlockCodeConfig==
 
 // Built-in variables:
-//   1. calendar: calendar instance
-//   2. Calendar: Calendar class
-//   3. option:   calendar option object
-//   4. this:     calendar plugin instance
+//   calendar: calendar instance
+//   Calendar: Calendar class
+//   option:   calendar option object
+//   this:     calendar plugin instance
 // Examples: https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
 // API:      https://github.com/nhn/tui.calendar/blob/main/docs/en/apis/options.md
 // NOTE:     Code within this block will be evaluated. Exercise caution

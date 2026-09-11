@@ -121,7 +121,7 @@ class GrammarPresenter {
     })
   }
 
-  buildExplain(ast, translate, textStyle) {
+  buildList(ast, translate, textStyle) {
     const dnf = this.searcher.toDNF(ast)
     const txt = dnf
       .map(p => p.map(n => `「${this._formatNodeText(n, { translate, textStyle })}」`).join(this.i18n.t("and")))
@@ -130,7 +130,7 @@ class GrammarPresenter {
     return `${this.i18n.t("explain")}：\n${txt}`
   }
 
-  buildTreeExplain(ast, translate, textStyle) {
+  buildTree(ast, translate, textStyle) {
     const build = (node, depth) => {
       const pad = "&nbsp;".repeat(6 * depth)
       if (node.type === AST.LogicalExpression) {
@@ -153,8 +153,8 @@ class GrammarPresenter {
   buildMermaid(ast, translate, textStyle, direction) {
     const graphData = this._toGraphData(ast)
     const nodes = graphData.nodes.map(n => {
-      const text = this._formatNodeText(n, { translate, textStyle })
-      const safeText = text.replace(/"/g, "#quot;").replace(/^\s*([-*+>#])/g, "\\$1")
+      const txt = this._formatNodeText(n, { translate, textStyle })
+      const safeText = txt.replace(/"/g, "#quot;").replace(/^\s*([-*+>#])/g, "\\$1")
       return `${n.id}("${safeText}")`
     })
     const edges = graphData.edges.map(e => `${e.from} --> ${e.to}`)
@@ -169,7 +169,7 @@ const getGrammarModal = ({ i18n, utils, searcher }) => {
   const { t } = i18n
   const presenter = new GrammarPresenter({ i18n, utils, searcher })
   return async function show() {
-    const scopes = Object.groupBy(searcher.qualifiers.values(), s => s.is_meta ? "isMeta" : "notMeta")
+    const scopes = Object.groupBy(searcher.qualifiers.values(), s => s.isMeta ? "isMeta" : "notMeta")
 
     const bold = x => `<b>${x}</b>`
     const em = x => `<em>${x}</em>`
@@ -199,7 +199,7 @@ const getGrammarModal = ({ i18n, utils, searcher }) => {
         t("modal.syntax.combine.parentheses", { eg: em("size>2kb OR (ext:txt AND hasimage=true)") }),
       ),
       sugar: t("modal.syntax.sugarDesc", {
-        scope: em("default"), operator: em(":"), shortCond: em("pear"),
+        scope: bold(em("default")), operator: bold(em(":")), shortCond: em("pear"),
         normalCond: em("default:pear"), longCond: em("path:pear OR content:pear"),
       }),
     }
@@ -217,7 +217,7 @@ const getGrammarModal = ({ i18n, utils, searcher }) => {
       [`thead:k8s h2:prometheus blockcode:"kubectl apply"`, t("modal.example.desc9")],
     ].map(([expression, desc]) => ({ expression, desc }))
 
-    const PRESENT = { graph: "graph", text: "text", tree: "tree", ast: "ast" }
+    const PRESENT = { graph: "graph", list: "list", tree: "tree", ast: "ast" }
 
     const schema = ({ Group, Controls, When }) => [
       Group(
@@ -230,18 +230,18 @@ const getGrammarModal = ({ i18n, utils, searcher }) => {
       ),
       Controls.Table("example").ThMap({ expression: t("modal.example.expression"), desc: t("modal.example.desc") }).Readonly(true),
       Group(t("modal.playground.title"),
-        Controls.Textarea("expression").Rows(3).NoResize(true).IsBlockLayout(true),
+        Controls.Textarea("expression").Rows(3).NoResize(true).IsBlockLayout(true).LiveCommit(150),
         Controls.Code("_displayAST").Readonly(true).ShowIf(When.eq("presentation", PRESENT.ast)).DependencyUnmetAction("hide").IsBlockLayout(true),
         Controls.Hint("_displayGraph").Unsafe(true).ShowIf(When.eq("presentation", PRESENT.graph)).DependencyUnmetAction("hide"),
-        Controls.Hint("_displayText").Unsafe(true).ShowIf(When.includes("presentation", [PRESENT.text, PRESENT.tree])).DependencyUnmetAction("hide"),
+        Controls.Hint("_displayText").Unsafe(true).ShowIf(When.includes("presentation", [PRESENT.list, PRESENT.tree])).DependencyUnmetAction("hide"),
         Controls.Select("presentation").Label(t("modal.playground.presentation")).Options({
           [PRESENT.graph]: t("modal.playground.presentation.graph"),
           [PRESENT.tree]: t("modal.playground.presentation.tree"),
-          [PRESENT.text]: t("modal.playground.presentation.text"),
+          [PRESENT.list]: t("modal.playground.presentation.list"),
           [PRESENT.ast]: t("modal.playground.presentation.ast"),
         }),
         Controls.Select("direction").Label(t("modal.playground.direction")).Options(["TB", "BT", "RL", "LR"]).ShowIf(When.eq("presentation", PRESENT.graph)),
-        Controls.Switch("textStyle").Label(t("modal.playground.textStyle")).ShowIf(When.includes("presentation", [PRESENT.graph, PRESENT.text, PRESENT.tree])),
+        Controls.Switch("textStyle").Label(t("modal.playground.textStyle")).ShowIf(When.ne("presentation", PRESENT.ast)),
         Controls.Switch("translate").Label(t("modal.playground.translate")).ShowIf(When.follow("textStyle")),
       ),
       Controls.Action("_grammar_box_visible").Label(t("modal.grammar.title")).ActionType("toggle"),
@@ -280,10 +280,10 @@ const getGrammarModal = ({ i18n, utils, searcher }) => {
           const direction = ctx.getValue("direction")
           if (presentation === PRESENT.ast) {
             _to(expression, ast => JSON.stringify(ast, null, "  ")).then(data => ctx.setValue("_displayAST", data))
-          } else if (presentation === PRESENT.text) {
-            _to(expression, ast => presenter.buildExplain(ast, translate, textStyle)).then(data => ctx.setValue("_displayText", { hintDetail: data }))
+          } else if (presentation === PRESENT.list) {
+            _to(expression, ast => presenter.buildList(ast, translate, textStyle)).then(data => ctx.setValue("_displayText", { hintDetail: data }))
           } else if (presentation === PRESENT.tree) {
-            _to(expression, ast => presenter.buildTreeExplain(ast, translate, textStyle)).then(data => ctx.setValue("_displayText", { hintDetail: data }))
+            _to(expression, ast => presenter.buildTree(ast, translate, textStyle)).then(data => ctx.setValue("_displayText", { hintDetail: data }))
           } else if (presentation === PRESENT.graph) {
             _to(expression, async ast => {
               const definition = presenter.buildMermaid(ast, translate, textStyle, direction)

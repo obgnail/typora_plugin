@@ -224,12 +224,11 @@ class SearchMultiPlugin extends BasePlugin {
         this.search()
       }
     })
+    const rehighlight = () => !this.fsm.isSearching() && this.entities.input.value && this.highlightByAST()
     this.entities.anchorBtn.addEventListener("click", () => {
       this.entities.anchorBtn.classList.toggle("is-active")
       this.highlighter.options.matchAnchor = (this.config.HIGHLIGHTS_MATCH_ANCHOR = !this.config.HIGHLIGHTS_MATCH_ANCHOR)
-      if (!this.fsm.isSearching() && this.entities.input.value) {
-        this.highlightByAST()
-      }
+      rehighlight()
     })
     this.entities.caseBtn.addEventListener("click", () => {
       this.entities.caseBtn.classList.toggle("is-active")
@@ -237,6 +236,7 @@ class SearchMultiPlugin extends BasePlugin {
       this.searcher.options.caseSensitive = sensitive
       this.highlighter.options.caseSensitive = sensitive
       this._updateExplain(true)
+      rehighlight()
     })
     this.entities.panel.addEventListener("btn-click", ev => {
       if (ev.detail.action === "showGrammar") {

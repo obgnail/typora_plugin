@@ -78,14 +78,16 @@ class ActionButtonsPlugin extends BasePlugin {
   toggle = force => this.utils.toggleInvisible(this.buttonGroup, force)
 
   _registerButtons = () => {
+    const getFn = (callbackStr) => {
+      const [plugin, fn = "call"] = callbackStr.split(".")
+      return this.utils.getPluginFn(plugin, fn)
+    }
     this.config.BUTTONS.forEach((btn = {}, idx) => {
       const { enable, coordinate = [], hint, icon, size, color, bgColor, callback = "", evil } = btn
       if (!enable) return
 
       const [x, y] = coordinate
-      const cb = evil
-        ? eval(evil)
-        : this.utils.getPluginFn(...callback.split("."))
+      const cb = evil ? eval(evil) : getFn(callback)
       if (typeof cb === "function" && x >= 0 && y >= 0) {
         const action = `__${idx}`
         const btn = { x, y, action, hint, icon, size, color, bgColor, callback: cb }

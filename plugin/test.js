@@ -2,12 +2,6 @@ class TestPlugin extends BasePlugin {
   style = () => ``
 
   process = () => {
-    if (this.config.SINGLETON) {
-      this.utils.decorator.afterCall(() => File?.editor?.library, "openFileInNewWindow", () => setTimeout(() => ClientCommand.close(), 500))
-    }
-    if (this.config.AUTO_OPEN_DEVTOOLS) {
-      this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => JSBridge.invoke("window.toggleDevTools"))
-    }
     if (this.config.EXPOSE_CJS_VARIABLES) {
       global.__require__ = require
       global.__module__ = module
@@ -16,6 +10,12 @@ class TestPlugin extends BasePlugin {
       global.__plugin_utils__ = this.utils
       global.__plugin_i18n__ = this.utils.i18n
       global.__plugin_container__ = this.utils.container
+    }
+    if (this.config.SINGLETON) {
+      this.utils.decorator.afterCall(() => File?.editor?.library, "openFileInNewWindow", () => setTimeout(() => ClientCommand.close(), 500))
+    }
+    if (this.config.AUTO_OPEN_DEVTOOLS) {
+      this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => JSBridge.invoke("window.toggleDevTools"))
     }
     if (this.config.RUN_CUSTOM_SCRIPT) {
       this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, this.test)

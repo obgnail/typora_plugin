@@ -214,23 +214,9 @@ class ThirdPartyDiagramParser {
         const selector = this.parsers.get(lang)?.checkSelector
         return selector
           ? `@media print {
-              .md-diagram-panel[lang="${lang}"] {
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                display: flex !important;
-                justify-content: center !important;
-                width: 100% !important;
-              }
-              .md-diagram-panel[lang="${lang}"] ${selector} {
-                max-width: 100% !important;
-                width: max-content !important;
-                overflow: visible !important;
-              }
-              .md-diagram-panel[lang="${lang}"] svg {
-                max-width: 100% !important;
-                width: max-content !important;
-                height: auto !important;
-              }
+              .md-diagram-panel[lang="${lang}"] { page-break-inside: avoid !important; break-inside: avoid !important; display: flex !important; justify-content: center !important; width: 100% !important; }
+              .md-diagram-panel[lang="${lang}"] ${selector} { max-width: 100% !important; width: max-content !important; overflow: visible !important; }
+              .md-diagram-panel[lang="${lang}"] svg { max-width: 100% !important; width: max-content !important; height: auto !important; }
             }`
           : ""
       },
@@ -285,7 +271,7 @@ function coerceUnknownValue(value) {
 }
 
 function defaultMetaExtractor(code) {
-  const BLOCK_REGEX = /^(?:\u00EF\u00BB\u00BF)?\s*\/\/ ==BlockCodeConfig==([\s\S]*?)^\/\/ ==\/BlockCodeConfig==[ \t]*(?:\r?\n)?/im
+  const BLOCK_REGEX = /^(?:\u00EF\u00BB\u00BF)?\s*\/\/\s+==BlockCodeConfig==([\s\S]*?)^\/\/\s+==\/BlockCodeConfig==[ \t]*(?:\r?\n)?/im
   const KV_REGEX = /^\s*\/\/\s+@([a-zA-Z0-9_\-$]+)(?:\s+(.*))?$/gm
 
   const rawData = Object.create(null)

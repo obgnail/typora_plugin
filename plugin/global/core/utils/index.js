@@ -56,19 +56,27 @@ class utils {
     return plugin?.[fnName]?.apply(plugin, args)
   }
 
-  static isUnderMountFolder = (path, mountFolder = this.getMountFolder()) => {
-    const resolvedMountFolder = PATH.resolve(mountFolder)
-    const p = PATH.resolve(path)
-    return resolvedMountFolder && p && p.startsWith(resolvedMountFolder + this.separator)
+  static isUnderMountFolder = (path) => {
+    const mount = this.getMountFolder()
+    if (!mount) return false
+    const mount_ = PATH.resolve(mount)
+    if (!mount_) return false
+    const path_ = PATH.resolve(path)
+    if (!path_) return false
+    return path_.startsWith(mount_ + this.separator)
   }
-  static openFile = (filepath, force = false) => {
-    if (!filepath) return
-    if (force || (this.getMountFolder() && this.isUnderMountFolder(filepath))) {
+  static setMountFolder = (folder) => {
+    File.setMountFolder(folder)
+    File.editor.library.refreshPanelCommand()
+  }
+  static openFile = (path, force = false) => {
+    if (!path) return
+    if (force || this.isUnderMountFolder(path)) {
       File.editor.restoreLastCursor()
       File.editor.focusAndRestorePos()
-      File.editor.library.openFile(filepath)
+      File.editor.library.openFile(path)
     } else {
-      File.editor.library.openFileInNewWindow(filepath, false)
+      File.editor.library.openFileInNewWindow(path, false)
     }
   }
   static openFolder = folder => {
@@ -86,24 +94,24 @@ class utils {
 
   static _meta = {}  // Used to pass data in the context menu
   static callPluginAction = (fixedName, action) => this.getPlugin(fixedName)?.call?.(action, this._meta)
-  static updatePluginDynamicActions = (fixedName, anchorNode = this.getAnchorNode(), notInContextMenu = false) => {
+  static updatePluginDynamicActions = (fixedName, anchorNode = this.getAnchorNode()) => {
     const plugin = this.getPlugin(fixedName)
     if (typeof plugin?.getDynamicActions === "function") {
       const anchor = anchorNode[0]
       if (anchor) {
         this._meta = {}
-        return plugin.getDynamicActions(anchor, this._meta, notInContextMenu)
+        return plugin.getDynamicActions(anchor, this._meta)
       }
     }
+    return []
   }
-  static updateAndCallPluginDynamicAction = (fixedName, action, anchorNode, notInContextMenu) => {
-    this.updatePluginDynamicActions(fixedName, anchorNode, notInContextMenu)
+  static callPluginDynamicAction = (fixedName, action, anchorNode) => {
+    this.updatePluginDynamicActions(fixedName, anchorNode)
     this.callPluginAction(fixedName, action)
   }
 
   static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
   static openPath = (path) => reqnode("electron").shell.openPath(path)
-
   static downloadImage = async (src, folder, filename) => {
     folder = folder || this.tempFolder
     filename = filename || (this.randomString() + "_" + PATH.extname(src))

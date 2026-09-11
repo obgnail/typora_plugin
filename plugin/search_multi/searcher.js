@@ -127,7 +127,7 @@ class Searcher {
   }
 
   extractHighlightConditions = (ast) => {
-    const isMeta = new Set([...this.qualifiers.values()].filter(q => q.is_meta).map(q => q.scope))
+    const isMeta = new Set([...this.qualifiers.values()].filter(q => q.isMeta).map(q => q.scope))
     const conds = []
     ASTUtils.walkLeaves(ast, (node, negated) => {
       if (negated || isMeta.has(node.semantic.scope)) return

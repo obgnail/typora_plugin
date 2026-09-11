@@ -108,7 +108,7 @@
 
 ## 如何使用：Windows/Linux 平台
 
-参考 [安装教程](https://github.com/obgnail/typora_plugin/issues/847) 获取图文支持。
+参考 [安装教程](https://github.com/obgnail/typora_plugin/issues/847) 获取更多支持。
 
 1. **获取源码压缩包**：通过 [Release 页面](https://github.com/obgnail/typora_plugin/releases/latest) 下载最新版本并解压。
 
@@ -126,9 +126,9 @@
 
 ![install](./assets/install.gif)
 
-## 如何使用：archlinux 平台
+## 如何使用：Archlinux 平台
 
-> 注意：此包管理方式目前仅限 archlinux 生态体系使用。详情请见 [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)。
+> 注意：此包管理方式目前仅限 Archlinux 生态体系使用。详情请见 [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)。
 
 ```sh
 yay -S typora-plugin

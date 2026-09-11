@@ -25,13 +25,13 @@ class MarkmapPlugin extends BasePlugin {
 
   call = async action => {
     if (action === "toggle_toc") {
-      await this.tocMarkmap?.callback(action)
+      await this.tocMarkmap?.callback()
     } else if (action === "draw_fence_template" || action === "draw_fence_outline") {
       await this.fenceMarkmap?.callback(action)
     }
   }
 
-  onButtonClick = () => this.tocMarkmap?.callback()
+  onButtonClick = () => this.call("toggle_toc")
 
   getToc = (
     fixSkip = this.config.FIX_SKIPPED_LEVEL_HEADERS,

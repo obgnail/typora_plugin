@@ -80,7 +80,7 @@ class HtmlEditorPlugin extends BasePlugin {
   bypassOpenGuard = false
 
   prepare = async () => {
-    await this.utils.waitUntil(() => File)
+    await this.utils.waitUntil(() => File, 50, 1500)
     return Object.hasOwn(File, "readContentFrom") ? undefined : this.utils.PLUGIN_LOAD_ABORT
   }
 
@@ -944,7 +944,6 @@ class HtmlEditorPlugin extends BasePlugin {
 
   _jumpToSource = (offset, end) => {
     const source = this.entities.source
-    if (!source) return false
     const start = Math.max(0, Math.min(source.value.length, Number(offset) || 0))
     const finish = Math.max(start, Math.min(source.value.length, Number(end) || start))
     if (this.viewMode !== "split") this._setViewMode("split", false)
@@ -963,7 +962,6 @@ class HtmlEditorPlugin extends BasePlugin {
   _handleSourceScroll = () => {
     if (!this.options.splitSync || this.viewMode !== "split" || this.syncingSourceScroll) return
     const source = this.entities.source
-    if (!source) return
     const maximum = Math.max(0, source.scrollHeight - source.clientHeight)
     this._postPreviewMessage("html-editor:set-scroll-ratio", { ratio: maximum ? source.scrollTop / maximum : 0 })
   }
@@ -971,7 +969,6 @@ class HtmlEditorPlugin extends BasePlugin {
   _handlePreviewScroll = payload => {
     if (!this.options.splitSync || this.viewMode !== "split") return
     const source = this.entities.source
-    if (!source) return
     const maximum = Math.max(0, source.scrollHeight - source.clientHeight)
     this.syncingSourceScroll = true
     source.scrollTop = maximum * clampRatio(payload.ratio)
