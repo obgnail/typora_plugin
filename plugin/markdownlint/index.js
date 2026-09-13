@@ -1,14 +1,37 @@
+const createVersioning = (trackedActions = []) => {
+  let seq = 0
+  const latest = Object.fromEntries(trackedActions.map(action => [action, 0]))
+  return {
+    isLatest: (action, id) => !(action in latest) || id === latest[action],
+    next: (action) => {
+      const id = ++seq
+      if (action in latest) {
+        latest[action] = id
+      }
+      return id
+    },
+  }
+}
+
 const createLinterClient = (workerPath, hooks, contentProvider) => {
   const ACTION = { CONFIGURE: "configure", CLOSE: "close", CHECK: "check", FIX: "fix" }
+  const versioning = createVersioning(Object.values(ACTION))
+
   const { onCheck, onFix, onError } = hooks
   const worker = new Worker(workerPath)
   worker.onmessage = event => {
-    const { action, result } = event.data
+    const { action, requestId, result } = event.data
+    if (!versioning.isLatest(action, requestId)) return
     const onEvent = (action === ACTION.FIX) ? onFix : onCheck
     onEvent(result)
   }
   worker.onerror = event => onError(event)
-  const send = (action, customPayload) => worker.postMessage({ action, payload: { content: contentProvider(), ...customPayload } })
+
+  const send = (action, customPayload) => {
+    const message = { action, requestId: versioning.next(action), payload: { content: contentProvider(), ...customPayload } }
+    worker.postMessage(message)
+  }
+
   return {
     configure: (payload) => send(ACTION.CONFIGURE, payload),
     close: () => send(ACTION.CLOSE),

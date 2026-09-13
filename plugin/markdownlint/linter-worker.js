@@ -41,7 +41,7 @@ const linter = {
 }
 
 self.onmessage = async (event) => {
-  const { data: { action, payload } } = event
+  const { data: { action, requestId, payload } } = event
   if (!payload) return
 
   const fn = linter[action]
@@ -51,6 +51,6 @@ self.onmessage = async (event) => {
   }
   const result = await fn(payload)
   if (result) {
-    postMessage({ action, result })
+    postMessage({ action, requestId, result })
   }
 }
