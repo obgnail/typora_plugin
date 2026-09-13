@@ -130,7 +130,7 @@ class MarkdownlintPlugin extends BasePlugin {
           ruleConfig,
           coreLib: this.utils.joinPluginPath("plugin/markdownlint/markdownlint.min.js"),
           helpersLib: this.utils.joinPluginPath("plugin/markdownlint/markdownlint-rule-helpers.min.js"),
-          polyfillLib: this.utils.joinPluginPath("plugin/global/core/polyfill.js"),
+          polyfillLibs: ["plugin/global/core/polyfill.js", "plugin/markdownlint/polyfill.js"].map(f => this.utils.joinPluginPath(f)),
           customRuleFiles: customRuleFiles.map(f => this.utils.resolvePluginPath(f)),
         })
       },

@@ -3,9 +3,9 @@ let RULE_CONFIG
 let CUSTOM_RULES
 
 const linter = {
-  configure: ({ polyfillLib, coreLib, helpersLib, customRuleFiles, ruleConfig, content }) => {
-    if (polyfillLib) {
-      require(polyfillLib)
+  configure: ({ polyfillLibs, coreLib, helpersLib, customRuleFiles, ruleConfig, content }) => {
+    if (polyfillLibs) {
+      polyfillLibs.forEach(require)
     }
     if (coreLib) {
       LIB = require(coreLib)

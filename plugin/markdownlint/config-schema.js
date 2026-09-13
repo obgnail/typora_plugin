@@ -113,6 +113,7 @@ const MD020 = UnconfigurableRule("MD020")
 const MD021 = UnconfigurableRule("MD021")
 const MD022 = ConfigurableRule(
   "MD022",
+  Switch("MD022.include_front_matter"),
   Text("MD022.lines_above", { tooltip: _t("tooltip.numberOrArray") }),
   Text("MD022.lines_below", { tooltip: _t("tooltip.numberOrArray") }),
 )
@@ -244,6 +245,7 @@ const MD059 = ConfigurableRule(
 )
 const MD060 = ConfigurableRule(
   "MD060",
+  Switch("MD060.aligned_delimiter"),
   Select("MD060.style"),
 )
 const MD101 = ConfigurableRule(

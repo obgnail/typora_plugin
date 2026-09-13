@@ -47,6 +47,7 @@
   "MD020": true,
   "MD021": true,
   "MD022": {
+    "include_front_matter": false,
     "lines_above": 1,
     "lines_below": 1
   },
@@ -87,7 +88,7 @@
     "style": "consistent"
   },
   "MD036": {
-    "punctuation": ".,:!?。，；：！？"
+    "punctuation": ".,;:!?。，；：！？"
   },
   "MD037": true,
   "MD038": true,
@@ -162,7 +163,8 @@
     ]
   },
   "MD060": {
-    "style": "any"
+    "style": "any",
+    "aligned_delimiter": false
   },
   "MD101": {
     "list_items": true
