@@ -13,18 +13,6 @@ const RULE_DEPENDENCIES = Object.fromEntries(
     return [rule, deps]
   }),
 )
-const OPTIONS = {
-  "MD003.style": ["consistent", "atx", "atx_closed", "setext", "setext_with_atx", "setext_with_atx_closed"],
-  "MD004.style": ["consistent", "asterisk", "plus", "dash", "sublist"],
-  "MD029.style": ["one", "ordered", "one_or_ordered", "zero"],
-  "MD046.style": ["consistent", "fenced", "indented"],
-  "MD048.style": ["consistent", "backtick", "tilde"],
-  "MD049.style": ["consistent", "asterisk", "underscore"],
-  "MD050.style": ["consistent", "asterisk", "underscore"],
-  "MD055.style": ["consistent", "leading_only", "trailing_only", "leading_and_trailing", "no_leading_or_trailing"],
-  "MD060.style": ["any", "aligned", "compact", "tight"],
-  "MD103.style": ["consistent", "single", "double"],
-}
 
 const _t = (key) => i18n.t("markdownlint", key)
 const RuleName = (name) => `${name} - ${_t(name)}`
@@ -33,9 +21,9 @@ const Label = (key) => _t(`label.${key}`)
 const Switch = (key, { ...args } = {}) => ({ key, type: "switch", label: Label(key), ...args })
 const Integer = (key, { min, max, ...args } = {}) => ({ key, type: "number", isInteger: true, label: Label(key), min, max, ...args })
 const Text = (key, { ...args } = {}) => ({ key, type: "text", label: Label(key), ...args })
-const Select = (key, { ...args } = {}) => {
-  const options = Object.fromEntries(OPTIONS[key].map(op => [op, _t(`option.${key}.${op}`)]))
-  return { key, type: "select", label: Label(key), options, ...args }
+const Select = (key, { options, ...args } = {}) => {
+  const opts = Object.fromEntries(options.map(op => [op, _t(`option.${key}.${op}`)]))
+  return { key, type: "select", label: Label(key), options: opts, ...args }
 }
 const Action = (key, label) => ({ key, type: "action", label })
 const Array_Inline = (key, { ...args } = {}) => ({ key, type: "array", isBlockLayout: false, label: Label(key), ...args })
@@ -43,234 +31,167 @@ const Array_Inline = (key, { ...args } = {}) => ({ key, type: "array", isBlockLa
 const UntitledBox = (...fields) => ({ title: undefined, fields })
 const TitledBox = (title, ...fields) => ({ title, fields })
 
+const scoped = (builder) => (sub, opts = {}) => (name) => {
+  const { dependsOn, ...rest } = opts
+  const dependencies = dependsOn
+    ? Object.fromEntries(Object.entries(dependsOn).map(([k, v]) => [`${name}.${k}`, v]))
+    : undefined
+  return builder(`${name}.${sub}`, { ...rest, ...(dependencies ? { dependencies } : {}) })
+}
+
+const Switch_ = scoped(Switch)
+const Integer_ = scoped(Integer)
+const Text_ = scoped(Text)
+const Select_ = scoped(Select)
+const Array_ = scoped(Array_Inline)
+
 const UnconfigurableRule = (name) => ({
   key: name,
   type: "switch",
   label: RuleName(name),
   dependencies: RULE_DEPENDENCIES[name],
 })
-const ConfigurableRule = (name, ...subFields) => ({
+const ConfigurableRule = (name, fieldFns) => ({
   key: name,
   type: "composite",
   label: RuleName(name),
   defaultValues: RULE_DEFAULT_VALUES[name],
   dependencies: RULE_DEPENDENCIES[name],
-  subSchema: [UntitledBox(...subFields)],
+  subSchema: [UntitledBox(...fieldFns.map(fn => fn(name)))],
 })
 
-const MD001 = ConfigurableRule(
-  "MD001",
-  Text("MD001.front_matter_title"),
-)
-const MD003 = ConfigurableRule(
-  "MD003",
-  Select("MD003.style"),
-)
-const MD004 = ConfigurableRule(
-  "MD004",
-  Select("MD004.style"),
-)
-const MD005 = UnconfigurableRule("MD005")
-const MD007 = ConfigurableRule(
-  "MD007",
-  Integer("MD007.indent", { min: 1 }),
-  Switch("MD007.start_indented"),
-  Integer("MD007.start_indent", { min: 1, dependencies: { "MD007.start_indented": true } }),
-)
-const MD009 = ConfigurableRule(
-  "MD009",
-  Integer("MD009.br_spaces", { min: 0 }),
-  Switch("MD009.code_blocks"),
-  Switch("MD009.list_item_empty_lines"),
-  Switch("MD009.strict"),
-)
-const MD010 = ConfigurableRule(
-  "MD010",
-  Integer("MD010.spaces_per_tab", { min: 1 }),
-  Switch("MD010.code_blocks"),
-  Array_Inline("MD010.ignore_code_languages", { dependencies: { "MD010.code_blocks": true } }),
-)
-const MD011 = UnconfigurableRule("MD011")
-const MD012 = ConfigurableRule(
-  "MD012",
-  Integer("MD012.maximum", { min: 1 }),
-)
-const MD013 = ConfigurableRule(
-  "MD013",
-  Integer("MD013.line_length", { min: 1 }),
-  Switch("MD013.tables"),
-  Switch("MD013.strict"),
-  Switch("MD013.stern"),
-  Switch("MD013.code_blocks"),
-  Integer("MD013.code_block_line_length", { min: 1, dependencies: { "MD013.code_blocks": true } }),
-  Switch("MD013.headings"),
-  Integer("MD013.heading_line_length", { min: 1, dependencies: { "MD013.headings": true } }),
-)
-const MD014 = UnconfigurableRule("MD014")
-const MD018 = UnconfigurableRule("MD018")
-const MD019 = UnconfigurableRule("MD019")
-const MD020 = UnconfigurableRule("MD020")
-const MD021 = UnconfigurableRule("MD021")
-const MD022 = ConfigurableRule(
-  "MD022",
-  Switch("MD022.include_front_matter"),
-  Text("MD022.lines_above", { tooltip: _t("tooltip.numberOrArray") }),
-  Text("MD022.lines_below", { tooltip: _t("tooltip.numberOrArray") }),
-)
-const MD023 = UnconfigurableRule("MD023")
-const MD024 = ConfigurableRule(
-  "MD024",
-  Switch("MD024.siblings_only"),
-)
-const MD025 = ConfigurableRule(
-  "MD025",
-  Text("MD025.front_matter_title"),
-  Integer("MD025.level", { min: 1, max: 6 }),
-)
-const MD026 = ConfigurableRule(
-  "MD026",
-  Text("MD026.punctuation"),
-)
-const MD027 = ConfigurableRule(
-  "MD027",
-  Switch("MD027.list_items"),
-)
-const MD028 = UnconfigurableRule("MD028")
-const MD029 = ConfigurableRule(
-  "MD029",
-  Select("MD029.style"),
-)
-const MD030 = ConfigurableRule(
-  "MD030",
-  Integer("MD030.ul_single", { min: 1 }),
-  Integer("MD030.ol_single", { min: 1 }),
-  Integer("MD030.ul_multi", { min: 1 }),
-  Integer("MD030.ol_multi", { min: 1 }),
-)
-const MD031 = ConfigurableRule(
-  "MD031",
-  Switch("MD031.list_items"),
-)
-const MD032 = UnconfigurableRule("MD032")
-const MD033 = ConfigurableRule(
-  "MD033",
-  Array_Inline("MD033.allowed_elements"),
-  Array_Inline("MD033.table_allowed_elements"),
-)
-const MD034 = UnconfigurableRule("MD034")
-const MD035 = ConfigurableRule(
-  "MD035",
-  Text("MD035.style"),
-)
-const MD036 = ConfigurableRule(
-  "MD036",
-  Text("MD036.punctuation"),
-)
-const MD037 = UnconfigurableRule("MD037")
-const MD038 = UnconfigurableRule("MD038")
-const MD039 = UnconfigurableRule("MD039")
-const MD040 = ConfigurableRule(
-  "MD040",
-  Switch("MD040.language_only"),
-  Array_Inline("MD040.allowed_languages"),
-)
-const MD041 = ConfigurableRule(
-  "MD041",
-  Switch("MD041.allow_preamble"),
-  Text("MD041.front_matter_title"),
-  Integer("MD041.level", { min: 1, max: 6 }),
-)
-const MD042 = UnconfigurableRule("MD042")
-const MD043 = ConfigurableRule(
-  "MD043",
-  Switch("MD043.match_case"),
-  Array_Inline("MD043.headings"),
-)
-const MD044 = ConfigurableRule(
-  "MD044",
-  Switch("MD044.code_blocks"),
-  Switch("MD044.html_elements"),
-  Array_Inline("MD044.names"),
-)
-const MD045 = UnconfigurableRule("MD045")
-const MD046 = ConfigurableRule(
-  "MD046",
-  Select("MD046.style"),
-)
-const MD047 = UnconfigurableRule("MD047")
-const MD048 = ConfigurableRule(
-  "MD048",
-  Select("MD048.style"),
-)
-const MD049 = ConfigurableRule(
-  "MD049",
-  Select("MD049.style"),
-)
-const MD050 = ConfigurableRule(
-  "MD050",
-  Select("MD050.style"),
-)
-const MD051 = ConfigurableRule(
-  "MD051",
-  Switch("MD051.ignore_case"),
-  Text("MD051.ignored_pattern"),
-)
-const MD052 = ConfigurableRule(
-  "MD052",
-  Switch("MD052.shortcut_syntax"),
-  Array_Inline("MD052.ignored_labels"),
-)
-const MD053 = ConfigurableRule(
-  "MD053",
-  Array_Inline("MD053.ignored_definitions"),
-)
-const MD054 = ConfigurableRule(
-  "MD054",
-  Switch("MD054.autolink"),
-  Switch("MD054.inline"),
-  Switch("MD054.full"),
-  Switch("MD054.collapsed"),
-  Switch("MD054.shortcut"),
-  Switch("MD054.url_inline"),
-)
-const MD055 = ConfigurableRule(
-  "MD055",
-  Select("MD055.style"),
-)
-const MD056 = UnconfigurableRule("MD056")
-const MD058 = UnconfigurableRule("MD058")
-const MD059 = ConfigurableRule(
-  "MD059",
-  Array_Inline("MD059.prohibited_texts"),
-)
-const MD060 = ConfigurableRule(
-  "MD060",
-  Switch("MD060.aligned_delimiter"),
-  Select("MD060.style"),
-)
-const MD101 = ConfigurableRule(
-  "MD101",
-  Switch("MD101.list_items"),
-)
-const MD102 = UnconfigurableRule("MD102")
-const MD103 = ConfigurableRule(
-  "MD103",
-  Select("MD103.style"),
-)
+const RULE_SCHEMA = {
+  MD001: [Text_("front_matter_title")],
+  MD003: [Select_("style", { options: ["consistent", "atx", "atx_closed", "setext", "setext_with_atx", "setext_with_atx_closed"] })],
+  MD004: [Select_("style", { options: ["consistent", "asterisk", "plus", "dash", "sublist"] })],
+  MD005: null,
+  MD007: [
+    Integer_("indent", { min: 1 }),
+    Switch_("start_indented"),
+    Integer_("start_indent", { min: 1, dependsOn: { start_indented: true } }),
+  ],
+  MD009: [
+    Integer_("br_spaces", { min: 0 }),
+    Switch_("code_blocks"),
+    Switch_("list_item_empty_lines"),
+    Switch_("strict"),
+  ],
+  MD010: [
+    Integer_("spaces_per_tab", { min: 1 }),
+    Switch_("code_blocks"),
+    Array_("ignore_code_languages", { dependsOn: { code_blocks: true } }),
+  ],
+  MD011: null,
+  MD012: [Integer_("maximum", { min: 1 })],
+  MD013: [
+    Integer_("line_length", { min: 1 }),
+    Switch_("tables"),
+    Switch_("strict"),
+    Switch_("stern"),
+    Switch_("code_blocks"),
+    Integer_("code_block_line_length", { min: 1, dependsOn: { code_blocks: true } }),
+    Switch_("headings"),
+    Integer_("heading_line_length", { min: 1, dependsOn: { headings: true } }),
+  ],
+  MD014: null,
+  MD018: null,
+  MD019: null,
+  MD020: null,
+  MD021: null,
+  MD022: [
+    Switch_("include_front_matter"),
+    Text_("lines_above", { tooltip: _t("tooltip.numberOrArray") }),
+    Text_("lines_below", { tooltip: _t("tooltip.numberOrArray") }),
+  ],
+  MD023: null,
+  MD024: [Switch_("siblings_only")],
+  MD025: [
+    Text_("front_matter_title"),
+    Integer_("level", { min: 1, max: 6 }),
+  ],
+  MD026: [Text_("punctuation")],
+  MD027: [Switch_("list_items")],
+  MD028: null,
+  MD029: [Select_("style", { options: ["one", "ordered", "one_or_ordered", "zero"] })],
+  MD030: [
+    Integer_("ul_single", { min: 1 }),
+    Integer_("ol_single", { min: 1 }),
+    Integer_("ul_multi", { min: 1 }),
+    Integer_("ol_multi", { min: 1 }),
+  ],
+  MD031: [Switch_("list_items")],
+  MD032: null,
+  MD033: [
+    Array_("allowed_elements"),
+    Array_("table_allowed_elements"),
+  ],
+  MD034: null,
+  MD035: [Text_("style")],
+  MD036: [Text_("punctuation")],
+  MD037: null,
+  MD038: null,
+  MD039: null,
+  MD040: [
+    Switch_("language_only"),
+    Array_("allowed_languages"),
+  ],
+  MD041: [
+    Switch_("allow_preamble"),
+    Text_("front_matter_title"),
+    Integer_("level", { min: 1, max: 6 }),
+  ],
+  MD042: null,
+  MD043: [
+    Switch_("match_case"),
+    Array_("headings"),
+  ],
+  MD044: [
+    Switch_("code_blocks"),
+    Switch_("html_elements"),
+    Array_("names"),
+  ],
+  MD045: null,
+  MD046: [Select_("style", { options: ["consistent", "fenced", "indented"] })],
+  MD047: null,
+  MD048: [Select_("style", { options: ["consistent", "backtick", "tilde"] })],
+  MD049: [Select_("style", { options: ["consistent", "asterisk", "underscore"] })],
+  MD050: [Select_("style", { options: ["consistent", "asterisk", "underscore"] })],
+  MD051: [
+    Switch_("ignore_case"),
+    Text_("ignored_pattern"),
+  ],
+  MD052: [
+    Switch_("shortcut_syntax"),
+    Array_("ignored_labels"),
+  ],
+  MD053: [Array_("ignored_definitions")],
+  MD054: [
+    Switch_("autolink"),
+    Switch_("inline"),
+    Switch_("full"),
+    Switch_("collapsed"),
+    Switch_("shortcut"),
+    Switch_("url_inline"),
+  ],
+  MD055: [Select_("style", { options: ["consistent", "leading_only", "trailing_only", "leading_and_trailing", "no_leading_or_trailing"] })],
+  MD056: null,
+  MD058: null,
+  MD059: [Array_("prohibited_texts")],
+  MD060: [
+    Switch_("aligned_delimiter"),
+    Select_("style", { options: ["any", "aligned", "compact", "tight"] }),
+  ],
+  MD101: [Switch_("list_items")],
+  MD102: null,
+  MD103: [Select_("style", { options: ["consistent", "single", "double"] })],
+}
 
 const globalConfigs = [
   Switch("default", { disabled: true }),
   Text("extends"),
 ]
 
-const specificRules = [
-  MD001, MD003, MD004, MD005, MD007, MD009, MD010, MD011, MD012, MD013,
-  MD014, MD018, MD019, MD020, MD021, MD022, MD023, MD024, MD025, MD026,
-  MD027, MD028, MD029, MD030, MD031, MD032, MD033, MD034, MD035, MD036,
-  MD037, MD038, MD039, MD040, MD041, MD042, MD043, MD044, MD045, MD046,
-  MD047, MD048, MD049, MD050, MD051, MD052, MD053, MD054, MD055, MD056,
-  MD058, MD059, MD060, MD101, MD102, MD103,
-]
+const specificRules = Object.entries(RULE_SCHEMA).map(([name, fields]) => fields === null ? UnconfigurableRule(name) : ConfigurableRule(name, fields))
 
 const ruleGroups = Object.entries(RULE_GROUPS).map(([group, rules]) => Switch(group, { explain: rules.join("、") }))
 
