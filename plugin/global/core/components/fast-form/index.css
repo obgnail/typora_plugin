@@ -13,6 +13,8 @@
   --ff-color-error-bg: #fef2f2;
   --ff-color-warning: #f59e0b;
   --ff-color-warning-bg: #fffbeb;
+  --ff-color-success: #22c55e;
+  --ff-color-success-bg: #ecfdf5;
   --ff-color-highlight-bg: rgba(245, 158, 11, 0.4);
 
   --ff-text-primary: #415462;
@@ -198,6 +200,17 @@
   }
 }
 
+@keyframes flash {
+  0% {
+    border-color: var(--ff-color-success);
+    background-color: var(--ff-color-success-bg);
+  }
+  100% {
+    border-color: var(--ff-border-base);
+    background-color: var(--ff-bg-surface);
+  }
+}
+
 .input-error {
   animation: shake 0.3s ease-in-out;
   border-color: var(--ff-color-error) !important;
@@ -209,6 +222,13 @@
   animation: shake 0.3s ease-in-out;
   border-color: var(--ff-color-warning) !important;
   background-color: var(--ff-color-warning-bg) !important;
+  border-width: var(--ff-border-width) !important;
+}
+
+.input-success {
+  animation: flash 0.3s ease-in-out;
+  border-color: var(--ff-color-success) !important;
+  background-color: var(--ff-color-success-bg) !important;
   border-width: var(--ff-border-width) !important;
 }
 
@@ -1118,6 +1138,7 @@ textarea:hover,
   overflow-y: hidden;
   overflow-x: auto;
   width: 100%;
+  --ff-scrollbar-bg: var(--ff-scrollbar-thumb);
 }
 
 .code-textarea:focus {

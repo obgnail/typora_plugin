@@ -68,10 +68,17 @@ customElements.define("fast-dialog", class extends HTMLElement {
     this.entities.overlay[fn]("keydown", this._onKeydown)
   }
 
-  _onCancel = () => this._onChange(0)
-  _onSubmit = () => this._onChange(1)
   _onClick = ev => !ev.target.closest(".dialog") && this._onChange(0)
   _onKeydown = ev => (ev.key === "Escape") && this._onChange(0)
+  _onCancel = () => this._onChange(0)
+  _onSubmit = () => {
+    const form = this.entities.form
+    if (form.options.validateForm) {
+      const api = form.getApi("validation")
+      if (api && api.validateAll() === false) return
+    }
+    this._onChange(1)
+  }
 
   _onChange(state = 1) {
     hide(this.entities.overlay)

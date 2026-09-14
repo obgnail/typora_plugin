@@ -4,10 +4,10 @@ module.exports = (plugin) => {
   const consecutive = (onConfirmed) => utils.createConsecutiveAction({ threshold: 3, timeWindow: 3000, onConfirmed })
   const openUrl = (urlOrFn) => () => utils.openUrl(typeof urlOrFn === "function" ? urlOrFn() : urlOrFn)
   const openPath = (relPath) => () => utils.showInFinder(utils.joinPluginPath(relPath))
-  const showSettings = async (title, settings) => await utils.formDialog.modal({
+  const showCodeModal = async (title, cnt) => await utils.formDialog.modal({
     title,
-    schema: ({ Controls }) => [Controls.Code("settings").Readonly(true)],
-    data: { settings: typeof settings === "string" ? settings : JSON.stringify(settings, null, "  ") },
+    schema: ({ Controls }) => [Controls.Code("d").Readonly(true)],
+    data: { d: typeof cnt === "string" ? cnt : JSON.stringify(cnt, null, "  ") },
   })
 
   const actions = {
@@ -46,6 +46,18 @@ module.exports = (plugin) => {
       await navigator.clipboard.writeText("nilheap@gmail.com")
       utils.notification.show(i18n.t("success.copy"))
     },
+    undoChange: () => {
+      const ok = plugin.entities.form.getApi("history")?.undo()
+      if (!ok) utils.notification.show(i18n.t("nothingToDo"), "info")
+    },
+    redoChange: () => {
+      const ok = plugin.entities.form.getApi("history")?.redo()
+      if (!ok) utils.notification.show(i18n.t("nothingToDo"), "info")
+    },
+    inspectChanges: async () => {
+      const changes = plugin.entities.form.getApi("history")?.inspect() ?? {}
+      await showCodeModal(i18n._t("settings", "$tooltip.inspectChanges"), changes)
+    },
     importSettings: async () => {
       const { canceled, filePaths } = await JSBridge.invoke("dialog.showOpenDialog", {
         title: i18n.t("$label.importSettings"),
@@ -78,16 +90,16 @@ module.exports = (plugin) => {
     }),
     inspectRuntimeSettings: async () => {
       const { settings } = await plugin.getCurrent()
-      await showSettings(i18n._t("settings", "$label.inspectRuntimeSettings"), settings)
+      await showCodeModal(i18n._t("settings", "$label.inspectRuntimeSettings"), settings)
     },
     inspectDefaultSettings: async () => {
       const content = await utils.Package.FsExtra.readFile(utils.settings.defaultTomlPath, "utf-8")
       const settings = utils.readToml(content)?.[plugin._getCurrentPlugin()]
-      await showSettings(i18n._t("settings", "$tooltip.inspectDefaultSettings"), settings)
+      await showCodeModal(i18n._t("settings", "$tooltip.inspectDefaultSettings"), settings)
     },
     inspectAllDefaultSettings: async () => {
       const settings = await utils.Package.FsExtra.readFile(utils.settings.defaultTomlPath, "utf-8")
-      await showSettings(i18n.t("$tooltip.inspectAllDefaultSettings"), settings)
+      await showCodeModal(i18n.t("$tooltip.inspectAllDefaultSettings"), settings)
     },
     openSettingsDefaultTomlExternally: async () => utils.openPath(utils.settings.defaultTomlPath),
     openSettingsUserTomlExternally: async () => utils.openPath(await utils.settings.getUserTomlPath()),

@@ -1,19 +1,24 @@
 const self = (rules) => ({ $self: rules })
 const each = (rules) => ({ $each: rules })
+const row = (rules) => ({ $row: rules })
 
 const url = "url"
 const regex = "regex"
 const path = "path"
 const required = "required"
 const array = "array"
-const notZero = { name: "notEqual", args: [0] }
-const hotkey = { name: "pattern", args: [/^((ctrl|shift|alt)\+)*[\w`]+$/i] }
-const fileExt = { name: "pattern", args: [/^([a-zA-Z0-9]+)?$/] }
-const codingLang = { name: "pattern", args: [/^[a-zA-Z0-9#+.\-]+$/] }
-const hexColor = { name: "pattern", args: [/^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i] }
+const notZero = { name: "notEqual", args: 0 }
+const hotkey = { name: "pattern", args: /^((ctrl|shift|alt)\+)*[\w`]+$/i }
+const fileExt = { name: "pattern", args: /^([a-zA-Z0-9]+)?$/ }
+const codingLang = { name: "pattern", args: /^[a-zA-Z0-9#+.\-]+$/ }
+const hexColor = { name: "pattern", args: /^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i }
+const variable = { name: "pattern", args: /^[a-zA-Z_][a-zA-Z0-9_]*$/i }
+const gestures = { name: "pattern", args: /^[↖↗↘↙←↑→↓]+$/u }
 
-const minItems = (min) => ({ name: "minItems", args: [min] })
-const maxItems = (max) => ({ name: "minItems", args: [max] })
+const minItems = (min) => ({ name: "minItems", args: min })
+const maxItems = (max) => ({ name: "minItems", args: max })
+const minLength = (min) => ({ name: "minLength", args: min })
+const maxLength = (max) => ({ name: "maxLength", args: max })
 
 const hotkeys = each([required, hotkey])
 
@@ -42,12 +47,17 @@ module.exports = {
   search_multi: {
     ALLOW_EXT: each(fileExt),
     IGNORE_FOLDERS: each(required),
+    HIGHLIGHT_COLORS: minItems(1),
     TIMEOUT: notZero,
     MAX_ENTITIES: notZero,
     MAX_DEPTH: notZero,
   },
   commander: {
     POST_SCRIPT: required,
+    BUILTIN: row({
+      name: required,
+      cmd: required,
+    }),
   },
   md_padding: {
     IGNORE_WORDS: each(required),
@@ -55,6 +65,7 @@ module.exports = {
   },
   markmap: {
     CANDIDATE_COLOR_SCHEMES: each([required, array]),
+    "DEFAULT_TOC_OPTIONS.color": minItems(1),
     "DOWNLOAD_OPTIONS.FOLDER": path,
     "DOWNLOAD_OPTIONS.FILENAME": required,
     "DOWNLOAD_OPTIONS.BACKGROUND_COLOR": [required, hexColor],
@@ -64,11 +75,15 @@ module.exports = {
     DEFAULT_FENCE_BACKGROUND_COLOR: [required, hexColor],
     "DEFAULT_FENCE_OPTIONS.height": required,
     "DEFAULT_FENCE_OPTIONS.backgroundColor": [required, hexColor],
+    "DEFAULT_FENCE_OPTIONS.color": minItems(1),
     FENCE_TEMPLATE: required,
   },
   auto_number: {
     FONT_FAMILY: required,
     APPLY_EXPORT_HEADER_NUMBERING: required,
+    LAYOUTS: row({
+      name: required,
+    }),
   },
   fence_enhance: {
     BUTTON_SIZE: required,
@@ -82,26 +97,77 @@ module.exports = {
     HIGHLIGHT_LINE_COLOR_ON_HOVER: required,
     HIGHLIGHT_LINE_COLOR_ON_FOCUS: required,
     CODE_TITLE_PATTERN: [required, regex],
+    CUSTOM_BUTTONS: row({
+      ICON: required,
+      ON_CLICK: required,
+    }),
+    CUSTOM_HOTKEYS: row({
+      HOTKEY: [required, hotkey],
+      CALLBACK: required,
+    }),
   },
   sidebar_enhance: {
     FONT_WEIGHT: required,
     HIDDEN_NODE_PATTERNS: each([required, regex]),
     COUNT_EXT: each(fileExt),
     IGNORE_FOLDERS: each(required),
+    SIDEBAR_ICONS: row({
+      icon: required,
+      extensions: each([required, fileExt]),
+    }),
   },
   text_stylize: {
     "DEFAULT_COLORS.FOREGROUND": [required, hexColor],
     "DEFAULT_COLORS.BACKGROUND": [required, hexColor],
     "DEFAULT_COLORS.BORDER": [required, hexColor],
     COLOR_TABLE: each([required, array]),
+    ACTION_HOTKEYS: row({
+      hotkey: [required, hotkey],
+    }),
+  },
+  mouse_gestures: {
+    GESTURES: row({
+      path: [required, gestures],
+      execute: required,
+    }),
   },
   slash_commands: {
     TRIGGER_REGEXP: [required, regex],
+    COMMANDS: row({
+      icon: required,
+      keyword: required,
+      callback: required,
+    }),
+  },
+  cjk_symbol_pairing: {
+    AUTO_PAIR_SYMBOLS: row({
+      input: [required, maxLength(1)],
+      output: [required, maxLength(1)],
+    }),
+    AUTO_CONVERT_SYMBOLS: row({
+      input: [required, maxLength(1)],
+      output: [required, maxLength(1)],
+    }),
+  },
+  right_click_menu: {
+    MENUS: row({
+      NAME: required,
+    }),
+  },
+  hotkeys: {
+    CUSTOM_HOTKEYS: row({
+      hotkey: [required, hotkey],
+    }),
   },
   resource_manager: {
     MAX_ENTITIES: notZero,
     MAX_DEPTH: notZero,
     IGNORE_FOLDERS: each(required),
+  },
+  pie_menu: {
+    BUTTONS: row({
+      CALLBACK: required,
+    }),
   },
   preferences: {
     FORM_RENDERING_HOOK: required,
@@ -129,6 +195,8 @@ module.exports = {
   },
   kanban: {
     KANBAN_TASK_DESC_MAX_HEIGHT: notZero,
+    KANBAN_COLOR: minItems(1),
+    TASK_COLOR: minItems(1),
     TEMPLATE: required,
   },
   chat: {
@@ -173,16 +241,32 @@ module.exports = {
   callouts: {
     FONT_FAMILY: required,
     NETWORK_ICON_URL: [required, url],
+    CALLOUTS: row({
+      type: [required, variable],
+      icon: required,
+      background_color: required,
+      left_line_color: required,
+    }),
     DEFAULT_BACKGROUND_COLOR: required,
     DEFAULT_LEFT_LINE_COLOR: required,
     DEFAULT_ICON: required,
     TEMPLATE: required,
   },
   templater: {
+    TEMPLATE_VARIABLES: row({
+      name: [required, variable],
+      callback: required,
+    }),
+    TEMPLATE: row({
+      name: required,
+    }),
     TEMPLATE_FOLDERS: each([required, path]),
   },
   image_viewer: {
     THUMBNAIL_HEIGHT: required,
+    HOTKEY_FUNCTION: row({
+      hotkey: [required, hotkey],
+    }),
   },
   markdownlint: {
     BUTTON_WIDTH: required,
@@ -202,5 +286,8 @@ module.exports = {
     BUTTON_GAP: required,
     POSITION_RIGHT: required,
     POSITION_BOTTOM: required,
+    BUTTONS: row({
+      icon: required,
+    }),
   },
 }

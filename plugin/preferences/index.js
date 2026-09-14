@@ -189,6 +189,7 @@ class PreferencesPlugin extends BasePlugin {
       boxDependencyUnmetAction: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
       collapsibleBox: this.config.COLLAPSIBLE_BOX,
       highlight: this._getSearchValue(),
+      historyEnabled: true,
     }, fixedName)
   }
 

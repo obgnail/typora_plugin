@@ -92,7 +92,7 @@ const initDSL = (dsl) => {
     ),
     SettingHandler: () => Group(
       Action("inspectRuntimeSettings").ActionTooltip("inspectDefaultSettings", "fa fa-cogs"),
-      Action("restoreSettings"),
+      Action("restoreSettings").ActionTooltip("undoChange", "fa fa-undo").ActionTooltip("redoChange", "fa fa-repeat").ActionTooltip("inspectChanges", "fa fa-history"),
     ),
     LangMode: () => Group("languageMode",
       Text("LANGUAGE").Protect(),

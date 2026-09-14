@@ -99,6 +99,22 @@ class FastForm extends HTMLElement {
         ? [result]
         : Array.isArray(result) ? result : []
     }
+    const notifyError = (errors) => {
+      const err = errors[0]  // show first error only
+      const msg = (typeof err.message === "string")
+        ? err.message || err.toString()
+        : typeof err === "string" ? err : "Verification Failed"
+      utils.notification.show(msg, "error")
+    }
+    const highlightError = (changeContext) => {
+      const context = this.resolveFieldContext(changeContext.key)
+      if (!context) return
+      const el = this.options.layout.findControl(context.field.key, this.form)
+      if (!el) return
+      el.classList.add("input-error")
+      // el.scrollIntoView({ behavior: "smooth", block: "center" })
+      setTimeout(() => el.classList.remove("input-error"), 3000)
+    }
     const defaultHooks = {
       onConstruct: (form) => void 0,
       onOptions: (options, form) => options,
@@ -110,11 +126,8 @@ class FastForm extends HTMLElement {
       onAfterValidate: (errors, changeContext) => errors,  // return true or [] for success; return Error or [Error, ...] for failure
       onValidateFailed: (errors, changeContext) => {
         if (!Array.isArray(errors) || errors.length === 0) return
-        const err = errors[0]  // show first error only
-        const msg = (typeof err.message === "string")
-          ? err.message || err.toString()
-          : typeof err === "string" ? err : "Verification Failed"
-        utils.notification.show(msg, "error")
+        notifyError(errors)
+        highlightError(changeContext)
       },
       onBeforeCommit: (changeContext, form) => void 0,
       onCommit: (changeContext, form) => form.dispatchEvent(new CustomEvent("form-crud", { detail: changeContext })),
@@ -2050,7 +2063,7 @@ const Feature_Validation = {
         const name = rule.name || rule.validator
         const factory = validators[name]
         if (typeof factory === "function") {
-          const args = rule.args || []
+          const args = rule.args === undefined ? [] : (Array.isArray(rule.args) ? rule.args : [rule.args])
           try {
             const instance = factory(...args)
             return typeof instance === "function" ? instance : factory
@@ -2066,6 +2079,13 @@ const Feature_Validation = {
   },
   configure: ({ initState, hooks, registerApi, form }) => {
     const state = initState({ rawRules: new Map(), compiledRules: new Map() })
+
+    const isFieldSkippable = (key) => {
+      const el = form.options.layout.findControl(key, form.form)
+      if (!el) return false
+      return el.classList.contains("plugin-common-hidden") || el.classList.contains("plugin-common-readonly")
+    }
+
     registerApi("validation", {
       addRule: (key, ruleConfig) => {
         if (!key || !ruleConfig) return
@@ -2078,6 +2098,19 @@ const Feature_Validation = {
         entry.$each.push(...normalized.$each)
       },
       getRules: (key) => state.compiledRules.get(key),
+      validateAll: () => {
+        let allValid = true
+        for (const key of state.compiledRules.keys()) {
+          if (isFieldSkippable(key)) continue
+          const changeContext = { key, value: form.getData(key), type: "set" }
+          const errors = form._validate(changeContext)
+          if (Array.isArray(errors) && errors.length > 0) {
+            allValid = false
+            form.hooks.invoke("onValidateFailed", errors, changeContext)
+          }
+        }
+        return allValid
+      },
     })
     hooks.on("onValidate", (changeContext) => {
       const { key, value, type } = changeContext
@@ -2180,6 +2213,14 @@ const Feature_Validation = {
       if (value == null || value === "") return true
       if (isNaN(value)) return i18n.t("global", "error.isNaN")
       return Number(value) <= max ? true : i18n.t("global", "error.max", { max })
+    },
+    minLength: (min) => ({ value }) => {
+      if (!Object.hasOwn(value, "length")) return true
+      return value.length >= min ? true : i18n.t("global", "error.minLength", { minLength: min })
+    },
+    maxLength: (max) => ({ value }) => {
+      if (!Object.hasOwn(value, "length")) return true
+      return value.length <= max ? true : i18n.t("global", "error.maxLength", { maxLength: max })
     },
     minItems: (min) => ({ value }) => {
       if (!Array.isArray(value)) return true
@@ -2388,6 +2429,171 @@ const Feature_Cascades = {
   },
 }
 
+const Feature_History = {
+  featureOptions: {
+    historyEnabled: false,
+    historyMaxSize: 50,
+    historyMergeWindow: 0,
+    historyExcludeKeys: [],
+    historyFeedbackClass: "input-success",
+    historyFeedbackDuration: 3000,
+    historyEmitEvents: false,
+  },
+
+  configure: ({ form, hooks, initState, registerApi, options }) => {
+    const state = initState({
+      undoStack: [],
+      redoStack: [],
+      isReplaying: false,
+      pendingSnapshot: new Map(),
+      highlightTimers: new Map(),
+    }, state => {
+      state.undoStack.length = 0
+      state.redoStack.length = 0
+      state.pendingSnapshot.clear()
+      state.highlightTimers.forEach(timerId => clearTimeout(timerId))
+      state.highlightTimers.clear()
+    })
+
+    const isExcluded = fieldKey => options.historyExcludeKeys.includes(fieldKey)
+    const captureSnapshot = (key) => {
+      const context = form.resolveFieldContext(key)
+      const containerKey = context ? context.field.key : key
+      const value = utils.naiveCloneDeep(form.getData(containerKey))
+      return { containerKey, value }
+    }
+    const emitChange = () => {
+      if (!options.historyEmitEvents) return
+      form.dispatchEvent(new CustomEvent("history-change", {
+        detail: {
+          canUndo: state.undoStack.length > 0,
+          canRedo: state.redoStack.length > 0,
+          undoSize: state.undoStack.length,
+          redoSize: state.redoStack.length,
+        },
+      }))
+    }
+
+    const onBeforeCommit = changeContext => {
+      if (state.isReplaying) return
+      const { key } = changeContext
+      if (isExcluded(key)) return
+      state.pendingSnapshot.set(key, captureSnapshot(key))
+    }
+    const onAfterCommit = changeContext => {
+      if (state.isReplaying) return
+      const { key } = changeContext
+      if (isExcluded(key)) return
+
+      const before = state.pendingSnapshot.get(key)
+      state.pendingSnapshot.delete(key)
+      if (!before) return
+
+      const after = captureSnapshot(key)
+      const entry = { key: before.containerKey, oldValue: before.value, newValue: after.value, timestamp: Date.now() }
+      if (utils.deepEqual(entry.oldValue, entry.newValue)) return
+
+      const top = state.undoStack.at(-1)
+      const canMerge = options.historyMergeWindow > 0
+        && top
+        && top.key === entry.key
+        && (entry.timestamp - top.timestamp) < options.historyMergeWindow
+
+      if (canMerge) {
+        top.newValue = entry.newValue
+        top.timestamp = entry.timestamp
+      } else {
+        state.undoStack.push(entry)
+        if (state.undoStack.length > options.historyMaxSize) state.undoStack.shift()
+      }
+
+      state.redoStack.length = 0
+      emitChange()
+    }
+
+    if (options.historyEnabled) {
+      hooks.on("onBeforeCommit", onBeforeCommit)
+      hooks.on("onAfterCommit", onAfterCommit)
+    }
+
+    const highlightControl = (key) => {
+      const { historyFeedbackClass: cls, historyFeedbackDuration: duration } = options
+      if (!cls || !duration) return
+      const el = form.options.layout.findControl(key, form.form)
+      if (!el) return
+
+      const prevTimer = state.highlightTimers.get(key)
+      if (prevTimer) clearTimeout(prevTimer)
+
+      el.classList.add(cls)
+      el.scrollIntoView({ behavior: "smooth", block: "center" })
+      const timerId = setTimeout(() => {
+        el.classList.remove(cls)
+        state.highlightTimers.delete(key)
+      }, duration)
+      state.highlightTimers.set(key, timerId)
+    }
+
+    const replay = (entry, value) => {
+      state.isReplaying = true
+      try {
+        const ok = form.reactiveCommit(entry.key, value, "set")
+        if (ok) {
+          highlightControl(entry.key)
+          utils.notification.show(i18n.t("global", "success.replay"))
+        } else {
+          utils.notification.show(i18n.t("global", "error.replay"), "error")
+        }
+        return ok
+      } finally {
+        state.isReplaying = false
+      }
+    }
+
+    registerApi("history", {
+      undo: () => {
+        const entry = state.undoStack.pop()
+        if (!entry) return false
+        const ok = replay(entry, entry.oldValue)
+        state[ok ? "redoStack" : "undoStack"].push(entry)
+        emitChange()
+        return ok
+      },
+      redo: () => {
+        const entry = state.redoStack.pop()
+        if (!entry) return false
+        const ok = replay(entry, entry.newValue)
+        state[ok ? "undoStack" : "redoStack"].push(entry)
+        emitChange()
+        return ok
+      },
+      clear: () => {
+        state.undoStack.length = 0
+        state.redoStack.length = 0
+        emitChange()
+      },
+      canUndo: () => state.undoStack.length > 0,
+      canRedo: () => state.redoStack.length > 0,
+      inspect: () => ({ undoStack: [...state.undoStack], redoStack: [...state.redoStack] }),
+    })
+  },
+}
+
+const Feature_TableRowRules = {
+  configure: ({ options, form }) => {
+    const { rules } = options
+    if (!rules || typeof rules !== "object") return
+
+    form.traverseFields(field => {
+      if (field.type !== "table" || !field.key) return
+      const rowRules = rules[field.key]?.$row
+      if (rowRules && typeof rowRules === "object" && !Array.isArray(rowRules)) {
+        field.subFormOptions = { rules: rowRules, ...(field.subFormOptions || {}) }
+      }
+    }, options.schema)
+  },
+}
+
 FastForm.registerFeature("eventDelegation", Feature_EventDelegation)
 FastForm.registerFeature("defaultKeybindings", Feature_DefaultKeybindings)
 FastForm.registerFeature("collapsibleBox", Feature_CollapsibleBox)
@@ -2401,6 +2607,8 @@ FastForm.registerFeature("boxDependencies", Feature_BoxDependencies)
 FastForm.registerFeature("cascades", Feature_Cascades)
 FastForm.registerFeature("dslEngine", Feature_DSLEngine)
 FastForm.registerFeature("standardDSL", Feature_StandardDSL)
+FastForm.registerFeature("history", Feature_History)
+FastForm.registerFeature("tableRowRules", Feature_TableRowRules)
 
 // usage:
 //  $compareFields: { left: "fieldKey1", operator: "$lt", right: "fieldKey2" }
@@ -2886,8 +3094,8 @@ const Control_Action = {
   bindEvents: ({ form }) => {
     form.onEvent("mousedown", `.control[data-type="action"]`, function (ev) {
       Control_Action._ripple(this, ev)
-    }).onEvent("click", `.control[data-type="action"]`, function () {
-      Control_Action._doAction(this, form)
+    }).onEvent("click", `.control[data-type="action"]`, function (ev) {
+      Control_Action._doAction(this, form, ev)
     })
   },
   _ripple: (el, ev) => {
@@ -2914,7 +3122,7 @@ const Control_Action = {
       if (mask.childNodes.length === 0) mask.remove()
     }, { once: true })
   },
-  _doAction: (el, form) => {
+  _doAction: (el, form, ev) => {
     const key = el.querySelector(".action").dataset.action
     const actionType = form.getControlOptionsFromKey(key).actionType || "function"
     if (actionType === "toggle") {
@@ -2922,7 +3130,7 @@ const Control_Action = {
     } else if (actionType === "trigger") {
       form.reactiveCommit(key, Date.now())  // Trigger mode: Update to timestamp to signal watchers
     } else {
-      form.options.actions[key]?.(form)  // Function mode: Execute callbacks
+      form.options.actions[key]?.(ev)  // Function mode: Execute callbacks
     }
   },
 }
@@ -4250,7 +4458,7 @@ const Control_Table = {
     }
     const table = Control_Table._buildTable([lines])
     const { key } = getCommonHTMLAttrs(field)
-    return `<div class="table ${isReadonly ? 'is-readonly' : ''}" ${key}>${table}</div>`
+    return `<div class="table ${isReadonly ? "is-readonly" : ""}" ${key}>${table}</div>`
   },
   update: ({ element, value, field }) => {
     const tbodyEl = element.querySelector("tbody")
@@ -4265,7 +4473,7 @@ const Control_Table = {
       const tableEl = this.closest(".table")
       const key = tableEl.dataset.key
       const { nestedBoxes, defaultValues, thMap, subFormOptions = {} } = form.getField(key)
-      const op = { title: i18n.t("global", "add"), schema: nestedBoxes, data: defaultValues, ...subFormOptions }
+      const op = { title: i18n.t("global", "add"), validateForm: true, schema: nestedBoxes, data: defaultValues, ...subFormOptions }
       const { response, data } = await utils.formDialog.modal(op)
       if (response === 0) return
       const ok = form.validateAndCommit(key, data, "push")
@@ -4282,7 +4490,7 @@ const Control_Table = {
       const rowValue = form.options.data[key][idx]
       const { nestedBoxes, defaultValues, thMap, subFormOptions = {} } = form.getField(key)
       const modalValues = utils.merge(defaultValues, rowValue)  // rowValue may be missing some attributes
-      const op = { title: i18n.t("global", "edit"), schema: nestedBoxes, data: modalValues, ...subFormOptions }
+      const op = { title: i18n.t("global", "edit"), validateForm: true, schema: nestedBoxes, data: modalValues, ...subFormOptions }
       const { response, data } = await utils.formDialog.modal(op)
       if (response === 0) return
       const ok = form.validateAndCommit(`${key}.${idx}`, data, "set")
@@ -4322,7 +4530,7 @@ const Control_Table = {
     const thead = `<tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr>`
     const tbody = bodyRows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("")
     return `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`
-  }
+  },
 }
 
 const Control_Composite = {

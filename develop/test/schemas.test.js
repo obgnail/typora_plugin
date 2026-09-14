@@ -299,6 +299,30 @@ describe("Schema rules and Settings Key Synchronization", () => {
   })
 })
 
+describe("Table row rules ($row) Field Synchronization", () => {
+  it("should have $row rule keys matching the table field's nestedBoxes/defaultValues columns", () => {
+    Object.entries(RULES).forEach(([fixedName, rules]) => {
+      const schema = SCHEMAS[fixedName]
+      if (!schema) return
+      const tableFields = {}
+      traverseTree(schema, null, field => {
+        if (field.type === "table" && field.key) tableFields[field.key] = field
+      })
+      Object.entries(rules).forEach(([key, ruleConfig]) => {
+        if (!ruleConfig || typeof ruleConfig !== "object" || !ruleConfig.$row) return
+        const field = tableFields[key]
+        assert.ok(field, `[$row] "${fixedName}.${key}" is not a table field in SCHEMAS.`)
+        Object.keys(ruleConfig.$row).forEach(subKey => {
+          assert.ok(
+            Object.hasOwn(field.defaultValues || {}, subKey),
+            `[$row] "${fixedName}.${key}.${subKey}" was NOT found in the table's defaultValues/nestedBoxes columns.`,
+          )
+        })
+      })
+    })
+  })
+})
+
 describe("Schema preprocessors and Settings Key Synchronization", () => {
   it("should have synchronized schema preprocessors with settings", () => {
     delete PREPROCESSORS?.global?.pluginVersion
