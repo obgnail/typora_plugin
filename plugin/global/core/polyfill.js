@@ -135,6 +135,20 @@ function string() {
     const regex = new RegExp(String(searchValue).replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")
     return str.replace(regex, replaceValue)
   })
+
+  _impl(String.prototype, "isWellFormed", function toWellFormed() {
+    if (this == null) {
+      throw new TypeError("Method String.prototype.isWellFormed called on null or undefined")
+    }
+    return !/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/.test(String(this))
+  })
+
+  _impl(String.prototype, "toWellFormed", function toWellFormed() {
+    if (this == null) {
+      throw new TypeError("Method String.prototype.toWellFormed called on null or undefined")
+    }
+    return String(this).replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, "\uFFFD")
+  })
 }
 
 function typedArray() {
