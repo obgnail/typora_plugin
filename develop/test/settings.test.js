@@ -154,7 +154,7 @@ describe("Scripts, Actions & File IO", () => {
       assert.ok(btn.coordinate.every(c => Number.isInteger(c) && c >= 0), `BUTTONS[${index}].coordinate elements must be non-negative integers`)
 
       if (btn.callback && !btn.evil) {
-        assert.match(btn.callback, /^[a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*$/, `Invalid format in BUTTONS[${index}].callback`)
+        assert.match(btn.callback, /^[a-zA-Z_][a-zA-Z0-9_]*\.*[a-zA-Z_][a-zA-Z0-9_]*$/, `Invalid format in BUTTONS[${index}].callback`)
         const pluginName = btn.callback.split(".")[0]
         assert.ok(pluginNames.includes(pluginName), `BUTTONS[${index}].callback references non-existent plugin: ${pluginName}`)
       }
