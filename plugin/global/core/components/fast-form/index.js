@@ -1402,15 +1402,15 @@ const Feature_StandardDSL = {
 
     const Controls = {
       Switch: defineField("switch", INLINE_INPUT),
-      Text: defineField("text", INLINE_TEXT),
-      Password: defineField("password", INLINE_TEXT),
+      Text: defineField("text", { ...INLINE_TEXT, liveCommit: INNER }),
+      Password: defineField("password", { ...INLINE_TEXT, liveCommit: INNER }),
       Color: defineField("color", INLINE_TEXT),
       Icon: defineField("icon", INLINE_TEXT),
       Hotkey: defineField("hotkey", { ...INLINE_INPUT, idlePlaceholder: INNER, listenPlaceholder: INNER }),
       Range: defineField("range", INLINE_NUM),
-      Number: defineField("number", { ...INLINE_NUM, ...PLACEHOLDER }),
-      Integer: defineField("integer", { ...INLINE_NUM, ...PLACEHOLDER }, { type: "number", isInteger: true }),
-      Float: defineField("float", { ...INLINE_NUM, ...PLACEHOLDER }, { type: "number", isInteger: false }),
+      Number: defineField("number", { ...INLINE_NUM, ...PLACEHOLDER, liveCommit: INNER }),
+      Integer: defineField("integer", { ...INLINE_NUM, ...PLACEHOLDER, liveCommit: INNER }, { type: "number", isInteger: true }),
+      Float: defineField("float", { ...INLINE_NUM, ...PLACEHOLDER, liveCommit: INNER }, { type: "number", isInteger: false }),
       Action: defineField("action", { ...INLINE, actionType: INNER, activeClass: INNER }),
       Static: defineField("static", { ...INLINE, content: INNER }),
       Composite: defineField("composite", { ...INLINE_INPUT, subSchema: SCHEMA, defaultValues: INNER }),
@@ -1420,9 +1420,9 @@ const Feature_StandardDSL = {
       Checkbox: defineField("checkbox", { ...BLOCK_OPTIONS, ...LIMITS, columns: INNER }),
       Transfer: defineField("transfer", { ...BLOCK_OPTIONS, ...LIMITS, titles: INNER, defaultHeight: INNER }),
       ToggleSort: defineField("togglesort", { ...BLOCK_OPTIONS, ...LIMITS }),
-      Textarea: defineField("textarea", { ...BLOCK_TEXT, rows: INNER, cols: INNER, noResize: INNER }),
-      Code: defineField("code", { ...BLOCK_TEXT, tabSize: INNER, lineNumbers: INNER }),
-      Object: defineField("object", { ...BLOCK_TEXT, rows: INNER, noResize: INNER, format: INNER }),
+      Textarea: defineField("textarea", { ...BLOCK_TEXT, rows: INNER, cols: INNER, noResize: INNER, liveCommit: INNER }),
+      Code: defineField("code", { ...BLOCK_TEXT, tabSize: INNER, lineNumbers: INNER, liveCommit: INNER }),
+      Object: defineField("object", { ...BLOCK_TEXT, rows: INNER, noResize: INNER, format: INNER, liveCommit: INNER }),
       Custom: defineField("custom", { ...BLOCK, content: INNER, unsafe: INNER }),
       Hint: defineField("hint", { ...BLOCK, isBlockLayout: NONE, hintHeader: INNER, hintDetail: INNER, unsafe: INNER }),
       Divider: defineField("divider", { ...BLOCK, divider: INNER, position: INNER, dashed: INNER }),
@@ -2579,6 +2579,51 @@ const Feature_History = {
   },
 }
 
+const Feature_LiveCommit = {
+  compile: ({ form, options }) => {
+    const targets = new Map()  // fieldKey -> delay(ms)
+    form.traverseFields(field => {
+      const delay = field.liveCommit
+      if (typeof delay === "number" && delay > 0) {
+        targets.set(field.key, delay)
+      }
+    }, options.schema)
+
+    if (targets.size === 0) return
+
+    const composing = new Set()
+    const timers = new Map()  // key -> timerId
+    const commit = (key, value) => {
+      clearTimeout(timers.get(key))
+      timers.set(key, setTimeout(() => {
+        timers.delete(key)
+        form.validateAndCommit(key, value)
+      }, targets.get(key)))
+    }
+    const resolve = ev => {
+      const key = ev.target.closest("[data-control]")?.dataset?.control
+      return (key && targets.has(key) && typeof ev.target.value === "string") ? key : null
+    }
+
+    form.onEvent("compositionstart", ev => {
+      const key = resolve(ev)
+      if (key) composing.add(key)
+    }, true).onEvent("compositionend", ev => {
+      const key = resolve(ev)
+      if (!key) return
+      composing.delete(key)
+      clearTimeout(timers.get(key))
+      timers.delete(key)
+      form.validateAndCommit(key, ev.target.value)
+    }, true).onEvent("input", ev => {
+      const key = resolve(ev)
+      if (key && !composing.has(key)) commit(key, ev.target.value)
+    }, true)
+
+    form.registerCleanup(() => timers.forEach(id => clearTimeout(id)))
+  },
+}
+
 const Feature_TableRowRules = {
   configure: ({ options, form }) => {
     const { rules } = options
@@ -2608,6 +2653,7 @@ FastForm.registerFeature("cascades", Feature_Cascades)
 FastForm.registerFeature("dslEngine", Feature_DSLEngine)
 FastForm.registerFeature("standardDSL", Feature_StandardDSL)
 FastForm.registerFeature("history", Feature_History)
+FastForm.registerFeature("liveCommit", Feature_LiveCommit)
 FastForm.registerFeature("tableRowRules", Feature_TableRowRules)
 
 // usage:
