@@ -503,7 +503,7 @@
     "success.fit": "Fitted to window successfully",
     "success.unfold": "Expanded successfully",
     "success.download": "Exported successfully",
-    "title.color": "Color Scheme",
+    "title.color": "Color",
     "title.chart": "Diagram",
     "title.window": "Popup",
     "title.interactive": "Interaction",
@@ -528,6 +528,8 @@
     "$label.DEFAULT_TOC_OPTIONS.zoom": "Allow Zoom",
     "$label.DEFAULT_TOC_OPTIONS.pan": "Allow Pan",
     "$label.DEFAULT_TOC_OPTIONS.toggleRecursively": "Expand/Collapse Recursively",
+    "$label.DEFAULT_TOC_OPTIONS.colorByParent": "Color by Parent Node",
+    "$label.DEFAULT_TOC_OPTIONS.colorByLevel": "Color by Level",
     "$label.DEFAULT_TOC_OPTIONS.initialExpandLevel": "Initial Expand Level",
     "$label.DEFAULT_TOC_OPTIONS.colorFreezeLevel": "Color Freeze Level",
     "$label.DEFAULT_TOC_OPTIONS.maxInitialScale": "Max Initial Zoom Scale",
@@ -559,6 +561,8 @@
     "$label.DEFAULT_FENCE_OPTIONS.zoom": "Allow Zoom",
     "$label.DEFAULT_FENCE_OPTIONS.pan": "Allow Pan",
     "$label.DEFAULT_FENCE_OPTIONS.toggleRecursively": "Expand/Collapse Recursively",
+    "$label.DEFAULT_FENCE_OPTIONS.colorByParent": "Color by Parent Node",
+    "$label.DEFAULT_FENCE_OPTIONS.colorByLevel": "Color by Level",
     "$label.DEFAULT_FENCE_OPTIONS.initialExpandLevel": "Initial Expand Level",
     "$label.DEFAULT_FENCE_OPTIONS.colorFreezeLevel": "Color Freeze Level",
     "$label.DEFAULT_FENCE_OPTIONS.maxInitialScale": "Max Initial Zoom Scale",
@@ -1031,7 +1035,7 @@
     "$label.BUTTONS": "Menu Items",
     "$label.BUTTONS.ICON": "Icon",
     "$label.BUTTONS.CALLBACK": "Action",
-    "$tooltip.example": "E.g., 'Ctrl' to use Ctrl+RClick to trigger"
+    "$tooltip.modifierKeyExample": "E.g., 'Ctrl' to use Ctrl+RClick to trigger"
   },
   "preferences": {
     "pluginName": "Preferences",

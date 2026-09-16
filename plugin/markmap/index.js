@@ -50,9 +50,18 @@ class MarkmapPlugin extends BasePlugin {
   }
 
   assignOptions = (update, origin) => {
-    const options = this.Lib.deriveOptions({ ...origin, ...update })
+    const merged = { ...origin, ...update }
+    const options = this.Lib.deriveOptions(merged)
+
     // `toggleRecursively` is deleted after calling deriveOptions
     options.toggleRecursively = update.toggleRecursively
+
+    if (merged.colorByParent) {
+      options.color = createParentColorFn(merged.color, options.color)
+    } else if (merged.colorByLevel) {
+      options.color = createLevelColorFn(merged.color, merged.colorFreezeLevel, options.color)
+    }
+
     return options
   }
 
@@ -97,6 +106,27 @@ class MarkmapPlugin extends BasePlugin {
     }
     localize(styles, "stylesheet", "href")
     localize(scripts, "script", "src")
+  }
+}
+
+function createParentColorFn(colors, fallback) {
+  const m = new Map()
+  return node => {
+    const path = node?.state?.path
+    if (!colors?.length || typeof path !== "string") return fallback?.(node)
+    const parentPath = path.includes(".") ? path.slice(0, path.lastIndexOf(".")) : ""
+    if (!m.has(parentPath)) {
+      m.set(parentPath, m.size)
+    }
+    return colors[m.get(parentPath) % colors.length]
+  }
+}
+
+function createLevelColorFn(colors, freezeLevel = colors?.length, fallback) {
+  const len = colors?.length
+  return node => {
+    const depth = node?.state?.depth
+    return len && Number.isFinite(depth) ? colors[Math.min(depth, freezeLevel) % len] : fallback?.(node)
   }
 }
 

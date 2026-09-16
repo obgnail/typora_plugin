@@ -22,7 +22,7 @@
     "crypto-js": "^4.2.0",
     "function-plot": "^1.25.4",
     "https-proxy-agent": "^7.0.6",
-    "json-rpc-2.0": "^1.8.0",
+    "json-rpc-2.0": "^1.8.1",
     "katex": "^0.16.47",
     "markdown-it-footnote": "^4.0.0",
     "markdown-it-ins": "^4.0.0",
@@ -48,7 +48,7 @@
   "devDependencies": {
     "chokidar": "^5.0.0",
     "esbuild": "^0.28.2",
-    "fs-extra": "^11.4.0",
+    "fs-extra": "^11.4.1",
     "jsdom": "^29.1.1",
     "minimatch": "^10.2.6",
     "proxyquire": "^2.1.3"

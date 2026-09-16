@@ -53,16 +53,16 @@ SHOW_DIR_ON_DUPLICATE = true
 # Show full path on hover: Display the complete file path in a tooltip when hovering over the tab
 SHOW_FULL_PATH_ON_HOVER = true
 
-# Show tab close button: Display the close (x) button on the right side of the tab
+# Show tab close button: Display the close button on the right side of the tab
 SHOW_TAB_CLOSE_BUTTON = true
 
 # Hide window title bar: Applies only when Typora uses the unibody window style
 HIDE_WINDOW_TITLE_BAR = false
 
-# Min tab width: Min limit is 400px. Supports CSS units (e.g., "100px", "12em")
+# Min tab width. Supports CSS units (e.g., "100px", "12em")
 TAB_MIN_WIDTH = "100px"
 
-# Max tab width: Max limit is 400px. Supports CSS units. Set to "none" for unlimited width
+# Max tab width. Supports CSS units. Set to "none" for unlimited width
 TAB_MAX_WIDTH = "200px"
 
 # =========== [ Drag & Detachment ] ===========
@@ -115,8 +115,8 @@ TAB_SWITCH_ON_CLOSE = "right"
 #   exit     : Exit Typora immediately
 LAST_TAB_CLOSE_ACTION = "blankPage"
 
-# Reopen unclosed tabs on startup: Restores tabs on next launch
-# Disabled when opening specific files on startup
+# Restore the tabs left open when Typora last exited
+# Disabled when opening specific files at startup
 REOPEN_TABS_ON_STARTUP = false
 
 # =========== [ Hotkeys ] ===========
@@ -146,13 +146,14 @@ COPY_PATH_HOTKEY = []
 #   closeLeftTabs  : Close all tabs to the left
 #   closeRightTabs : Close all tabs to the right
 #   copyPath       : Copy current file path
-#   showInFinder   : Show in File Explorer
+#   showInFinder   : Show in file explorer
 #   openInNewWindow: Open in a new window
 #   sortTabs       : Sort tabs
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
 
 # =========== [ experimental ] ===========
-# Enforce Singleton
+# Enforce singleton: Only one Typora instance is allowed to run.
+# Files opened in a new instance are automatically merged into the existing instance, and the new instance closes itself
 ENFORCE_SINGLETON = false
 
 
@@ -180,14 +181,16 @@ CONCURRENCY_LIMIT = 20
 FOLLOW_SYMBOLIC_LINKS = false
 
 # When to display the search explanation bubble
-#   focus: On Input / Focus
-#   hover: On Mouse Hover
+#   focus: On input focus
+#   hover: On mouse hover
 EXPLAIN_TRIGGER = ["focus"]
 
 # Max execution time (ms): Prevents search deadlocks. Set to -1 for unlimited
 TIMEOUT = 60000
 
-# Match Anchor: highlights strictly respect the spatial boundaries of specific Markdown elements. When disabled, matches will be globally highlighted anywhere in the text
+# Precise highlight
+#   true : highlights are confined to the exact element matched by the condition
+#   false: matches are highlighted anywhere in the document
 HIGHLIGHTS_MATCH_ANCHOR = true
 
 # Traverse strategy
@@ -195,13 +198,13 @@ HIGHLIGHTS_MATCH_ANCHOR = true
 #   dfs: Depth-First Search
 TRAVERSE_STRATEGY = "bfs"
 
-# Max entities: Automatically halt search after finding this number of items. Set to -1 for unlimited
+# Max entities: Automatically stop searching once this many results are found. Set to -1 for unlimited
 MAX_ENTITIES = -1
 
-# Max file size (bytes): Ignore files larger than this threshold. Typora limit is 2,000,000. Set to -1 for unlimited
+# Max file size (bytes): Ignore files larger than this threshold. Typora's own limit is 2,000,000. Set to -1 for unlimited
 MAX_SIZE = 2000000
 
-# Allowed file extensions: Defaults to Typora's supported formats. Modifying is not recommended
+# Allowed file extensions: Defaults to the formats Typora supports. Changing this is not recommended
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 
 # Ignored folders
@@ -227,7 +230,7 @@ HIGHLIGHT_COLORS = [
   "#99CCFF", "#FF99CC", "#66CC66", "#CC99FF", "#FFCC66", "#FFFF80", "#DD9966", "#AAAAAA", "#66AAAA", "#DD6699",
 ]
 
-# Max highlights: Limit HTML rendering to preserve performance
+# Caps the number of rendered highlights to preserve performance
 MAX_HIGHLIGHTS = 5000
 
 
@@ -245,7 +248,7 @@ BACKSPACE_TO_HIDE = false
 # Output display mode for shortcut-triggered commands
 #   always: Always show output panel after execution
 #   error : Show output panel only on error
-#   silent: Silent execution, hide output
+#   silent: Run without showing the output panel
 #   echo  : Stream output immediately (Ideal for long-running/streaming tasks)
 QUICK_RUN_DISPLAY = "error"
 
@@ -268,14 +271,14 @@ COMMIT_RUN_DISPLAY = "echo"
 #   c: Current file content
 BUILTIN = [
   { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $env:d" },
-  { name = "VScode", disable = false, shell = "cmd/bash", cmd = "code %f%" },
+  { name = "VSCode", disable = false, shell = "cmd/bash", cmd = "code %f%" },
   { name = "Terminal", disable = false, shell = "cmd/bash", cmd = "wt" },
 ]
 
 # Post-Execution Script. JavaScript code to execute after the command finishes
 POST_SCRIPT = "({ command, cwd, options, error, code, stdout, stderr }) => void 0"
 
-# Max capacity limit for command history
+# Max number of entries retained in command history
 MAX_HISTORY_ENTRIES = 20
 
 # =========== [ Advanced ] ===========
@@ -294,7 +297,8 @@ HOTKEY = "ctrl+shift+p"
 BACKSPACE_TO_HIDE = true
 
 # =========== [ Search Strategy ] ===========
-# Wait time after typing stops before triggering a search (ms, Short intervals recommended due to memory-level search)
+# Wait time (ms) after typing stops before triggering a search
+# Short intervals are recommended, since the search runs entirely in memory
 DEBOUNCE_INTERVAL = 70
 
 
@@ -312,7 +316,7 @@ REMOVE_HEADER_STYLES = true
 #   header: Header
 #   image : Image
 #   table : Table
-#   fence : BlockCode
+#   fence : Code Block
 #   link  : Link
 #   math  : Math
 TITLE_BAR_BUTTONS = ["header", "image", "table", "fence", "link", "math"]
@@ -372,13 +376,13 @@ RULE_CONFIG = {
 # Translate English rule text to target locale
 TRANSLATE = true
 
-# Toolbar rapid-action buttons
-#   settings        : Open Rule Settings
-#   detailAll       : Display verbose details
-#   fixAll          : Batch Fix Errors
-#   toggleSourceMode: Toggle Source Mode
-#   refresh         : Manual Force Refresh
-#   close           : Close Panel
+# Toolbar quick-action buttons
+#   settings        : Open rule settings
+#   detailAll       : Show details for all errors
+#   fixAll          : Fix all errors at once
+#   toggleSourceMode: Toggle source mode
+#   refresh         : Force refresh
+#   close           : Close the panel
 TITLE_BAR_BUTTONS = ["settings", "fixAll", "toggleSourceMode", "refresh", "close"]
 
 # Master list table columns to display
@@ -390,20 +394,21 @@ TITLE_BAR_BUTTONS = ["settings", "fixAll", "toggleSourceMode", "refresh", "close
 COLUMNS = ["line", "rule", "desc", "ops"]
 
 # Executable actions for individual error row items
-#   detailSingle: View Lint Doc
-#   jumpToLine  : Scroll to Line
-#   fixSingle   : Fix Error
+#   detailSingle: Show details for this error
+#   jumpToLine  : Scroll to the corresponding line
+#   fixSingle   : Fix this error
 ROW_OPERATIONS = ["jumpToLine", "fixSingle"]
 
 # Default result sorting rule
 #   idx       : Sort by index
-#   lineNumber: Sort by document line
-#   ruleName  : Sort by Rule Name
-#   ruleDesc  : Sort by Rule Description
+#   lineNumber: Sort by line number
+#   ruleName  : Sort by rule name
+#   ruleDesc  : Sort by rule description
 RESULT_ORDER_BY = "lineNumber"
 
 # =========== [ Status Indicator ] ===========
-# Enable floating indicator button in top-right corner (Set false to disable all configs below)
+# Enable the floating indicator button in the top-right corner
+# Setting this to false also disables all the settings below
 USE_INDICATOR_BUTTON = true
 
 # Button width
@@ -415,11 +420,11 @@ BUTTON_HEIGHT = "16px"
 # Button border radius
 BUTTON_BORDER_RADIUS = "50%"
 
-# Button distance from the right window edge
-BUTTON_RIGHT = "5px"
-
 # Button opacity (0.0 ~ 1.0)
 BUTTON_OPACITY = 1
+
+# Button distance from the right window edge
+BUTTON_RIGHT = "5px"
 
 # Button background color when all checks pass
 BUTTON_PASS_COLOR = "#92C498"
@@ -428,13 +433,13 @@ BUTTON_PASS_COLOR = "#92C498"
 BUTTON_ERROR_COLOR = "#d8bd74"
 
 # =========== [ Shortcuts ] ===========
-# Left-click the row action(Keys mirror ROW_OPERATIONS)
+# Action triggered by left-clicking a row (value must match one of the keys in ROW_OPERATIONS)
 LEFT_CLICK_ROW_ACTION = "jumpToLine"
 
-# Right-click the table action(Keys mirror TITLE_BAR_BUTTONS)
+# Action triggered by right-clicking the table (value must match one of the keys in TITLE_BAR_BUTTONS)
 RIGHT_CLICK_TABLE_ACTION = "toggleSourceMode"
 
-# Right-click the indicator action(Keys mirror TITLE_BAR_BUTTONS)
+# Action triggered by right-clicking the indicator button (value must match one of the keys in TITLE_BAR_BUTTONS)
 RIGHT_CLICK_INDICATOR_ACTION = "fixAll"
 
 
@@ -445,10 +450,10 @@ NAME = ""
 HOTKEY = "ctrl+shift+b"
 
 # =========== [ Ignore ] ===========
-# Ignored words: Exact words where internal/adjacent padding spaces are bypassed (e.g., ["word1", "word2"])
+# Exact-match words that are skipped when inserting padding spaces (e.g., ["word1", "word2"])
 IGNORE_WORDS = []
 
-# Ignored patterns: Regex where matched content bypasses padding spaces
+# Regex patterns whose matched content is skipped when inserting padding spaces
 IGNORE_PATTERNS = [':[0-9a-z_\-]+?:', '<br\s*?/?>', '<u>.+?</u>', '<span style=".+?">.+?</span>']
 
 
@@ -466,18 +471,18 @@ READ_ONLY_DEFAULT = false
 # Disable expand on click: Prevent images and inline formulas from expanding on click
 DISABLE_EXPAND_WHEN_READ_ONLY = true
 
-# Auto collapse: Automatically collapse expanded images/formulas when clicking elsewhere
+# Auto collapse: Collapse expanded images/formulas when clicking elsewhere
 # Disabled if DISABLE_EXPAND_WHEN_READ_ONLY is true
 AUTO_COLLAPSE_WHEN_READ_ONLY = true
 
 # Directly open URLs via click (Standard mode requires Ctrl+Click)
 CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY = false
 
-# Disable context menu: Simplify context menu options to prevent misoperations
+# Disable context menu: Simplify the context menu to prevent accidental actions
 DISABLE_CONTEXT_MENU_WHEN_READ_ONLY = true
 
-# Remain available menu keys: Core menu options to retain when the context menu is disabled (Use devTools to find data-key attributes)
-# Disabled if DISABLE_CONTEXT_MENU_WHEN_READ_ONLY is false
+# Menu keys to keep: Core menu items to retain when the context menu is simplified (use DevTools to find the data-key attribute)
+# Has no effect if DISABLE_CONTEXT_MENU_WHEN_READ_ONLY is false
 REMAIN_AVAILABLE_MENU_KEY = ["typora-plugin", "dev-tool", "copy-img"]
 
 # Hint text: Status indicator displayed in the bottom right word count area
@@ -501,7 +506,8 @@ BLUR_DEFAULT = false
 #   hide: Hide unfocused components
 BLUR_TYPE = "blur"
 
-# Restore visibility on hover: Auto-focus components on mouse hover (Disabled if BLUR_TYPE is "hide")
+# Restore visibility on hover: Temporarily restore a blurred component's visibility when the mouse hovers over it
+# Disabled if BLUR_TYPE is "hide"
 RESTORE_ON_HOVER = true
 
 # Blur level (px, Disabled if BLUR_TYPE is "hide")
@@ -579,7 +585,7 @@ HOTKEY = ""
 # Enter myopic defocus mode automatically on Typora startup
 DEFOCUS_DEFAULT = false
 
-# =========== [ Defoucs Parameters ] ===========
+# =========== [ Defocus Parameters ] ===========
 # Screen size: Physical diagonal size in inches
 SCREEN_SIZE = 14
 
@@ -611,7 +617,7 @@ MODIFIER_KEY = {
 }
 
 # =========== [ Boundaries & Alignment ] ===========
-# Allow exceed limit: Permit images to scale beyond the parent container or screen viewport width
+# Allow exceeding size limit: Permit images to scale beyond the width of the parent container or screen viewport
 ALLOW_EXCEED_LIMIT = true
 
 # Image alignment
@@ -636,7 +642,7 @@ REMOVE_MIN_CELL_WIDTH = true
 # Drag threshold (px): Minimum mouse drag distance required to trigger table boundary adjustments
 DRAG_THRESHOLD = 20
 
-# Remember resize state: Retain table deformation state within the same Typora session
+# Remember resize state: Retain the table's resized column widths within the same Typora session
 RECORD_RESIZE = true
 
 
@@ -652,13 +658,13 @@ PAGING = true
 # Page length: Default number of rows per page in paging mode
 PAGE_LENGTH = 25
 
-# Allow table to collapse height: Auto-shrink table container height when data rows are sparse
+# Allow table height to collapse: Shrink the table container height automatically when there are few rows
 SCROLL_COLLAPSE = true
 
 # Enable ordering: Support ascending/descending data sorting via clicking table headers
 ORDERING = true
 
-# Default order: Automatically apply sorting to the first column on initialization
+# Default order: Sort by the first column by default when the table loads
 DEFAULT_ORDER = false
 
 # =========== [ Searching & Filtering ] ===========
@@ -705,16 +711,16 @@ CLICK_TO_POSITION = true
 # Requires CLICK_TO_POSITION = true
 POSITIONING_VIEWPORT_HEIGHT = 0.2
 
-# Filter or auto-complete out-of-order nodes that violate Markdown specs (e.g., H1 followed directly by H3)
+# Fix skipped heading levels that violate Markdown conventions (e.g., an H1 followed directly by an H3)
 FIX_SKIPPED_LEVEL_HEADERS = true
 
 # Strip visual styling markers (e.g., **bold**, `code`) from MindMap nodes
 REMOVE_HEADER_STYLES = true
 
-# Auto-fit window size: Triggered on diagram data updates
+# Auto-fit window size when the diagram data updates
 AUTO_FIT_ON_UPDATE = true
 
-# Auto-fit window size: Triggered on node fold/expand actions
+# Auto-fit window size when a node is folded or expanded
 AUTO_FIT_WHEN_FOLD = true
 
 # Preserve user fold states during diagram update/redraws
@@ -752,6 +758,8 @@ CANDIDATE_COLOR_SCHEMES = [
 # Default TOC Options: Customize TOC diagram appearance and behavior
 #   duration          : Node folding/expanding animation duration (ms)
 #   initialExpandLevel: Render depth on initialization (-1 to expand all)
+#   colorByParent     : If true, colors are assigned by parent node, and `colorByLevel`, `colorFreezeLevel` will be ignored
+#   colorByLevel      : If true, colors are assigned per depth level instead of per branch
 #   colorFreezeLevel  : Node depth where branch colors stop generating new variations
 #   maxInitialScale   : Max scaling ratio on first render
 #   zoom              : Allow manual zooming
@@ -774,6 +782,8 @@ DEFAULT_TOC_OPTIONS = {
   spacingVertical = 5,
   fitRatio = 0.95,
   paddingX = 8,
+  colorByParent = true,
+  colorByLevel = false,
   colorFreezeLevel = 7,
   zoom = true,
   pan = true,
@@ -795,14 +805,14 @@ DEFAULT_TOC_OPTIONS = {
 #   PADDING_VERTICAL: Graphic vertical padding
 #   IMAGE_SCALE: Export resolution scale multiplier
 #   IMAGE_QUALITY: JPG/WebP export quality (0.0 ~ 1.0)
-#   KEEP_ALPHA_CHANNEL: Preserve transparent background channel for PNG/WEBP exports
-#     true : Export with transparent background
-#     false: Fill background using BACKGROUND_COLOR
+#   KEEP_ALPHA_CHANNEL: Whether to preserve the transparent background channel for PNG/WebP exports
+#     true : Export with a transparent background (default)
+#     false: Fill the background using BACKGROUND_COLOR
 #   BACKGROUND_COLOR: Fallback background color for pixel exports
 #   TEXT_COLOR: Node font color
 #   OPEN_CIRCLE_COLOR: Color of expanded node indicators
-#   SHOW_PATH_INQUIRY_DIALOG: Prompt directory selection dialog before saving
-#   SHOW_IN_FINDER: Automatically open the output directory after saving
+#   SHOW_PATH_INQUIRY_DIALOG: Show a directory picker dialog before saving
+#   SHOW_IN_FINDER: Automatically open the output folder in the system file manager after saving
 DOWNLOAD_OPTIONS = {
   FILENAME = "{{filename}}_{{timestamp}}.svg",
   FOLDER = "",
@@ -824,29 +834,31 @@ DOWNLOAD_OPTIONS = {
 # Enable Fence Markmap (If false, all Fence-related configurations below are disabled)
 ENABLE_FENCE_MARKMAP = true
 
-# Hotkey to rapidly insert a Markmap code block
+# Hotkey to quickly insert a Markmap code block
 FENCE_HOTKEY = ""
 
-# Designated language alias for Markmap code block
+# Language alias used to identify Markmap code blocks
 FENCE_LANGUAGE = "markmap"
 
 # Interactive Mode: Prevents accidental mouse touches
 INTERACTIVE_MODE = true
 
-# Default structural height for the Fence Diagram
+# Default height for the Fence diagram
 DEFAULT_FENCE_HEIGHT = "300px"
 
 # Default background color for the Fence Diagram
 DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 
 # Default Fence Options: Customize appearance and behavior
-#   height         : structural height for the Fence Diagram
-#   backgroundColor: background color for the Fence Diagram
+#   height         : Default height for the Fence diagram
+#   backgroundColor: Default background color for the Fence diagram
 #   Other Keys mirror DEFAULT_TOC_OPTIONS
 DEFAULT_FENCE_OPTIONS = {
   duration = 500,
   initialExpandLevel = -1,
   maxInitialScale = 2,
+  colorByParent = false,
+  colorByLevel = false,
   colorFreezeLevel = 7,
   zoom = false,
   pan = false,
@@ -877,6 +889,8 @@ markmap:
   paddingX: 8
   fitRatio: 0.95
   initialExpandLevel: -1
+  colorByParent: false
+  colorByLevel: false
   colorFreezeLevel: 7
   maxInitialScale: 2
   color: ["#4E79A7", "#F28E2C", "#E15759", "#76B7B2", "#59A14F", "#EDC949", "#AF7AA1", "#FF9DA7", "#9C755F", "#BAB0AB"]
@@ -926,7 +940,8 @@ ENABLE_IMAGE = false   # Image captions
 ENABLE_FENCE = false   # Code block captions
 
 # =========== [ Styling & Alignment ] ===========
-# Show image file alias alongside image numbers (Performance intensive; use with caution)
+# Show the image's file name alongside its number
+# May impact performance on documents with many images; enable with caution
 # Requires ENABLE_IMAGE = true
 SHOW_IMAGE_NAME = false
 
@@ -948,7 +963,7 @@ POSITION_TABLE = "after"
 # Retain injected numbering styling when exporting to HTML/PDF
 ENABLE_WHEN_EXPORT = true
 
-# Hijacking hook to apply numbering logic directly to headers during export (Advanced JS Config)
+# Custom hook that applies numbering logic directly to headers during export (advanced JS config)
 # Requires ENABLE_WHEN_EXPORT = true
 APPLY_EXPORT_HEADER_NUMBERING = """
 (headers) => {
@@ -1002,7 +1017,7 @@ APPLY_EXPORT_HEADER_NUMBERING = """
 #   di : Disc (●)
 #   ci : Circle (○)
 #   sq : Square (■)
-#   no : None (Hides numbering)
+#   no : No numbering (hides the counter entirely)
 
 # Layout Config Definitions
 #   name    : Unique layout identifier
@@ -1194,7 +1209,8 @@ LINE_BREAKS_ON_COPY = "preserve"
 #   false: Copy as plain text
 COPY_AS_MARKDOWN = false
 
-# Enable [Indent] button: One-click hierarchical auto-formatting (Note: Poor compatibility on older Typora versions)
+# Enable the [Indent] button: One-click hierarchical auto-formatting
+# Note: May not work reliably on older versions of Typora
 ENABLE_INDENT = true
 
 # Bypass auto-formatting logic for specific code languages to prevent syntax breakage
@@ -1228,7 +1244,7 @@ EXPAND_ON_FOCUS = false
 # Fold on blur: Auto-collapse expanded code blocks when losing cursor focus
 FOLD_ON_BLUR = false
 
-# Feedback overlay retention time (ms) for success visual cues (e.g., check mark after copying)
+# How long (ms) to show the success feedback icon (e.g., the checkmark shown after copying)
 HINT_DURATION = 1000
 
 # =========== [ Custom Buttons ] ===========
@@ -1325,17 +1341,19 @@ ENABLE_CODE_TITLE = false
 CODE_TITLE_PATTERN = '.+?\s+title="(?<title>[^"]+)"'
 
 # =========== [ Advanced ] ===========
-# Auto-align wrapped lines: Maintain proper indentation for long, wrapped text lines. Note: High rendering performance cost
-# See: https://github.com/codemirror/codemirror5/issues/2085
+# Auto-align wrapped lines: Maintain proper indentation for long, wrapped text lines
+# Note: High rendering performance cost
 INDENTED_WRAPPED_LINE = false
 
-# Force immediate rendering of all code blocks regardless of viewport. Use with extreme caution (Induces heavy lag)
+# Force all code blocks to render immediately, regardless of viewport
+# Use with extreme caution: this can cause severe lag on documents with many code blocks
 PRELOAD_ALL_FENCES = false
 
-# Splices code output. Note: Relies on CSS injection, prone to conflict with third-party themes
+# Show code and its rendered output side by side
+# Note: Relies on CSS injection; may conflict with third-party themes
 SIDE_BY_SIDE_VIEW = false
 
-# Inject visual glyphs for tabular indents
+# Show a visible glyph for each tab character used in indentation
 VISIBLE_TABS = false
 
 
@@ -1465,11 +1483,11 @@ THUMBNAIL_HEIGHT = "80px"
 # Extra thumbnail preload count
 PRELOAD_THUMBNAIL_COUNT = 3
 
-# Thumbnail object fit strategy: Adjust image sizing in thumbnail container
-#   fill      : Stretch to fit, may cause distortion
-#   contain   : Scale proportionally to guarantee full display
-#   cover     : Maintain original size, crop overflow
-#   scale-down: Similar to 'contain', but will not upscale if smaller than container
+# Thumbnail object-fit strategy: Adjust how images are sized within the thumbnail container
+#   fill      : Stretch to fill the container, may cause distortion
+#   contain   : Scale proportionally to fit entirely inside the container
+#   cover     : Scale proportionally to fill the container, cropping any overflow
+#   scale-down: Same as 'contain', but never upscales an image smaller than the container
 THUMBNAIL_OBJECT_FIT = "scale-down"
 
 # Waterfall wall matrix column count
@@ -1477,36 +1495,36 @@ WATERFALL_COLUMNS = 5
 
 # =========== [ Toolbar & Interaction ] ===========
 # Available functions for the viewer toolbar and interactions
-#  dummy         : No Function
+#  dummy         : No function
 #  close         : Close
 #  download      : Download online image
 #  scroll        : Scroll to document location
-#  play          : Play Carousel
+#  play          : Play carousel
 #  location      : Open image path
-#  nextImage     : Next Image
-#  previousImage : Previous Image
-#  firstImage    : First Image
-#  lastImage     : Last Image
-#  thumbnailNav  : Show/Hide Thumbnail Navigation
-#  waterfall     : Show/Hide Waterfall
-#  zoomIn        : Zoom In
-#  zoomOut       : Zoom Out
-#  rotateLeft    : Rotate Left
-#  rotateRight   : Rotate Right
-#  hFlip         : Flip Horizontally
-#  vFlip         : Flip Vertically
-#  translateLeft : Move Left
-#  translateRight: Move Right
-#  translateUp   : Move Up
-#  translateDown : Move Down
-#  incHSkew      : Increase Horizontal Skew
-#  decHSkew      : Decrease Horizontal Skew
-#  incVSkew      : Increase Vertical Skew
-#  decVSkew      : Decrease Vertical Skew
-#  originSize    : Restore Original Size
-#  fitScreen     : Fit to Screen
-#  autoSize      : Toggle between Original and Screen Size
-#  restore       : Restore Initial State
+#  nextImage     : Next image
+#  previousImage : Previous image
+#  firstImage    : First image
+#  lastImage     : Last image
+#  thumbnailNav  : Show/Hide thumbnail navigation
+#  waterfall     : Show/Hide waterfall
+#  zoomIn        : Zoom in
+#  zoomOut       : Zoom out
+#  rotateLeft    : Rotate left
+#  rotateRight   : Rotate right
+#  hFlip         : Flip horizontally
+#  vFlip         : Flip vertically
+#  translateLeft : Move left
+#  translateRight: Move right
+#  translateUp   : Move up
+#  translateDown : Move down
+#  incHSkew      : Increase horizontal skew
+#  decHSkew      : Decrease horizontal skew
+#  incVSkew      : Increase vertical skew
+#  decVSkew      : Decrease vertical skew
+#  originSize    : Restore original size
+#  fitScreen     : Fit to screen
+#  autoSize      : Toggle between original and screen size
+#  restore       : Restore initial state
 
 # Built-in control buttons displayed on the toolbar (Local images automatically hide 'download')
 # Includes an additional 'info' option for displaying function tooltips
@@ -1598,7 +1616,7 @@ NAME = ""
 # When exporting to PDF/HTML, embed network images via inline Base64 to prevent loss
 EMBED_NETWORK_IMAGES = false
 
-# Download thread concurrency limit (Applies when EMBED_NETWORK_IMAGES = true)
+# Max number of concurrent download threads (applies when EMBED_NETWORK_IMAGES = true)
 DOWNLOAD_THREADS = 10
 
 
@@ -1608,13 +1626,13 @@ ENABLE = true
 NAME = ""
 
 # =========== [ Interaction & State ] ===========
-# Ctrl+Wheel: Scroll sidebar horizontally
+# Hold Ctrl and scroll the mouse wheel to scroll the sidebar horizontally
 CTRL_WHEEL_TO_SCROLL_SIDEBAR = true
 
-# Memory strategy for Outline fold state
+# How to persist the fold state of outline nodes
 #   alwaysUnfold: Always unfold all nodes
 #   alwaysFold  : Always fold all nodes
-#   remember    : Remember the previous fold state
+#   remember    : Remember the fold state from last time
 OUTLINE_FOLD_STATE = "remember"
 
 # Allow drag-and-drop outline headers to rearrange Markdown document structure
@@ -1663,16 +1681,16 @@ BACKGROUND_COLOR = ""
 # Ignore directories containing fewer than this number of files
 MIN_FILES_TO_DISPLAY = 0
 
-# Max file size (in bytes) to count (Typora limit: 2,000,000 bytes)
+# Max file size (bytes): Ignore files larger than this threshold. Typora's own limit is 2,000,000. Set to -1 for unlimited
 MAX_SIZE = 2000000
 
-# Max number of entities to process before halting the search (-1 means no limit)
+# Max results: Automatically stop searching once this many files are counted. Set to -1 for unlimited
 MAX_ENTITIES = 10000
 
 # Concurrency limit for file counting tasks
 CONCURRENCY_LIMIT = 20
 
-# Follow symbolic links: If enabled, note the risk of infinite loops caused by closed-loop directories
+# Follow symbolic links: If enabled, be aware that circular symlinks can cause infinite loops
 FOLLOW_SYMBOLIC_LINKS = false
 
 # Allowed file extensions to be included in the count statistics
@@ -1958,13 +1976,13 @@ GESTURES = [
 # Execution Strategy
 #   fourWay : 4-Way
 #   eightWay: 8-Way
-#   adaptive: Adaptive: Prioritizes 8-way recognition, but automatically falls back to 4-way for complex trajectories to improve accuracy
+#   adaptive: Prioritizes 8-way recognition, but automatically falls back to 4-way for complex trajectories to improve accuracy
 STRATEGY = "adaptive"
 
 # Hysteresis Tolerance: Increases turn-detection threshold (degrees) to filter out jitter at boundary angles
 HYSTERESIS = 8
 
-# Suppression key: When holding down the suppression key and swipe the mouse, it is no longer recognized as a mouse gesture
+# Suppression key: While this key is held down, mouse swipes are not recognized as gestures
 #   ""     : Do NOT use the suppression key
 #   "alt"  : alt
 #   "ctrl" : ctrl
@@ -2185,9 +2203,9 @@ SHOW_ACTION_OPTIONS_ICON = true
 RETAIN_ON_BLUR = false
 
 # Min width constraint for submenus
-#   ""       : Inherits default width (aligns with first-level menu width)
-#   "inherit": Dynamically adapts to text length
-#   integer  : Specifies a precise pixel value
+#   ""        : Inherit the default width (same as the first-level menu)
+#   "inherit" : Dynamically adapt to the text content's length
+#   <a number>: Specify an exact width in pixels
 MENU_MIN_WIDTH = ""
 
 # =========== [ Menu Option ] ===========
@@ -2455,7 +2473,7 @@ NAME = ""
 HOTKEY = ""
 
 # =========== [ Template Application Options ] ===========
-# Automatically load and open the newly generated file within the editor
+# Automatically open the newly generated file in the editor
 AUTO_OPEN = true
 
 # =========== [ Built-in Template Variables ] ===========
@@ -2566,7 +2584,7 @@ UPLOAD_CSDN_HOTKEY = ""
 # Show confirmation dialog before uploading
 reconfirm = true
 
-# Selenium headless mode for covert execution
+# Run Selenium in headless mode
 selenium = { headless = true }
 
 # Authentication parameters for WordPress integration
@@ -2595,7 +2613,7 @@ cnblog = {
 
 # Authentication parameters for CSDN integration
 #   enabled: Enabled
-#   cookie : Authentication Cookie string (Requires manual browser extraction; monitor for expiry)
+#   cookie : Authentication cookie string. Must be extracted manually from the browser, and re-extracted once it expires
 csdn = {
   enabled = true,
   cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s; log_Id_click=37......",
@@ -2626,7 +2644,7 @@ HOTKEY_GO_FORWARD = "alt+ArrowRight"
 HOTKEY_GO_BACK = "alt+ArrowLeft"
 
 # =========== [ Storage Limit ] ===========
-# Max capacity limit for cursor history
+# Max number of entries retained in cursor history
 MAX_HISTORY_ENTRIES = 100
 
 
@@ -2723,7 +2741,7 @@ HOTKEY = ""
 
 [remote_control]
 # =========== [ Basic ] ===========
-# Warning: Activating this grants remote execution permissions over this machine. Proceed with extreme caution
+# Warning: Enabling this grants remote clients the ability to execute commands on this machine. Proceed with extreme caution
 ENABLE = false
 NAME = ""
 
@@ -2735,7 +2753,7 @@ SERVER_PORT = 5080
 # Auth Token
 AUTH_TOKEN = "secret-token"
 
-# Warning: Enabling this allows remote execution of arbitrary JavaScript code, posing serious security risks
+# Warning: Enabling this allows remote clients to execute arbitrary JavaScript code on this machine, posing serious security risks
 ENABLE_EVAL = false
 
 # Allow modifying plugin configuration via RPC
@@ -3598,7 +3616,7 @@ TEMPLATE = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE
 
 [test]
 # =========== [ Basic ] ===========
-# Developers only. Do NOT enable
+# For plugin developers only. Do not enable in normal use — this section is for debugging purposes
 ENABLE = false
 NAME = ""
 

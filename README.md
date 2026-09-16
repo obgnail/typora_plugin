@@ -98,15 +98,6 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 
 > Welcome to submit an [Issue](https://github.com/obgnail/typora_plugin/issues/new) to report bugs or discuss features, and Pull Requests are always welcome. If this project enhances your workflow, please consider leaving a Star ⭐.
 
-## Q&A
-
-- **What are the Typora version requirements?** Typora version must be ≥ 0.9.98 (encompassing the last free beta version and subsequent official releases).
-- **How to adjust plugin configurations?** `Right-click menu` -> `Interactive Plugins` -> `Preferences`. **All user preferences are respected**; every plugin and feature can be independently and permanently enabled or disabled.
-- **How to execute a plugin system upgrade?** `Right-click menu` -> `Interactive Plugins` -> `Preferences` -> `Check for Updates`.
-- **How to safely uninstall plugins?** `Right-click menu` -> `Interactive Plugins` -> `Preferences` -> `Uninstall Plugins`.
-- **Is macOS supported?** Due to the lack of a testing environment and Apple hardware, macOS is currently not natively supported.
-- **Other technical questions or discussions?** Please visit the [AI Wiki](https://deepwiki.com/obgnail/typora_plugin) for documentation or join the community discussions.
-
 ## How to Use: Windows/Linux Platform
 
 Refer to the [Installation Tutorial](https://github.com/obgnail/typora_plugin/issues/847) for visual guidance.
@@ -463,6 +454,15 @@ For specific interface definitions and technical specifications, please refer to
 A cross-platform document publishing engine. Supports automated pushing of rendered Markdown documents from the current workspace to pre-configured third-party content platforms via trigger behaviors (e.g., hotkeys or UI interactions).
 
 For detailed platform support lists and configuration guidelines, please refer to the sub-document: [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/article_uploader/README.md).
+
+## Q&A
+
+- **What are the Typora version requirements?** Typora version must be ≥ 0.9.98 (encompassing the last free beta version and subsequent official releases).
+- **How to adjust plugin configurations?** `Right-click menu` -> `Interactive Plugins` -> `Preferences`. **All user preferences are respected**; every plugin and feature can be independently and permanently enabled or disabled.
+- **How to execute a plugin system upgrade?** `Right-click menu` -> `Interactive Plugins` -> `Preferences` -> `Check for Updates`.
+- **How to safely uninstall plugins?** `Right-click menu` -> `Interactive Plugins` -> `Preferences` -> `Uninstall Plugins`.
+- **Is macOS supported?** Due to the lack of a testing environment and Apple hardware, macOS is currently not natively supported.
+- **Other technical questions or discussions?** Please visit the [AI Wiki](https://deepwiki.com/obgnail/typora_plugin) for documentation or join the community discussions.
 
 ## Acknowledgements
 

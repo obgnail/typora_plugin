@@ -10,8 +10,8 @@
  * outer wrapper and seamlessly degrades into an inline input field, sitting alongside its siblings.
  */
 
-const OPTION_SCOPE = Symbol("Schema:OptionScope")
-const I18N_PROP = Symbol("Schema:I18nProp")
+const OPTION_SCOPE = Symbol("schema:option-scope")
+const I18N_PROP = Symbol("schema:i18n-prop")
 
 const UNITS = {
   byte: "byte", centimeter: "centimeter", degree: "degree", em: "em", inch: "inch", item: "item",
@@ -27,8 +27,8 @@ const OPTS = {
 
 let Group, When
 let Switch, Text, Password, Color, Integer, Float, Icon, Range, Action, Static,
-  Hint, Divider, Hotkey, Textarea, Code, Select, Segment, Radio, Checkbox, Transfer,
-  ToggleSort, Dict, Palette, Table, Object_, Array_
+  Hint, Divider, Hotkey, ModifierKey, Textarea, Code, Select, Segment, Radio,
+  Checkbox, Transfer, ToggleSort, Dict, Palette, Table, Object_, Array_
 
 let DEPS, FRAG
 
@@ -63,8 +63,8 @@ const initDSL = (dsl) => {
 
   ;({
     Switch, Text, Password, Color, Integer, Float, Icon, Range, Action, Static,
-    Hint, Divider, Hotkey, Textarea, Code, Select, Segment, Radio, Checkbox, Transfer,
-    ToggleSort, Dict, Palette, Table, Object: Object_, Array: Array_,
+    Hint, Divider, Hotkey, ModifierKey, Textarea, Code, Select, Segment, Radio,
+    Checkbox, Transfer, ToggleSort, Dict, Palette, Table, Object: Object_, Array: Array_,
   } = enhancedControls)
 
   const { preset, presetFor } = dsl.Extend
@@ -330,9 +330,9 @@ const schema_resize_image = () => [
     Segment("IMAGE_ALIGN").Options(["left", "center", "right"]),
   ),
   Group("modifierKeys",
-    Hotkey("MODIFIER_KEY.TEMPORARY").Tooltip("modifyKeyExample"),
-    Hotkey("MODIFIER_KEY.PERSISTENT"),
-  ),
+    ModifierKey("MODIFIER_KEY.TEMPORARY"),
+    ModifierKey("MODIFIER_KEY.PERSISTENT"),
+  ).Tooltip("modifyKeyExample"),
   FRAG.SettingHandler(),
 ]
 
@@ -388,8 +388,10 @@ const schema_markmap = () => [
     Switch("DEFAULT_TOC_OPTIONS.zoom"),
     Switch("DEFAULT_TOC_OPTIONS.pan"),
     Switch("DEFAULT_TOC_OPTIONS.toggleRecursively"),
+    Switch("DEFAULT_TOC_OPTIONS.colorByParent"),
+    Switch("DEFAULT_TOC_OPTIONS.colorByLevel").ShowIf(When.false("DEFAULT_TOC_OPTIONS.colorByParent")),
+    Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel").Min(1).Max(7).Step(1).ShowIf(When.false("DEFAULT_TOC_OPTIONS.colorByParent")),
     Range("DEFAULT_TOC_OPTIONS.initialExpandLevel").Min(1).Max(7).Step(1),
-    Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel").Min(1).Max(7).Step(1),
     Range("DEFAULT_TOC_OPTIONS.fitRatio").Min(0.5).Max(1).Step(0.01),
     Range("DEFAULT_TOC_OPTIONS.maxInitialScale").Min(0.5).Max(5).Step(0.25),
     Integer("DEFAULT_TOC_OPTIONS.maxWidth").Unit(UNITS.pixel).Min(0).Max(100).Step(5).Tooltip("zero"),
@@ -428,8 +430,10 @@ const schema_markmap = () => [
     Switch("DEFAULT_FENCE_OPTIONS.zoom"),
     Switch("DEFAULT_FENCE_OPTIONS.pan"),
     Switch("DEFAULT_FENCE_OPTIONS.toggleRecursively"),
+    Switch("DEFAULT_FENCE_OPTIONS.colorByParent"),
+    Switch("DEFAULT_FENCE_OPTIONS.colorByLevel").ShowIf(When.false("DEFAULT_FENCE_OPTIONS.colorByParent")),
+    Range("DEFAULT_FENCE_OPTIONS.colorFreezeLevel").Min(1).Max(7).Step(1).ShowIf(When.false("DEFAULT_FENCE_OPTIONS.colorByParent")),
     Range("DEFAULT_FENCE_OPTIONS.initialExpandLevel").Min(1).Max(7).Step(1),
-    Range("DEFAULT_FENCE_OPTIONS.colorFreezeLevel").Min(1).Max(7).Step(1),
     Range("DEFAULT_FENCE_OPTIONS.fitRatio").Min(0.5).Max(1).Step(0.01),
     Range("DEFAULT_FENCE_OPTIONS.maxInitialScale").Min(0.5).Max(5).Step(0.25),
     Integer("DEFAULT_FENCE_OPTIONS.maxWidth").Unit(UNITS.pixel).Min(0).Max(1000).Step(10).Tooltip("zero"),
@@ -626,11 +630,11 @@ const schema_collapse_paragraph = () => [
     Switch("STRICT_MODE_IN_CONTEXT_MENU"),
   ),
   Group("modifierKey",
-    Hotkey("MODIFIER_KEY.COLLAPSE_SINGLE").Tooltip("modifierKeyExample"),
-    Hotkey("MODIFIER_KEY.COLLAPSE_SIBLINGS"),
-    Hotkey("MODIFIER_KEY.COLLAPSE_ALL_SIBLINGS"),
-    Hotkey("MODIFIER_KEY.COLLAPSE_RECURSIVE"),
-  ),
+    ModifierKey("MODIFIER_KEY.COLLAPSE_SINGLE"),
+    ModifierKey("MODIFIER_KEY.COLLAPSE_SIBLINGS"),
+    ModifierKey("MODIFIER_KEY.COLLAPSE_ALL_SIBLINGS"),
+    ModifierKey("MODIFIER_KEY.COLLAPSE_RECURSIVE"),
+  ).Tooltip("modifierKeyExample"),
   FRAG.SettingHandler(),
 ]
 
@@ -916,7 +920,7 @@ const schema_right_click_menu = () => [
 
 const schema_pie_menu = () => [
   FRAG.Base(true),
-  Hotkey("MODIFIER_KEY").Tooltip("example"),
+  ModifierKey("MODIFIER_KEY").Tooltip("modifierKeyExample"),
   Table("BUTTONS")
     .Headers(["CALLBACK", "ICON"])
     .NestedBoxes([
@@ -983,7 +987,7 @@ const schema_asset_root_redirect = () => [
 const schema_bookmark = () => [
   FRAG.Base(true),
   Group(
-    Hotkey("MODIFIER_KEY").Tooltip("modifierKeyExample"),
+    ModifierKey("MODIFIER_KEY").Tooltip("modifierKeyExample"),
     Switch("AUTO_POPUP_WINDOW"),
   ),
   FRAG.SettingHandler(),

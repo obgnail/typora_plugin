@@ -329,6 +329,11 @@ class TOCMarkmap {
             value: "color",
             schema: [
               C.Radio("DEFAULT_TOC_OPTIONS.color").Options(colorOptions),
+              Group(
+                C.Switch("DEFAULT_TOC_OPTIONS.colorByParent"),
+                C.Switch("DEFAULT_TOC_OPTIONS.colorByLevel").ShowIf(When.false("DEFAULT_TOC_OPTIONS.colorByParent")),
+                C.Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel").Min(1).Max(7).Step(1).ShowIf(When.false("DEFAULT_TOC_OPTIONS.colorByParent")),
+              ),
             ],
           })
           .Tab({
@@ -339,9 +344,7 @@ class TOCMarkmap {
               C.Range("DEFAULT_TOC_OPTIONS.paddingX").Min(0).Max(100).Step(1),
               C.Range("DEFAULT_TOC_OPTIONS.maxWidth").Tooltip(T("zero")).Min(0).Max(1000).Step(10),
               C.Range("DEFAULT_TOC_OPTIONS.nodeMinHeight").Min(5).Max(50).Step(1),
-              C.Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel").Min(1).Max(7).Step(1),
               C.Range("DEFAULT_TOC_OPTIONS.initialExpandLevel").Min(1).Max(7).Step(1),
-              C.Range("DEFAULT_TOC_OPTIONS.duration").Min(0).Max(1000).Step(10),
             )],
           })
           .Tab({
@@ -356,17 +359,6 @@ class TOCMarkmap {
             )],
           })
           .Tab({
-            value: "interactive",
-            schema: [Group(
-              C.Switch("USE_CONTEXT_MENU"),
-              C.Switch("DEFAULT_TOC_OPTIONS.zoom"),
-              C.Switch("DEFAULT_TOC_OPTIONS.pan"),
-              C.Switch("DEFAULT_TOC_OPTIONS.toggleRecursively"),
-              C.Switch("CLICK_TO_POSITION"),
-              C.Range("POSITIONING_VIEWPORT_HEIGHT").Tooltip(T("positioningViewPort")).Min(0.1).Max(0.95).Step(0.01).ShowIf(When.true("CLICK_TO_POSITION")),
-            )],
-          })
-          .Tab({
             value: "behavior",
             schema: [Group(
               C.Switch("FIX_SKIPPED_LEVEL_HEADERS"),
@@ -375,6 +367,18 @@ class TOCMarkmap {
               C.Switch("AUTO_FIT_ON_UPDATE"),
               C.Switch("AUTO_FIT_WHEN_FOLD"),
               C.Switch("AUTO_COLLAPSE_PARAGRAPH_ON_FOLD").Tooltip(T("experimental")).Disabled(!pluginEnabled),
+            )],
+          })
+          .Tab({
+            value: "interactive",
+            schema: [Group(
+              C.Switch("USE_CONTEXT_MENU"),
+              C.Switch("DEFAULT_TOC_OPTIONS.zoom"),
+              C.Switch("DEFAULT_TOC_OPTIONS.pan"),
+              C.Switch("DEFAULT_TOC_OPTIONS.toggleRecursively"),
+              C.Switch("CLICK_TO_POSITION"),
+              C.Range("POSITIONING_VIEWPORT_HEIGHT").Tooltip(T("positioningViewPort")).Min(0.1).Max(0.95).Step(0.01).ShowIf(When.true("CLICK_TO_POSITION")),
+              C.Range("DEFAULT_TOC_OPTIONS.duration").Min(0).Max(1000).Step(10),
             )],
           })
           .Tab({

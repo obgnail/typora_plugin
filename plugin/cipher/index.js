@@ -30,7 +30,7 @@ class CipherPlugin extends BasePlugin {
 
     const { response, checkboxChecked } = await this.utils.showMessageBox({
       type: "info",
-      title: this.i18n.t("act.encrypt"),
+      title: this.pluginName,
       message: this.i18n.t(isCiphered ? "msgBox.encrypt.onCiphered" : "msgBox.encrypt.onPlain"),
       checkboxLabel: this.i18n.t("disableReminder"),
     })
@@ -52,7 +52,7 @@ class CipherPlugin extends BasePlugin {
     }
     await this.utils.showMessageBox({
       type: "info",
-      title: this.i18n.t("act.decrypt"),
+      title: this.pluginName,
       message: this.i18n.t("msgBox.decrypt.onPlain"),
       buttons: [this.i18n.t("confirm")],
     })
