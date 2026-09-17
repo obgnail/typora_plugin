@@ -509,7 +509,8 @@ mark.feature-highlight {
 .control[data-type="color"] > .control-right,
 .control[data-type="unit"] > .control-right,
 .control[data-type="icon"] > .control-right,
-.control[data-type="range"] > .control-right {
+.control[data-type="range"] > .control-right,
+.control[data-type="modifierKey"] > .control-right {
   flex: 42;
 }
 
@@ -875,6 +876,55 @@ textarea:hover,
   opacity: 1;
   pointer-events: auto;
   transform: scale(1);
+}
+
+/* ModifierKey */
+.modifier-key-wrap {
+  display: flex;
+  margin-left: auto;
+}
+
+.modifier-key-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 4px 10px;
+  font-family: var(--ff-font-family-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ff-text-primary);
+  background: var(--ff-bg-surface);
+  border: var(--ff-border-width) var(--ff-border-style) var(--ff-border-base);
+  border-radius: var(--ff-radius-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.modifier-key-item + .modifier-key-item {
+  margin-left: 6px;
+}
+
+.modifier-key-item:hover {
+  border-color: var(--ff-border-hover);
+  background: var(--ff-bg-surface-hover);
+}
+
+.modifier-key-item.active {
+  color: var(--ff-color-primary);
+  border-color: var(--ff-color-primary);
+  background: var(--ff-color-primary-bg);
+}
+
+.modifier-key-item.active:hover {
+  border-color: var(--ff-color-primary-hover);
+}
+
+.modifier-key-item.plugin-common-readonly {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 /* Unit */

@@ -106,14 +106,13 @@ class FastForm extends HTMLElement {
         : typeof err === "string" ? err : "Verification Failed"
       utils.notification.show(msg, "error")
     }
+    const errorHighlightTimers = new Map()
     const highlightError = (changeContext) => {
       const context = this.resolveFieldContext(changeContext.key)
       if (!context) return
       const el = this.options.layout.findControl(context.field.key, this.form)
-      if (!el) return
-      el.classList.add("input-error")
-      // el.scrollIntoView({ behavior: "smooth", block: "center" })
-      setTimeout(() => el.classList.remove("input-error"), 3000)
+      const op = { key: context.field.key, duration: 3000, className: "input-error", timers: errorHighlightTimers }
+      flashHighlight(el, op)
     }
     const defaultHooks = {
       onConstruct: (form) => void 0,
@@ -620,6 +619,25 @@ class States {
   clear = () => this.modules.clear()
 }
 
+function flashHighlight(el, { key, timers, className = "input-success", duration = 3000, scroll = false } = {}) {
+  if (!el || !className || !duration) return
+
+  if (timers) {
+    const prevTimer = timers.get(key)
+    if (prevTimer) clearTimeout(prevTimer)
+  }
+
+  el.classList.add(className)
+  if (scroll) el.scrollIntoView({ behavior: "smooth", block: "center" })
+
+  const timerId = setTimeout(() => {
+    el.classList.remove(className)
+    timers?.delete(key)
+  }, duration)
+
+  timers?.set(key, timerId)
+}
+
 function validateDefinition(name, definition, checks, options = {}) {
   const { prefix } = options
   if (prefix && (typeof name !== "string" || !name.startsWith(prefix))) {
@@ -928,10 +946,10 @@ const Feature_Highlight = {
     const highlight = (keyword) => {
       clear()
 
-      if (!keyword) return
+      if (!keyword) return { count: 0, firstMatchEl: null }
 
       const formEl = form.getFormEl()
-      if (!formEl) return
+      if (!formEl) return { count: 0, firstMatchEl: null }
 
       let regex
       if (typeof keyword === "string" && keyword.trim()) {
@@ -940,7 +958,7 @@ const Feature_Highlight = {
       } else if (keyword instanceof RegExp) {
         regex = new RegExp(keyword.source, keyword.flags.includes("g") ? keyword.flags : keyword.flags + "g")
       } else {
-        return
+        return { count: 0, firstMatchEl: null }
       }
 
       const walker = document.createTreeWalker(formEl, NodeFilter.SHOW_TEXT, {
@@ -959,6 +977,7 @@ const Feature_Highlight = {
         targetNodes.push(node)
       }
 
+      let matchCount = 0
       let firstMatchEl = null
       targetNodes.forEach(textNode => {
         const text = textNode.nodeValue
@@ -979,6 +998,7 @@ const Feature_Highlight = {
           mark.textContent = match[0]
           frag.appendChild(mark)
           lastIdx = match.index + match[0].length
+          matchCount++
         })
 
         if (lastIdx < text.length) {
@@ -997,6 +1017,8 @@ const Feature_Highlight = {
       if (options.scrollToFirstMatchOnHighlight && firstMatchEl) {
         firstMatchEl.scrollIntoView({ behavior: "smooth", block: "center" })
       }
+
+      return { count: matchCount, firstMatchEl }
     }
 
     registerApi("highlight", { highlight, clear })
@@ -1407,6 +1429,7 @@ const Feature_StandardDSL = {
       Color: defineField("color", INLINE_TEXT),
       Icon: defineField("icon", INLINE_TEXT),
       Hotkey: defineField("hotkey", { ...INLINE_INPUT, idlePlaceholder: INNER, listenPlaceholder: INNER }),
+      ModifierKey: defineField("modifierKey", INLINE_INPUT),
       Range: defineField("range", INLINE_NUM),
       Number: defineField("number", { ...INLINE_NUM, ...PLACEHOLDER, liveCommit: INNER }),
       Integer: defineField("integer", { ...INLINE_NUM, ...PLACEHOLDER, liveCommit: INNER }, { type: "number", isInteger: true }),
@@ -2081,7 +2104,7 @@ const Feature_Validation = {
     const state = initState({ rawRules: new Map(), compiledRules: new Map() })
 
     const isFieldSkippable = (key) => {
-      const el = form.options.layout.findControl(key, form.form)
+      const el = form.options.layout.findControl(key, form.getFormEl())
       if (!el) return false
       return el.classList.contains("plugin-common-hidden") || el.classList.contains("plugin-common-readonly")
     }
@@ -2517,21 +2540,9 @@ const Feature_History = {
     }
 
     const highlightControl = (key) => {
-      const { historyFeedbackClass: cls, historyFeedbackDuration: duration } = options
-      if (!cls || !duration) return
-      const el = form.options.layout.findControl(key, form.form)
-      if (!el) return
-
-      const prevTimer = state.highlightTimers.get(key)
-      if (prevTimer) clearTimeout(prevTimer)
-
-      el.classList.add(cls)
-      el.scrollIntoView({ behavior: "smooth", block: "center" })
-      const timerId = setTimeout(() => {
-        el.classList.remove(cls)
-        state.highlightTimers.delete(key)
-      }, duration)
-      state.highlightTimers.set(key, timerId)
+      const el = form.options.layout.findControl(key, form.getFormEl())
+      const op = { key, duration: options.historyFeedbackDuration, className: options.historyFeedbackClass, timers: state.highlightTimers, scroll: true }
+      flashHighlight(el, op)
     }
 
     const replay = (entry, value) => {
@@ -3745,6 +3756,36 @@ const Control_Segment = {
   },
 }
 
+const Control_ModifierKey = {
+  create: ({ field }) => {
+    const { key } = getCommonHTMLAttrs(field)
+    const items = Object.entries(Control_ModifierKey.MODIFIERS)
+      .map(([k, v]) => `<button type="button" class="modifier-key-item" data-value="${k}">${v}</button>`)
+      .join("")
+    return `<div class="modifier-key-wrap" ${key}>${items}</div>`
+  },
+  update: ({ element, value }) => {
+    const wrap = element.querySelector(".modifier-key-wrap")
+    if (!wrap) return
+    const selected = String(value || "").toLowerCase().split("+").map(s => s.trim()).filter(Boolean)
+    wrap.querySelectorAll(".modifier-key-item").forEach(item => item.classList.toggle("active", selected.includes(item.dataset.value)))
+  },
+  bindEvents: ({ form }) => {
+    form.onEvent("click", ".modifier-key-item", function () {
+      const key = this.closest(".modifier-key-wrap").dataset.key
+      const clicked = this.dataset.value
+      const current = String(form.getData(key) || "").toLowerCase().split("+").map(s => s.trim()).filter(Boolean)
+      const idx = current.indexOf(clicked)
+      const next = idx > -1
+        ? [...current.slice(0, idx), ...current.slice(idx + 1)]
+        : [...current, clicked]
+      const nextValue = Object.keys(Control_ModifierKey.MODIFIERS).filter(k => next.includes(k)).join("+")
+      form.reactiveCommit(key, nextValue)
+    })
+  },
+  MODIFIERS: { ctrl: "Ctrl", shift: "Shift", alt: "Alt" },
+}
+
 const Control_Radio = {
   controlOptions: {
     columns: 1,
@@ -4767,6 +4808,7 @@ FastForm.registerControl("object", Control_Object)
 FastForm.registerControl("array", Control_Array)
 FastForm.registerControl("select", Control_Select)
 FastForm.registerControl("segment", Control_Segment)
+FastForm.registerControl("modifierKey", Control_ModifierKey)
 FastForm.registerControl("radio", Control_Radio)
 FastForm.registerControl("checkbox", Control_Checkbox)
 FastForm.registerControl("transfer", Control_Transfer)
