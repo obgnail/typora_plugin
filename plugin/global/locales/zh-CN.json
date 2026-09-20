@@ -1317,6 +1317,10 @@
     "$label.MARP_CORE_OPTIONS": "Marp Core 配置",
     "$tooltip.viewMarpOptions": "选项文档"
   },
+  "infographic": {
+    "pluginName": "Infographic",
+    "$label.RESOURCE_URI": "CDN"
+  },
   "callouts": {
     "pluginName": "Callouts",
     "$label.SET_TITLE_COLOR": "高亮标题",

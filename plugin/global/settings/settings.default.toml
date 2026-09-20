@@ -2244,6 +2244,7 @@ LIST = [
   "wavedrom",
   "drawIO",
   "plantUML",
+  "infographic",
   "marp",
   "---",
   "callouts",
@@ -3308,7 +3309,7 @@ PROXY = ""
 CACHED_URL_COUNT = 20
 
 # =========== [ Language & Mode ] ===========
-# Language used to render drawIO code block
+# Language used to render draw.io code block
 LANGUAGE = "drawio"
 
 # Interactive Mode: Prevents accidental mouse touches
@@ -3376,7 +3377,7 @@ PROXY = ""
 CACHED_URL_COUNT = 20
 
 # =========== [ Language & Mode ] ===========
-# Language used to render plantUML code block
+# Language used to render PlantUML code block
 LANGUAGE = "plantuml"
 
 # Interactive Mode: Prevents accidental mouse touches
@@ -3407,6 +3408,52 @@ loop
   end
 end
 @enduml"""
+
+
+[infographic]
+# =========== [ Basic ] ===========
+ENABLE = true
+NAME = ""
+HOTKEY = ""
+
+# =========== [ Language & Mode ] ===========
+# Language used to render Infographic code block
+LANGUAGE = "infographic"
+
+# Interactive Mode: Prevents accidental mouse touches
+INTERACTIVE_MODE = true
+
+# Default height for the Fence diagram
+DEFAULT_FENCE_HEIGHT = "100%"
+
+# Default background color for the Fence Diagram
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
+
+# =========== [ Resources ] ===========
+# Dependent Resource URI
+# This plugin pulls dependencies from the network by default. If you wish to save dependencies locally, do the following:
+#   1. Download and save the script
+#   2. Modify RESOURCE_URI to the local file path (e.g., D:\\tmp\\infographic.min.js)
+RESOURCE_URI = "https://unpkg.com/@antv/infographic@latest/dist/infographic.min.js"
+
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
+TEMPLATE = """
+// ==BlockCodeConfig==
+// @width            auto
+// @height           100%
+// @backgroundColor  transparent
+// ==/BlockCodeConfig==
+
+infographic list-row-simple-horizontal-arrow
+  data
+    lists
+      - label Step 1
+        desc Start
+      - label Step 2
+        desc In Progress
+      - label Step 3
+        desc Complete"""
 
 
 [marp]

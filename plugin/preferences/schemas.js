@@ -1315,6 +1315,17 @@ const schema_drawIO = () => [
   FRAG.SettingHandler(),
 ]
 
+const schema_infographic = () => [
+  FRAG.Base(true),
+  FRAG.LangMode(),
+  FRAG.ChartStyle(),
+  Group("advanced",
+    Text("RESOURCE_URI"),
+  ),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
+]
+
 const schema_plantUML = () => [
   FRAG.Base(true),
   Group(
@@ -1619,6 +1630,7 @@ const RAW_SCHEMAS = {
   calendar: schema_calendar,
   abc: schema_abc,
   drawIO: schema_drawIO,
+  infographic: schema_infographic,
   plantUML: schema_plantUML,
   marp: schema_marp,
   callouts: schema_callouts,
