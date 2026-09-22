@@ -82,13 +82,14 @@ const sharedVendor = {
 }
 
 const pluginVendor = {
-  bundle: ({ entryInBuild, outFilePath, copyNpm }) => {
+  bundle: ({ entryInBuild, outFilePath, copyNpm, extraPlugins }) => {
     const absOut = absPaths.root(outFilePath)
     return {
       type: VENDOR_TYPE.bundle,
       absEntry: absPaths.build(entryInBuild),
       absOut,
       copies: copyNpm ? resolveCopies(copyNpm.pkgName, path.dirname(absOut), copyNpm.assets) : [],
+      extraPlugins: extraPlugins ?? [],
     }
   },
   download: ({ files }) => ({
@@ -136,11 +137,22 @@ const PLUGIN_VENDORS_CONFIG = {
   "json-rpc-2.0": pluginVendor.bundle({ entryInBuild: "json-rpc-2.0.mjs", outFilePath: "plugin/remote_control/json-rpc-2.0.min.js" }),
   "md-padding": pluginVendor.bundle({ entryInBuild: "md-padding.mjs", outFilePath: "plugin/md_padding/md-padding.min.js" }),
   "aes-ecb": pluginVendor.bundle({ entryInBuild: "aes-ecb.mjs", outFilePath: "plugin/cipher/aes-ecb.min.js" }),
-  "markmap": pluginVendor.bundle({ entryInBuild: "markmap.mjs", outFilePath: "plugin/markmap/resource/markmap.min.js" }),
-  "marp-core": pluginVendor.bundle({ entryInBuild: "marp-core.mjs", outFilePath: "plugin/marp/marp-core.min.js" }),
+  "markmap": pluginVendor.bundle({
+    entryInBuild: "markmap.mjs",
+    outFilePath: "plugin/markmap/resource/markmap.min.js",
+    extraPlugins: [patchHighlightLanguages()],
+  }),
+  "marp-core": pluginVendor.bundle({
+    entryInBuild: "marp-core.mjs",
+    outFilePath: "plugin/marp/marp-core.min.js",
+    extraPlugins: [patchMathjaxGlobalDetect(), patchHighlightLanguages()],
+  }),
   "function-plot": pluginVendor.bundle({ entryInBuild: "function-plot.mjs", outFilePath: "plugin/function_plot/function-plot.min.js" }),
   "markdownlint": pluginVendor.bundle({ entryInBuild: "markdownlint.mjs", outFilePath: "plugin/markdownlint/markdownlint.min.js" }),
-  "markdownlint-rule-helpers": pluginVendor.bundle({ entryInBuild: "markdownlint-rule-helpers.cjs", outFilePath: "plugin/markdownlint/markdownlint-rule-helpers.min.js" }),
+  "markdownlint-rule-helpers": pluginVendor.bundle({
+    entryInBuild: "markdownlint-rule-helpers.cjs",
+    outFilePath: "plugin/markdownlint/markdownlint-rule-helpers.min.js",
+  }),
   "calendar": pluginVendor.bundle({
     entryInBuild: "calendar.cjs",
     outFilePath: "plugin/calendar/toastui-calendar.min.js",
@@ -226,12 +238,34 @@ function patchMathjaxGlobalDetect() {
         const original = code
         code = code.replace(
           /if\s*\(typeof MathJax !== 'undefined' && MathJax\.loader\)\s*\{[\s\S]*?\}\s*/,
-          "/* patched by typora_plugin build: removed global MathJax detection to avoid Typora conflict */\n"
+          "/* patched by typora_plugin build: removed global MathJax detection to avoid Typora conflict */\n",
         )
         if (code === original) {
           console.warn(`\x1b[33mWarning: AllPackages.js global-detect block not found; mathjax-full may have changed.\x1b[0m`)
         }
         return { contents: code, loader: "js" }
+      })
+    },
+  }
+}
+
+const HIGHLIGHT_LANGUAGE_WHITELIST = new Set([
+  "javascript", "typescript", "python", "bash", "shell", "json", "yaml",
+  "css", "scss", "less", "xml", "html", "markdown", "java", "c", "cpp",
+  "csharp", "go", "rust", "sql", "ini", "diff", "dockerfile", "plaintext",
+])
+
+function patchHighlightLanguages(whitelist) {
+  return {
+    name: "patch-highlight-languages",
+    setup(build) {
+      build.onLoad({ filter: /highlight\.js[\\/]lib[\\/]languages[\\/]([\w-]+)\.js$/ }, async (args) => {
+        const langName = args.path.match(/highlight\.js[\\/]lib[\\/]languages[\\/]([\w-]+)\.js$/)?.[1]
+        if (langName && (whitelist || HIGHLIGHT_LANGUAGE_WHITELIST).has(langName)) {
+          return undefined
+        }
+        const stub = `module.exports = function(hljs) { return { case_insensitive: true, contains: [] } }`
+        return { contents: stub, loader: "js" }
       })
     },
   }
@@ -250,7 +284,7 @@ const vendorExecutors = {
       ...ESBUILD_OPTIONS,
       entryPoints: [vendor.absEntry],
       outfile: vendor.absOut,
-      plugins: [createAliasPlugin(aliasRegistry, vendor.absOut), patchMathjaxGlobalDetect()],
+      plugins: [createAliasPlugin(aliasRegistry, vendor.absOut), ...(vendor.extraPlugins ?? [])],
       metafile: analyze,
     })
     if (analyze && result.metafile) {
