@@ -59,22 +59,23 @@
 | [assets_storage](#assets_storage)           | 修改资源存储位置                     | ×        |
 | [cipher](#cipher)                           | 文件加密与解密                       | ×        |
 
-| 插件：组件                  | 功能              | 默认启用 |
-| :-------------------------- | :---------------- | :------- |
-| [markmap](#markmap)         | 集成 Markmap      |          |
-| [echarts](#echarts)         | 集成 Echarts      |          |
-| [chart](#chart)             | 集成 Chart.js     |          |
-| [drawIO](#drawIO)           | 集成 DrawIO       |          |
-| [abc](#abc)                 | 集成 abc.js       |          |
-| [calendar](#calendar)       | 集成 tui.calendar |          |
-| [wavedrom](#wavedrom)       | 集成 Wavedrom     |          |
-| [marp](#marp)               | 集成 Marp         |          |
-| [plantUML](#plantUML)       | 集成 PlantUML     |          |
-| [infographic](#infographic) | 集成 Infographic  |          |
-| [callouts](#callouts)       | 集成 Callouts     |          |
-| [kanban](#kanban)           | 看板组件          |          |
-| [timeline](#timeline)       | 时间线组件        |          |
-| [chat](#chat)               | 对话组件          |          |
+| 插件：组件                      | 功能               | 默认启用 |
+| :------------------------------ | :----------------- | :------- |
+| [markmap](#markmap)             | 集成 Markmap       |          |
+| [echarts](#echarts)             | 集成 Echarts       |          |
+| [chart](#chart)                 | 集成 Chart.js      |          |
+| [drawIO](#drawIO)               | 集成 DrawIO        |          |
+| [abc](#abc)                     | 集成 abc.js        |          |
+| [calendar](#calendar)           | 集成 tui.calendar  |          |
+| [wavedrom](#wavedrom)           | 集成 Wavedrom      |          |
+| [marp](#marp)                   | 集成 Marp          |          |
+| [plantUML](#plantUML)           | 集成 PlantUML      |          |
+| [infographic](#infographic)     | 集成 Infographic   |          |
+| [function_plot](#function_plot) | 集成 Function Plot |          |
+| [callouts](#callouts)           | 集成 Callouts      |          |
+| [kanban](#kanban)               | 看板组件           |          |
+| [timeline](#timeline)           | 时间线组件         |          |
+| [chat](#chat)                   | 对话组件           |          |
 
 | 插件：视图与主题                    | 功能                                       | 默认启用 |
 | :---------------------------------- | :----------------------------------------- | :------- |
@@ -363,19 +364,20 @@ Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自�
 <tr>
 <td width="33.33%" align="center"><a id="plantUML"><b>PlantUML</b></a><br><img src="./assets/plantUML.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="drawIO"><b>Draw.io</b></a><br><img src="./assets/drawIO.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="infographic"><b>Infographic</b></a><br><img src="./assets/infographic.png" width="100%"></td>
+<td width="33.33%" align="center"><a id="function_plot"><b>Function Plot</b></a><br><img src="./assets/function_plot.png" width="100%"></td>
 </tr>
 <tr>
+<td width="33.33%" align="center"><a id="infographic"><b>Infographic</b></a><br><img src="./assets/infographic.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="abc"><b>ABC</b></a><br><img src="./assets/abcjs.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="wavedrom"><b>WaveDrom</b></a><br><img src="./assets/wavedrom.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="marp"><b>Marp</b></a><br><img src="./assets/marp.png" width="100%"></td>
 </tr>
 <tr>
+<td width="33.33%" align="center"><a id="marp"><b>Marp</b></a><br><img src="./assets/marp.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="calendar"><b>Calendar</b></a><br><img src="./assets/calendar.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="timeline"><b>Timeline</b></a><br><img src="./assets/timeline.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="kanban"><b>Kanban</b></a><br><img src="./assets/kanban.png" width="100%"></td>
 </tr>
 <tr>
+<td width="33.33%" align="center"><a id="kanban"><b>Kanban</b></a><br><img src="./assets/kanban.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="chat"><b>Chat</b></a><br><img src="./assets/chat.png" width="100%"></td>
 </tr>
 </table>

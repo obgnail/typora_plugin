@@ -58,22 +58,23 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [assets_storage](#assets_storage)           | Modify resource storage location             | ×       |
 | [cipher](#cipher)                           | Document Encryption and Decryption           | ×       |
 
-| Plugin: Component           | Feature                 | Default |
-| :-------------------------- | :---------------------- | :------ |
-| [markmap](#markmap)         | Integrates Markmap      |         |
-| [echarts](#echarts)         | Integrates ECharts      |         |
-| [chart](#chart)             | Integrates Chart.js     |         |
-| [drawIO](#drawIO)           | Integrates DrawIO       |         |
-| [abc](#abc)                 | Integrates abc.js       |         |
-| [calendar](#calendar)       | Integrates tui.calendar |         |
-| [wavedrom](#wavedrom)       | Integrates WaveDrom     |         |
-| [marp](#marp)               | Integrates Marp         |         |
-| [plantUML](#plantUML)       | Integrates PlantUML     |         |
-| [infographic](#infographic) | Integrates Infographic  |         |
-| [callouts](#callouts)       | Integrates Callouts     |         |
-| [kanban](#kanban)           | Kanban component        |         |
-| [timeline](#timeline)       | Timeline component      |         |
-| [chat](#chat)               | Chat Bubble component   |         |
+| Plugin: Component               | Feature                  | Default |
+| :------------------------------ | :----------------------- | :------ |
+| [markmap](#markmap)             | Integrates Markmap       |         |
+| [echarts](#echarts)             | Integrates ECharts       |         |
+| [chart](#chart)                 | Integrates Chart.js      |         |
+| [drawIO](#drawIO)               | Integrates DrawIO        |         |
+| [abc](#abc)                     | Integrates abc.js        |         |
+| [calendar](#calendar)           | Integrates tui.calendar  |         |
+| [wavedrom](#wavedrom)           | Integrates WaveDrom      |         |
+| [marp](#marp)                   | Integrates Marp          |         |
+| [plantUML](#plantUML)           | Integrates PlantUML      |         |
+| [infographic](#infographic)     | Integrates Infographic   |         |
+| [function_plot](#function_plot) | Integrates Function Plot |         |
+| [callouts](#callouts)           | Integrates Callouts      |         |
+| [kanban](#kanban)               | Kanban component         |         |
+| [timeline](#timeline)           | Timeline component       |         |
+| [chat](#chat)                   | Chat Bubble component    |         |
 
 | Plugin: View & Theme                | Feature                                                   | Default |
 | :---------------------------------- | :-------------------------------------------------------- | :------ |
@@ -362,19 +363,20 @@ Provides a document security module based on standard cryptographic algorithms, 
 <tr>
 <td width="33.33%" align="center"><a id="plantUML"><b>PlantUML</b></a><br><img src="./assets/plantUML.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="drawIO"><b>Draw.io</b></a><br><img src="./assets/drawIO.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="infographic"><b>Infographic</b></a><br><img src="./assets/infographic.png" width="100%"></td>
+<td width="33.33%" align="center"><a id="function_plot"><b>Function Plot</b></a><br><img src="./assets/function_plot.png" width="100%"></td>
 </tr>
 <tr>
+<td width="33.33%" align="center"><a id="infographic"><b>Infographic</b></a><br><img src="./assets/infographic.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="abc"><b>ABC</b></a><br><img src="./assets/abcjs.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="wavedrom"><b>WaveDrom</b></a><br><img src="./assets/wavedrom.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="marp"><b>Marp</b></a><br><img src="./assets/marp.png" width="100%"></td>
 </tr>
 <tr>
+<td width="33.33%" align="center"><a id="marp"><b>Marp</b></a><br><img src="./assets/marp.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="calendar"><b>Calendar</b></a><br><img src="./assets/calendar.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="timeline"><b>Timeline</b></a><br><img src="./assets/timeline.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="kanban"><b>Kanban</b></a><br><img src="./assets/kanban.png" width="100%"></td>
 </tr>
 <tr>
+<td width="33.33%" align="center"><a id="kanban"><b>Kanban</b></a><br><img src="./assets/kanban.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="chat"><b>Chat</b></a><br><img src="./assets/chat.png" width="100%"></td>
 </tr>
 </table>

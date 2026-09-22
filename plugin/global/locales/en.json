@@ -1281,6 +1281,9 @@
     "$label.SKIN_FOLDER": "Skin Folder",
     "$tooltip.downloadWaveDromSkins": "Download Custom Skins"
   },
+  "function_plot": {
+    "pluginName": "Function Plot"
+  },
   "calendar": {
     "pluginName": "Calendar"
   },

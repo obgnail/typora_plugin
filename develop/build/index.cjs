@@ -138,6 +138,7 @@ const PLUGIN_VENDORS_CONFIG = {
   "aes-ecb": pluginVendor.bundle({ entryInBuild: "aes-ecb.mjs", outFilePath: "plugin/cipher/aes-ecb.min.js" }),
   "markmap": pluginVendor.bundle({ entryInBuild: "markmap.mjs", outFilePath: "plugin/markmap/resource/markmap.min.js" }),
   "marp-core": pluginVendor.bundle({ entryInBuild: "marp-core.mjs", outFilePath: "plugin/marp/marp-core.min.js" }),
+  "function-plot": pluginVendor.bundle({ entryInBuild: "function-plot.mjs", outFilePath: "plugin/function_plot/function-plot.min.js" }),
   "markdownlint": pluginVendor.bundle({ entryInBuild: "markdownlint.mjs", outFilePath: "plugin/markdownlint/markdownlint.min.js" }),
   "markdownlint-rule-helpers": pluginVendor.bundle({ entryInBuild: "markdownlint-rule-helpers.cjs", outFilePath: "plugin/markdownlint/markdownlint-rule-helpers.min.js" }),
   "calendar": pluginVendor.bundle({

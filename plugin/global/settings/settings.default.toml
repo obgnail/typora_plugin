@@ -2242,6 +2242,7 @@ LIST = [
   "echarts",
   "calendar",
   "wavedrom",
+  "function_plot",
   "drawIO",
   "plantUML",
   "infographic",
@@ -3122,6 +3123,42 @@ config = {
       borderWidth: 1
     }]
   }
+}"""
+
+
+[function_plot]
+# =========== [ Basic ] ===========
+ENABLE = true
+NAME = ""
+HOTKEY = ""
+
+# =========== [ Language & Mode ] ===========
+# Language used to render function-plot code block
+LANGUAGE = "function-plot"
+
+# Interactive Mode: Prevents accidental mouse touches
+INTERACTIVE_MODE = true
+
+# Default height for the Fence diagram
+DEFAULT_FENCE_HEIGHT = "100%"
+
+# Default background color for the Fence Diagram
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
+
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
+TEMPLATE = """
+// Examples: https://mauriciopoppe.github.io/function-plot/
+// NOTE:     Code within this block will be evaluated. Exercise caution
+
+options = {
+  data: [{ fn: "x^-1" }, { fn: "x" }, { fn: "x^2" }],
+  grid: false,
+  xAxis: { domain: [-6, 6] },
+  yAxis: { domain: [-4, 4] },
+  disableZoom: true,
+  width: 800,
+  height: 500,
 }"""
 
 

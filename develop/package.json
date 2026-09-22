@@ -20,6 +20,7 @@
     "@moritzrs/micromark-extension-ofm": "^0.0.1",
     "@toast-ui/calendar": "^2.1.3",
     "crypto-js": "^4.2.0",
+    "function-plot": "^1.25.4",
     "https-proxy-agent": "^7.0.6",
     "json-rpc-2.0": "^1.8.0",
     "katex": "^0.16.47",

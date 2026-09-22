@@ -1284,6 +1284,14 @@ const schema_wavedrom = () => [
   FRAG.SettingHandler(),
 ]
 
+const schema_function_plot = () => [
+  FRAG.Base(true),
+  FRAG.LangMode(),
+  FRAG.ChartStyle(),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
+]
+
 const schema_calendar = () => [
   FRAG.Base(true),
   FRAG.LangMode(),
@@ -1627,6 +1635,7 @@ const RAW_SCHEMAS = {
   echarts: schema_echarts,
   chart: schema_chart,
   wavedrom: schema_wavedrom,
+  function_plot: schema_function_plot,
   calendar: schema_calendar,
   abc: schema_abc,
   drawIO: schema_drawIO,

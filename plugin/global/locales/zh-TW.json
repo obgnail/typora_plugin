@@ -1281,6 +1281,9 @@
     "$label.SKIN_FOLDER": "皮膚目錄",
     "$tooltip.downloadWaveDromSkins": "下載皮膚檔案"
   },
+  "function_plot": {
+    "pluginName": "Function Plot"
+  },
   "calendar": {
     "pluginName": "Calendar"
   },
