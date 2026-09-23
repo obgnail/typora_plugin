@@ -153,7 +153,7 @@ const buildQualifier = ({ match = {}, ...rest }) => ({
 })
 
 const createBaseQualifiers = (ctx) => {
-  const { i18n, utils: { splitFrontMatter, Package: { Path } } } = ctx
+  const { i18n, utils: { Package: { Path } } } = ctx
 
   const REGEX = {
     CHINESE_CHARS: /[\u3040-\uABFF\uD7A4-\uFAFF]/gi,
@@ -184,7 +184,7 @@ const createBaseQualifiers = (ctx) => {
     stringArray: { match: { KEYWORD: arrayCompare, REGEX: arrayRegex } },
   }
 
-  const getMatchCount = (content, regex) => (content.match(regex) || []).length
+  const countRegex = (content, regex) => (content.match(regex) || []).length
   const countWords = content => {
     content = content.trim()
     if (content.length === 0) return 0
@@ -200,10 +200,6 @@ const createBaseQualifiers = (ctx) => {
       .split(REGEX.SPLIT_WORDS)
     return words.length - 2 + chars
   }
-  const getFrontmatter = async fileCtx => {
-    const { yamlObject } = splitFrontMatter(await fileCtx.getContent())
-    return yamlObject ? JSON.stringify(yamlObject) : ""
-  }
 
   const DEFINITIONS = {
     default: { isMeta: false, cost: 2, anchor: write, query: async fileCtx => `${await fileCtx.getContent()}\n${fileCtx.path}` },
@@ -214,7 +210,6 @@ const createBaseQualifiers = (ctx) => {
     name: { isMeta: true, cost: 1, anchor: none, query: fileCtx => Path.parse(fileCtx.file).name },
     ext: { isMeta: true, cost: 1, anchor: none, query: fileCtx => Path.extname(fileCtx.file) },
     content: { isMeta: false, cost: 2, anchor: write, query: async fileCtx => await fileCtx.getContent() },
-    frontmatter: { isMeta: false, cost: 3, anchor: `pre[mdtype="meta_block"]`, query: getFrontmatter },
     size: { isMeta: true, cost: 1, anchor: none, ...MIXINS.size, query: fileCtx => fileCtx.stats.size },
     birthtime: { isMeta: true, cost: 1, anchor: none, ...MIXINS.date, query: fileCtx => toDate(fileCtx.stats.birthtime) },
     mtime: { isMeta: true, cost: 1, anchor: none, ...MIXINS.date, query: fileCtx => toDate(fileCtx.stats.mtime) },
@@ -222,9 +217,9 @@ const createBaseQualifiers = (ctx) => {
     linenum: { isMeta: true, cost: 2, anchor: none, ...MIXINS.number, query: async fileCtx => (await fileCtx.getContent()).split("\n").length },
     charnum: { isMeta: true, cost: 2, anchor: none, ...MIXINS.number, query: async fileCtx => (await fileCtx.getContent()).length },
     wordnum: { isMeta: true, cost: 3, anchor: none, ...MIXINS.number, query: async fileCtx => countWords(await fileCtx.getContent()) },
-    chinesenum: { isMeta: true, cost: 2, anchor: none, ...MIXINS.number, query: async fileCtx => getMatchCount(await fileCtx.getContent(), REGEX.CHINESE_G) },
-    imagenum: { isMeta: true, cost: 2, anchor: none, ...MIXINS.number, query: async fileCtx => getMatchCount(await fileCtx.getContent(), REGEX.IMAGE_MD_G) },
-    imgtagnum: { isMeta: true, cost: 2, anchor: none, ...MIXINS.number, query: async fileCtx => getMatchCount(await fileCtx.getContent(), REGEX.IMG_TAG_G) },
+    chinesenum: { isMeta: true, cost: 2, anchor: none, ...MIXINS.number, query: async fileCtx => countRegex(await fileCtx.getContent(), REGEX.CHINESE_G) },
+    imagenum: { isMeta: true, cost: 2, anchor: none, ...MIXINS.number, query: async fileCtx => countRegex(await fileCtx.getContent(), REGEX.IMAGE_MD_G) },
+    imgtagnum: { isMeta: true, cost: 2, anchor: none, ...MIXINS.number, query: async fileCtx => countRegex(await fileCtx.getContent(), REGEX.IMG_TAG_G) },
     hasimage: { isMeta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => REGEX.IMAGE_MD.test(await fileCtx.getContent()) },
     hasimgtag: { isMeta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => REGEX.IMG_TAG.test(await fileCtx.getContent()) },
     haschinese: { isMeta: true, cost: 2, anchor: none, ...MIXINS.boolean, query: async fileCtx => REGEX.CHINESE.test(await fileCtx.getContent()) },
@@ -327,6 +322,7 @@ const createMarkdownQualifiers = (ctx) => {
     info: node => node.info,
     infoAndContent: node => `${node.info}\n${node.content}`,
     attrAndContent: node => `${(node.attrs || []).map(attr => attr.at(-1)).join(" ")}${node.content}`,
+    rawMeta: node => node.meta,
     meta: key => node => node.meta?.[key],
     metaOrContent: metaKey => node => node.meta?.[metaKey] || node.content,
     contentLine: node => node.content.split("\n"),
@@ -364,6 +360,9 @@ const createMarkdownQualifiers = (ctx) => {
     blockcodeline: { anchor: "pre.md-fences", parser: PARSER.block, filter: FILTER.ofType("fence"), transformer: TRANSFORMER.contentLine },
     blockhtml: { anchor: ".md-html-inline, .md-htmlblock", parser: PARSER.block, filter: FILTER.ofType("html_block"), transformer: TRANSFORMER.content },
     blockquote: { anchor: `[mdtype="blockquote"]`, parser: PARSER.block, filter: FILTER.within("blockquote"), transformer: TRANSFORMER.content },
+    inlinemath: { anchor: `.md-inline-math`, parser: PARSER.inline, filter: FILTER.ofType("math_inline"), transformer: TRANSFORMER.content },
+    blockmath: { anchor: ".md-math-block", parser: PARSER.block, filter: FILTER.ofType("math_block"), transformer: TRANSFORMER.content },
+    frontmatter: { anchor: `pre[mdtype="meta_block"]`, parser: PARSER.block, filter: FILTER.ofType("front_matter"), transformer: TRANSFORMER.rawMeta },
     table: { anchor: ".md-table", parser: PARSER.block, filter: FILTER.within("table"), transformer: TRANSFORMER.content },
     thead: { anchor: ".md-table thead", parser: PARSER.block, filter: FILTER.within("thead"), transformer: TRANSFORMER.content },
     tbody: { anchor: ".md-table tbody", parser: PARSER.block, filter: FILTER.within("tbody"), transformer: TRANSFORMER.content },

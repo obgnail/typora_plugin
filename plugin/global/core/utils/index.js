@@ -870,9 +870,9 @@ class utils {
   }
 
   static getMarkdownIt = this.once(() => {
-    const { footnote, mark, tasklist, alert, sub, sup, ins } = require("../lib/markdown-it-plugins")
+    const { footnote, mark, tasklist, alert, katex, frontMatter, sub, sup, ins } = require("../lib/markdown-it-plugins")
     return require("../lib/markdown-it")({ html: true, linkify: true, typographer: true })
-      .use(footnote).use(mark).use(tasklist).use(alert, { deep: true })
+      .use(footnote).use(mark).use(tasklist).use(frontMatter, () => void 0).use(alert, { deep: true }).use(katex, { throwOnError: false })
     // .use(sub).use(sup).use(ins)
   })
   static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)

@@ -257,6 +257,8 @@
     "scope.blockcodeline": "Specific Code Line",
     "scope.blockhtml": "HTML Block",
     "scope.blockquote": "Blockquote",
+    "scope.inlinemath": "Inline Math",
+    "scope.blockmath": "Math Block",
     "scope.table": "Table",
     "scope.thead": "Table Header",
     "scope.tbody": "Table Body",

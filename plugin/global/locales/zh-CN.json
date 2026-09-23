@@ -257,6 +257,8 @@
     "scope.blockcodeline": "代码块行",
     "scope.blockhtml": "HTML 块",
     "scope.blockquote": "引用块",
+    "scope.inlinemath": "内联公式",
+    "scope.blockmath": "公式块",
     "scope.table": "表格",
     "scope.thead": "表头",
     "scope.tbody": "表体",

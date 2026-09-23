@@ -767,14 +767,13 @@ describe("getQualifiers — scope coverage", () => {
   const EXPECTED_BASE_SCOPES = [
     "default", "path", "dir", "folder", "file", "name", "ext", "content",
     "frontmatter", "size", "birthtime", "mtime", "atime", "linenum", "charnum",
-    "wordnum", "chinesenum", "imagenum", "imgtagnum",
-    "hasimage", "hasimgtag", "haschinese", "hasemoji", "hasinvisiblechar",
-    "isempty", "crlf",
+    "wordnum", "chinesenum", "imagenum", "imgtagnum", "hasimage", "hasimgtag",
+    "haschinese", "hasemoji", "hasinvisiblechar", "isempty", "crlf",
   ]
   const EXPECTED_MARKDOWN_SCOPES = [
     "blockcode", "blockcodelang", "blockcodebody", "blockcodeline",
-    "blockhtml", "blockquote", "table", "thead", "tbody",
-    "ol", "ul", "task", "taskdone", "tasktodo",
+    "blockhtml", "blockquote", "inlinemath", "blockmath", "table",
+    "thead", "tbody", "ol", "ul", "task", "taskdone", "tasktodo",
     "head", "h1", "h2", "h3", "h4", "h5", "h6",
     "image", "code", "link", "strong", "em", "del", "highlight",
     "footnoteref", "footnote", "footnotename", "footnotecontent",
