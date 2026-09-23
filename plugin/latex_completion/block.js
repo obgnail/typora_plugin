@@ -1,4 +1,4 @@
-const { extractPrefix, placeMenu, replaceInCodeMirror, replaceInTextarea } = require("./core")
+const { extractPrefix, replaceInCodeMirror, replaceInTextarea } = require("./core")
 
 class BlockCompletion {
   constructor(plugin) {
@@ -143,38 +143,19 @@ class BlockCompletion {
     else replaceInTextarea(active.input, active.prefix, command)
   }
 
-  _textareaCursorRect = input => {
-    const rect = input.getBoundingClientRect()
-    const style = getComputedStyle(input)
-    const mirror = document.createElement("div")
-    const caret = document.createElement("div")
-    mirror.style.cssText = `position:fixed;visibility:hidden;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;box-sizing:${style.boxSizing};padding:${style.padding};border:${style.border};font:${style.font};line-height:${style.lineHeight};white-space:pre-wrap;overflow-wrap:break-word;`
-    mirror.textContent = input.value.slice(0, input.selectionStart)
-    caret.style.display = "inline-block"
-    caret.textContent = "\u200b"
-    mirror.appendChild(caret)
-    document.body.appendChild(mirror)
-    const point = caret.getBoundingClientRect()
-    mirror.remove()
-    return { left: point.left - input.scrollLeft, top: point.top - input.scrollTop, bottom: point.bottom - input.scrollTop }
-  }
-
   position = () => {
     if (!this.active || this.menu.style.display === "none") return
     const active = this.active
-    const anchor = active.type === "cm" ? active.cm.cursorCoords(active.cm.getCursor(), "window") : this._textareaCursorRect(active.input)
     const wrapper = active.type === "cm" ? active.cm.getWrapperElement() : active.input
-    const preview = wrapper.closest(".md-math-block")?.querySelector(".md-mathjax-preview")
-    const menuRect = this.menu.getBoundingClientRect()
-    const previewRect = preview?.getBoundingClientRect()
-    const placement = placeMenu(anchor, menuRect, previewRect, { width: window.innerWidth, height: window.innerHeight })
-    this.menu.style.left = `${placement.left}px`
-    this.menu.style.top = `${placement.top}px`
+    const block = wrapper.closest(".md-math-block")
+    if (!block) return this.hide()
+    if (this.menu.parentElement !== block) block.appendChild(this.menu)
   }
 
   hide = () => {
     this.active = null
     this.menu.style.display = "none"
+    if (this.menu.parentElement !== document.body) document.body.appendChild(this.menu)
   }
 
   detach = () => {

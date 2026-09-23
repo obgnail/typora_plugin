@@ -14,11 +14,13 @@ as `plugin.pre-block`. The current user settings were preserved.
 | Inline Tab and mouse | Pass | Tab applied `\frac{}{}`; mouse selection applied `\sqrt{}` at the viewport's right edge. |
 | Block CodeMirror | Pass | Typing `\fra` in the active block displayed a list; Enter inserted `\frac{}{}` at the cursor. |
 | Block undo and redo | Pass | Ctrl+Z restored the prefix; Ctrl+Shift+Z reapplied the snippet. |
-| Block preview avoidance | Pass | The list appeared above the block editor without covering the preview. |
+| Block preview avoidance | Pass | The list now appears below the active formula block, with the preview and editor visible. Following paragraphs move down while it is open. |
+| Long block prefix and partial match | Pass | Reproduced the supplied `\lefta` screenshot: the list stayed below the block, aligned with its left edge, and did not cover the preceding paragraph. With `\arrow`, `\leftarrow` and `\rightarrow` were the first two suggestions; Enter replaced the typed fragment with `\leftarrow`. |
+| Inline partial match | Pass | Editing `\arrow` in inline math displayed `\leftarrow` and `\rightarrow` at the top of Typora's native menu, below the visible preview. |
 | Block mouse, Esc, blur, block switch | Pass | Mouse applied `\frac{}{}`; Esc and blur hid the menu, and switching blocks displayed candidates only at the active cursor. |
 | `ENABLE_BLOCK=false` | Pass | After restarting the test window, block input showed no LaTeX menu while inline completion still worked. |
 | `ENABLE=false` and slash fallback | Pass | After restarting, the LaTeX menu was absent; the pre-existing slash menu handled `\` inside math. A line-start `/` showed the normal H1–H5 menu. |
-| Dark theme and right edge | Pass | Night theme retained readable candidates. Theme switching repositioned an open block menu. At the right edge the inline menu stayed inside the window and below the visible math preview. The prior Github theme was restored. |
+| Dark theme and right edge | Earlier pass | Before the block layout fix, Night theme retained readable candidates and the right-edge inline menu stayed inside the window. The new in-flow block layout has only been rechecked in the light theme. The prior Github theme was restored. |
 | Textarea fallback and IME | Automated only | Typora 1.12.4 uses CodeMirror; the legacy textarea path and composition handling use mocks. |
 | Narrow window | Automated only | Viewport clamping is covered by `develop/test/latex_completion.test.js`; the window itself was not resized for manual inspection. |
 | Typora 0.9.98 and Linux | Not run | Static compatibility review and automated tests only. |

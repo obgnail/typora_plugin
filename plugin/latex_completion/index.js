@@ -36,7 +36,7 @@ class LatexCompletionPlugin extends BasePlugin {
 .plugin-latex-completion-hint { opacity: .88; margin-left: 8px; }
 .plugin-latex-completion-preview { opacity: .72; margin-left: 10px; font-family: monospace; font-size: .9em; }
 @media (max-width: 800px) { .plugin-latex-completion-preview { display: none; } }
-.plugin-latex-block-menu { position: fixed; z-index: 30; width: 320px; max-width: calc(100vw - 16px); max-height: 240px; overflow-y: auto; background: var(--bg-color); color: var(--text-color); border-radius: 6px; box-shadow: rgba(15,15,15,.14) 0 4px 14px; padding: 4px 0; }
+.plugin-latex-block-menu { position: relative; z-index: 30; width: 320px; max-width: 100%; max-height: 240px; overflow-y: auto; background: var(--bg-color); color: var(--text-color); border-radius: 6px; box-shadow: rgba(15,15,15,.14) 0 4px 14px; padding: 4px 0; margin-top: 6px; clear: both; }
 .plugin-latex-block-row { padding: 4px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
 .plugin-latex-block-row.active, .plugin-latex-block-row:hover { background: var(--item-hover-bg-color); }`
 
@@ -67,7 +67,7 @@ class LatexCompletionPlugin extends BasePlugin {
   }
 
   _onInlineKeyDown = event => {
-    if (event.key !== "Tab" || event.isComposing) return
+    if ((event.key !== "Tab" && event.key !== "Enter") || event.isComposing) return
     const autoComplete = File?.editor?.autoComplete
     if (autoComplete?.state.type !== "latex_completion" || !autoComplete.isShown() || !autoComplete.state.match.length) return
     event.preventDefault()
@@ -79,13 +79,17 @@ class LatexCompletionPlugin extends BasePlugin {
     const menu = this._menu()
     if (!menu?.classList.contains("plugin-latex-completion-menu") || !File?.editor?.autoComplete?.isShown()) return
     const selection = window.getSelection()
-    const anchor = selection?.rangeCount && selection.getRangeAt(0).getClientRects()[0]
-    if (!anchor) return
+    const caret = selection?.rangeCount && selection.getRangeAt(0).getClientRects()[0]
+    if (!caret) return
+    const formula = selection.anchorNode?.parentElement?.closest?.('[type="math/tex"]')
+    const formulaRect = formula?.getBoundingClientRect()
+    const anchor = { left: this._inlineAnchorLeft ?? formulaRect?.left ?? caret.left, top: caret.top, bottom: caret.bottom }
     const preview = document.querySelector("#math-inline-preview")
     const previewRect = preview && getComputedStyle(preview).display !== "none" ? preview.getBoundingClientRect() : null
-    const placement = placeMenu(anchor, menu.getBoundingClientRect(), previewRect, { width: window.innerWidth, height: window.innerHeight })
+    const placement = placeMenu(anchor, menu.getBoundingClientRect(), previewRect, { width: window.innerWidth, height: window.innerHeight }, this._inlineSide, formulaRect)
     menu.style.left = `${placement.left}px`
     menu.style.top = `${placement.top}px`
+    this._inlineSide = placement.side
   }
 
   hasCandidate = prefix => this._find(prefix, 1).length > 0
@@ -111,7 +115,17 @@ class LatexCompletionPlugin extends BasePlugin {
     const textBefore = probe.toString()
 
     const prefix = extractPrefix(textBefore)
-    if (!prefix || !this.hasCandidate(prefix)) return
+    if (!prefix || !this.hasCandidate(prefix)) {
+      this._inlineAnchorLeft = null
+      this._inlineSide = null
+      return
+    }
+
+    if (this._inlineContainer !== container) {
+      this._inlineContainer = container
+      this._inlineAnchorLeft = container.getBoundingClientRect?.().left ?? null
+      this._inlineSide = null
+    }
 
     bookmark.start -= prefix.length
     const autoComplete = File.editor.autoComplete

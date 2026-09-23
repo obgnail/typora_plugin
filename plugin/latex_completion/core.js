@@ -7,12 +7,15 @@ const extractPrefix = textBefore => {
 
 const findCandidates = (prefix, commands, limit = 10) => {
   if (!prefix || !Array.isArray(commands)) return []
-  const common = ["\\frac", "\\sqrt", "\\sum", "\\int", "\\alpha", "\\beta", "\\theta", "\\pi", "\\infty", "\\leq", "\\geq", "\\times", "\\text", "\\begin"]
+  const common = ["\\frac", "\\sqrt", "\\sum", "\\int", "\\alpha", "\\beta", "\\theta", "\\pi", "\\infty", "\\leq", "\\geq", "\\times", "\\text", "\\begin", "\\leftarrow", "\\rightarrow", "\\leftrightarrow", "\\uparrow", "\\downarrow"]
   const rank = key => {
     const index = common.indexOf(key)
     return index < 0 ? common.length : index
   }
-  return commands.filter(command => command.key.startsWith(prefix)).sort((a, b) => {
+  const matchRank = key => key === prefix ? 0 : key.startsWith(prefix) ? 1 : key.includes(prefix.slice(1)) ? 2 : 3
+  return commands.filter(command => matchRank(command.key) < 3).sort((a, b) => {
+    const matchDifference = matchRank(a.key) - matchRank(b.key)
+    if (matchDifference) return matchDifference
     if (a.key === prefix) return -1
     if (b.key === prefix) return 1
     const commonDifference = rank(a.key) - rank(b.key)
@@ -32,25 +35,28 @@ const getCursorIndex = (snippet, cursorOffset = 0) => {
   return Math.max(0, Math.min(index, snippet.length))
 }
 
-const placeMenu = (anchor, menu, preview, viewport) => {
+const placeMenu = (anchor, menu, preview, viewport, preferredSide, avoid) => {
   const margin = 8
   const clamp = (value, max) => Math.max(margin, Math.min(value, max - margin))
   const width = Math.min(menu.width, viewport.width - 2 * margin)
   const height = Math.min(menu.height, viewport.height - 2 * margin)
   const candidates = [
-    [anchor.left, anchor.bottom + 6],
-    [preview?.right + margin, anchor.bottom + 6],
-    [anchor.left, preview?.bottom + margin],
-    [anchor.left, anchor.top - height - 6],
-    [preview?.left - width - margin, anchor.bottom + 6],
-  ].filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y))
-  const overlap = (x, y) => !preview ? 0 : Math.max(0, Math.min(x + width, preview.right) - Math.max(x, preview.left))
-    * Math.max(0, Math.min(y + height, preview.bottom) - Math.max(y, preview.top))
-  return candidates.map(([x, y]) => {
+    { side: "below", x: anchor.left, y: anchor.bottom + 6 },
+    { side: "right", x: preview?.right + margin, y: anchor.bottom + 6 },
+    { side: "afterPreview", x: anchor.left, y: preview?.bottom + margin },
+    { side: "above", x: anchor.left, y: anchor.top - height - 6 },
+    { side: "left", x: preview?.left - width - margin, y: anchor.bottom + 6 },
+  ].filter(({ x, y }) => Number.isFinite(x) && Number.isFinite(y))
+  const overlap = (rect, x, y) => !rect ? 0 : Math.max(0, Math.min(x + width, rect.right) - Math.max(x, rect.left))
+    * Math.max(0, Math.min(y + height, rect.bottom) - Math.max(y, rect.top))
+  const placements = candidates.map(({ side, x, y }) => {
     x = clamp(x, viewport.width - width)
     y = clamp(y, viewport.height - height)
-    return { left: x, top: y, score: overlap(x, y) * 1000 + Math.abs(x - anchor.left) + Math.abs(y - anchor.bottom) }
-  }).sort((a, b) => a.score - b.score)[0]
+    const coveredArea = overlap(preview, x, y) + overlap(avoid, x, y)
+    return { left: x, top: y, side, coveredArea, score: coveredArea * 1000 + Math.abs(x - anchor.left) + Math.abs(y - anchor.bottom) }
+  })
+  const preferred = placements.find(item => item.side === preferredSide && item.coveredArea === 0)
+  return preferred || placements.sort((a, b) => a.score - b.score)[0]
 }
 
 const getLinePrefix = (line, column) => extractPrefix(line.slice(0, column))

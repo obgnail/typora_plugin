@@ -31,11 +31,20 @@ test("prefix extraction supports nested input, numeric aliases and punctuation",
 })
 
 test("matching is case sensitive and ranks exact and common commands", () => {
-  assert.deepEqual(findCandidates("\\Gamma", commands, 10).map(command => command.key), ["\\Gamma"])
+  assert.deepEqual(findCandidates("\\Gamma", commands, 10).map(command => command.key), ["\\Gamma", "\\varGamma"])
   assert.ok(findCandidates("\\gamma", commands, 10).some(command => command.key === "\\gamma"))
   assert.deepEqual(findCandidates("\\bma2", commands, 1).map(command => command.key), ["\\bma2"])
   assert.equal(findCandidates("\\frac", commands, 10)[0].key, "\\frac")
   assert.deepEqual(findCandidates("\\", commands, 3).map(command => command.key), ["\\frac", "\\sqrt", "\\sum"])
+})
+
+test("command fragments match after exact and prefix results", () => {
+  const fixtures = ["\\leftarrow", "\\arrowvert", "\\rightarrow", "\\Arrow"]
+    .map(key => ({ key }))
+  assert.deepEqual(findCandidates("\\arrow", fixtures).map(command => command.key),
+    ["\\arrowvert", "\\leftarrow", "\\rightarrow"])
+  assert.deepEqual(findCandidates("\\Arrow", fixtures).map(command => command.key), ["\\Arrow"])
+  assert.ok(findCandidates("\\arrow", commands, 50).some(command => command.key === "\\leftarrow"))
 })
 
 test("snippet cursor positions are valid, including the removed tab stop", () => {
@@ -69,6 +78,11 @@ test("menu placement keeps the formula preview visible and stays inside the view
   const edge = placeMenu({ left: 790, top: 640, bottom: 660 }, { width: 280, height: 150 }, null, { width: 900, height: 700 })
   assert.ok(edge.left >= 8 && edge.left + 280 <= 892)
   assert.ok(edge.top >= 8 && edge.top + 150 <= 692)
+  const formula = { left: 100, top: 100, right: 220, bottom: 120 }
+  const first = placeMenu(anchor, { width: 280, height: 150 }, preview, { width: 900, height: 700 }, null, formula)
+  const later = placeMenu(anchor, { width: 280, height: 70 }, preview, { width: 900, height: 700 }, first.side, formula)
+  assert.equal(later.side, first.side)
+  assert.ok(later.top >= formula.bottom || later.left >= formula.right || later.left + 280 <= formula.left || later.top + 70 <= formula.top)
 })
 
 test("CodeMirror insertion replaces only the prefix and places the cursor in the snippet", () => {
@@ -147,6 +161,28 @@ test("inline math invokes Typora's native completion with the matched range", ()
   delete global.BasePlugin
 })
 
+test("inline fragment suggestions can be accepted with Enter or Tab", () => {
+  global.BasePlugin = class {}
+  const Plugin = require("../../plugin/latex_completion").plugin
+  const plugin = new Plugin()
+  plugin.config = { MAX_RESULTS: 10 }
+  assert.deepEqual(plugin.handler.search("arrow").slice(0, 2), ["\\leftarrow", "\\rightarrow"])
+  const applied = []
+  global.File = { editor: { autoComplete: {
+    state: { type: "latex_completion", match: ["\\leftarrow"], index: 0 },
+    isShown: () => true,
+    apply: key => applied.push(key),
+  } } }
+  for (const key of ["Enter", "Tab"]) {
+    let prevented = 0
+    plugin._onInlineKeyDown({ key, isComposing: false, preventDefault: () => { prevented++ }, stopPropagation: () => {} })
+    assert.equal(prevented, 1)
+  }
+  assert.deepEqual(applied, ["\\leftarrow", "\\leftarrow"])
+  global.File = NativeFile
+  delete global.BasePlugin
+})
+
 test("block completion follows the active CodeMirror and cleans listeners on switch", () => {
   const { JSDOM } = require("jsdom")
   const dom = new JSDOM('<div class="md-math-block"><div class="CodeMirror"></div><div class="md-mathjax-preview"></div></div>')
@@ -177,6 +213,8 @@ test("block completion follows the active CodeMirror and cleans listeners on swi
   block.bindCurrent()
   assert.equal(block.active.candidates[0].key, "\\frac")
   assert.equal(block.active.index, 0)
+  assert.equal(block.menu.parentElement, document.querySelector(".md-math-block"))
+  assert.equal(block.menu.style.top, "")
   let prevented = 0
   block._onKeyDown({ key: "Enter", preventDefault: () => { prevented++ }, stopPropagation: () => {} })
   assert.equal(value, "\\frac{}{}")
@@ -184,6 +222,7 @@ test("block completion follows the active CodeMirror and cleans listeners on swi
   assert.equal(prevented, 1)
   block.detach()
   assert.equal(block.active, null)
+  assert.equal(block.menu.parentElement, document.body)
   assert.equal(listeners.size, 0)
   dom.window.close()
   global.File = NativeFile
