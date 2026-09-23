@@ -963,6 +963,7 @@
   "latex_completion": {
     "pluginName": "LaTeX Completion",
     "$label.MAX_RESULTS": "Maximum suggestions",
+    "$label.ENABLE_BLOCK": "Complete display math blocks",
     "category.symbol": "symbol",
     "category.original": "command",
     "hint.subseteq": "subset or equal",

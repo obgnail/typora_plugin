@@ -805,6 +805,7 @@ const schema_latex_completion = () => [
   FRAG.Base(),
   Group(
     Integer("MAX_RESULTS").Min(1).Max(50),
+    Switch("ENABLE_BLOCK"),
   ),
   FRAG.SettingHandler(),
 ]

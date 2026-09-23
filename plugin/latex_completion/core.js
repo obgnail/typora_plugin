@@ -32,4 +32,47 @@ const getCursorIndex = (snippet, cursorOffset = 0) => {
   return Math.max(0, Math.min(index, snippet.length))
 }
 
-module.exports = { extractPrefix, findCandidates, getCursorIndex, availablePackages }
+const placeMenu = (anchor, menu, preview, viewport) => {
+  const margin = 8
+  const clamp = (value, max) => Math.max(margin, Math.min(value, max - margin))
+  const width = Math.min(menu.width, viewport.width - 2 * margin)
+  const height = Math.min(menu.height, viewport.height - 2 * margin)
+  const candidates = [
+    [anchor.left, anchor.bottom + 6],
+    [preview?.right + margin, anchor.bottom + 6],
+    [anchor.left, preview?.bottom + margin],
+    [anchor.left, anchor.top - height - 6],
+    [preview?.left - width - margin, anchor.bottom + 6],
+  ].filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y))
+  const overlap = (x, y) => !preview ? 0 : Math.max(0, Math.min(x + width, preview.right) - Math.max(x, preview.left))
+    * Math.max(0, Math.min(y + height, preview.bottom) - Math.max(y, preview.top))
+  return candidates.map(([x, y]) => {
+    x = clamp(x, viewport.width - width)
+    y = clamp(y, viewport.height - height)
+    return { left: x, top: y, score: overlap(x, y) * 1000 + Math.abs(x - anchor.left) + Math.abs(y - anchor.bottom) }
+  }).sort((a, b) => a.score - b.score)[0]
+}
+
+const getLinePrefix = (line, column) => extractPrefix(line.slice(0, column))
+
+const replaceInCodeMirror = (cm, prefix, command) => {
+  const end = cm.getCursor()
+  const from = { line: end.line, ch: end.ch - prefix.length }
+  const cursorIndex = cm.indexFromPos(from) + getCursorIndex(command.snippet, command.cursorOffset)
+  cm.operation(() => {
+    cm.replaceRange(command.snippet, from, end, "+input")
+    cm.setCursor(cm.posFromIndex(cursorIndex))
+  })
+  cm.focus()
+}
+
+const replaceInTextarea = (input, prefix, command) => {
+  const start = input.selectionStart - prefix.length
+  input.setRangeText(command.snippet, start, input.selectionStart, "end")
+  const cursor = start + getCursorIndex(command.snippet, command.cursorOffset)
+  input.setSelectionRange(cursor, cursor)
+  input.dispatchEvent(new Event("input", { bubbles: true }))
+  input.focus()
+}
+
+module.exports = { extractPrefix, findCandidates, getCursorIndex, availablePackages, placeMenu, getLinePrefix, replaceInCodeMirror, replaceInTextarea }

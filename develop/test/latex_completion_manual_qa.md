@@ -1,21 +1,25 @@
-# Inline LaTeX completion: Typora 1.12.4 QA
+# LaTeX completion: Typora 1.12.4 manual QA
 
-Test host: Windows, installed Typora at `D:\Typora`. The plugin was temporarily
-copied into `resources/plugin`, and `window.html` was temporarily injected.
-After both sessions, Typora was closed normally, the original plugin directory
-was restored, and the original `window.html` SHA-256 was confirmed as
-`2B39A2386E700C16BE81A487C1A39D7A8BC1DFA07699CAD4916221D367AD8BC7`.
+Host: Windows, Typora installed at `D:\Typora`. The current branch was copied to
+`resources/plugin` for manual testing. The original installation remains in
+`resources/latex-completion-manual-backup/plugin.original`, with the original
+`window.html` in the same backup directory. The pre-block test plugin is saved
+as `plugin.pre-block`. The current user settings were preserved.
 
 | Check | Result | Observation |
 | --- | --- | --- |
-| Plugin startup in installed Typora | Pass | Inline math `\` displayed Typora's native candidate list. |
-| Formula preview overlap | Pass | Candidate rows appeared above the formula preview after the z-index change. |
-| Compact hint and snippet preview | Pass | The list showed the command, localized description, and snippet. |
-| Candidate choice by keyboard and mouse | Inconclusive | The active Windows Chinese IME consumed letter keys; synthetic text paste did not refresh Typora's native completion. |
-| Nested braces, aliases, selection, source mode, slash fallback | Automated only | Covered by `develop/test/latex_completion.test.js`. |
-| Undo/redo, dark theme, window edge positioning | Not run | Require another interactive session with English keyboard input. |
+| Plugin startup | Pass | Both inline and block completion loaded in Typora 1.12.4. |
+| Inline initial candidate | Pass | With English keyboard input, typing `\` displayed common commands and highlighted the first row. |
+| Inline preview avoidance | Pass | The native list appeared to the right of the math preview; both were visible. |
+| Inline Tab | Pass | Tab applied the active `\frac{}{}` snippet. |
+| Block CodeMirror | Pass | Typing `\fra` in the active block displayed a list; Enter inserted `\frac{}{}` at the cursor. |
+| Block undo and redo | Pass | Ctrl+Z restored the prefix; Ctrl+Shift+Z reapplied the snippet. |
+| Block preview avoidance | Pass | The list appeared above the block editor without covering the preview. |
+| Block mouse, Esc, blur, block switch | Automated only | Covered in part by `develop/test/latex_completion.test.js`; manual checks remain for the user. |
+| Textarea fallback, IME, disabled setting | Automated only | Typora 1.12.4 uses CodeMirror; the legacy textarea path and composition handling use mocks. |
+| Dark theme, narrow window, `/` fallback | Automated only | Placement and priority have unit tests; visual inspection remains for the user. |
 | Typora 0.9.98 and Linux | Not run | Static compatibility review and automated tests only. |
 
-The existing native menu displayed five rows even when `MAX_RESULTS` was ten;
-Typora controls the number of visible rows. No claim is made that this setting
-can override Typora's own visible-row limit.
+The Windows Chinese IME initially consumed typed Latin keys. Switching to the
+English keyboard allowed the inline native menu to appear. Typora controls the
+number of visible rows in that menu; `MAX_RESULTS` limits generated matches.

@@ -963,6 +963,7 @@
   "latex_completion": {
     "pluginName": "LaTeX 补全",
     "$label.MAX_RESULTS": "最多显示候选数",
+    "$label.ENABLE_BLOCK": "补全块级公式",
     "category.symbol": "符号",
     "category.original": "命令",
     "hint.subseteq": "子集或相等",

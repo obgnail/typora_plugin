@@ -2017,6 +2017,7 @@ NAME = ""
 
 # Maximum number of suggestions shown at once (1-50)
 MAX_RESULTS = 10
+ENABLE_BLOCK = true
 
 
 [slash_commands]

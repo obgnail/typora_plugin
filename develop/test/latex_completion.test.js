@@ -1,7 +1,9 @@
 const test = require("node:test")
 const assert = require("node:assert/strict")
+const NativeFile = global.File
+const NativeEvent = global.Event
 const commands = require("../../plugin/latex_completion/commands.json")
-const { extractPrefix, findCandidates, getCursorIndex, availablePackages } = require("../../plugin/latex_completion/core")
+const { extractPrefix, findCandidates, getCursorIndex, availablePackages, placeMenu, replaceInCodeMirror, replaceInTextarea } = require("../../plugin/latex_completion/core")
 
 test("catalog preserves 232 source commands and extends MathJax symbols", () => {
   const originals = require("../../plugin/latex_completion/commands.original.json")
@@ -59,6 +61,51 @@ test("extension commands appear only for confirmed MathJax packages", () => {
   delete global.BasePlugin
 })
 
+test("menu placement keeps the formula preview visible and stays inside the viewport", () => {
+  const anchor = { left: 100, top: 100, bottom: 120 }
+  const preview = { left: 90, top: 125, right: 220, bottom: 170 }
+  const result = placeMenu(anchor, { width: 280, height: 150 }, preview, { width: 900, height: 700 })
+  assert.ok(result.top >= preview.bottom || result.left >= preview.right || result.left + 280 <= preview.left || result.top + 150 <= preview.top)
+  const edge = placeMenu({ left: 790, top: 640, bottom: 660 }, { width: 280, height: 150 }, null, { width: 900, height: 700 })
+  assert.ok(edge.left >= 8 && edge.left + 280 <= 892)
+  assert.ok(edge.top >= 8 && edge.top + 150 <= 692)
+})
+
+test("CodeMirror insertion replaces only the prefix and places the cursor in the snippet", () => {
+  let value = "x+\\fra+y"
+  let cursor = { line: 0, ch: 6 }
+  const cm = {
+    getCursor: () => cursor,
+    indexFromPos: pos => pos.ch,
+    posFromIndex: ch => ({ line: 0, ch }),
+    operation: fn => fn(),
+    replaceRange: (text, from, to) => { value = value.slice(0, from.ch) + text + value.slice(to.ch) },
+    setCursor: pos => { cursor = pos },
+    focus: () => {},
+  }
+  const command = commands.find(item => item.key === "\\frac")
+  replaceInCodeMirror(cm, "\\fra", command)
+  assert.equal(value, "x+\\frac{}{}+y")
+  assert.equal(cursor.ch, 8)
+})
+
+test("textarea insertion replaces the selected prefix and dispatches input", () => {
+  let notified = 0
+  const input = {
+    value: "x+\\fra+y", selectionStart: 6,
+    setRangeText: (text, start, end) => { input.value = input.value.slice(0, start) + text + input.value.slice(end); input.selectionStart = start + text.length },
+    setSelectionRange: start => { input.selectionStart = start },
+    dispatchEvent: () => { notified++ },
+    focus: () => {},
+  }
+  global.Event = class {}
+  replaceInTextarea(input, "\\fra", commands.find(item => item.key === "\\frac"))
+  assert.equal(input.value, "x+\\frac{}{}+y")
+  assert.equal(input.selectionStart, 8)
+  assert.equal(notified, 1)
+  global.Event = NativeEvent
+})
+
 test("inline math invokes Typora's native completion with the matched range", () => {
   global.BasePlugin = class {}
   const Plugin = require("../../plugin/latex_completion").plugin
@@ -77,22 +124,112 @@ test("inline math invokes Typora's native completion with the matched range", ()
   global.File = { editor: {
     selection: { getRangy: () => range },
     autoComplete: {
+      state: { type: "slash", match: [], index: -1 },
+      hide: () => calls.push("hide"),
+      initState: () => { File.editor.autoComplete.state = { type: "", match: [], index: -1 } },
       attachToRange: () => calls.push("attach"),
-      show: (...args) => calls.push(args),
+      show: (...args) => { calls.push(args); File.editor.autoComplete.state.type = args[3].type; File.editor.autoComplete.state.match = ["\\frac"] },
+      updateActive: () => calls.push("active"),
     },
   } }
   plugin._onEdit()
-  assert.equal(calls[0], "attach")
-  assert.equal(calls[1][1].start, 4)
-  assert.equal(calls[1][2], "frac")
-  assert.equal(calls[1][3], plugin.handler)
+  assert.deepEqual(calls.slice(0, 2), ["hide", "attach"])
+  assert.equal(calls[2][1].start, 4)
+  assert.equal(calls[2][2], "frac")
+  assert.equal(calls[2][3], plugin.handler)
+  assert.equal(File.editor.autoComplete.state.index, 0)
   document.activeElement.tagName = "TEXTAREA"
   plugin._onEdit()
-  assert.equal(calls.length, 2)
-  delete global.File
+  assert.equal(calls.length, 4)
+  global.File = NativeFile
   delete global.$
   delete global.document
   delete global.BasePlugin
+})
+
+test("block completion follows the active CodeMirror and cleans listeners on switch", () => {
+  const { JSDOM } = require("jsdom")
+  const dom = new JSDOM('<div class="md-math-block"><div class="CodeMirror"></div><div class="md-mathjax-preview"></div></div>')
+  global.document = dom.window.document
+  global.window = dom.window
+  const wrapper = document.querySelector(".CodeMirror")
+  const listeners = new Map()
+  let value = "\\fra"
+  let cursor = { line: 0, ch: 4 }
+  const cm = {
+    getWrapperElement: () => wrapper,
+    getCursor: () => cursor,
+    getLine: () => value,
+    somethingSelected: () => false,
+    cursorCoords: () => ({ left: 30, top: 30, bottom: 45 }),
+    on: (name, fn) => listeners.set(name, fn),
+    off: (name, fn) => { if (listeners.get(name) === fn) listeners.delete(name) },
+    indexFromPos: pos => pos.ch,
+    posFromIndex: ch => ({ line: 0, ch }),
+    operation: fn => fn(),
+    replaceRange: (snippet, from, to) => { value = value.slice(0, from.ch) + snippet + value.slice(to.ch) },
+    setCursor: pos => { cursor = pos },
+    focus: () => {},
+  }
+  global.File = { editor: { mathBlock: { currentCm: cm } } }
+  const BlockCompletion = require("../../plugin/latex_completion/block")
+  const block = new BlockCompletion({ config: { ENABLE_BLOCK: true }, _find: prefix => findCandidates(prefix, commands, 10), _hint: () => "fraction" })
+  block.bindCurrent()
+  assert.equal(block.active.candidates[0].key, "\\frac")
+  assert.equal(block.active.index, 0)
+  let prevented = 0
+  block._onKeyDown({ key: "Enter", preventDefault: () => { prevented++ }, stopPropagation: () => {} })
+  assert.equal(value, "\\frac{}{}")
+  assert.equal(cursor.ch, 6)
+  assert.equal(prevented, 1)
+  block.detach()
+  assert.equal(block.active, null)
+  assert.equal(listeners.size, 0)
+  dom.window.close()
+  global.File = NativeFile
+  delete global.window
+  delete global.document
+})
+
+test("textarea fallback responds to Tab, IME state and focus cleanup", () => {
+  const { JSDOM } = require("jsdom")
+  const dom = new JSDOM('<div class="md-math-block"><textarea></textarea></div>')
+  global.document = dom.window.document
+  global.window = dom.window
+  global.Event = dom.window.Event
+  global.getComputedStyle = dom.window.getComputedStyle
+  const input = document.querySelector("textarea")
+  input.value = "\\sqr"
+  input.setSelectionRange(4, 4)
+  let composing = false
+  let cleaned = false
+  global.File = { editor: { mathBlock: { currentCm: null } } }
+  const BlockCompletion = require("../../plugin/latex_completion/block")
+  const block = new BlockCompletion({
+    config: { ENABLE_BLOCK: true },
+    _find: prefix => findCandidates(prefix, commands, 10),
+    _hint: () => "root",
+    utils: { createSmartInputHandler: () => ({ isComposing: () => composing, clean: () => { cleaned = true } }) },
+  })
+  input.focus()
+  assert.equal(block.active.candidates[0].key, "\\sqrt")
+  composing = true
+  block.updateTextarea(input)
+  assert.equal(block.active, null)
+  composing = false
+  block.updateTextarea(input)
+  block._onKeyDown({ key: "Tab", preventDefault: () => {}, stopPropagation: () => {} })
+  assert.equal(input.value, "\\sqrt{}")
+  assert.equal(input.selectionStart, 6)
+  block.detach()
+  assert.equal(cleaned, true)
+  assert.equal(block.active, null)
+  dom.window.close()
+  global.File = NativeFile
+  global.Event = NativeEvent
+  delete global.getComputedStyle
+  delete global.window
+  delete global.document
 })
 
 test("slash commands defer a matching backslash to LaTeX completion", () => {
@@ -122,7 +259,7 @@ test("slash commands defer a matching backslash to LaTeX completion", () => {
   plugin._getTextAround = () => ["/frac", "", { start: 5 }, plugin.SCOPE.INLINE_MATH]
   plugin._onEdit()
   assert.equal(shows, 2)
-  delete global.File
+  global.File = NativeFile
   delete global.document
   delete global.BasePlugin
 })
