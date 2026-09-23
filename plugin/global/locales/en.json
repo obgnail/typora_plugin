@@ -963,6 +963,12 @@
   "latex_completion": {
     "pluginName": "LaTeX Completion",
     "$label.MAX_RESULTS": "Maximum suggestions",
+    "category.symbol": "symbol",
+    "category.original": "command",
+    "hint.subseteq": "subset or equal",
+    "hint.emptyset": "empty set",
+    "hint.dfrac": "display fraction",
+    "hint.widehat": "wide hat accent",
     "hint.frac": "fraction",
     "hint.sum": "summation",
     "hint.int": "integral",

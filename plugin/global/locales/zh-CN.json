@@ -963,6 +963,12 @@
   "latex_completion": {
     "pluginName": "LaTeX 补全",
     "$label.MAX_RESULTS": "最多显示候选数",
+    "category.symbol": "符号",
+    "category.original": "命令",
+    "hint.subseteq": "子集或相等",
+    "hint.emptyset": "空集",
+    "hint.dfrac": "显示式分数",
+    "hint.widehat": "宽帽重音",
     "hint.frac": "分式",
     "hint.sum": "求和",
     "hint.int": "积分",

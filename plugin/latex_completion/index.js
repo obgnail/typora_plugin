@@ -1,5 +1,5 @@
 const commands = require("./commands.json")
-const { extractPrefix, findCandidates, getCursorIndex } = require("./core")
+const { extractPrefix, findCandidates, getCursorIndex, availablePackages } = require("./core")
 
 class LatexCompletionPlugin extends BasePlugin {
   commandByKey = new Map(commands.map(command => [command.key, command]))
@@ -8,11 +8,14 @@ class LatexCompletionPlugin extends BasePlugin {
     render: (key, isActive) => {
       const command = this.commandByKey.get(key)
       if (!command) return ""
-      const hint = this.i18n.t(`hint.${key.slice(1)}`)
+      const translated = this.i18n.t(`hint.${key.slice(1)}`)
+      const hint = translated === `hint.${key.slice(1)}` ? `${this.i18n.t(`category.${command.category}`)} · ${command.glyph || key.slice(1)}` : translated
+      const preview = command.snippet.replace(/\s*\n\s*/g, " ↵ ").trim().slice(0, 64)
       const active = isActive ? " active" : ""
-      return `<li class="plugin-latex-completion${active}" data-content="${this.utils.escape(key)}">${this.utils.escape(key)} <div class="plugin-latex-completion-hint">${this.utils.escape(hint)}</div></li>`
+      return `<li class="plugin-latex-completion${active}" data-content="${this.utils.escape(key)}"><div class="plugin-latex-completion-key">${this.utils.escape(key)}</div><div class="plugin-latex-completion-hint">${this.utils.escape(hint)}</div><div class="plugin-latex-completion-preview">${this.utils.escape(preview)}</div></li>`
     },
     beforeApply: key => {
+      document.querySelector?.(".auto-suggest-container")?.classList.remove("plugin-latex-completion-menu")
       const command = this.commandByKey.get(key)
       if (!command) return ""
       const { anchor } = File.editor.autoComplete.state
@@ -25,8 +28,12 @@ class LatexCompletionPlugin extends BasePlugin {
     },
   }
 
-  style = () => `.auto-suggest-container li.plugin-latex-completion { padding-left: 10px; }
-.plugin-latex-completion-hint { display: inline; opacity: 0.7; }`
+  style = () => `.auto-suggest-container.plugin-latex-completion-menu { z-index: 100000 !important; }
+.auto-suggest-container li.plugin-latex-completion { min-width: 280px; max-width: 400px; box-sizing: border-box; padding: 3px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.plugin-latex-completion-key, .plugin-latex-completion-hint, .plugin-latex-completion-preview { display: inline; }
+.plugin-latex-completion-key { font-weight: 600; }
+.plugin-latex-completion-hint { opacity: .75; margin-left: 8px; }
+.plugin-latex-completion-preview { opacity: .55; margin-left: 10px; font-family: monospace; font-size: .9em; }`
 
   process = () => {
     this.utils.decorator.afterCall(() => File?.editor?.brush, "triggerAutoComplete", this._onEdit, { priority: -10 })
@@ -36,10 +43,12 @@ class LatexCompletionPlugin extends BasePlugin {
 
   _find = (prefix, limit = this.config.MAX_RESULTS) => {
     const max = Math.max(1, Math.min(50, Number(limit) || 10))
-    return findCandidates(prefix, commands, max)
+    const packages = availablePackages(typeof window === "undefined" ? null : window.MathJax)
+    return findCandidates(prefix, commands.filter(command => command.package === "base" || packages.includes(command.package)), max)
   }
 
   _onEdit = () => {
+    document.querySelector?.(".auto-suggest-container")?.classList.remove("plugin-latex-completion-menu")
     if (File.editor.sourceView?.inSourceMode || document.activeElement?.tagName === "TEXTAREA") return
 
     const range = File.editor.selection.getRangy()
@@ -58,6 +67,7 @@ class LatexCompletionPlugin extends BasePlugin {
     bookmark.start -= prefix.length
     File.editor.autoComplete.attachToRange()
     File.editor.autoComplete.show([], bookmark, prefix.slice(1), this.handler)
+    document.querySelector?.(".auto-suggest-container")?.classList.add("plugin-latex-completion-menu")
   }
 
   _refresh = () => {
