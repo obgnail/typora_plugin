@@ -37,6 +37,7 @@
 | [collapse_table](#collapse_table)           | 表格折叠                             | ×        |
 | [md_padding](#md_padding)                   | 中英文混排优化                       |          |
 | [slash_commands](#slash_commands)           | 斜杠命令                             |          |
+| [latex_completion](#latex_completion)       | 行内公式 LaTeX 命令与片段补全        |          |
 | [mouse_gestures](#mouse_gestures)           | 鼠标手势                             | ×        |
 | [templater](#templater)                     | 文件模板                             |          |
 | [fence_enhance](#fence_enhance)             | 复制、折叠、格式化代码               |          |
@@ -224,6 +225,10 @@ yay -S typora-plugin
 提供类似 Notion 的斜杠（`/`）唤出式命令菜单。
 
 ![slash_commands](./assets/slash_commands.gif)
+
+### latex_completion
+
+在行内公式中输入 `\` 和命令前缀时，使用 Typora 的补全菜单推荐 LaTeX 命令和片段。例如输入 `\fra` 可插入 `\frac{}{}`，光标定位到第一个花括号内。可在插件配置中关闭或调整最多显示的候选数；块级公式补全将在后续贡献中加入。
 
 ### mouse_gestures
 

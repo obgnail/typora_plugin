@@ -36,6 +36,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [collapse_table](#collapse_table)           | Table Folding                                | ×       |
 | [md_padding](#md_padding)                   | Chinese-English Text Spacer                  |         |
 | [slash_commands](#slash_commands)           | Slash Commands                               |         |
+| [latex_completion](#latex_completion)       | Inline LaTeX Command and Snippet Completion  |         |
 | [mouse_gestures](#mouse_gestures)           | Mouse Gestures Recognition                   | ×       |
 | [templater](#templater)                     | File Templater Engine                        |         |
 | [fence_enhance](#fence_enhance)             | Code Block Enhancements                      |         |
@@ -223,6 +224,10 @@ Normalizes typography experiences: Automatically inserts whitespace (Pangu spaci
 Provides a Notion-style slash (`/`) command invocation menu.
 
 ![slash_commands](./assets/slash_commands.gif)
+
+### latex_completion
+
+Completes LaTeX commands and snippets inside inline math using Typora's suggestion menu. For example, `\fra` inserts `\frac{}{}` and places the cursor inside the first braces. The plugin can be disabled and the result limit adjusted in Preferences. Block math support is planned as a follow-up contribution.
 
 ### mouse_gestures
 
