@@ -232,6 +232,30 @@ test("textarea fallback responds to Tab, IME state and focus cleanup", () => {
   delete global.document
 })
 
+test("an open block menu repositions after a theme stylesheet change", async () => {
+  const { JSDOM } = require("jsdom")
+  const dom = new JSDOM("<div></div>")
+  global.document = dom.window.document
+  global.window = dom.window
+  global.MutationObserver = dom.window.MutationObserver
+  global.requestAnimationFrame = callback => callback()
+  const BlockCompletion = require("../../plugin/latex_completion/block")
+  const block = new BlockCompletion({ config: { ENABLE_BLOCK: true } })
+  let positions = 0
+  block.position = () => { positions++ }
+  const stylesheet = document.createElement("link")
+  stylesheet.rel = "stylesheet"
+  stylesheet.href = "night.css"
+  document.head.appendChild(stylesheet)
+  await new Promise(resolve => setImmediate(resolve))
+  assert.ok(positions > 0)
+  dom.window.close()
+  delete global.requestAnimationFrame
+  delete global.MutationObserver
+  delete global.window
+  delete global.document
+})
+
 test("slash commands defer a matching backslash to LaTeX completion", () => {
   global.BasePlugin = class {
     constructor(name, config) {

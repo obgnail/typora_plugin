@@ -16,6 +16,13 @@ class BlockCompletion {
     document.addEventListener("focusin", this._onFocusIn)
     window.addEventListener("resize", () => this.position())
     document.addEventListener("scroll", () => this.position(), true)
+    if (typeof MutationObserver !== "undefined") {
+      const reposition = () => requestAnimationFrame(() => this.position())
+      const observer = new MutationObserver(reposition)
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "style"] })
+      observer.observe(document.body, { attributes: true, attributeFilter: ["class", "style"] })
+      observer.observe(document.head, { attributes: true, childList: true, subtree: true, attributeFilter: ["href", "media", "disabled"] })
+    }
   }
 
   bindCurrent = () => {

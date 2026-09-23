@@ -227,7 +227,7 @@ Provides a Notion-style slash (`/`) command invocation menu.
 
 ### latex_completion
 
-Completes LaTeX commands and snippets in inline and display math. For example, `\fra` inserts `\frac{}{}` and places the cursor inside the first braces. Inline math uses Typora's suggestion menu; display math uses a matching menu beside the active math editor. The 600-entry catalog preserves the original helper's 232 commands and adds verified MathJax base and AMS symbols plus common templates. Suggestions rank exact matches first, then common commands. Commands from optional packages appear only when MathJax reports those packages enabled. Inline and block completion can be controlled separately in Preferences.
+Completes LaTeX commands and snippets in inline and display math. For example, `\fra` inserts `\frac{}{}` and places the cursor inside the first braces. Inline math uses Typora's suggestion menu; display math uses a matching menu beside the active math editor. The 600-entry catalog preserves the original helper's 232 commands and adds verified MathJax base and AMS symbols plus common templates. Suggestions rank exact matches first, then common commands. Commands from optional packages appear only when MathJax reports those packages enabled. Inline and block completion can be controlled separately in Preferences; setting changes take effect after restarting Typora.
 
 ### mouse_gestures
 

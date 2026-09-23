@@ -33,8 +33,8 @@ class LatexCompletionPlugin extends BasePlugin {
 .auto-suggest-container li.plugin-latex-completion { min-width: 260px; max-width: 360px; box-sizing: border-box; padding: 2px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .plugin-latex-completion-key, .plugin-latex-completion-hint, .plugin-latex-completion-preview { display: inline; }
 .plugin-latex-completion-key { font-weight: 600; }
-.plugin-latex-completion-hint { opacity: .75; margin-left: 8px; }
-.plugin-latex-completion-preview { opacity: .55; margin-left: 10px; font-family: monospace; font-size: .9em; }
+.plugin-latex-completion-hint { opacity: .88; margin-left: 8px; }
+.plugin-latex-completion-preview { opacity: .72; margin-left: 10px; font-family: monospace; font-size: .9em; }
 @media (max-width: 800px) { .plugin-latex-completion-preview { display: none; } }
 .plugin-latex-block-menu { position: fixed; z-index: 30; width: 320px; max-width: calc(100vw - 16px); max-height: 240px; overflow-y: auto; background: var(--bg-color); color: var(--text-color); border-radius: 6px; box-shadow: rgba(15,15,15,.14) 0 4px 14px; padding: 4px 0; }
 .plugin-latex-block-row { padding: 4px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
