@@ -17,10 +17,11 @@ as `plugin.pre-block`. The current user settings were preserved.
 | Block preview avoidance | Pass | The list now appears below the active formula block, with the preview and editor visible. Following paragraphs move down while it is open. |
 | Long block prefix and partial match | Pass | Reproduced the supplied `\lefta` screenshot: the list stayed below the block, aligned with its left edge, and did not cover the preceding paragraph. With `\arrow`, `\leftarrow` and `\rightarrow` were the first two suggestions; Enter replaced the typed fragment with `\leftarrow`. |
 | Inline partial match | Pass | Editing `\arrow` in inline math displayed `\leftarrow` and `\rightarrow` at the top of Typora's native menu, below the visible preview. |
+| Matched-character highlight | Pass | In Typora 1.12.4, both inline and block menus colored only the matched `arrow` letters red inside `\leftarrow` and `\rightarrow`. The highlight remained legible in Github and Night themes. The original Github theme was restored after testing. |
 | Block mouse, Esc, blur, block switch | Pass | Mouse applied `\frac{}{}`; Esc and blur hid the menu, and switching blocks displayed candidates only at the active cursor. |
 | `ENABLE_BLOCK=false` | Pass | After restarting the test window, block input showed no LaTeX menu while inline completion still worked. |
 | `ENABLE=false` and slash fallback | Pass | After restarting, the LaTeX menu was absent; the pre-existing slash menu handled `\` inside math. A line-start `/` showed the normal H1–H5 menu. |
-| Dark theme and right edge | Earlier pass | Before the block layout fix, Night theme retained readable candidates and the right-edge inline menu stayed inside the window. The new in-flow block layout has only been rechecked in the light theme. The prior Github theme was restored. |
+| Dark theme and right edge | Pass | Night theme retained readable candidates, including the new red match highlight and in-flow block layout. An earlier right-edge check showed the inline menu inside the window. The prior Github theme was restored. |
 | Textarea fallback and IME | Automated only | Typora 1.12.4 uses CodeMirror; the legacy textarea path and composition handling use mocks. |
 | Narrow window | Automated only | Viewport clamping is covered by `develop/test/latex_completion.test.js`; the window itself was not resized for manual inspection. |
 | Typora 0.9.98 and Linux | Not run | Static compatibility review and automated tests only. |

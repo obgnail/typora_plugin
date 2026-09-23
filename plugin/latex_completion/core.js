@@ -23,6 +23,14 @@ const findCandidates = (prefix, commands, limit = 10) => {
   }).slice(0, limit)
 }
 
+const splitCommandMatch = (key, prefix) => {
+  const fragment = prefix?.replace(/^\\/, "")
+  if (!fragment) return [key, "", ""]
+  const start = key.indexOf(fragment, 1)
+  if (start < 0) return [key, "", ""]
+  return [key.slice(0, start), key.slice(start, start + fragment.length), key.slice(start + fragment.length)]
+}
+
 const availablePackages = mathJax => {
   const packages = mathJax?.config?.tex?.packages
   if (Array.isArray(packages)) return packages
@@ -81,4 +89,4 @@ const replaceInTextarea = (input, prefix, command) => {
   input.focus()
 }
 
-module.exports = { extractPrefix, findCandidates, getCursorIndex, availablePackages, placeMenu, getLinePrefix, replaceInCodeMirror, replaceInTextarea }
+module.exports = { extractPrefix, findCandidates, splitCommandMatch, getCursorIndex, availablePackages, placeMenu, getLinePrefix, replaceInCodeMirror, replaceInTextarea }

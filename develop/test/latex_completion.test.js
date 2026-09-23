@@ -3,7 +3,7 @@ const assert = require("node:assert/strict")
 const NativeFile = global.File
 const NativeEvent = global.Event
 const commands = require("../../plugin/latex_completion/commands.json")
-const { extractPrefix, findCandidates, getCursorIndex, availablePackages, placeMenu, replaceInCodeMirror, replaceInTextarea } = require("../../plugin/latex_completion/core")
+const { extractPrefix, findCandidates, splitCommandMatch, getCursorIndex, availablePackages, placeMenu, replaceInCodeMirror, replaceInTextarea } = require("../../plugin/latex_completion/core")
 
 test("catalog preserves 232 source commands and extends MathJax symbols", () => {
   const originals = require("../../plugin/latex_completion/commands.original.json")
@@ -45,6 +45,13 @@ test("command fragments match after exact and prefix results", () => {
     ["\\arrowvert", "\\leftarrow", "\\rightarrow"])
   assert.deepEqual(findCandidates("\\Arrow", fixtures).map(command => command.key), ["\\Arrow"])
   assert.ok(findCandidates("\\arrow", commands, 50).some(command => command.key === "\\leftarrow"))
+})
+
+test("matched command characters are isolated without changing the command", () => {
+  assert.deepEqual(splitCommandMatch("\\leftarrow", "\\arrow"), ["\\left", "arrow", ""])
+  assert.deepEqual(splitCommandMatch("\\leftarrow", "\\left"), ["\\", "left", "arrow"])
+  assert.deepEqual(splitCommandMatch("\\Gamma", "\\gamma"), ["\\Gamma", "", ""])
+  assert.deepEqual(splitCommandMatch("\\frac", "\\"), ["\\frac", "", ""])
 })
 
 test("snippet cursor positions are valid, including the removed tab stop", () => {
@@ -166,7 +173,12 @@ test("inline fragment suggestions can be accepted with Enter or Tab", () => {
   const Plugin = require("../../plugin/latex_completion").plugin
   const plugin = new Plugin()
   plugin.config = { MAX_RESULTS: 10 }
+  plugin.utils = { escape: value => value.replace(/&/g, "&amp;").replace(/</g, "&lt;") }
+  plugin._hint = () => "left arrow"
   assert.deepEqual(plugin.handler.search("arrow").slice(0, 2), ["\\leftarrow", "\\rightarrow"])
+  const rendered = plugin.handler.render("\\leftarrow", true)
+  assert.match(rendered, /\\left<div class="plugin-latex-completion-match">arrow<\/div>/)
+  assert.match(rendered, /data-content="\\leftarrow"/)
   const applied = []
   global.File = { editor: { autoComplete: {
     state: { type: "latex_completion", match: ["\\leftarrow"], index: 0 },
@@ -213,6 +225,7 @@ test("block completion follows the active CodeMirror and cleans listeners on swi
   block.bindCurrent()
   assert.equal(block.active.candidates[0].key, "\\frac")
   assert.equal(block.active.index, 0)
+  assert.equal(block.menu.querySelector(".plugin-latex-completion-match").textContent, "fra")
   assert.equal(block.menu.parentElement, document.querySelector(".md-math-block"))
   assert.equal(block.menu.style.top, "")
   let prevented = 0
@@ -220,6 +233,9 @@ test("block completion follows the active CodeMirror and cleans listeners on swi
   assert.equal(value, "\\frac{}{}")
   assert.equal(cursor.ch, 6)
   assert.equal(prevented, 1)
+  block.show("\\arrow", { type: "cm", cm })
+  assert.equal(block.menu.querySelector(".plugin-latex-completion-match").textContent, "arrow")
+  assert.equal(block.menu.querySelector(".plugin-latex-completion-key").textContent, "\\leftarrow")
   block.detach()
   assert.equal(block.active, null)
   assert.equal(block.menu.parentElement, document.body)

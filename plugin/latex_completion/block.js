@@ -1,4 +1,4 @@
-const { extractPrefix, replaceInCodeMirror, replaceInTextarea } = require("./core")
+const { extractPrefix, splitCommandMatch, replaceInCodeMirror, replaceInTextarea } = require("./core")
 
 class BlockCompletion {
   constructor(plugin) {
@@ -101,7 +101,15 @@ class BlockCompletion {
       row.setAttribute("aria-selected", String(index === this.active.index))
       const key = document.createElement("div")
       key.className = "plugin-latex-completion-key"
-      key.textContent = command.key
+      const [before, match, after] = splitCommandMatch(command.key, this.active.prefix)
+      key.appendChild(document.createTextNode(before))
+      if (match) {
+        const highlighted = document.createElement("div")
+        highlighted.className = "plugin-latex-completion-match"
+        highlighted.textContent = match
+        key.appendChild(highlighted)
+      }
+      key.appendChild(document.createTextNode(after))
       const hint = document.createElement("div")
       hint.className = "plugin-latex-completion-hint"
       hint.textContent = this.plugin._hint(command)

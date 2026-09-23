@@ -1,19 +1,24 @@
 const commands = require("./commands.json")
-const { extractPrefix, findCandidates, getCursorIndex, availablePackages, placeMenu } = require("./core")
+const { extractPrefix, findCandidates, splitCommandMatch, getCursorIndex, availablePackages, placeMenu } = require("./core")
 const BlockCompletion = require("./block")
 
 class LatexCompletionPlugin extends BasePlugin {
   commandByKey = new Map(commands.map(command => [command.key, command]))
   handler = {
     type: "latex_completion",
-    search: input => this._find(`\\${String(input || "").replace(/^\\/, "")}`).map(command => command.key),
+    search: input => {
+      this._renderPrefix = `\\${String(input || "").replace(/^\\/, "")}`
+      return this._find(this._renderPrefix).map(command => command.key)
+    },
     render: (key, isActive) => {
       const command = this.commandByKey.get(key)
       if (!command) return ""
       const hint = this._hint(command)
       const preview = command.snippet.replace(/\s*\n\s*/g, " ↵ ").trim().slice(0, 64)
       const active = isActive ? " active" : ""
-      return `<li class="plugin-latex-completion${active}" data-content="${this.utils.escape(key)}"><div class="plugin-latex-completion-key">${this.utils.escape(key)}</div><div class="plugin-latex-completion-hint">${this.utils.escape(hint)}</div><div class="plugin-latex-completion-preview">${this.utils.escape(preview)}</div></li>`
+      const [before, match, after] = splitCommandMatch(key, this._renderPrefix)
+      const highlightedKey = match ? `${this.utils.escape(before)}<div class="plugin-latex-completion-match">${this.utils.escape(match)}</div>${this.utils.escape(after)}` : this.utils.escape(key)
+      return `<li class="plugin-latex-completion${active}" data-content="${this.utils.escape(key)}"><div class="plugin-latex-completion-key">${highlightedKey}</div><div class="plugin-latex-completion-hint">${this.utils.escape(hint)}</div><div class="plugin-latex-completion-preview">${this.utils.escape(preview)}</div></li>`
     },
     beforeApply: key => {
       this._menu()?.classList.remove("plugin-latex-completion-menu")
@@ -33,6 +38,8 @@ class LatexCompletionPlugin extends BasePlugin {
 .auto-suggest-container li.plugin-latex-completion { min-width: 260px; max-width: 360px; box-sizing: border-box; padding: 2px 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .plugin-latex-completion-key, .plugin-latex-completion-hint, .plugin-latex-completion-preview { display: inline; }
 .plugin-latex-completion-key { font-weight: 600; }
+.plugin-latex-completion-match { display: inline; color: #d93036; font-weight: 700; }
+body.plugin-dark-mode .plugin-latex-completion-match { color: #ff6b72; }
 .plugin-latex-completion-hint { opacity: .88; margin-left: 8px; }
 .plugin-latex-completion-preview { opacity: .72; margin-left: 10px; font-family: monospace; font-size: .9em; }
 @media (max-width: 800px) { .plugin-latex-completion-preview { display: none; } }
