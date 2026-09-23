@@ -41,38 +41,40 @@ class MarpPlugin extends BasePlugin {
 
   destroy = shadowRoot => shadowRoot.replaceChildren()
 
-  getVersion = () => "marp-core@4.3.0"
+  getVersion = () => "marp-core@4.4.0"
 
   lazyLoad = () => {
-    this.Marp = require("./marp-core.min.js").Marp
-    this.marp = new this.Marp(this.config.MARP_CORE_OPTIONS).use(this._imageAbsPath())
+    const { Marp } = require("./marp-core.min.js")
+    this.marp = new Marp(this.config.MARP_CORE_OPTIONS).use(absImagePathPlugin(this.utils))
   }
+}
 
-  _imageAbsPath = () => {
-    const toAbsPath = (url) => {
-      const decodedURL = decodeURIComponent(url)
-      const absPath = (this.utils.isNetworkImage(decodedURL) || this.utils.isSpecialImage(decodedURL))
-        ? decodedURL
-        : this.utils.resolveLocalPath(decodedURL)
-      return absPath.split(this.utils.Package.Path.sep).join("/")
-    }
+const absImagePathPlugin = utils => {
+  return imagePathPlugin(url => {
+    const decodedURL = decodeURIComponent(url)
+    const absPath = (utils.isNetworkImage(decodedURL) || utils.isSpecialImage(decodedURL))
+      ? decodedURL
+      : utils.resolveLocalPath(decodedURL)
+    return absPath.split(utils.Package.Path.sep).join("/")
+  })
+}
 
-    return function (marp) {
-      const originalNormalizeLink = marp.normalizeLink
-      const originalImageRule = marp.renderer.rules.image
+const imagePathPlugin = resolvePath => {
+  return marp => {
+    const originNormalizeLink = marp.normalizeLink
+    const originImageRule = marp.renderer.rules.image
 
-      // Image commands (`![bg](...) `): They will be processed by `marp.normalizeLink`, replaced to the `background-image: url(...)` in `style` attribute.
-      marp.normalizeLink = (url) => toAbsPath(originalNormalizeLink(url))
+    // Image commands (`![bg](...) `): They will be processed by `marp.normalizeLink`, replaced to the `background-image: url(...)` in `style` attribute.
+    marp.normalizeLink = (url) => resolvePath(originNormalizeLink(url))
 
-      // Ordinary images (`![alt](...) `): They will be processed by `md.renderer.rules.images`, replaced to the `src` attribute of the `<img>` tag.
-      marp.renderer.rules.image = (tokens, idx, options, env, self) => {
-        const token = tokens[idx]
-        const srcIndex = token.attrIndex("src")
-        if (srcIndex >= 0) {
-          token.attrs[srcIndex][1] = toAbsPath(token.attrs[srcIndex][1])
-        }
-        return originalImageRule ? originalImageRule(tokens, idx, options, env, self) : self.renderToken(tokens, idx, options)
+    // Ordinary images (`![alt](...) `): They will be processed by `md.renderer.rules.images`, replaced to the `src` attribute of the `<img>` tag.
+    marp.renderer.rules.image = (tokens, idx, options, env, self) => {
+      const token = tokens[idx]
+      const srcIndex = token.attrIndex("src")
+      if (srcIndex >= 0) {
+        token.attrs[srcIndex][1] = resolvePath(token.attrs[srcIndex][1])
       }
+      return originImageRule ? originImageRule(tokens, idx, options, env, self) : self.renderToken(tokens, idx, options)
     }
   }
 }

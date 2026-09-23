@@ -13,7 +13,8 @@
     "serve": "npm run dev serve"
   },
   "dependencies": {
-    "@marp-team/marp-core": "^4.3.0",
+    "@iktakahiro/markdown-it-katex": "^4.0.1",
+    "@marp-team/marp-core": "^4.4.0",
     "@mdit/plugin-alert": "^2.0.1",
     "@mdit/plugin-tasklist": "^1.1.1",
     "@moritzrs/mdast-util-ofm": "^0.0.1",
@@ -25,6 +26,7 @@
     "json-rpc-2.0": "^1.8.1",
     "katex": "^0.16.47",
     "markdown-it-footnote": "^4.0.0",
+    "markdown-it-front-matter": "^0.2.4",
     "markdown-it-ins": "^4.0.0",
     "markdown-it-mark": "^4.0.0",
     "markdown-it-sub": "^2.0.0",
@@ -43,7 +45,7 @@
     "micromark-extension-gfm": "^3.0.0",
     "micromark-extension-math": "^3.1.0",
     "node-fetch-commonjs": "^3.3.2",
-    "smol-toml": "^1.7.1"
+    "smol-toml": "^1.9.0"
   },
   "devDependencies": {
     "chokidar": "^5.0.0",

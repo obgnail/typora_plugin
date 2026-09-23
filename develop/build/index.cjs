@@ -271,6 +271,67 @@ function patchHighlightLanguages(whitelist) {
   }
 }
 
+const SUB_EXPORT_ALIAS_CONFIG = {
+  "markdown-it-ins": { target: "$markdown-it-plugins", exportName: "ins" },
+  "markdown-it-mark": { target: "$markdown-it-plugins", exportName: "mark" },
+  "markdown-it-sub": { target: "$markdown-it-plugins", exportName: "sub" },
+  "markdown-it-sup": { target: "$markdown-it-plugins", exportName: "sup" },
+  "markdown-it-front-matter": { target: "$markdown-it-plugins", exportName: "frontMatter" },
+  "@iktakahiro/markdown-it-katex": { target: "$markdown-it-plugins", exportName: "katex" },
+}
+
+function createSubExportAliasPlugin(config, aliasRegistry, currentAbsOutfile) {
+  const specifiers = Object.keys(config)
+  if (!specifiers.length) {
+    return { name: "sub-export-alias-noop", setup: () => undefined }
+  }
+
+  const namespace = "sub-export-alias-ns"
+  const sharedAbsPaths = new Set(
+    Object.values(config).map(({ target }) => absPaths.root(aliasRegistry[target])),
+  )
+
+  return {
+    name: "sub-export-alias",
+    setup(build) {
+      const regexPattern = specifiers.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")
+
+      build.onResolve({ filter: new RegExp(`^(${regexPattern})$`) }, (args) => {
+        const { target } = config[args.path]
+        const targetAbsPath = absPaths.root(aliasRegistry[target])
+        if (currentAbsOutfile === targetAbsPath) return null
+        return { path: args.path, namespace }
+      })
+
+      build.onLoad({ filter: /.*/, namespace }, (args) => {
+        const { target, exportName } = config[args.path]
+        const targetRel = aliasRegistry[target]
+        if (!targetRel) {
+          console.warn(`\x1b[33mWarning: sub-export-alias target "${target}" not found in aliasRegistry for "${args.path}".\x1b[0m`)
+          return { contents: `module.exports = undefined`, loader: "js" }
+        }
+        const targetAbsPath = absPaths.root(targetRel)
+        let relPath = path.relative(path.dirname(currentAbsOutfile), targetAbsPath).split(path.sep).join("/")
+        relPath = relPath.startsWith(".") ? relPath : `./${relPath}`
+        return {
+          contents: `module.exports = require(${JSON.stringify(relPath)}).${exportName}`,
+          loader: "js",
+          resolveDir: path.dirname(currentAbsOutfile),
+        }
+      })
+
+      build.onResolve({ filter: /\.js$/ }, (args) => {
+        if (args.namespace !== "file" && args.namespace !== namespace) return null
+        const resolvedAbs = path.resolve(args.resolveDir, args.path)
+        if (sharedAbsPaths.has(resolvedAbs)) {
+          return { path: args.path, external: true }
+        }
+        return null
+      })
+    },
+  }
+}
+
 const vendorExecutors = {
   [VENDOR_TYPE.download]: async (vendor, { analyze }) => {
     await Promise.all(vendor.downloads.map(async task => {
@@ -284,7 +345,11 @@ const vendorExecutors = {
       ...ESBUILD_OPTIONS,
       entryPoints: [vendor.absEntry],
       outfile: vendor.absOut,
-      plugins: [createAliasPlugin(aliasRegistry, vendor.absOut), ...(vendor.extraPlugins ?? [])],
+      plugins: [
+        createAliasPlugin(aliasRegistry, vendor.absOut),
+        createSubExportAliasPlugin(SUB_EXPORT_ALIAS_CONFIG, aliasRegistry, vendor.absOut),
+        ...(vendor.extraPlugins ?? []),
+      ],
       metafile: analyze,
     })
     if (analyze && result.metafile) {
