@@ -1259,6 +1259,23 @@ const schema_echarts = () => [
   FRAG.SettingHandler(),
 ]
 
+const schema_vega_lite = () => [
+  FRAG.Base(true),
+  FRAG.LangMode(),
+  FRAG.ChartStyle(),
+  Group("resourceUri",
+    Text("RESOURCE_URI.vega"),
+    Text("RESOURCE_URI.vega_lite"),
+    Text("RESOURCE_URI.vega_embed"),
+  ).Tooltip("resourceUri"),
+  Group("advanced",
+    Select("THEME").Options(["excel", "ggplot2", "quartz", "vox", "fivethirtyeight", "dark"]),
+    Segment("RENDERER").Options(["svg", "canvas"]).Tooltip("chooseVegaRenderer"),
+  ),
+  FRAG.Template(),
+  FRAG.SettingHandler(),
+]
+
 const schema_chart = () => [
   FRAG.Base(true),
   FRAG.LangMode(),
@@ -1638,6 +1655,7 @@ const RAW_SCHEMAS = {
   timeline: schema_timeline,
   echarts: schema_echarts,
   chart: schema_chart,
+  vega_lite: schema_vega_lite,
   wavedrom: schema_wavedrom,
   function_plot: schema_function_plot,
   calendar: schema_calendar,

@@ -1328,6 +1328,25 @@
     "pluginName": "Infographic",
     "$label.RESOURCE_URI": "CDN"
   },
+  "vega_lite": {
+    "pluginName": "Vega-Lite",
+    "$label.RENDERER": "Renderer",
+    "$label.THEME": "Theme",
+    "$label.RESOURCE_URI.vega": "Vega",
+    "$label.RESOURCE_URI.vega_lite": "Vega-Lite",
+    "$label.RESOURCE_URI.vega_embed": "Vega-Embed",
+    "$option.RENDERER.svg": "SVG",
+    "$option.RENDERER.canvas": "Canvas",
+    "$option.THEME.excel": "Excel",
+    "$option.THEME.ggplot2": "ggplot2",
+    "$option.THEME.quartz": "Quartz",
+    "$option.THEME.vox": "Vox",
+    "$option.THEME.fivethirtyeight": "FiveThirtyEight",
+    "$option.THEME.dark": "Dark",
+    "$title.resourceUri": "Dependency CDN URLs",
+    "$tooltip.chooseVegaRenderer": "Typora renders SVG better",
+    "$tooltip.resourceUri": "Verify version compatibility before modifying"
+  },
   "callouts": {
     "pluginName": "Callouts",
     "$label.SET_TITLE_COLOR": "Highlight Title",

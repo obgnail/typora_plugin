@@ -1328,6 +1328,25 @@
     "pluginName": "Infographic",
     "$label.RESOURCE_URI": "CDN"
   },
+  "vega_lite": {
+    "pluginName": "Vega-Lite",
+    "$label.RENDERER": "渲染器",
+    "$label.THEME": "主題",
+    "$label.RESOURCE_URI.vega": "Vega",
+    "$label.RESOURCE_URI.vega_lite": "Vega-Lite",
+    "$label.RESOURCE_URI.vega_embed": "Vega-Embed",
+    "$option.RENDERER.svg": "SVG",
+    "$option.RENDERER.canvas": "Canvas",
+    "$option.THEME.excel": "Excel",
+    "$option.THEME.ggplot2": "ggplot2",
+    "$option.THEME.quartz": "Quartz",
+    "$option.THEME.vox": "Vox",
+    "$option.THEME.fivethirtyeight": "FiveThirtyEight",
+    "$option.THEME.dark": "Dark",
+    "$title.resourceUri": "依賴庫 CDN 位址",
+    "$tooltip.chooseVegaRenderer": "Typora 對 SVG 的支援較好",
+    "$tooltip.resourceUri": "修改前請確認版本相容"
+  },
   "callouts": {
     "pluginName": "Callouts",
     "$label.SET_TITLE_COLOR": "高亮標題",

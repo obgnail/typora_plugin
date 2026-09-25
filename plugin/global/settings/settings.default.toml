@@ -914,7 +914,7 @@ Note that if blocks and lists appear at the same level, the lists will be ignore
 - `inline code`
 - [x] checkbox
 - Katex: $x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}$ <!-- markmap: fold -->
-  - [More Katex Examples](#?d=gist:af76a4c245b302206b16aec503dbe07b:katex.md)
+  - [More Katex Examples](https://markmap.js.org/repl#?d=gist:af76a4c245b302206b16aec503dbe07b:katex.md)
 - Now we can wrap very very very very long text based on `maxWidth` option
 
 ### Blocks
@@ -2252,19 +2252,21 @@ LIST = [
 NAME = "__COMPONENT_PLUGINS__"
 LIST = [
   "markmap",
+  "echarts",
+  "chart",
+  "vega_lite",
+  "function_plot",
+  "wavedrom",
+  "drawIO",
+  "plantUML",
+  "abc",
+  "infographic",
+  "calendar",
+  "marp",
+  "---",
   "kanban",
   "timeline",
   "chat",
-  "abc",
-  "chart",
-  "echarts",
-  "calendar",
-  "wavedrom",
-  "function_plot",
-  "drawIO",
-  "plantUML",
-  "infographic",
-  "marp",
   "---",
   "callouts",
 ]
@@ -3144,6 +3146,70 @@ config = {
 }"""
 
 
+[vega_lite]
+# =========== [ Basic ] ===========
+ENABLE = true
+NAME = ""
+HOTKEY = ""
+
+# =========== [ Language & Mode ] ===========
+# Language used to render vega-lite code block
+LANGUAGE = "vega-lite"
+
+# Interactive Mode: Prevents accidental mouse touches
+INTERACTIVE_MODE = true
+
+# Renderer: Select the core rendering engine (Typora better supports SVG)
+#   canvas: Use Canvas renderer
+#   svg   : Use SVG renderer
+RENDERER = "svg"
+
+# Theme
+#   excel
+#   ggplot2
+#   quartz
+#   vox
+#   fivethirtyeight
+#   dark
+THEME = "excel"
+
+# Default height for the Fence diagram
+DEFAULT_FENCE_HEIGHT = "100%"
+
+# Default background color for the Fence Diagram
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
+
+# =========== [ Resources ] ===========
+# Dependent Resource URI
+RESOURCE_URI = {
+  vega = "https://cdn.jsdelivr.net/npm/vega@5.30.0/build/vega.min.js",
+  vega_lite = "https://cdn.jsdelivr.net/npm/vega-lite@5.21.0/build/vega-lite.min.js",
+  vega_embed = "https://cdn.jsdelivr.net/npm/vega-embed@6.29.0/build/vega-embed.min.js",
+}
+
+# =========== [ Template ] ===========
+# Template: Default sample padding content when inserting a code block
+TEMPLATE = '''
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "A simple bar chart with embedded data.",
+  "width": "500",
+  "height": "300",
+  "data": {
+    "values": [
+      {"a": "A", "b": 28}, {"a": "B", "b": 55}, {"a": "C", "b": 43},
+      {"a": "D", "b": 91}, {"a": "E", "b": 81}, {"a": "F", "b": 53},
+      {"a": "G", "b": 19}, {"a": "H", "b": 87}, {"a": "I", "b": 52}
+    ]
+  },
+  "mark": "bar",
+  "encoding": {
+    "x": {"field": "a", "type": "nominal", "axis": {"labelAngle": 0} },
+    "y": {"field": "b", "type": "quantitative" }
+  }
+}'''
+
+
 [function_plot]
 # =========== [ Basic ] ===========
 ENABLE = true
@@ -3499,6 +3565,8 @@ TEMPLATE = """
 // @height           100%
 // @backgroundColor  transparent
 // ==/BlockCodeConfig==
+
+// Examples: https://infographic.antv.vision/gallery
 
 infographic list-row-simple-horizontal-arrow
   data

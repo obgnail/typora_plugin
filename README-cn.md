@@ -63,6 +63,7 @@
 | :------------------------------ | :----------------- | :------- |
 | [markmap](#markmap)             | 集成 Markmap       |          |
 | [echarts](#echarts)             | 集成 Echarts       |          |
+| [vega-lite](#vega-lite)         | 集成 Vega-Lite     |          |
 | [chart](#chart)                 | 集成 Chart.js      |          |
 | [drawIO](#drawIO)               | 集成 DrawIO        |          |
 | [abc](#abc)                     | 集成 abc.js        |          |
@@ -353,21 +354,22 @@ Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自�
 <td width="33.33%" align="center"><a id="markmap"><b>Markmap</b></a><br><img src="./assets/markmap.png" width="100%"></td>
 </tr>
 <tr>
+<td width="33.33%" align="center"><a id="vega-lite"><b>Vega-Lite</b></a><br><img src="./assets/vega_lite.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="plantUML"><b>PlantUML</b></a><br><img src="./assets/plantUML.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="drawIO"><b>Draw.io</b></a><br><img src="./assets/drawIO.png" width="100%"></td>
+</tr>
+<tr>
 <td width="33.33%" align="center"><a id="function_plot"><b>Function Plot</b></a><br><img src="./assets/function_plot.png" width="100%"></td>
+<td width="33.33%" align="center"><a id="wavedrom"><b>WaveDrom</b></a><br><img src="./assets/wavedrom.png" width="100%"></td>
+<td width="33.33%" align="center"><a id="abc"><b>ABC</b></a><br><img src="./assets/abcjs.png" width="100%"></td>
 </tr>
 <tr>
 <td width="33.33%" align="center"><a id="infographic"><b>Infographic</b></a><br><img src="./assets/infographic.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="abc"><b>ABC</b></a><br><img src="./assets/abcjs.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="wavedrom"><b>WaveDrom</b></a><br><img src="./assets/wavedrom.png" width="100%"></td>
-</tr>
-<tr>
 <td width="33.33%" align="center"><a id="marp"><b>Marp</b></a><br><img src="./assets/marp.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="calendar"><b>Calendar</b></a><br><img src="./assets/calendar.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="timeline"><b>Timeline</b></a><br><img src="./assets/timeline.png" width="100%"></td>
 </tr>
 <tr>
+<td width="33.33%" align="center"><a id="timeline"><b>Timeline</b></a><br><img src="./assets/timeline.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="kanban"><b>Kanban</b></a><br><img src="./assets/kanban.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="chat"><b>Chat</b></a><br><img src="./assets/chat.png" width="100%"></td>
 </tr>
@@ -469,8 +471,9 @@ Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自�
 ## 致谢
 
 - **GPL 协议**: [PlantUML](https://plantuml.com/) | [Refractify Myopic Defocus](https://chromewebstore.google.com/detail/refractify-myopic-defocus/dpnfdlnkgojjihdmgmacnmheflkojijm?hl=en)
+- **BSD 协议**: [Vega-Lite](https://github.com/vega/vega-lite)
 - **Apache 协议**: [ECharts](https://echarts.apache.org/zh/index.html) | [draw.io](https://github.com/jgraph/drawio)
-- **MIT 协议**: [markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
+- **MIT 协议**: [markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint) | [Function Plot](https://github.com/mauriciopoppe/function-plot) | [Infographic](https://github.com/antvis/infographic)
 - **无显式协议/公共领域**: [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/harttle/md-padding)
 
 ## 结语

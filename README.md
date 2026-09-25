@@ -63,6 +63,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [markmap](#markmap)             | Integrates Markmap       |         |
 | [echarts](#echarts)             | Integrates ECharts       |         |
 | [chart](#chart)                 | Integrates Chart.js      |         |
+| [vega-lite](#vega-lite)         | Integrates Vega-Lite     |         |
 | [drawIO](#drawIO)               | Integrates DrawIO        |         |
 | [abc](#abc)                     | Integrates abc.js        |         |
 | [calendar](#calendar)           | Integrates tui.calendar  |         |
@@ -352,21 +353,22 @@ Provides a document security module based on standard cryptographic algorithms, 
 <td width="33.33%" align="center"><a id="markmap"><b>Markmap</b></a><br><img src="./assets/markmap.png" width="100%"></td>
 </tr>
 <tr>
+<td width="33.33%" align="center"><a id="vega-lite"><b>Vega-Lite</b></a><br><img src="./assets/vega_lite.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="plantUML"><b>PlantUML</b></a><br><img src="./assets/plantUML.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="drawIO"><b>Draw.io</b></a><br><img src="./assets/drawIO.png" width="100%"></td>
+</tr>
+<tr>
 <td width="33.33%" align="center"><a id="function_plot"><b>Function Plot</b></a><br><img src="./assets/function_plot.png" width="100%"></td>
+<td width="33.33%" align="center"><a id="wavedrom"><b>WaveDrom</b></a><br><img src="./assets/wavedrom.png" width="100%"></td>
+<td width="33.33%" align="center"><a id="abc"><b>ABC</b></a><br><img src="./assets/abcjs.png" width="100%"></td>
 </tr>
 <tr>
 <td width="33.33%" align="center"><a id="infographic"><b>Infographic</b></a><br><img src="./assets/infographic.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="abc"><b>ABC</b></a><br><img src="./assets/abcjs.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="wavedrom"><b>WaveDrom</b></a><br><img src="./assets/wavedrom.png" width="100%"></td>
-</tr>
-<tr>
 <td width="33.33%" align="center"><a id="marp"><b>Marp</b></a><br><img src="./assets/marp.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="calendar"><b>Calendar</b></a><br><img src="./assets/calendar.png" width="100%"></td>
-<td width="33.33%" align="center"><a id="timeline"><b>Timeline</b></a><br><img src="./assets/timeline.png" width="100%"></td>
 </tr>
 <tr>
+<td width="33.33%" align="center"><a id="timeline"><b>Timeline</b></a><br><img src="./assets/timeline.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="kanban"><b>Kanban</b></a><br><img src="./assets/kanban.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="chat"><b>Chat</b></a><br><img src="./assets/chat.png" width="100%"></td>
 </tr>
@@ -467,8 +469,9 @@ For detailed platform support lists and configuration guidelines, please refer t
 ## Acknowledgements
 
 - **GPL Licensed**: [PlantUML](https://plantuml.com/) | [Refractify Myopic Defocus](https://chromewebstore.google.com/detail/refractify-myopic-defocus/dpnfdlnkgojjihdmgmacnmheflkojijm?hl=en)
+- **BSD Licensed**: [Vega-Lite](https://github.com/vega/vega-lite)
 - **Apache Licensed**: [ECharts](https://echarts.apache.org/zh/index.html) | [draw.io](https://github.com/jgraph/drawio)
-- **MIT Licensed**: [markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
+- **MIT Licensed**: [markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint) | [Function Plot](https://github.com/mauriciopoppe/function-plot) | [Infographic](https://github.com/antvis/infographic)
 - **Unlicensed / Public Domain**: [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/harttle/md-padding)
 
 ## Conclusion
