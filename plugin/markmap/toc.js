@@ -59,202 +59,205 @@ class TOCMarkmap {
   }
 
   process = () => {
-    const onEvent = () => {
-      const { eventHub } = this.utils
-      const { panel, content, fullScreen, header } = this.entities
-      const repositioning = () => {
-        if (!this.mm) return
+    this._onEvent()
+    this._onMove()
+    this._onResize()
+    this._onSvgClick()
+  }
 
-        const isFullScreen = fullScreen.getAttribute("action") === "shrink"
-        if (!this.pinUtils.isPinTop && !this.pinUtils.isPinRight && !isFullScreen) return
+  _onEvent = () => {
+    const { eventHub } = this.utils
+    const { panel, content, fullScreen, header } = this.entities
+    const repositioning = () => {
+      if (!this.mm) return
 
-        const contentRect = content.getBoundingClientRect()
-        const panelRect = panel.getBoundingClientRect()
-        const { originContentRect } = this.pinUtils
+      const isFullScreen = fullScreen.getAttribute("action") === "shrink"
+      if (!this.pinUtils.isPinTop && !this.pinUtils.isPinRight && !isFullScreen) return
 
-        let newPanelRect, newContentRect
-        if (isFullScreen) {
-          newPanelRect = contentRect
-          newContentRect = contentRect
-        } else if (this.pinUtils.isPinTop) {
-          newPanelRect = new DOMRect(contentRect.x, panelRect.y, contentRect.width, panelRect.height)
-          newContentRect = new DOMRect(contentRect.x, originContentRect.y, contentRect.width, originContentRect.height)
-        } else if (this.pinUtils.isPinRight) {
-          newPanelRect = new DOMRect(contentRect.right, panelRect.y, panelRect.right - contentRect.right, panelRect.height)
-          newContentRect = new DOMRect(contentRect.x, originContentRect.y, originContentRect.right - contentRect.left, originContentRect.height)
-        }
-        this.pinUtils.recordContentRect(newContentRect)
-        this._setPanelRect(newPanelRect)
+      const contentRect = content.getBoundingClientRect()
+      const panelRect = panel.getBoundingClientRect()
+      const { originContentRect } = this.pinUtils
+
+      let newPanelRect, newContentRect
+      if (isFullScreen) {
+        newPanelRect = contentRect
+        newContentRect = contentRect
+      } else if (this.pinUtils.isPinTop) {
+        newPanelRect = new DOMRect(contentRect.x, panelRect.y, contentRect.width, panelRect.height)
+        newContentRect = new DOMRect(contentRect.x, originContentRect.y, contentRect.width, originContentRect.height)
+      } else if (this.pinUtils.isPinRight) {
+        newPanelRect = new DOMRect(contentRect.right, panelRect.y, panelRect.right - contentRect.right, panelRect.height)
+        newContentRect = new DOMRect(contentRect.x, originContentRect.y, originContentRect.right - contentRect.left, originContentRect.height)
       }
-      eventHub.on(eventHub.eventType.afterToggleSidebar, repositioning)
-      eventHub.on(eventHub.eventType.afterSetSidebarWidth, repositioning)
-      eventHub.on(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this.close())
-      eventHub.on(eventHub.eventType.outlineUpdated, () => {
-        if (!this.utils.isShown(panel)) return
-        this.draw()
-        if (this.config.AUTO_FIT_ON_UPDATE) this.fit()
-      })
-
-      const fitDelay = this.utils.debounce(() => this.fit(), 30)
-      panel.addEventListener("transitionend", ev => ev.target === ev.currentTarget && fitDelay())
-      header.addEventListener("click", ev => {
-        const action = ev.target.closest(".plugin-markmap-icon")?.getAttribute("action")
-        if (action) this.doAction(action)
-      })
-
-      this.toggleContextMenu()
+      this.pinUtils.recordContentRect(newContentRect)
+      this._setPanelRect(newPanelRect)
     }
-    const onMove = () => {
-      this.utils.dragElement({
-        targetEl: this.entities.header,
-        moveEl: this.entities.panel,
-        onCheck: () => !this.entities.panel.classList.contains("pinned-window"),
-        onMouseDown: null,
-        onMouseMove: null,
-        onMouseUp: null,
-      })
-    }
-    const onResize = () => {
-      const { minHeight, minWidth } = window.getComputedStyle(this.entities.panel)
-      const panelMinHeight = parseFloat(minHeight) || 90
-      const panelMinWidth = parseFloat(minWidth) || 90
-      const onMouseUp = () => this.fit()
+    eventHub.on(eventHub.eventType.afterToggleSidebar, repositioning)
+    eventHub.on(eventHub.eventType.afterSetSidebarWidth, repositioning)
+    eventHub.on(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this.close())
+    eventHub.on(eventHub.eventType.outlineUpdated, () => {
+      if (!this.utils.isShown(panel)) return
+      this.draw()
+      if (this.config.AUTO_FIT_ON_UPDATE) this.fit()
+    })
 
-      const whenUnpin = () => {
-        let deltaHeight = 0
-        let deltaWidth = 0
-        const onMouseDown = (startX, startY, startWidth, startHeight) => {
-          deltaHeight = panelMinHeight - startHeight
-          deltaWidth = panelMinWidth - startWidth
-        }
-        const onMouseMove = (deltaX, deltaY) => {
-          deltaY = Math.max(deltaY, deltaHeight)
-          deltaX = Math.max(deltaX, deltaWidth)
-          return { deltaX, deltaY }
-        }
-        this.utils.resizeElement({
-          targetEl: this.entities.resize,
-          resizeEl: this.entities.panel,
-          resizeWidth: true,
-          resizeHeight: true,
-          onMouseDown,
-          onMouseMove,
-          onMouseUp,
-        })
+    const fitDelay = this.utils.debounce(() => this.fit(), 30)
+    panel.addEventListener("transitionend", ev => ev.target === ev.currentTarget && fitDelay())
+    header.addEventListener("click", ev => {
+      const action = ev.target.closest(".plugin-markmap-icon")?.getAttribute("action")
+      if (action) this.doAction(action)
+    })
+
+    this.toggleContextMenu()
+  }
+
+  _onMove = () => {
+    this.utils.dragElement({
+      targetEl: this.entities.header,
+      moveEl: this.entities.panel,
+      onCheck: () => !this.entities.panel.classList.contains("pinned-window"),
+      onMouseDown: null,
+      onMouseMove: null,
+      onMouseUp: null,
+    })
+  }
+
+  _onResize = () => {
+    const { minHeight, minWidth } = window.getComputedStyle(this.entities.panel)
+    const panelMinHeight = parseFloat(minHeight) || 90
+    const panelMinWidth = parseFloat(minWidth) || 90
+    const onMouseUp = () => this.fit()
+
+    const whenUnpin = () => {
+      let deltaHeight = 0
+      let deltaWidth = 0
+      const onMouseDown = (startX, startY, startWidth, startHeight) => {
+        deltaHeight = panelMinHeight - startHeight
+        deltaWidth = panelMinWidth - startWidth
       }
-
-      const whenPinTop = () => {
-        let contentStartTop = 0
-        let contentMinTop = 0
-        const onMouseDown = () => {
-          contentStartTop = this.entities.content.getBoundingClientRect().top
-          contentMinTop = panelMinHeight + this.entities.panel.getBoundingClientRect().top
-        }
-        const onMouseMove = (deltaX, deltaY) => {
-          let newContentTop = contentStartTop + deltaY
-          if (newContentTop < contentMinTop) {
-            newContentTop = contentMinTop
-            deltaY = contentMinTop - contentStartTop
-          }
-          this.entities.content.style.top = newContentTop + "px"
-          return { deltaX, deltaY }
-        }
-        this.utils.resizeElement({
-          targetEl: this.entities.gripTop,
-          resizeEl: this.entities.panel,
-          resizeWidth: false,
-          resizeHeight: true,
-          onMouseDown,
-          onMouseMove,
-          onMouseUp,
-        })
+      const onMouseMove = (deltaX, deltaY) => {
+        deltaY = Math.max(deltaY, deltaHeight)
+        deltaX = Math.max(deltaX, deltaWidth)
+        return { deltaX, deltaY }
       }
-
-      const whenPinRight = () => {
-        let contentStartRight = 0
-        let contentStartWidth = 0
-        let panelStartLeft = 0
-        let contentMaxRight = 0
-        const onMouseDown = () => {
-          const contentRect = this.entities.content.getBoundingClientRect()
-          contentStartRight = contentRect.right
-          contentStartWidth = contentRect.width
-
-          const panelRect = this.entities.panel.getBoundingClientRect()
-          panelStartLeft = panelRect.left
-          contentMaxRight = panelRect.right - panelMinWidth
-        }
-        const onMouseMove = (deltaX, deltaY) => {
-          deltaX = -deltaX
-          deltaY = -deltaY
-          let newContentRight = contentStartRight - deltaX
-          if (newContentRight > contentMaxRight) {
-            deltaX = contentStartRight - contentMaxRight
-          }
-          this.entities.content.style.width = contentStartWidth - deltaX + "px"
-          this.entities.panel.style.left = panelStartLeft - deltaX + "px"
-          return { deltaX, deltaY }
-        }
-        this.utils.resizeElement({
-          targetEl: this.entities.gripRight,
-          resizeEl: this.entities.panel,
-          resizeWidth: true,
-          resizeHeight: false,
-          onMouseDown,
-          onMouseMove,
-          onMouseUp,
-        })
-      }
-
-      whenUnpin()
-      whenPinTop()
-      whenPinRight()
-    }
-    const onSvgClick = () => {
-      const getCid = node => {
-        if (!node) return
-        const headers = File.editor.nodeMap.toc.headers
-        if (!headers || headers.length === 0) return
-        const nodeIdx = node.getAttribute("data-path")?.split(".").at(-1)
-        if (nodeIdx === undefined) return
-        let tocIdx = parseInt(nodeIdx - 1) // Markmap node indices start from 1, so subtract 1.
-        if (this.mm.state.data.content === "" && headers[0].getText() !== "") {
-          tocIdx-- // If the first(root) node of the markmap is an empty node, subtract 1 again.
-        }
-        return headers[tocIdx]?.attributes.id
-      }
-      this.entities.svg.addEventListener("click", ev => {
-        const node = ev.target.closest(".markmap-node")
-        const cid = getCid(node)
-        if (!cid) return
-
-        const circle = ev.target.closest("circle")
-        if (circle) {
-          if (this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD) {
-            const head = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`)
-            const isFold = node.classList.contains("markmap-fold")
-            this.utils.callPluginFn("collapse_paragraph", "trigger", head, !isFold)
-          }
-          if (this.config.AUTO_FIT_WHEN_FOLD) {
-            this.fit()
-          }
-        } else {
-          if (this.config.CLICK_TO_POSITION) {
-            const { height, top } = this.entities.content.getBoundingClientRect()
-            this.utils.scrollTo(cid, {
-              height: height * this.config.POSITIONING_VIEWPORT_HEIGHT + top,
-              showHiddenEls: !this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD,
-              moveCursor: true,
-            })
-          }
-        }
+      this.utils.resizeElement({
+        targetEl: this.entities.resize,
+        resizeEl: this.entities.panel,
+        resizeWidth: true,
+        resizeHeight: true,
+        onMouseDown,
+        onMouseMove,
+        onMouseUp,
       })
     }
 
-    onEvent()
-    onMove()
-    onResize()
-    onSvgClick()
+    const whenPinTop = () => {
+      let contentStartTop = 0
+      let contentMinTop = 0
+      const onMouseDown = () => {
+        contentStartTop = this.entities.content.getBoundingClientRect().top
+        contentMinTop = panelMinHeight + this.entities.panel.getBoundingClientRect().top
+      }
+      const onMouseMove = (deltaX, deltaY) => {
+        let newContentTop = contentStartTop + deltaY
+        if (newContentTop < contentMinTop) {
+          newContentTop = contentMinTop
+          deltaY = contentMinTop - contentStartTop
+        }
+        this.entities.content.style.top = newContentTop + "px"
+        return { deltaX, deltaY }
+      }
+      this.utils.resizeElement({
+        targetEl: this.entities.gripTop,
+        resizeEl: this.entities.panel,
+        resizeWidth: false,
+        resizeHeight: true,
+        onMouseDown,
+        onMouseMove,
+        onMouseUp,
+      })
+    }
+
+    const whenPinRight = () => {
+      let contentStartRight = 0
+      let contentStartWidth = 0
+      let panelStartLeft = 0
+      let contentMaxRight = 0
+      const onMouseDown = () => {
+        const contentRect = this.entities.content.getBoundingClientRect()
+        contentStartRight = contentRect.right
+        contentStartWidth = contentRect.width
+
+        const panelRect = this.entities.panel.getBoundingClientRect()
+        panelStartLeft = panelRect.left
+        contentMaxRight = panelRect.right - panelMinWidth
+      }
+      const onMouseMove = (deltaX, deltaY) => {
+        deltaX = -deltaX
+        deltaY = -deltaY
+        let newContentRight = contentStartRight - deltaX
+        if (newContentRight > contentMaxRight) {
+          deltaX = contentStartRight - contentMaxRight
+        }
+        this.entities.content.style.width = contentStartWidth - deltaX + "px"
+        this.entities.panel.style.left = panelStartLeft - deltaX + "px"
+        return { deltaX, deltaY }
+      }
+      this.utils.resizeElement({
+        targetEl: this.entities.gripRight,
+        resizeEl: this.entities.panel,
+        resizeWidth: true,
+        resizeHeight: false,
+        onMouseDown,
+        onMouseMove,
+        onMouseUp,
+      })
+    }
+
+    whenUnpin()
+    whenPinTop()
+    whenPinRight()
+  }
+
+  _onSvgClick = () => {
+    const getCid = node => {
+      if (!node) return
+      const headers = File.editor.nodeMap.toc.headers
+      if (!headers || headers.length === 0) return
+      const nodeIdx = node.getAttribute("data-path")?.split(".").at(-1)
+      if (nodeIdx === undefined) return
+      let tocIdx = parseInt(nodeIdx - 1) // Markmap node indices start from 1, so subtract 1.
+      if (this.mm.state.data.content === "" && headers[0].getText() !== "") {
+        tocIdx-- // If the first(root) node of the markmap is an empty node, subtract 1 again.
+      }
+      return headers[tocIdx]?.attributes.id
+    }
+    this.entities.svg.addEventListener("click", ev => {
+      const node = ev.target.closest(".markmap-node")
+      const cid = getCid(node)
+      if (!cid) return
+
+      const circle = ev.target.closest("circle")
+      if (circle) {
+        if (this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD) {
+          const head = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`)
+          const isFold = node.classList.contains("markmap-fold")
+          this.utils.callPluginFn("collapse_paragraph", "trigger", head, !isFold)
+        }
+        if (this.config.AUTO_FIT_WHEN_FOLD) {
+          this.fit()
+        }
+      } else {
+        if (this.config.CLICK_TO_POSITION) {
+          const { height, top } = this.entities.content.getBoundingClientRect()
+          this.utils.scrollTo(cid, {
+            height: height * this.config.POSITIONING_VIEWPORT_HEIGHT + top,
+            showHiddenEls: !this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD,
+            moveCursor: true,
+          })
+        }
+      }
+    })
   }
 
   callback = async () => {
@@ -460,13 +463,8 @@ class TOCMarkmap {
           },
         }),
       },
-      rules: {
-        "DOWNLOAD_OPTIONS.FOLDER": "path",
-        "DOWNLOAD_OPTIONS.FILENAME": "required",
-      },
-      hooks: {
-        onCommit: () => _edited = true,
-      },
+      rules: { "DOWNLOAD_OPTIONS.FOLDER": "path", "DOWNLOAD_OPTIONS.FILENAME": "required" },
+      hooks: { onCommit: () => _edited = true },
     })
     if (response === 1 && _edited) {
       await save(data)
@@ -606,7 +604,7 @@ class TOCMarkmap {
     const md = this.plugin.getToc()
     if (md === undefined) return
 
-    const options = this.plugin.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm?.options)
+    const options = this.Lib.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm?.options)
     this.transformContext = this.Lib.transformer.transform(md)
     const { root } = this.transformContext
 
@@ -614,7 +612,7 @@ class TOCMarkmap {
       this._setFoldNode(root)
       this.mm.setData(root, options)
     } else {
-      this.mm = this.Lib.Markmap.create(this.entities.svg, options, root)
+      this.mm = this.Lib.createMarkmap(this.entities.svg, options, root)
     }
   }
 

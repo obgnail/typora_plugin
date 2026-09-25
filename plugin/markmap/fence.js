@@ -51,20 +51,20 @@ class FenceMarkmap {
 
   create = ($wrap, content, options) => {
     const { root } = this.Lib.transformer.transform(content)
-    const _options = this.plugin.assignOptions(options)
-    return this.Lib.Markmap.create($wrap[0], _options, root)
+    const _options = this.Lib.assignOptions(options)
+    return this.Lib.createMarkmap($wrap[0], _options, root)
   }
 
   update = async ($wrap, content, instance, options) => {
     const { root } = this.Lib.transformer.transform(content)
-    const _options = this.plugin.assignOptions(options, instance.options)
+    const _options = this.Lib.assignOptions(options, instance.options)
     instance.setData(root, _options)
     await instance.fit()
   }
 
   destroy = instance => instance.destroy()
 
-  getVersion = () => this.Lib.transformerVersions["markmap-lib"]
+  getVersion = () => this.Lib.version
 
   getStyleContent = () =>
     `.md-diagram-panel .plugin-fence-markmap-svg { line-height: initial !important; user-select: none; }
