@@ -2010,6 +2010,16 @@ MACRO_RADIUS = 35
 TAIL_RADIUS = 15
 
 
+[latex_completion]
+# =========== [ Basic ] ===========
+ENABLE = true
+NAME = ""
+
+# Maximum number of suggestions shown at once (1-50)
+MAX_RESULTS = 10
+ENABLE_BLOCK = true
+
+
 [slash_commands]
 # =========== [ Basic ] ===========
 ENABLE = true

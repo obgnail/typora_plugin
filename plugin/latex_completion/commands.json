@@ -1,0 +1,5113 @@
+[
+  {
+    "key": "\\frac",
+    "snippet": "\\frac{}{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\sum",
+    "snippet": "\\sum_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\int",
+    "snippet": "\\int_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\alpha",
+    "snippet": "\\alpha ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\beta",
+    "snippet": "\\beta ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\gamma",
+    "snippet": "\\gamma ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\delta",
+    "snippet": "\\delta ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\epsilon",
+    "snippet": "\\epsilon ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\zeta",
+    "snippet": "\\zeta ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\eta",
+    "snippet": "\\eta ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\theta",
+    "snippet": "\\theta ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\iota",
+    "snippet": "\\iota ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\kappa",
+    "snippet": "\\kappa ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\lambda",
+    "snippet": "\\lambda ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\mu",
+    "snippet": "\\mu ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\nu",
+    "snippet": "\\nu ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\xi",
+    "snippet": "\\xi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\omicron",
+    "snippet": "\\omicron ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\pi",
+    "snippet": "\\pi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\rho",
+    "snippet": "\\rho ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\sigma",
+    "snippet": "\\sigma ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\tau",
+    "snippet": "\\tau ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\upsilon",
+    "snippet": "\\upsilon ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\phi",
+    "snippet": "\\phi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\chi",
+    "snippet": "\\chi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\psi",
+    "snippet": "\\psi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\omega",
+    "snippet": "\\omega ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Gamma",
+    "snippet": "\\Gamma ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Delta",
+    "snippet": "\\Delta ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Theta",
+    "snippet": "\\Theta ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Lambda",
+    "snippet": "\\Lambda ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Xi",
+    "snippet": "\\Xi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Pi",
+    "snippet": "\\Pi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Sigma",
+    "snippet": "\\Sigma ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Upsilon",
+    "snippet": "\\Upsilon ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Phi",
+    "snippet": "\\Phi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Psi",
+    "snippet": "\\Psi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Omega",
+    "snippet": "\\Omega ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\begin",
+    "snippet": "\\begin{}\n\n\\end{}",
+    "cursorOffset": -9,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\beg",
+    "snippet": "\\begin{}\n\n\\end{}",
+    "cursorOffset": -9,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\sin",
+    "snippet": "\\sin ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\cos",
+    "snippet": "\\cos ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\tan",
+    "snippet": "\\tan ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\cot",
+    "snippet": "\\cot ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\sec",
+    "snippet": "\\sec ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\csc",
+    "snippet": "\\csc ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\arcsin",
+    "snippet": "\\arcsin ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\arccos",
+    "snippet": "\\arccos ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\arctan",
+    "snippet": "\\arctan ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\exp",
+    "snippet": "\\exp ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\log",
+    "snippet": "\\log ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\ln",
+    "snippet": "\\ln ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\lg",
+    "snippet": "\\lg ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\lim",
+    "snippet": "\\lim_{}\\to ",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\prod",
+    "snippet": "\\prod_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\oint",
+    "snippet": "\\oint_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\iint",
+    "snippet": "\\iint_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\iiint",
+    "snippet": "\\iiint_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\binom",
+    "snippet": "\\binom{}{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\choose",
+    "snippet": "\\choose{}{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\hat",
+    "snippet": "\\hat{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bar",
+    "snippet": "\\bar{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\tilde",
+    "snippet": "\\tilde{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\dot",
+    "snippet": "\\dot{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\ddot",
+    "snippet": "\\ddot{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\partial",
+    "snippet": "\\partial ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\nabla",
+    "snippet": "\\nabla ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\infty",
+    "snippet": "\\infty ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\mathcal",
+    "snippet": "\\mathcal{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\mathbf",
+    "snippet": "\\mathbf{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\mathbb",
+    "snippet": "\\mathbb{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\mathfrak",
+    "snippet": "\\mathfrak{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\mathit",
+    "snippet": "\\mathit{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\mathrm",
+    "snippet": "\\mathrm{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\mathsf",
+    "snippet": "\\mathsf{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\mathtt",
+    "snippet": "\\mathtt{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\cup",
+    "snippet": "\\cup ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\cap",
+    "snippet": "\\cap ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\subset",
+    "snippet": "\\subset ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\supset",
+    "snippet": "\\supset ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\in",
+    "snippet": "\\in ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\notin",
+    "snippet": "\\notin ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\forall",
+    "snippet": "\\forall ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\exists",
+    "snippet": "\\exists ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\neg",
+    "snippet": "\\neg ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\because",
+    "snippet": "\\because ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\therefore",
+    "snippet": "\\therefore ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\leq",
+    "snippet": "\\leq ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\geq",
+    "snippet": "\\geq ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\equiv",
+    "snippet": "\\equiv ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\approx",
+    "snippet": "\\approx ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\neq",
+    "snippet": "\\neq ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\cdot",
+    "snippet": "\\cdot ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\times",
+    "snippet": "\\times ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\div",
+    "snippet": "\\div ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\pm",
+    "snippet": "\\pm ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\mp",
+    "snippet": "\\mp ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\left",
+    "snippet": "\\left( \\right)",
+    "cursorOffset": -7,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\abs",
+    "snippet": "\\left| \\right|",
+    "cursorOffset": -7,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\norm",
+    "snippet": "\\left\\| \\right\\|",
+    "cursorOffset": -7,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\matrix",
+    "snippet": "\\begin{matrix}\\\\\\end{matrix}",
+    "cursorOffset": -17,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\pmatrix",
+    "snippet": "\\begin{pmatrix}\\\\\\end{pmatrix}",
+    "cursorOffset": -20,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bmatrix",
+    "snippet": "\\begin{bmatrix}\\\\\\end{bmatrix}",
+    "cursorOffset": -20,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\vmatrix",
+    "snippet": "\\begin{vmatrix}\\\\\\end{vmatrix}",
+    "cursorOffset": -20,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\cases",
+    "snippet": "\\begin{cases}\\\\\\end{cases}",
+    "cursorOffset": -18,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\cdots",
+    "snippet": "\\cdots ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\ldots",
+    "snippet": "\\ldots ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\vdots",
+    "snippet": "\\vdots ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\ddots",
+    "snippet": "\\ddots ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\quad",
+    "snippet": "\\quad ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\qquad",
+    "snippet": "\\qquad ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\hspace",
+    "snippet": "\\hspace{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\vspace",
+    "snippet": "\\vspace{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\,",
+    "snippet": "\\, ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\;",
+    "snippet": "\\; ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\!",
+    "snippet": "\\! ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\dagger",
+    "snippet": "\\dagger ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\ddagger",
+    "snippet": "\\ddagger ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\star",
+    "snippet": "\\star ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\diamond",
+    "snippet": "\\diamond ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\triangle",
+    "snippet": "\\triangle ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\clubsuit",
+    "snippet": "\\clubsuit ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\diamondsuit",
+    "snippet": "\\diamondsuit ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\heartsuit",
+    "snippet": "\\heartsuit ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\spadesuit",
+    "snippet": "\\spadesuit ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\varepsilon",
+    "snippet": "\\varepsilon ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\vartheta",
+    "snippet": "\\vartheta ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\varpi",
+    "snippet": "\\varpi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\varrho",
+    "snippet": "\\varrho ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\varsigma",
+    "snippet": "\\varsigma ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\varphi",
+    "snippet": "\\varphi ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\bigcup",
+    "snippet": "\\bigcup_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bigcap",
+    "snippet": "\\bigcap_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bigsqcup",
+    "snippet": "\\bigsqcup_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bigvee",
+    "snippet": "\\bigvee_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bigwedge",
+    "snippet": "\\bigwedge_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bigodot",
+    "snippet": "\\bigodot_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bigoplus",
+    "snippet": "\\bigoplus_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bigotimes",
+    "snippet": "\\bigotimes_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\biguplus",
+    "snippet": "\\biguplus_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\coprod",
+    "snippet": "\\coprod_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bigsqcap",
+    "snippet": "\\bigsqcap_{}^{}",
+    "cursorOffset": -4,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\text",
+    "snippet": "\\text{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\rm",
+    "snippet": "\\rm{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bf",
+    "snippet": "\\bf{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\it",
+    "snippet": "\\it{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\cal",
+    "snippet": "\\cal{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bb",
+    "snippet": "\\bb{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\tt",
+    "snippet": "\\tt{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\sf",
+    "snippet": "\\sf{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\displaystyle",
+    "snippet": "\\displaystyle ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\textstyle",
+    "snippet": "\\textstyle ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\scriptstyle",
+    "snippet": "\\scriptstyle ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\scriptscriptstyle",
+    "snippet": "\\scriptscriptstyle ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\limits",
+    "snippet": "\\limits ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\nolimits",
+    "snippet": "\\nolimits ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\over",
+    "snippet": "\\over ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\atop",
+    "snippet": "\\atop ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\underline",
+    "snippet": "\\underline{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\overline",
+    "snippet": "\\overline{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\overbrace",
+    "snippet": "\\overbrace{}^{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\underbrace",
+    "snippet": "\\underbrace{}_{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\sqrt",
+    "snippet": "\\sqrt{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\root",
+    "snippet": "\\sqrt[]{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\gets",
+    "snippet": "\\gets ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\to",
+    "snippet": "\\to ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\rightarrow",
+    "snippet": "\\rightarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\leftarrow",
+    "snippet": "\\leftarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\longrightarrow",
+    "snippet": "\\longrightarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\longleftarrow",
+    "snippet": "\\longleftarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\uparrow",
+    "snippet": "\\uparrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\downarrow",
+    "snippet": "\\downarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\updownarrow",
+    "snippet": "\\updownarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Rightarrow",
+    "snippet": "\\Rightarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Leftarrow",
+    "snippet": "\\Leftarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Leftrightarrow",
+    "snippet": "\\Leftrightarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Uparrow",
+    "snippet": "\\Uparrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Downarrow",
+    "snippet": "\\Downarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Updownarrow",
+    "snippet": "\\Updownarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Longrightarrow",
+    "snippet": "\\Longrightarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Longleftarrow",
+    "snippet": "\\Longleftarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Longleftrightarrow",
+    "snippet": "\\Longleftrightarrow ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\mapsto",
+    "snippet": "\\mapsto ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\leftharpoonup",
+    "snippet": "\\leftharpoonup ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\rightharpoonup",
+    "snippet": "\\rightharpoonup ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\leftharpoondown",
+    "snippet": "\\leftharpoondown ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\rightharpoondown",
+    "snippet": "\\rightharpoondown ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\rightleftharpoons",
+    "snippet": "\\rightleftharpoons ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\angle",
+    "snippet": "\\angle ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\parallel",
+    "snippet": "\\parallel ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\perp",
+    "snippet": "\\perp ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\asymp",
+    "snippet": "\\asymp ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\sim",
+    "snippet": "\\sim ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\cong",
+    "snippet": "\\cong ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\simeq",
+    "snippet": "\\simeq ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\propto",
+    "snippet": "\\propto ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\ll",
+    "snippet": "\\ll ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\gg",
+    "snippet": "\\gg ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\doteq",
+    "snippet": "\\doteq ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\smile",
+    "snippet": "\\smile ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\frown",
+    "snippet": "\\frown ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\aleph",
+    "snippet": "\\aleph ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\beth",
+    "snippet": "\\beth ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\gimel",
+    "snippet": "\\gimel ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\daleth",
+    "snippet": "\\daleth ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\ell",
+    "snippet": "\\ell ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\hbar",
+    "snippet": "\\hbar ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Re",
+    "snippet": "\\Re ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\Im",
+    "snippet": "\\Im ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\wp",
+    "snippet": "\\wp ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\mho",
+    "snippet": "\\mho ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\dots",
+    "snippet": "\\dots ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\bma2",
+    "snippet": "\\begin{bmatrix}  & \\\\  & \\end{bmatrix}",
+    "cursorOffset": -17,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\bma3",
+    "snippet": "\\begin{bmatrix}  &  & \\\\  &  & \\\\  &  & \\end{bmatrix}",
+    "cursorOffset": -31,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\aligned",
+    "snippet": "\\begin{aligned}\n &=  \\\\\n &= \n\\end{aligned}",
+    "cursorOffset": -18,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\dff",
+    "snippet": "\\frac{\\mathrm{d}}{\\mathrm{d}x}",
+    "cursorOffset": -5,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\pff",
+    "snippet": "\\frac{\\partial }{\\partial x}",
+    "cursorOffset": -12,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\dd",
+    "snippet": "\\mathrm{d}",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\set",
+    "snippet": "\\{  \\mid  \\}",
+    "cursorOffset": -8,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\boxed",
+    "snippet": "\\boxed{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\red",
+    "snippet": "\\color{red}{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\blue",
+    "snippet": "\\color{blue}{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\rank",
+    "snippet": "\\mathrm{rank}()",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\det",
+    "snippet": "\\det()",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "symbol",
+    "package": "base"
+  },
+  {
+    "key": "\\doubleint",
+    "snippet": "\\iint_{D}  \\mathrm{d}\\sigma",
+    "cursorOffset": -10,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\triint",
+    "snippet": "\\iiint_{\\Omega}  \\mathrm{d}V",
+    "cursorOffset": -8,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\limn",
+    "snippet": "\\lim_{n \\to \\infty} ",
+    "cursorOffset": 0,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\sub",
+    "snippet": "_{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\sup",
+    "snippet": "^{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\vec",
+    "snippet": "\\vec{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\vect",
+    "snippet": "\\overrightarrow{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\pmat",
+    "snippet": "\\begin{pmatrix}  \\\\  \\end{pmatrix}",
+    "cursorOffset": -12,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\arg",
+    "snippet": "\\arg ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\cosh",
+    "snippet": "\\cosh ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\coth",
+    "snippet": "\\coth ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\deg",
+    "snippet": "\\deg ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\dim",
+    "snippet": "\\dim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\gcd",
+    "snippet": "\\gcd ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\hom",
+    "snippet": "\\hom ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\inf",
+    "snippet": "\\inf ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\ker",
+    "snippet": "\\ker ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\liminf",
+    "snippet": "\\liminf ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\limsup",
+    "snippet": "\\limsup ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\max",
+    "snippet": "\\max ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\min",
+    "snippet": "\\min ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\Pr",
+    "snippet": "\\Pr ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\sinh",
+    "snippet": "\\sinh ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\tanh",
+    "snippet": "\\tanh ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\bmod",
+    "snippet": "\\bmod ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\iff",
+    "snippet": "\\iff ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\TeX",
+    "snippet": "\\TeX ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\LaTeX",
+    "snippet": "\\LaTeX ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "base"
+  },
+  {
+    "key": "\\injlim",
+    "snippet": "\\injlim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "ams"
+  },
+  {
+    "key": "\\projlim",
+    "snippet": "\\projlim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "ams"
+  },
+  {
+    "key": "\\varliminf",
+    "snippet": "\\varliminf ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "ams"
+  },
+  {
+    "key": "\\varlimsup",
+    "snippet": "\\varlimsup ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "ams"
+  },
+  {
+    "key": "\\varinjlim",
+    "snippet": "\\varinjlim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "ams"
+  },
+  {
+    "key": "\\varprojlim",
+    "snippet": "\\varprojlim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "ams"
+  },
+  {
+    "key": "\\implies",
+    "snippet": "\\implies ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "ams"
+  },
+  {
+    "key": "\\impliedby",
+    "snippet": "\\impliedby ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "operator",
+    "package": "ams"
+  },
+  {
+    "key": "\\dfrac",
+    "snippet": "\\dfrac{}{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "ams"
+  },
+  {
+    "key": "\\tfrac",
+    "snippet": "\\tfrac{}{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "ams"
+  },
+  {
+    "key": "\\widehat",
+    "snippet": "\\widehat{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\widetilde",
+    "snippet": "\\widetilde{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\overset",
+    "snippet": "\\overset{}{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "ams"
+  },
+  {
+    "key": "\\underset",
+    "snippet": "\\underset{}{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "ams"
+  },
+  {
+    "key": "\\operatorname",
+    "snippet": "\\operatorname{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "ams"
+  },
+  {
+    "key": "\\bra",
+    "snippet": "\\bra{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "braket"
+  },
+  {
+    "key": "\\ket",
+    "snippet": "\\ket{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "braket"
+  },
+  {
+    "key": "\\braket",
+    "snippet": "\\braket{}{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "braket"
+  },
+  {
+    "key": "\\cancel",
+    "snippet": "\\cancel{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "cancel"
+  },
+  {
+    "key": "\\textrm",
+    "snippet": "\\textrm{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\textbf",
+    "snippet": "\\textbf{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\textit",
+    "snippet": "\\textit{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\overrightarrow",
+    "snippet": "\\overrightarrow{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\overleftarrow",
+    "snippet": "\\overleftarrow{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\overleftrightarrow",
+    "snippet": "\\overleftrightarrow{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\xrightarrow",
+    "snippet": "\\xrightarrow{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "ams"
+  },
+  {
+    "key": "\\xleftarrow",
+    "snippet": "\\xleftarrow{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "ams"
+  },
+  {
+    "key": "\\phantom",
+    "snippet": "\\phantom{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\hphantom",
+    "snippet": "\\hphantom{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\vphantom",
+    "snippet": "\\vphantom{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\acute",
+    "snippet": "\\acute{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\grave",
+    "snippet": "\\grave{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\breve",
+    "snippet": "\\breve{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\check",
+    "snippet": "\\check{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\mathring",
+    "snippet": "\\mathring{}",
+    "cursorOffset": -1,
+    "category": "original",
+    "kind": "template",
+    "package": "base"
+  },
+  {
+    "key": "\\tbinom",
+    "snippet": "\\tbinom{}{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "ams"
+  },
+  {
+    "key": "\\dbinom",
+    "snippet": "\\dbinom{}{}",
+    "cursorOffset": -3,
+    "category": "original",
+    "kind": "template",
+    "package": "ams"
+  },
+  {
+    "key": "\\S",
+    "snippet": "\\S ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "§"
+  },
+  {
+    "key": "\\imath",
+    "snippet": "\\imath ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "ı"
+  },
+  {
+    "key": "\\jmath",
+    "snippet": "\\jmath ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "ȷ"
+  },
+  {
+    "key": "\\prime",
+    "snippet": "\\prime ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "′"
+  },
+  {
+    "key": "\\emptyset",
+    "snippet": "\\emptyset ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∅"
+  },
+  {
+    "key": "\\top",
+    "snippet": "\\top ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊤"
+  },
+  {
+    "key": "\\bot",
+    "snippet": "\\bot ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊥"
+  },
+  {
+    "key": "\\backslash",
+    "snippet": "\\backslash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∖"
+  },
+  {
+    "key": "\\lnot",
+    "snippet": "\\lnot ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "¬"
+  },
+  {
+    "key": "\\flat",
+    "snippet": "\\flat ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "♭"
+  },
+  {
+    "key": "\\natural",
+    "snippet": "\\natural ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "♮"
+  },
+  {
+    "key": "\\sharp",
+    "snippet": "\\sharp ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "♯"
+  },
+  {
+    "key": "\\surd",
+    "snippet": "\\surd ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "√"
+  },
+  {
+    "key": "\\intop",
+    "snippet": "\\intop ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∫"
+  },
+  {
+    "key": "\\smallint",
+    "snippet": "\\smallint ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∫"
+  },
+  {
+    "key": "\\triangleleft",
+    "snippet": "\\triangleleft ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "◃"
+  },
+  {
+    "key": "\\triangleright",
+    "snippet": "\\triangleright ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "▹"
+  },
+  {
+    "key": "\\bigtriangleup",
+    "snippet": "\\bigtriangleup ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "△"
+  },
+  {
+    "key": "\\bigtriangledown",
+    "snippet": "\\bigtriangledown ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "▽"
+  },
+  {
+    "key": "\\wedge",
+    "snippet": "\\wedge ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∧"
+  },
+  {
+    "key": "\\land",
+    "snippet": "\\land ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∧"
+  },
+  {
+    "key": "\\vee",
+    "snippet": "\\vee ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∨"
+  },
+  {
+    "key": "\\lor",
+    "snippet": "\\lor ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∨"
+  },
+  {
+    "key": "\\sqcap",
+    "snippet": "\\sqcap ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊓"
+  },
+  {
+    "key": "\\sqcup",
+    "snippet": "\\sqcup ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊔"
+  },
+  {
+    "key": "\\uplus",
+    "snippet": "\\uplus ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊎"
+  },
+  {
+    "key": "\\amalg",
+    "snippet": "\\amalg ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⨿"
+  },
+  {
+    "key": "\\bullet",
+    "snippet": "\\bullet ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∙"
+  },
+  {
+    "key": "\\wr",
+    "snippet": "\\wr ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "≀"
+  },
+  {
+    "key": "\\divsymbol",
+    "snippet": "\\divsymbol ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "÷"
+  },
+  {
+    "key": "\\odot",
+    "snippet": "\\odot ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊙"
+  },
+  {
+    "key": "\\oslash",
+    "snippet": "\\oslash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊘"
+  },
+  {
+    "key": "\\otimes",
+    "snippet": "\\otimes ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊗"
+  },
+  {
+    "key": "\\ominus",
+    "snippet": "\\ominus ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊖"
+  },
+  {
+    "key": "\\oplus",
+    "snippet": "\\oplus ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊕"
+  },
+  {
+    "key": "\\circ",
+    "snippet": "\\circ ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∘"
+  },
+  {
+    "key": "\\bigcirc",
+    "snippet": "\\bigcirc ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "◯"
+  },
+  {
+    "key": "\\setminus",
+    "snippet": "\\setminus ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∖"
+  },
+  {
+    "key": "\\ast",
+    "snippet": "\\ast ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∗"
+  },
+  {
+    "key": "\\sqsubseteq",
+    "snippet": "\\sqsubseteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊑"
+  },
+  {
+    "key": "\\sqsupseteq",
+    "snippet": "\\sqsupseteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊒"
+  },
+  {
+    "key": "\\mid",
+    "snippet": "\\mid ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∣"
+  },
+  {
+    "key": "\\dashv",
+    "snippet": "\\dashv ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊣"
+  },
+  {
+    "key": "\\vdash",
+    "snippet": "\\vdash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊢"
+  },
+  {
+    "key": "\\le",
+    "snippet": "\\le ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "≤"
+  },
+  {
+    "key": "\\ge",
+    "snippet": "\\ge ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "≥"
+  },
+  {
+    "key": "\\lt",
+    "snippet": "\\lt ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "<"
+  },
+  {
+    "key": "\\gt",
+    "snippet": "\\gt ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": ">"
+  },
+  {
+    "key": "\\succ",
+    "snippet": "\\succ ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "≻"
+  },
+  {
+    "key": "\\prec",
+    "snippet": "\\prec ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "≺"
+  },
+  {
+    "key": "\\succeq",
+    "snippet": "\\succeq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⪰"
+  },
+  {
+    "key": "\\preceq",
+    "snippet": "\\preceq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⪯"
+  },
+  {
+    "key": "\\supseteq",
+    "snippet": "\\supseteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊇"
+  },
+  {
+    "key": "\\subseteq",
+    "snippet": "\\subseteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊆"
+  },
+  {
+    "key": "\\ni",
+    "snippet": "\\ni ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∋"
+  },
+  {
+    "key": "\\owns",
+    "snippet": "\\owns ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "∋"
+  },
+  {
+    "key": "\\ne",
+    "snippet": "\\ne ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "≠"
+  },
+  {
+    "key": "\\bowtie",
+    "snippet": "\\bowtie ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⋈"
+  },
+  {
+    "key": "\\models",
+    "snippet": "\\models ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⊨"
+  },
+  {
+    "key": "\\notChar",
+    "snippet": "\\notChar ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⧸"
+  },
+  {
+    "key": "\\leftrightarrow",
+    "snippet": "\\leftrightarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "↔"
+  },
+  {
+    "key": "\\nearrow",
+    "snippet": "\\nearrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "↗"
+  },
+  {
+    "key": "\\searrow",
+    "snippet": "\\searrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "↘"
+  },
+  {
+    "key": "\\nwarrow",
+    "snippet": "\\nwarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "↖"
+  },
+  {
+    "key": "\\swarrow",
+    "snippet": "\\swarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "↙"
+  },
+  {
+    "key": "\\hookrightarrow",
+    "snippet": "\\hookrightarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "↪"
+  },
+  {
+    "key": "\\hookleftarrow",
+    "snippet": "\\hookleftarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "↩"
+  },
+  {
+    "key": "\\longleftrightarrow",
+    "snippet": "\\longleftrightarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⟷"
+  },
+  {
+    "key": "\\longmapsto",
+    "snippet": "\\longmapsto ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⟼"
+  },
+  {
+    "key": "\\dotsc",
+    "snippet": "\\dotsc ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "…"
+  },
+  {
+    "key": "\\dotsb",
+    "snippet": "\\dotsb ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⋯"
+  },
+  {
+    "key": "\\dotsm",
+    "snippet": "\\dotsm ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⋯"
+  },
+  {
+    "key": "\\dotsi",
+    "snippet": "\\dotsi ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⋯"
+  },
+  {
+    "key": "\\dotso",
+    "snippet": "\\dotso ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "…"
+  },
+  {
+    "key": "\\ldotp",
+    "snippet": "\\ldotp ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "."
+  },
+  {
+    "key": "\\cdotp",
+    "snippet": "\\cdotp ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "⋅"
+  },
+  {
+    "key": "\\colon",
+    "snippet": "\\colon ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": ":"
+  },
+  {
+    "key": "\\And",
+    "snippet": "\\And ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "base",
+    "glyph": "&"
+  },
+  {
+    "key": "\\iiiint",
+    "snippet": "\\iiiint ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⨌"
+  },
+  {
+    "key": "\\digamma",
+    "snippet": "\\digamma ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "ϝ"
+  },
+  {
+    "key": "\\varkappa",
+    "snippet": "\\varkappa ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "ϰ"
+  },
+  {
+    "key": "\\varGamma",
+    "snippet": "\\varGamma ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Γ"
+  },
+  {
+    "key": "\\varDelta",
+    "snippet": "\\varDelta ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Δ"
+  },
+  {
+    "key": "\\varTheta",
+    "snippet": "\\varTheta ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Θ"
+  },
+  {
+    "key": "\\varLambda",
+    "snippet": "\\varLambda ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Λ"
+  },
+  {
+    "key": "\\varXi",
+    "snippet": "\\varXi ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Ξ"
+  },
+  {
+    "key": "\\varPi",
+    "snippet": "\\varPi ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Π"
+  },
+  {
+    "key": "\\varSigma",
+    "snippet": "\\varSigma ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Σ"
+  },
+  {
+    "key": "\\varUpsilon",
+    "snippet": "\\varUpsilon ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Υ"
+  },
+  {
+    "key": "\\varPhi",
+    "snippet": "\\varPhi ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Φ"
+  },
+  {
+    "key": "\\varPsi",
+    "snippet": "\\varPsi ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Ψ"
+  },
+  {
+    "key": "\\varOmega",
+    "snippet": "\\varOmega ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Ω"
+  },
+  {
+    "key": "\\backprime",
+    "snippet": "\\backprime ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "‵"
+  },
+  {
+    "key": "\\hslash",
+    "snippet": "\\hslash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "ℏ"
+  },
+  {
+    "key": "\\varnothing",
+    "snippet": "\\varnothing ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∅"
+  },
+  {
+    "key": "\\blacktriangle",
+    "snippet": "\\blacktriangle ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "▴"
+  },
+  {
+    "key": "\\triangledown",
+    "snippet": "\\triangledown ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "▽"
+  },
+  {
+    "key": "\\blacktriangledown",
+    "snippet": "\\blacktriangledown ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "▾"
+  },
+  {
+    "key": "\\square",
+    "snippet": "\\square ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "◻"
+  },
+  {
+    "key": "\\Box",
+    "snippet": "\\Box ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "◻"
+  },
+  {
+    "key": "\\blacksquare",
+    "snippet": "\\blacksquare ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "◼"
+  },
+  {
+    "key": "\\lozenge",
+    "snippet": "\\lozenge ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "◊"
+  },
+  {
+    "key": "\\Diamond",
+    "snippet": "\\Diamond ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "◊"
+  },
+  {
+    "key": "\\blacklozenge",
+    "snippet": "\\blacklozenge ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⧫"
+  },
+  {
+    "key": "\\circledS",
+    "snippet": "\\circledS ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Ⓢ"
+  },
+  {
+    "key": "\\bigstar",
+    "snippet": "\\bigstar ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "★"
+  },
+  {
+    "key": "\\sphericalangle",
+    "snippet": "\\sphericalangle ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∢"
+  },
+  {
+    "key": "\\measuredangle",
+    "snippet": "\\measuredangle ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∡"
+  },
+  {
+    "key": "\\nexists",
+    "snippet": "\\nexists ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∄"
+  },
+  {
+    "key": "\\complement",
+    "snippet": "\\complement ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∁"
+  },
+  {
+    "key": "\\eth",
+    "snippet": "\\eth ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "ð"
+  },
+  {
+    "key": "\\Finv",
+    "snippet": "\\Finv ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "Ⅎ"
+  },
+  {
+    "key": "\\diagup",
+    "snippet": "\\diagup ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "╱"
+  },
+  {
+    "key": "\\Game",
+    "snippet": "\\Game ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⅁"
+  },
+  {
+    "key": "\\diagdown",
+    "snippet": "\\diagdown ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "╲"
+  },
+  {
+    "key": "\\Bbbk",
+    "snippet": "\\Bbbk ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "k"
+  },
+  {
+    "key": "\\yen",
+    "snippet": "\\yen ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "¥"
+  },
+  {
+    "key": "\\circledR",
+    "snippet": "\\circledR ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "®"
+  },
+  {
+    "key": "\\checkmark",
+    "snippet": "\\checkmark ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "✓"
+  },
+  {
+    "key": "\\maltese",
+    "snippet": "\\maltese ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "✠"
+  },
+  {
+    "key": "\\dotplus",
+    "snippet": "\\dotplus ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∔"
+  },
+  {
+    "key": "\\ltimes",
+    "snippet": "\\ltimes ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋉"
+  },
+  {
+    "key": "\\smallsetminus",
+    "snippet": "\\smallsetminus ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∖"
+  },
+  {
+    "key": "\\rtimes",
+    "snippet": "\\rtimes ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋊"
+  },
+  {
+    "key": "\\Cap",
+    "snippet": "\\Cap ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋒"
+  },
+  {
+    "key": "\\doublecap",
+    "snippet": "\\doublecap ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋒"
+  },
+  {
+    "key": "\\leftthreetimes",
+    "snippet": "\\leftthreetimes ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋋"
+  },
+  {
+    "key": "\\Cup",
+    "snippet": "\\Cup ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋓"
+  },
+  {
+    "key": "\\doublecup",
+    "snippet": "\\doublecup ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋓"
+  },
+  {
+    "key": "\\rightthreetimes",
+    "snippet": "\\rightthreetimes ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋌"
+  },
+  {
+    "key": "\\barwedge",
+    "snippet": "\\barwedge ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊼"
+  },
+  {
+    "key": "\\curlywedge",
+    "snippet": "\\curlywedge ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋏"
+  },
+  {
+    "key": "\\veebar",
+    "snippet": "\\veebar ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊻"
+  },
+  {
+    "key": "\\curlyvee",
+    "snippet": "\\curlyvee ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋎"
+  },
+  {
+    "key": "\\doublebarwedge",
+    "snippet": "\\doublebarwedge ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⩞"
+  },
+  {
+    "key": "\\boxminus",
+    "snippet": "\\boxminus ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊟"
+  },
+  {
+    "key": "\\circleddash",
+    "snippet": "\\circleddash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊝"
+  },
+  {
+    "key": "\\boxtimes",
+    "snippet": "\\boxtimes ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊠"
+  },
+  {
+    "key": "\\circledast",
+    "snippet": "\\circledast ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊛"
+  },
+  {
+    "key": "\\boxdot",
+    "snippet": "\\boxdot ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊡"
+  },
+  {
+    "key": "\\circledcirc",
+    "snippet": "\\circledcirc ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊚"
+  },
+  {
+    "key": "\\boxplus",
+    "snippet": "\\boxplus ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊞"
+  },
+  {
+    "key": "\\centerdot",
+    "snippet": "\\centerdot ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋅"
+  },
+  {
+    "key": "\\divideontimes",
+    "snippet": "\\divideontimes ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋇"
+  },
+  {
+    "key": "\\intercal",
+    "snippet": "\\intercal ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊺"
+  },
+  {
+    "key": "\\leqq",
+    "snippet": "\\leqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≦"
+  },
+  {
+    "key": "\\geqq",
+    "snippet": "\\geqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≧"
+  },
+  {
+    "key": "\\leqslant",
+    "snippet": "\\leqslant ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⩽"
+  },
+  {
+    "key": "\\geqslant",
+    "snippet": "\\geqslant ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⩾"
+  },
+  {
+    "key": "\\eqslantless",
+    "snippet": "\\eqslantless ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪕"
+  },
+  {
+    "key": "\\eqslantgtr",
+    "snippet": "\\eqslantgtr ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪖"
+  },
+  {
+    "key": "\\lesssim",
+    "snippet": "\\lesssim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≲"
+  },
+  {
+    "key": "\\gtrsim",
+    "snippet": "\\gtrsim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≳"
+  },
+  {
+    "key": "\\lessapprox",
+    "snippet": "\\lessapprox ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪅"
+  },
+  {
+    "key": "\\gtrapprox",
+    "snippet": "\\gtrapprox ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪆"
+  },
+  {
+    "key": "\\approxeq",
+    "snippet": "\\approxeq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≊"
+  },
+  {
+    "key": "\\lessdot",
+    "snippet": "\\lessdot ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋖"
+  },
+  {
+    "key": "\\gtrdot",
+    "snippet": "\\gtrdot ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋗"
+  },
+  {
+    "key": "\\lll",
+    "snippet": "\\lll ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋘"
+  },
+  {
+    "key": "\\llless",
+    "snippet": "\\llless ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋘"
+  },
+  {
+    "key": "\\ggg",
+    "snippet": "\\ggg ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋙"
+  },
+  {
+    "key": "\\gggtr",
+    "snippet": "\\gggtr ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋙"
+  },
+  {
+    "key": "\\lessgtr",
+    "snippet": "\\lessgtr ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≶"
+  },
+  {
+    "key": "\\gtrless",
+    "snippet": "\\gtrless ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≷"
+  },
+  {
+    "key": "\\lesseqgtr",
+    "snippet": "\\lesseqgtr ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋚"
+  },
+  {
+    "key": "\\gtreqless",
+    "snippet": "\\gtreqless ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋛"
+  },
+  {
+    "key": "\\lesseqqgtr",
+    "snippet": "\\lesseqqgtr ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪋"
+  },
+  {
+    "key": "\\gtreqqless",
+    "snippet": "\\gtreqqless ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪌"
+  },
+  {
+    "key": "\\doteqdot",
+    "snippet": "\\doteqdot ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≑"
+  },
+  {
+    "key": "\\Doteq",
+    "snippet": "\\Doteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≑"
+  },
+  {
+    "key": "\\eqcirc",
+    "snippet": "\\eqcirc ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≖"
+  },
+  {
+    "key": "\\risingdotseq",
+    "snippet": "\\risingdotseq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≓"
+  },
+  {
+    "key": "\\circeq",
+    "snippet": "\\circeq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≗"
+  },
+  {
+    "key": "\\fallingdotseq",
+    "snippet": "\\fallingdotseq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≒"
+  },
+  {
+    "key": "\\triangleq",
+    "snippet": "\\triangleq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≜"
+  },
+  {
+    "key": "\\backsim",
+    "snippet": "\\backsim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∽"
+  },
+  {
+    "key": "\\thicksim",
+    "snippet": "\\thicksim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∼"
+  },
+  {
+    "key": "\\backsimeq",
+    "snippet": "\\backsimeq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋍"
+  },
+  {
+    "key": "\\thickapprox",
+    "snippet": "\\thickapprox ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≈"
+  },
+  {
+    "key": "\\subseteqq",
+    "snippet": "\\subseteqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⫅"
+  },
+  {
+    "key": "\\supseteqq",
+    "snippet": "\\supseteqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⫆"
+  },
+  {
+    "key": "\\Subset",
+    "snippet": "\\Subset ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋐"
+  },
+  {
+    "key": "\\Supset",
+    "snippet": "\\Supset ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋑"
+  },
+  {
+    "key": "\\sqsubset",
+    "snippet": "\\sqsubset ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊏"
+  },
+  {
+    "key": "\\sqsupset",
+    "snippet": "\\sqsupset ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊐"
+  },
+  {
+    "key": "\\preccurlyeq",
+    "snippet": "\\preccurlyeq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≼"
+  },
+  {
+    "key": "\\succcurlyeq",
+    "snippet": "\\succcurlyeq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≽"
+  },
+  {
+    "key": "\\curlyeqprec",
+    "snippet": "\\curlyeqprec ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋞"
+  },
+  {
+    "key": "\\curlyeqsucc",
+    "snippet": "\\curlyeqsucc ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋟"
+  },
+  {
+    "key": "\\precsim",
+    "snippet": "\\precsim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≾"
+  },
+  {
+    "key": "\\succsim",
+    "snippet": "\\succsim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≿"
+  },
+  {
+    "key": "\\precapprox",
+    "snippet": "\\precapprox ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪷"
+  },
+  {
+    "key": "\\succapprox",
+    "snippet": "\\succapprox ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪸"
+  },
+  {
+    "key": "\\vartriangleleft",
+    "snippet": "\\vartriangleleft ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊲"
+  },
+  {
+    "key": "\\lhd",
+    "snippet": "\\lhd ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊲"
+  },
+  {
+    "key": "\\vartriangleright",
+    "snippet": "\\vartriangleright ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊳"
+  },
+  {
+    "key": "\\rhd",
+    "snippet": "\\rhd ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊳"
+  },
+  {
+    "key": "\\trianglelefteq",
+    "snippet": "\\trianglelefteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊴"
+  },
+  {
+    "key": "\\unlhd",
+    "snippet": "\\unlhd ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊴"
+  },
+  {
+    "key": "\\trianglerighteq",
+    "snippet": "\\trianglerighteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊵"
+  },
+  {
+    "key": "\\unrhd",
+    "snippet": "\\unrhd ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊵"
+  },
+  {
+    "key": "\\vDash",
+    "snippet": "\\vDash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊨"
+  },
+  {
+    "key": "\\Vdash",
+    "snippet": "\\Vdash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊩"
+  },
+  {
+    "key": "\\Vvdash",
+    "snippet": "\\Vvdash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊪"
+  },
+  {
+    "key": "\\smallsmile",
+    "snippet": "\\smallsmile ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⌣"
+  },
+  {
+    "key": "\\shortmid",
+    "snippet": "\\shortmid ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∣"
+  },
+  {
+    "key": "\\smallfrown",
+    "snippet": "\\smallfrown ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⌢"
+  },
+  {
+    "key": "\\shortparallel",
+    "snippet": "\\shortparallel ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∥"
+  },
+  {
+    "key": "\\bumpeq",
+    "snippet": "\\bumpeq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≏"
+  },
+  {
+    "key": "\\between",
+    "snippet": "\\between ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≬"
+  },
+  {
+    "key": "\\Bumpeq",
+    "snippet": "\\Bumpeq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≎"
+  },
+  {
+    "key": "\\pitchfork",
+    "snippet": "\\pitchfork ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋔"
+  },
+  {
+    "key": "\\varpropto",
+    "snippet": "\\varpropto ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∝"
+  },
+  {
+    "key": "\\backepsilon",
+    "snippet": "\\backepsilon ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∍"
+  },
+  {
+    "key": "\\blacktriangleleft",
+    "snippet": "\\blacktriangleleft ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "◂"
+  },
+  {
+    "key": "\\blacktriangleright",
+    "snippet": "\\blacktriangleright ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "▸"
+  },
+  {
+    "key": "\\eqsim",
+    "snippet": "\\eqsim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≂"
+  },
+  {
+    "key": "\\vartriangle",
+    "snippet": "\\vartriangle ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "△"
+  },
+  {
+    "key": "\\Join",
+    "snippet": "\\Join ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋈"
+  },
+  {
+    "key": "\\nless",
+    "snippet": "\\nless ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≮"
+  },
+  {
+    "key": "\\ngtr",
+    "snippet": "\\ngtr ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≯"
+  },
+  {
+    "key": "\\nleq",
+    "snippet": "\\nleq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≰"
+  },
+  {
+    "key": "\\ngeq",
+    "snippet": "\\ngeq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≱"
+  },
+  {
+    "key": "\\nleqslant",
+    "snippet": "\\nleqslant ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪇"
+  },
+  {
+    "key": "\\ngeqslant",
+    "snippet": "\\ngeqslant ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪈"
+  },
+  {
+    "key": "\\nleqq",
+    "snippet": "\\nleqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≰"
+  },
+  {
+    "key": "\\ngeqq",
+    "snippet": "\\ngeqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≱"
+  },
+  {
+    "key": "\\lneq",
+    "snippet": "\\lneq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪇"
+  },
+  {
+    "key": "\\gneq",
+    "snippet": "\\gneq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪈"
+  },
+  {
+    "key": "\\lneqq",
+    "snippet": "\\lneqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≨"
+  },
+  {
+    "key": "\\gneqq",
+    "snippet": "\\gneqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≩"
+  },
+  {
+    "key": "\\lvertneqq",
+    "snippet": "\\lvertneqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≨"
+  },
+  {
+    "key": "\\gvertneqq",
+    "snippet": "\\gvertneqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≩"
+  },
+  {
+    "key": "\\lnsim",
+    "snippet": "\\lnsim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋦"
+  },
+  {
+    "key": "\\gnsim",
+    "snippet": "\\gnsim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋧"
+  },
+  {
+    "key": "\\lnapprox",
+    "snippet": "\\lnapprox ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪉"
+  },
+  {
+    "key": "\\gnapprox",
+    "snippet": "\\gnapprox ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪊"
+  },
+  {
+    "key": "\\nprec",
+    "snippet": "\\nprec ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊀"
+  },
+  {
+    "key": "\\nsucc",
+    "snippet": "\\nsucc ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊁"
+  },
+  {
+    "key": "\\npreceq",
+    "snippet": "\\npreceq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋠"
+  },
+  {
+    "key": "\\nsucceq",
+    "snippet": "\\nsucceq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋡"
+  },
+  {
+    "key": "\\precneqq",
+    "snippet": "\\precneqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪵"
+  },
+  {
+    "key": "\\succneqq",
+    "snippet": "\\succneqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪶"
+  },
+  {
+    "key": "\\precnsim",
+    "snippet": "\\precnsim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋨"
+  },
+  {
+    "key": "\\succnsim",
+    "snippet": "\\succnsim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋩"
+  },
+  {
+    "key": "\\precnapprox",
+    "snippet": "\\precnapprox ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪹"
+  },
+  {
+    "key": "\\succnapprox",
+    "snippet": "\\succnapprox ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⪺"
+  },
+  {
+    "key": "\\nsim",
+    "snippet": "\\nsim ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≁"
+  },
+  {
+    "key": "\\ncong",
+    "snippet": "\\ncong ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "≇"
+  },
+  {
+    "key": "\\nshortmid",
+    "snippet": "\\nshortmid ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∤"
+  },
+  {
+    "key": "\\nshortparallel",
+    "snippet": "\\nshortparallel ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∦"
+  },
+  {
+    "key": "\\nmid",
+    "snippet": "\\nmid ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∤"
+  },
+  {
+    "key": "\\nparallel",
+    "snippet": "\\nparallel ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "∦"
+  },
+  {
+    "key": "\\nvdash",
+    "snippet": "\\nvdash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊬"
+  },
+  {
+    "key": "\\nvDash",
+    "snippet": "\\nvDash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊭"
+  },
+  {
+    "key": "\\nVdash",
+    "snippet": "\\nVdash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊮"
+  },
+  {
+    "key": "\\nVDash",
+    "snippet": "\\nVDash ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊯"
+  },
+  {
+    "key": "\\ntriangleleft",
+    "snippet": "\\ntriangleleft ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋪"
+  },
+  {
+    "key": "\\ntriangleright",
+    "snippet": "\\ntriangleright ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋫"
+  },
+  {
+    "key": "\\ntrianglelefteq",
+    "snippet": "\\ntrianglelefteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋬"
+  },
+  {
+    "key": "\\ntrianglerighteq",
+    "snippet": "\\ntrianglerighteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⋭"
+  },
+  {
+    "key": "\\nsubseteq",
+    "snippet": "\\nsubseteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊈"
+  },
+  {
+    "key": "\\nsupseteq",
+    "snippet": "\\nsupseteq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊉"
+  },
+  {
+    "key": "\\nsubseteqq",
+    "snippet": "\\nsubseteqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊈"
+  },
+  {
+    "key": "\\nsupseteqq",
+    "snippet": "\\nsupseteqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊉"
+  },
+  {
+    "key": "\\subsetneq",
+    "snippet": "\\subsetneq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊊"
+  },
+  {
+    "key": "\\supsetneq",
+    "snippet": "\\supsetneq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊋"
+  },
+  {
+    "key": "\\varsubsetneq",
+    "snippet": "\\varsubsetneq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊊"
+  },
+  {
+    "key": "\\varsupsetneq",
+    "snippet": "\\varsupsetneq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊋"
+  },
+  {
+    "key": "\\subsetneqq",
+    "snippet": "\\subsetneqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⫋"
+  },
+  {
+    "key": "\\supsetneqq",
+    "snippet": "\\supsetneqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⫌"
+  },
+  {
+    "key": "\\varsubsetneqq",
+    "snippet": "\\varsubsetneqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⫋"
+  },
+  {
+    "key": "\\varsupsetneqq",
+    "snippet": "\\varsupsetneqq ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⫌"
+  },
+  {
+    "key": "\\leftleftarrows",
+    "snippet": "\\leftleftarrows ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇇"
+  },
+  {
+    "key": "\\rightrightarrows",
+    "snippet": "\\rightrightarrows ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇉"
+  },
+  {
+    "key": "\\leftrightarrows",
+    "snippet": "\\leftrightarrows ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇆"
+  },
+  {
+    "key": "\\rightleftarrows",
+    "snippet": "\\rightleftarrows ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇄"
+  },
+  {
+    "key": "\\Lleftarrow",
+    "snippet": "\\Lleftarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇚"
+  },
+  {
+    "key": "\\Rrightarrow",
+    "snippet": "\\Rrightarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇛"
+  },
+  {
+    "key": "\\twoheadleftarrow",
+    "snippet": "\\twoheadleftarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↞"
+  },
+  {
+    "key": "\\twoheadrightarrow",
+    "snippet": "\\twoheadrightarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↠"
+  },
+  {
+    "key": "\\leftarrowtail",
+    "snippet": "\\leftarrowtail ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↢"
+  },
+  {
+    "key": "\\rightarrowtail",
+    "snippet": "\\rightarrowtail ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↣"
+  },
+  {
+    "key": "\\looparrowleft",
+    "snippet": "\\looparrowleft ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↫"
+  },
+  {
+    "key": "\\looparrowright",
+    "snippet": "\\looparrowright ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↬"
+  },
+  {
+    "key": "\\leftrightharpoons",
+    "snippet": "\\leftrightharpoons ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇋"
+  },
+  {
+    "key": "\\curvearrowleft",
+    "snippet": "\\curvearrowleft ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↶"
+  },
+  {
+    "key": "\\curvearrowright",
+    "snippet": "\\curvearrowright ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↷"
+  },
+  {
+    "key": "\\circlearrowleft",
+    "snippet": "\\circlearrowleft ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↺"
+  },
+  {
+    "key": "\\circlearrowright",
+    "snippet": "\\circlearrowright ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↻"
+  },
+  {
+    "key": "\\Lsh",
+    "snippet": "\\Lsh ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↰"
+  },
+  {
+    "key": "\\Rsh",
+    "snippet": "\\Rsh ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↱"
+  },
+  {
+    "key": "\\upuparrows",
+    "snippet": "\\upuparrows ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇈"
+  },
+  {
+    "key": "\\downdownarrows",
+    "snippet": "\\downdownarrows ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇊"
+  },
+  {
+    "key": "\\upharpoonleft",
+    "snippet": "\\upharpoonleft ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↿"
+  },
+  {
+    "key": "\\upharpoonright",
+    "snippet": "\\upharpoonright ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↾"
+  },
+  {
+    "key": "\\downharpoonleft",
+    "snippet": "\\downharpoonleft ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇃"
+  },
+  {
+    "key": "\\restriction",
+    "snippet": "\\restriction ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↾"
+  },
+  {
+    "key": "\\multimap",
+    "snippet": "\\multimap ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⊸"
+  },
+  {
+    "key": "\\downharpoonright",
+    "snippet": "\\downharpoonright ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇂"
+  },
+  {
+    "key": "\\leftrightsquigarrow",
+    "snippet": "\\leftrightsquigarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↭"
+  },
+  {
+    "key": "\\rightsquigarrow",
+    "snippet": "\\rightsquigarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇝"
+  },
+  {
+    "key": "\\leadsto",
+    "snippet": "\\leadsto ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇝"
+  },
+  {
+    "key": "\\dashrightarrow",
+    "snippet": "\\dashrightarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇢"
+  },
+  {
+    "key": "\\dashleftarrow",
+    "snippet": "\\dashleftarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇠"
+  },
+  {
+    "key": "\\nleftarrow",
+    "snippet": "\\nleftarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↚"
+  },
+  {
+    "key": "\\nrightarrow",
+    "snippet": "\\nrightarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↛"
+  },
+  {
+    "key": "\\nLeftarrow",
+    "snippet": "\\nLeftarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇍"
+  },
+  {
+    "key": "\\nRightarrow",
+    "snippet": "\\nRightarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇏"
+  },
+  {
+    "key": "\\nleftrightarrow",
+    "snippet": "\\nleftrightarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "↮"
+  },
+  {
+    "key": "\\nLeftrightarrow",
+    "snippet": "\\nLeftrightarrow ",
+    "cursorOffset": 0,
+    "category": "symbol",
+    "kind": "symbol",
+    "package": "ams",
+    "glyph": "⇎"
+  }
+]

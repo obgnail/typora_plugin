@@ -36,6 +36,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [collapse_table](#collapse_table)           | Table Folding                                | ×       |
 | [md_padding](#md_padding)                   | Chinese-English Text Spacer                  |         |
 | [slash_commands](#slash_commands)           | Slash Commands                               |         |
+| [latex_completion](#latex_completion)       | Inline and display math LaTeX completion     |         |
 | [mouse_gestures](#mouse_gestures)           | Mouse Gestures Recognition                   | ×       |
 | [templater](#templater)                     | File Templater Engine                        |         |
 | [fence_enhance](#fence_enhance)             | Code Block Enhancements                      |         |
@@ -224,6 +225,10 @@ Normalizes typography experiences: Automatically inserts whitespace (Pangu spaci
 Provides a Notion-style slash (`/`) command invocation menu.
 
 ![slash_commands](./assets/slash_commands.gif)
+
+### latex_completion
+
+Completes LaTeX commands and snippets in inline and display math. For example, `\fra` inserts `\frac{}{}` and places the cursor inside the first braces. Typing `\arrow` also finds `\leftarrow` and `\rightarrow`, with the matching letters highlighted in red. Inline math uses Typora's suggestion menu; display math shows suggestions below the active math block, moving following text down instead of covering the editor. The 600-entry catalog preserves the original helper's 232 commands and adds verified MathJax base and AMS symbols plus common templates. Suggestions rank exact matches, command prefixes, then fragments, with common commands first within each group. Commands from optional packages appear only when MathJax reports those packages enabled. Inline and block completion can be controlled separately in Preferences; setting changes take effect after restarting Typora.
 
 ### mouse_gestures
 
