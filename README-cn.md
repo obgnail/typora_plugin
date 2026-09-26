@@ -47,6 +47,7 @@
 | [pie_menu](#pie_menu)                       | 圆盘菜单                             | ×        |
 | [datatables](#datatables)                   | 表格增强（搜索、过滤、分页、排序等） | ×        |
 | [resize_table](#resize_table)               | 调整表格行高列宽                     |          |
+| [table_style](#table_style)                 | 表格样式                             | ×        |
 | [resize_image](#resize_image)               | 调整图片显示大小                     |          |
 | [easy_modify](#easy_modify)                 | 编辑工具                             |          |
 | [editor_width_slider](#editor_width_slider) | 写作区宽度调整                       |          |
@@ -282,6 +283,10 @@ yay -S typora-plugin
 通过 `Ctrl + 鼠标拖拽` 的交互方式，动态调整当前表格的行高与列宽样式。
 
 ![resize_table](./assets/resize_table.gif)
+
+### table_style
+
+支持可选的首行和首列样式、表头不换行及表格自适应宽度。全局默认值可在设置中配置；在表格内右键可循环切换当前表格独立的“跟随全局配置”“开启”“关闭”覆盖状态。覆盖状态保存在本地，不会修改 Markdown 源文件。
 
 ### resize_image
 

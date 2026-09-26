@@ -472,6 +472,22 @@
     "$label.REMOVE_MIN_CELL_WIDTH": "移除单元格最小宽度限制",
     "$label.DRAG_THRESHOLD": "可拖拽识别范围"
   },
+  "table_style": {
+    "pluginName": "表格样式",
+    "act.cycle_header": "首行样式",
+    "act.cycle_first_column": "首列样式",
+    "act.cycle_nowrap": "表头不换行",
+    "act.cycle_auto_width": "自适应宽度",
+    "$label.HEADER_STYLE": "启用首行样式",
+    "$label.HEADER_BACKGROUND_COLOR": "首行背景颜色",
+    "$label.FIRST_COLUMN_STYLE": "启用首列样式",
+    "$label.FIRST_COLUMN_BACKGROUND_COLOR": "首列背景颜色",
+    "$label.HEADER_NOWRAP": "表头强制不换行",
+    "$label.AUTO_WIDTH": "表格自适应宽度",
+    "state.inherit": "跟随全局配置",
+    "state.on": "开启",
+    "state.off": "关闭"
+  },
   "datatables": {
     "pluginName": "DataTables",
     "act.enhance_table": "增强表格",

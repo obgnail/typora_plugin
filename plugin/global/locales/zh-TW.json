@@ -472,6 +472,22 @@
     "$label.REMOVE_MIN_CELL_WIDTH": "移除儲存格最小寬度限制",
     "$label.DRAG_THRESHOLD": "可拖曳識別範圍"
   },
+  "table_style": {
+    "pluginName": "表格樣式",
+    "act.cycle_header": "首行樣式",
+    "act.cycle_first_column": "首欄樣式",
+    "act.cycle_nowrap": "表頭不換行",
+    "act.cycle_auto_width": "自適應寬度",
+    "$label.HEADER_STYLE": "啟用首行樣式",
+    "$label.HEADER_BACKGROUND_COLOR": "首行背景顏色",
+    "$label.FIRST_COLUMN_STYLE": "啟用首欄樣式",
+    "$label.FIRST_COLUMN_BACKGROUND_COLOR": "首欄背景顏色",
+    "$label.HEADER_NOWRAP": "表頭強制不換行",
+    "$label.AUTO_WIDTH": "表格自適應寬度",
+    "state.inherit": "跟隨全域設定",
+    "state.on": "開啟",
+    "state.off": "關閉"
+  },
   "datatables": {
     "pluginName": "DataTables",
     "act.enhance_table": "增強表格",

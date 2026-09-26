@@ -646,6 +646,27 @@ DRAG_THRESHOLD = 20
 RECORD_RESIZE = true
 
 
+[table_style]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+
+# =========== [ Global Table Styles ] ===========
+# Style the header row
+HEADER_STYLE = false
+HEADER_BACKGROUND_COLOR = "rgba(0, 0, 0, .06)"
+
+# Style the first column in table bodies
+FIRST_COLUMN_STYLE = false
+FIRST_COLUMN_BACKGROUND_COLOR = "rgba(0, 0, 0, .03)"
+
+# Keep header cells on one line
+HEADER_NOWRAP = false
+
+# Expand tables to the available editor width when they have no explicit width
+AUTO_WIDTH = false
+
+
 [datatables]
 # =========== [ Basic ] ===========
 ENABLE = false
@@ -2229,6 +2250,7 @@ LIST = [
   "collapse_table",
   "resize_image",
   "resize_table",
+  "table_style",
   "truncate_text",
   "read_only",
   "blur",
