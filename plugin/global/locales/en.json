@@ -472,6 +472,22 @@
     "$label.REMOVE_MIN_CELL_WIDTH": "Remove Minimum Cell Width Limit",
     "$label.DRAG_THRESHOLD": "Drag Threshold"
   },
+  "table_style": {
+    "pluginName": "Table Styles",
+    "act.cycle_header": "Header Row",
+    "act.cycle_first_column": "First Column",
+    "act.cycle_nowrap": "Header No Wrap",
+    "act.cycle_auto_width": "Adaptive Width",
+    "$label.HEADER_STYLE": "Style Header Row",
+    "$label.HEADER_BACKGROUND_COLOR": "Header Background Color",
+    "$label.FIRST_COLUMN_STYLE": "Style First Column",
+    "$label.FIRST_COLUMN_BACKGROUND_COLOR": "First Column Background Color",
+    "$label.HEADER_NOWRAP": "Keep Header on One Line",
+    "$label.AUTO_WIDTH": "Adaptive Table Width",
+    "state.inherit": "Follow Global",
+    "state.on": "On",
+    "state.off": "Off"
+  },
   "datatables": {
     "pluginName": "DataTables",
     "act.enhance_table": "Enhance Table",

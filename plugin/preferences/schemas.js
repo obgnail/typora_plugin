@@ -346,6 +346,19 @@ const schema_resize_table = () => [
   FRAG.SettingHandler(),
 ]
 
+const schema_table_style = () => [
+  FRAG.Base(),
+  Group(
+    Switch("HEADER_STYLE"),
+    Text("HEADER_BACKGROUND_COLOR"),
+    Switch("FIRST_COLUMN_STYLE"),
+    Text("FIRST_COLUMN_BACKGROUND_COLOR"),
+    Switch("HEADER_NOWRAP"),
+    Switch("AUTO_WIDTH"),
+  ),
+  FRAG.SettingHandler(),
+]
+
 const schema_datatables = () => [
   FRAG.Base(),
   Group(
@@ -1615,6 +1628,7 @@ const RAW_SCHEMAS = {
   command_palette: schema_command_palette,
   resize_image: schema_resize_image,
   resize_table: schema_resize_table,
+  table_style: schema_table_style,
   datatables: schema_datatables,
   markmap: schema_markmap,
   auto_number: schema_auto_number,

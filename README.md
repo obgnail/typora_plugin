@@ -46,6 +46,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [pie_menu](#pie_menu)                       | Pie Menu                                     | ×       |
 | [datatables](#datatables)                   | Table Enhancements (Filter, Sort, Paging)    | ×       |
 | [resize_table](#resize_table)               | Table Resizer                                |         |
+| [table_style](#table_style)                 | Table Presentation Styles                    | ×       |
 | [resize_image](#resize_image)               | Image Resizer                                |         |
 | [easy_modify](#easy_modify)                 | High-Frequency Editing Toolset               |         |
 | [editor_width_slider](#editor_width_slider) | Writing Area Width Adjustment                |         |
@@ -281,6 +282,10 @@ Injects advanced interaction features into standard Markdown tables, including d
 Dynamically adjust table row height and column width via `Ctrl + Mouse Drag` interaction.
 
 ![resize_table](./assets/resize_table.gif)
+
+### table_style
+
+Adds optional first-row and first-column styling, non-wrapping table headers, and adaptive table width. Global defaults are configured in Preferences; right-click inside a table to cycle that table's independent `Follow Global`, `On`, and `Off` overrides. Overrides are stored locally and never modify Markdown source.
 
 ### resize_image
 
