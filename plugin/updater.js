@@ -27,13 +27,13 @@ class UpdaterPlugin extends BasePlugin {
     }
   }
 
-  silentUpdate = async proxy => {
+  _withLock = this.utils.singleflight(fn => fn(), () => "update")
+  silentUpdate = proxy => this._withLock(async () => {
     console.log("Start silent update...")
     const updater = await this.getUpdater(proxy)
     await updater.run()
-  }
-
-  manualUpdate = async proxy => {
+  })
+  manualUpdate = proxy => this._withLock(async () => {
     const timeout = Math.max(this.config.NETWORK_REQUEST_TIMEOUT, 30 * 1000)
     const I18N = {
       pleaseWait: this.i18n.t("update.pleaseWait"),
@@ -72,7 +72,7 @@ class UpdaterPlugin extends BasePlugin {
       schema: ({ Controls }) => [Controls.Code("detail")],
       data: { detail },
     })
-  }
+  })
 
   getProxy = async (userProxy) => {
     let proxy = (userProxy || this.config.PROXY || await getSysProxy() || "").trim()

@@ -52,60 +52,22 @@ class PreferencesPlugin extends BasePlugin {
   }
 
   process = () => {
-    const searchInDialog = () => {
-      const matchSchemas = (query) => {
-        if (!query) return []
-        return Object.keys(this.SCHEMAS).filter(name =>
-          this.SCHEMAS[name].some(box =>
-            box.title?.toLowerCase().includes(query) ||
-            box.fields?.some(field => field.label?.toLowerCase().includes(query)),
-          ),
-        )
-      }
-      const filterMenuItems = (query) => {
-        const hitSchemas = matchSchemas(query)
-        const regex = query ? new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi") : null
-        this.entities.menu.querySelectorAll(".plugin-preferences-menu-item").forEach(el => {
-          const name = el.textContent
-          const isHit = hitSchemas.includes(el.dataset.plugin) || name.toLowerCase().includes(query)
-          this.utils.toggleInvisible(el, Boolean(query && !isHit))
-          el.innerHTML = (query && isHit) ? name.replace(regex, "<div class='plugin-preferences-highlight'>$1</div>") : name
-        })
-      }
-      const highlightForm = (query) => this.entities.form.getApi("highlight")?.highlight(query)
-      this.utils.createSmartInputHandler(this.entities.searchInput, (query) => {
-        filterMenuItems(query)
-        highlightForm(query)
-        if (!query) this.entities.menu.querySelector(".plugin-preferences-menu-item.active")?.scrollIntoView({ block: "center" })
-      })
-      this.entities.searchClear.addEventListener("click", () => {
-        const inputEl = this.entities.searchInput
-        inputEl.value = ""
-        inputEl.dispatchEvent(new Event("input", { bubbles: true }))
-        inputEl.focus()
-      })
-    }
-    const onEvents = () => {
-      this.entities.close.addEventListener("click", () => this.call())
-      this.entities.menu.addEventListener("click", async ev => {
-        const menu = ev.target.closest(".plugin-preferences-menu-item")?.dataset.plugin
-        if (menu) await this.switchMenu(menu)
-      })
-      this.entities.form.addEventListener("form-crud", async ev => {
-        const { key, value, type } = ev.detail
-        const handleProperty = this.utils.nestedPropertyHelpers[type]
-        if (!handleProperty) return
+    this.entities.close.addEventListener("click", () => this.call())
+    this.entities.menu.addEventListener("click", async ev => {
+      const menu = ev.target.closest(".plugin-preferences-menu-item")?.dataset.plugin
+      if (menu) await this.switchMenu(menu)
+    })
+    this.entities.form.addEventListener("form-crud", async ev => {
+      const { key, value, type } = ev.detail
+      const handleProperty = this.utils.nestedPropertyHelpers[type]
+      if (!handleProperty) return
+      const { fixedName, settings } = await this.getCurrent()
+      handleProperty(settings, key, value)
+      await this.utils.settings.handle(fixedName, (_, allSettings) => allSettings[fixedName] = settings)
+      this._setDialogState(true)
+    })
 
-        const { fixedName, settings } = await this.getCurrent()
-        handleProperty(settings, key, value)
-        await this.utils.settings.handle(fixedName, (_, allSettings) => allSettings[fixedName] = settings)
-
-        this._setDialogState(true)
-      })
-    }
-
-    searchInDialog()
-    onEvents()
+    this._searchInDialog()
   }
 
   call = async () => {
@@ -226,6 +188,41 @@ class PreferencesPlugin extends BasePlugin {
   _hasDialogChanged = () => this.entities.dialog.hasAttribute("has-changed")
   _getCurrentPlugin = () => this.entities.form.dataset.plugin
   _getSearchValue = () => this.entities.searchInput.value.trim()
+
+  _searchInDialog = () => {
+    const matchSchemas = (query) => {
+      if (!query) return []
+      return Object.keys(this.SCHEMAS).filter(name =>
+        this.SCHEMAS[name].some(box =>
+          box.title?.toLowerCase().includes(query) ||
+          box.fields?.some(field => field.label?.toLowerCase().includes(query)),
+        ),
+      )
+    }
+    const filterMenuItems = (query) => {
+      const hitSchemas = matchSchemas(query)
+      const regex = query ? new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi") : null
+      this.entities.menu.querySelectorAll(".plugin-preferences-menu-item").forEach(el => {
+        const name = el.textContent
+        const isHit = hitSchemas.includes(el.dataset.plugin) || name.toLowerCase().includes(query)
+        this.utils.toggleInvisible(el, Boolean(query && !isHit))
+        el.innerHTML = (query && isHit) ? name.replace(regex, "<div class='plugin-preferences-highlight'>$1</div>") : name
+      })
+    }
+    const highlightForm = (query) => this.entities.form.getApi("highlight")?.highlight(query)
+    const scrollForm = () => this.entities.menu.querySelector(".plugin-preferences-menu-item.active")?.scrollIntoView({ block: "center" })
+    this.utils.createSmartInputHandler(this.entities.searchInput, (query) => {
+      filterMenuItems(query)
+      highlightForm(query)
+      if (!query) scrollForm()
+    })
+    this.entities.searchClear.addEventListener("click", () => {
+      const inputEl = this.entities.searchInput
+      inputEl.value = ""
+      inputEl.dispatchEvent(new Event("input", { bubbles: true }))
+      inputEl.focus()
+    })
+  }
 }
 
 module.exports = {

@@ -115,9 +115,7 @@ class DrawIOPlugin extends BasePlugin {
   }
 
   lazyLoad = async () => {
-    const from = this.config.RESOURCE_URI
-    const path = this.utils.isNetworkURI(from) ? from : this.utils.toFileProtocol(this.utils.Package.Path.resolve(from))
-    await $.getScript(path)
+    await this.utils.insertScript(this.config.RESOURCE_URI)
     if (typeof window.Graph?.sanitizeHtml === "function") {
       window.Graph.sanitizeHtml = (html) => html
     }

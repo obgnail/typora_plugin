@@ -52,9 +52,7 @@ class MarpPlugin extends BasePlugin {
 const absImagePathPlugin = utils => {
   return imagePathPlugin(url => {
     const decodedURL = decodeURIComponent(url)
-    const absPath = (utils.isNetworkImage(decodedURL) || utils.isSpecialImage(decodedURL))
-      ? decodedURL
-      : utils.resolveLocalPath(decodedURL)
+    const absPath = utils.isLocalImage(decodedURL) ? utils.resolveLocalPath(decodedURL) : decodedURL
     return absPath.split(utils.Package.Path.sep).join("/")
   })
 }

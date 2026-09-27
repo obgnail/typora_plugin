@@ -108,7 +108,7 @@ describe("index.js - entry() gating", () => {
 
   it("stops after reading settings when global.ENABLE is false, without calling container.connect", async () => {
     stubSettingsRead({ global: { ENABLE: false } })
-    const connectSpy = mock.method(container, "connect")
+    const connectSpy = mock.method(container, "setSettings")
     await loadEntry()()
     assert.equal(connectSpy.mock.callCount(), 0)
   })
@@ -124,7 +124,7 @@ describe("index.js - entry() gating", () => {
     const i18n = createMockI18n()
     const FakePlugin = class {
     }
-    const connectSpy = mock.method(container, "connect")
+    const connectSpy = mock.method(container, "setSettings")
 
     await loadEntry({ i18n, PluginExport: FakePlugin })()
 

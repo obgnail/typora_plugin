@@ -30,14 +30,11 @@ class ChatPlugin extends BasePlugin {
     const mergedOptions = { ...this.config.DEFAULT_OPTIONS, ...options }
     const { useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars = {}, senderNickname = "me", timeNickname = "time" } = mergedOptions
 
-    const dir = this.utils.getLocalRootUrl()
     const avatarPaths = Object.fromEntries(
-      Object.entries(avatars).map(([name, src]) => {
-        if (!this.utils.isNetworkImage(src) && !this.utils.isSpecialImage(src)) {
-          src = this.utils.toFileProtocol(this.utils.Package.Path.resolve(dir, src))
-        }
-        return [name, src]
-      }),
+      Object.entries(avatars).map(([name, src]) => [
+        name,
+        this.utils.isLocalImage(src) ? this.utils.toFileProtocol(this.utils.resolveLocalPath(src)) : src,
+      ]),
     )
 
     const assertOK = (must, errorLine, reason) => {

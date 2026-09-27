@@ -12,7 +12,7 @@ async function entry() {
   if (!settings?.global?.ENABLE) return
 
   global.BasePlugin = BasePlugin
-  container.connect(utils, settings)
+
   utils.setDarkMode(settings.global.DARK_MODE)
   await i18n.init(settings.global.LOCALE)
   await bootstrap(settings)
@@ -26,6 +26,8 @@ async function bootstrap(settings) {
     contextMenu, notification, formDialog, stateRecorder, hotkeyHub, exportHelper,
     eventHub, diagramParser, thirdPartyDiagramParser,
   } = utils.mixins
+
+  container.setSettings(settings)
 
   await invoke([logger, unstableRequire, styleManager], "process")
   await invoke([contextMenu, notification, formDialog, stateRecorder, hotkeyHub, exportHelper], "process")

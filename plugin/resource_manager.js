@@ -1,5 +1,5 @@
 const buildResourceScanner = ({ utils, config, i18n }) => {
-  const { Package, isNetworkImage, isSpecialImage } = utils
+  const { Package, isLocalImage } = utils
 
   // This regular expression is from `File.editor.brush.inline.rules.image`
   // Typora simplifies the image syntax from a context-free grammar to a regular grammar
@@ -13,25 +13,23 @@ const buildResourceScanner = ({ utils, config, i18n }) => {
     return [...htmlImages, ...mdImages]
   }
 
+  const normalizeImagePath = (img) =>
+    decodeURIComponent(img.replace(/^\s*<\s*|\s*>\s*$/g, ""))
+      .split("?")[0]
+      .replace(/^\s*([\\/])/, "")
+
   const processMarkdownFile = async (mdPath, mdDir, redirectPlugin) => {
     const md = await Package.FsExtra.readFile(mdPath, "utf-8")
     const images = extractImages(md)
       .map(img => {
         try {
-          img = img.replace(/^\s*<\s*/, "").replace(/\s*>\s*$/, "")
-          img = decodeURIComponent(img).split("?")[0]
-          return img.replace(/^\s*([\\/])/, "")
+          return normalizeImagePath(img)
         } catch (e) {
           console.warn(`[ResourceManager] Error parsing image path: ${img}`, e)
           return null
         }
       })
-      .filter(img =>
-        img &&
-        !isNetworkImage(img) &&
-        !isSpecialImage(img) &&
-        config.RESOURCE_EXT.includes(Package.Path.extname(img).toLowerCase()),
-      )
+      .filter(img => isLocalImage(img) && config.RESOURCE_EXT.includes(Package.Path.extname(img).toLowerCase()))
     if (images.length === 0) return []
 
     const root = redirectPlugin?.getRootURL(md, mdPath, mdDir) ?? mdDir
@@ -108,31 +106,37 @@ const buildExportEngine = ({ utils, i18n }) => {
 }
 
 const buildTableActionController = ({ utils, i18n }) => {
-  let showWarnDialog = true
-  const handleAction = async (action, rowData, tableEntity) => {
-    if (action === "locate") {
-      utils.showInFinder(rowData.path)
-      return
-    }
-    if (action === "delete") {
-      if (showWarnDialog) {
-        const reconfirm = i18n.t("msgBox.reconfirmDeleteFile")
-        const filename = utils.getFileName(rowData.path, false)
-        const { response, checkboxChecked } = await utils.showMessageBox({
-          type: "warning",
-          message: `${reconfirm} ${filename}`,
-          checkboxLabel: i18n.t("disableReminder"),
-        })
-        if (response === 1) return
-        if (checkboxChecked) showWarnDialog = false
-      }
-      await utils.Package.FsExtra.remove(rowData.path)
-      tableEntity.deleteRow("idx", rowData.idx)
-      utils.notification.show(i18n.t("success.deleted"))
-    }
+  const ROW_KEY = "idx"
+  const state = { showWarnDialog: true }
+
+  const confirmDelete = async (path) => {
+    if (!state.showWarnDialog) return true
+    const { response, checkboxChecked } = await utils.showMessageBox({
+      type: "warning",
+      message: i18n.t("msgBox.reconfirmDeleteFile", { filename: utils.getFileName(path, false) }),
+      checkboxLabel: i18n.t("disableReminder"),
+    })
+    if (checkboxChecked) state.showWarnDialog = false
+    return response === 0
   }
 
-  return { handleAction }
+  const ACTIONS = {
+    locate: (rowData) => utils.showInFinder(rowData.path),
+    delete: async (rowData, tableEntity) => {
+      if (!(await confirmDelete(rowData.path))) return
+      try {
+        await utils.Package.FsExtra.remove(rowData.path)
+      } catch (err) {
+        console.error(`[ResourceManager] Failed to delete ${rowData.path}:`, err)
+        utils.notification.show(err.toString(), "error")
+        return
+      }
+      tableEntity.deleteRow(ROW_KEY, rowData[ROW_KEY])
+      utils.notification.show(i18n.t("success.deleted"))
+    },
+  }
+
+  return { handleAction: async (action, rowData, tableEntity) => ACTIONS[action]?.(rowData, tableEntity) }
 }
 
 class ResourceManagerPlugin extends BasePlugin {
@@ -184,12 +188,13 @@ class ResourceManagerPlugin extends BasePlugin {
     })
   }
 
-  call = async (action, meta) => {
+  call = this.utils.singleflight(async (action, meta) => {
     const dir = this.utils.getMountFolder()
     if (!dir) return
 
     const hideProcessing = this.utils.notification.show(this.i18n.t("processing"), "info")
     const result = await this._runWithProgressBar(dir)
+    hideProcessing()
     if (result instanceof Error) {
       this.utils.notification.show(result.toString(), "error")
       return
@@ -197,8 +202,7 @@ class ResourceManagerPlugin extends BasePlugin {
     this._initPanelContent(result)
     this._initPanelRect()
     this.entities.panel.show()
-    hideProcessing()
-  }
+  }, () => "call")
 
   close = () => {
     this.entities.panel.hide()

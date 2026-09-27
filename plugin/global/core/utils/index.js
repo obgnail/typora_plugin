@@ -4,6 +4,7 @@ const FS_EXTRA = require("fs-extra")
 const TOML = require("../lib/smol-toml")
 
 const i18n = require("../i18n")
+const container = require("../container")
 
 const MIXINS = {
   settings: require("./settings"),
@@ -34,21 +35,18 @@ class utils {
   static supportHasSelector = CSS.supports("selector(:has(*))")
   static tempFolder = window._options.tempPath || require("os").tmpdir()
   static Package = Object.freeze({ Path: PATH, FsExtra: FS_EXTRA, Util: UTIL })
-  static mixins = Object.fromEntries(
-    Object.entries(MIXINS).map(([name, cls]) => [[name], new cls(this, i18n)]),
-  )
+  static mixins = Object.fromEntries(Object.entries(MIXINS).map(([name, cls]) => [[name], new cls(this, i18n)]))
 
   static PLUGIN_LOAD_ABORT = Symbol.for("plugin:load-abort")  // For plugins prepare method; return this to stop loading the plugin
 
   // =========== Plugin ===========
   static i18n = i18n
+  static container = container
 
-  static container = null
-  static setContainer = container => this.container = container
-  static getAllPlugins = () => this.container.getAllPlugins()
-  static getPlugin = fixedName => this.container.getPlugin(fixedName)
-  static getAllSettings = () => this.container.getAllSettings()
-  static getSetting = (fixedName, key) => this.container.getSetting(fixedName, key)
+  static getAllPlugins = () => container.getAllPlugins()
+  static getPlugin = fixedName => container.getPlugin(fixedName)
+  static getAllSettings = () => container.getAllSettings()
+  static getSetting = (fixedName, key) => container.getSetting(fixedName, key)
 
   static getPluginFn = (fixedName, fnName) => this.getPlugin(fixedName)?.[fnName]
   static callPluginFn = (fixedName, fnName, ...args) => {
@@ -206,6 +204,20 @@ class utils {
     }
   }
 
+  static singleflight = (fn, keyResolver = (...args) => JSON.stringify(args)) => {
+    const inflight = new Map()
+    return function (...args) {
+      const key = keyResolver.apply(this, args)
+      const existing = inflight.get(key)
+      if (existing) return existing
+      const p = Promise.try(() => fn.apply(this, args))
+      inflight.set(key, p)
+      const clear = () => (inflight.get(key) === p) && inflight.delete(key)
+      p.then(clear, clear)
+      return p
+    }
+  }
+
   static memorize = (fn, keyResolver = (...args) => JSON.stringify(args)) => {
     const cache = Object.create(null)
     return function (...args) {
@@ -360,7 +372,7 @@ class utils {
 
   static asyncReplaceAll = (text, regex, replaceFn) => {
     if (!regex.global) {
-      throw Error("Called with a non-global RegExp argument")
+      throw new Error("Called with a non-global RegExp argument")
     }
 
     let match
@@ -413,7 +425,8 @@ class utils {
       s: () => date.getSeconds().toString(),
       SSS: () => date.getMilliseconds().toString().padStart(3, "0"),
       S: () => date.getMilliseconds().toString(),
-      a: () => new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true }).formatToParts(date).find(part => part.type === "dayPeriod")?.value || "",
+      a: () => new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true })
+        .formatToParts(date).find(part => part.type === "dayPeriod")?.value || "",
     }
     const regex = /(yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a)/g
     return format.replace(regex, match => fns[match]?.() ?? match)
@@ -625,6 +638,8 @@ class utils {
     el.href = this.toFileProtocol(this.joinPluginPath(href))
     document.head.append(el)
   }
+
+  static insertScript = async (uri) => $.getScript(this.isNetworkURI(uri) ? uri : this.toFileProtocol(PATH.resolve(uri)))
 
   static newFilePath = async filename => {
     filename = filename || File.getFileName() || Date.now() + ".md"
@@ -869,12 +884,13 @@ class utils {
     return JSBridge.invoke("dialog.showMessageBox", op)
   }
 
-  static getMarkdownIt = this.once(() => {
+  static createMarkdownIt = () => {
     const { footnote, mark, tasklist, alert, katex, frontMatter, sub, sup, ins } = require("../lib/markdown-it-plugins")
     return require("../lib/markdown-it")({ html: true, linkify: true, typographer: true })
       .use(footnote).use(mark).use(tasklist).use(frontMatter, () => void 0).use(alert, { deep: true }).use(katex, { throwOnError: false })
     // .use(sub).use(sup).use(ins)
-  })
+  }
+  static getMarkdownIt = this.once(() => this.createMarkdownIt())
   static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
   static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
   static getDefaultRenderer = this.once(() => {
@@ -883,7 +899,7 @@ class utils {
     md.renderer.rules.image = (tokens, idx, options, env, self) => {
       const token = tokens[idx]
       const src = token.attrGet("src")
-      if (src && !this.isNetworkImage(src) && !this.isSpecialImage(src)) {
+      if (this.isLocalImage(src)) {
         token.attrSet("src", this.toFileProtocol(this.resolveLocalPath(src)))
       }
       return defaultRule(tokens, idx, options, env, self)
@@ -934,6 +950,7 @@ class utils {
   static isNetworkURI = uri => /^https?|(ftp):\/\//.test(uri)
   static isSpecialImage = uri => /^(blob|chrome-blob|moz-blob|data):[^\/]/.test(uri)
   static isNetworkImage = this.isNetworkURI
+  static isLocalImage = uri => uri && !this.isNetworkImage(uri) && !this.isSpecialImage(uri)
 
   static getFenceContentByCid = cid => cid && File.editor.fences.queue[cid]?.getValue()
 
@@ -1033,16 +1050,6 @@ class utils {
     cm.setCursor(cursor)
   }
 
-  // content: \n represents a soft line break; \n\n represents a hard line break
-  static insertText = (anchorNode, content, restoreLastCursor = true) => {
-    if (restoreLastCursor) {
-      File.editor.contextMenu.hide()
-      // File.editor.writingArea.focus()
-      File.editor.restoreLastCursor()
-    }
-    File.editor.insertText(content)
-  }
-
   static createFragment = els => {
     if (!els) return null
     if (typeof els === "string") {
@@ -1063,30 +1070,33 @@ class utils {
     if (frag) document.getElementById("typora-quick-open").after(frag)
   }
 
-  /** Backup before `File.editor.stylize.toggleFences()` as it uses `File.option` to set block code language. Restore after. */
   static insertFence = (lang = "") => {
-    const lang1_ = File.option["default-code-lang"]  // Used for old versions
-    const lang2_ = File.option.defaultCodeLang  // Used for new versions
-    const menu_ = File.option.DefaultCodeLangOptionMenu
-    const op_ = File.option.defaultCodeLangOption
-
-    File.option["default-code-lang"] = lang
-    File.option.defaultCodeLang = lang
-    File.option.DefaultCodeLangOptionMenu = 1
-    File.option.defaultCodeLangOption = 1
+    const op = File.option
+    const backup = this.pick(op, ["default-code-lang", "defaultCodeLang", "DefaultCodeLangOptionMenu", "defaultCodeLangOption"])
     try {
+      op["default-code-lang"] = lang
+      op.defaultCodeLang = lang
+      op.DefaultCodeLangOptionMenu = 1
+      op.defaultCodeLangOption = 1
       File.editor.stylize.toggleFences()
     } finally {
-      File.option["default-code-lang"] = lang1_
-      File.option.defaultCodeLang = lang2_
-      File.option.DefaultCodeLangOptionMenu = menu_
-      File.option.defaultCodeLangOption = op_
+      Object.assign(op, backup)
     }
   }
 
   static insertBlockCode = (anchorNode, lang, content) => {
     const cnt = ["```", lang, "\n", content, "\n", "```"].join("")
     this.insertText(anchorNode, cnt)
+  }
+
+  // content: \n represents a soft line break; \n\n represents a hard line break
+  static insertText = (anchorNode, content, restoreLastCursor = true) => {
+    if (restoreLastCursor) {
+      File.editor.contextMenu.hide()
+      // File.editor.writingArea.focus()
+      File.editor.restoreLastCursor()
+    }
+    File.editor.insertText(content)
   }
 
   static getRangy = () => {

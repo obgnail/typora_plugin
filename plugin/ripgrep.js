@@ -51,7 +51,32 @@ const parseCommandLineArgs = args => {
   return parsedResult
 }
 
+const createSoloProcess = () => {
+  let current = null
+
+  const kill = () => current?.kill()
+  const run = (command, args, options, hooks) => {
+    kill()
+    const child = require("child_process").spawn(command, parseCommandLineArgs(args), options)
+    current = child
+    const alive = () => current === child
+    child.stdout.setEncoding("utf8")
+    child.stderr.setEncoding("utf8")
+    child.stdout.on("data", data => alive() && hooks.onData(data))
+    child.stderr.on("data", data => alive() && hooks.onErr(data))
+    child.on("error", err => alive() && hooks.onErr(err.toString() + "\n"))
+    child.on("close", (code, signal) => {
+      if (alive()) current = null
+      hooks.onClose(code, signal)
+    })
+  }
+
+  return { run, kill }
+}
+
 class RipgrepPlugin extends BasePlugin {
+  _rg = createSoloProcess()
+
   style = () => true
 
   html = () =>
@@ -89,21 +114,29 @@ class RipgrepPlugin extends BasePlugin {
   call = () => {
     const { panel, input } = this.entities
     this.utils.toggleInvisible(panel)
-    if (this.utils.isShown(panel)) input.select()
+    if (this.utils.isShown(panel)) {
+      input.select()
+    } else {
+      this._rg.kill()
+    }
   }
 
-  ripgrep = (rawInput = this.entities.input.value, callback = this.utils.noop) => {
-    const cmdArgs = parseCommandLineArgs(rawInput)
+  /** @example: ripgrep("--max-filesize 2M -g *.md XXX", (code, signal) => console.log("finish code:", code)) */
+  ripgrep = (rawInput = this.entities.input.value, onClose = this.utils.noop) => {
     const addErrClass = this.utils.once(() => this.entities.pre.classList.add("error"))
-    const onData = data => {
-      if (data) this.entities.pre.append(data.toString())
-    }
+    const onData = data => data && this.entities.pre.append(data)
     const onErr = data => {
       onData(data)
       addErrClass()
     }
     this._resetOutput()
-    this._ripgrep(cmdArgs, onData, onErr, callback)
+    this._ripgrep(rawInput, { onData, onErr, onClose })
+  }
+
+  _ripgrep = (rawInput, { onData, onErr, onClose }) => {
+    const rgPath = reqnode("vscode-ripgrep").rgPath.replace("node_modules.asar", "node_modules")
+    const options = { cwd: File.getMountFolder(), stdio: ["ignore", "pipe", "pipe"], env: { rg: rgPath } }
+    this._rg.run(rgPath, rawInput, options, { onData, onErr, onClose })
   }
 
   _resetOutput = () => {
@@ -111,27 +144,6 @@ class RipgrepPlugin extends BasePlugin {
     pre.textContent = ""
     pre.classList.remove("error")
     this.utils.show(output)
-  }
-
-  /**
-   * @repo: https://github.com/microsoft/vscode-ripgrep
-   * @example:
-   *   _ripgrep(
-   *     ["--max-filesize", "2M", "-g", "*.md", "XXX"],
-   *     data => console.log(data),
-   *     data => console.error(data),
-   *     code => console.log("finish code:", code),
-   *   )
-   */
-  _ripgrep = (args, onData, onErr, onClose) => {
-    const rgPath = reqnode("vscode-ripgrep").rgPath.replace("node_modules.asar", "node_modules")
-    const options = { cwd: File.getMountFolder(), stdio: ["ignore", "pipe", "pipe"], env: { rg: rgPath } }
-    const child = require("child_process").spawn(rgPath, args, options)
-    child.stdout.setEncoding("utf8")
-    child.stderr.setEncoding("utf8")
-    child.stdout.on("data", onData)
-    child.stderr.on("data", onErr)
-    child.on("close", onClose)
   }
 }
 

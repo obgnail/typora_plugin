@@ -101,6 +101,8 @@
   overflow-x: auto;
   border-top: 1px solid var(--border);
   background: var(--bg-dialog);
+  border-bottom-left-radius: var(--radius-dialog);
+  border-bottom-right-radius: var(--radius-dialog);
 }
 
 .plugin-ripgrep-output::-webkit-scrollbar {

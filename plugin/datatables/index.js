@@ -44,7 +44,7 @@ class DataTablesPlugin extends BasePlugin {
     this.initDataTablesConfig()
     this.utils.insertStyle(this.fixedName, this._buildCSS())
     this.utils.insertStyleFile("datatables-common", "./plugin/datatables/resource/css/dataTables.min.css")
-    await $.getScript(this.utils.toFileProtocol(this.utils.joinPluginPath("./plugin/datatables/resource/js/dataTables.min.js")))
+    await this.utils.insertScript(this.utils.joinPluginPath("./plugin/datatables/resource/js/dataTables.min.js"))
   }
 
   _buildCSS = () => `

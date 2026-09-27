@@ -9,11 +9,6 @@ class Container {
     this.settings = settings
   }
 
-  connect = (utils, settings) => {
-    utils.setContainer(this)
-    this.setSettings(settings)
-  }
-
   getAllPlugins = () => this.plugins
   getPlugin = (name) => this.plugins[name]
 

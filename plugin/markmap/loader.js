@@ -49,10 +49,7 @@ function localizeResources(styles, scripts, localPaths) {
 }
 
 function getPlugins(utils) {
-  const localImagePlugin = resolveImageSrcPlugin(
-    src => src && !utils.isNetworkImage(src) && !utils.isSpecialImage(src),
-    src => utils.toFileProtocol(utils.resolveLocalPath(src)),
-  )
+  const localImagePlugin = resolveImageSrcPlugin(utils.isLocalImage, src => utils.toFileProtocol(utils.resolveLocalPath(src)))
   return [...builtInPlugins, localImagePlugin]
 }
 

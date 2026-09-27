@@ -25,15 +25,11 @@ class InfographicPlugin extends BasePlugin {
       beforeExportToNative: null,
       beforeExportToHTML: null,
       exportStyleGetter: null,
-      versionGetter: null,
+      versionGetter: this.getVersion,
     })
   }
 
-  lazyLoad = async () => {
-    const from = this.config.RESOURCE_URI
-    const path = this.utils.isNetworkURI(from) ? from : this.utils.toFileProtocol(this.utils.Package.Path.resolve(from))
-    await $.getScript(path)
-  }
+  lazyLoad = async () => this.utils.insertScript(this.config.RESOURCE_URI)
 
   create = async ($wrap, content, meta) => {
     const { Infographic } = global.AntVInfographic
@@ -45,6 +41,8 @@ class InfographicPlugin extends BasePlugin {
   update = ($wrap, content, instance) => instance.update(content)
 
   destroy = instance => instance.destroy()
+
+  getVersion = () => global.AntVInfographic.VERSION
 }
 
 module.exports = {
