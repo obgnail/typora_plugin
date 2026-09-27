@@ -785,6 +785,14 @@
     "actHint.convert_current": "請將游標定位到表格後點擊滑鼠右鍵",
     "$label.RECORD_COLLAPSE": "記憶摺疊狀態"
   },
+  "collapse_image": {
+    "pluginName": "長圖摺疊",
+    "act.expand": "展開長圖",
+    "act.collapse": "收起長圖",
+    "$title.height": "高度",
+    "$label.TRIGGER_HEIGHT_PERCENT": "觸發摺疊高度",
+    "$label.COLLAPSED_HEIGHT_PERCENT": "摺疊後高度"
+  },
   "truncate_text": {
     "pluginName": "文段截斷",
     "act.hide_front": "只保留最後 {{remain}} 段",
