@@ -1433,6 +1433,19 @@ NAME = ""
 RECORD_COLLAPSE = true
 
 
+[collapse_image]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+
+# =========== [ Height ] ===========
+# Collapse an image when its displayed height exceeds this percentage of the editor viewport
+TRIGGER_HEIGHT_PERCENT = 120
+
+# Visible image height after collapsing, expressed as a percentage of the editor viewport
+COLLAPSED_HEIGHT_PERCENT = 70
+
+
 [image_viewer]
 # =========== [ Basic ] ===========
 ENABLE = true
