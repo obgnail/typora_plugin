@@ -877,6 +877,19 @@ class utils {
   })
   static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
   static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
+  static getDefaultRenderer = this.once(() => {
+    const md = this.createMarkdownIt()
+    const defaultRule = md.renderer.rules.image || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options))
+    md.renderer.rules.image = (tokens, idx, options, env, self) => {
+      const token = tokens[idx]
+      const src = token.attrGet("src")
+      if (src && !this.isNetworkImage(src) && !this.isSpecialImage(src)) {
+        token.attrSet("src", this.toFileProtocol(this.resolveLocalPath(src)))
+      }
+      return defaultRule(tokens, idx, options, env, self)
+    }
+    return md
+  })
 
   static fetch = async (url, { proxy = "", timeout = 3 * 60 * 1000, ...args } = {}) => {
     let signal, agent
@@ -973,21 +986,6 @@ class utils {
   }
 
   static isImgEmbed = img => img.complete && img.naturalWidth !== 0 && img.naturalHeight !== 0
-
-  static markdownInlineStyleToHTML = (content, dir = this.getLocalRootUrl()) => {
-    return content
-      .replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
-      .replace(/(?<!\\)[*_]{2}(.+?)(?<!\\)[*_]{2}/gs, `<strong>$1</strong>`)
-      .replace(/(?<![*\\])\*(?![\\*])(.+?)(?<![*\\])\*(?![\\*])/gs, `<em>$1</em>`)
-      .replace(/(?<!\\)~~(.+?)(?<!\\)~~/gs, "<del>$1</del>")
-      .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
-      .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => {
-        if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
-          src = this.toFileProtocol(PATH.resolve(dir, src))
-        }
-        return `<img alt="${alt}" src="${src}">`
-      })
-  }
 
   static jumpToEdge = (toTop = true) => {
     const fn = toTop ? "jumpTop" : "jumpBottom"

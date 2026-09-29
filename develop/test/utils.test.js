@@ -167,62 +167,6 @@ describe("String, Parsing & Markdown Utilities", () => {
       assert.strictEqual(result.yamlLineCount, 5)
     })
   })
-
-  describe("utils.markdownInlineStyleToHTML", () => {
-    const dir = "/root/"
-
-    it("converts basic markdown inline styles to HTML", () => {
-      const input = "This is **bold** and *italic* text"
-      const result = utils.markdownInlineStyleToHTML(input, dir)
-      assert.ok(result.includes("<strong>bold</strong>"))
-      assert.ok(result.includes("<em>italic</em>"))
-    })
-
-    it("handles code spans", () => {
-      const input = "Use `console.log()` for debugging"
-      const result = utils.markdownInlineStyleToHTML(input, dir)
-      assert.ok(result.includes("<code>console.log()</code>"))
-    })
-
-    it("handles links", () => {
-      const input = "Visit [GitHub](https://github.com)"
-      const result = utils.markdownInlineStyleToHTML(input, dir)
-      assert.ok(result.includes(`<a href="https://github.com">GitHub</a>`))
-    })
-
-    it("handles images", () => {
-      const input = "![Alt text](image.png)"
-      const result = utils.markdownInlineStyleToHTML(input, dir)
-      assert.ok(/<img alt="Alt text" src=".+?image\.png">/.test(result))
-    })
-
-    it("handles strikethrough", () => {
-      const input = "~~deleted text~~"
-      const result = utils.markdownInlineStyleToHTML(input, dir)
-      assert.ok(result.includes("<del>deleted text</del>"))
-    })
-
-    it("handles mixed styles", () => {
-      const input = "**bold** *italic* `code` [link](url)"
-      const result = utils.markdownInlineStyleToHTML(input, dir)
-      assert.ok(result.includes("<strong>bold</strong>"))
-      assert.ok(result.includes("<em>italic</em>"))
-      assert.ok(result.includes("<code>code</code>"))
-      assert.ok(result.includes(`<a href="url">link</a>`))
-    })
-
-    it("handles empty string", () => {
-      const input = ""
-      const result = utils.markdownInlineStyleToHTML(input, dir)
-      assert.strictEqual(result, "")
-    })
-
-    it("handles plain text without markdown", () => {
-      const input = "Just plain text"
-      const result = utils.markdownInlineStyleToHTML(input, dir)
-      assert.strictEqual(result, "Just plain text")
-    })
-  })
 })
 
 describe("Object & Array Utilities", () => {

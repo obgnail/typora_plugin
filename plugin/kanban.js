@@ -1,6 +1,7 @@
 class KanbanPlugin extends BasePlugin {
   STRICT_MODE_STR = "use strict"
   fenceStrictMode = false  // Is a single fence using strict mode
+  md = this.utils.getDefaultRenderer()
 
   style = () => ({
     maxHeight: (this.config.KANBAN_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_MAX_HEIGHT + "px",
@@ -39,48 +40,65 @@ class KanbanPlugin extends BasePlugin {
     }
   }
 
-  _toElement = (pre, cid, content) => {
-    const dir = this.utils.getLocalRootUrl()
-    const ITEM_REGEX = /^[\-*]\s(?<title>.*?)(\((?<desc>.*?)\))?$/
-
+  _extractStrictMode = (content) => {
     this.fenceStrictMode = false
-    let firstLineNum = -1
-    const data = { title: "", columns: [] }
     const lines = content.split("\n")
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim()
-      if (!line) continue
+    const strictIdx = lines.findIndex(l => l.trim() === this.STRICT_MODE_STR)
+    if (strictIdx === -1) return content
 
-      const lineNum = i + 1
-      if (firstLineNum === -1) firstLineNum = lineNum
+    this.fenceStrictMode = true
+    const lineNum = strictIdx + 1
+    const firstNonEmptyLineNum = lines.findIndex(l => l.trim() !== "") + 1
+    this._assertOK(lineNum === firstNonEmptyLineNum, lineNum, "error.useStrictMustFirstLine")
+    lines[strictIdx] = ""
+    return lines.join("\n")
+  }
 
-      if (line === this.STRICT_MODE_STR) {
-        this.fenceStrictMode = true
-        this._assertOK(lineNum === firstLineNum, lineNum, "error.useStrictMustFirstLine")
-        continue
-      }
-      if (line.startsWith("# ")) {
+  _toElement = (pre, cid, content) => {
+    content = this._extractStrictMode(content)
+
+    const ITEM_REGEX = /^(?<title>.*?)(\((?<desc>.*?)\))?$/
+
+    const env = {}
+    const tokens = this.md.parse(content, env)
+    const data = { title: "", columns: [] }
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i]
+      const lineNum = token.map ? token.map[0] + 1 : 1
+
+      if (token.type === "heading_open" && token.tag === "h1") {
         this._assertOK(data.title === "", lineNum, "error.multiTitles")
         this._assertOK(data.columns.length === 0, lineNum, "error.bodyComeBeforeTitle")
-        data.title = line.slice(2).trim()
+        data.title = tokens[i + 1].content.trim()
+        i += 2
         continue
       }
-      if (line.startsWith("## ")) {
-        data.columns.push({ name: line.slice(3).trim(), items: [] })
+      if (token.type === "heading_open" && token.tag === "h2") {
+        data.columns.push({ name: tokens[i + 1].content.trim(), items: [] })
+        i += 2
         continue
       }
-      const match = line.match(ITEM_REGEX)
-      if (match) {
+      if (token.type === "inline") {
+        const inListItem = tokens[i - 1]?.type === "paragraph_open" && tokens[i - 2]?.type === "list_item_open"
+        if (!inListItem) {
+          this._assertOK(false, lineNum, "error.syntaxError")
+          continue
+        }
+        const match = token.content.trim().match(ITEM_REGEX)
+        if (!match) {
+          this._assertOK(false, lineNum, "error.syntaxError")
+          continue
+        }
         const { title, desc: rawDesc = "" } = match.groups
         this._assertOK(title, lineNum, "error.taskTitleNonExist")
         this._assertOK(data.columns.length > 0, lineNum, "error.taskComeBeforeKanban")
+
         let desc = rawDesc.replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t")
         if (this.config.ALLOW_MARKDOWN_INLINE_STYLE && desc) {
-          desc = this.utils.markdownInlineStyleToHTML(desc, dir)
+          desc = this.md.renderInline(desc)
         }
         data.columns.at(-1).items.push({ title, desc })
-      } else {
-        this._assertOK(false, lineNum, "error.syntaxError")
       }
     }
 

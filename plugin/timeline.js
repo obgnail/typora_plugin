@@ -1,4 +1,6 @@
 class TimelinePlugin extends BasePlugin {
+  md = this.utils.getDefaultRenderer()
+
   style = () => true
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -28,118 +30,46 @@ class TimelinePlugin extends BasePlugin {
   _assertOK = (must, errorLineNum, reason) => this.utils.diagramParser.assertOK(must, errorLineNum, this.i18n.t(reason))
 
   _toElement = (pre, cid, content) => {
-    const dir = this.utils.getLocalRootUrl()
-    const REGEX = {
-      HEADING: /^(?<level>#{3,6})\s(?<text>.+?)$/,
-      TASK: /^(\s*)(([-+*])\s*)\[(?<checked>(x|X)| )\]\s+(?<text>.*)/,
-      UL: /^[\-*]\s(?<text>.*?)$/,
-      OL: /^\d\.\s(?<text>.*?)$/,
-      QUOTE: /^>\s(?<text>.+?)$/,
-      HR: /^(\*\*\*|---)$/,
-    }
+    const env = {}
+    const tokens = this.md.parse(content, env)
 
-    const data = { title: "", buckets: [] }
-    const lines = content.split("\n")
+    const data = { title: "", buckets: [], env }
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i]
+      const lineNum = token.map ? token.map[0] + 1 : 1
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim()
-      if (!line) continue
-
-      const lineNum = i + 1
-      if (line.startsWith("# ")) {
+      if (token.type === "heading_open" && token.tag === "h1") {
         this._assertOK(data.title === "", lineNum, "error.multiTitles")
         this._assertOK(data.buckets.length === 0, lineNum, "error.bodyComeBeforeTitle")
-        data.title = line.slice(2).trim()
+        data.title = tokens[i + 1]
+        i += 2
         continue
       }
-      if (line.startsWith("## ")) {
-        data.buckets.push({ time: line.slice(3).trim(), items: [] })
+      if (token.type === "heading_open" && token.tag === "h2") {
+        data.buckets.push({ time: tokens[i + 1], tokens: [] })
+        i += 2
         continue
       }
-      this._assertOK(data.buckets.length > 0, "error.bodyComeBeforeTime")
-
-      const currentItems = data.buckets.at(-1).items
-      const lastItem = currentItems.at(-1)
-      switch (true) {
-        case REGEX.HR.test(line):
-          currentItems.push({ type: "hr" })
-          break
-        case REGEX.HEADING.test(line): {
-          const { level, text } = line.match(REGEX.HEADING).groups
-          currentItems.push({ type: "h" + level.length, value: text })
-          break
-        }
-        case REGEX.TASK.test(line): {
-          const { checked, text } = line.match(REGEX.TASK).groups
-          currentItems.push({ type: "taskList", checked: !!checked.trim(), value: text })
-          break
-        }
-        case REGEX.UL.test(line): {
-          const { text } = line.match(REGEX.UL).groups
-          if (lastItem && lastItem.type === "ul") {
-            lastItem.list.push(text)
-          } else {
-            currentItems.push({ type: "ul", list: [text] })
-          }
-          break
-        }
-        case REGEX.OL.test(line): {
-          const { text } = line.match(REGEX.OL).groups
-          if (lastItem && lastItem.type === "ol") {
-            lastItem.list.push(text)
-          } else {
-            currentItems.push({ type: "ol", list: [text] })
-          }
-          break
-        }
-        case REGEX.QUOTE.test(line): {
-          const { text } = line.match(REGEX.QUOTE).groups
-          currentItems.push({ type: "blockquote", value: text })
-          break
-        }
-        default:
-          currentItems.push({ type: "p", value: line })
-      }
+      this._assertOK(data.buckets.length > 0, lineNum, "error.bodyComeBeforeTime")
+      data.buckets.at(-1).tokens.push(token)
     }
 
-    return this._renderTimelineHtml(data, dir)
+    return this._renderTimelineHtml(data)
   }
 
-  _renderTimelineHtml = (data, dir) => {
-    const fmt = (str) => this.utils.markdownInlineStyleToHTML(str, dir)
+  _renderTimelineHtml = (data) => {
+    const inline = t => this.md.renderer.renderInline(t.children, this.md.options, data.env)
     const bucketsHtml = data.buckets.map(bucket => {
-      const itemsHtml = bucket.items.map(item => {
-        switch (item.type) {
-          case "h3":
-          case "h4":
-          case "h5":
-          case "h6":
-          case "p":
-          case "blockquote":
-            return `<${item.type}>${fmt(item.value)}</${item.type}>`
-          case "hr":
-            return `<hr>`
-          case "taskList":
-            const checkedAttr = item.checked ? "checked" : ""
-            return `<p class="timeline-task-list"><input type="checkbox" ${checkedAttr} disabled><span>${fmt(item.value)}</span></p>`
-          case "ul":
-          case "ol":
-            const listItems = item.list.map(li => `<li>${fmt(li)}</li>`).join("")
-            return `<${item.type}>${listItems}</${item.type}>`
-          default:
-            return ""
-        }
-      }).join("")
-
+      const itemsHtml = this.md.renderer.render(bucket.tokens, this.md.options, data.env)
       return `
         <div class="timeline-line"><div class="timeline-circle"></div></div>
         <div class="timeline-wrapper">
-          <div class="timeline-time">${bucket.time}</div>
+          <div class="timeline-time">${inline(bucket.time)}</div>
           <div class="timeline-event">${itemsHtml}</div>
         </div>`
     }).join("")
 
-    const titleHtml = `<div class="timeline-title">${this.utils.escape(data.title)}</div>`
+    const titleHtml = `<div class="timeline-title">${this.utils.escape(data.title?.content ?? "")}</div>`
     const contentHtml = `<div class="timeline-content">${bucketsHtml}</div>`
     return `<div class="plugin-timeline">${titleHtml}${contentHtml}</div>`
   }

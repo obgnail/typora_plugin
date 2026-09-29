@@ -1,4 +1,6 @@
 class ChatPlugin extends BasePlugin {
+  md = this.utils.getDefaultRenderer()
+
   style = () => true
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -53,7 +55,7 @@ class ChatPlugin extends BasePlugin {
       let text = line.slice(i + 1).trim().replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t")
       assertOK(name && text, idx, "error.emptyNicknameOrEmptyText")
       if (allowMarkdown) {
-        text = this.utils.markdownInlineStyleToHTML(text, dir)
+        text = this.md.renderInline(text)
       }
 
       const lowerName = name.toLowerCase()
