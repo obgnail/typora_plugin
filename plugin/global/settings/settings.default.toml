@@ -707,6 +707,9 @@ TITLE_BAR_BUTTONS = ["close", "expand", "pinTop", "pinRight", "fit", "unfold", "
 # Click node to position: Smoothly scroll the Markdown document to the clicked header node
 CLICK_TO_POSITION = true
 
+# Highlight path on hover: Dim all nodes/links except the path from the root to the hovered node
+HIGHLIGHT_PATH_ON_HOVER = false
+
 # Viewport position ratio where the scrolled header stops (e.g., 0.2 means top 20% of the screen)
 # Requires CLICK_TO_POSITION = true
 POSITIONING_VIEWPORT_HEIGHT = 0.2

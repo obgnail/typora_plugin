@@ -521,6 +521,7 @@
     "$label.RETAIN_FOLD_STATE_ON_UPDATE": "保持节点折叠状态",
     "$label.USE_CONTEXT_MENU": "右键菜单",
     "$label.CLICK_TO_POSITION": "点击节点跳转到文档对应章节",
+    "$label.HIGHLIGHT_PATH_ON_HOVER": "悬停节点时高亮路径",
     "$label.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD": "折叠节点后自动折叠章节内容",
     "$label.POSITIONING_VIEWPORT_HEIGHT": "定位视口高度",
     "$label.WIDTH_PERCENT_WHEN_INIT": "初始窗口宽度",

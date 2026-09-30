@@ -521,6 +521,7 @@
     "$label.RETAIN_FOLD_STATE_ON_UPDATE": "保持節點摺疊狀態",
     "$label.USE_CONTEXT_MENU": "右鍵選單",
     "$label.CLICK_TO_POSITION": "點擊節點跳轉到文檔對應章節",
+    "$label.HIGHLIGHT_PATH_ON_HOVER": "懸停節點時高亮路徑",
     "$label.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD": "摺疊節點後自動摺疊章節內容",
     "$label.POSITIONING_VIEWPORT_HEIGHT": "定位視窗高度",
     "$label.WIDTH_PERCENT_WHEN_INIT": "初始視窗寬度",

@@ -190,3 +190,19 @@ body.plugin-dark-mode #plugin-markmap {
   --icon-hover: rgba(255, 255, 255, 0.06);
   --icon-danger-bg: rgba(239, 68, 68, 0.2);
 }
+
+#plugin-markmap-svg .markmap-node,
+#plugin-markmap-svg .markmap-link {
+  opacity: 1;
+  transition: opacity 500ms ease-out;
+}
+
+#plugin-markmap-svg.markmap-dim-others .markmap-node,
+#plugin-markmap-svg.markmap-dim-others .markmap-link {
+  opacity: 0.1;
+}
+
+#plugin-markmap-svg .markmap-node.markmap-path-active,
+#plugin-markmap-svg .markmap-link.markmap-path-active {
+  opacity: 1;
+}

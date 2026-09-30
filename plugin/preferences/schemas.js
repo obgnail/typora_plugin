@@ -375,6 +375,7 @@ const schema_markmap = () => [
     Switch("AUTO_FIT_WHEN_FOLD"),
     Switch("RETAIN_FOLD_STATE_ON_UPDATE"),
     Switch("USE_CONTEXT_MENU"),
+    Switch("HIGHLIGHT_PATH_ON_HOVER"),
     Switch("CLICK_TO_POSITION"),
     Switch("AUTO_COLLAPSE_PARAGRAPH_ON_FOLD").Tooltip("experimental"),
     Range("POSITIONING_VIEWPORT_HEIGHT").Min(0.1).Max(0.95).Step(0.01).Tooltip("positioningViewPort"),

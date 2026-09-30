@@ -63,6 +63,7 @@ class TOCMarkmap {
     this._onMove()
     this._onResize()
     this._onSvgClick()
+    this._onSvgHover()
   }
 
   _onEvent = () => {
@@ -260,6 +261,36 @@ class TOCMarkmap {
     })
   }
 
+  _onSvgHover = () => {
+    const svg = this.entities.svg
+    const DIM = "markmap-dim-others"
+    const ACTIVE = "markmap-path-active"
+    let hoveredEl = null
+
+    const clear = () => {
+      if (!this.config.HIGHLIGHT_PATH_ON_HOVER) return
+      svg.querySelectorAll(`.${ACTIVE}`).forEach(el => el.classList.remove(ACTIVE))
+      svg.classList.remove(DIM)
+      hoveredEl = null
+    }
+
+    svg.addEventListener("mouseleave", clear)
+    svg.addEventListener("mouseover", ev => {
+      if (!this.config.HIGHLIGHT_PATH_ON_HOVER) return
+      const node = ev.target.closest(".markmap-node")
+      if (node === hoveredEl) return
+      clear()
+      const path = node && svg.contains(node) ? node.dataset.path : null
+      if (!path) return
+
+      const parts = path.split(".")
+      const selector = parts.map((_, i) => `[data-path="${parts.slice(0, i + 1).join(".")}"]`).join(",")
+      svg.querySelectorAll(selector).forEach(el => el.classList.add(ACTIVE))
+      svg.classList.add(DIM)
+      hoveredEl = node
+    })
+  }
+
   callback = async () => {
     if (this.utils.isShown(this.entities.panel)) {
       this.close()
@@ -306,7 +337,7 @@ class TOCMarkmap {
     const attrsToSave = [
       "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
       "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITION",
-      "USE_CONTEXT_MENU", "AUTO_FIT_ON_UPDATE", "AUTO_FIT_WHEN_FOLD", "RETAIN_FOLD_STATE_ON_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_ON_FOLD",
+      "HIGHLIGHT_PATH_ON_HOVER", "USE_CONTEXT_MENU", "AUTO_FIT_ON_UPDATE", "AUTO_FIT_WHEN_FOLD", "RETAIN_FOLD_STATE_ON_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_ON_FOLD",
     ]
     const arr2Str = arr => arr.join("_")
     const str2Arr = str => str.split("_")
@@ -379,6 +410,7 @@ class TOCMarkmap {
               C.Switch("DEFAULT_TOC_OPTIONS.zoom"),
               C.Switch("DEFAULT_TOC_OPTIONS.pan"),
               C.Switch("DEFAULT_TOC_OPTIONS.toggleRecursively"),
+              C.Switch("HIGHLIGHT_PATH_ON_HOVER"),
               C.Switch("CLICK_TO_POSITION"),
               C.Range("POSITIONING_VIEWPORT_HEIGHT").Tooltip(T("positioningViewPort")).Min(0.1).Max(0.95).Step(0.01).ShowIf(When.true("CLICK_TO_POSITION")),
               C.Range("DEFAULT_TOC_OPTIONS.duration").Min(0).Max(1000).Step(10),

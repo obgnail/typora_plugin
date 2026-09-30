@@ -521,6 +521,7 @@
     "$label.RETAIN_FOLD_STATE_ON_UPDATE": "Preserve Collapse State on Update",
     "$label.USE_CONTEXT_MENU": "Context Menu",
     "$label.CLICK_TO_POSITION": "Click Node to Scroll to Chapter",
+    "$label.HIGHLIGHT_PATH_ON_HOVER": "Highlight Path to Hovered Node",
     "$label.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD": "Auto-Collapse Chapter on Node Fold",
     "$label.POSITIONING_VIEWPORT_HEIGHT": "Positioning Viewport Height",
     "$label.WIDTH_PERCENT_WHEN_INIT": "Initial Window Width",
