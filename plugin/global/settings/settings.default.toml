@@ -1345,6 +1345,12 @@ HIGHLIGHT_ON_FOCUS = false
 # Highlight line background color on cursor focus
 HIGHLIGHT_LINE_COLOR_ON_FOCUS = "rgba(142, 150, 170, 0.14)"
 
+# Toggle code line highlight by clicking its line number
+HIGHLIGHT_ON_LINE_NUMBER_CLICK = false
+
+# Highlight line background color when toggled by line number
+HIGHLIGHT_LINE_COLOR_ON_LINE_NUMBER_CLICK = "rgba(142, 150, 170, 0.14)"
+
 # =========== [ Code Title ] ===========
 # Enable code title
 # See: https://vuepress.vuejs.org/guide/markdown.html#code-title

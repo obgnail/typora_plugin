@@ -25,6 +25,7 @@ class FenceEnhancePlugin extends BasePlugin {
 .fence-enhance .enhance-btn { cursor: pointer; opacity: ${this.config.BUTTON_OPACITY}; padding: 0 ${this.config.BUTTON_PADDING}; }
 .fence-enhance .enhance-btn:hover { opacity: ${this.config.BUTTON_OPACITY_HOVER}; }
 .plugin-fence-enhance-highlight { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_BY_LANGUAGE} !important; }
+.plugin-fence-enhance-click-highlight { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_LINE_NUMBER_CLICK} !important; }
 ${this.config.HIGHLIGHT_ON_HOVER ? `.CodeMirror-line:hover { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_HOVER}; }` : ""}
 ${this.config.HIGHLIGHT_ON_FOCUS ? `.md-focus .CodeMirror-activeline { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_FOCUS}; }` : ""}
 `
@@ -35,6 +36,7 @@ ${this.config.HIGHLIGHT_ON_FOCUS ? `.md-focus .CodeMirror-activeline { backgroun
     if (this.config.ENABLE_BUTTON) this.buttonHelper.process()
     if (this.config.ENABLE_HOTKEY) new HotkeyHelper(this).process()
     if (this.config.HIGHLIGHT_BY_LANGUAGE) new HighlightHelper(this).process()
+    if (this.config.HIGHLIGHT_ON_LINE_NUMBER_CLICK) highlightByClickGutter(this)
     if (this.config.PRELOAD_ALL_FENCES) preloadAllFences(this)
     if (this.config.SIDE_BY_SIDE_VIEW) sideBySideView(this)
     if (this.config.ENABLE_LANGUAGE_FOLD) await foldLanguage(this)
@@ -576,6 +578,18 @@ class HighlightHelper {
       if (cm) this._rerender(cm)
     })
   }
+}
+
+const highlightByClickGutter = ({ utils }) => {
+  const className = "plugin-fence-enhance-click-highlight"
+  const onClick = (cm, lineNo, gutter) => {
+    if (gutter !== "CodeMirror-linenumbers") return
+    const info = cm.lineInfo(lineNo)
+    if (!info?.handle) return
+    const highlighted = (info.bgClass ?? "").split(" ").includes(className)
+    cm[highlighted ? "removeLineClass" : "addLineClass"](info.handle, "background", className)
+  }
+  utils.eventHub.on(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => cm?.on("gutterClick", onClick))
 }
 
 const preloadAllFences = ({ utils }) => {

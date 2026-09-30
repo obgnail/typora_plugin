@@ -734,6 +734,8 @@
     "$label.HIGHLIGHT_LINE_COLOR_ON_HOVER": "高亮背景色",
     "$label.HIGHLIGHT_ON_FOCUS": "游標聚焦高亮",
     "$label.HIGHLIGHT_LINE_COLOR_ON_FOCUS": "高亮背景色",
+    "$label.HIGHLIGHT_ON_LINE_NUMBER_CLICK": "點擊行號高亮",
+    "$label.HIGHLIGHT_LINE_COLOR_ON_LINE_NUMBER_CLICK": "高亮背景色",
     "$label.ENABLE_CODE_TITLE": "啟用",
     "$label.CODE_TITLE_PATTERN": "程式碼區塊標題格式",
     "$title.buttonGeneral": "按鈕",
