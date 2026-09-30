@@ -734,6 +734,8 @@
     "$label.HIGHLIGHT_LINE_COLOR_ON_HOVER": "高亮背景色",
     "$label.HIGHLIGHT_ON_FOCUS": "光标聚焦高亮",
     "$label.HIGHLIGHT_LINE_COLOR_ON_FOCUS": "高亮背景色",
+    "$label.HIGHLIGHT_ON_LINE_NUMBER_CLICK": "点击行号高亮",
+    "$label.HIGHLIGHT_LINE_COLOR_ON_LINE_NUMBER_CLICK": "高亮背景色",
     "$label.ENABLE_CODE_TITLE": "启用",
     "$label.CODE_TITLE_PATTERN": "代码标题格式",
     "$title.buttonGeneral": "按钮",

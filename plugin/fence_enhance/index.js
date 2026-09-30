@@ -25,6 +25,7 @@ class FenceEnhancePlugin extends BasePlugin {
 .fence-enhance .enhance-btn { cursor: pointer; opacity: ${this.config.BUTTON_OPACITY}; padding: 0 ${this.config.BUTTON_PADDING}; }
 .fence-enhance .enhance-btn:hover { opacity: ${this.config.BUTTON_OPACITY_HOVER}; }
 .plugin-fence-enhance-highlight { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_BY_LANGUAGE} !important; }
+.plugin-fence-enhance-click-highlight { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_LINE_NUMBER_CLICK} !important; }
 ${this.config.HIGHLIGHT_ON_HOVER ? `.CodeMirror-line:hover { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_HOVER}; }` : ""}
 ${this.config.HIGHLIGHT_ON_FOCUS ? `.md-focus .CodeMirror-activeline { background-color: ${this.config.HIGHLIGHT_LINE_COLOR_ON_FOCUS}; }` : ""}
 `
@@ -486,11 +487,14 @@ class HotkeyHelper {
 // See: https://vuepress.vuejs.org/guide/markdown.html#line-highlighting
 class HighlightHelper {
   className = "plugin-fence-enhance-highlight"
+  clickClassName = "plugin-fence-enhance-click-highlight"
   highlightSym = Symbol("highlight")
   highlightHandlesSym = Symbol("highlight_handles")
+  clickHighlightHandlesSym = Symbol("click_highlight_handles")
 
   constructor(plugin) {
     this.utils = plugin.utils
+    this.config = plugin.config
     this.pattern = new RegExp(plugin.config.HIGHLIGHT_PATTERN)
     this.numberingBase = (plugin.config.NUMBERING_BASE === "0-based") ? 0 : 1
   }
@@ -526,6 +530,31 @@ class HighlightHelper {
     cm[this.highlightHandlesSym] = null
   }
 
+  _toggleClickHighlight = (cm, lineNo) => {
+    const handle = cm.getLineHandle(lineNo)
+    if (!handle) return
+
+    const handles = cm[this.clickHighlightHandlesSym] || new Set()
+    if (handles.has(handle)) {
+      cm.removeLineClass(handle, "background", this.clickClassName)
+      handles.delete(handle)
+    } else {
+      cm.addLineClass(handle, "background", this.clickClassName)
+      handles.add(handle)
+    }
+    cm[this.clickHighlightHandlesSym] = handles
+  }
+
+  _clearClickHighlights = cm => {
+    const handles = cm[this.clickHighlightHandlesSym]
+    if (handles instanceof Set) {
+      handles.forEach(handle => {
+        if (handle?.parent) cm.removeLineClass(handle, "background", this.clickClassName)
+      })
+    }
+    cm[this.clickHighlightHandlesSym] = new Set()
+  }
+
   _rerender = (cm) => {
     cm?.operation(() => {
       this._clearHighlight(cm)
@@ -538,6 +567,10 @@ class HighlightHelper {
     const handleLineChange = (cm, changeObj) => {
       const isLineCountChanged = changeObj.text.length !== changeObj.removed.length
       if (isLineCountChanged) this._rerender(cm)
+    }
+    const handleGutterClick = (cm, lineNo, gutter) => {
+      if (!this.config.HIGHLIGHT_ON_LINE_NUMBER_CLICK || gutter !== "CodeMirror-linenumbers") return
+      cm.operation(() => this._toggleClickHighlight(cm, lineNo))
     }
     const extract = mode => {
       const match = mode.match(this.pattern)
@@ -563,18 +596,22 @@ class HighlightHelper {
       return mode
     }
     this.utils.decorator.decorate(() => window, "getCodeMirrorMode", { before, after, modifyResult: true, modifyArgs: true })
-    this.utils.eventHub.on(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
+    const bindCodeMirror = cm => {
       if (!cm) return
       this._rerender(cm)
       cm.off("change", handleLineChange)
       cm.on("change", handleLineChange)
-    })
+      cm.off("gutterClick", handleGutterClick)
+      cm.on("gutterClick", handleGutterClick)
+    }
+    this.utils.eventHub.on(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => bindCodeMirror(cm))
     this.utils.eventHub.on(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => {
       const cid = node?.cid
       if (!cid) return
       const cm = File.editor.fences.queue[cid]
       if (cm) this._rerender(cm)
     })
+    traverseAllFences(({ cm }) => bindCodeMirror(cm))
   }
 }
 

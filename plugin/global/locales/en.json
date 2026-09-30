@@ -734,6 +734,8 @@
     "$label.HIGHLIGHT_LINE_COLOR_ON_HOVER": "Hover Background Color",
     "$label.HIGHLIGHT_ON_FOCUS": "Highlight on Focus",
     "$label.HIGHLIGHT_LINE_COLOR_ON_FOCUS": "Focus Background Color",
+    "$label.HIGHLIGHT_ON_LINE_NUMBER_CLICK": "Highlight on Line Number Click",
+    "$label.HIGHLIGHT_LINE_COLOR_ON_LINE_NUMBER_CLICK": "Line Number Click Background Color",
     "$label.ENABLE_CODE_TITLE": "Enable",
     "$label.CODE_TITLE_PATTERN": "Code Title Pattern",
     "$title.buttonGeneral": "Button",

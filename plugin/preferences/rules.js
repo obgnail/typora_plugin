@@ -97,6 +97,7 @@ module.exports = {
     HIGHLIGHT_LINE_COLOR_BY_LANGUAGE: required,
     HIGHLIGHT_LINE_COLOR_ON_HOVER: required,
     HIGHLIGHT_LINE_COLOR_ON_FOCUS: required,
+    HIGHLIGHT_LINE_COLOR_ON_LINE_NUMBER_CLICK: required,
     CODE_TITLE_PATTERN: [required, regex],
     CUSTOM_BUTTONS: row({
       ICON: required,
