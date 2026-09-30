@@ -371,6 +371,7 @@ const schema_markmap = () => [
     Hotkey("TOC_HOTKEY"),
     Switch("FIX_SKIPPED_LEVEL_HEADERS"),
     Switch("REMOVE_HEADER_STYLES"),
+    Text("NODE_TEXT_TEMPLATE").Tooltip("nodeTextTemplate"),
     Switch("AUTO_FIT_ON_UPDATE"),
     Switch("AUTO_FIT_WHEN_FOLD"),
     Switch("RETAIN_FOLD_STATE_ON_UPDATE"),

@@ -337,7 +337,8 @@ class TOCMarkmap {
     const attrsToSave = [
       "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
       "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITION",
-      "HIGHLIGHT_PATH_ON_HOVER", "USE_CONTEXT_MENU", "AUTO_FIT_ON_UPDATE", "AUTO_FIT_WHEN_FOLD", "RETAIN_FOLD_STATE_ON_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_ON_FOLD",
+      "HIGHLIGHT_PATH_ON_HOVER", "USE_CONTEXT_MENU", "AUTO_FIT_ON_UPDATE", "AUTO_FIT_WHEN_FOLD", "RETAIN_FOLD_STATE_ON_UPDATE",
+      "AUTO_COLLAPSE_PARAGRAPH_ON_FOLD", "NODE_TEXT_TEMPLATE",
     ]
     const arr2Str = arr => arr.join("_")
     const str2Arr = str => str.split("_")
@@ -397,6 +398,7 @@ class TOCMarkmap {
             schema: [Group(
               C.Switch("FIX_SKIPPED_LEVEL_HEADERS"),
               C.Switch("REMOVE_HEADER_STYLES"),
+              C.Text("NODE_TEXT_TEMPLATE").Tooltip(T("nodeTextTemplate")),
               C.Switch("RETAIN_FOLD_STATE_ON_UPDATE"),
               C.Switch("AUTO_FIT_ON_UPDATE"),
               C.Switch("AUTO_FIT_WHEN_FOLD"),
@@ -495,7 +497,7 @@ class TOCMarkmap {
           },
         }),
       },
-      rules: { "DOWNLOAD_OPTIONS.FOLDER": "path", "DOWNLOAD_OPTIONS.FILENAME": "required" },
+      rules: { NODE_TEXT_TEMPLATE: "required", "DOWNLOAD_OPTIONS.FOLDER": "path", "DOWNLOAD_OPTIONS.FILENAME": "required" },
       hooks: { onCommit: () => _edited = true },
     })
     if (response === 1 && _edited) {

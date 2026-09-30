@@ -33,26 +33,46 @@ class MarkmapPlugin extends BasePlugin {
 
   onButtonClick = () => this.call("toggle_toc")
 
-  getToc = (
-    fixSkip = this.config.FIX_SKIPPED_LEVEL_HEADERS,
-    removeStyles = this.config.REMOVE_HEADER_STYLES,
-  ) => {
-    const tree = this.utils.getTocTree(removeStyles)
-    const getHeaders = (node, ret, indent) => {
-      const head = "#".repeat(fixSkip ? indent : node.depth)
-      ret.push(`${head} ${node.text}`)
-      for (const child of node.children) {
-        getHeaders(child, ret, indent + 1)
-      }
-      return ret
-    }
-    return getHeaders(tree, [], 0).slice(1).join("\n")
+  getToc = (options = this.config) => {
+    const { REMOVE_HEADER_STYLES: removeStyles, FIX_SKIPPED_LEVEL_HEADERS: fixSkippedLevels, NODE_TEXT_TEMPLATE: nodeTemplate = "{{text}}" } = options
+    return serializeToc(this.utils.getTocTree(removeStyles), { fixSkippedLevels, nodeTemplate })
   }
 
   lazyLoad = this.utils.once(async () => {
     const load = require("./loader.js")
     Object.assign(this.Lib, await load(this.utils))
   })
+}
+
+const TOKEN_RESOLVERS = {
+  text: node => node.text,
+  cid: node => node.cid,
+  level: node => node.depth,
+  index: (node, numbers) => numbers.at(-1),
+  number: (node, numbers) => numbers.join("."),
+  children: node => node.children.length,
+}
+
+function serializeToc(tree, { fixSkippedLevels, nodeTemplate }) {
+  const lines = []
+  const counters = []
+
+  const visit = (node, depth) => {
+    counters[depth] = (counters[depth] || 0) + 1
+    counters.length = depth + 1
+
+    const heading = "#".repeat(fixSkippedLevels ? depth : node.depth)
+    const numbers = counters.slice(1)
+    const content = nodeTemplate.replace(/\{\{\s*(\w+)\s*}}/g, (raw, token) => TOKEN_RESOLVERS[token]?.(node, numbers) ?? raw)
+    lines.push(`${heading} ${content}`)
+
+    for (const child of node.children) {
+      visit(child, depth + 1)
+    }
+  }
+
+  visit(tree, 0)
+  return lines.slice(1).join("\n")  // root is virtual: drop its line
 }
 
 module.exports = {

@@ -71,6 +71,7 @@ module.exports = {
     "DOWNLOAD_OPTIONS.BACKGROUND_COLOR": [required, hexColor],
     "DOWNLOAD_OPTIONS.TEXT_COLOR": [required, hexColor],
     "DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR": [required, hexColor],
+    NODE_TEXT_TEMPLATE: required,
     DEFAULT_FENCE_HEIGHT: required,
     DEFAULT_FENCE_BACKGROUND_COLOR: [required, hexColor],
     "DEFAULT_FENCE_OPTIONS.height": required,

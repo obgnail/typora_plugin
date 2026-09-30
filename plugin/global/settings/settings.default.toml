@@ -720,6 +720,16 @@ FIX_SKIPPED_LEVEL_HEADERS = true
 # Strip visual styling markers (e.g., **bold**, `code`) from MindMap nodes
 REMOVE_HEADER_STYLES = true
 
+# Node text template. Supported placeholders:
+#   {{text}}     : header text (after REMOVE_HEADER_STYLES processing)
+#   {{level}}    : actual heading level (1-6)
+#   {{number}}   : hierarchical index, e.g. "1.2.3"
+#   {{index}}    : sibling index within the same level
+#   {{cid}}      : header's cid in document
+#   {{children}} : direct child count
+# Unknown placeholders are kept as-is; Markdown syntax is allowed.
+NODE_TEXT_TEMPLATE = "{{text}}"
+
 # Auto-fit window size when the diagram data updates
 AUTO_FIT_ON_UPDATE = true
 
@@ -796,9 +806,9 @@ DEFAULT_TOC_OPTIONS = {
 
 # Customize exported SVG/Image settings
 #   FILENAME: Output filename format. Supported placeholders
-#     {{filename}} : Current Markdown filename
-#     {{timestamp}}: Current timestamp
-#     {{random}}   : Random alphanumeric string
+#     {{filename}}  : Current Markdown filename
+#     {{timestamp}} : Current timestamp
+#     {{random}}    : Random alphanumeric string
 #   FOLDER: Output directory path. Leave blank to use system TEMP directory. Supports absolute paths (e.g., "D:\\tmp\\img")
 #   REMOVE_USELESS_CLASSES: Strip useless CSS classes to reduce SVG file size
 #   REMOVE_FOREIGN_OBJECT: Replace <foreignObject> tags with <text>
@@ -2919,13 +2929,13 @@ time: Yesterday 18:21
 
 senderA: Messages are separated from usernames by a colon
 
-me: The sender's nickname on the right is 'me', and timestamp's nickname is 'time'
+me: The nickname of sender on the right is `me`, and the nickname of timestamp is `time`
 
 me: Supports basic Markdown syntax: **bold**, *italic*, `code`, ~~strikethrough~~, [link](https://github.com/obgnail/typora_plugin), \\n![image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
 
 senderB: You can use YAML front matter to modify the configuration. \\n\\nThe `avatars` option sets user avatars, If not configured, The first letter of the user name is used as the avatar. \\n\\nTry adding `./assets/senderB.jpg` to current directory to see the user senderB's avatar change
 
-NOTE: Supports exporting to HTML, PDF, etc. This syntax is plugin-specific and not universal."""
+NOTE: This syntax is plugin-specific and not universal."""
 
 
 [timeline]
@@ -2982,7 +2992,9 @@ TEMPLATE = """
 Supports basic Markdown:
 - Unordered list item 1
 - Unordered list item 2
+
 **bold**, *italic*, `code`, ~~delete~~, [link](https://github.com/obgnail/typora_plugin), ![Image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
+
 ---
 Code blocks are not supported (nested code blocks are discouraged)
 
