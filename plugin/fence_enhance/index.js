@@ -36,6 +36,7 @@ ${this.config.HIGHLIGHT_ON_FOCUS ? `.md-focus .CodeMirror-activeline { backgroun
     if (this.config.ENABLE_BUTTON) this.buttonHelper.process()
     if (this.config.ENABLE_HOTKEY) new HotkeyHelper(this).process()
     if (this.config.HIGHLIGHT_BY_LANGUAGE) new HighlightHelper(this).process()
+    if (this.config.HIGHLIGHT_ON_LINE_NUMBER_CLICK) highlightByClickGutter(this)
     if (this.config.PRELOAD_ALL_FENCES) preloadAllFences(this)
     if (this.config.SIDE_BY_SIDE_VIEW) sideBySideView(this)
     if (this.config.ENABLE_LANGUAGE_FOLD) await foldLanguage(this)
@@ -487,14 +488,11 @@ class HotkeyHelper {
 // See: https://vuepress.vuejs.org/guide/markdown.html#line-highlighting
 class HighlightHelper {
   className = "plugin-fence-enhance-highlight"
-  clickClassName = "plugin-fence-enhance-click-highlight"
   highlightSym = Symbol("highlight")
   highlightHandlesSym = Symbol("highlight_handles")
-  clickHighlightHandlesSym = Symbol("click_highlight_handles")
 
   constructor(plugin) {
     this.utils = plugin.utils
-    this.config = plugin.config
     this.pattern = new RegExp(plugin.config.HIGHLIGHT_PATTERN)
     this.numberingBase = (plugin.config.NUMBERING_BASE === "0-based") ? 0 : 1
   }
@@ -530,31 +528,6 @@ class HighlightHelper {
     cm[this.highlightHandlesSym] = null
   }
 
-  _toggleClickHighlight = (cm, lineNo) => {
-    const handle = cm.getLineHandle(lineNo)
-    if (!handle) return
-
-    const handles = cm[this.clickHighlightHandlesSym] || new Set()
-    if (handles.has(handle)) {
-      cm.removeLineClass(handle, "background", this.clickClassName)
-      handles.delete(handle)
-    } else {
-      cm.addLineClass(handle, "background", this.clickClassName)
-      handles.add(handle)
-    }
-    cm[this.clickHighlightHandlesSym] = handles
-  }
-
-  _clearClickHighlights = cm => {
-    const handles = cm[this.clickHighlightHandlesSym]
-    if (handles instanceof Set) {
-      handles.forEach(handle => {
-        if (handle?.parent) cm.removeLineClass(handle, "background", this.clickClassName)
-      })
-    }
-    cm[this.clickHighlightHandlesSym] = new Set()
-  }
-
   _rerender = (cm) => {
     cm?.operation(() => {
       this._clearHighlight(cm)
@@ -567,10 +540,6 @@ class HighlightHelper {
     const handleLineChange = (cm, changeObj) => {
       const isLineCountChanged = changeObj.text.length !== changeObj.removed.length
       if (isLineCountChanged) this._rerender(cm)
-    }
-    const handleGutterClick = (cm, lineNo, gutter) => {
-      if (!this.config.HIGHLIGHT_ON_LINE_NUMBER_CLICK || gutter !== "CodeMirror-linenumbers") return
-      cm.operation(() => this._toggleClickHighlight(cm, lineNo))
     }
     const extract = mode => {
       const match = mode.match(this.pattern)
@@ -596,23 +565,31 @@ class HighlightHelper {
       return mode
     }
     this.utils.decorator.decorate(() => window, "getCodeMirrorMode", { before, after, modifyResult: true, modifyArgs: true })
-    const bindCodeMirror = cm => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
       if (!cm) return
       this._rerender(cm)
       cm.off("change", handleLineChange)
       cm.on("change", handleLineChange)
-      cm.off("gutterClick", handleGutterClick)
-      cm.on("gutterClick", handleGutterClick)
-    }
-    this.utils.eventHub.on(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => bindCodeMirror(cm))
+    })
     this.utils.eventHub.on(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, ([node] = []) => {
       const cid = node?.cid
       if (!cid) return
       const cm = File.editor.fences.queue[cid]
       if (cm) this._rerender(cm)
     })
-    traverseAllFences(({ cm }) => bindCodeMirror(cm))
   }
+}
+
+const highlightByClickGutter = ({ utils }) => {
+  const className = "plugin-fence-enhance-click-highlight"
+  const onClick = (cm, lineNo, gutter) => {
+    if (gutter !== "CodeMirror-linenumbers") return
+    const info = cm.lineInfo(lineNo)
+    if (!info?.handle) return
+    const highlighted = (info.bgClass ?? "").split(" ").includes(className)
+    cm[highlighted ? "removeLineClass" : "addLineClass"](info.handle, "background", className)
+  }
+  utils.eventHub.on(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => cm?.on("gutterClick", onClick))
 }
 
 const preloadAllFences = ({ utils }) => {
