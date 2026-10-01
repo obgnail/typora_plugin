@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+\.[0-9]+\.[0-9]+'
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  PLUGIN_NAME: typora-plugin
+  PLUGIN_VERSION: ${{ github.ref_name }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Package Plugin
+        id: package_plugin
+        run: |
+          VERSION_JSON="plugin/VERSION.json"
+          ZIP_NAME="${PLUGIN_NAME}@v${PLUGIN_VERSION}.zip"
+          PUBLISHED_AT=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+          echo "Creating $VERSION_JSON"
+          echo "{ \"tag_name\": \"${PLUGIN_VERSION}\", \"published_at\": \"${PUBLISHED_AT}\" }" > "$VERSION_JSON"
+
+          echo "Creating zip archive: $ZIP_NAME"
+          zip -r "$ZIP_NAME" plugin/
+          echo "zip_name=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+          echo "File created: $ZIP_NAME"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.PLUGIN_VERSION }}
+          name: ${{ env.PLUGIN_VERSION }}
+          files: ${{ steps.package_plugin.outputs.zip_name }}
+          generate_release_notes: true

@@ -1,16 +1,25 @@
-name: Similarity Analysis On Issue
+name: Issue Similarity
 
 on:
   issues:
-    types: [opened, edited]
+    types: [ opened, edited ]
+
+concurrency:
+  group: similarity-analysis-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+permissions:
+  issues: write
 
 jobs:
   similarity-analysis:
     runs-on: ubuntu-latest
+    if: github.event.issue != null
     steps:
       - name: analysis
         uses: actions-cool/issues-similarity-analysis@v1
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           filter-threshold: 0.5
           comment-title: '### Similar Issues'
           comment-body: '${index}. ${similarity} #${number}'

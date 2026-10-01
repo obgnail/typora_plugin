@@ -1,11 +1,15 @@
-name: Test on Commit
+name: CI
 
 on:
   push:
-    paths:
-      - 'develop/**'
-      - 'plugin/**'
-      - '.github/**'
+  pull_request:
+
+concurrency:
+  group: test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -17,7 +21,8 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 24.x]
+        node-version: [ 20.x, 24.x ]
+      fail-fast: false
 
     steps:
       - name: Checkout repository

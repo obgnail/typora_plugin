@@ -4,7 +4,7 @@ This file provides guidance to AI coding assistants and agents when working with
 
 ## Project Overview
 
-Typora Plugin is an extensible plugin system for the Typora Markdown editor. It injects into Typora's Electron-based runtime (via `window.html`) and provides 50+ plugins. The project is pure JavaScript (no TypeScript), requires Typora >= 0.9.98, and supports Windows and Linux.
+Typora Plugin is an extensible plugin system for the Typora Markdown editor. It injects into Typora's Electron-based runtime (via `window.html`) and provides 60+ plugins. The project is pure JavaScript (no TypeScript), requires Typora >= 0.9.98, and supports Windows and Linux.
 
 **Compatibility Target:**
 
@@ -134,5 +134,5 @@ The build (`develop/build/index.cjs`) uses esbuild to bundle NPM dependencies in
 
 ## CI/CD
 
-- `TestOnCommit.yaml` -- Runs `npm ci && npm test` on push to `develop/**`, `plugin/**`, `.github/**` (Node 20.x and 24.x matrix)
-- `PublishOnTag.yaml` -- On tag `X.Y.Z`, creates VERSION.json, zips `plugin/`, publishes GitHub Release
+- `ci.yml` -- Runs `npm ci && npm test` on push and pull_request (Node 20.x and 24.x matrix, working dir `develop/`)  
+- `release.yml` -- On tag `X.Y.Z`, writes plugin/VERSION.json, zips `plugin/` as `typora-plugin@vX.Y.Z.zip`, publishes GitHub Release
