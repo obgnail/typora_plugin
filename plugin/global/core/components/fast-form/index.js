@@ -112,7 +112,7 @@ class FastForm extends HTMLElement {
       if (!context) return
       const el = this.options.layout.findControl(context.field.key, this.form)
       const op = { key: context.field.key, duration: 3000, className: "input-error", timers: errorHighlightTimers }
-      flashHighlight(el, op)
+      revealElement(el, op)
     }
     const defaultHooks = {
       onConstruct: (form) => void 0,
@@ -619,9 +619,10 @@ class States {
   clear = () => this.modules.clear()
 }
 
-function flashHighlight(el, { key, timers, className = "input-success", duration = 3000, scroll = false } = {}) {
-  if (!el || !className || !duration) return
+function revealElement(el, { key, timers, className = "input-focus", duration = 3000, scroll = false } = {}) {
+  if (!el || !className || !duration) return false
 
+  el.closest(".box-container.collapsed")?.classList.remove("collapsed")
   if (timers) {
     const prevTimer = timers.get(key)
     if (prevTimer) clearTimeout(prevTimer)
@@ -636,6 +637,7 @@ function flashHighlight(el, { key, timers, className = "input-success", duration
   }, duration)
 
   timers?.set(key, timerId)
+  return true
 }
 
 function validateDefinition(name, definition, checks, options = {}) {
@@ -1023,6 +1025,35 @@ const Feature_Highlight = {
 
     registerApi("highlight", { highlight, clear })
     hooks.on("onRender", () => hl && highlight(hl))
+  },
+}
+
+const Feature_Reveal = {
+  featureOptions: {
+    revealClass: "input-focus",
+    revealDuration: 3000,
+  },
+  configure: ({ form, options, registerApi, initState }) => {
+    const timers = initState(new Map(), m => {
+      m.forEach(clearTimeout)
+      m.clear()
+    })
+    registerApi("reveal", {
+      reveal: (keys, overrides = {}) => {
+        const formEl = form.getFormEl()
+        const targets = (Array.isArray(keys) ? keys : [keys])
+          .map(key => [key, options.layout.findControl(key, formEl) || options.layout.findBox(key, formEl)])
+          .filter(([, el]) => el)
+        targets.forEach(([key, el], index) => revealElement(el, {
+          key,
+          timers,
+          scroll: index === 0,
+          className: overrides.className ?? options.revealClass,
+          duration: overrides.duration ?? options.revealDuration,
+        }))
+        return targets.length
+      },
+    })
   },
 }
 
@@ -2542,7 +2573,7 @@ const Feature_History = {
     const highlightControl = (key) => {
       const el = form.options.layout.findControl(key, form.getFormEl())
       const op = { key, duration: options.historyFeedbackDuration, className: options.historyFeedbackClass, timers: state.highlightTimers, scroll: true }
-      flashHighlight(el, op)
+      revealElement(el, op)
     }
 
     const replay = (entry, value) => {
@@ -2655,6 +2686,7 @@ FastForm.registerFeature("defaultKeybindings", Feature_DefaultKeybindings)
 FastForm.registerFeature("collapsibleBox", Feature_CollapsibleBox)
 FastForm.registerFeature("interactiveTooltip", Feature_InteractiveTooltip)
 FastForm.registerFeature("highlight", Feature_Highlight)
+FastForm.registerFeature("reveal", Feature_Reveal)
 FastForm.registerFeature("watchers", Feature_Watchers)
 FastForm.registerFeature("parsing", Feature_Parsing)
 FastForm.registerFeature("validation", Feature_Validation)
@@ -3698,7 +3730,7 @@ const Control_Select = {
       if (Array.isArray(value)) {
         if (optionEl.dataset.choose === "true") {
           const idx = value.indexOf(toggleOptionKey)
-          commitValue = [...value.slice(0, idx), ...value.slice(idx + 1)]
+          commitValue = value.toSpliced(idx, 1)
         } else {
           commitValue = [...value, toggleOptionKey]
         }
@@ -3745,9 +3777,7 @@ const Control_Segment = {
       let nextValue = clickedValue
       if (Array.isArray(currentValue)) {
         const idx = currentValue.map(String).indexOf(clickedValue)
-        nextValue = idx > -1
-          ? [...currentValue.slice(0, idx), ...currentValue.slice(idx + 1)]
-          : [...currentValue, clickedValue]
+        nextValue = idx > -1 ? currentValue.toSpliced(idx, 1) : [...currentValue, clickedValue]
       } else {
         if (String(currentValue) === clickedValue) return
       }
@@ -3776,9 +3806,7 @@ const Control_ModifierKey = {
       const clicked = this.dataset.value
       const current = String(form.getData(key) || "").toLowerCase().split("+").map(s => s.trim()).filter(Boolean)
       const idx = current.indexOf(clicked)
-      const next = idx > -1
-        ? [...current.slice(0, idx), ...current.slice(idx + 1)]
-        : [...current, clicked]
+      const next = idx > -1 ? current.toSpliced(idx, 1) : [...current, clicked]
       const nextValue = Object.keys(Control_ModifierKey.MODIFIERS).filter(k => next.includes(k)).join("+")
       form.reactiveCommit(key, nextValue)
     })

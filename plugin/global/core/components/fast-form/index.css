@@ -211,6 +211,17 @@
   }
 }
 
+@keyframes focusFlash {
+  0% {
+    border-color: var(--ff-color-primary);
+    background-color: var(--ff-color-primary-bg);
+  }
+  100% {
+    border-color: var(--ff-border-base);
+    background-color: var(--ff-bg-surface);
+  }
+}
+
 .input-error {
   animation: shake 0.3s ease-in-out;
   border-color: var(--ff-color-error) !important;
@@ -230,6 +241,12 @@
   border-color: var(--ff-color-success) !important;
   background-color: var(--ff-color-success-bg) !important;
   border-width: var(--ff-border-width) !important;
+}
+
+.input-focus {
+  animation: focusFlash 0.6s ease-in-out;
+  border-color: var(--ff-color-primary) !important;
+  background-color: var(--ff-color-primary-bg) !important;
 }
 
 /* ========================
