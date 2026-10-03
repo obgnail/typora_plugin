@@ -188,8 +188,7 @@
   min-width: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 5px;
+  margin: 5px -4px -4px 0;
 }
 
 .plugin-preferences-menu-item-keys div {
@@ -202,6 +201,7 @@
   color: var(--pref-text-sub);
   max-width: 100%;
   overflow-wrap: anywhere;
+  margin: 0 4px 4px 0;
 }
 
 .plugin-preferences-menu-item-keys div.is-fixedname {

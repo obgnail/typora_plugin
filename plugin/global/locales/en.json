@@ -65,7 +65,6 @@
     "search": "Search",
     "readonly": "Read-Only",
     "processing": "Processing, please wait...",
-    "lastUsed": "Recently Used",
     "disableReminder": "Do not Show Again",
     "nothingToDo": "No Tasks Available",
     "takesEffectAfterRestart": "Takes Effect After Restart",
@@ -1047,8 +1046,6 @@
   "preferences": {
     "pluginName": "Preferences",
     "$label.OBJECT_SETTINGS_FORMAT": "Data Format",
-    "$label.DEFAULT_MENU": "Default Settings Tab",
-    "$label.HIDE_MENUS": "Hidden Settings Tabs",
     "$label.COLLAPSIBLE_BOX": "Collapsible Categories",
     "$label.DEPENDENCIES_FAILURE_BEHAVIOR": "Missing Dependency Behavior",
     "$label.FORM_RENDERING_HOOK": "Form Rendering Hook",
@@ -1163,7 +1160,8 @@
     "$option.OUTLINE_FOLD_STATE.alwaysFold": "Always Collapsed",
     "$option.OUTLINE_FOLD_STATE.remember": "Remember State",
     "$tooltip.ignoreMinNum": "Ignore folders containing fewer than X files",
-    "$tooltip.canCollapseOutlinePanel": "Requires Typora's 'Collapsible Outline on Left Panel' setting to be enabled"
+    "$tooltip.canCollapseOutlinePanel": "Requires Typora's 'Collapsible Outline on Left Panel' setting to be enabled",
+    "$tooltip.openTyporaFileIconFolder": "View typora-file-icon/style.css"
   },
   "cursor_history": {
     "pluginName": "Cursor History",

@@ -948,8 +948,6 @@ const schema_preferences = () => [
     Switch("COLLAPSIBLE_BOX"),
     Segment("DEPENDENCIES_FAILURE_BEHAVIOR").Options(["readonly", "hide"]),
     Segment("OBJECT_SETTINGS_FORMAT").Options(["JSON", "TOML", "YAML"]),
-    Select("DEFAULT_MENU"),
-    Select("HIDE_MENUS"),
   ),
   Code("FORM_RENDERING_HOOK").Tooltip("expertsOnly"),
   FRAG.SettingHandler(),
@@ -1109,8 +1107,9 @@ const schema_sidebar_enhance = () => [
     Switch("DISPLAY_NON_MARKDOWN_FILES"),
     Array_("OPEN_BY_TYPORA_EXT").ShowIf(When.true("DISPLAY_NON_MARKDOWN_FILES")),
     Array_("OPEN_BY_SYSTEM_EXT").ShowIf(When.true("DISPLAY_NON_MARKDOWN_FILES")),
+    Divider(),
+    Switch("CUSTOMIZE_SIDEBAR_ICONS").ShowIf(When.true("DISPLAY_NON_MARKDOWN_FILES")),
   ),
-  Switch("CUSTOMIZE_SIDEBAR_ICONS").ShowIf(When.true("DISPLAY_NON_MARKDOWN_FILES")),
   Table("SIDEBAR_ICONS")
     .Headers(["extensions", "icon"])
     .NestedBoxes([
@@ -1125,6 +1124,7 @@ const schema_sidebar_enhance = () => [
       icon: "fa fa-file-text-o",
       extensions: [],
     })
+    .ActionTooltip("openTyporaFileIconFolder", "fa fa-css3")
     .ShowIf(When.and(When.true("CUSTOMIZE_SIDEBAR_ICONS"), When.follow("CUSTOMIZE_SIDEBAR_ICONS"))),
   FRAG.SettingHandler(),
 ]

@@ -80,15 +80,6 @@ describe("UI & Menus Configuration", () => {
     })
   })
 
-  it("preferences: DEFAULT_MENU and HIDE_MENUS should reference valid plugins", () => {
-    const setting = getSetting("preferences")
-    assert.ok([...pluginNames, "__LAST__"].includes(setting.DEFAULT_MENU), "DEFAULT_MENU is invalid")
-    assert.ok(Array.isArray(setting.HIDE_MENUS), "HIDE_MENUS must be an array")
-    setting.HIDE_MENUS.forEach((menu, index) => {
-      assert.ok(pluginNames.includes(menu), `HIDE_MENUS[${index}] contains invalid plugin name`)
-    })
-  })
-
   it("callouts: CALLOUTS should have required display properties", () => {
     const setting = getSetting("callouts")
     assert.ok(Array.isArray(setting.CALLOUTS), "CALLOUTS must be an array")

@@ -65,7 +65,6 @@
     "search": "查找",
     "readonly": "只读",
     "processing": "处理中，请稍等",
-    "lastUsed": "最近使用",
     "disableReminder": "不再提示",
     "nothingToDo": "暂无任务",
     "takesEffectAfterRestart": "修改将在重启后生效",
@@ -1047,8 +1046,6 @@
   "preferences": {
     "pluginName": "插件配置",
     "$label.OBJECT_SETTINGS_FORMAT": "对象类型的数据格式",
-    "$label.DEFAULT_MENU": "默认的配置页",
-    "$label.HIDE_MENUS": "隐藏的配置页",
     "$label.COLLAPSIBLE_BOX": "标题可折叠",
     "$label.DEPENDENCIES_FAILURE_BEHAVIOR": "依赖未满足时的显示策略",
     "$label.FORM_RENDERING_HOOK": "表单渲染钩子",
@@ -1163,7 +1160,8 @@
     "$option.OUTLINE_FOLD_STATE.alwaysFold": "总是折叠",
     "$option.OUTLINE_FOLD_STATE.remember": "记忆状态",
     "$tooltip.ignoreMinNum": "忽略所含文件数少于 X 的目录",
-    "$tooltip.canCollapseOutlinePanel": "需启用 Typora 配置「允许折叠/展开侧边栏的大纲视图」"
+    "$tooltip.canCollapseOutlinePanel": "需启用 Typora 配置「允许折叠/展开侧边栏的大纲视图」",
+    "$tooltip.openTyporaFileIconFolder": "查看 typora-file-icon/style.css"
   },
   "cursor_history": {
     "pluginName": "光标历史",

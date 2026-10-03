@@ -2358,12 +2358,6 @@ NAME = ""
 HOTKEY = ""
 
 # =========== [ UI ] ===========
-# The default settings tab loaded on startup (Input plugin FixedName. '__LAST__' loads the previously used tab)
-DEFAULT_MENU = "__LAST__"
-
-# Array of settings tabs to hide from the interface (Input plugin FixedName)
-HIDE_MENUS = []
-
 # Collapsible box for the modules of settings page
 COLLAPSIBLE_BOX = true
 

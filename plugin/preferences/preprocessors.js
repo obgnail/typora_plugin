@@ -120,19 +120,6 @@ module.exports = (plugin) => {
         if (!document.querySelector(".ty-menu-shortcut")) _disableSwitch(field, data)
       },
     },
-    preferences: {
-      DEFAULT_MENU: (field) => {
-        if (!field.options) {
-          field.options = { __LAST__: i18n.t("lastUsed"), ...plugin._getAllPlugins() }
-        }
-      },
-      HIDE_MENUS: (field) => {
-        if (!field.options) {
-          field.options = plugin._getAllPlugins()
-          _disableOptions(field, "global", "preferences")
-        }
-      },
-    },
     markdownlint: {
       RULE_CONFIG: (field, data, box) => {
         if (utils.getPlugin("markdownlint")) {

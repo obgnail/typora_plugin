@@ -34,6 +34,7 @@ module.exports = (plugin) => {
     developPlugins: openPath("./plugin/DEVELOP_PLUGINS.md"),
     openLocaleFolder: openPath("./plugin/global/locales/en.json"),
     openPluginFolder: openPath("./plugin"),
+    openTyporaFileIconFolder: openPath("./style/typora-file-icon/style.css"),
     openLogFolder: () => utils.logger.showInFinder(),
     openSettingsFolder: async () => utils.settings.openFolder(),
     toggleDevTools: () => JSBridge.invoke("window.toggleDevTools"),
@@ -90,12 +91,12 @@ module.exports = (plugin) => {
       await showCodeModal(i18n._t("settings", "$label.inspectRuntimeSettings"), settings)
     },
     inspectDefaultSettings: async () => {
-      const content = await utils.Package.FsExtra.readFile(utils.settings.defaultTomlPath, "utf-8")
+      const content = await FsExtra.readFile(utils.settings.defaultTomlPath, "utf-8")
       const settings = utils.readToml(content)?.[plugin._getCurrentPlugin()]
       await showCodeModal(i18n._t("settings", "$tooltip.inspectDefaultSettings"), settings)
     },
     inspectAllDefaultSettings: async () => {
-      const settings = await utils.Package.FsExtra.readFile(utils.settings.defaultTomlPath, "utf-8")
+      const settings = await FsExtra.readFile(utils.settings.defaultTomlPath, "utf-8")
       await showCodeModal(i18n.t("$tooltip.inspectAllDefaultSettings"), settings)
     },
     openSettingsDefaultTomlExternally: async () => utils.openPath(utils.settings.defaultTomlPath),

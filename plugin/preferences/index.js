@@ -102,24 +102,24 @@ class PreferencesPlugin extends BasePlugin {
   }
 
   showDialog = async (fixedName) => {
-    const plugins = this._getAllPlugins()
-    this._fillMenu(plugins)
+    const plugins = Object.fromEntries(
+      ["global", ...Object.keys(this.utils.getAllSettings())]
+        .filter(name => Object.hasOwn(this.SCHEMAS, name))
+        .map(name => [name, this._getPluginName(name)]),
+    )
+    this.entities.menu.innerHTML = Object.entries(plugins).map(([name, pluginName]) => this.searcher.itemHTML(name, pluginName)).join("")
     const menu = Object.hasOwn(plugins, fixedName) ? fixedName : this.FALLBACK_MENU
     await this.switchMenu(menu, true)
   }
 
   switchMenu = async (fixedName, scrollMenuIntoView = false, scrollMainToTop = true) => {
-    if (this.config.HIDE_MENUS.includes(fixedName)) {
-      fixedName = this.FALLBACK_MENU
-    }
-
     const options = await this._getFormOptions(fixedName)
     if (!options) return
 
     this.entities.form.dataset.plugin = fixedName
     this.entities.form.render(options)
     this.entities.menu.querySelectorAll(".plugin-preferences-menu-item").forEach(e => e.classList.toggle("active", e.dataset.plugin === fixedName))
-    this.entities.title.textContent = this.searcher.displayNameOf(this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`))
+    this.entities.title.textContent = this._getPluginName(fixedName)
     this.menuStorage.set(fixedName)
 
     if (scrollMainToTop) {
@@ -143,13 +143,6 @@ class PreferencesPlugin extends BasePlugin {
     return { fixedName, settings }
   }
 
-  _fillMenu = (plugins) => {
-    this.entities.menu.innerHTML = Object.entries(plugins)
-      .filter(([name]) => !this.config.HIDE_MENUS.includes(name))
-      .map(([name, pluginName]) => this.searcher.itemHTML(name, pluginName))
-      .join("")
-  }
-
   _getFormOptions = async (fixedName) => {
     const schema = this.SCHEMAS[fixedName]
     if (!schema) return
@@ -171,17 +164,7 @@ class PreferencesPlugin extends BasePlugin {
     }, fixedName)
   }
 
-  _getAllPlugins = () => {
-    const plugins = Object.keys(this.utils.getAllSettings())
-    return Object.fromEntries(
-      ["global", ...plugins]
-        .filter(name => Object.hasOwn(this.SCHEMAS, name))
-        .map(name => [
-          name,
-          this.utils.getPlugin(name)?.pluginName ?? this.i18n._t(name, "pluginName"),
-        ]),
-    )
-  }
+  _getPluginName = (fixedName) => this.utils.getPlugin(fixedName)?.pluginName ?? this.i18n._t(fixedName, "pluginName")
 
   _getSettings = async (fixedName) => {
     const settings = await this.utils.settings.read()
@@ -221,8 +204,6 @@ function getSearcher(plugin) {
       <div class="${SELECTOR_KEYS.slice(1)}"></div>
     </div>`
 
-  const displayNameOf = (itemEl) => itemEl.querySelector(SELECTOR_LABEL).textContent
-
   const matchPlugin = (fixedName, query) => {
     query = query.toLowerCase()
     const isMatch = cnt => cnt?.toLowerCase().includes(query)
@@ -243,6 +224,7 @@ function getSearcher(plugin) {
   ].join("")
 
   const applyToMenu = (menuEl, query) => {
+    query = query.trim().toLowerCase()
     const regex = query ? new RegExp(`(${escapeRegExp(query)})`, "gi") : null
     menuEl.querySelectorAll(SELECTOR_ITEM).forEach(itemEl => {
       const labelEl = itemEl.querySelector(SELECTOR_LABEL)
@@ -258,7 +240,7 @@ function getSearcher(plugin) {
 
   const revealTargets = (itemEl) => [...itemEl.querySelectorAll(`${SELECTOR_KEYS} div:not(.is-fixedname)`)].map(el => el.textContent)
 
-  return { itemHTML, displayNameOf, applyToMenu, revealTargets }
+  return { itemHTML, applyToMenu, revealTargets }
 }
 
 module.exports = {
