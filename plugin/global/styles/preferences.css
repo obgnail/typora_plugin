@@ -163,6 +163,7 @@
   user-select: none;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .plugin-preferences-menu-item:hover {
@@ -180,6 +181,33 @@
   color: inherit;
   background-color: var(--pref-bg-highlight);
   border-radius: 4px;
+}
+
+.plugin-preferences-menu-item-keys {
+  flex-basis: 100%;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.plugin-preferences-menu-item-keys div {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 11px;
+  font-weight: 400;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--pref-bg-search);
+  color: var(--pref-text-sub);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.plugin-preferences-menu-item-keys div.is-fixedname {
+  background: transparent;
+  border: 1px solid var(--pref-border);
+  color: var(--pref-text-placeholder);
 }
 
 .plugin-preferences-right {
