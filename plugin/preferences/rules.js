@@ -221,6 +221,12 @@ module.exports = {
   },
   echarts: chartStyles,
   chart: chartStyles,
+  vega_lite: {
+    ...chartStyles,
+    "RESOURCE_URI.vega": [required, url],
+    "RESOURCE_URI.vega_lite": [required, url],
+    "RESOURCE_URI.vega_embed": [required, url],
+  },
   wavedrom: {
     ...chartStyles,
     SKIN_FOLDER: [required, path],
@@ -231,6 +237,10 @@ module.exports = {
     ...chartStyles,
     RESOURCE_URI: [required, url],
     PROXY: url,
+  },
+  infographic: {
+    ...chartStyles,
+    RESOURCE_URI: [required, url],
   },
   plantUML: {
     ...chartStyles,
