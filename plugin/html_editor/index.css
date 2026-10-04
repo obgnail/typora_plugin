@@ -1,0 +1,304 @@
+content.plugin-html-file-active {
+  overflow: hidden !important;
+}
+content.plugin-html-file-active > #write,
+content.plugin-html-file-active > #typora-source,
+content.plugin-html-file-active > #ty-oversize-body {
+  display: none !important;
+}
+content.plugin-html-file-active ~ footer.ty-footer {
+  display: none !important;
+}
+#plugin-html-file-view {
+  --html-editor-bg: #fff;
+  --html-editor-toolbar-bg: #f8fafc;
+  --html-editor-hover: rgba(15, 23, 42, .06);
+  --html-editor-active: rgba(66, 133, 244, .12);
+  --html-editor-border: rgba(15, 23, 42, .12);
+  --html-editor-text: #172033;
+  --html-editor-subtext: #64748b;
+  --html-editor-primary: #4285f4;
+  --html-editor-warning: #b45309;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  color: var(--html-editor-text);
+  background: var(--html-editor-bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+#plugin-html-file-view .html-editor-header {
+  display: flex;
+  flex: 0 0 52px;
+  align-items: center;
+  min-width: 0;
+  padding: 0 16px;
+  background: var(--html-editor-toolbar-bg);
+  border-bottom: 1px solid var(--html-editor-border);
+}
+#plugin-html-file-view .html-editor-header > * + * {
+  margin-left: 12px;
+}
+#plugin-html-file-view .html-editor-heading {
+  min-width: 0;
+  flex: 1;
+}
+#plugin-html-file-view .html-editor-title,
+#plugin-html-file-view .html-editor-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#plugin-html-file-view .html-editor-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+#plugin-html-file-view .html-editor-path {
+  margin-top: 1px;
+  color: var(--html-editor-subtext);
+  font-size: 10px;
+}
+#plugin-html-file-view .html-editor-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 30px;
+  padding: 4px 9px;
+  color: inherit;
+  background: var(--html-editor-bg);
+  border: 1px solid var(--html-editor-border);
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .15s, border-color .15s, color .15s;
+}
+#plugin-html-file-view .html-editor-button:hover:not(.is-disabled) {
+  background: var(--html-editor-hover);
+}
+#plugin-html-file-view .html-editor-button.is-disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+#plugin-html-file-view .html-editor-view-group {
+  display: inline-flex;
+  flex: none;
+  padding: 2px;
+  background: var(--html-editor-hover);
+  border-radius: 8px;
+}
+#plugin-html-file-view .html-editor-view-group .html-editor-button {
+  border-color: transparent;
+  background: transparent;
+}
+#plugin-html-file-view .html-editor-view-group .html-editor-button[aria-pressed="true"] {
+  color: var(--html-editor-primary);
+  background: var(--html-editor-active);
+  border-color: rgba(66, 133, 244, .22);
+}
+#plugin-html-file-view > .html-editor-header > .html-editor-button[aria-pressed="true"] {
+  color: var(--html-editor-primary);
+  background: var(--html-editor-active);
+  border-color: rgba(66, 133, 244, .22);
+}
+#plugin-html-file-view .html-editor-workspace {
+  display: grid;
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--html-editor-bg);
+}
+#plugin-html-file-view.is-split .html-editor-workspace {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+#plugin-html-file-view .html-editor-pane {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+#plugin-html-file-view .html-editor-source-pane {
+  display: flex;
+  border-right: 1px solid var(--html-editor-border);
+}
+#plugin-html-file-view .html-editor-source {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 18px;
+  resize: none;
+  color: var(--html-editor-text);
+  background: var(--html-editor-bg);
+  border: 0;
+  outline: 0;
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  line-height: 1.55;
+  tab-size: 2;
+  white-space: pre;
+}
+#plugin-html-file-view .html-editor-preview-pane {
+  position: relative;
+  display: flex;
+  background: #fff;
+}
+#plugin-html-file-view .html-editor-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none !important;
+  margin: 0 !important;
+  background: #fff;
+  border: 0;
+}
+#plugin-html-file-view.is-source .html-editor-preview-pane,
+#plugin-html-file-view.is-preview .html-editor-source-pane {
+  display: none;
+}
+#plugin-html-file-view.is-source .html-editor-workspace,
+#plugin-html-file-view.is-preview .html-editor-workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+#plugin-html-file-view .html-editor-inspector {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 4;
+  box-sizing: border-box;
+  width: min(380px, calc(100% - 24px));
+  max-height: min(520px, calc(100% - 24px));
+  overflow: auto;
+  color: var(--html-editor-text);
+  background: var(--html-editor-bg);
+  border: 1px solid var(--html-editor-border);
+  border-radius: 9px;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, .2);
+}
+#plugin-html-file-view .html-editor-inspector.plugin-common-hidden {
+  display: none !important;
+}
+#plugin-html-file-view .html-editor-inspector-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--html-editor-toolbar-bg);
+  border-bottom: 1px solid var(--html-editor-border);
+}
+#plugin-html-file-view .html-editor-inspector-header .html-editor-button {
+  min-width: 28px;
+  min-height: 26px;
+  padding: 2px 7px;
+}
+#plugin-html-file-view .html-editor-inspector-body {
+  padding: 10px;
+  font-size: 12px;
+}
+#plugin-html-file-view .html-editor-inspector-title,
+#plugin-html-file-view .html-editor-inspector-tag {
+  font-weight: 600;
+}
+#plugin-html-file-view .html-editor-inspector-selector {
+  display: block;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: var(--html-editor-primary);
+  font-family: "Cascadia Code", Consolas, monospace;
+}
+#plugin-html-file-view .html-editor-inspector-box {
+  margin: 8px 0;
+  color: var(--html-editor-subtext);
+}
+#plugin-html-file-view .html-editor-inspector details {
+  margin-top: 8px;
+}
+#plugin-html-file-view .html-editor-inspector pre {
+  max-height: 160px;
+  margin: 5px 0 0;
+  padding: 8px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: inherit;
+  background: var(--html-editor-hover);
+  border-radius: 6px;
+  font: 11px/1.45 "Cascadia Code", Consolas, monospace;
+}
+#plugin-html-file-view .html-editor-footer {
+  display: flex;
+  flex: 0 0 30px;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0 12px;
+  color: var(--html-editor-subtext);
+  background: var(--html-editor-toolbar-bg);
+  border-top: 1px solid var(--html-editor-border);
+  font-size: 10px;
+}
+#plugin-html-file-view .html-editor-security {
+  margin-left: 12px;
+}
+#plugin-html-file-view .html-editor-status,
+#plugin-html-file-view .html-editor-security {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#plugin-html-file-view .html-editor-security.is-warning {
+  color: var(--html-editor-warning);
+  font-weight: 600;
+}
+body.plugin-dark-mode #plugin-html-file-view {
+  --html-editor-bg: #1e1e20;
+  --html-editor-toolbar-bg: #252529;
+  --html-editor-hover: rgba(255, 255, 255, .07);
+  --html-editor-active: rgba(138, 180, 248, .14);
+  --html-editor-border: rgba(255, 255, 255, .1);
+  --html-editor-text: #f1f5f9;
+  --html-editor-subtext: #9ca3af;
+  --html-editor-primary: #8ab4f8;
+  --html-editor-warning: #fbbf24;
+}
+@media (max-width: 760px) {
+  #plugin-html-file-view .html-editor-header {
+    flex-wrap: wrap;
+    height: auto;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+  #plugin-html-file-view .html-editor-heading {
+    flex-basis: 100%;
+  }
+  #plugin-html-file-view.is-split .html-editor-workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  #plugin-html-file-view .html-editor-source-pane {
+    border-right: 0;
+    border-bottom: 1px solid var(--html-editor-border);
+  }
+}
+@media print {
+  #plugin-html-file-view {
+    display: none !important;
+  }
+}
