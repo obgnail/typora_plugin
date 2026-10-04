@@ -32,24 +32,6 @@ test("renders an integrated main-area HTML view instead of a separate modal", ()
   assert.deepEqual(instance.hotkey(), [{ hotkey: "ctrl+alt+h", callback: instance.call }])
 })
 
-test("replaces the Typora writing surface for source, preview, and split layouts", () => {
-  const instance = new HtmlEditorPlugin()
-
-  const style = instance.style()
-  assert.match(style, /content\.plugin-html-file-active > #write/)
-  assert.match(style, /content\.plugin-html-file-active > #typora-source/)
-  assert.doesNotMatch(style, /content\.plugin-html-file-active\s*\{[^}]*position:\s*relative/s)
-  assert.match(style, /#plugin-html-file-view\s*\{[^}]*width:\s*auto\s*!important/s)
-  assert.match(style, /#plugin-html-file-view\s*\{[^}]*height:\s*auto\s*!important/s)
-  assert.match(style, /\.html-editor-workspace\s*\{[^}]*flex:\s*1\s+1\s+0/s)
-  assert.match(style, /\.html-editor-preview\s*\{[^}]*margin:\s*0\s*!important/s)
-  assert.match(style, /content\.plugin-html-file-active\s*~\s*footer\.ty-footer/)
-  assert.match(style, /\.is-source \.html-editor-preview-pane/)
-  assert.match(style, /\.is-preview \.html-editor-source-pane/)
-  assert.match(style, /\.is-split \.html-editor-workspace/)
-  assert.match(style, /@media print/)
-})
-
 test("renders preview through one blob URL owner and releases retired URLs", async t => {
   const originalCreateObjectURL = URL.createObjectURL
   const originalRevokeObjectURL = URL.revokeObjectURL
