@@ -177,10 +177,31 @@
   font-weight: 600;
 }
 
-.plugin-preferences-highlight {
-  color: inherit;
-  background-color: var(--pref-bg-highlight);
-  border-radius: 4px;
+.plugin-preferences-menu-item-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plugin-preferences-menu-item-fixedname {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 0 6px;
+  border: 1px solid var(--pref-border);
+  border-radius: var(--pref-radius-item);
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--pref-text-placeholder);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+.plugin-preferences-menu-item-fixedname:empty {
+  display: none;
 }
 
 .plugin-preferences-menu-item-keys {
@@ -204,10 +225,10 @@
   margin: 0 4px 4px 0;
 }
 
-.plugin-preferences-menu-item-keys div.is-fixedname {
-  background: transparent;
-  border: 1px solid var(--pref-border);
-  color: var(--pref-text-placeholder);
+.plugin-preferences-highlight {
+  color: inherit;
+  background-color: var(--pref-bg-highlight);
+  border-radius: 4px;
 }
 
 .plugin-preferences-right {

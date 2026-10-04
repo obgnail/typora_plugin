@@ -1030,30 +1030,58 @@ const Feature_Highlight = {
 
 const Feature_Reveal = {
   featureOptions: {
+    reveal: [],
     revealClass: "input-focus",
     revealDuration: 3000,
   },
-  configure: ({ form, options, registerApi, initState }) => {
+  configure: ({ form, options, hooks, registerApi, initState }) => {
     const timers = initState(new Map(), m => {
       m.forEach(clearTimeout)
       m.clear()
     })
-    registerApi("reveal", {
-      reveal: (keys, overrides = {}) => {
-        const formEl = form.getFormEl()
-        const targets = (Array.isArray(keys) ? keys : [keys])
-          .map(key => [key, options.layout.findControl(key, formEl) || options.layout.findBox(key, formEl)])
-          .filter(([, el]) => el)
-        targets.forEach(([key, el], index) => revealElement(el, {
-          key,
-          timers,
-          scroll: index === 0,
-          className: overrides.className ?? options.revealClass,
-          duration: overrides.duration ?? options.revealDuration,
-        }))
-        return targets.length
-      },
-    })
+
+    const resolve = (keys) => {
+      const formEl = form.getFormEl()
+      const find = (key) => options.layout.findControl(key, formEl) || options.layout.findBox(key, formEl)
+      return (Array.isArray(keys) ? keys : [keys]).map(key => ({ key, el: find(key) })).filter(({ el }) => el)
+    }
+
+    const clearTimer = (key) => {
+      const pending = timers.get(key)
+      if (pending) {
+        clearTimeout(pending)
+        timers.delete(key)
+      }
+    }
+
+    const clear = () => form.getFormEl()?.querySelectorAll(`.${options.revealClass}`).forEach(el => el.classList.remove(options.revealClass))
+
+    const reveal = (keys) => {
+      clear()
+      const targets = resolve(keys)
+      targets.forEach(({ key, el }) => {
+        clearTimer(key)
+        el.closest(".box-container.collapsed")?.classList.remove("collapsed")
+        el.classList.add(options.revealClass)
+      })
+      targets[0]?.el.scrollIntoView({ behavior: "smooth", block: "center" })
+      return targets.length
+    }
+
+    const pulse = (keys, overrides = {}) => {
+      const targets = resolve(keys)
+      targets.forEach(({ key, el }, idx) => revealElement(el, {
+        key,
+        timers,
+        scroll: idx === 0,
+        className: overrides.className ?? options.revealClass,
+        duration: overrides.duration ?? options.revealDuration,
+      }))
+      return targets.length
+    }
+
+    registerApi("reveal", { reveal, pulse, clear })
+    hooks.on("onRender", () => options.reveal?.length && reveal(options.reveal))
   },
 }
 
