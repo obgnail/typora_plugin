@@ -5,7 +5,7 @@ global.BasePlugin = class {
 const { describe, it, beforeEach, mock } = require("node:test")
 const assert = require("node:assert")
 const mockUtils = require("./mocks/utils.mock.js")
-const { TabManager } = require("../../plugin/window_tab.js")
+const { TabManager } = require("../../plugin/window_tab/index.js")
 
 File.getMountFolder = () => ""
 
