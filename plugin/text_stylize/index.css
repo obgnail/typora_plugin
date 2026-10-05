@@ -39,13 +39,13 @@
   background-color: transparent;
 }
 
-#plugin-text-stylize .stylize-tool {
+#plugin-text-stylize .stylize-tools {
   display: flex;
   align-items: center;
   padding: 8px 10px;
 }
 
-#plugin-text-stylize .stylize-tool > [action] {
+#plugin-text-stylize .stylize-tools > [data-tool] {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,16 +58,16 @@
   transition: background-color 0.15s, color 0.15s;
 }
 
-#plugin-text-stylize .stylize-tool > [action] + [action] {
+#plugin-text-stylize .stylize-tools > [data-tool] + [data-tool] {
   margin-left: 2px;
 }
 
-#plugin-text-stylize .stylize-tool > [action]:hover {
+#plugin-text-stylize .stylize-tools > [data-tool]:hover {
   background-color: var(--ts-bg-hover);
   color: var(--ts-text-main);
 }
 
-#plugin-text-stylize .stylize-tool > [action].select {
+#plugin-text-stylize .stylize-tools > [data-tool].select {
   background-color: var(--ts-bg-active);
   color: var(--ts-primary-text);
 }
