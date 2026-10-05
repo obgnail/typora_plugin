@@ -92,10 +92,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   flex-shrink: 0;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text-sub);
   border-radius: 8px;
   cursor: pointer;
@@ -117,10 +117,10 @@
 
 .plugin-markmap-icon[action="resize"] {
   position: absolute;
-  bottom: 4px;
-  right: 4px;
-  width: 22px;
-  height: 22px;
+  bottom: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
   cursor: nwse-resize;
   background: transparent;
 }

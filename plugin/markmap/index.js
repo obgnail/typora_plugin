@@ -35,7 +35,9 @@ class MarkmapPlugin extends BasePlugin {
 
   getToc = (options = this.config) => {
     const { REMOVE_HEADER_STYLES: removeStyles, FIX_SKIPPED_LEVEL_HEADERS: fixSkippedLevels, NODE_TEXT_TEMPLATE: nodeTemplate = "{{text}}" } = options
-    return serializeToc(this.utils.getTocTree(removeStyles), { fixSkippedLevels, nodeTemplate })
+    const tree = this.utils.getTocTree(removeStyles)
+    const md = serializeToc(tree, { fixSkippedLevels, nodeTemplate })
+    return { tree, md }
   }
 
   lazyLoad = this.utils.once(async () => {

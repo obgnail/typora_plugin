@@ -37,7 +37,7 @@ class FenceMarkmap {
   callback = type => {
     const empty = "# empty"
     const frontMatter = `---\nmarkmap:\n  height: 300px\n  backgroundColor: transparent\n---\n`
-    const content = type === "draw_fence_template" ? this.config.FENCE_TEMPLATE : `${frontMatter}\n${this.plugin.getToc() || empty}`
+    const content = type === "draw_fence_template" ? this.config.FENCE_TEMPLATE : `${frontMatter}\n${this.plugin.getToc().md || empty}`
     this.utils.insertBlockCode(null, this.config.FENCE_LANGUAGE, content)
   }
 
@@ -66,9 +66,7 @@ class FenceMarkmap {
 
   getVersion = () => this.Lib.version
 
-  getStyleContent = () =>
-    `.md-diagram-panel .plugin-fence-markmap-svg { line-height: initial !important; user-select: none; }
-     .plugin-fence-markmap-svg table { margin: 0; padding: 0; }`
+  getStyleContent = () => `.md-diagram-panel .plugin-fence-markmap-svg { line-height: initial !important; user-select: none; } .plugin-fence-markmap-svg table { margin: 0; padding: 0; }`
 }
 
 module.exports = FenceMarkmap

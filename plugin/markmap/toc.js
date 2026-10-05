@@ -1,19 +1,10 @@
+const PanelController = require("./panel.js")
+
+const CID_SYM = Symbol("NodeCid")
+
 class TOCMarkmap {
   mm = null
-  transformContext = null
-  pinUtils = {
-    isPinTop: false,
-    isPinRight: false,
-    originPanelRect: null,
-    originContentRect: null,
-    recordContentRect: rect => this.pinUtils.originContentRect = rect,
-    recordRects: () => {
-      if (!this.entities.panel.classList.contains("pinned-window")) {
-        this.pinUtils.originPanelRect = this.entities.panel.getBoundingClientRect()
-        this.pinUtils.originContentRect = this.entities.content.getBoundingClientRect()
-      }
-    },
-  }
+  _ctx = null
 
   constructor(plugin) {
     this.plugin = plugin
@@ -24,13 +15,13 @@ class TOCMarkmap {
   }
 
   html = () => {
-    const icons = {
-      download: "ion-archive", settings: "ion-android-settings", unfold: "ion-refresh", fit: "ion-cube",
-      pinRight: "ion-chevron-right", pinTop: "ion-chevron-up", expand: "ion-qr-scanner", close: "ion-close",
+    const ICONS = {
+      download: "fa fa-download", settings: "fa fa-cog", unfold: "fa fa-sitemap fa-rotate-270", fit: "fa fa-compress",
+      pinRight: "fa fa-chevron-right", pinTop: "fa fa-chevron-up", expand: "fa fa-expand", close: "fa fa-times",
     }
     const buttons = this.config.TITLE_BAR_BUTTONS.map(name => {
       const hint = this.i18n.t(`$option.TITLE_BAR_BUTTONS.${name}`)
-      return `<div class="plugin-markmap-icon" action="${name}" ty-hint="${hint}"><i class="${icons[name]}"></i></div>`
+      return `<div class="plugin-markmap-icon" action="${name}" ty-hint="${hint}"><i class="${ICONS[name]}"></i></div>`
     }).join("")
     const resizeButton = `<div class="plugin-markmap-icon" action="resize"><svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg></div>`
     return `
@@ -45,7 +36,7 @@ class TOCMarkmap {
   hotkey = () => [{ hotkey: this.config.TOC_HOTKEY, callback: this.callback }]
 
   init = () => {
-    this._fixConfig()
+    fixConfig(this.config)
     this.entities = {
       content: this.utils.entities.eContent,
       panel: document.querySelector("#plugin-markmap"),
@@ -56,43 +47,41 @@ class TOCMarkmap {
       resize: document.querySelector(`.plugin-markmap-icon[action="resize"]`),
       fullScreen: document.querySelector(`.plugin-markmap-icon[action="expand"]`),
     }
+    this.panelCtl = new PanelController({
+      entities: this.entities,
+      config: this.config,
+      utils: this.utils,
+      i18n: this.i18n,
+      hooks: { fit: () => this.fit(), isChartActive: () => this.mm != null },
+    })
+    this.actions = {
+      pinTop: () => this.panelCtl.pinTop(),
+      pinRight: () => this.panelCtl.pinRight(),
+      expand: () => this.panelCtl.expand(),
+      shrink: () => this.panelCtl.shrink(),
+      showToolbar: () => this.panelCtl.showToolbar(),
+      hideToolbar: () => this.panelCtl.hideToolbar(),
+      fit: () => this.fit(true),
+      unfold: () => this.unfold(),
+      settings: () => this.settings(),
+      download: () => this.download(),
+      close: () => this.close(),
+    }
   }
 
   process = () => {
     this._onEvent()
-    this._onMove()
-    this._onResize()
     this._onSvgClick()
     this._onSvgHover()
+    this._registerContextMenu()
+    this.panelCtl.bindMove()
+    this.panelCtl.bindResize()
   }
 
   _onEvent = () => {
     const { eventHub } = this.utils
-    const { panel, content, fullScreen, header } = this.entities
-    const repositioning = () => {
-      if (!this.mm) return
-
-      const isFullScreen = fullScreen.getAttribute("action") === "shrink"
-      if (!this.pinUtils.isPinTop && !this.pinUtils.isPinRight && !isFullScreen) return
-
-      const contentRect = content.getBoundingClientRect()
-      const panelRect = panel.getBoundingClientRect()
-      const { originContentRect } = this.pinUtils
-
-      let newPanelRect, newContentRect
-      if (isFullScreen) {
-        newPanelRect = contentRect
-        newContentRect = contentRect
-      } else if (this.pinUtils.isPinTop) {
-        newPanelRect = new DOMRect(contentRect.x, panelRect.y, contentRect.width, panelRect.height)
-        newContentRect = new DOMRect(contentRect.x, originContentRect.y, contentRect.width, originContentRect.height)
-      } else if (this.pinUtils.isPinRight) {
-        newPanelRect = new DOMRect(contentRect.right, panelRect.y, panelRect.right - contentRect.right, panelRect.height)
-        newContentRect = new DOMRect(contentRect.x, originContentRect.y, originContentRect.right - contentRect.left, originContentRect.height)
-      }
-      this.pinUtils.recordContentRect(newContentRect)
-      this._setPanelRect(newPanelRect)
-    }
+    const { panel, header } = this.entities
+    const repositioning = () => this.panelCtl.reposition()
     eventHub.on(eventHub.eventType.afterToggleSidebar, repositioning)
     eventHub.on(eventHub.eventType.afterSetSidebarWidth, repositioning)
     eventHub.on(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this.close())
@@ -108,134 +97,13 @@ class TOCMarkmap {
       const action = ev.target.closest(".plugin-markmap-icon")?.getAttribute("action")
       if (action) this.doAction(action)
     })
-
-    this.toggleContextMenu()
-  }
-
-  _onMove = () => {
-    this.utils.dragElement({
-      targetEl: this.entities.header,
-      moveEl: this.entities.panel,
-      onCheck: () => !this.entities.panel.classList.contains("pinned-window"),
-      onMouseDown: null,
-      onMouseMove: null,
-      onMouseUp: null,
-    })
-  }
-
-  _onResize = () => {
-    const { minHeight, minWidth } = window.getComputedStyle(this.entities.panel)
-    const panelMinHeight = parseFloat(minHeight) || 90
-    const panelMinWidth = parseFloat(minWidth) || 90
-    const onMouseUp = () => this.fit()
-
-    const whenUnpin = () => {
-      let deltaHeight = 0
-      let deltaWidth = 0
-      const onMouseDown = (startX, startY, startWidth, startHeight) => {
-        deltaHeight = panelMinHeight - startHeight
-        deltaWidth = panelMinWidth - startWidth
-      }
-      const onMouseMove = (deltaX, deltaY) => {
-        deltaY = Math.max(deltaY, deltaHeight)
-        deltaX = Math.max(deltaX, deltaWidth)
-        return { deltaX, deltaY }
-      }
-      this.utils.resizeElement({
-        targetEl: this.entities.resize,
-        resizeEl: this.entities.panel,
-        resizeWidth: true,
-        resizeHeight: true,
-        onMouseDown,
-        onMouseMove,
-        onMouseUp,
-      })
-    }
-
-    const whenPinTop = () => {
-      let contentStartTop = 0
-      let contentMinTop = 0
-      const onMouseDown = () => {
-        contentStartTop = this.entities.content.getBoundingClientRect().top
-        contentMinTop = panelMinHeight + this.entities.panel.getBoundingClientRect().top
-      }
-      const onMouseMove = (deltaX, deltaY) => {
-        let newContentTop = contentStartTop + deltaY
-        if (newContentTop < contentMinTop) {
-          newContentTop = contentMinTop
-          deltaY = contentMinTop - contentStartTop
-        }
-        this.entities.content.style.top = newContentTop + "px"
-        return { deltaX, deltaY }
-      }
-      this.utils.resizeElement({
-        targetEl: this.entities.gripTop,
-        resizeEl: this.entities.panel,
-        resizeWidth: false,
-        resizeHeight: true,
-        onMouseDown,
-        onMouseMove,
-        onMouseUp,
-      })
-    }
-
-    const whenPinRight = () => {
-      let contentStartRight = 0
-      let contentStartWidth = 0
-      let panelStartLeft = 0
-      let contentMaxRight = 0
-      const onMouseDown = () => {
-        const contentRect = this.entities.content.getBoundingClientRect()
-        contentStartRight = contentRect.right
-        contentStartWidth = contentRect.width
-
-        const panelRect = this.entities.panel.getBoundingClientRect()
-        panelStartLeft = panelRect.left
-        contentMaxRight = panelRect.right - panelMinWidth
-      }
-      const onMouseMove = (deltaX, deltaY) => {
-        deltaX = -deltaX
-        deltaY = -deltaY
-        let newContentRight = contentStartRight - deltaX
-        if (newContentRight > contentMaxRight) {
-          deltaX = contentStartRight - contentMaxRight
-        }
-        this.entities.content.style.width = contentStartWidth - deltaX + "px"
-        this.entities.panel.style.left = panelStartLeft - deltaX + "px"
-        return { deltaX, deltaY }
-      }
-      this.utils.resizeElement({
-        targetEl: this.entities.gripRight,
-        resizeEl: this.entities.panel,
-        resizeWidth: true,
-        resizeHeight: false,
-        onMouseDown,
-        onMouseMove,
-        onMouseUp,
-      })
-    }
-
-    whenUnpin()
-    whenPinTop()
-    whenPinRight()
   }
 
   _onSvgClick = () => {
-    const getCid = node => {
-      if (!node) return
-      const headers = File.editor.nodeMap.toc.headers
-      if (!headers || headers.length === 0) return
-      const nodeIdx = node.getAttribute("data-path")?.split(".").at(-1)
-      if (nodeIdx === undefined) return
-      let tocIdx = parseInt(nodeIdx - 1) // Markmap node indices start from 1, so subtract 1.
-      if (this.mm.state.data.content === "" && headers[0].getText() !== "") {
-        tocIdx-- // If the first(root) node of the markmap is an empty node, subtract 1 again.
-      }
-      return headers[tocIdx]?.attributes.id
-    }
     this.entities.svg.addEventListener("click", ev => {
       const node = ev.target.closest(".markmap-node")
-      const cid = getCid(node)
+      // `.__data__` is the d3 hierarchy node; `.data` is the decorated tree node (see topology note below).
+      const cid = node?.__data__?.data?.[CID_SYM]
       if (!cid) return
 
       const circle = ev.target.closest("circle")
@@ -291,30 +159,35 @@ class TOCMarkmap {
     })
   }
 
+  _registerContextMenu = () => {
+    if (!this.config.USE_CONTEXT_MENU) return
+    this.utils.contextMenu.register(this.entities.svg, () => {
+      const activeKeys = [
+        this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar",
+        this.entities.fullScreen.getAttribute("action"),
+        "fit", "unfold", "pinTop", "pinRight", "settings", "download", "close",
+      ]
+      const availableItems = this.utils.pick(this.i18n.entries(Object.keys(this.actions), "$option.TITLE_BAR_BUTTONS."), activeKeys)
+      return Object.entries(availableItems).map(([key, label]) => ({ label, action: () => this.doAction(key) }))
+    })
+  }
+
   callback = async () => {
     if (this.utils.isShown(this.entities.panel)) {
       this.close()
     } else {
       this.utils.show(this.entities.panel)
-      this._initPanelRect()
+      this.panelCtl.initRect()
       await this.plugin.lazyLoad()
-      await this.draw()
+      this.draw()
     }
   }
 
   close = () => {
-    if (this.pinUtils.isPinTop) {
-      this.pinTop()
-    } else if (this.pinUtils.isPinRight) {
-      this.pinRight()
-    }
-    this.entities.panel.style = ""
-    this.utils.hide(this.entities.panel)
-    this.utils.show(this.entities.resize)
-    this.entities.panel.classList.remove("pinned-window")
-    this._setFullScreenStyles(false)
+    this.panelCtl.reset()
     this.mm.destroy()
     this.mm = null
+    this._ctx = null
   }
 
   fit = (notify = false) => {
@@ -324,440 +197,159 @@ class TOCMarkmap {
   }
 
   unfold = () => {
-    const { root } = this.transformContext
-    this._preorder(root, node => {
-      if (node.payload) node.payload.fold = 0
-    })
+    const root = this.mm.state.data
+    unfoldAll(root)
     this.mm.setData(root)
-    this.fit()
     this.utils.notification.show(this.i18n.t("success.unfold"))
   }
 
   settings = async () => {
-    const attrsToSave = [
-      "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
-      "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITION",
-      "HIGHLIGHT_PATH_ON_HOVER", "USE_CONTEXT_MENU", "AUTO_FIT_ON_UPDATE", "AUTO_FIT_WHEN_FOLD", "RETAIN_FOLD_STATE_ON_UPDATE",
-      "AUTO_COLLAPSE_PARAGRAPH_ON_FOLD", "NODE_TEXT_TEMPLATE",
-    ]
-    const arr2Str = arr => arr.join("_")
-    const str2Arr = str => str.split("_")
-    const T = (key) => this.i18n.t(`$tooltip.${key}`)
-
-    const getSchema = () => {
-      const pluginEnabled = this.utils.getPlugin("collapse_paragraph")
-      const colorOptions = Object.fromEntries(
-        [...this.config.CANDIDATE_COLOR_SCHEMES, this.config.DEFAULT_TOC_OPTIONS.color].map(colorList => {
-          const colors = colorList
-            .map(color => `<div style="background: ${color}; width: 34px; border-radius: 2px;"></div>`)
-            .join("")
-          const label = `<div style="display: inline-flex; height: 22px;">${colors}</div>`
-          return [arr2Str(colorList), label]
-        }),
-      )
-
-      return ({ Group, Controls: C, When }) => [
-        C.Tabs("markmap_settings_tabs")
-          .TabPosition("top")
-          .TabStyle("line")
-          .Tab({
-            value: "color",
-            schema: [
-              C.Radio("DEFAULT_TOC_OPTIONS.color").Options(colorOptions),
-              Group(
-                C.Switch("DEFAULT_TOC_OPTIONS.colorByParent"),
-                C.Switch("DEFAULT_TOC_OPTIONS.colorByLevel").ShowIf(When.false("DEFAULT_TOC_OPTIONS.colorByParent")),
-                C.Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel").Min(1).Max(7).Step(1).ShowIf(When.false("DEFAULT_TOC_OPTIONS.colorByParent")),
-              ),
-            ],
-          })
-          .Tab({
-            value: "chart",
-            schema: [Group(
-              C.Range("DEFAULT_TOC_OPTIONS.spacingHorizontal").Min(0).Max(200).Step(1),
-              C.Range("DEFAULT_TOC_OPTIONS.spacingVertical").Min(0).Max(100).Step(1),
-              C.Range("DEFAULT_TOC_OPTIONS.paddingX").Min(0).Max(100).Step(1),
-              C.Range("DEFAULT_TOC_OPTIONS.maxWidth").Tooltip(T("zero")).Min(0).Max(1000).Step(10),
-              C.Range("DEFAULT_TOC_OPTIONS.nodeMinHeight").Min(5).Max(50).Step(1),
-              C.Range("DEFAULT_TOC_OPTIONS.initialExpandLevel").Min(1).Max(7).Step(1),
-            )],
-          })
-          .Tab({
-            value: "window",
-            schema: [Group(
-              C.Range("DEFAULT_TOC_OPTIONS.fitRatio").Min(0.5).Max(1).Step(0.01),
-              C.Range("DEFAULT_TOC_OPTIONS.maxInitialScale").Min(0.5).Max(5).Step(0.25),
-              C.Range("WIDTH_PERCENT_WHEN_INIT").Min(20).Max(95).Step(1),
-              C.Range("HEIGHT_PERCENT_WHEN_INIT").Min(20).Max(95).Step(1),
-              C.Range("HEIGHT_PERCENT_WHEN_PIN_TOP").Min(20).Max(95).Step(1),
-              C.Range("WIDTH_PERCENT_WHEN_PIN_RIGHT").Min(20).Max(95).Step(1),
-            )],
-          })
-          .Tab({
-            value: "behavior",
-            schema: [Group(
-              C.Switch("FIX_SKIPPED_LEVEL_HEADERS"),
-              C.Switch("REMOVE_HEADER_STYLES"),
-              C.Text("NODE_TEXT_TEMPLATE").Tooltip(T("nodeTextTemplate")),
-              C.Switch("RETAIN_FOLD_STATE_ON_UPDATE"),
-              C.Switch("AUTO_FIT_ON_UPDATE"),
-              C.Switch("AUTO_FIT_WHEN_FOLD"),
-              C.Switch("AUTO_COLLAPSE_PARAGRAPH_ON_FOLD").Tooltip(T("experimental")).Disabled(!pluginEnabled),
-            )],
-          })
-          .Tab({
-            value: "interactive",
-            schema: [Group(
-              C.Switch("USE_CONTEXT_MENU"),
-              C.Switch("DEFAULT_TOC_OPTIONS.zoom"),
-              C.Switch("DEFAULT_TOC_OPTIONS.pan"),
-              C.Switch("DEFAULT_TOC_OPTIONS.toggleRecursively"),
-              C.Switch("HIGHLIGHT_PATH_ON_HOVER"),
-              C.Switch("CLICK_TO_POSITION"),
-              C.Range("POSITIONING_VIEWPORT_HEIGHT").Tooltip(T("positioningViewPort")).Min(0.1).Max(0.95).Step(0.01).ShowIf(When.true("CLICK_TO_POSITION")),
-              C.Range("DEFAULT_TOC_OPTIONS.duration").Min(0).Max(1000).Step(10),
-            )],
-          })
-          .Tab({
-            value: "download",
-            schema: [Group(
-              C.Switch("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG"),
-              C.Switch("DOWNLOAD_OPTIONS.SHOW_IN_FINDER"),
-              C.Text("DOWNLOAD_OPTIONS.FOLDER").Tooltip(T("tempDir")).Placeholder(this.utils.tempFolder),
-              C.Text("DOWNLOAD_OPTIONS.FILENAME"),
-              C.Float("DOWNLOAD_OPTIONS.IMAGE_SCALE").Min(0.1).Step(0.1),
-              C.Integer("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL").Min(1).Step(1).Unit(this.i18n._t("settings", "$unit.pixel")),
-              C.Integer("DOWNLOAD_OPTIONS.PADDING_VERTICAL").Min(1).Step(1).Unit(this.i18n._t("settings", "$unit.pixel")),
-              C.Color("DOWNLOAD_OPTIONS.TEXT_COLOR"),
-              C.Color("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR"),
-              C.Color("DOWNLOAD_OPTIONS.BACKGROUND_COLOR").Tooltip(T("jpgFormatOnly")),
-              C.Range("DOWNLOAD_OPTIONS.IMAGE_QUALITY").Tooltip(T("pixelImagesOnly")).Min(0.01).Max(1).Step(0.01),
-              C.Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL"),
-              C.Switch("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES"),
-              C.Switch("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT").Tooltip(T("removeForeignObj")),
-            )],
-          }),
-        C.Action("restoreSettings").Label(this.i18n._t("settings", "$label.restoreSettings")),
-      ]
-    }
-
-    const getData = () => {
-      const obj = this.utils.pick(this.config, attrsToSave)
-      const data = this.utils.naiveCloneDeep(obj)
-      data.DEFAULT_TOC_OPTIONS.color = arr2Str(data.DEFAULT_TOC_OPTIONS.color)
-      return data
-    }
-
-    const save = async (result) => {
-      result.DEFAULT_TOC_OPTIONS.color = str2Arr(result.DEFAULT_TOC_OPTIONS.color)
-      Object.assign(this.config, result)
-      await this.utils.settings.save(this.plugin.fixedName, result)
-    }
-
-    let _edited = false
-    const { response, data } = await this.utils.formDialog.modal({
-      title: this.i18n.t("$option.TITLE_BAR_BUTTONS.settings"),
-      schema: getSchema(),
-      data: getData(),
-      features: {
-        i18nAutoFill: {
-          compile: ({ form }) => {
-            form.traverseFields(field => {
-              if (field.key && !field.label) {
-                field.label = this.i18n.t(`$label.${field.key}`)
-              }
-              if (field.type === "tabs" && Array.isArray(field.tabs)) {
-                field.tabs.forEach(tab => {
-                  if (tab.value && !tab.label) {
-                    tab.label = this.i18n.t(`title.${tab.value}`)
-                  }
-                })
-              }
-            })
-          },
-        },
-      },
-      actions: {
-        restoreSettings: this.utils.createConsecutiveAction({
-          threshold: 3,
-          timeWindow: 3000,
-          onConfirmed: async () => {
-            const fixedName = this.plugin.fixedName
-            await this.utils.settings.handle(fixedName, (pluginSettings, allSettings) => {
-              allSettings[fixedName] = this.utils.pickBy(pluginSettings, (_, k) => !attrsToSave.includes(k))
-            })
-            const settings = await this.utils.settings.read()
-            this.config = settings[fixedName]
-            this.utils.notification.show(this.i18n.t("success.restore"))
-            await this.utils.formDialog.refresh(op => {
-              op.schema = getSchema()
-              op.data = getData()
-            })
-            _edited = true
-          },
-        }),
-      },
-      rules: { NODE_TEXT_TEMPLATE: "required", "DOWNLOAD_OPTIONS.FOLDER": "path", "DOWNLOAD_OPTIONS.FILENAME": "required" },
-      hooks: { onCommit: () => _edited = true },
-    })
-    if (response === 1 && _edited) {
-      await save(data)
-      await this.draw()
-      this.toggleContextMenu()
-      this.utils.notification.show(this.i18n.t("success.edit"))
-    }
+    const { openTOCSettings } = require("./settings.js")
+    const saved = await openTOCSettings({ config: this.config, utils: this.utils, i18n: this.i18n, fixedName: this.plugin.fixedName })
+    if (!saved) return
+    this.draw()
+    this.utils.notification.show(this.i18n.t("success.edit"))
   }
 
   download = async () => {
-    const Downloader = require("./downloader.js")
-
-    let {
-      SHOW_PATH_INQUIRY_DIALOG,
-      SHOW_IN_FINDER,
-      FOLDER: folder,
-      FILENAME: file = "{{filename}}.svg",
-    } = this.config.DOWNLOAD_OPTIONS
-    const getDownloadPath = async () => {
-      if (folder) {
-        folder = this.utils.resolvePluginPath(folder)
-      }
-      if (!folder || !(await this.utils.existPath(folder))) {
-        folder = this.utils.tempFolder
-      }
-      const tpl = {
-        timestamp: Date.now(),
-        random: this.utils.randomString(),
-        filename: this.utils.getFileName() || "MARKMAP",
-      }
-      const name = file.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
-      return this.utils.Package.Path.join(folder, name)
-    }
-
-    let downloadPath = await getDownloadPath()
-    if (SHOW_PATH_INQUIRY_DIALOG) {
+    const { download, getFormats } = require("./downloader.js")
+    const options = this.config.DOWNLOAD_OPTIONS
+    let downloadPath = await resolveDownloadPath(options, this.utils)
+    if (options.SHOW_PATH_INQUIRY_DIALOG) {
       const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
         title: this.i18n.t("$option.TITLE_BAR_BUTTONS.download"),
         properties: ["saveFile", "showOverwriteConfirmation"],
         defaultPath: downloadPath,
-        filters: Downloader.getFormats(),
+        filters: getFormats(),
       })
       if (canceled) return
       downloadPath = filePath
     }
-    const ok = await Downloader.download(this, downloadPath)
+    const ok = await download({
+      svg: this.entities.svg,
+      mmOptions: this.mm?.options || {},
+      transformer: this.Lib.transformer,
+      root: this._ctx.root,
+      features: this._ctx.features,
+      content: this._ctx.content,
+      tocOps: this.config.DEFAULT_TOC_OPTIONS,
+      downloadOps: options,
+      utils: this.utils,
+    }, downloadPath)
     if (!ok) return
-    if (SHOW_IN_FINDER) {
+    if (options.SHOW_IN_FINDER) {
       this.utils.showInFinder(downloadPath)
     }
     this.utils.notification.show(this.i18n.t("success.download"))
   }
 
-  toggleContextMenu = (register = this.config.USE_CONTEXT_MENU) => {
-    if (!register) {
-      this.utils.contextMenu.unregister(this.entities.svg)
-      return
-    }
-    this.utils.contextMenu.register(this.entities.svg, () => {
-      const allKeys = ["expand", "shrink", "hideToolbar", "showToolbar", "fit", "unfold", "pinTop", "pinRight", "settings", "download", "close"]
-      const activeKeys = [
-        this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar",
-        this.entities.fullScreen.getAttribute("action"),
-        "fit", "unfold", "pinTop", "pinRight", "settings", "download", "close",
-      ]
-      const availableItems = this.utils.pick(this.i18n.entries(allKeys, "$option.TITLE_BAR_BUTTONS."), activeKeys)
-      return Object.entries(availableItems).map(([key, label]) => ({ label, action: () => this.doAction(key) }))
-    })
-  }
-
-  pinTop = (fit = true) => {
-    this.pinUtils.isPinTop = !this.pinUtils.isPinTop
-    if (this.pinUtils.isPinTop) {
-      if (this.pinUtils.isPinRight) {
-        this.pinRight(false)
-      } else {
-        this.pinUtils.recordRects()
-      }
-    }
-
-    let panelRect, contentTop
-    if (this.pinUtils.isPinTop) {
-      const { left, top, height, width } = this.pinUtils.originContentRect
-      const newHeight = height * this.config.HEIGHT_PERCENT_WHEN_PIN_TOP / 100
-      panelRect = { left, top, width, height: newHeight }
-      contentTop = top + newHeight
-    } else {
-      panelRect = this.pinUtils.originPanelRect
-      contentTop = this.pinUtils.originContentRect.top
-    }
-
-    this._setPanelRect(panelRect)
-    this._setPinStyles(true)
-    this.entities.content.style.top = contentTop + "px"
-    if (fit) this.fit()
-  }
-
-  pinRight = (fit = true) => {
-    this.pinUtils.isPinRight = !this.pinUtils.isPinRight
-    if (this.pinUtils.isPinRight) {
-      if (this.pinUtils.isPinTop) {
-        this.pinTop(false)
-      } else {
-        this.pinUtils.recordRects()
-      }
-    }
-
-    let panelRect, contentRight, contentWidth, writeWidth
-    if (this.pinUtils.isPinRight) {
-      const { top, height, width, right } = this.pinUtils.originContentRect
-      const newWidth = width * this.config.WIDTH_PERCENT_WHEN_PIN_RIGHT / 100
-      panelRect = { top, height, width: newWidth, left: right - newWidth }
-      contentRight = right - newWidth + "px"
-      contentWidth = width - newWidth + "px"
-      writeWidth = "initial"
-    } else {
-      panelRect = this.pinUtils.originPanelRect
-      contentRight = ""
-      contentWidth = ""
-      writeWidth = ""
-    }
-
-    this._setPanelRect(panelRect)
-    this._setPinStyles(false)
-    this.entities.content.style.right = contentRight
-    this.entities.content.style.width = contentWidth
-    this.utils.entities.eWrite.style.width = writeWidth
-    if (fit) this.fit()
-  }
-
-  showToolbar = () => this._toggleToolbar(true)
-  hideToolbar = () => this._toggleToolbar(false)
-  expand = () => this._toggleFullscreen(true)
-  shrink = () => this._toggleFullscreen(false)
-
   draw = () => {
-    const md = this.plugin.getToc()
-    if (md === undefined) return
-
+    const { md, tree } = this.plugin.getToc()
     const options = this.Lib.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm?.options)
-    this.transformContext = this.Lib.transformer.transform(md)
-    const { root } = this.transformContext
-
+    const oldRoot = this.mm?.state?.data
+    this._ctx = this.Lib.transformer.transform(md)
+    const { root } = this._ctx
+    annotate(root, tree)
     if (this.mm) {
-      this._setFoldNode(root)
+      if (this.config.RETAIN_FOLD_STATE_ON_UPDATE && oldRoot) {
+        retainFoldState(oldRoot, root)
+      }
       this.mm.setData(root, options)
     } else {
       this.mm = this.Lib.createMarkmap(this.entities.svg, options, root)
     }
   }
 
-  doAction = async action => {
-    if (action === "fit") {
-      this.fit(true)
-    } else if (action !== "resize" && this[action]) {
-      await this[action]()
+  doAction = action => this.actions[action]?.()
+}
+
+function traverse(node, fn) {
+  fn(node)
+  for (const child of node.children) {
+    traverse(child, fn)
+  }
+}
+
+function preorder(root) {
+  const nodes = []
+  traverse(root, node => nodes.push(node))
+  return nodes
+}
+
+function zipAligned(arr1, arr2) {
+  const n = Math.min(arr1.length, arr2.length)
+  const offset1 = arr1.length - n
+  const offset2 = arr2.length - n
+  return Array.from({ length: n }, (_, i) => [arr1[offset1 + i], arr2[offset2 + i]])
+}
+
+/**
+ * Node topology across the d3 boundary:
+ *
+ *   ELEMENT (<g class="markmap-node">)
+ *     +-- __data__        d3 hierarchy node
+ *           +-- data      tree node (same object as in mm.state.data's tree)
+ *           |     +-- children
+ *           |     +-- payload.fold
+ *           |     +-- state
+ *           |     +-- CID_SYM   <- written by `annotate`
+ *           +-- depth/x/y/children/...
+ */
+function annotate(mmRoot, tocRoot) {
+  const tocNodes = preorder(tocRoot)
+  const mmNodes = preorder(mmRoot)
+  // markmap may prepend a virtual root that has no toc counterpart; tail alignment cancels out whichever side carries one.
+  for (const [mmNode, tocNode] of zipAligned(mmNodes, tocNodes)) {
+    mmNode[CID_SYM] = tocNode.cid
+  }
+}
+
+function retainFoldState(oldRoot, newRoot) {
+  const foldedCids = new Set()
+  traverse(oldRoot, node => {
+    if (node.payload?.fold && node[CID_SYM] != null) {
+      foldedCids.add(node[CID_SYM])
     }
-  }
-
-  _setFoldNode = newRoot => {
-    if (!this.config.RETAIN_FOLD_STATE_ON_UPDATE) return
-
-    const needFold = new Set()
-    const { data: oldRoot } = this.mm.state || {}
-    this._preorder(oldRoot, node => {
-      if (node.payload?.fold) {
-        needFold.add(node.__path)
-      }
-    })
-    this._preorder(newRoot, node => {
-      if (node.payload && needFold.has(node.__path)) {
-        node.payload.fold = 1
-      }
-    })
-  }
-
-  _preorder = (node, fn, parent) => {
-    const parentPath = parent?.__path || ""
-    node.__path = `${parentPath}\n${node.content}`
-    fn(node)
-    for (const child of node.children) {
-      this._preorder(child, fn, node)
+  })
+  traverse(newRoot, node => {
+    if (foldedCids.has(node[CID_SYM])) {
+      if (!node.payload) node.payload = {}
+      node.payload.fold = 1
     }
+  })
+}
+
+function unfoldAll(root) {
+  traverse(root, node => {
+    if (node.payload) node.payload.fold = 0
+  })
+}
+
+function fixConfig(config) {
+  const { DEFAULT_TOC_OPTIONS: op } = config
+  op.color = op.color.map(e => e.toUpperCase())
+  if (op.initialExpandLevel <= 0 || isNaN(op.initialExpandLevel)) {
+    op.initialExpandLevel = 7
   }
-
-  _fixConfig = () => {
-    const { DEFAULT_TOC_OPTIONS: op } = this.config
-    op.color = op.color.map(e => e.toUpperCase())
-    if (op.initialExpandLevel <= 0 || isNaN(op.initialExpandLevel)) {
-      op.initialExpandLevel = 7
-    }
-    if (op.colorFreezeLevel < 0 || isNaN(op.colorFreezeLevel)) {
-      op.colorFreezeLevel = 7
-    }
+  if (op.colorFreezeLevel < 0 || isNaN(op.colorFreezeLevel)) {
+    op.colorFreezeLevel = 7
   }
+}
 
-  _initPanelRect = () => {
-    const { top: t, left: l, width: w, height: h } = this.entities.content.getBoundingClientRect()
-    const { WIDTH_PERCENT_WHEN_INIT: wRatio, HEIGHT_PERCENT_WHEN_INIT: hRatio } = this.config
-    const top = t + 10
-    const height = h * hRatio / 100
-    const width = w * wRatio / 100
-    const left = l + (w - width) / 2
-    this._setPanelRect({ top, height, width, left })
+async function resolveDownloadPath({ FOLDER: folder, FILENAME: file = "{{filename}}.svg" }, utils) {
+  if (folder) {
+    folder = utils.resolvePluginPath(folder)
   }
-
-  _setPanelRect = rect => {
-    if (!rect) return
-    const { left, top, height, width } = rect
-    const s = { left: `${left}px`, top: `${top}px`, height: `${height}px`, width: `${width}px` }
-    Object.assign(this.entities.panel.style, s)
+  if (!folder || !(await utils.existPath(folder))) {
+    folder = utils.tempFolder
   }
-
-  _setPinStyles = (isTop = true) => {
-    const [pinned, gripEl, act, hint, icon] = (isTop === true)
-      ? [this.pinUtils.isPinTop, this.entities.gripTop, "pinTop", "$option.TITLE_BAR_BUTTONS.pinTop", "ion-chevron-up"]
-      : [this.pinUtils.isPinRight, this.entities.gripRight, "pinRight", "$option.TITLE_BAR_BUTTONS.pinRight", "ion-chevron-right"]
-
-    this.entities.panel.classList.toggle("pinned-window", pinned)
-    this.utils.toggleInvisible(gripEl, !pinned)
-    this.utils.toggleInvisible(this.entities.resize, pinned)
-    this._setFullScreenStyles(false)
-
-    const btn = this.entities.header.querySelector(`[action="${act}"]`)
-    const iconEl = btn.firstElementChild
-    iconEl.classList.toggle(icon, !pinned)
-    iconEl.classList.toggle("ion-ios7-undo", pinned)
-    btn.setAttribute("ty-hint", this.i18n.t(pinned ? "$option.TITLE_BAR_BUTTONS.pinRecover" : hint))
+  const tpl = {
+    timestamp: Date.now(),
+    random: utils.randomString(),
+    filename: utils.getFileName() || "MARKMAP",
   }
-
-  _setFullScreenStyles = (expand = true) => {
-    const btn = this.entities.fullScreen
-    if (!btn) return
-    btn.setAttribute("action", expand ? "shrink" : "expand")
-    btn.setAttribute("ty-hint", this.i18n.t(expand ? "$option.TITLE_BAR_BUTTONS.shrink" : "$option.TITLE_BAR_BUTTONS.expand"))
-    const iconEl = btn.firstElementChild
-    iconEl.classList.toggle("ion-qr-scanner", !expand)
-    iconEl.classList.toggle("ion-ios7-undo", expand)
-  }
-
-  _toggleFullscreen = (expand = true) => {
-    if (this.pinUtils.isPinTop) {
-      this.pinTop()
-    } else if (this.pinUtils.isPinRight) {
-      this.pinRight()
-    } else {
-      this.pinUtils.recordRects()
-    }
-
-    this._setPanelRect(expand ? this.pinUtils.originContentRect : this.pinUtils.originPanelRect)
-    this._setFullScreenStyles(expand)
-    this.entities.panel.classList.toggle("pinned-window", expand)
-    this.utils.toggleInvisible(this.entities.resize, expand)
-  }
-
-  _toggleToolbar = show => {
-    this.utils.toggleInvisible(this.entities.header, !show)
-    this.fit()
-  }
+  const name = file.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
+  return utils.Package.Path.join(folder, name)
 }
 
 module.exports = TOCMarkmap
