@@ -16,11 +16,7 @@ before(async () => {
   }
   dom = require("./mocks/dom.mock.js")
 
-  proxyquire("../../plugin/global/core/components/fast-form/index.js", {
-    "../common": require("./mocks/component_common.mock.js"),
-    "../../utils": { ...utils, "@noCallThru": true },
-    "../../i18n": { ...i18n, "@noCallThru": true },
-  })
+  require("./fixtures/fast-form")({ utils, i18n })
 
   FastForm = customElements.get("fast-form")
   ff = new FastForm()
