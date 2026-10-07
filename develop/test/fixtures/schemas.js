@@ -1,5 +1,5 @@
-const proxyquire = require("proxyquire")
 const I18N_FILES = require("./i18n_files.js")
+const loadFastForm = require("./fast-form")
 const compile = require("../../../plugin/preferences/schemas.js")
 
 function createMockDslContext() {
@@ -8,10 +8,9 @@ function createMockDslContext() {
     HTMLElement: class {
     },
   })
-  const FF = proxyquire("../../../plugin/global/core/components/fast-form/index.js", {
-    "../common": require("../mocks/component_common.mock.js"),
-    "../../utils": { ...require("../mocks/utils.mock.js"), "@noCallThru": true },
-    "../../i18n": { t: (s) => s, "@noCallThru": true },
+  const FF = loadFastForm({
+    utils: require("../mocks/utils.mock.js"),
+    i18n: { t: (s) => s },
   })
 
   const mockForm = {}
