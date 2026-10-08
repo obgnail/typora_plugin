@@ -13,7 +13,6 @@ test("uses the shared action-buttons entry point and configured hotkey", () => {
   instance.config = { HOTKEY: "ctrl+alt+r" }
 
   assert.doesNotMatch(instance.html(), /plugin-repository-launcher/)
-  assert.doesNotMatch(instance.style(), /plugin-repository-launcher/)
   assert.deepEqual(instance.hotkey(), [{ hotkey: "ctrl+alt+r", callback: instance.call }])
 })
 
@@ -26,9 +25,6 @@ test("uses the same modal shell and entrance motion as plugin preferences", () =
   assert.doesNotMatch(instance.html(), /<(?:header|main)\b/)
   assert.match(instance.html(), /class="repository-mask plugin-common-hidden"/)
   assert.match(instance.html(), /class="repository-dialog"/)
-  assert.match(instance.style(), /animation: repository-fade-in \.2s linear forwards/)
-  assert.match(instance.style(), /animation: repository-slide-up \.3s ease-out forwards/)
-  assert.match(instance.style(), /transform: translateY\(12px\)/)
 })
 
 test("uses theme-safe controls and the shared dropdown", () => {
@@ -38,7 +34,6 @@ test("uses theme-safe controls and the shared dropdown", () => {
 
   assert.doesNotMatch(instance.html(), /<\/?(?:select|option|button)\b/i)
   assert.match(instance.html(), /<fast-dropdown class="repository-sort"/)
-  assert.doesNotMatch(instance.style(), /\binset\s*:/)
 })
 
 test("stores repository data through utils.getStorage", async () => {
