@@ -1,6 +1,32 @@
+const createCipher = getKey => {
+  const MAGIC_HEADER = "TYPENC1:"
+  const BASE64_RE = /^[A-Za-z0-9+/=]+$/
+  let crypto = null
+
+  const getCrypto = () => {
+    crypto = crypto || require("./aes-ecb.min.js")
+    return crypto
+  }
+  const isEncrypted = str => str.startsWith(MAGIC_HEADER) && BASE64_RE.test(str.slice(MAGIC_HEADER.length))
+  const isLegacyEncrypted = str => str.length % 4 === 0 && BASE64_RE.test(str)
+  return {
+    isEncrypted: str => isEncrypted(str) || isLegacyEncrypted(str),
+    encrypt: raw => MAGIC_HEADER + getCrypto().encrypt(raw, getKey()),
+    decrypt: ciphered => {
+      const c = getCrypto()
+      if (isEncrypted(ciphered)) {
+        return c.decrypt(ciphered.slice(MAGIC_HEADER.length), getKey())
+      }
+      if (isLegacyEncrypted(ciphered)) {
+        return c.decrypt(ciphered, getKey())
+      }
+      return null
+    },
+  }
+}
+
 class CipherPlugin extends BasePlugin {
-  AES_ECB = null
-  key = this.config.SECRET_KEY
+  cipher = createCipher(() => this.config.SECRET_KEY)
   showMessageBox = this.config.SHOW_HINT_DIALOG
   staticActions = [
     { act_value: "encrypt", act_hotkey: this.config.ENCRYPT_HOTKEY, act_name: this.i18n.t("$label.ENCRYPT_HOTKEY") },
@@ -14,41 +40,36 @@ class CipherPlugin extends BasePlugin {
 
   call = async action => {
     const fn = this[action]
-    if (fn) {
-      await this.utils.editCurrentFile(fn)
-    }
+    if (fn) await this.utils.editCurrentFile(fn)
   }
 
-  isEncrypted = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str)
-
   encrypt = async raw => {
-    const { encrypt } = this.lazyLoad()
-    const isCiphered = this.isEncrypted(raw)
-    if (!this.showMessageBox && !isCiphered) {
-      return encrypt(raw, this.key)
+    const isEncrypted = this.cipher.isEncrypted(raw)
+    const doEncrypt = () => this.cipher.encrypt(raw)
+
+    if (!this.showMessageBox && !isEncrypted) {
+      return doEncrypt()
     }
 
     const { response, checkboxChecked } = await this.utils.showMessageBox({
       type: "info",
       title: this.pluginName,
-      message: this.i18n.t(isCiphered ? "msgBox.encrypt.onCiphered" : "msgBox.encrypt.onPlain"),
+      message: this.i18n.t(isEncrypted ? "msgBox.encrypt.onCiphered" : "msgBox.encrypt.onPlain"),
       checkboxLabel: this.i18n.t("disableReminder"),
     })
     if (checkboxChecked) {
       this.showMessageBox = false
     }
     if (response === 0) {
-      return isCiphered ? raw : encrypt(raw, this.key)
-    } else if (response === 1) {
-      return raw
+      return isEncrypted ? raw : doEncrypt()
     }
+    return raw
   }
 
-  decrypt = async ciphered => {
-    const { decrypt } = this.lazyLoad()
-    const isCiphered = this.isEncrypted(ciphered)
-    if (isCiphered) {
-      return decrypt(ciphered, this.key)
+  decrypt = async decrypted => {
+    const plain = this.cipher.decrypt(decrypted)
+    if (plain !== null) {
+      return plain
     }
     await this.utils.showMessageBox({
       type: "info",
@@ -56,12 +77,7 @@ class CipherPlugin extends BasePlugin {
       message: this.i18n.t("msgBox.decrypt.onPlain"),
       buttons: [this.i18n.t("confirm")],
     })
-    return ciphered
-  }
-
-  lazyLoad = () => {
-    this.AES_ECB = this.AES_ECB || require("./aes-ecb.min.js")
-    return { encrypt: this.AES_ECB.encrypt, decrypt: this.AES_ECB.decrypt }
+    return decrypted
   }
 }
 
