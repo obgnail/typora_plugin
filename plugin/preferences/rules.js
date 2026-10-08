@@ -9,14 +9,16 @@ const required = "required"
 const array = "array"
 const notZero = { name: "notEqual", args: 0 }
 const hotkey = { name: "pattern", args: /^((ctrl|shift|alt)\+)*[\w`]+$/i }
+const codeMirrorKey = { name: "pattern", args: /^((Ctrl|Alt|Shift|Cmd|Mod)-)*[\w\[\]';,\.\/\\`=-]+$/ }
 const fileExt = { name: "pattern", args: /^([a-zA-Z0-9]+)?$/ }
 const codingLang = { name: "pattern", args: /^[a-zA-Z0-9#+.\-]+$/ }
 const hexColor = { name: "pattern", args: /^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i }
 const variable = { name: "pattern", args: /^[a-zA-Z_][a-zA-Z0-9_]*$/i }
+const lettersAndNumbers = { name: "pattern", args: /^[a-zA-Z0-9]+$/ }
 const gestures = { name: "pattern", args: /^[↖↗↘↙←↑→↓]+$/u }
 
 const minItems = (min) => ({ name: "minItems", args: min })
-const maxItems = (max) => ({ name: "minItems", args: max })
+const maxItems = (max) => ({ name: "maxItems", args: max })
 const minLength = (min) => ({ name: "minLength", args: min })
 const maxLength = (max) => ({ name: "maxLength", args: max })
 
@@ -53,7 +55,6 @@ module.exports = {
     MAX_DEPTH: notZero,
   },
   commander: {
-    POST_SCRIPT: required,
     BUILTIN: row({
       name: required,
       cmd: required,
@@ -81,7 +82,6 @@ module.exports = {
   },
   auto_number: {
     FONT_FAMILY: required,
-    APPLY_EXPORT_HEADER_NUMBERING: required,
     LAYOUTS: row({
       name: required,
     }),
@@ -103,13 +103,21 @@ module.exports = {
       ICON: required,
       ON_CLICK: required,
     }),
+    SWAP_PREVIOUS_LINE: codeMirrorKey,
+    SWAP_NEXT_LINE: codeMirrorKey,
+    COPY_PREVIOUS_LINE: codeMirrorKey,
+    COPY_NEXT_LINE: codeMirrorKey,
+    INSERT_LINE_PREVIOUS: codeMirrorKey,
+    INSERT_LINE_NEXT: codeMirrorKey,
     CUSTOM_HOTKEYS: row({
-      HOTKEY: [required, hotkey],
+      HOTKEY: [required, codeMirrorKey],
       CALLBACK: required,
     }),
   },
   sidebar_enhance: {
     FONT_WEIGHT: required,
+    OPEN_BY_SYSTEM_EXT: each(fileExt),
+    OPEN_BY_TYPORA_EXT: each(fileExt),
     HIDDEN_NODE_PATTERNS: each([required, regex]),
     COUNT_EXT: each(fileExt),
     IGNORE_FOLDERS: each(required),
@@ -137,7 +145,7 @@ module.exports = {
     TRIGGER_REGEXP: [required, regex],
     COMMANDS: row({
       icon: required,
-      keyword: required,
+      keyword: [required, lettersAndNumbers],
       callback: required,
     }),
   },
@@ -162,6 +170,8 @@ module.exports = {
     }),
   },
   resource_manager: {
+    RESOURCE_EXT: each(fileExt),
+    MARKDOWN_EXT: each(fileExt),
     MAX_ENTITIES: notZero,
     MAX_DEPTH: notZero,
     IGNORE_FOLDERS: each(required),
@@ -170,9 +180,6 @@ module.exports = {
     BUTTONS: row({
       CALLBACK: required,
     }),
-  },
-  preferences: {
-    FORM_RENDERING_HOOK: required,
   },
   asset_root_redirect: {
     ROOT_PATH: required,
@@ -183,7 +190,7 @@ module.exports = {
   },
   article_uploader: {
     "upload.wordpress.hostname": required,
-    "upload.wordpress.loginUrl": required,
+    "upload.wordpress.loginUrl": [required, url],
     "upload.wordpress.username": required,
     "upload.wordpress.password": required,
     "upload.cnblog.username": required,
@@ -231,6 +238,7 @@ module.exports = {
     ...chartStyles,
     SKIN_FOLDER: [required, path],
   },
+  function_plot: chartStyles,
   calendar: chartStyles,
   abc: chartStyles,
   drawIO: {
@@ -285,8 +293,8 @@ module.exports = {
     BUTTON_HEIGHT: required,
     BUTTON_RIGHT: required,
     BUTTON_BORDER_RADIUS: required,
-    BUTTON_PASS_COLOR: required,
-    BUTTON_ERROR_COLOR: required,
+    BUTTON_PASS_COLOR: [required, hexColor],
+    BUTTON_ERROR_COLOR: [required, hexColor],
     CUSTOM_RULE_FILES: each([required, path]),
   },
   action_buttons: {
