@@ -1,77 +1,39 @@
-class DataTablesPlugin extends BasePlugin {
-  dataTablesConfig = null
-  tableList = []
+const createTableEnhancer = ({ utils, i18n, config, fixedName }) => {
+  const tables = new Map()  // uuid -> DataTables
 
-  process = () => {
-    this.utils.eventHub.on(this.utils.eventHub.eventType.otherFileOpened, this.destroyAllDataTable)
-    this.utils.eventHub.on(this.utils.eventHub.eventType.beforeToggleSourceMode, this.destroyAllDataTable)
-    this.utils.decorator.preventCallIf(() => File?.editor?.tableEdit, "showTableEdit", (...args) => {
-      const table = args[0]?.find?.("table")
-      if (!table || table.length === 0) return false
-      const uuid = table.attr("table-uuid")
-      return this.tableList.some(t => t.uuid === uuid)
-    })
-  }
-
-  destroyAllDataTable = () => {
-    while (this.tableList.length) {
-      this.removeDataTable(this.tableList[0].uuid)
-    }
-    this.tableList = []
-  }
-
-  // addTfoot = $table => {
-  //   const th = $table.find("thead th")
-  //   const list = [...th].map(el => `<td>${el.textContent}: </td>`)
-  //   const tfoot = `<tfoot><tr>${list.join("")}</tr></tfoot>`
-  //   $table.append(tfoot)
-  // }
-
-  appendFilter = dataTable => {
-    dataTable.columns().flatten().each(function (colIdx) {
-      const select = $("<select />").appendTo(dataTable.column(colIdx).header())
-        .on("change", function () {
-          dataTable.column(colIdx).search($(this).val()).draw()
-        })
-        .on("click", () => false)
-      select.append($(`<option value=""></option>>`))
-      dataTable.column(colIdx).cache("search").sort().unique().each(d => select.append($(`<option value="${d}">${d}</option>>`)))
-    })
-  }
-
-  lazyLoad = async () => {
-    if ($?.fn?.dataTable) return
-    this.initDataTablesConfig()
-    this.utils.insertStyle(this.fixedName, this._buildCSS())
-    this.utils.insertStyleFile("datatables-common", "./plugin/datatables/resource/css/dataTables.min.css")
-    await this.utils.insertScript(this.utils.joinPluginPath("./plugin/datatables/resource/js/dataTables.min.js"))
-  }
-
-  _buildCSS = () => `
+  const buildCSS = () => `
 #write figure select, #write figure input { border: 1px solid #ddd; box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075); border-radius: 2px; height: 27px; margin-top: 5px; margin-bottom: 1px; max-width: 10em; }
 .dataTables_wrapper .dataTables_paginate .paginate_button { padding: 0.05em 0.1em; }
 .dataTables_wrapper .dataTables_length, .dataTables_filter { margin-bottom: 0.25em; }
 .dataTables_wrapper .dataTables_info { padding-top: 0.25em; }`
 
-  initDataTablesConfig = () => {
-    this.dataTablesConfig = {
-      paging: this.config.PAGING,
-      ordering: this.config.ORDERING,
-      searching: this.config.SEARCHING,
-      pageLength: this.config.PAGE_LENGTH,
-      scrollCollapse: this.config.SCROLL_COLLAPSE,
+  const ensureLoaded = async () => {
+    if ($?.fn?.dataTable) return
+    utils.insertStyle(fixedName, buildCSS())
+    utils.insertStyleFile("datatables-common", "./plugin/datatables/resource/css/dataTables.min.css")
+    await utils.insertScript(utils.joinPluginPath("./plugin/datatables/resource/js/dataTables.min.js"))
+  }
+
+  const buildConfig = () => {
+    const t = key => i18n.t(`tableConfig.${key}`)
+    const cfg = {
+      paging: config.PAGING,
+      ordering: config.ORDERING,
+      searching: config.SEARCHING,
+      pageLength: config.PAGE_LENGTH,
+      scrollCollapse: config.SCROLL_COLLAPSE,
       processing: true,
-      search: { caseInsensitive: this.config.CASE_INSENSITIVE, regex: this.config.REGEX },
+      search: { caseInsensitive: config.CASE_INSENSITIVE, regex: config.REGEX },
       language: {
-        processing: this.i18n.t("tableConfig.processing"),
-        lengthMenu: this.i18n.t("tableConfig.lengthMenu"),
-        zeroRecords: this.i18n.t("tableConfig.zeroRecords"),
-        info: this.i18n.t("tableConfig.info"),
-        infoEmpty: this.i18n.t("tableConfig.infoEmpty"),
-        infoFiltered: this.i18n.t("tableConfig.infoFiltered"),
-        search: this.i18n.t("tableConfig.search"),
-        emptyTable: this.i18n.t("tableConfig.emptyTable"),
-        loadingRecords: this.i18n.t("tableConfig.loadingRecords"),
+        processing: t("processing"),
+        lengthMenu: t("lengthMenu"),
+        zeroRecords: t("zeroRecords"),
+        info: t("info"),
+        infoEmpty: t("infoEmpty"),
+        infoFiltered: t("infoFiltered"),
+        search: t("search"),
+        emptyTable: t("emptyTable"),
+        loadingRecords: t("loadingRecords"),
         infoPostFix: "",
         searchPlaceholder: "",
         url: "",
@@ -80,62 +42,83 @@ class DataTablesPlugin extends BasePlugin {
         paginate: { first: "<<", previous: "<", next: ">", last: ">>" },
       },
     }
-    if (!this.config.DEFAULT_ORDER) {
-      this.dataTablesConfig.order = []
+    if (!config.DEFAULT_ORDER) {
+      cfg.order = []
     }
+    return cfg
   }
 
-  newDataTable = async target => {
+  const enhance = async target => {
     if (!target) return
-    await this.lazyLoad()
-    const edit = target.parentElement.querySelector(".md-table-edit")
-    const $table = $(target)
-    const uuid = this.utils.randomString()
-    $table.attr("table-uuid", uuid)
-    // addTfoot($table)
-    const table = $table.dataTable(this.dataTablesConfig)
-    this.appendFilter(table.api())
-    this.tableList.push({ uuid, table })
-    edit?.remove()
+    await ensureLoaded()
+
+    const uuid = utils.randomString()
+    const $table = $(target).attr("table-uuid", uuid)
+    const table = $table.dataTable(buildConfig())
+    appendColumnFilter(table.api())
+    tables.set(uuid, table)
+    target.parentElement.querySelector(".md-table-edit")?.remove()
     return uuid
   }
 
-  removeDataTable = uuid => {
-    if (!uuid || !this.tableList.length) return
-    const idx = this.tableList.findIndex(t => t.uuid === uuid)
-    if (idx === -1) return
+  const revert = uuid => {
+    const table = tables.get(uuid)
+    if (!table) return
 
-    const table = this.tableList[idx].table
     const target = table[0]
     table.api().destroy()
     target.removeAttribute("table-uuid")
-    this.tableList.splice(idx, 1)
     target.querySelectorAll("th select").forEach(el => el.remove())
-    if (target) {
-      const $fig = $(target.parentElement)
-      File.editor.tableEdit.showTableEdit($fig)
-    }
+    tables.delete(uuid)
+    File.editor.tableEdit.showTableEdit($(target.parentElement))
+  }
+
+  const revertAll = () => tables.keys().forEach(uuid => revert(uuid))
+
+  return { has: uuid => tables.has(uuid), enhance, revert, revertAll }
+}
+
+const appendColumnFilter = api => {
+  api.columns().flatten().each(colIdx => {
+    const column = api.column(colIdx)
+    const select = $("<select />").appendTo(column.header())
+      .on("change", () => column.search(select.val()).draw())
+      .on("click", () => false)
+    select.append($("<option value=''></option>"))
+    column.cache("search").sort().unique().each(d => select.append($(`<option value="${d}">${d}</option>`)))
+  })
+}
+
+class DataTablesPlugin extends BasePlugin {
+  enhancer = createTableEnhancer(this)
+
+  process = () => {
+    const { eventHub, decorator } = this.utils
+    eventHub.on(eventHub.eventType.otherFileOpened, this.enhancer.revertAll)
+    eventHub.on(eventHub.eventType.beforeToggleSourceMode, this.enhancer.revertAll)
+    decorator.preventCallIf(() => File?.editor?.tableEdit, "showTableEdit", (...args) => {
+      const table = args[0]?.find?.("table")
+      return !!table?.length && this.enhancer.has(table.attr("table-uuid"))
+    })
   }
 
   getDynamicActions = (anchorNode, meta) => {
-    const table = anchorNode.closest("#write table.md-table")
-    const uuid = table?.getAttribute("table-uuid")
-    meta.uuid = uuid
-    meta.target = table
-    const act = {
-      act_name: this.i18n.t(uuid ? "act.revert_table" : "act.enhance_table"),
-      act_value: uuid ? "revert_table" : "enhance_table",
-      act_hint: !table ? this.i18n.t("actHint.positioningTable") : "",
-      act_disabled: !table,
-    }
-    return [act]
+    meta.target = anchorNode.closest("#write table.md-table")
+    meta.uuid = meta.target?.getAttribute("table-uuid")
+    const enhanced = !!meta.uuid
+    return [{
+      act_name: this.i18n.t(enhanced ? "act.revert_table" : "act.enhance_table"),
+      act_value: enhanced ? "revert_table" : "enhance_table",
+      act_hint: meta.target ? "" : this.i18n.t("actHint.positioningTable"),
+      act_disabled: !meta.target,
+    }]
   }
 
   call = async (action, meta) => {
     if (action === "enhance_table") {
-      await this.newDataTable(meta.target)
+      await this.enhancer.enhance(meta.target)
     } else if (action === "revert_table") {
-      this.removeDataTable(meta.uuid)
+      this.enhancer.revert(meta.uuid)
     }
   }
 }
