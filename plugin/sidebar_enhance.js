@@ -35,7 +35,8 @@ class SidebarEnhancePlugin extends BasePlugin {
     const displayExt = new Set([...this.config.OPEN_BY_SYSTEM_EXT, ...this.config.OPEN_BY_TYPORA_EXT])
     const openBySystemExt = new Set(this.config.OPEN_BY_SYSTEM_EXT.filter(ext => !this.config.OPEN_BY_TYPORA_EXT.includes(ext)).map(ext => `.${ext}`))
 
-    File.SupportedFiles.push(...displayExt)
+    const toSupportedExt = [...displayExt].filter(ext => !File.SupportedFiles.includes(ext))
+    File.SupportedFiles.push(...toSupportedExt)
 
     this.utils.decorator.preventCallIf(() => File?.editor?.library, "openFile", (toOpenFile) => {
       const ext = this.utils.Package.Path.extname(toOpenFile)
@@ -68,6 +69,7 @@ class SidebarEnhancePlugin extends BasePlugin {
         try {
           return new RegExp(p)
         } catch (e) {
+          console.warn(`Invalid HIDDEN_NODE_PATTERNS "${p}"`, e)
         }
       }
       const REGEXPS = this.config.HIDDEN_NODE_PATTERNS.map(compile).filter(Boolean)
@@ -133,13 +135,14 @@ class SidebarEnhancePlugin extends BasePlugin {
     this.utils.decorator.afterCall(() => File?.editor?.library?.outline, "renderOutline", fresh)
 
     let dragItem
-    const isAncestorOf = (ancestor, descendant) => ancestor.parentElement.contains(descendant)
+    const isAncestorOf = (ancestor, descendant) => !!ancestor?.parentElement?.contains(descendant)
     const isPreceding = (el, otherEl) => el.compareDocumentPosition(otherEl) === document.DOCUMENT_POSITION_PRECEDING
-    const getCid = item => item.querySelector(":scope > .outline-label").dataset.ref
+    const getCid = item => item.querySelector(":scope > .outline-label")?.dataset?.ref
     const clearStyle = () => this.entities.outline.querySelectorAll(`.${classAbove}, .${classBelow}, .${classSource}`).forEach(e => {
       e.classList.remove(classAbove, classBelow, classSource)
     })
     const setStyle = function (ev) {
+      if (!dragItem) return false
       if (isAncestorOf(dragItem, this)) {
         ev.originalEvent.dataTransfer.effectAllowed = "none"
         ev.originalEvent.dataTransfer.dropEffect = "none"
@@ -181,6 +184,7 @@ class SidebarEnhancePlugin extends BasePlugin {
         this.parentElement.classList.remove(classAbove, classBelow)
       })
       .on("drop", ".outline-item", function () {
+        if (!dragItem) return
         if (isAncestorOf(dragItem, this)) return
         const dragCid = getCid(dragItem)
         const dropCid = getCid(this)
@@ -193,6 +197,7 @@ class SidebarEnhancePlugin extends BasePlugin {
 
         const drag = getHeader(dragCid, headers, blocks)
         const drop = getHeader(dropCid, headers, blocks)
+        if (!drag || !drop) return
 
         const dragLength = drag.endIdx - drag.startIdx
         const removed = blocks.splice(drag.startIdx, dragLength)
@@ -205,7 +210,10 @@ class SidebarEnhancePlugin extends BasePlugin {
         const op = File.option.enableAutoSave ? { delayRefresh: true, skipChangeCount: true, skipStore: true } : undefined
         File.reloadContent(content, op)
       })
-      .on("dragend", clearStyle)
+      .on("dragend", () => {
+        clearStyle()
+        dragItem = null
+      })
   }
 
   _ctrlWheelToScroll = () => {
@@ -263,9 +271,12 @@ class SidebarEnhancePlugin extends BasePlugin {
     const observer = getObserver()
     const walkOptions = getWalkOptions()
     const setCount = async (node) => {
+      const dir = node?.dataset?.path
+      if (!dir) return
       let fileCount = 0
-      await this.utils.walkDir({ ...walkOptions, dir: node.dataset.path, onFile: () => fileCount++ })
+      await this.utils.walkDir({ ...walkOptions, dir, onFile: () => fileCount++ })
       const displayEl = node.querySelector(":scope > .file-node-content")
+      if (!displayEl) return
       if (fileCount <= this.config.MIN_FILES_TO_DISPLAY) {
         displayEl.removeAttribute("data-count")
       } else {
