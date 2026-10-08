@@ -325,9 +325,10 @@ class RightOutlinePlugin extends BasePlugin {
     const classAbove = "plugin-right-outline-drag-above"
     const classBelow = "plugin-right-outline-drag-below"
     const classSource = "plugin-right-outline-drag-source"
-    const isAncestorOf = (ancestor, descendant) => ancestor.parentElement.contains(descendant)
+    const isAncestorOf = (ancestor, descendant) => !!ancestor?.parentElement?.contains(descendant)
     const isPreceding = (el, otherEl) => el.compareDocumentPosition(otherEl) === document.DOCUMENT_POSITION_PRECEDING
     const setStyle = function (ev) {
+      if (!dragItem) return false
       if (isAncestorOf(dragItem, this)) {
         ev.originalEvent.dataTransfer.effectAllowed = "none"
         ev.originalEvent.dataTransfer.dropEffect = "none"
@@ -368,6 +369,7 @@ class RightOutlinePlugin extends BasePlugin {
         this.parentElement.classList.remove(classAbove, classBelow)
       })
       .on("drop", ".toc-node", function () {
+        if (!dragItem) return
         if (isAncestorOf(dragItem, this)) return
 
         const headers = []
@@ -379,6 +381,7 @@ class RightOutlinePlugin extends BasePlugin {
 
         const drag = getHeader(dragItem.dataset.ref, headers, blocks)
         const drop = getHeader(this.dataset.ref, headers, blocks)
+        if (!drag || !drop) return
 
         const dragLength = drag.endIdx - drag.startIdx
         const removed = blocks.splice(drag.startIdx, dragLength)
@@ -396,6 +399,7 @@ class RightOutlinePlugin extends BasePlugin {
         that.entities.list.querySelectorAll(selector).forEach(e => {
           e.classList.remove(classAbove, classBelow, classSource)
         })
+        dragItem = null
       })
   }
 
