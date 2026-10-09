@@ -206,7 +206,7 @@ module.exports = { plugin: helloWorld }
 写盘**之前**就会拒绝的情况：
 
 - 目标目录看起来不是 Typora 的 `plugin` 目录（不含 `global/settings/settings.default.toml`、`global/core/`、`index.js`）。
-  确实想装到别处时，命令行加 `--allow-non-plugin-target`，GUI 勾选「允许目标目录不含插件系统」。
+  GUI 里没有关掉这个检查的开关；命令行保留了 `--allow-non-plugin-target`，只给自动化测试用。
 - 清单缺失、语法错误、缺 `id`/`name`、`id` 非法、`[menu] mode` 取值非法、`[settings]` 里出现保留键。
 - `install.source` / `install.files` 指向不存在的路径，或用 `..`/绝对路径逃逸出插件包。
 - 安装后仍然找不到 `plugin/<id>.js` 或 `plugin/<id>/index.js`。

@@ -45,7 +45,6 @@ public class GuiSmokeTests
         foreach (var name in new[]
                  {
                      "SourceBox", "TargetBox", "LogBox", "StatusText", "SummaryText",
-                     "DryRunCheck", "AllowNonPluginTargetCheck",
                      "PreviewButton", "InstallButton", "OpenSettingsFolderButton",
                      "BrowseSourceButton", "BrowseTargetButton",
                      "MenuGroupBox", "NewGroupNameBox", "MenuPositionBox",

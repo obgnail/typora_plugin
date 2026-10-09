@@ -6,7 +6,7 @@
         MinWidth="800" MinHeight="560"
         WindowStartupLocation="CenterScreen">
 
-  <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" Margin="18">
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" Margin="18">
 
     <!-- 标题 -->
     <StackPanel Grid.Row="0" Spacing="4">
@@ -40,14 +40,8 @@
       <ComboBox Grid.Column="4" x:Name="MenuPositionBox" HorizontalAlignment="Stretch" />
     </Grid>
 
-    <!-- 选项 -->
-    <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="20" Margin="110,12,0,0">
-      <CheckBox x:Name="DryRunCheck" Content="试运行（不写入任何文件）" />
-      <CheckBox x:Name="AllowNonPluginTargetCheck" Content="允许目标目录不含插件系统（高级）" />
-    </StackPanel>
-
     <!-- 操作 + 日志 -->
-    <Grid Grid.Row="5" RowDefinitions="Auto,*" Margin="0,16,0,0">
+    <Grid Grid.Row="4" RowDefinitions="Auto,*" Margin="0,16,0,0">
       <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10">
         <Button x:Name="PreviewButton" Content="试运行 / 预览" />
         <Button x:Name="InstallButton" Content="开始安装" />
@@ -62,6 +56,6 @@
                Margin="0,10,0,0" />
     </Grid>
 
-    <TextBlock Grid.Row="6" x:Name="SummaryText" Foreground="#777" TextWrapping="Wrap" Margin="0,10,0,0" />
+    <TextBlock Grid.Row="5" x:Name="SummaryText" Foreground="#777" TextWrapping="Wrap" Margin="0,10,0,0" />
   </Grid>
 </Window>

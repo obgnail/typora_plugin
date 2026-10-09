@@ -31,8 +31,6 @@ public partial class MainWindow : Window
     private readonly TextBox _newGroupNameBox;
     private readonly TextBlock _statusText;
     private readonly TextBlock _summaryText;
-    private readonly CheckBox _dryRunCheck;
-    private readonly CheckBox _allowNonPluginTargetCheck;
     private readonly Button _previewButton;
     private readonly Button _installButton;
     private readonly Button _openSettingsFolderButton;
@@ -52,8 +50,6 @@ public partial class MainWindow : Window
         _newGroupNameBox = Find<TextBox>("NewGroupNameBox");
         _statusText = Find<TextBlock>("StatusText");
         _summaryText = Find<TextBlock>("SummaryText");
-        _dryRunCheck = Find<CheckBox>("DryRunCheck");
-        _allowNonPluginTargetCheck = Find<CheckBox>("AllowNonPluginTargetCheck");
         _previewButton = Find<Button>("PreviewButton");
         _installButton = Find<Button>("InstallButton");
         _openSettingsFolderButton = Find<Button>("OpenSettingsFolderButton");
@@ -62,7 +58,7 @@ public partial class MainWindow : Window
 
         _menuPositionBox.ItemsSource = new[]
         {
-            new PositionOption("最前（推荐）", MenuGroupPosition.First),
+            new PositionOption("最前", MenuGroupPosition.First),
             new PositionOption("最后", MenuGroupPosition.Last),
         };
         _menuPositionBox.SelectedIndex = 0;
@@ -233,8 +229,10 @@ public partial class MainWindow : Window
             {
                 SourceDirectory = source,
                 TargetPluginDirectory = target,
-                DryRun = dryRun || _dryRunCheck.IsChecked == true,
-                AllowNonPluginTarget = _allowNonPluginTargetCheck.IsChecked == true,
+                // 试运行只由「试运行 / 预览」按钮触发；界面上不再放一个和它等价的勾选框。
+                DryRun = dryRun,
+                // 界面不提供这个测试用开关，保持引擎默认的严格检查。
+                AllowNonPluginTarget = false,
                 MenuChoice = SelectedMenuChoice(),
             };
 
