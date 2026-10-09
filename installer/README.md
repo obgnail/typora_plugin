@@ -14,7 +14,7 @@
 
 应用界面如下所示。
 
-![main_page](.\pictures\main_page.png)
+![main_page](./pictures/main_page.png)
 
 您需要指定插件包目录以及plugin目录。注意插件包目录中需要包含`installer.toml`与包含您插件的`plugin`文件夹。
 
@@ -22,11 +22,11 @@
 
 配置完成后，您可以通过“试运行 / 预览”功能，对配置进行快速检查。此时应用会在下方输出检查结果。
 
-![preview](.\pictures\preview.png)
+![preview](./pictures/preview.png)
 
 确认无误后，您可以通过“开始安装”完成安装步骤。安装成功后，重启Typora，您可以在右键菜单中找到您刚才安装的插件。
 
-![result](.\pictures\result.png)
+![result](./pictures/result.png)
 
 安装器不提供卸载。删掉 `plugin/<id>.js`（或 `plugin/<id>/` 目录），再从 `settings.user.toml` 里删掉 `[<id>]` 段即可；必要时用 `settings.user.toml.bak` 覆盖回配置。
 
