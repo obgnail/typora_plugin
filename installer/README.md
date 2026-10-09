@@ -10,48 +10,23 @@
 
 ## 1. 快速开始
 
-### 1.1 GUI
+您需要参考第6节中的内容，自行构建`TyporaPluginInstaller.exe`
 
-1. 运行 `dist/win-x64/TyporaPluginInstaller.exe`（自行构建见[第 6 节](#6-构建)）。
-2. 填两个目录：
-   - **插件包目录**：插件作者提供的目录，里面必须有 `installer.toml`。
-   - **plugin 目录**：Typora 的插件目录，通常是 `<Typora 安装目录>/resources/plugin`（0.9.98 免费版是 `<Typora>/resources/app/plugin`）。
-3. 选**右键菜单分组**（选好 plugin 目录后会自动列出可选项）：
-   - 默认「新建分组…」，名字预填目标语言对应的「自定义插件」，位置可选「最前 / 最后」；
-   - 也可以从列表里挑一个**已有分组**（含内置分组）把插件放进去。
-4. 点 **「试运行 / 预览」**：只会列出将要新增/覆盖的文件、菜单落点和要改写的配置，不写盘。
-5. 点 **「开始安装」** → 确认 → 写盘。原 `settings.user.toml` 会先备份为 `settings.user.toml.bak`。
-6. **重启 Typora**，右键菜单里就会出现该插件。
+应用界面如下所示。
 
-### 1.2 命令行
+![main_page](.\pictures\main_page.png)
 
-```bash
-# 安装（最常用）
-typora-plugin-installer-cli -s ./my-plugin -t "<plugin目录>"
+您需要指定插件包目录以及plugin目录。注意插件包目录中需要包含`installer.toml`与包含您插件的`plugin`文件夹。
 
-# 先预览一遍，确认要写哪些文件
-typora-plugin-installer-cli -s ./my-plugin -t "<plugin目录>" --dry-run
+您可以通过“右键菜单分组”来决定您的插件需要安装在哪一组内。
 
-# 装进指定的右键菜单分组（名字不存在就新建；也可以写内置分组的键或显示名）
-typora-plugin-installer-cli -s ./my-plugin -t "<plugin目录>" --menu-group "自定义插件"
-```
+配置完成后，您可以通过“试运行 / 预览”功能，对配置进行快速检查。此时应用会在下方输出检查结果。
 
-| 选项 | 说明 |
-| --- | --- |
-| `-s, --source <dir>` | 插件包目录（含 `installer.toml`） |
-| `-t, --target <dir>` | Typora 的 `plugin` 目录 |
-| `-n, --dry-run` | 只演练、不写盘（别名 `--check`） |
-| `--menu-group <名字>` | 放进该分组；名字不存在则新建 |
-| `--menu-position first\|last` | 新建分组时的位置，默认 `first`（最前） |
-| `--menu-none` | 不注册右键菜单 |
-| `--list-groups` | 只列出目标当前的菜单分组后退出 |
-| `-m, --manifest <file>` | 显式指定清单文件（默认 `<source>/installer.toml`） |
-| `--json` | 以 JSON 输出结果 |
-| `-h, --help` | 显示完整帮助 |
+![preview](.\pictures\preview.png)
 
-退出码：`0` 成功、`1` 安装失败、`2` 参数错误。
+确认无误后，您可以通过“开始安装”完成安装步骤。安装成功后，重启Typora，您可以在右键菜单中找到您刚才安装的插件。
 
-### 1.3 卸载
+![result](.\pictures\result.png)
 
 安装器不提供卸载。删掉 `plugin/<id>.js`（或 `plugin/<id>/` 目录），再从 `settings.user.toml` 里删掉 `[<id>]` 段即可；必要时用 `settings.user.toml.bak` 覆盖回配置。
 
