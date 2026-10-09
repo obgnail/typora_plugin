@@ -6,18 +6,17 @@ class PieMenuPlugin extends BasePlugin {
   style = () => true
 
   html = () => {
-    const innerItems = this.config.BUTTONS.slice(0, 8)
-    const outerItems = this.config.BUTTONS.slice(8, 16)
-    const genCircle = (type, items = []) => {
-      const item = items.map(({ ICON, CALLBACK }) => `<div class="plugin-pie-menu-item" data-callback="${CALLBACK}"><div class="plugin-pie-menu-item-text-${type} ${ICON}"></div></div>`)
-      return `<div class="plugin-pie-menu-circle plugin-pie-menu-${type}">${item.join("")}</div>`
+    const { BUTTONS } = this.config
+    const ring = (type, items) => {
+      const children = items.map(({ ICON, CALLBACK }, i) =>
+        `<div class="plugin-pie-menu-item" style="--i:${i}" data-callback="${CALLBACK}"></div>` +
+        `<div class="plugin-pie-menu-icon ${ICON}" style="--i:${i}"></div>`,
+      ).join("")
+      return `<div class="plugin-pie-menu-circle plugin-pie-menu-${type}" style="--n:${items.length}">${children}</div>`
     }
-    const circles = [
-      genCircle("solid", []),
-      genCircle("inner", innerItems),
-      outerItems.length ? genCircle("outer", outerItems) : "",
-    ]
-    return `<div class="plugin-pie-menu plugin-common-hidden">${circles.join("")}</div>`
+    const solid = `<div class="plugin-pie-menu-circle plugin-pie-menu-solid"><div class="plugin-pie-menu-hint"></div></div>`
+    const rings = [ring("inner", BUTTONS.slice(0, 8)), ring("outer", BUTTONS.slice(8, 16))].join("")
+    return `<div class="plugin-pie-menu plugin-common-hidden">${solid}${rings}</div>`
   }
 
   hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -26,6 +25,7 @@ class PieMenuPlugin extends BasePlugin {
     this.entities = {
       content: this.utils.entities.eContent,
       menu: document.querySelector(".plugin-pie-menu"),
+      hint: document.querySelector(".plugin-pie-menu-hint"),
     }
   }
 
@@ -36,8 +36,7 @@ class PieMenuPlugin extends BasePlugin {
     }
     this.utils.show(this.entities.menu)
     const { width, height } = this.entities.menu.getBoundingClientRect()
-    const position = { left: x - width / 2 + "px", top: y - height / 2 + "px" }
-    Object.assign(this.entities.menu.style, position)
+    Object.assign(this.entities.menu.style, { left: x - width / 2 + "px", top: y - height / 2 + "px" })
   }
 
   isMenuShown = () => this.utils.isShown(this.entities.menu)
@@ -46,7 +45,16 @@ class PieMenuPlugin extends BasePlugin {
   isMenuPinned = () => this.entities.menu.classList.contains(this.pinMenuClass)
   togglePinMenu = () => this.entities.menu.classList.toggle(this.pinMenuClass)
   toggleExpandMenu = () => this.entities.menu.classList.toggle(this.expandMenuClass)
-  isMenuExpanded = () => this.entities.menu.classList.contains(this.expandMenuClass)
+
+  _actionName = callback => {
+    const [fixedName, action] = callback.split(".")
+    const plugin = this.utils.getPlugin(fixedName)
+    if (!plugin) return action || fixedName
+    if (!action) return plugin.pluginName
+    const hit = (plugin.staticActions || []).find(a => a.act_value === action)
+      || (this.utils.updatePluginDynamicActions(fixedName) || []).find(a => a.act_value === action)
+    return hit ? hit.act_name : action
+  }
 
   process = () => {
     this.entities.content.addEventListener("contextmenu", ev => {
@@ -58,11 +66,17 @@ class PieMenuPlugin extends BasePlugin {
     }, true)
 
     this.entities.content.addEventListener("click", ev => {
-      if (this.isMenuShown() && !this.isMenuPinned() && !ev.target.closest(".plugin-pie-menu")) {
-        this.hideMenu()
-      }
+      if (this.isMenuShown() && !this.isMenuPinned() && !ev.target.closest(".plugin-pie-menu")) this.hideMenu()
     })
 
+    this.entities.menu.addEventListener("mouseover", ev => {
+      const item = ev.target.closest(".plugin-pie-menu-item")
+      if (!item) return
+      const { name, callback } = item.dataset
+      if (!name) item.dataset.name = this._actionName(callback)
+      this.entities.hint.textContent = name
+    })
+    this.entities.menu.addEventListener("mouseleave", () => this.entities.hint.textContent = "")
     this.entities.menu.addEventListener("mousedown", ev => {
       if (ev.target.closest(".plugin-pie-menu-solid")) {
         if (ev.button === 0) {
@@ -72,26 +86,14 @@ class PieMenuPlugin extends BasePlugin {
         }
         return
       }
-
-      if (ev.button === 0) {
-        const cb = ev.target.closest(".plugin-pie-menu-item[data-callback]")?.dataset.callback
-        if (cb) {
-          const [fixedName, action] = cb.split(".")
-          this.utils.callPluginDynamicAction(fixedName, action)
-          if (!this.isMenuPinned()) {
-            this.hideMenu()
-          }
-        }
+      if (ev.button !== 0) return
+      const cb = ev.target.closest(".plugin-pie-menu-item[data-callback]")?.dataset.callback
+      if (cb) {
+        const [fixedName, action] = cb.split(".")
+        this.utils.callPluginDynamicAction(fixedName, action)
+        if (!this.isMenuPinned()) this.hideMenu()
       }
     })
-
-    this.entities.menu.addEventListener("wheel", ev => {
-      ev.preventDefault()
-      const step = 22.5
-      const rotate = window.getComputedStyle(this.entities.menu).getPropertyValue("--menu-rotate") || 0
-      const rotateValue = parseFloat(rotate) + (ev.deltaY > 0 ? step : -step)
-      this.entities.menu.style.setProperty("--menu-rotate", `${rotateValue}deg`)
-    }, { passive: false })
   }
 
   call = () => setTimeout(this.toggleMenu)
