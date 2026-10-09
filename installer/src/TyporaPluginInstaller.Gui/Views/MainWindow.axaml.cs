@@ -73,8 +73,16 @@ public partial class MainWindow : Window
         _installButton.Click += async (_, _) => await RunAsync(dryRun: false);
         _openSettingsFolderButton.Click += (_, _) => OpenContainingFolder(_lastSettingsPath);
 
-        _sourceBox.TextChanged += (_, _) => UpdateManifestSummary();
-        _targetBox.TextChanged += (_, _) => ReloadMenuGroups();
+        // 注意：Avalonia 的 TextBox.TextChanged 只在用户输入路径上触发，代码里给 .Text 赋值
+        // （比如"浏览…"选完目录）不会触发它。这里监听属性变化，两条路径都能覆盖。
+        _sourceBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == TextBox.TextProperty) UpdateManifestSummary();
+        };
+        _targetBox.PropertyChanged += (_, e) =>
+        {
+            if (e.Property == TextBox.TextProperty) ReloadMenuGroups();
+        };
         _menuGroupBox.SelectionChanged += (_, _) => SyncMenuControls();
 
         ReloadMenuGroups();

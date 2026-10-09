@@ -18,6 +18,9 @@ public static class InstallEngine
     private const string UserSettingsRelativePath = "global/settings/settings.user.toml";
     private const string Separator = "---";
 
+    /// <summary>插件系统的保留段名；它不会进入插件遍历，也不能被插件写。</summary>
+    private const string ReservedGlobalSection = "global";
+
     /// <summary>粗略探测插件是否覆盖了 <c>call</c> / 提供了动作列表（用于菜单可点击性提示）。</summary>
     private static readonly Regex ActionDefinitionPattern = new(
         @"(?m)^\s*(call|staticActions|getDynamicActions)\s*[=:(]",
@@ -97,6 +100,8 @@ public static class InstallEngine
                 $"安装后仍找不到插件入口。\n" +
                 $"插件包需要提供 {manifest.Id}.js 或 {manifest.Id}/index.js（当前 install.source = \"{manifest.SourceDirectory}\"）。");
         }
+
+        RejectOverwritingExistingPlugins(targetDir, manifest, files);
 
         var (settingsPath, fromProfile) = ResolveSettingsPath(targetDir);
         var settingsExists = File.Exists(settingsPath);
@@ -407,6 +412,19 @@ public static class InstallEngine
         var created = groupIndex < 0;
         var title = created ? wanted! : baseMenus[groupIndex].Name;
 
+        // `__…__` 是插件系统内置分组的命名形式，安装器也会据此判断"要不要补单条目分隔线"。
+        // 允许新建这种名字会造出一个不被补线、点了没反应的分组，所以直接挡住，
+        // 并把可用的内置分组列出来（常见原因是内置分组的键名敲错了）。
+        if (created && IsBuiltinGroup(title))
+        {
+            var available = string.Join("\n", baseMenus
+                .Where(g => IsBuiltinGroup(g.Name))
+                .Select(g => "  - " + g.Name));
+            throw new InstallException(
+                $"「{title}」是 __…__ 形式，看起来像插件系统的内置分组，但目标里没有这个分组。\n" +
+                "要放进内置分组请用它真实的键名：\n" + available);
+        }
+
         // 先原样复刻所有分组，并把本插件从其它分组里摘掉，保证"一个插件只出现一次"。
         // 受管分组里的 `.call` 与分隔线都会被还原/重排：它们是写盘时按分组长度临时补的。
         var final = new List<MenuGroup>();
@@ -489,7 +507,10 @@ public static class InstallEngine
         var defaultsPath = Path.Combine(targetDir, DefaultSettingsRelativePath.Replace('/', Path.DirectorySeparatorChar));
         if (!File.Exists(defaultsPath))
         {
-            throw new InstallException($"找不到 {defaultsPath}，无法读取默认右键菜单。");
+            throw new InstallException(
+                $"找不到 {defaultsPath}，无法读取默认右键菜单。\n" +
+                "如果这个目录确实不是完整的 Typora plugin 目录，请改用 --menu-none" +
+                "（GUI 上选\"不注册右键菜单\"），或把插件清单的 [menu] mode 设为 none。");
         }
 
         var defaultMenus = MenuArrayCodec.Extract(File.ReadAllText(defaultsPath));
@@ -751,6 +772,85 @@ public static class InstallEngine
         }
 
         return false;
+    }
+
+    /// <summary>插件系统自带插件都在 <c>settings.default.toml</c> 里有一个同名段；这些名字一律不许被第三方包占用。</summary>
+    private static HashSet<string> ReadBuiltinPluginIds(string targetDir)
+    {
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        var defaultsPath = Path.Combine(targetDir, DefaultSettingsRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(defaultsPath))
+        {
+            return ids;   // 不是完整的插件目录（例如 --allow-non-plugin-target），无从判断
+        }
+
+        foreach (var raw in File.ReadLines(defaultsPath))
+        {
+            var line = TomlParser.StripComment(raw).Trim();
+            if (line.Length < 3 || line[0] != '[' || line[^1] != ']' || line.StartsWith("[[", StringComparison.Ordinal))
+            {
+                continue;
+            }
+            var name = line[1..^1].Trim().Trim('"');
+            if (name.Length > 0 && !name.Contains('.'))
+            {
+                ids.Add(name);
+            }
+        }
+        return ids;
+    }
+
+    /// <summary>
+    /// 阻止覆盖已经存在的东西：自带插件（会顶掉它的代码与配置）以及框架自己的 <c>global/</c> 目录。
+    /// <para>宁可装不上，也不允许第三方包悄悄替换掉一个已有插件 —— 这正是这条检查存在的理由。
+    /// 升级自己（同一个 id、同一批文件）不受影响，因为自带插件的名字才是被保护的对象。</para>
+    /// </summary>
+    private static void RejectOverwritingExistingPlugins(
+        string targetDir,
+        InstallManifest manifest,
+        IReadOnlyList<PlannedFile> files)
+    {
+        var builtin = ReadBuiltinPluginIds(targetDir);
+        if (builtin.Count == 0)
+        {
+            return;
+        }
+
+        if (string.Equals(manifest.Id, ReservedGlobalSection, StringComparison.Ordinal))
+        {
+            throw new InstallException(
+                $"[plugin] id = \"{ReservedGlobalSection}\" 是插件系统的保留段名（它不会进入插件遍历，装了也不会加载）。请换一个名字。");
+        }
+
+        if (builtin.Contains(manifest.Id))
+        {
+            throw new InstallException(
+                $"[plugin] id = \"{manifest.Id}\" 与插件系统自带插件同名，安装会顶掉它，因此已中止。\n" +
+                "自带插件同名时，plugin/<id>.js 会盖住自带插件的目录、[<id>] 段也会覆盖它的配置。\n" +
+                "如果你是另一位插件作者，请把 installer.toml 里的 [plugin] id 改成不冲突的名字。");
+        }
+
+        foreach (var file in files)
+        {
+            var segments = file.RelativePath.Split('/');
+            var head = segments.Length == 1
+                ? Path.GetFileNameWithoutExtension(segments[0])
+                : segments[0];
+
+            if (string.Equals(head, ReservedGlobalSection, StringComparison.Ordinal))
+            {
+                throw new InstallException(
+                    $"计划写入的 \"{file.RelativePath}\" 落在插件系统的 global/ 目录里（框架自己的配置与共享代码），因此已中止。\n" +
+                    "插件应当只写自己的 plugin/<id>/ 目录。");
+            }
+
+            if (builtin.Contains(head))
+            {
+                throw new InstallException(
+                    $"计划写入的 \"{file.RelativePath}\" 落在插件系统自带插件「{head}」的位置上，安装会覆盖它的文件，因此已中止。\n" +
+                    "请检查 installer.toml 的 install.source / install.files，让文件只落在本插件自己的目录里。");
+            }
+        }
     }
 
     private static bool LooksLikePluginDirectory(string targetDir) =>
