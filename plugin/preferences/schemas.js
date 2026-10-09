@@ -658,6 +658,15 @@ const schema_collapse_table = () => [
   FRAG.SettingHandler(),
 ]
 
+const schema_collapse_image = () => [
+  FRAG.Base(),
+  Group("height",
+    Range("TRIGGER_HEIGHT_PERCENT").Min(101).Max(500).Step(1).Unit(UNITS.percent),
+    Range("COLLAPSED_HEIGHT_PERCENT").Min(10).Max(100).Step(1).Unit(UNITS.percent),
+  ),
+  FRAG.SettingHandler(),
+]
+
 const schema_truncate_text = () => [
   FRAG.Base(),
   Group("hotkey",
@@ -1627,6 +1636,7 @@ const RAW_SCHEMAS = {
   collapse_paragraph: schema_collapse_paragraph,
   collapse_list: schema_collapse_list,
   collapse_table: schema_collapse_table,
+  collapse_image: schema_collapse_image,
   markdownlint: schema_markdownlint,
   image_viewer: schema_image_viewer,
   truncate_text: schema_truncate_text,

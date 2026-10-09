@@ -785,6 +785,14 @@
     "actHint.convert_current": "Right-click inside a table to use this feature",
     "$label.RECORD_COLLAPSE": "Remember State"
   },
+  "collapse_image": {
+    "pluginName": "Long Image Collapse",
+    "act.expand": "Expand Long Image",
+    "act.collapse": "Collapse Long Image",
+    "$title.height": "Height",
+    "$label.TRIGGER_HEIGHT_PERCENT": "Collapse Trigger Height",
+    "$label.COLLAPSED_HEIGHT_PERCENT": "Collapsed Height"
+  },
   "truncate_text": {
     "pluginName": "Text Truncation",
     "act.hide_front": "Show Only Last {{remain}} Paragraphs",
