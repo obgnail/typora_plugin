@@ -1,42 +1,35 @@
-class MenuManager {
-  second = null
-  third = null
-  firstItem = null
-  secondItem = null
-  clearAll = () => {
-    this.third?.classList.remove("show")
-    this.secondItem?.classList.remove("active")
-    this.second?.classList.remove("show")
-    this.firstItem?.classList.remove("active")
-    this.second = null
-    this.third = null
-    this.firstItem = null
-    this.secondItem = null
+const LEVEL = { SECOND: 0, THIRD: 1 }
+
+const createMenuManager = () => {
+  // The opened submenu chain, shallow to deep:
+  //   chain[LEVEL.SECOND] = { menu: .plugin-menu-second ul, trigger: #context-menu li }
+  //   chain[LEVEL.THIRD]  = { menu: .plugin-menu-third ul,  trigger: .plugin-menu-second li }
+  const chain = []
+
+  const deactivate = entry => {
+    entry?.menu?.classList.remove("show")
+    entry?.trigger?.classList.remove("active")
   }
-  clearThirdMenu = () => {
-    this.third?.classList.remove("show")
-    this.third = null
+
+  /** Close the submenu at `depth` and everything deeper. Default closes all. */
+  const close = (depth = LEVEL.SECOND) => chain.splice(depth).forEach(deactivate)
+
+  /**
+   * Open `menu` activated by `trigger` at `depth`.
+   * Everything at `depth` and deeper is closed first; reopening the same entry is a no-op.
+   * `menu` may be null: only `trigger` gets `active`.
+   */
+  const open = (depth, menu, trigger) => {
+    const cur = chain[depth]
+    if (cur && cur.menu === menu && cur.trigger === trigger) return
+    close(depth)
+    if (!trigger) return
+    chain[depth] = { menu, trigger }
+    trigger.classList.add("active")
+    menu?.classList.add("show")
   }
-  setThirdMenu = (menuEl, triggerEl) => {
-    if (this.secondItem && this.secondItem !== triggerEl) {
-      this.secondItem.classList.remove("active")
-    }
-    this.third = menuEl
-    this.secondItem = triggerEl
-    triggerEl?.classList.add("active")
-    menuEl?.classList.add("show")
-  }
-  clearSecondItem = () => {
-    this.secondItem?.classList.remove("active")
-    this.secondItem = null
-  }
-  isDifferentSecond = (idx) => this.second && this.second.dataset.idx !== String(idx)
-  setSecondMenu = (menuEl, triggerEl) => {
-    this.second = menuEl
-    this.firstItem = triggerEl
-    triggerEl?.classList.add("active")
-    menuEl?.classList.add("show")
-  }
+
+  return { open, close }
 }
 
 const hasOverridePluginFn = (plugin, fn) => plugin[fn] !== BasePlugin.prototype[fn]
@@ -49,7 +42,7 @@ class RightClickMenuPlugin extends BasePlugin {
   unavailableActName = this.i18n.t("act.disabled")
   defaultDisableHint = this.i18n.t("actHint.disabled")
   supportShortcut = !!document.querySelector(".ty-menu-shortcut")
-  menuManager = new MenuManager()
+  menuManager = createMenuManager()
 
   style = () => `
 .plugin-menu-second.ext-context-menu, .plugin-menu-third.ext-context-menu { min-width: ${this.config.MENU_MIN_WIDTH}; }
@@ -217,22 +210,19 @@ class RightClickMenuPlugin extends BasePlugin {
       self._hideMenuIfNeed()
       // Display the 2nd level menu
     }).on("mouseenter", "[data-key]", function () {
-      if (self.groupName === this.dataset.key) {
-        const idx = this.dataset.idx
-        if (menuManager.isDifferentSecond(idx)) {
-          menuManager.clearAll()
-        }
-        const secondMenu = document.querySelector(`.plugin-menu-second[data-idx="${idx}"]`)
-        menuManager.setSecondMenu(secondMenu, this)
+      if (self.groupName !== this.dataset.key) {
+        menuManager.close()
+        return
+      }
+      const secondMenu = document.querySelector(`.plugin-menu-second[data-idx="${this.dataset.idx}"]`)
+      menuManager.open(LEVEL.SECOND, secondMenu, this)
+      if (secondMenu) {
         self._showMenuItem(secondMenu, this)
-      } else {
-        menuManager.clearAll()
       }
     })
 
     // Display the 3rd level menu
     $(".plugin-menu-second").on("mouseenter", "[data-key]", function () {
-      menuManager.clearThirdMenu()
       document.querySelectorAll(".plugin-dynamic-act").forEach(el => el.remove())
       const fixedName = this.dataset.key
       const third = document.querySelector(`.plugin-menu-third[data-plugin="${fixedName}"]`)
@@ -246,11 +236,13 @@ class RightClickMenuPlugin extends BasePlugin {
         const html = dynamicActions.map(act => self._thirdLiTemplate(act, true)).join("")
         third.insertAdjacentHTML("beforeend", html)
       }
-      if (this.querySelector(`span[data-lg="Menu"]`)) {
-        menuManager.setThirdMenu(third, this)
-        self._showMenuItem(third, this)
+      if (this.classList.contains("has-extra-menu")) {
+        menuManager.open(LEVEL.THIRD, third, this)
+        if (third) {
+          self._showMenuItem(third, this)
+        }
       } else {
-        menuManager.clearSecondItem()
+        menuManager.close(LEVEL.THIRD)
       }
       // Call plugins in the 2nd level menu
     }).on("click", "[data-key]", function () {
@@ -281,7 +273,7 @@ class RightClickMenuPlugin extends BasePlugin {
   _hideMenuIfNeed = key => {
     if (!this.config.RETAIN_ON_BLUR) {
       File.editor.contextMenu.hide()
-      this.menuManager.clearAll()
+      this.menuManager.close()
       return
     }
     if (key) {
