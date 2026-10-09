@@ -1,10 +1,14 @@
 namespace TyporaPluginInstaller.Core.Manifest;
 
-/// <summary>右键菜单注册方式。</summary>
+/// <summary>
+/// 插件清单能对右键菜单表达的全部意愿：<b>要不要</b>上菜单。
+/// <para>"放到哪个分组"完全由安装器在安装时决定，插件无权过问 —— 所以这里没有
+/// <c>group</c> / <c>position</c> 之类的字段。</para>
+/// </summary>
 public enum MenuMode
 {
-    /// <summary>自动追加：把 <c>[right_click_menu] FIND_LOST_PLUGINS</c> 置为 true，由插件系统自己兜底陈列。</summary>
-    Auto,
+    /// <summary>上菜单（默认）。具体分组由安装器选择。</summary>
+    Group,
 
     /// <summary>不注册菜单（插件仍会被加载，只是不出现在右键菜单里）。</summary>
     None,
@@ -47,7 +51,7 @@ public sealed class InstallManifest
     /// <summary>写入 settings 时是否覆盖用户已有的同名配置值（ENABLE 恒为 true，不受此开关影响）。</summary>
     public bool SettingsOverwrite { get; init; }
 
-    public MenuMode Menu { get; init; } = MenuMode.Auto;
+    public MenuMode Menu { get; init; } = MenuMode.Group;
 
     /// <summary>额外写入 <c>[&lt;id&gt;]</c> 的配置项。</summary>
     public IReadOnlyDictionary<string, object?> Settings { get; init; } =

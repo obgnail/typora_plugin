@@ -48,6 +48,7 @@ public class GuiSmokeTests
                      "DryRunCheck", "AllowNonPluginTargetCheck",
                      "PreviewButton", "InstallButton", "OpenSettingsFolderButton",
                      "BrowseSourceButton", "BrowseTargetButton",
+                     "MenuGroupBox", "NewGroupNameBox", "MenuPositionBox",
                  })
         {
             Assert.NotNull(window.FindControl<Control>(name));

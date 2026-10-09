@@ -62,7 +62,7 @@ public class ManifestLoaderTests
         Assert.True(manifest.Overwrite);
         Assert.True(manifest.WriteSettings);
         Assert.False(manifest.SettingsOverwrite);
-        Assert.Equal(MenuMode.Auto, manifest.Menu);
+        Assert.Equal(MenuMode.Group, manifest.Menu);
     }
 
     [Theory]
@@ -82,9 +82,20 @@ public class ManifestLoaderTests
     public void Rejects_unknown_menu_mode()
     {
         using var temp = new TempDir();
-        var path = WriteManifest(temp, "[plugin]\nid=\"p\"\nname=\"P\"\n[menu]\nmode = \"group\"\n");
+        var path = WriteManifest(temp, "[plugin]\nid=\"p\"\nname=\"P\"\n[menu]\nmode = \"whatever\"\n");
         var error = Assert.Throws<ManifestException>(() => ManifestLoader.Load(path));
         Assert.Contains("[menu] mode", error.Message);
+    }
+
+    [Theory]
+    [InlineData("[plugin]\nid=\"p\"\nname=\"P\"\n[menu]\ngroup = \"我的插件\"\n", "不允许指定 group")]
+    [InlineData("[plugin]\nid=\"p\"\nname=\"P\"\n[menu]\nposition = \"last\"\n", "不允许指定 position")]
+    public void Rejects_installer_owned_menu_fields(string content, string expectedFragment)
+    {
+        using var temp = new TempDir();
+        var path = WriteManifest(temp, content);
+        var error = Assert.Throws<ManifestException>(() => ManifestLoader.Load(path));
+        Assert.Contains(expectedFragment, error.Message);
     }
 
     [Fact]

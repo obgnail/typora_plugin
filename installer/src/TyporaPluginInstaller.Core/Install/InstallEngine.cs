@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using TyporaPluginInstaller.Core.Manifest;
+using TyporaPluginInstaller.Core.Menu;
 using TyporaPluginInstaller.Core.Toml;
 
 namespace TyporaPluginInstaller.Core.Install;
@@ -12,6 +14,10 @@ namespace TyporaPluginInstaller.Core.Install;
 /// </summary>
 public static class InstallEngine
 {
+    private const string DefaultSettingsRelativePath = "global/settings/settings.default.toml";
+    private const string UserSettingsRelativePath = "global/settings/settings.user.toml";
+    private const string Separator = "---";
+
     /// <summary>粗略探测插件是否覆盖了 <c>call</c> / 提供了动作列表（用于菜单可点击性提示）。</summary>
     private static readonly Regex ActionDefinitionPattern = new(
         @"(?m)^\s*(call|staticActions|getDynamicActions)\s*[=:(]",
@@ -99,9 +105,19 @@ public static class InstallEngine
             warnings.Add($"settings.user.toml 不存在，将在该位置新建：{settingsPath}");
         }
 
-        if (manifest.Menu != MenuMode.None)
+        // "要不要上菜单"由插件清单决定（mode），"放到哪个分组"由安装器决定（MenuChoice）；
+        // 安装器选择"不注册"时也可以覆盖掉插件作者的意愿。
+        var skipMenu = manifest.Menu == MenuMode.None || options.MenuChoice?.Kind == MenuChoiceKind.None;
+
+        if (!skipMenu)
         {
             CheckMenuClickability(manifest, entryJs, entryIndex, files, warnings);
+        }
+
+        MenuPlan? menu = null;
+        if (!skipMenu)
+        {
+            menu = PlanMenus(manifest, targetDir, settingsPath, options.MenuChoice, warnings);
         }
 
         var overwrites = files.Count(f => f.Overwrites);
@@ -126,6 +142,7 @@ public static class InstallEngine
             SettingsFromUserProfile = fromProfile,
             Files = files,
             Warnings = warnings,
+            Menu = menu,
             EntryAlreadyPresent = entryAlreadyPresent,
         };
     }
@@ -189,30 +206,41 @@ public static class InstallEngine
             };
         }
 
-        var editor = BuildSettingsEditor(plan);
+        var write = BuildSettingsWrite(plan);
         log.Add($"  配置文件：{plan.SettingsPath}" +
                 (plan.SettingsFromUserProfile ? "（用户目录优先，与运行时行为一致）" : "（插件目录）"));
 
-        if (editor.Changes.Count == 0)
+        if (write.Changes.Count == 0)
         {
-            log.Add("  无需改动（配置已就绪）。");
+            log.Add("  无需改动（插件配置已就绪）。");
         }
         else
         {
-            foreach (var change in editor.Changes)
+            foreach (var change in write.Changes)
             {
                 log.Add($"  {change}");
             }
         }
 
+        if (plan.Menu != null)
+        {
+            log.Add($"  {(plan.Menu.GroupCreated ? "新建" : "复用")}右键菜单分组「{plan.Menu.Title}」" +
+                    $"，位于第 {plan.Menu.GroupIndex + 1} 组（共 {plan.Menu.FinalMenus.Count} 组）");
+            log.Add($"  菜单基线来自：{plan.Menu.BaseSource}");
+            foreach (var note in write.Notes)
+            {
+                log.Add($"  {note}");
+            }
+        }
+
         string? backupPath = null;
-        if (!options.DryRun && editor.IsDirty)
+        if (!options.DryRun && write.Dirty)
         {
             try
             {
-                editor.Save(plan.SettingsPath, createBackup: true);
-                backupPath = File.Exists(plan.SettingsPath + ".bak") ? plan.SettingsPath + ".bak" : null;
-                if (backupPath != null)
+                TomlSettingsEditor.SaveText(plan.SettingsPath, EnsureTrailingNewline(write.Text), createBackup: true);
+                backupPath = plan.SettingsPath + ".bak";
+                if (File.Exists(backupPath))
                 {
                     log.Add($"  原配置已备份到：{backupPath}");
                 }
@@ -234,7 +262,7 @@ public static class InstallEngine
             Plan = plan,
             Log = log,
             CopiedFiles = copied,
-            SettingsChanges = editor.Changes,
+            SettingsChanges = write.Changes,
             DryRun = options.DryRun,
             SettingsBackupPath = backupPath,
         };
@@ -247,14 +275,14 @@ public static class InstallEngine
         return Execute(options, plan);
     }
 
-    // ----------------------------------------------------------------- helpers
+    // ------------------------------------------------------------ settings text
 
-    /// <summary>构造已应用改动的 settings 编辑器（dry-run 也用它来展示会改什么）。</summary>
-    internal static TomlSettingsEditor BuildSettingsEditor(InstallPlan plan)
+    /// <summary>构造最终要写进 settings.user.toml 的文本。</summary>
+    internal static SettingsWrite BuildSettingsWrite(InstallPlan plan)
     {
+        var manifest = plan.Manifest;
         var text = File.Exists(plan.SettingsPath) ? File.ReadAllText(plan.SettingsPath) : string.Empty;
         var editor = new TomlSettingsEditor(text);
-        var manifest = plan.Manifest;
 
         var writable = manifest.SettingsOverwrite ? KeyWritePolicy.SetAlways : KeyWritePolicy.SetIfMissing;
         var pluginWrites = new List<KeyWrite>
@@ -265,17 +293,336 @@ public static class InstallEngine
         pluginWrites.AddRange(manifest.Settings.Select(kv => new KeyWrite(kv.Key, kv.Value, writable)));
         editor.Apply(manifest.Id, pluginWrites);
 
-        if (manifest.Menu == MenuMode.Auto)
+        if (plan.Menu != null)
         {
-            // 自动追加：由插件系统把"已加载但未被 MENUS 列出"的插件挂到最后一个菜单组末尾。
-            editor.Apply("right_click_menu", new[]
+            // 保留兜底开关：任何"已加载但没被 MENUS 列出"的插件仍然会出现在菜单里，
+            // 不会因为 MENUS 被整段覆盖而彻底消失。
+            editor.Apply(MenuArrayCodec.Section, new[]
             {
                 new KeyWrite("FIND_LOST_PLUGINS", true, KeyWritePolicy.SetIfDifferent),
             });
         }
 
-        return editor;
+        var result = editor.Text;
+        var notes = new List<string>();
+        var dirty = editor.IsDirty;
+
+        if (plan.Menu != null)
+        {
+            result = MenuArrayCodec.Replace(result, plan.Menu.FinalMenus);
+
+            // 自检：写盘前确认 MENUS 能原样回读，且没有留下第二种写法
+            // （重复定义会让整个 settings 文件解析失败，进而把插件系统整个关掉）。
+            if (!MenuArrayCodec.SameGroups(MenuArrayCodec.Extract(result), plan.Menu.FinalMenus))
+            {
+                throw new InstallException("生成的配置自检失败：MENUS 无法正确回读，已中止写入。");
+            }
+            if (MenuArrayCodec.HasInlineAssignment(result))
+            {
+                throw new InstallException("生成的配置自检失败：仍残留 `MENUS = [...]` 写法，已中止写入。");
+            }
+
+            dirty = true;
+            notes.Add($"MENUS 整段写入（{plan.Menu.FinalMenus.Count} 组），数组是整体替换：安装后上游若调整默认菜单分组，不会自动生效。");
+        }
+
+        return new SettingsWrite(result, editor.Changes, dirty, notes);
     }
+
+    private static string EnsureTrailingNewline(string text) =>
+        text.Length == 0 || text.EndsWith('\n') ? text : text + "\n";
+
+    // -------------------------------------------------------------- menu plan
+
+    /// <summary>
+    /// 读出目标目录当前"实际生效"的菜单分组，供 GUI 下拉框 / CLI <c>--list-groups</c> 使用。
+    /// 显示名直接从目标的 <c>global/locales/*.json</c> 里读，所以和 Typora 里看到的一致。
+    /// </summary>
+    public static MenuGroupCatalog InspectMenus(string targetPluginDirectory)
+    {
+        var targetDir = Path.GetFullPath(targetPluginDirectory);
+        var (baseMenus, baseSource) = ReadEffectiveMenus(targetDir);
+        var locale = MenuTitles.Normalize(ResolveMenuLocale(targetDir, ResolveSettingsPath(targetDir).Path));
+        var titles = MenuTitles.LoadSettingsTitles(targetDir, locale);
+
+        var groups = baseMenus
+            .Select(group => new MenuGroupInfo(
+                group.Name,
+                MenuTitles.DisplayTitle(group.Name, titles),
+                group.List.Count,
+                group.Name.StartsWith("__", StringComparison.Ordinal)))
+            .ToList();
+
+        return new MenuGroupCatalog(locale, MenuTitles.SuggestedGroupName(locale), groups, baseSource);
+    }
+
+    /// <summary>
+    /// 按安装器选择（<see cref="MenuChoice"/>）计算最终的菜单落点。
+    /// <para>插件清单只能说"要不要上菜单"，放哪儿完全由这里决定；分组名相同即视为同一个分组，
+    /// 所以连着装几个插件只会有一个自定义分组。</para>
+    /// </summary>
+    private static MenuPlan PlanMenus(
+        InstallManifest manifest,
+        string targetDir,
+        string settingsPath,
+        MenuChoice? choice,
+        List<string> warnings)
+    {
+        var (baseMenus, baseSource) = ReadEffectiveMenus(targetDir);
+        var locale = MenuTitles.Normalize(ResolveMenuLocale(targetDir, settingsPath));
+
+        // 默认行为：新建一个按目标语言命名的分组，放在最前。
+        choice ??= MenuChoice.New(MenuTitles.SuggestedGroupName(locale), MenuGroupPosition.First);
+        if (choice.Kind == MenuChoiceKind.None)
+        {
+            throw new InstallException("内部错误：MenuChoice.None 不应走到分组规划。");
+        }
+
+        // 目标分组（已有分组按 NAME 精确匹配；新建分组按标题匹配）
+        var wanted = choice.GroupName?.Trim();
+        if (string.IsNullOrEmpty(wanted))
+        {
+            wanted = MenuTitles.SuggestedGroupName(locale);
+        }
+
+        var groupIndex = -1;
+        for (var i = 0; i < baseMenus.Count; i++)
+        {
+            var matches = choice.Kind == MenuChoiceKind.ExistingGroup
+                ? string.Equals(baseMenus[i].Name, wanted, StringComparison.Ordinal)
+                : string.Equals(baseMenus[i].Name, wanted, StringComparison.Ordinal);
+            if (matches)
+            {
+                groupIndex = i;
+                break;
+            }
+        }
+
+        if (choice.Kind == MenuChoiceKind.ExistingGroup && groupIndex < 0)
+        {
+            var available = string.Join("\n", baseMenus.Select(g => "  - " + g.Name));
+            throw new InstallException($"目标里没有名为 \"{wanted}\" 的菜单分组。当前可用：\n{available}");
+        }
+
+        var created = groupIndex < 0;
+        var title = created ? wanted! : baseMenus[groupIndex].Name;
+
+        // 先原样复刻所有分组，并把本插件从其它分组里摘掉，保证"一个插件只出现一次"。
+        // 受管分组里的 `.call` 与分隔线都会被还原/重排：它们是写盘时按分组长度临时补的。
+        var final = new List<MenuGroup>();
+        var managedIndex = -1;
+        for (var i = 0; i < baseMenus.Count; i++)
+        {
+            var isManagedGroup = i == groupIndex;
+            var hadOurEntry = baseMenus[i].List.Any(entry => PluginPartOf(entry) == manifest.Id);
+            var list = TidySeparators(baseMenus[i].List
+                .Where(entry => PluginPartOf(entry) != manifest.Id)
+                .Select(entry => isManagedGroup ? StripCallShorthand(entry) : entry)
+                .ToList());
+
+            // 上次是"只为这个插件建的分组"，这次挪到别处了 —— 别留下空壳，
+            // 否则 FIND_LOST_PLUGINS 的兜底插件会莫名其妙落进这个空组。
+            if (!isManagedGroup && list.Count == 0 && hadOurEntry && !IsBuiltinGroup(baseMenus[i].Name))
+            {
+                continue;
+            }
+
+            if (isManagedGroup)
+            {
+                managedIndex = final.Count;
+            }
+            final.Add(new MenuGroup(baseMenus[i].Name, list));
+        }
+
+        if (created)
+        {
+            var group = new MenuGroup(title, new[] { manifest.Id });
+            if (choice.Position == MenuGroupPosition.Last)
+            {
+                final.Add(group);
+                groupIndex = final.Count - 1;
+            }
+            else
+            {
+                final.Insert(0, group);
+                groupIndex = 0;
+            }
+        }
+        else
+        {
+            groupIndex = managedIndex;
+            var list = final[groupIndex].List.ToList();
+            list.Add(manifest.Id);
+            final[groupIndex] = new MenuGroup(title, list);
+        }
+
+        // right_click_menu.js 里有两个坑，都不能碰，所以只能让分组"看起来像多条目分组"：
+        //   1) LIST.length === 1 时一级菜单项直接指向 LIST[0]，但点击处理要求 `plugin.action`
+        //      形式 —— 纯插件名会 return false，点了没反应；
+        //   2) 写成 `plugin.action` 又能绕过 1)，却会在 _insertLevel2 里走到
+        //      LiWithAction 的 `plugin.staticActions.find(...)`：没有 staticActions 的插件
+        //      直接抛 TypeError，整份右键菜单都构建不出来（默认配置里没有这种条目，所以这条
+        //      路径在插件系统里是没被验证过的）。
+        // 补一条分隔线就能让 LIST.length 变成 2，走正常的多条目分支，两个坑都绕开；
+        // 组里出现第二个插件时，分隔线会在下次安装时被清掉。
+        // 对所有自定义分组（非 __XXX__ 形式）做同样处理：只要恰好只剩 1 个条目就补分隔线。
+        // 不只是刚写进去的那个分组 —— 之前补过线的分组可能因为这次清理掉了线而重新变成单条目。
+        for (var i = 0; i < final.Count; i++)
+        {
+            if (!IsBuiltinGroup(final[i].Name) && final[i].List.Count == 1)
+            {
+                final[i] = final[i] with { List = new[] { final[i].List[0], Separator } };
+            }
+        }
+
+        warnings.Add(
+            "右键菜单 MENUS 会整段写进 settings.user.toml：数组是整体替换，" +
+            "安装后上游若调整默认菜单分组或新增内置插件，不会自动反映到这份配置里" +
+            "（FIND_LOST_PLUGINS 会兜底保证这些插件仍然可见）。");
+
+        return new MenuPlan(title, baseMenus, final, baseSource, groupIndex, created);
+    }
+
+    /// <summary>读出目标当前生效的 MENUS：用户配置优先，其次 settings.default.toml。</summary>
+    private static (IReadOnlyList<MenuGroup> Menus, string Source) ReadEffectiveMenus(string targetDir)
+    {
+        var defaultsPath = Path.Combine(targetDir, DefaultSettingsRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(defaultsPath))
+        {
+            throw new InstallException($"找不到 {defaultsPath}，无法读取默认右键菜单。");
+        }
+
+        var defaultMenus = MenuArrayCodec.Extract(File.ReadAllText(defaultsPath));
+        if (defaultMenus.Count == 0)
+        {
+            throw new InstallException($"{defaultsPath} 里没有 [[right_click_menu.MENUS]] 数组表，无法选择菜单分组。");
+        }
+
+        IReadOnlyList<MenuGroup> baseMenus = defaultMenus;
+        var baseSource = "settings.default.toml";
+
+        // 优先级与运行时 settings.read() 一致：用户目录 > 插件目录 > 默认。
+        foreach (var (path, label) in new[]
+                 {
+                     (OriginSettingsPath(targetDir), "插件目录的 settings.user.toml"),
+                     (HomeSettingsPath(), "用户目录的 settings.user.toml"),
+                 })
+        {
+            if (path == null || !File.Exists(path))
+            {
+                continue;
+            }
+
+            var text = File.ReadAllText(path);
+            if (MenuArrayCodec.HasInlineAssignment(text))
+            {
+                throw new InstallException(
+                    $"{label} 里用的是 `MENUS = [...]` 内联写法，安装器无法安全读取并保留它。\n" +
+                    "请改成 [[right_click_menu.MENUS]] 数组表。");
+            }
+
+            var extracted = MenuArrayCodec.Extract(text);
+            if (extracted.Count > 0)
+            {
+                baseMenus = extracted;
+                baseSource = label;
+            }
+        }
+
+        return (baseMenus, baseSource);
+    }
+
+    /// <summary>取合并后生效的 <c>[global] LOCALE</c>；<c>auto</c> 交给安装器自身的区域设置。</summary>
+    private static string ResolveMenuLocale(string targetDir, string settingsPath)
+    {
+        var candidates = new[]
+        {
+            ReadIfExists(settingsPath),
+            ReadIfExists(HomeSettingsPath()),
+            ReadIfExists(Path.Combine(targetDir, DefaultSettingsRelativePath.Replace('/', Path.DirectorySeparatorChar))),
+        };
+
+        foreach (var text in candidates)
+        {
+            var value = text == null ? null : ReadGlobalLocale(text);
+            if (value == null)
+            {
+                continue;
+            }
+            return value.Equals("auto", StringComparison.OrdinalIgnoreCase)
+                ? CultureInfo.CurrentUICulture.Name
+                : value;
+        }
+
+        return CultureInfo.CurrentUICulture.Name;
+    }
+
+    private static string? ReadGlobalLocale(string tomlText)
+    {
+        var inGlobal = false;
+        foreach (var raw in tomlText.Split('\n'))
+        {
+            var line = TomlParser.StripComment(raw).Trim();
+            if (line.StartsWith('['))
+            {
+                inGlobal = line == "[global]";
+                continue;
+            }
+            if (!inGlobal)
+            {
+                continue;
+            }
+
+            var eq = line.IndexOf('=');
+            if (eq <= 0 || line[..eq].Trim() != "LOCALE")
+            {
+                continue;
+            }
+            return line[(eq + 1)..].Trim().Trim('"', '\'');
+        }
+        return null;
+    }
+
+    private static string? ReadIfExists(string? path) =>
+        path != null && File.Exists(path) ? File.ReadAllText(path) : null;
+
+    private static string PluginPartOf(string entry)
+    {
+        if (string.IsNullOrEmpty(entry) || entry == Separator)
+        {
+            return string.Empty;
+        }
+        var dot = entry.IndexOf('.');
+        return dot < 0 ? entry : entry[..dot];
+    }
+
+    /// <summary>插件系统自带的分组用 <c>__XXX__</c> 形式命名。</summary>
+    private static bool IsBuiltinGroup(string name) => name.StartsWith("__", StringComparison.Ordinal);
+
+    /// <summary>清掉早期版本写下的 <c>.call</c> 简写（那个写法会踩到框架的 LiWithAction 崩溃）。</summary>
+    private static string StripCallShorthand(string entry) =>
+        entry.EndsWith(".call", StringComparison.Ordinal) ? entry[..^".call".Length] : entry;
+
+    /// <summary>去掉因移除条目而产生的首尾/连续分隔线。</summary>
+    private static List<string> TidySeparators(IReadOnlyList<string> list)
+    {
+        var result = new List<string>();
+        foreach (var item in list)
+        {
+            if (item == Separator && (result.Count == 0 || result[^1] == Separator))
+            {
+                continue;
+            }
+            result.Add(item);
+        }
+        while (result.Count > 0 && result[^1] == Separator)
+        {
+            result.RemoveAt(result.Count - 1);
+        }
+        return result;
+    }
+
+    // ----------------------------------------------------------------- helpers
 
     private static List<PlannedFile> CollectFiles(
         InstallManifest manifest,
@@ -407,9 +754,20 @@ public static class InstallEngine
     }
 
     private static bool LooksLikePluginDirectory(string targetDir) =>
-        File.Exists(Path.Combine(targetDir, "global", "settings", "settings.default.toml")) ||
+        File.Exists(Path.Combine(targetDir, DefaultSettingsRelativePath.Replace('/', Path.DirectorySeparatorChar))) ||
         Directory.Exists(Path.Combine(targetDir, "global", "core")) ||
         File.Exists(Path.Combine(targetDir, "index.js"));
+
+    private static string OriginSettingsPath(string targetDir) =>
+        Path.Combine(targetDir, UserSettingsRelativePath.Replace('/', Path.DirectorySeparatorChar));
+
+    private static string? HomeSettingsPath()
+    {
+        var home = HomeDirectoryProvider();
+        return string.IsNullOrEmpty(home)
+            ? null
+            : Path.Combine(home, ".config", "typora_plugin", "settings.user.toml");
+    }
 
     /// <summary>
     /// 复刻运行时的 <c>utils.settings.getUserTomlPath()</c>：
@@ -417,17 +775,13 @@ public static class InstallEngine
     /// </summary>
     private static (string Path, bool FromProfile) ResolveSettingsPath(string targetDir)
     {
-        var home = HomeDirectoryProvider();
-        if (!string.IsNullOrEmpty(home))
+        var home = HomeSettingsPath();
+        if (home != null && File.Exists(home))
         {
-            var userPath = Path.Combine(home, ".config", "typora_plugin", "settings.user.toml");
-            if (File.Exists(userPath))
-            {
-                return (userPath, true);
-            }
+            return (home, true);
         }
 
-        return (Path.Combine(targetDir, "global", "settings", "settings.user.toml"), false);
+        return (OriginSettingsPath(targetDir), false);
     }
 
     private static void CheckMenuClickability(
@@ -485,3 +839,6 @@ public static class InstallEngine
         return sb.ToString().TrimEnd();
     }
 }
+
+/// <summary>最终写入内容 + 改动清单。</summary>
+internal sealed record SettingsWrite(string Text, IReadOnlyList<KeyChange> Changes, bool Dirty, IReadOnlyList<string> Notes);

@@ -1,5 +1,6 @@
 using TyporaPluginInstaller.Core.Install;
 using TyporaPluginInstaller.Core.Manifest;
+using TyporaPluginInstaller.Core.Menu;
 using Xunit;
 
 namespace TyporaPluginInstaller.Tests;
@@ -13,11 +14,46 @@ public class InstallEngineTests
         module.exports = { plugin: helloWorld }
         """;
 
-    private static string CreateFakePluginDir(TempDir temp, string name = "target", string? userToml = null)
+    /// <summary>一个"像插件系统"的默认配置：含 [global] 与两组内置右键菜单。</summary>
+    private const string DefaultToml = """
+        [global]
+        ENABLE = true
+        LOCALE = "zh-CN"
+
+        [right_click_menu]
+        ENABLE = true
+        FIND_LOST_PLUGINS = false
+
+        [[right_click_menu.MENUS]]
+        NAME = "__VISUAL_PLUGINS__"
+        LIST = ["static_markers", "auto_number"]
+
+        [[right_click_menu.MENUS]]
+        NAME = "__INTERACTIVE_PLUGINS__"
+        LIST = ["window_tab", "commander"]
+        """;
+
+    /// <summary>目标自带的语言文件：分组显示名要能从中读出来。</summary>
+    private const string LocaleJson = """
+        {
+          "settings": {
+            "__VISUAL_PLUGINS__": "视觉插件",
+            "__INTERACTIVE_PLUGINS__": "交互插件"
+          }
+        }
+        """;
+
+    private static string CreateFakePluginDir(
+        TempDir temp,
+        string name = "target",
+        string? userToml = null,
+        string defaultToml = DefaultToml)
     {
         var dir = Path.Combine(temp.Path, name);
         Directory.CreateDirectory(Path.Combine(dir, "global", "settings"));
-        File.WriteAllText(Path.Combine(dir, "global", "settings", "settings.default.toml"), "[global]\nENABLE = true\n");
+        Directory.CreateDirectory(Path.Combine(dir, "global", "locales"));
+        File.WriteAllText(Path.Combine(dir, "global", "locales", "zh-CN.json"), LocaleJson);
+        File.WriteAllText(Path.Combine(dir, "global", "settings", "settings.default.toml"), defaultToml);
         File.WriteAllText(Path.Combine(dir, "index.js"), "// plugin system entry\n");
         if (userToml != null)
         {
@@ -32,10 +68,11 @@ public class InstallEngineTests
         string fileName = "helloWorld.js",
         string? js = null,
         string installSection = "source = \"core\"",
-        string menuSection = "mode = \"auto\"",
-        string settingsSection = "")
+        string menuSection = "mode = \"none\"",
+        string settingsSection = "",
+        string rootName = "package")
     {
-        var root = Path.Combine(temp.Path, "package");
+        var root = Path.Combine(temp.Path, rootName);
         Directory.CreateDirectory(Path.Combine(root, "core"));
         File.WriteAllText(Path.Combine(root, "installer.toml"), $"""
             [plugin]
@@ -54,12 +91,15 @@ public class InstallEngineTests
         return root;
     }
 
+    private static string SettingsPathOf(string target) =>
+        Path.Combine(target, "global", "settings", "settings.user.toml");
+
     [Fact]
     public void Installs_files_and_merges_settings()
     {
         using var temp = new TempDir();
         using var home = new HomeScope(Path.Combine(temp.Path, "home"));
-        var package = CreatePackage(temp, settingsSection: "[settings]\nGREETING = \"你好\"\n");
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"", settingsSection: "[settings]\nGREETING = \"你好\"\n");
         var target = CreateFakePluginDir(temp, userToml: "[otherPlugin]\nENABLE = true\n# 用户自己的注释\n");
 
         var result = InstallEngine.Install(new InstallOptions
@@ -235,7 +275,7 @@ public class InstallEngineTests
     {
         using var temp = new TempDir();
         using var home = new HomeScope(Path.Combine(temp.Path, "home"));
-        var package = CreatePackage(temp, js: "class helloWorld extends BasePlugin {}\nmodule.exports = { plugin: helloWorld }\n");
+        var package = CreatePackage(temp, js: "class helloWorld extends BasePlugin {}\nmodule.exports = { plugin: helloWorld }\n", menuSection: "mode = \"group\"");
         var target = CreateFakePluginDir(temp);
 
         var plan = InstallEngine.CreatePlan(new InstallOptions { SourceDirectory = package, TargetPluginDirectory = target });
@@ -338,5 +378,335 @@ public class InstallEngineTests
         Assert.False(File.Exists(Path.Combine(target, "README.md")));
         Assert.False(File.Exists(Path.Combine(target, "installer.toml")));
         Assert.False(Directory.Exists(Path.Combine(target, ".git")));
+    }
+
+    // ---- 自定义右键菜单分组 -----------------------------------------------------
+
+    [Fact]
+    public void Group_mode_creates_a_top_level_group_and_keeps_built_in_groups()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+        var target = CreateFakePluginDir(temp);
+
+        InstallEngine.Install(new InstallOptions { SourceDirectory = package, TargetPluginDirectory = target });
+
+        var groups = MenuArrayCodec.Extract(File.ReadAllText(SettingsPathOf(target)));
+        Assert.Equal(3, groups.Count);
+        // 默认放在最前，标题按目标 LOCALE（zh-CN）选择
+        Assert.Equal("自定义插件", groups[0].Name);
+        // 分组里只有这一个插件时，条目必须写成 plugin.action，否则框架的一级菜单点了没反应
+        Assert.Equal(new[] { "helloWorld", "---" }, groups[0].List);   // 单条目分组补分隔线，绕开框架的单条目简写
+        // 内置分组原样保留
+        Assert.Equal("__VISUAL_PLUGINS__", groups[1].Name);
+        Assert.Equal(new[] { "static_markers", "auto_number" }, groups[1].List);
+        Assert.Equal("__INTERACTIVE_PLUGINS__", groups[2].Name);
+    }
+
+    [Fact]
+    public void Second_install_joins_the_same_group_and_drops_the_single_entry_padding()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp);
+
+        InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = CreatePackage(temp, menuSection: "mode = \"group\""),
+            TargetPluginDirectory = target,
+        });
+        InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = CreatePackage(temp, id: "otherPlugin", fileName: "otherPlugin.js",
+                menuSection: "mode = \"group\"", rootName: "package2"),
+            TargetPluginDirectory = target,
+        });
+
+        var groups = MenuArrayCodec.Extract(File.ReadAllText(SettingsPathOf(target)));
+        Assert.Equal(3, groups.Count);
+        Assert.Equal("自定义插件", groups[0].Name);
+        // 组里有两个条目后，临时补的分隔线要消失
+        Assert.Equal(new[] { "helloWorld", "otherPlugin" }, groups[0].List);
+    }
+
+    [Fact]
+    public void Reinstalling_the_same_plugin_does_not_duplicate_the_entry()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+        var target = CreateFakePluginDir(temp);
+
+        InstallEngine.Install(new InstallOptions { SourceDirectory = package, TargetPluginDirectory = target });
+        InstallEngine.Install(new InstallOptions { SourceDirectory = package, TargetPluginDirectory = target });
+
+        var groups = MenuArrayCodec.Extract(File.ReadAllText(SettingsPathOf(target)));
+        Assert.Equal(3, groups.Count);
+        Assert.Equal(new[] { "helloWorld", "---" }, groups[0].List);   // 单条目分组补分隔线，绕开框架的单条目简写
+    }
+
+    [Fact]
+    public void Plugin_already_listed_in_another_group_is_moved_not_duplicated()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var userToml = """
+            [right_click_menu]
+            FIND_LOST_PLUGINS = false
+
+            [[right_click_menu.MENUS]]
+            NAME = "自定义插件"
+            LIST = ["helloWorld"]
+
+            [[right_click_menu.MENUS]]
+            NAME = "__INTERACTIVE_PLUGINS__"
+            LIST = ["helloWorld", "window_tab"]
+            """;
+        var target = CreateFakePluginDir(temp, userToml: userToml);
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+
+        InstallEngine.Install(new InstallOptions { SourceDirectory = package, TargetPluginDirectory = target });
+
+        var groups = MenuArrayCodec.Extract(File.ReadAllText(SettingsPathOf(target)));
+        Assert.Equal(2, groups.Count);
+        Assert.Equal(new[] { "helloWorld", "---" }, groups[0].List);   // 单条目分组补分隔线，绕开框架的单条目简写
+        Assert.Equal(new[] { "window_tab" }, groups[1].List);
+    }
+
+    [Fact]
+    public void Installer_choice_can_put_the_plugin_into_an_existing_builtin_group()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp);
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+
+        InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = package,
+            TargetPluginDirectory = target,
+            MenuChoice = MenuChoice.Existing("__INTERACTIVE_PLUGINS__"),
+        });
+
+        var groups = MenuArrayCodec.Extract(File.ReadAllText(SettingsPathOf(target)));
+        Assert.Equal(2, groups.Count);                                   // 没有新建分组
+        Assert.Equal("__VISUAL_PLUGINS__", groups[0].Name);
+        Assert.Equal(new[] { "window_tab", "commander", "helloWorld" }, groups[1].List);
+    }
+
+    [Fact]
+    public void Installer_choice_can_create_a_group_with_a_chosen_name_and_position()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp);
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+
+        InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = package,
+            TargetPluginDirectory = target,
+            MenuChoice = MenuChoice.New("我的插件", MenuGroupPosition.Last),
+        });
+
+        var groups = MenuArrayCodec.Extract(File.ReadAllText(SettingsPathOf(target)));
+        Assert.Equal("我的插件", groups[^1].Name);
+        Assert.Equal(new[] { "helloWorld", "---" }, groups[^1].List);
+        Assert.Equal("__VISUAL_PLUGINS__", groups[0].Name);
+    }
+
+    [Fact]
+    public void Choosing_an_unknown_existing_group_is_rejected()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp);
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+
+        var error = Assert.Throws<InstallException>(() => InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = package,
+            TargetPluginDirectory = target,
+            MenuChoice = MenuChoice.Existing("__NOPE__"),
+        }));
+
+        Assert.Contains("没有名为", error.Message);
+        Assert.Contains("__VISUAL_PLUGINS__", error.Message);            // 错误里列出可用分组
+    }
+
+    [Fact]
+    public void Different_chosen_group_names_create_separate_groups()
+    {
+        // 刻意保留的灵活性：装的人想让两个插件分开就分开。
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp);
+
+        InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = CreatePackage(temp, menuSection: "mode = \"group\""),
+            TargetPluginDirectory = target,
+            MenuChoice = MenuChoice.New("组A"),
+        });
+        InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = CreatePackage(temp, id: "otherPlugin", fileName: "otherPlugin.js",
+                menuSection: "mode = \"group\"", rootName: "package2"),
+            TargetPluginDirectory = target,
+            MenuChoice = MenuChoice.New("组B"),
+        });
+
+        var groups = MenuArrayCodec.Extract(File.ReadAllText(SettingsPathOf(target)));
+        Assert.Equal(4, groups.Count);
+        // 按名字查，不依赖插到最前还是最后
+        Assert.Equal(new[] { "helloWorld", "---" }, groups.Single(g => g.Name == "组A").List);
+        Assert.Equal(new[] { "otherPlugin", "---" }, groups.Single(g => g.Name == "组B").List);
+    }
+
+    [Fact]
+    public void Menu_none_choice_overrides_the_plugin_manifest()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp);
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+
+        InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = package,
+            TargetPluginDirectory = target,
+            MenuChoice = MenuChoice.Skip,
+        });
+
+        var settings = File.ReadAllText(SettingsPathOf(target));
+        Assert.Contains("[helloWorld]", settings);
+        Assert.DoesNotContain("right_click_menu", settings);
+    }
+
+    [Fact]
+    public void Moving_a_plugin_leaves_no_empty_group_behind()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp);
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+
+        // 第一次：新建「组A」
+        InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = package,
+            TargetPluginDirectory = target,
+            MenuChoice = MenuChoice.New("组A"),
+        });
+        // 第二次：改放进内置分组 —— 「组A」空了，应该被清掉
+        InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = package,
+            TargetPluginDirectory = target,
+            MenuChoice = MenuChoice.Existing("__INTERACTIVE_PLUGINS__"),
+        });
+
+        var groups = MenuArrayCodec.Extract(File.ReadAllText(SettingsPathOf(target)));
+        Assert.Equal(2, groups.Count);
+        Assert.DoesNotContain("组A", groups.Select(g => g.Name));
+        Assert.Contains("helloWorld", groups.Single(g => g.Name == "__INTERACTIVE_PLUGINS__").List);
+    }
+
+    [Fact]
+    public void Inspect_menus_reads_group_titles_from_the_target_locale_file()
+    {
+        using var temp = new TempDir();
+        var target = CreateFakePluginDir(temp);
+
+        var catalog = InstallEngine.InspectMenus(target);
+
+        Assert.Equal("zh-CN", catalog.Locale);
+        Assert.Equal("自定义插件", catalog.SuggestedGroupName);
+        Assert.Equal(2, catalog.Groups.Count);
+        Assert.Equal("__VISUAL_PLUGINS__", catalog.Groups[0].Key);
+        Assert.Equal("视觉插件", catalog.Groups[0].DisplayTitle);        // 来自目标的 locales/zh-CN.json
+        Assert.Equal("__INTERACTIVE_PLUGINS__", catalog.Groups[1].Key);
+        Assert.Equal("交互插件", catalog.Groups[1].DisplayTitle);
+    }
+
+    [Fact]
+    public void Manifest_group_or_position_is_rejected()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp);
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"\ngroup = \"我的插件\"");
+
+        var error = Assert.Throws<InstallException>(() => InstallEngine.Install(
+            new InstallOptions { SourceDirectory = package, TargetPluginDirectory = target }));
+
+        Assert.Contains("不允许指定 group", error.Message);
+    }
+
+    [Fact]
+    public void Inline_MENUS_assignment_in_user_settings_is_rejected()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp, userToml: "[right_click_menu]\nMENUS = [{ NAME = \"x\", LIST = [] }]\n");
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+
+        var error = Assert.Throws<InstallException>(() => InstallEngine.Install(
+            new InstallOptions { SourceDirectory = package, TargetPluginDirectory = target }));
+
+        Assert.Contains("内联写法", error.Message);
+        // 被拒绝时不应写入任何配置
+        Assert.DoesNotContain("[[right_click_menu.MENUS]]", File.ReadAllText(SettingsPathOf(target)));
+    }
+
+    [Fact]
+    public void Group_mode_requires_the_default_menu_table()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp, defaultToml: "[global]\nENABLE = true\n");
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+
+        var error = Assert.Throws<InstallException>(() => InstallEngine.Install(
+            new InstallOptions { SourceDirectory = package, TargetPluginDirectory = target }));
+
+        Assert.Contains("[[right_click_menu.MENUS]]", error.Message);
+    }
+
+    [Fact]
+    public void Auto_mode_is_no_longer_accepted()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var target = CreateFakePluginDir(temp);
+        var package = CreatePackage(temp, menuSection: "mode = \"auto\"");
+
+        var error = Assert.Throws<InstallException>(() => InstallEngine.Install(
+            new InstallOptions { SourceDirectory = package, TargetPluginDirectory = target }));
+
+        Assert.Contains("[menu] mode", error.Message);
+    }
+
+    [Fact]
+    public void Group_mode_dry_run_writes_nothing()
+    {
+        using var temp = new TempDir();
+        using var home = new HomeScope(Path.Combine(temp.Path, "home"));
+        var package = CreatePackage(temp, menuSection: "mode = \"group\"");
+        var target = CreateFakePluginDir(temp, userToml: "[otherPlugin]\nENABLE = true\n");
+        var before = File.ReadAllText(SettingsPathOf(target));
+
+        var result = InstallEngine.Install(new InstallOptions
+        {
+            SourceDirectory = package,
+            TargetPluginDirectory = target,
+            DryRun = true,
+        });
+
+        Assert.True(result.DryRun);
+        Assert.Equal(before, File.ReadAllText(SettingsPathOf(target)));
+        Assert.NotNull(result.Plan.Menu);
+        Assert.Contains(result.Plan.Menu!.FinalMenus, g => g.Name == "自定义插件");
     }
 }

@@ -17,9 +17,12 @@
    - **插件包目录**：插件作者提供的目录，里面必须有 `installer.toml`。
    - **plugin 目录**：Typora 的插件目录，通常是 `<Typora 安装目录>/resources/plugin`
      （免费版 0.9.98 是 `<Typora>/resources/app/plugin`）。
-3. 先点 **「试运行 / 预览」**：只读地列出将要新增/覆盖的文件与将要改写的配置，不落盘。
+   - **右键菜单分组**（选好 plugin 目录后自动填充）：默认是「新建分组…」，名字预填目标语言对应的
+     "自定义插件"；也可以直接**挑一个已有分组**（列表里带上它的显示名与条目数），把插件放进内置分组里。
+     位置可选「最前 / 最后」。**这一项每次安装都由你决定，插件清单管不着。**
+3. 先点 **「试运行 / 预览」**：只读地列出将要新增/覆盖的文件、菜单落点与将要改写的配置，不落盘。
 4. 确认无误后点 **「开始安装」**：弹出确认框 → 确认 → 写盘。
-5. 重启 Typora。右键菜单最下方的插件组里会出现该插件。
+5. 重启 Typora，右键菜单里你选的那个分组下就会出现该插件。
 
 ### 1.2 命令行
 
@@ -29,6 +32,14 @@ typora-plugin-installer-cli --source ./my-plugin --target "<Typora>/resources/pl
 
 # 实际安装
 typora-plugin-installer-cli --source ./my-plugin --target "<Typora>/resources/plugin"
+
+# 先看看目标里有哪些分组
+typora-plugin-installer-cli -t <plugin目录> --list-groups
+
+# 指定分组（不存在就新建；也可以用内置分组的键）
+typora-plugin-installer-cli -s ./my-plugin -t <plugin目录> --menu-group "自定义插件"
+typora-plugin-installer-cli -s ./my-plugin -t <plugin目录> --menu-group __INTERACTIVE_PLUGINS__
+typora-plugin-installer-cli -s ./my-plugin -t <plugin目录> --menu-none
 
 # 以 JSON 输出（便于脚本消费）
 typora-plugin-installer-cli -s ./my-plugin -t <plugin目录> --json
@@ -69,8 +80,9 @@ typora-plugin-installer-cli -s ./my-plugin -t <plugin目录> --json
    # installer.toml 里 [settings] 的其它键
    ```
 
-3. 在 `settings.user.toml` 写入 `[right_click_menu] FIND_LOST_PLUGINS = true`
-   （这会让插件系统把"已加载但没被 MENUS 列出"的插件自动追加到右键菜单的最后一个分组）；
+3. 在 `settings.user.toml` 里登记右键菜单：**把你选的那个分组**（新建一个，或复用已有的内置分组）
+   写进 `MENUS` 并把插件列进去，同时打开 `[right_click_menu] FIND_LOST_PLUGINS = true`
+   作为兜底（保证任何"已加载但没被 MENUS 列出"的插件仍然可见）；
 4. 改写前把原 `settings.user.toml` 备份为 `settings.user.toml.bak`。
 
 ### 2.3 目录结构模板
@@ -123,7 +135,12 @@ source = "."
 
 | 键 | 必需 | 默认 | 说明 |
 | --- | --- | --- | --- |
-| `mode` | | `"auto"` | `auto`：写 `[right_click_menu] FIND_LOST_PLUGINS = true`，插件出现在最后一个菜单组（`__INTERACTIVE_PLUGINS__`）末尾。<br>`none`：不注册菜单 |
+| `mode` | | `"group"` | `group`：上右键菜单（放哪个分组由**安装器**在安装时决定）。<br>`none`：不注册菜单 |
+| ~~`group`~~ | | | **不允许**。分组由安装器选择；清单里出现这个键，安装器会直接报错。 |
+| ~~`position`~~ | | | **不允许**，同上。 |
+
+> 分工是刻意的：**插件只说"要不要上菜单"，"放哪儿"由使用安装器的人决定**。
+> 这样连着装几个插件不会各自开一个分组，也不会出现某个插件把公共分组改名的怪事。
 
 #### `[settings]`（可选）
 
@@ -145,7 +162,7 @@ overwrite = true
 settings = true
 
 [menu]
-mode = "auto"
+mode = "group"        # 只表达"要不要上菜单"；分组在安装时选
 
 [settings]
 GREETING = "Hello World"
@@ -175,7 +192,7 @@ module.exports = { plugin: helloWorld }
 | `<plugin>/global/settings/settings.default.toml` | ❌ 绝不修改（它属于发行包，升级会被覆盖） |
 | `<plugin>/global/locales/*.json` | ❌ 不修改 |
 | `<plugin>/preferences/schemas.js` | ❌ 不修改 |
-| `settings.user.toml` 里 `[right_click_menu] MENUS` 数组 | ❌ 不修改（只新增 `FIND_LOST_PLUGINS`，因此默认菜单分组原样保留） |
+| `settings.user.toml` 里 `[right_click_menu] MENUS` 数组 | ✅ **整段覆盖**（上菜单时）：先读目标当前生效的 MENUS 原样复刻，再把你选的分组写进去<br>选"不注册右键菜单"时完全不碰 MENUS |
 | 其它插件的配置段、注释、空行、键顺序 | ❌ 原样保留 |
 
 **配置写到哪一份？** 安装器复刻运行时的 `utils.settings.getUserTomlPath()` 逻辑：
@@ -211,17 +228,42 @@ installer.toml  ──解析──▶ 校验 + 生成计划
 core/myPlugin.js ─复制──▶ <plugin>/myPlugin.js
                           settings.user.toml  ──合并──▶ [myPlugin] ENABLE/NAME/...
                                                         [right_click_menu] FIND_LOST_PLUGINS = true
+                                                        [[right_click_menu.MENUS]]  ← 复刻内置分组 + 追加「自定义插件」
 重启 Typora ──▶ core/index.js 的 loadPlugins() 遍历合并后的 settings
                 └─ utils.require("./plugin","myPlugin") → 加载成功
-                └─ right_click_menu 把未列入 MENUS 的插件追加到末组
+                └─ right_click_menu 渲染「自定义插件」分组（与内置分组同级）
+                └─ FIND_LOST_PLUGINS 把仍未列出的插件兜底追加到末组
 ```
 
-为什么走 `FIND_LOST_PLUGINS` 而不是直接改 `MENUS`：
+为什么可以只改 `settings.user.toml`：
 
-- `MENUS` 是数组，配置合并时是**整体替换**而不是逐项合并；写 `MENUS` 会把默认的 4 个分组整个替换掉。
-- `settings.default.toml` 属于发行包，整包升级会被覆盖；`settings.user.toml` 才会被保留。
+- `MENUS` 就是一个普通配置项，运行时由 `settings.read()` 合并得到，所以安装器写用户配置即可，
+  **不需要改 `settings.default.toml`**（它属于发行包，整包升级会被覆盖）。
+- 分组标题可以直接用**字面文本**：`right_click_menu` 用 `i18n._t("settings", NAME)` 取标题，查不到翻译就把
+  `NAME` 原样显示，所以不需要往 `plugin/global/locales/*.json` 加 key。
+- 首选项里的菜单表用的是自由文本框（`Table("MENUS").NestedBoxes([Text("NAME"), Transfer("LIST")])`），
+  自定义组名能正常显示和回写。
 
-代价：插件出现在**最后一个菜单组末尾**，且不会出现在首选项面板里。要固定分组/顺序/首选项面板，那是"把插件并入插件系统源码"的路线（改 `settings.default.toml` + `schemas.js` + 三语 locale），不属于本安装器的职责。
+**分组是谁决定的**：只有安装器。每次安装你在界面上选一次（`--menu-group` 是等价的命令行入口），
+插件清单里出现 `group` / `position` 会被直接拒绝。新建分组时名字相同的会被复用，所以想"所有插件都在
+同一个组"就一直选同一个名字即可；想分开就选不同的名字，互不影响。
+
+代价与限制：
+
+- `MENUS` 是数组，配置合并时是**整体替换**而不是逐项合并。安装器因此会先读出目标当前生效的 MENUS
+  原样复刻，再把插件写进你选的分组；但这份数组会被"快照"进 `settings.user.toml`，**安装后上游若调整
+  默认菜单分组，不会自动生效**。`FIND_LOST_PLUGINS` 兜底能保证那些插件仍然可见。
+- 分组里**只剩 1 个**插件时，`right_click_menu.js` 有两个坑：`LIST.length === 1` 会让一级菜单项直接指向
+  `LIST[0]`，而该分支的点击处理只认 `plugin.action` 形式（纯插件名点了没反应）；可一旦写成
+  `plugin.action`，`_insertLevel2` 又会走到 `LiWithAction` 的 `plugin.staticActions.find(...)` ——
+  没有 `staticActions` 的插件直接抛 `TypeError`，**整份右键菜单都构建不出来**
+  （默认菜单里没有任何 `plugin.action` 条目，所以这条路径在插件系统里从未被验证过）。
+  安装器的做法是**给只剩 1 个条目的自定义分组补一条 `---` 分隔线**，让它按正常的多条目分组渲染：
+  两个坑都绕开，插件也依然可点。组里出现第二个插件时，这条临时分隔线会自动消失。
+- **新建分组**的标题是字面文本（不参与 i18n），切换 Typora 界面语言时不会跟着变；挑**已有分组**时
+  显示名直接读目标自己的 `global/locales/*.json`，和 Typora 里看到的一致。
+- 插件仍然不会出现在**首选项面板**里。那需要 `schemas.js` + 三语 locale + `settings.default.toml`，
+  属于"把插件并入插件系统源码"的路线，不在本安装器的职责范围内。
 
 ---
 
@@ -280,32 +322,50 @@ GUI 与 CLI 共用同一个 `InstallEngine`，因此两者的行为完全一致�
 
 ```bash
 cd installer
-dotnet test TyporaPluginInstaller.sln     # 42 个测试
+dotnet test TyporaPluginInstaller.sln     # 69 个测试
 ```
 
 覆盖范围：
 
 - **TOML 解析**：跨行数组、转义、行内注释、非法输入（数组表 / 未闭合字符串 / 未知语法）。
 - **settings 行级合并**：保留注释与顺序、CRLF、`[[数组表]]` 边界、空值填充、值比较、备份、UTF-8 无 BOM、结尾换行。
-- **清单校验**：必填项、`id` 规则、`menu.mode` 取值、保留键、缺文件。
-- **安装引擎**：复制/覆盖开关、目录形态插件、包根即核心目录、路径逃逸拒绝、非 plugin 目录拒绝、缺入口拒绝、用户目录优先、dry-run 不落盘、`call` 缺失告警、`settings=false`。
+- **MENUS 编解码**：抽取 `[[right_click_menu.MENUS]]`（含跨行 LIST）、识别并拒绝 `MENUS = [...]` 内联写法、
+  整体替换后能原样回读、保留其它 section 与注释、CRLF、转义组名的往返。
+- **清单校验**：必填项、`id` 规则、`menu.mode`/`position` 取值、保留键、缺文件。
+- **安装引擎**：复制/覆盖开关、目录形态插件、包根即核心目录、路径逃逸拒绝、非 plugin 目录拒绝、
+  缺入口拒绝、用户目录优先、dry-run 不落盘、`call` 缺失告警、`settings=false`。
+- **菜单分组（安装器决定）**：默认新建在最前、放进已有内置分组、指定名字与位置、指定不存在的分组会被拒绝并列出可用分组、
+  不同名字会产生不同分组、单条目分组补分隔线、第二个插件并入同一组后分隔线消失、重复安装幂等、
+  把插件从别的分组里挪走并清掉留下的空组、`MenuChoice.Skip` 覆盖插件清单、清单里出现 `group`/`position` 被拒绝、
+  `mode = "auto"` 被拒绝、`InspectMenus` 从目标的 locales 文件里读出分组译名、
+  内联 `MENUS = [...]` 被拒绝且不落盘、缺 `[[right_click_menu.MENUS]]` 时报错。
 - **GUI 冒烟**：在无显示环境下用 `Avalonia.Headless` 真正构造 `MainWindow` / `ConfirmDialog`，确认 XAML 能加载且所有 `x:Name` 控件都能解析（Windows exe 无法在本机运行，这是 GUI 侧唯一可自动化的验证手段）。
 
-此外做过一次真实端到端演练（已回滚）：把 `examples/helloWorld` 装进本仓库的 `plugin/`，然后用插件系统**真实**的 `settings.read()` / `utils.require()` / `right_click_menu._insertLevel2()` 验证：
+### 真实端到端演练（已回滚）
+
+把 Tagora 与 `examples/helloWorld` 装进本仓库的 `plugin/`，再用插件系统**真实的**
+`settings.read()` / `utils.require()` / `i18n.bind()` / `right_click_menu._insertLevel1/2/3()` 验证。
+
+三次安装覆盖了三种选法：
 
 ```
-PASS  settings.user.toml 被合并：helloWorld 段存在
-PASS  helloWorld.ENABLE === true
-PASS  helloWorld.NAME 已写入
-PASS  right_click_menu.FIND_LOST_PLUGINS === true
-PASS  默认 MENUS 仍完整（4 组）
-PASS  helloWorld 未被显式列进 MENUS（应由兜底追加）
-PASS  plugin/helloWorld.js 可被真实 require 解析
-PASS  插件覆盖了 call（菜单可点击的必要条件）
-PASS  右键菜单 HTML 里出现 helloWorld
-PASS  菜单项未被置灰
-PASS  菜单标题取自 NAME
-11/11 passed
+--（默认）        → 新建分组「Custom Plugins」，第 1 组（目标语言是 en 时的默认名；zh-CN 下是「自定义插件」）
+--menu-group __INTERACTIVE_PLUGINS__
+                  → 复用右键菜单分组「__INTERACTIVE_PLUGINS__」，helloWorld 进了内置的交互插件组
+--menu-group 自定义插件
+                  → tagora 挪进新分组「自定义插件」，原来那个空壳分组被自动清掉（分组数仍是 5）
+```
+
+渲染验证（7/7）：
+
+```
+PASS  一级菜单里排在内置分组之前
+PASS  自定义分组里有 tagora
+PASS  自定义分组渲染成了正常多条目分组（含补的分隔线）
+PASS  _insertLevel3 不抛错                      ← 回归：没有 staticActions 的插件不能走 plugin.action
+PASS  交互插件组里有 helloWorld                 ← 插件被放进内置分组时渲染正常
+PASS  两个插件都在各自组里没有被置灰
+PASS  点内置组里的条目派发到插件 call
 ```
 
 同时确认插件系统自带的 1369 个测试在安装后仍然全绿（`1368 pass / 0 fail / 1 skipped`）。
@@ -314,7 +374,9 @@ PASS  菜单标题取自 NAME
 
 ## 9. 已知限制 / 后续方向
 
-- 菜单只支持 `auto`（追加到末组）与 `none`。要"指定分组/顺序/图标"需要安装器直接改 `MENUS` 数组（会整体替换默认分组，需谨慎设计合并策略）。
+- 菜单分组每次安装时选一次（不持久化，保持安装器简单）。分组只支持放在最前 / 最后，
+  还不支持"插到某个分组之后"或给分组排图标。
+- `MENUS` 会被整段快照进 `settings.user.toml`，上游后续的默认菜单改动不会自动生效（见第 5 节）。
 - 不做卸载 UI。手工回滚：删掉 `plugin/<id>.js`（或目录）、从 `settings.user.toml` 删掉 `[<id>]` 段，必要时用 `settings.user.toml.bak` 覆盖回去。
 - 不做依赖管理、不做版本比较、不联网。
 - 不修改 `settings.default.toml`（这是刻意的：它会被整包升级覆盖）。
@@ -338,4 +400,12 @@ To be installable by this installer, a plugin package must provide:
 2. **Runtime files that map to `plugin/<id>.js` or `plugin/<id>/index.js`** (via `install.source` and optional `install.files`).
 3. **A plugin class that overrides `call`** (`module.exports = { plugin: class extends BasePlugin { call = () => {...} } }`) — otherwise the context-menu entry is rendered greyed out and is not clickable.
 
-Nothing else is required: no changes to `settings.default.toml`, `schemas.js`, or locale files. The installer copies the files, merges `[<id>] ENABLE/NAME` plus `[settings]` into `settings.user.toml`, and sets `[right_click_menu] FIND_LOST_PLUGINS = true` so the plugin shows up in the context menu (appended to the last menu group). Optional manifest keys: `[plugin] version/description/author/homepage/min_typora`, `[install] files/overwrite/settings/settings_overwrite`, `[menu] mode = "auto" | "none"`.
+Nothing else is required: no changes to `settings.default.toml`, `schemas.js`, or locale files. The installer
+copies the files, merges `[<id>] ENABLE/NAME` plus `[settings]` into `settings.user.toml`, and registers the
+context menu: it reads the target's effective `MENUS`, replays every built-in group verbatim, and puts the
+plugin into the group **you** pick at install time (a new one, or an existing group), keeping
+`FIND_LOST_PLUGINS = true` as a safety net. Group placement is deliberately an installer-side decision:
+`[menu] group` / `[menu] position` in a plugin manifest are rejected. `[menu] mode = "none"` (or choosing
+"no menu" in the installer) skips the menu entirely. Optional manifest keys:
+`[plugin] version/description/author/homepage/min_typora`, `[install] files/overwrite/settings/settings_overwrite`,
+`[menu] mode`.

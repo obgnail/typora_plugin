@@ -159,6 +159,20 @@ public sealed class TomlSettingsEditor
     /// <summary>原子写回文件，并先生成 <c>*.bak</c> 备份。</summary>
     public void Save(string path, bool createBackup = true)
     {
+        var text = Text;
+        if (text.Length > 0 && !text.EndsWith(_newline, StringComparison.Ordinal))
+        {
+            text += _newline;
+        }
+        SaveText(path, text, createBackup);
+    }
+
+    /// <summary>
+    /// 把已经构造好的文本原子写回文件（先备份）。
+    /// 供"先用本编辑器改标量、再用其它编解码器改数组表"的流程复用。
+    /// </summary>
+    public static void SaveText(string path, string text, bool createBackup = true)
+    {
         var directory = Path.GetDirectoryName(Path.GetFullPath(path));
         if (!string.IsNullOrEmpty(directory))
         {
@@ -171,11 +185,6 @@ public sealed class TomlSettingsEditor
         }
 
         var temp = path + ".tmp";
-        var text = Text;
-        if (text.Length > 0 && !text.EndsWith(_newline, StringComparison.Ordinal))
-        {
-            text += _newline;
-        }
         // UTF-8 无 BOM：与仓库里的 TOML 文件保持一致。
         File.WriteAllText(temp, text, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
         File.Move(temp, path, overwrite: true);

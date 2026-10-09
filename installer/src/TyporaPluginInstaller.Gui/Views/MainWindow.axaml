@@ -2,17 +2,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="TyporaPluginInstaller.Gui.Views.MainWindow"
         Title="Typora 插件安装器"
-        Width="940" Height="680"
-        MinWidth="760" MinHeight="540"
+        Width="980" Height="720"
+        MinWidth="800" MinHeight="560"
         WindowStartupLocation="CenterScreen">
 
-  <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" Margin="18">
+  <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" Margin="18">
 
     <!-- 标题 -->
     <StackPanel Grid.Row="0" Spacing="4">
       <TextBlock Text="Typora 插件安装器" FontSize="21" FontWeight="SemiBold" />
       <TextBlock TextWrapping="Wrap" Foreground="#777"
-                 Text="选择一个插件包目录和一个 Typora 的 plugin 目录。安装器会解析插件包里的 installer.toml，把核心文件复制进 plugin/，并把配置合并写进 settings.user.toml（先备份）。" />
+                 Text="选择一个插件包目录和一个 Typora 的 plugin 目录。安装器会解析插件包里的 installer.toml，把核心文件复制进 plugin/，把配置合并写进 settings.user.toml（先备份），并把插件登记进你选的右键菜单分组。" />
     </StackPanel>
 
     <!-- 插件包目录 -->
@@ -31,14 +31,23 @@
               HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
     </Grid>
 
+    <!-- 右键菜单分组（由安装器决定，插件清单里没有这一项） -->
+    <Grid Grid.Row="3" ColumnDefinitions="110,*,220,52,110" Margin="0,10,0,0">
+      <TextBlock Grid.Column="0" Text="右键菜单分组" VerticalAlignment="Center" />
+      <ComboBox Grid.Column="1" x:Name="MenuGroupBox" HorizontalAlignment="Stretch" />
+      <TextBox Grid.Column="2" x:Name="NewGroupNameBox" Margin="8,0,0,0" Watermark="新分组名称" />
+      <TextBlock Grid.Column="3" Text="位置" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10,0,8,0" />
+      <ComboBox Grid.Column="4" x:Name="MenuPositionBox" HorizontalAlignment="Stretch" />
+    </Grid>
+
     <!-- 选项 -->
-    <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="20" Margin="110,12,0,0">
+    <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="20" Margin="110,12,0,0">
       <CheckBox x:Name="DryRunCheck" Content="试运行（不写入任何文件）" />
       <CheckBox x:Name="AllowNonPluginTargetCheck" Content="允许目标目录不含插件系统（高级）" />
     </StackPanel>
 
     <!-- 操作 + 日志 -->
-    <Grid Grid.Row="4" RowDefinitions="Auto,*" Margin="0,16,0,0">
+    <Grid Grid.Row="5" RowDefinitions="Auto,*" Margin="0,16,0,0">
       <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10">
         <Button x:Name="PreviewButton" Content="试运行 / 预览" />
         <Button x:Name="InstallButton" Content="开始安装" />
@@ -53,6 +62,6 @@
                Margin="0,10,0,0" />
     </Grid>
 
-    <TextBlock Grid.Row="5" x:Name="SummaryText" Foreground="#777" TextWrapping="Wrap" Margin="0,10,0,0" />
+    <TextBlock Grid.Row="6" x:Name="SummaryText" Foreground="#777" TextWrapping="Wrap" Margin="0,10,0,0" />
   </Grid>
 </Window>

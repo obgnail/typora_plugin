@@ -33,9 +33,10 @@ settings = true
 settings_overwrite = false
 
 [menu]
-# auto = 自动追加到右键菜单（把 [right_click_menu] FIND_LOST_PLUGINS 置为 true）
-# none = 不注册右键菜单
-mode = "auto"
+# 插件清单只能表达"要不要上右键菜单"：
+#   group = 上菜单（默认），具体分组由安装器在安装时选择
+#   none  = 不注册右键菜单
+mode = "group"
 
 # 额外写进 [helloWorld] 段的配置项；插件里用 this.config.GREETING 读取。
 [settings]

@@ -52,12 +52,24 @@ public static partial class ManifestLoader
         var install = document.TryGetSection("install", out var installTable) ? installTable : new TomlTable();
         var menuTable = document.TryGetSection("menu", out var menu) ? menu : new TomlTable();
 
-        var menuMode = menuTable.GetTrimmedString("mode", "auto").ToLowerInvariant() switch
+        var menuMode = menuTable.GetTrimmedString("mode", "group").ToLowerInvariant() switch
         {
-            "auto" => MenuMode.Auto,
+            "group" => MenuMode.Group,
             "none" => MenuMode.None,
-            var other => throw new ManifestException($"[menu] mode 只支持 \"auto\" 或 \"none\"，收到 \"{other}\"。"),
+            var other => throw new ManifestException($"[menu] mode 只支持 \"group\" 或 \"none\"，收到 \"{other}\"。"),
         };
+
+        // 分组是安装器在安装时决定的：插件清单里出现这些键说明作者理解错了，
+        // 直接拒绝比静默忽略更容易被发现。
+        foreach (var forbidden in new[] { "group", "position" })
+        {
+            if (menuTable.Has(forbidden))
+            {
+                throw new ManifestException(
+                    $"[menu] 不允许指定 {forbidden}：放到哪个菜单分组由安装器在安装时选择。" +
+                    "请把它从 installer.toml 里删掉（插件只能通过 mode 表达\"要不要上菜单\"）。");
+            }
+        }
 
         var settings = new Dictionary<string, object?>(StringComparer.Ordinal);
         if (document.TryGetSection("settings", out var settingsTable))

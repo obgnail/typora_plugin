@@ -127,7 +127,7 @@ public static class TomlParser
     }
 
     /// <summary>去掉行尾注释（不触碰字符串里的 '#')。</summary>
-    private static string StripComment(string line)
+    internal static string StripComment(string line)
     {
         var quote = '\0';
         for (var i = 0; i < line.Length; i++)
@@ -158,7 +158,7 @@ public static class TomlParser
         return line;
     }
 
-    private static bool IsBalanced(string text)
+    internal static bool IsBalanced(string text)
     {
         var depth = 0;
         var quote = '\0';
@@ -241,7 +241,7 @@ public static class TomlParser
         throw new TomlParseException($"无法识别的值（{sourceName}）：{text}", line);
     }
 
-    private static string ParseBasicString(string text, int line)
+    internal static string ParseBasicString(string text, int line)
     {
         var sb = new StringBuilder();
         for (var i = 1; i < text.Length; i++)
@@ -277,7 +277,7 @@ public static class TomlParser
         throw new TomlParseException("字符串未闭合", line);
     }
 
-    private static List<string> ParseStringArray(string text, int line)
+    internal static List<string> ParseStringArray(string text, int line)
     {
         var result = new List<string>();
         var i = text.IndexOf('[') + 1;
