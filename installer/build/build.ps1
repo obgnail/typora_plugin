@@ -1,18 +1,29 @@
 <#
 .SYNOPSIS
-  在 Windows 上构建 Typora 插件安装器。
+  Build the Typora plugin installer on Windows.
+
+.DESCRIPTION
+  Keep this file PURE ASCII (every byte 0x00-0x7F). Windows PowerShell 5.1 reads
+  a BOM-less .ps1 with the system ANSI code page instead of UTF-8, so any
+  non-ASCII byte here turns into garbage -- and a stray lead byte can swallow the
+  byte after it, which is usually a closing quote, producing bogus parse errors
+  such as "unexpected token }". Pure ASCII reads the same under every code page,
+  so no BOM is needed and this works on any Windows locale.
+
+  If the machine blocks unsigned scripts, run it through a bypassing host:
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\build\build.ps1
 
 .EXAMPLE
   .\build\build.ps1
-  自包含单文件 win-x64 exe（目标机无需安装 .NET）。
+  Self-contained single-file win-x64 exe (no .NET needed on the target machine).
 
 .EXAMPLE
   .\build\build.ps1 -Test
-  先跑单元测试再发布。
+  Run the unit tests before publishing.
 
 .EXAMPLE
   .\build\build.ps1 -FrameworkDependent -CliOnly
-  只发布命令行版本，且为框架依赖（体积小，目标机需要 .NET 8 运行时）。
+  Publish the CLI only and framework-dependent (smaller; needs the .NET 8 runtime).
 #>
 [CmdletBinding()]
 param(
@@ -27,27 +38,28 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $out = Join-Path $root "dist\$Rid"
 $selfContained = if ($FrameworkDependent) { "false" } else { "true" }
-# 自包含单文件默认开启压缩：43MB vs 92MB，代价是启动时解压（GUI 工具可接受）
+# Compress the self-contained single file by default: 43 MB instead of 92 MB,
+# paid for with extraction time on startup (acceptable for a desktop tool).
 $compress = $selfContained
 
 if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
-    throw "找不到 dotnet（需要 .NET 8 SDK）。"
+    throw "dotnet not found (the .NET 8 SDK is required)."
 }
 
-Write-Host "==> dotnet    : $(dotnet --version)"
-Write-Host "==> 目标平台  : $Rid   配置: $Configuration   自包含: $selfContained"
+Write-Host "==> dotnet   : $(dotnet --version)"
+Write-Host "==> target   : $Rid   config: $Configuration   self-contained: $selfContained"
 
 if ($Test) {
-    Write-Host "==> 单元测试"
+    Write-Host "==> unit tests"
     dotnet test (Join-Path $root "tests\TyporaPluginInstaller.Tests\TyporaPluginInstaller.Tests.csproj") -c $Configuration --nologo
-    if ($LASTEXITCODE -ne 0) { throw "单元测试失败。" }
+    if ($LASTEXITCODE -ne 0) { throw "unit tests failed." }
 }
 
 if (Test-Path $out) { Remove-Item $out -Recurse -Force }
 New-Item -ItemType Directory -Path $out | Out-Null
 
 function Publish-Project([string]$project, [string]$label) {
-    Write-Host "==> 发布 $label"
+    Write-Host "==> publishing $label"
     dotnet publish (Join-Path $root $project) `
         -c $Configuration `
         -r $Rid `
@@ -57,7 +69,7 @@ function Publish-Project([string]$project, [string]$label) {
         -p:EnableCompressionInSingleFile=$compress `
         -o $out `
         --nologo
-    if ($LASTEXITCODE -ne 0) { throw "$label 发布失败。" }
+    if ($LASTEXITCODE -ne 0) { throw "$label failed to publish." }
 }
 
 if (-not $CliOnly) {
@@ -68,5 +80,5 @@ Publish-Project "src\TyporaPluginInstaller.Cli\TyporaPluginInstaller.Cli.csproj"
 Get-ChildItem $out -Filter *.pdb | Remove-Item -Force
 
 Write-Host ""
-Write-Host "==> 产物：$out"
+Write-Host "==> output: $out"
 Get-ChildItem $out | Format-Table Name, Length

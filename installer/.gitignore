@@ -3,6 +3,9 @@ bin/
 obj/
 dist/
 
+# Avalonia 的 XAML 编译器在项目旁边丢下的标记目录
+.avalonia-build-tasks/
+
 # 本地构建缓存（build.sh 默认写到这里）
 .cache/
 .dotnet-home/

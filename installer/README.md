@@ -288,6 +288,16 @@ core/myPlugin.js ─复制──▶ <plugin>/myPlugin.js
 产物：`dist/<rid>/TyporaPluginInstaller.exe`（GUI）与 `dist/<rid>/typora-plugin-installer-cli[.exe]`。
 自包含单文件 exe 约 43 MB，目标机不需要安装任何运行时。
 
+> **`build.ps1` 必须保持纯 ASCII**，连注释也不要写中文。Windows PowerShell 5.1 读取**无 BOM** 的 `.ps1`
+> 用的是系统 ANSI 代码页（简体中文 = GBK），不是 UTF-8：中文会变乱码，而且在双字节代码页（简中/繁中/
+> 日文/韩文）下，某些字节还会把紧随其后的字节一起吃掉——常常正好是字符串的结束引号——于是报出一串
+> 和实际内容无关的语法错误（`意外的标记 }`、`字符串缺少终止符`、`赋值表达式无效`）。
+> 纯 ASCII 在任何代码页下解码结果都一样，所以在任何语言的 Windows、任何 PowerShell 版本下都正常，
+> 也不需要 BOM。`build.sh` 不在此列（bash 不按代码页解码），可以继续用中文。
+>
+> 如果机器禁止运行未签名脚本（或文件带着"来自 Internet"的标记），用下面这行绕过执行策略：
+> `powershell -NoProfile -ExecutionPolicy Bypass -File .\build\build.ps1`
+
 > 本仓库里的 `NuGet.config` 只配置官方源。若所在环境 `~/.nuget/packages` 只读，构建脚本默认会把包缓存与 CLI home 放到 `installer/.cache/` 下（已 gitignore）。
 
 ---
@@ -322,7 +332,7 @@ GUI 与 CLI 共用同一个 `InstallEngine`，因此两者的行为完全一致�
 
 ```bash
 cd installer
-dotnet test TyporaPluginInstaller.sln     # 69 个测试
+dotnet test TyporaPluginInstaller.sln     # 70 个测试
 ```
 
 覆盖范围：
@@ -340,6 +350,7 @@ dotnet test TyporaPluginInstaller.sln     # 69 个测试
   `mode = "auto"` 被拒绝、`InspectMenus` 从目标的 locales 文件里读出分组译名、
   内联 `MENUS = [...]` 被拒绝且不落盘、缺 `[[right_click_menu.MENUS]]` 时报错。
 - **GUI 冒烟**：在无显示环境下用 `Avalonia.Headless` 真正构造 `MainWindow` / `ConfirmDialog`，确认 XAML 能加载且所有 `x:Name` 控件都能解析（Windows exe 无法在本机运行，这是 GUI 侧唯一可自动化的验证手段）。
+- **构建脚本编码**：仓库里所有 `*.ps1` 必须保持纯 ASCII（见第 6 节：Windows PowerShell 5.1 用系统代码页读无 BOM 脚本，中文会让解析器报出一串假语法错误）。
 
 ### 真实端到端演练（已回滚）
 
