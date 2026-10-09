@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>TyporaPluginInstaller.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+    <!-- 用来在无显示环境下构造 GUI 窗口，验证 XAML 与控件命名 -->
+    <PackageReference Include="Avalonia.Headless" Version="11.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TyporaPluginInstaller.Core\TyporaPluginInstaller.Core.csproj" />
+    <ProjectReference Include="..\..\src\TyporaPluginInstaller.Gui\TyporaPluginInstaller.Gui.csproj" />
+  </ItemGroup>
+
+</Project>

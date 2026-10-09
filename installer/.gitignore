@@ -1,0 +1,9 @@
+# 构建产物
+bin/
+obj/
+dist/
+
+# 本地构建缓存（build.sh 默认写到这里）
+.cache/
+.dotnet-home/
+.nuget/

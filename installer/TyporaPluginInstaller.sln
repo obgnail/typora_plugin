@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F6CB892A-7DF5-4355-B8C1-2537E4C718CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TyporaPluginInstaller.Core", "src\TyporaPluginInstaller.Core\TyporaPluginInstaller.Core.csproj", "{B41CD23C-AD5B-4E2C-A1FA-BCEF0E688E62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TyporaPluginInstaller.Cli", "src\TyporaPluginInstaller.Cli\TyporaPluginInstaller.Cli.csproj", "{8EF53C01-5CFE-4B51-A36E-0D6141B0B961}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TyporaPluginInstaller.Gui", "src\TyporaPluginInstaller.Gui\TyporaPluginInstaller.Gui.csproj", "{46727BAF-871E-4FE6-96C7-AF2CD99C2DFD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FCA4096F-8544-469B-95EB-525A752EFDB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TyporaPluginInstaller.Tests", "tests\TyporaPluginInstaller.Tests\TyporaPluginInstaller.Tests.csproj", "{4FB5A626-7765-4010-927F-116EB5E7F557}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B41CD23C-AD5B-4E2C-A1FA-BCEF0E688E62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B41CD23C-AD5B-4E2C-A1FA-BCEF0E688E62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B41CD23C-AD5B-4E2C-A1FA-BCEF0E688E62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B41CD23C-AD5B-4E2C-A1FA-BCEF0E688E62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EF53C01-5CFE-4B51-A36E-0D6141B0B961}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EF53C01-5CFE-4B51-A36E-0D6141B0B961}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EF53C01-5CFE-4B51-A36E-0D6141B0B961}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EF53C01-5CFE-4B51-A36E-0D6141B0B961}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46727BAF-871E-4FE6-96C7-AF2CD99C2DFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46727BAF-871E-4FE6-96C7-AF2CD99C2DFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46727BAF-871E-4FE6-96C7-AF2CD99C2DFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46727BAF-871E-4FE6-96C7-AF2CD99C2DFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FB5A626-7765-4010-927F-116EB5E7F557}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FB5A626-7765-4010-927F-116EB5E7F557}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FB5A626-7765-4010-927F-116EB5E7F557}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FB5A626-7765-4010-927F-116EB5E7F557}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B41CD23C-AD5B-4E2C-A1FA-BCEF0E688E62} = {F6CB892A-7DF5-4355-B8C1-2537E4C718CC}
+		{8EF53C01-5CFE-4B51-A36E-0D6141B0B961} = {F6CB892A-7DF5-4355-B8C1-2537E4C718CC}
+		{46727BAF-871E-4FE6-96C7-AF2CD99C2DFD} = {F6CB892A-7DF5-4355-B8C1-2537E4C718CC}
+		{4FB5A626-7765-4010-927F-116EB5E7F557} = {FCA4096F-8544-469B-95EB-525A752EFDB2}
+	EndGlobalSection
+EndGlobal

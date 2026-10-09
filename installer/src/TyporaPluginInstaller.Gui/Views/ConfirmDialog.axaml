@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TyporaPluginInstaller.Gui.Views.ConfirmDialog"
+        Title="确认安装"
+        Width="560" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+  <StackPanel Margin="18" Spacing="14">
+    <TextBlock Text="即将进行的改动" FontSize="16" FontWeight="SemiBold" />
+    <ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
+      <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontFamily="Consolas,Menlo,DejaVu Sans Mono,monospace" />
+    </ScrollViewer>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+      <Button x:Name="CancelButton" Content="取消" MinWidth="88" HorizontalContentAlignment="Center" />
+      <Button x:Name="OkButton" Content="确认安装" MinWidth="104" HorizontalContentAlignment="Center" />
+    </StackPanel>
+  </StackPanel>
+</Window>

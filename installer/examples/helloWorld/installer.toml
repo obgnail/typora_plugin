@@ -1,0 +1,42 @@
+# installer.toml —— 安装清单（安装器唯一必读的文件）
+#
+# 这个文件描述"插件包里哪些文件要被安装到 plugin/，以及要写哪些配置"。
+# 完整的字段说明见 ../../README.md。
+
+[plugin]
+# 固定名：同时是文件名（plugin/helloWorld.js）、settings 段名（[helloWorld]）
+# 只允许字母/数字/下划线，且不能以数字开头。
+id = "helloWorld"
+
+# 显示名：写进 NAME，也是右键菜单里显示的标题。
+name = "Hello World（示例）"
+
+version = "1.0.0"
+description = "演示用插件：点击右键菜单弹出一条通知。"
+author = "your-name"
+homepage = "https://github.com/your-name/your-plugin"
+
+[install]
+# 核心文件所在目录（相对本文件）。安装器会把 core/ 下的内容原样映射到 plugin/。
+source = "core"
+
+# 也可以不用 source，改成显式列条目（二者只能选一种思路，files 优先）：
+# files = ["helloWorld.js"]
+
+# 目标已存在同名文件时是否覆盖。
+overwrite = true
+
+# 是否写入 settings.user.toml。
+settings = true
+
+# 是否覆盖用户已有的同名配置值（默认 false：只补缺失的键）。
+settings_overwrite = false
+
+[menu]
+# auto = 自动追加到右键菜单（把 [right_click_menu] FIND_LOST_PLUGINS 置为 true）
+# none = 不注册右键菜单
+mode = "auto"
+
+# 额外写进 [helloWorld] 段的配置项；插件里用 this.config.GREETING 读取。
+[settings]
+GREETING = "Hello World"
