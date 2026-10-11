@@ -1,47 +1,19 @@
-const createVersioning = (trackedActions = []) => {
-  let seq = 0
-  const latest = Object.fromEntries(trackedActions.map(action => [action, 0]))
-  return {
-    isLatest: (action, id) => !(action in latest) || id === latest[action],
-    next: (action) => {
-      const id = ++seq
-      if (action in latest) {
-        latest[action] = id
-      }
-      return id
-    },
-  }
-}
+const { createLinter } = require("./linter.js")
+const { DEFAULT_VALUES, ALIAS_MAP } = require("./rule-definitions.js")
 
-const createLinterClient = (workerPath, hooks, contentProvider) => {
-  const ACTION = { CONFIGURE: "configure", CLOSE: "close", CHECK: "check", FIX: "fix" }
-  const versioning = createVersioning(Object.values(ACTION))
-
-  const { onCheck, onFix, onError } = hooks
-  const worker = new Worker(workerPath)
-  worker.onmessage = event => {
-    const { action, requestId, result } = event.data
-    if (!versioning.isLatest(action, requestId)) return
-    const onEvent = (action === ACTION.FIX) ? onFix : onCheck
-    onEvent(result)
-  }
-  worker.onerror = event => onError(event)
-
-  const send = (action, customPayload) => {
-    const message = { action, requestId: versioning.next(action), payload: { content: contentProvider(), ...customPayload } }
-    worker.postMessage(message)
-  }
-
-  return {
-    configure: (payload) => send(ACTION.CONFIGURE, payload),
-    close: () => send(ACTION.CLOSE),
-    check: () => send(ACTION.CHECK),
-    fix: (fixInfo) => send(ACTION.FIX, { fixInfo }),
-  }
+// Rule keys may be canonical names or aliases, case-insensitive (later wins on conflict).
+// Normalize them all to canonical names upfront to simplify downstream processing.
+const normalizeConfig = (config) => {
+  return Object.fromEntries(
+    Object.entries(config).map(([name, option]) => {
+      name = /^md\d{3}$/i.test(name) ? name.toUpperCase() : name.toLowerCase()
+      name = ALIAS_MAP[name] ?? name
+      return [name, option]
+    }),
+  )
 }
 
 class MarkdownlintPlugin extends BasePlugin {
-  fixInfos = []
   TRANSLATIONS = this.i18n.entries(Object.keys(this.i18n.data).filter(e => e.startsWith("MD")))
   ACTIONS = (() => {
     const getDetail = async infos => {
@@ -61,10 +33,10 @@ class MarkdownlintPlugin extends BasePlugin {
         this.linter.check()
         this.utils.notification.show(this.i18n.t("success.refresh"))
       },
-      detailAll: () => getDetail(this.fixInfos),
-      fixAll: () => this.linter.fix(this.fixInfos),
-      detailSingle: idx => getDetail([this.fixInfos[idx]]),
-      fixSingle: idx => this.linter.fix([this.fixInfos[idx]]),
+      detailAll: () => getDetail(this.linter.getFixInfos()),
+      fixAll: () => this.linter.fixAll(),
+      detailSingle: idx => getDetail([this.linter.getFixInfo(idx)]),
+      fixSingle: idx => this.linter.fixByIndex(idx),
       toggleSourceMode: () => File.toggleSourceMode(),
       settings: () => this.settings(),
       jumpToLine: lineToGo => {
@@ -75,18 +47,8 @@ class MarkdownlintPlugin extends BasePlugin {
     }
   })()
 
-  // Markdownlint config supports names and aliases,
-  // keys are not case-sensitive and processed in order from top to bottom with later values overriding earlier ones.
-  // To simplify the main processing logic, we first normalize the config by resolving all aliases to their names.
   prepare = () => {
-    const mapAliasToName = require("./rule-aliases.json")
-    this.config.RULE_CONFIG = Object.fromEntries(
-      Object.entries(this.config.RULE_CONFIG).map(([name, option]) => {
-        name = /^md\d{3}$/i.test(name) ? name.toUpperCase() : name.toLowerCase()
-        name = mapAliasToName[name] ?? name
-        return [name, option]
-      }),
-    )
+    this.config.RULE_CONFIG = normalizeConfig(this.config.RULE_CONFIG)
   }
 
   style = () => `
@@ -123,7 +85,7 @@ class MarkdownlintPlugin extends BasePlugin {
 
   hotkey = () => [
     { hotkey: this.config.HOTKEY, callback: () => this.call() },
-    { hotkey: this.config.HOTKEY_FIX_LINT, callback: () => this.linter.fix() },
+    { hotkey: this.config.HOTKEY_FIX_LINT, callback: () => this.linter.fixAll() },
   ]
 
   html = () => {
@@ -137,30 +99,11 @@ class MarkdownlintPlugin extends BasePlugin {
   }
 
   init = () => {
-    const client = createLinterClient(
-      "plugin/markdownlint/linter-worker.js",
-      { onCheck: this._onCheck, onFix: this._onFix, onError: event => console.error(event.message) },
+    this.linter = createLinter(
+      this.utils,
       () => this.utils.getCurrentFileContent(),
+      { onCheck: this._onCheck, onFix: this._onFix, onError: console.error },
     )
-    this.linter = {
-      configure: async ({ ruleConfig = this.config.RULE_CONFIG, customRuleFiles = this.config.CUSTOM_RULE_FILES, persistent = false } = {}) => {
-        if (persistent) {
-          const conf = { RULE_CONFIG: ruleConfig, CUSTOM_RULE_FILES: customRuleFiles }
-          await this.utils.settings.handle(this.fixedName, pluginSettings => Object.assign(pluginSettings, conf))
-          Object.assign(this.config, conf)
-        }
-        client.configure({
-          ruleConfig,
-          coreLib: this.utils.joinPluginPath("plugin/markdownlint/markdownlint.min.js"),
-          helpersLib: this.utils.joinPluginPath("plugin/markdownlint/markdownlint-rule-helpers.min.js"),
-          polyfillLibs: ["plugin/global/core/polyfill.js", "plugin/markdownlint/polyfill.js"].map(f => this.utils.joinPluginPath(f)),
-          customRuleFiles: customRuleFiles.map(f => this.utils.resolvePluginPath(f)),
-        })
-      },
-      close: client.close,
-      check: client.check,
-      fix: (fixInfo = this.fixInfos) => client.fix(fixInfo),
-    }
 
     this.entities = {
       panel: document.querySelector("#plugin-markdownlint"),
@@ -173,12 +116,13 @@ class MarkdownlintPlugin extends BasePlugin {
   process = () => {
     const { eventHub } = this.utils
     eventHub.on(eventHub.eventType.fileEdited, this.utils.debounce(this.linter.check, 500))
-    eventHub.on(eventHub.eventType.allPluginsHadInjected, () => this.linter.configure())
+    eventHub.on(eventHub.eventType.allPluginsHadInjected, () => this.linter.configure(this.config.RULE_CONFIG, this.config.CUSTOM_RULE_FILES))
     eventHub.on(eventHub.eventType.toggleSettingPage, force => {
       if (force) this.entities.panel.toggle(force)
       if (this.entities.indicator) this.utils.toggleInvisible(this.entities.indicator, force)
     })
 
+    this.entities.panel.addEventListener("btn-click", ev => this.ACTIONS[ev.detail.action]?.())
     this.entities.indicator?.addEventListener("mousedown", ev => {
       if (ev.button === 0) this.call()
       else if (ev.button === 2) this.ACTIONS[this.config.RIGHT_CLICK_INDICATOR_ACTION]?.()
@@ -188,15 +132,14 @@ class MarkdownlintPlugin extends BasePlugin {
       ev.stopPropagation()
       if (ev.button === 2) this.ACTIONS[this.config.RIGHT_CLICK_TABLE_ACTION]?.()
     })
-    this.entities.panel.addEventListener("btn-click", ev => this.ACTIONS[ev.detail.action]?.())
     this.entities.table.addEventListener("row-action", ev => {
       const { action, rowData } = ev.detail
       const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
       this.ACTIONS[action](arg)
     })
     this.entities.table.addEventListener("row-click", ev => {
-      const action = this.config.LEFT_CLICK_ROW_ACTION
       const { rowData } = ev.detail
+      const action = this.config.LEFT_CLICK_ROW_ACTION
       const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
       this.ACTIONS[action](arg)
     })
@@ -208,11 +151,10 @@ class MarkdownlintPlugin extends BasePlugin {
   }
 
   settings = async () => {
-    const defaultValues = require("./rule-default-values.json")
     const getData = () => {
       const cfg = this.config.RULE_CONFIG
       return {
-        ...defaultValues,
+        ...DEFAULT_VALUES,
         ...cfg,
         default: true,  // Force `default` to true
         extends: cfg.extends || "",  // `extends` type is null or string. Text fields do not support null, convert it to an empty string
@@ -267,16 +209,16 @@ class MarkdownlintPlugin extends BasePlugin {
       }
     }
     const getParsers = () => {
-      const toNumberOrNumberArray = (value) => {
-        if (!isNaN(value)) {
-          return Number(value)
+      const toNumberOrNumberArray = val => {
+        if (!isNaN(val)) {
+          return Number(val)
         }
         try {
-          return JSON.parse(`[${value}]`).flat()  // supports: [1,2,3] or 1,2,3
+          return JSON.parse(`[${val}]`).flat()  // supports: [1,2,3] or 1,2,3
         } catch (err) {
           console.error(err)
         }
-        return value
+        return val
       }
       return {
         "extends": val => val.trim(),
@@ -311,10 +253,16 @@ class MarkdownlintPlugin extends BasePlugin {
       if (data.extends === "") {
         data.extends = null  // Convert an empty string back to null
       }
-      const ruleConfig = this.utils.minimize(data, defaultValues)
-      await this.linter.configure({ ruleConfig, persistent: true })
+      const ruleConfig = this.utils.minimize(data, DEFAULT_VALUES)
+      await this._saveRuleConfig(ruleConfig)
+      this.linter.configure(ruleConfig, this.config.CUSTOM_RULE_FILES)
       this.utils.notification.show(this.i18n.t("success.edit"))
     }
+  }
+
+  _saveRuleConfig = async (ruleConfig) => {
+    await this.utils.settings.save(this.fixedName, { RULE_CONFIG: ruleConfig })
+    this.config.RULE_CONFIG = ruleConfig
   }
 
   _initTableColumns = () => {
@@ -340,7 +288,6 @@ class MarkdownlintPlugin extends BasePlugin {
   }
 
   _onCheck = fixInfos => {
-    this.fixInfos = fixInfos
     this.entities.indicator?.toggleAttribute("lint-check-failed", !!fixInfos.length)
     if (!this.entities.panel.hidden) {
       this.entities.table.setData(fixInfos.map((item, idx) => {
