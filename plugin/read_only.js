@@ -107,18 +107,15 @@ class ReadOnlyPlugin extends BasePlugin {
     this.utils.entities.querySelectorAllInWrite(`input[type="checkbox"]`).forEach(box => box.toggleAttribute("disabled", isLocked))
 
     // update inputs
-    const inputSelectors = [
+    const inputs = [
       "#typora-quick-open-input input", "#plugin-search-multi-form input", "#plugin-commander-form textarea",
       "#plugin-command-palette-input", "#plugin-ripgrep-form input", "#plugin-preferences-search input",
     ]
-    inputSelectors.forEach(s => {
-      const el = document.querySelector(s)
-      if (el) isLocked ? el.setAttribute("readonly", "true") : el.removeAttribute("readonly")
-    })
+    inputs.forEach(s => document.querySelector(s)?.removeAttribute("readonly"))
 
-    // update replace buttons
-    const btnSelectors = ["#search-panel-replace-btn", "#search-panel-replaceall-btn", "#search-panel-replace-input"]
-    btnSelectors.forEach(s => document.querySelector(s)?.toggleAttribute("disabled", isLocked))
+    // update buttons
+    const buttons = ["#search-panel-replace-btn", "#search-panel-replaceall-btn", "#search-panel-replace-input"]
+    buttons.forEach(s => document.querySelector(s)?.toggleAttribute("disabled", isLocked))
 
     // update show text
     if (this.config.SHOW_TEXT) {
@@ -128,9 +125,8 @@ class ReadOnlyPlugin extends BasePlugin {
 
     // update menu items
     if (this.config.DISABLE_CONTEXT_MENU_WHEN_READ_ONLY) {
-      const excludeSelectors = this.config.REMAIN_AVAILABLE_MENU_KEY.map(key => `:not([data-key="${key}"])`).join("")
-      document.querySelectorAll(`#context-menu > li${excludeSelectors}`)
-        .forEach(el => el.classList.toggle("plu-disable-menu", isLocked))
+      const exclude = this.config.REMAIN_AVAILABLE_MENU_KEY.map(key => `:not([data-key="${key}"])`).join("")
+      document.querySelectorAll(`#context-menu > li${exclude}`).forEach(el => el.classList.toggle("plu-disable-menu", isLocked))
     }
   }
 
