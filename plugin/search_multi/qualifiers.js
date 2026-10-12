@@ -323,14 +323,13 @@ const createMarkdownQualifiers = ctx => {
     childrenContent: node => (node.children || []).map(TRANSFORMER.content).join("\n"),
     infoAndContent: node => `${node.info}\n${node.content}`,
     attrAndContent: node => `${TRANSFORMER.attrs(node)}\n${node.content}`,
+    attrAndChildrenContent: node => `${TRANSFORMER.attrs(node)}\n${TRANSFORMER.childrenContent(node)}`,
     rawMeta: node => node.meta,
     meta: key => node => node.meta?.[key],
-    metaOrContent: metaKey => node => node.meta?.[metaKey] || node.content,
-    attrAndChildrenContent: node => `${TRANSFORMER.attrs(node)}\n${TRANSFORMER.childrenContent(node)}`,
+    metaOrContent: key => node => node.meta?.[key] || node.content,
   }
 
-  const parse = async fileCtx => utils.parseMarkdownBlock(await fileCtx.getContent())
-
+  const parse = async fileCtx => utils.parseMarkdown(await fileCtx.getContent())
   const getAst = fileCtx => fileCtx.compute("$ast", parse)
 
   const collectNodes = (ast = [], filter) => {

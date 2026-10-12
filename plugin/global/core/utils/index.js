@@ -889,8 +889,7 @@ class utils {
     // .use(sub).use(sup).use(ins)
   }
   static getMarkdownIt = this.once(() => this.createMarkdownIt())
-  static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
-  static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
+  static parseMarkdown = (content, options = {}) => this.getMarkdownIt().parse(content, options)
   static getDefaultRenderer = this.once(() => {
     const md = this.createMarkdownIt()
     const defaultRule = md.renderer.rules.image || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options))

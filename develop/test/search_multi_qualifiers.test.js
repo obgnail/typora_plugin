@@ -1,5 +1,3 @@
-global.File = { option: { wordsPerMinute: 300 } }
-
 const { describe, it, before } = require("node:test")
 const assert = require("node:assert")
 const path = require("path")
@@ -10,8 +8,7 @@ const mockCtx = {
   utils: {
     splitFrontMatter: () => ({ yamlObject: null }),
     Package: { Path: path },
-    parseMarkdownInline: () => [],
-    parseMarkdownBlock: () => [],
+    parseMarkdown: () => [],
   },
 }
 
