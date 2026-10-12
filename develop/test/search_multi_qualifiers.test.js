@@ -746,7 +746,7 @@ describe("buildQualifier — default value injection", () => {
 
 describe("Markdown qualifiers — shared structure", () => {
   const MARKDOWN_SCOPES = [
-    "blockcode", "blockcodelang", "blockcodebody", "blockcodeline",
+    "blockcode", "blockcodelang", "blockcodebody",
     "blockhtml", "blockquote", "table", "thead", "tbody",
     "ol", "ul", "task", "taskdone", "tasktodo",
     "head", "h1", "h2", "h3", "h4", "h5", "h6",
@@ -824,7 +824,7 @@ describe("getQualifiers — scope coverage", () => {
     "haschinese", "hasemoji", "hasinvisiblechar", "isempty", "crlf",
   ]
   const EXPECTED_MARKDOWN_SCOPES = [
-    "blockcode", "blockcodelang", "blockcodebody", "blockcodeline",
+    "blockcode", "blockcodelang", "blockcodebody",
     "blockhtml", "blockquote", "inlinemath", "blockmath", "table",
     "thead", "tbody", "ol", "ul", "task", "taskdone", "tasktodo",
     "head", "h1", "h2", "h3", "h4", "h5", "h6",

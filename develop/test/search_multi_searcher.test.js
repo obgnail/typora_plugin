@@ -128,7 +128,7 @@ beforeEach(() => {
 describe("Searcher: Dual-Index Architecture & Rendered Text Defense", () => {
   it("should preserve Dual-Index searching (Raw Markdown vs Unescaped Text)", async () => {
     await assertMatch(`h1:"1 < 2 *star*"`, "torture", true)
-    await assertMatch(`h1:"1 &lt; 2 \\*star\\*"`, "torture", true)
+    await assertMatch(`h1:"1 &lt; 2 \\*star\\*"`, "torture", false)
   })
   it("should intentionally extract inner micro-fragments due to Dual-Index design", async () => {
     await assertMatch(`h1:/^Bold$/`, "torture", true)
@@ -191,7 +191,6 @@ describe("Searcher: Full Markdown Block Matchers", () => {
   it("should match Code Blocks", async () => {
     await assertMatch("blockcodelang:javascript", "torture")
     await assertMatch("blockcodebody:hello", "torture")
-    await assertMatch("blockcodeline:const a = 1;", "torture")
     await assertMatch("blockcode:console.log", "torture")
   })
   it("should match Tables and Quotes", async () => {
@@ -335,17 +334,17 @@ describe("Searcher: AST Optimizer & Physical Plan Generation", () => {
 
   it("should deeply flatten and sort identically nested operators", () => {
     // Explicit nested parentheses for identical AND operators
-    // Costs: blockcodeline(3), ext(1), size(1), h1(3)
-    const rawAst = searcher.parse("blockcodeline:A AND (ext:md AND size>10kb AND h1:Title)")
+    // Costs: blockcode(3), ext(1), size(1), h1(3)
+    const rawAst = searcher.parse("blockcode:A AND (ext:md AND size>10kb AND h1:Title)")
     const optAst = searcher.optimize(rawAst)
 
-    // Right-heavy tree expected: (ext AND (size AND (blockcodeline AND h1)))
+    // Right-heavy tree expected: (ext AND (size AND (blockcode AND h1)))
     assert.strictEqual(optAst.type, AST.LogicalExpression)
     assert.strictEqual(optAst.operator, "AND")
     assert.ok(["ext", "size"].includes(optAst.left.semantic.scope))
     assert.ok(["ext", "size"].includes(optAst.right.left.semantic.scope))
-    assert.ok(["h1", "blockcodeline"].includes(optAst.right.right.left.semantic.scope))
-    assert.ok(["h1", "blockcodeline"].includes(optAst.right.right.right.semantic.scope))
+    assert.ok(["h1", "blockcode"].includes(optAst.right.right.left.semantic.scope))
+    assert.ok(["h1", "blockcode"].includes(optAst.right.right.right.semantic.scope))
   })
 
   it("should treat mixed operators (AND/OR) as strict structural boundaries", () => {

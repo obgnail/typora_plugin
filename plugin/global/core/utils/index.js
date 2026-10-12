@@ -39,7 +39,7 @@ class utils {
 
   static PLUGIN_LOAD_ABORT = Symbol.for("plugin:load-abort")  // For plugins prepare method; return this to stop loading the plugin
 
-  // =========== Plugin ===========
+  // ---------- Plugin ----------
   static i18n = i18n
   static container = container
 
@@ -141,7 +141,7 @@ class utils {
   }
 
 
-  // =========== Event ===========
+  // ---------- Event ----------
   static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
   static isIMEActivated = ev => ev.key === "Process"
   static modifierKey = keyString => {
@@ -153,7 +153,7 @@ class utils {
   }
 
 
-  // =========== Pure Function ===========
+  // ---------- Pure Function ----------
   static noop = () => undefined
   static identity = args => args
 
@@ -579,7 +579,7 @@ class utils {
     }
   }
 
-  // =========== Business File ===========
+  // ---------- Business File ----------
   static toFileProtocol = (path) => (path && !path.startsWith("file://")) ? `file://${path}` : path
   static getLocalRootUrl = () => File.editor.docMenu.getLocalRootUrl() || this.getCurrentDirPath()
   static resolveLocalPath = (path) => PATH.resolve(this.getLocalRootUrl(), path)
@@ -674,7 +674,7 @@ class utils {
     remove: () => localStorage.removeItem(key),
   })
 
-  // =========== Basic File ===========
+  // ---------- Basic File ----------
   static getDirname = () => global.dirname || global.__dirname
   static getHomeDir = () => require("os").homedir() || File.option.userPath
   static getFilePath = () => File.filePath || File.bundle?.filePath || ""
@@ -853,7 +853,7 @@ class utils {
     return drainPromise
   }
 
-  // =========== Business Operations ===========
+  // ---------- Business Operations ----------
   static exitTypora = () => JSBridge.invoke("window.close")
   static restartTypora = () => {
     this.openFolder(this.getMountFolder())
@@ -884,7 +884,7 @@ class utils {
 
   static createMarkdownIt = () => {
     const { footnote, mark, tasklist, alert, katex, frontMatter, sub, sup, ins } = require("../lib/markdown-it-plugins")
-    return require("../lib/markdown-it")({ html: true, linkify: true, typographer: true })
+    return require("../lib/markdown-it")({ html: true })
       .use(footnote).use(mark).use(tasklist).use(frontMatter, () => void 0).use(alert, { deep: true }).use(katex, { throwOnError: false })
     // .use(sub).use(sup).use(ins)
   }
@@ -977,7 +977,7 @@ class utils {
     return root
   }
 
-  // =========== DOM Operations ===========
+  // ---------- DOM Operations ----------
   static entities = {
     eWrite: document.querySelector("#write"),
     $eWrite: $(document.querySelector("#write")),
