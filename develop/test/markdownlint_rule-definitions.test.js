@@ -257,6 +257,259 @@ describe("Subfield key format validation", () => {
   })
 })
 
+describe("dependsOn -> dependencies reference integrity", () => {
+  it("every dependency key references a real sibling switch field within the same rule", () => {
+    for (const [name, { fields }] of ruleEntries) {
+      if (fields === null) continue
+      const rendered = fields.map(fn => fn(name))
+      const siblings = Object.fromEntries(rendered.map(f => [f.key, f]))
+      for (const field of rendered) {
+        if (!field.dependencies) continue
+        for (const [depKey, depVal] of Object.entries(field.dependencies)) {
+          assert.ok(depKey.startsWith(`${name}.`), `Rule "${name}": dependency "${depKey}" of "${field.key}" is not scoped to its own rule`)
+          assert.ok(siblings[depKey], `Rule "${name}": field "${field.key}" depends on "${depKey}" which is NOT a declared field of "${name}"`)
+          assert.strictEqual(
+            siblings[depKey].type,
+            "switch",
+            `Rule "${name}": dependency "${depKey}" has type "${siblings[depKey].type}"; dependencies only make sense on boolean switches`,
+          )
+          assert.strictEqual(typeof depVal, "boolean", `Rule "${name}": dependency value for "${depKey}" must be boolean (got: ${JSON.stringify(depVal)})`)
+        }
+      }
+    }
+  })
+
+  it("no field depends on itself", () => {
+    for (const [name, { fields }] of ruleEntries) {
+      if (fields === null) continue
+      for (const fn of fields) {
+        const field = fn(name)
+        assert.ok(!field.dependencies?.[field.key], `Rule "${name}": field "${field.key}" depends on itself`)
+      }
+    }
+  })
+})
+
+describe("field default value type matches rendered control type", () => {
+  const validators = {
+    switch: (v) => typeof v === "boolean",
+    number: (v) => typeof v === "number" && Number.isInteger(v),
+    text: (v) => typeof v === "string",
+    select: (v) => typeof v === "string",
+    array: (v) => Array.isArray(v),
+  }
+
+  it("every subfield's default value matches its control type (and integer bounds)", () => {
+    const ignored = {
+      MD022: ["lines_above", "lines_below"],
+    }
+    for (const [name, { fields, default: def }] of ruleEntries) {
+      if (fields === null) continue
+      for (const fn of fields) {
+        const field = fn(name)
+        const subKey = field.key.slice(`${name}.`.length)
+        const val = def[subKey]
+        const validate = validators[field.type]
+        assert.ok(validate, `Rule "${name}": unknown field type "${field.type}" for "${field.key}" -- update validators map`)
+        if (ignored[name] && !ignored[name].includes(subKey)) {
+          assert.ok(
+            validate(val),
+            `Rule "${name}": default of "${subKey}" is ${JSON.stringify(val)} but control type "${field.type}" requires a different type`,
+          )
+        }
+        if (field.type === "number") {
+          if (field.min !== undefined) assert.ok(val >= field.min, `Rule "${name}": default "${subKey}"=${val} < min=${field.min}`)
+          if (field.max !== undefined) assert.ok(val <= field.max, `Rule "${name}": default "${subKey}"=${val} > max=${field.max}`)
+        }
+      }
+    }
+  })
+
+  it("integer fields with min/max must satisfy min <= max", () => {
+    for (const [name, { fields }] of ruleEntries) {
+      if (fields === null) continue
+      for (const fn of fields) {
+        const field = fn(name)
+        if (field.type === "number" && field.min !== undefined && field.max !== undefined) {
+          assert.ok(field.min <= field.max, `Rule "${name}": field "${field.key}" has min=${field.min} > max=${field.max}`)
+        }
+      }
+    }
+  })
+})
+
+describe("Select_ default value membership", () => {
+  it("every select field's default value must be one of its declared options", () => {
+    for (const [name, { fields, default: def }] of ruleEntries) {
+      if (fields === null) continue
+      for (const fn of fields) {
+        const field = fn(name)
+        if (field.type !== "select") continue
+        const subKey = field.key.slice(`${name}.`.length)
+        const val = def[subKey]
+        const options = Object.keys(field.options)
+        assert.ok(options.length > 0, `Rule "${name}": select field "${field.key}" has no options`)
+        assert.ok(
+          options.includes(val),
+          `Rule "${name}": default "${subKey}"=${JSON.stringify(val)} is not one of select options [${options.join(", ")}]`,
+        )
+      }
+    }
+  })
+})
+
+describe("config-schema.js top-level Box structure", () => {
+  it("configSchema has exactly 4 boxes: global configs, specific rules, rule groups, actions", () => {
+    const configSchema = proxyquire("../../plugin/markdownlint/config-schema.js", {
+      "../global/core/i18n.js": { t: (_ns, key) => key ?? _ns, "@global": true },
+    })
+    assert.strictEqual(configSchema.length, 4, `Expected 4 top-level boxes, got ${configSchema.length}`)
+    assert.strictEqual(configSchema[0].title, undefined, "Box[0] (globalConfigs) must be an UntitledBox")
+    assert.strictEqual(configSchema[3].title, undefined, "Box[3] (actions) must be an UntitledBox")
+    assert.strictEqual(configSchema[1].title, "title.specificRules", "Box[1] title must be the 'title.specificRules' i18n key")
+    assert.strictEqual(configSchema[2].title, "title.ruleGroups", "Box[2] title must be the 'title.ruleGroups' i18n key")
+  })
+
+  it("globalConfigs box contains exactly a disabled 'default' switch and an 'extends' text field", () => {
+    const configSchema = proxyquire("../../plugin/markdownlint/config-schema.js", {
+      "../global/core/i18n.js": { t: (_ns, key) => key ?? _ns, "@global": true },
+    })
+    const fields = configSchema[0].fields
+    assert.deepStrictEqual(fields.map(f => f.key).sort(), ["default", "extends"])
+    const byKey = Object.fromEntries(fields.map(f => [f.key, f]))
+    assert.strictEqual(byKey.default.type, "switch", `"default" must render as a switch`)
+    assert.strictEqual(byKey.default.disabled, true, `"default" switch must be disabled (it mirrors the markdownlint 'default' setting)`)
+    assert.strictEqual(byKey.extends.type, "text", `"extends" must render as a text field`)
+  })
+
+  it("ruleGroups box contains exactly one switch per group, with explain listing member rules", () => {
+    const configSchema = proxyquire("../../plugin/markdownlint/config-schema.js", {
+      "../global/core/i18n.js": { t: (_ns, key) => key ?? _ns, "@global": true },
+    })
+    const fields = configSchema[2].fields
+    assert.deepStrictEqual(
+      fields.map(f => f.key).sort(),
+      [...GROUP_NAMES].sort(),
+      `Group switches diverge from GROUP_NAMES`,
+    )
+    for (const f of fields) {
+      assert.strictEqual(f.type, "switch", `Group "${f.key}" must render as a switch`)
+      assert.strictEqual(f.explain, GROUPS[f.key].join("、"), `Group "${f.key}": explain must list its member rules`)
+    }
+  })
+
+  it("actions box contains exactly 'viewRules' and 'restoreRules', and no action leaks into rule/group boxes", () => {
+    const configSchema = proxyquire("../../plugin/markdownlint/config-schema.js", {
+      "../global/core/i18n.js": { t: (_ns, key) => key ?? _ns, "@global": true },
+    })
+    const actionKeys = configSchema[3].fields.filter(f => f.type === "action").map(f => f.key).sort()
+    assert.deepStrictEqual(actionKeys, ["restoreRules", "viewRules"])
+    for (const boxIdx of [0, 1, 2]) {
+      const leaked = configSchema[boxIdx].fields.filter(f => f.type === "action").map(f => f.key)
+      assert.deepStrictEqual(leaked, [], `Action(s) [${leaked}] leaked into configSchema[${boxIdx}]`)
+    }
+    const stray = schemaRules.filter(f => f.type === "action").map(f => f.key)
+    assert.deepStrictEqual(stray, [], `Action(s) [${stray}] found among specificRules`)
+  })
+})
+
+describe("rule i18n coverage in locale files", () => {
+  const I18N_FILES = require("./fixtures/i18n_files.js")
+
+  // Record every (namespace, key) pair that config-schema.js requests at render time.
+  // "@global": true makes the stub apply to schema-builders.js as well (it also requires i18n.js).
+  const i18nCalls = []
+  before(() => {
+    proxyquire("../../plugin/markdownlint/config-schema.js", {
+      "../global/core/i18n.js": {
+        t: (ns, key) => {
+          i18nCalls.push([ns, key])
+          return key ?? ns
+        },
+        "@global": true,
+      },
+    })
+    assert.ok(i18nCalls.length > 0, "no i18n.t calls recorded -- stub may be stale")
+  })
+
+  const lookup = (obj, ns, key) => obj[ns]?.[key] ?? obj.global?.[key]
+
+  it("every i18n key requested by config-schema.js exists in every locale file", () => {
+    for (const file of Object.values(I18N_FILES)) {
+      const missing = i18nCalls
+        .filter(([ns, key]) => lookup(file.obj, ns, key) === undefined)
+        .map(([ns, key]) => `${ns}:${key}`)
+      assert.deepStrictEqual(missing, [], `[${file.name}] missing ${missing.length} markdownlint translation(s)`)
+    }
+  })
+
+  it("all requested markdownlint translations are non-empty strings", () => {
+    for (const file of Object.values(I18N_FILES)) {
+      for (const [ns, key] of i18nCalls) {
+        const val = lookup(file.obj, ns, key)
+        if (val === undefined) continue // covered by the existence test above
+        assert.ok(
+          typeof val === "string" && val.trim().length > 0,
+          `[${file.name}] "${ns}:${key}" must be a non-empty string (got: ${JSON.stringify(val)})`,
+        )
+      }
+    }
+  })
+
+  it("en locale has no untranslated CJK residue in markdownlint keys", () => {
+    const en = I18N_FILES["en"]
+    assert.ok(en, "en.json not found in plugin/global/locales")
+    const residue = i18nCalls
+      .filter(([ns, key]) => /[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(lookup(en.obj, ns, key) ?? ""))
+      .map(([ns, key]) => `${ns}:${key}`)
+    assert.deepStrictEqual(residue, [], `[en] untranslated CJK text in: ${residue.join(", ")}`)
+  })
+
+  it("every rule name (MDxxx) is translated in every locale", () => {
+    for (const file of Object.values(I18N_FILES)) {
+      for (const name of Object.keys(RULES)) {
+        assert.ok(
+          typeof file.obj.markdownlint?.[name] === "string" && file.obj.markdownlint[name].trim().length > 0,
+          `[${file.name}] missing rule name translation: "markdownlint:${name}"`,
+        )
+      }
+    }
+  })
+
+  it("every configurable rule subfield label (label.MDxxx.field) is translated in every locale", () => {
+    for (const file of Object.values(I18N_FILES)) {
+      for (const [name, { fields }] of ruleEntries) {
+        if (fields === null) continue
+        for (const fn of fields) {
+          const key = `label.${fn(name).key}` // e.g. "label.MD001.front_matter_title"
+          assert.ok(
+            typeof file.obj.markdownlint?.[key] === "string" && file.obj.markdownlint[key].trim().length > 0,
+            `[${file.name}] missing subfield label: "markdownlint:${key}"`,
+          )
+        }
+      }
+    }
+  })
+
+  it("every group name and static UI key is translated in every locale", () => {
+    const staticKeys = [
+      "label.default",
+      "label.extends",
+      "title.specificRules",
+      "title.ruleGroups",
+      "$tooltip.viewMarkdownlintRules",
+    ]
+    for (const file of Object.values(I18N_FILES)) {
+      for (const key of staticKeys) {
+        assert.ok(
+          typeof file.obj.markdownlint?.[key] === "string" && file.obj.markdownlint[key].trim().length > 0,
+          `[${file.name}] missing translation: "markdownlint:${key}"`,
+        )
+      }
+    }
+  })
+})
+
 describe("index.js hardcoded MDxxx.field keys stay in sync with RULE_SCHEMA", () => {
   it("every \"MDxxx.field\" string literal in index.js must resolve to a real field in RULE_SCHEMA", () => {
     const indexSrc = require("fs").readFileSync(require.resolve("../../plugin/markdownlint/index.js"), "utf8")
