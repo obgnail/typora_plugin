@@ -212,19 +212,14 @@ class SearchMultiPlugin extends BasePlugin {
   process = () => {
     this.highlighter.process()
 
-    this.utils.eventHub.on(this.utils.eventHub.eventType.fileContentLoaded, () => this.resetHighlight())
+    const resetHighlight = () => !this.entities.panel.hidden && this.highlight()
+    const rehighlight = () => !this.fsm.isSearching() && this.highlight()
+
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileContentLoaded, () => resetHighlight())
     this.utils.createSmartInputHandler(this.entities.input, () => this._updateExplain(true))
 
     this.entities.files.addEventListener("click", ev => this.utils.openFile(ev.target.closest(".plugin-search-item")?.dataset.path))
-    this.entities.triggerBtn.addEventListener("click", () => {
-      if (this.fsm.isSearching()) {
-        this.executor.abort()
-        this.fsm.cancel()
-      } else {
-        this.search()
-      }
-    })
-    const rehighlight = () => !this.fsm.isSearching() && this.entities.input.value && this.highlightByAST()
+    this.entities.triggerBtn.addEventListener("click", () => this.toggleSearch())
     this.entities.anchorBtn.addEventListener("click", () => {
       this.entities.anchorBtn.classList.toggle("is-active")
       this.highlighter.options.matchAnchor = (this.config.HIGHLIGHTS_MATCH_ANCHOR = !this.config.HIGHLIGHTS_MATCH_ANCHOR)
@@ -232,7 +227,7 @@ class SearchMultiPlugin extends BasePlugin {
     })
     this.entities.caseBtn.addEventListener("click", () => {
       this.entities.caseBtn.classList.toggle("is-active")
-      const sensitive = this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
+      const sensitive = (this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE)
       this.searcher.options.caseSensitive = sensitive
       this.highlighter.options.caseSensitive = sensitive
       this._updateExplain(true)
@@ -266,7 +261,7 @@ class SearchMultiPlugin extends BasePlugin {
       onEmpty: () => this.fsm.reset(),
       onStart: () => this.fsm.start(),
       onItem: this._createOnItemHandler(rootPath),
-      onSuccess: () => this.fsm.success() && this.highlightByAST(ast),
+      onSuccess: () => this.fsm.success() && this.highlight(ast),
       onError: (err) => {
         const msg = err.name === "TimeoutError" ? this.i18n.t("error.timeout") : err.toString()
         this.utils.notification.show(msg, "error")
@@ -276,7 +271,20 @@ class SearchMultiPlugin extends BasePlugin {
     })
   }
 
-  highlightByAST = (ast = this._getAST()) => {
+  cancelSearch = () => {
+    this.executor.abort()
+    this.fsm.cancel()
+  }
+
+  toggleSearch = async (rootPath, input) => {
+    if (this.fsm.isSearching()) {
+      this.cancelSearch()
+    } else {
+      await this.search(rootPath, input)
+    }
+  }
+
+  highlight = (ast = this._getAST()) => {
     this.entities.highlights.replaceChildren()
     if (!ast) return
 
@@ -296,8 +304,6 @@ class SearchMultiPlugin extends BasePlugin {
       console.error(e)
     }
   }
-
-  resetHighlight = () => !this.entities.panel.hidden && this.highlightByAST()
 
   _getAST = (input = this.entities.input.value) => {
     input = input.trim()
@@ -362,8 +368,7 @@ class SearchMultiPlugin extends BasePlugin {
   hide = () => {
     this.entities.panel.hide()
     this.highlighter.clearSearch()
-    this.executor.abort()
-    this.fsm.cancel()
+    this.cancelSearch()
   }
 
   show = () => {

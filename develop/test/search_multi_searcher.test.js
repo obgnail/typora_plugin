@@ -1,6 +1,3 @@
-// Mock File environment dependencies
-global.File = { option: { wordsPerMinute: 300 } }
-
 const { describe, before, beforeEach, it } = require("node:test")
 const assert = require("node:assert")
 const proxyquire = require("proxyquire")
