@@ -18,6 +18,20 @@ const buildResourceScanner = ({ utils, config, i18n }) => {
       .split("?")[0]
       .replace(/^\s*([\\/])/, "")
 
+  const createPathGroup = () => {
+    const caseInsensitive = !File.isLinux
+    const key = p => {
+      const s = Package.Path.normalize(p)
+      return caseInsensitive ? s.toLowerCase() : s
+    }
+    const m = new Map()  // canonical key -> original path
+    return {
+      add: p => m.set(key(p), p),
+      has: p => m.has(key(p)),
+      values: () => m.values(),
+    }
+  }
+
   const processMarkdownFile = async (mdPath, mdDir, redirectPlugin) => {
     const md = await Package.FsExtra.readFile(mdPath, "utf-8")
     const images = extractImages(md)
@@ -39,7 +53,7 @@ const buildResourceScanner = ({ utils, config, i18n }) => {
   const scan = async (dir) => {
     dir = dir || utils.getMountFolder()
     const redirectPlugin = utils.getPlugin("asset_root_redirect")
-    const resources = { inFolder: new Set(), inFile: new Set() }
+    const resources = { inFolder: createPathGroup(), inFile: createPathGroup() }
     const resourceExts = new Set(config.RESOURCE_EXT)
     const markdownExts = new Set(config.MARKDOWN_EXT)
     await utils.walkDir({
@@ -69,8 +83,8 @@ const buildResourceScanner = ({ utils, config, i18n }) => {
     })
 
     return {
-      notInFile: [...resources.inFolder].filter(x => !resources.inFile.has(x)),
-      notInFolder: [...resources.inFile].filter(x => !resources.inFolder.has(x)),
+      notInFile: [...resources.inFolder.values()].filter(p => !resources.inFile.has(p)),
+      notInFolder: [...resources.inFile.values()].filter(p => !resources.inFolder.has(p)),
     }
   }
 
@@ -154,9 +168,7 @@ class ResourceManagerPlugin extends BasePlugin {
       id="plugin-resource-manager"
       hidden
       window-title="${this.pluginName}"
-      window-buttons="download|fa-download|${this.i18n.t("func.download")};
-                      togglePreview|fa-eye|${this.i18n.t("func.togglePreview")};
-                      close|fa-times|${this.i18n.t("func.close")}">
+      window-buttons="download|fa-download|${this.i18n.t("func.download")};togglePreview|fa-eye|${this.i18n.t("func.togglePreview")};close|fa-times|${this.i18n.t("func.close")}">
       <div class="plugin-resource-manager-wrap">
         <div class="non-exist-in-file-caption"></div>
         <fast-table class="non-exist-in-file"></fast-table>
@@ -192,9 +204,9 @@ class ResourceManagerPlugin extends BasePlugin {
     const dir = this.utils.getMountFolder()
     if (!dir) return
 
-    const hideProcessing = this.utils.notification.show(this.i18n.t("processing"), "info")
+    const hide = this.utils.notification.show(this.i18n.t("processing"), "info")
     const result = await this._runWithProgressBar(dir)
-    hideProcessing()
+    hide()
     if (result instanceof Error) {
       this.utils.notification.show(result.toString(), "error")
       return
