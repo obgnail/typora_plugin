@@ -11,8 +11,12 @@ const { OPERATORS, getQualifiers } = require("./qualifiers")
  */
 class Searcher {
   constructor(ctx) {
-    this.options = { caseSensitive: ctx.config.CASE_SENSITIVE }
     this.qualifiers = new Map(getQualifiers(ctx).map(q => [q.scope, q]))
+    this.options = {
+      caseSensitive: ctx.config.CASE_SENSITIVE,
+      defaultScope: this.qualifiers.has(ctx.config.DEFAULT_SCOPE) ? ctx.config.DEFAULT_SCOPE : "default",
+      defaultOperator: ":",
+    }
     this.lexer = new Lexer([...this.qualifiers.keys()], Object.keys(OPERATORS))
     this.parser = new Parser()
   }
@@ -33,8 +37,8 @@ class Searcher {
 
   _resolveSemantics(node) {
     const isFilter = node.type === AST.FilterExpression
-    const scope = isFilter ? node.scope.name : "default"
-    const operator = isFilter ? node.operator.value : ":"
+    const scope = isFilter ? node.scope.name : this.options.defaultScope
+    const operator = isFilter ? node.operator.value : this.options.defaultOperator
 
     const valNode = isFilter ? node.value : node
     const isRegex = valNode.type === AST.RegexLiteral

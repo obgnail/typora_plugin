@@ -54,6 +54,7 @@ module.exports = {
     TIMEOUT: notZero,
     MAX_ENTITIES: notZero,
     MAX_DEPTH: notZero,
+    MAX_RESULT_ITEMS: notZero,
   },
   commander: {
     EXTRA_ENV_VARS: row({

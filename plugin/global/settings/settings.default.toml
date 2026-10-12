@@ -171,6 +171,13 @@ BACKSPACE_TO_HIDE = false
 # Case sensitive search
 CASE_SENSITIVE = false
 
+# Default scope for bare keywords (queries without an explicit "scope:" prefix)
+#   default: path + content
+#   content: content
+#   path   : path
+#   file   : name
+DEFAULT_SCOPE = "default"
+
 # Max directory traversal depth. Set to -1 for unlimited
 MAX_DEPTH = -1
 
@@ -211,6 +218,9 @@ ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "
 IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 
 # =========== [ Result Display ] ===========
+# Compact mode: Render result items as single-line rows
+COMPACT_MODE = false
+
 # Use relative path: Show relative paths instead of absolute paths in the search list
 RELATIVE_PATH = true
 
@@ -223,6 +233,10 @@ SHOW_EXT = true
 #   atime
 #   birthtime
 META_FIELD = "size"
+
+# Max rendered result items: Caps the number of file entries rendered in the result list
+# Matched files beyond this limit are still counted but not rendered. Set to -1 for unlimited
+MAX_RESULT_ITEMS = -1
 
 # Highlight colors: Background colors for highlights
 HIGHLIGHT_COLORS = [

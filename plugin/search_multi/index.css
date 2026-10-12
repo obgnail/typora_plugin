@@ -554,3 +554,13 @@ body.plugin-dark-mode #plugin-search-multi {
   --sm-operator-color: #79c0ff;
   --sm-divider-line: rgba(255, 255, 255, 0.08);
 }
+
+#plugin-search-multi.is-compact {
+  --sm-item-height: 26px;
+  --sm-item-margin: 0px;
+  --sm-item-count: 14;
+}
+
+#plugin-search-multi.is-compact .plugin-search-item-path {
+  display: none;
+}

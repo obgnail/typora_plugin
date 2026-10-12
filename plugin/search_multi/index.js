@@ -143,6 +143,7 @@ class SearchMultiPlugin extends BasePlugin {
   html = () =>
     `<fast-window
       id="plugin-search-multi"
+      class="${this.config.COMPACT_MODE ? "is-compact" : ""}"
       hidden
       window-title="${this.pluginName}"
       window-resize="none"
@@ -339,12 +340,13 @@ class SearchMultiPlugin extends BasePlugin {
   }
 
   _createOnItemHandler = (rootPath) => {
+    const maxRender = this.config.MAX_RESULT_ITEMS
     let count = 0
     const rafManager = this.utils.getRafManager()
     const fragment = document.createDocumentFragment()
     return (fileCtx, signal) => {
       count++
-      fragment.appendChild(this._toItemEl(rootPath, fileCtx))
+      if (maxRender < 0 || count < maxRender) fragment.appendChild(this._toItemEl(rootPath, fileCtx))
       rafManager.schedule(() => {
         if (signal?.aborted) return
         this.entities.files.appendChild(fragment)
