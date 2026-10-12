@@ -62,11 +62,10 @@ class PreferencesPlugin extends BasePlugin {
       ).join("")
     })
 
-    this.entities.close.addEventListener("click", () => this.call())
+    this.entities.close.addEventListener("click", () => this.close())
     this.entities.menu.addEventListener("click", async ev => {
       const item = ev.target.closest(".plugin-preferences-menu-item")
-      if (!item) return
-      await this.switchMenu(item.dataset.plugin, { scrollMenuIntoView: false })
+      if (item) await this._switchMenu(item.dataset.plugin)
     })
     this.entities.form.addEventListener("form-crud", async ev => {
       const { key, value } = ev.detail
@@ -82,26 +81,52 @@ class PreferencesPlugin extends BasePlugin {
       if (!query) this._scrollMenuIntoView()
     })
     this.entities.searchClear.addEventListener("click", () => {
-      this._clearSearch()
+      this._resetSearch()
       this.entities.searchInput.focus()
     })
   }
 
   call = async () => {
     if (this.utils.isShown(this.entities.mask)) {
-      this._clearSearch()
-      this.utils.hide(this.entities.mask)
-      if (this._hasDialogChanged()) {
-        this._setDialogState(false)
-        this.utils.notification.show(this.i18n.t("takesEffectAfterRestart"))
-      }
+      this.close()
     } else {
-      this.utils.show(this.entities.mask)
-      await this.switchMenu(this.menuStorage.get(), { scrollMenuIntoView: true })
+      await this.open()
     }
   }
 
-  switchMenu = async (fixedName, { scrollMenuIntoView = false } = {}) => {
+  open = async (fixedName, key) => {
+    if (fixedName && !this._hasMenu(fixedName)) {
+      console.warn(`Unknown plugin "${fixedName}"`)
+    }
+    this.utils.show(this.entities.mask)
+    this._resetSearch()
+    await this._switchMenu(fixedName ?? this.menuStorage.get(), { revealKey: key, scrollMenuIntoView: true })
+  }
+
+  close = () => {
+    if (!this.utils.isShown(this.entities.mask)) return
+    this._resetSearch()
+    this.utils.hide(this.entities.mask)
+    if (this._hasDialogChanged()) {
+      this._setDialogState(false)
+      this.utils.notification.show(this.i18n.t("takesEffectAfterRestart"))
+    }
+  }
+
+  renewMenu = async (renewFn) => {
+    const fixedName = this._getCurrentPlugin()
+    await renewFn(fixedName)
+    await this._switchMenu(fixedName)
+    this._setDialogState(true)
+  }
+
+  getCurrent = async () => {
+    const fixedName = this._getCurrentPlugin()
+    const settings = await this._getSettings(fixedName)
+    return { fixedName, settings }
+  }
+
+  _switchMenu = async (fixedName, { revealKey, scrollMenuIntoView = false } = {}) => {
     if (!this._hasMenu(fixedName)) fixedName = "global"
 
     const options = await this._getFormOptions(fixedName)
@@ -114,8 +139,13 @@ class PreferencesPlugin extends BasePlugin {
     this.entities.title.textContent = this._getPluginName(fixedName)
     this.menuStorage.set(fixedName)
 
-    const count = this._applySearch()
-    if (count === 0) {
+    if (revealKey) {
+      $(this.entities.main).stop()
+      requestAnimationFrame(() => {
+        const found = this.entities.form.getApi("reveal")?.reveal([revealKey])
+        if (!found) console.warn(`key "${revealKey}" not found in "${fixedName}"`)
+      })
+    } else if (this._applySearch() === 0) {
       $(this.entities.main).animate({ scrollTop: 0 }, 300)
     }
     if (scrollMenuIntoView) {
@@ -123,27 +153,13 @@ class PreferencesPlugin extends BasePlugin {
     }
   }
 
-  renewMenu = async (renewFn) => {
-    const fixedName = this._getCurrentPlugin()
-    await renewFn(fixedName)
-    await this.switchMenu(fixedName)
-    this._setDialogState(true)
-  }
-
-  getCurrent = async () => {
-    const fixedName = this._getCurrentPlugin()
-    const settings = await this._getSettings(fixedName)
-    return { fixedName, settings }
-  }
-
-  _applySearch = () => {
-    const query = this._getSearchValue()
+  _applySearch = (query = this.entities.searchInput.value.trim()) => {
     this.entities.form.getApi("highlight")?.highlight(query)
     const count = this.entities.form.getApi("reveal")?.reveal(this.searcher.keysOf(this._getCurrentPlugin(), query))
     return count ?? 0
   }
 
-  _clearSearch = () => {
+  _resetSearch = () => {
     this.entities.searchInput.value = ""
     this.entities.searchInput.dispatchEvent(new Event("input", { bubbles: true }))
   }
@@ -168,13 +184,6 @@ class PreferencesPlugin extends BasePlugin {
     }, fixedName)
   }
 
-  _getPluginName = (fixedName) => this.utils.getPlugin(fixedName)?.pluginName ?? this.i18n._t(fixedName, "pluginName")
-
-  _getSettings = async (fixedName) => {
-    const settings = await this.utils.settings.read()
-    return settings[fixedName]
-  }
-
   _preprocess = async (fixedName) => {
     const data = await this._getSettings(fixedName)
     const pp = this.PREPROCESSORS[fixedName]
@@ -187,31 +196,41 @@ class PreferencesPlugin extends BasePlugin {
     return data
   }
 
+  _getPluginName = (fixedName) => this.utils.getPlugin(fixedName)?.pluginName ?? this.i18n._t(fixedName, "pluginName")
+
+  _getSettings = async (fixedName) => {
+    const settings = await this.utils.settings.read()
+    return settings[fixedName]
+  }
+
   _hasMenu = (fixedName) => Object.hasOwn(this.SCHEMAS, fixedName)
   _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
   _hasDialogChanged = () => this.entities.dialog.hasAttribute("has-changed")
   _getCurrentPlugin = () => this.entities.form.dataset.plugin
-  _getSearchValue = () => this.entities.searchInput.value.trim()
   _scrollMenuIntoView = () => this.entities.menu.querySelector(".plugin-preferences-menu-item.active")?.scrollIntoView({ block: "center" })
 }
 
 function getSearcher(plugin) {
   const { utils } = plugin
-  const SELECTOR_ITEM = ".plugin-preferences-menu-item"
-  const SELECTOR_LABEL = ".plugin-preferences-menu-item-label"
-  const SELECTOR_KEYS = ".plugin-preferences-menu-item-keys"
-  const SELECTOR_FIXEDNAME = ".plugin-preferences-menu-item-fixedname"
+  const SELECTOR = {
+    ITEM: ".plugin-preferences-menu-item",
+    LABEL: ".plugin-preferences-menu-item-label",
+    KEYS: ".plugin-preferences-menu-item-keys",
+    FIXEDNAME: ".plugin-preferences-menu-item-fixedname",
+  }
   const UNSEARCHABLE_TYPES = new Set(["action", "static", "hint", "divider"])
-  const BOX_MATCHERS = [box => box.title]
-  const FIELD_MATCHERS = [field => field.key, field => field.label]
+  const MATCHERS = {
+    BOX: [box => box.title],
+    FIELD: [field => field.key, field => field.label, field => field.explain],
+  }
 
   const escapeRegExp = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
   const menuItemHTML = (fixedName, displayName) =>
-    `<div class="${SELECTOR_ITEM.slice(1)}" data-plugin="${fixedName}">
-      <div class="${SELECTOR_LABEL.slice(1)}">${utils.escape(displayName)}</div>
-      <div class="${SELECTOR_FIXEDNAME.slice(1)}"></div>
-      <div class="${SELECTOR_KEYS.slice(1)}"></div>
+    `<div class="${SELECTOR.ITEM.slice(1)}" data-plugin="${fixedName}">
+      <div class="${SELECTOR.LABEL.slice(1)}">${utils.escape(displayName)}</div>
+      <div class="${SELECTOR.FIXEDNAME.slice(1)}"></div>
+      <div class="${SELECTOR.KEYS.slice(1)}"></div>
     </div>`
 
   const match = ({ fixedName, name, query }) => {
@@ -220,9 +239,9 @@ function getSearcher(plugin) {
 
     const isHit = cnt => cnt?.toLowerCase().includes(query)
     const matchedKeys = (plugin.SCHEMAS[fixedName] ?? []).flatMap(box => {
-      const boxHit = BOX_MATCHERS.some(get => isHit(get(box)))
+      const boxHit = MATCHERS.BOX.some(get => isHit(get(box)))
       return (box.fields ?? [])
-        .filter(field => field.key && !UNSEARCHABLE_TYPES.has(field.type) && (boxHit || FIELD_MATCHERS.some(get => isHit(get(field)))))
+        .filter(field => field.key && !UNSEARCHABLE_TYPES.has(field.type) && (boxHit || MATCHERS.FIELD.some(get => isHit(get(field)))))
         .map(field => field.key)
     })
     return { nameHit: isHit(name), fixedNameHit: isHit(fixedName), matchedKeys: [...new Set(matchedKeys)] }
@@ -239,10 +258,10 @@ function getSearcher(plugin) {
   const applyToMenu = (menuEl, query) => {
     query = query.trim().toLowerCase()
     const regex = query ? new RegExp(`(${escapeRegExp(query)})`, "gi") : null
-    menuEl.querySelectorAll(SELECTOR_ITEM).forEach(itemEl => {
-      const labelEl = itemEl.querySelector(SELECTOR_LABEL)
-      const keysEl = itemEl.querySelector(SELECTOR_KEYS)
-      const fixedNameEl = itemEl.querySelector(SELECTOR_FIXEDNAME)
+    menuEl.querySelectorAll(SELECTOR.ITEM).forEach(itemEl => {
+      const labelEl = itemEl.querySelector(SELECTOR.LABEL)
+      const keysEl = itemEl.querySelector(SELECTOR.KEYS)
+      const fixedNameEl = itemEl.querySelector(SELECTOR.FIXEDNAME)
       if (!labelEl || !keysEl || !fixedNameEl) return
       const name = labelEl.textContent
       const fixedName = itemEl.dataset.plugin
