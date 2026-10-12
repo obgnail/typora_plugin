@@ -448,16 +448,15 @@ describe("FastForm Feature_Parsing", () => {
       parsers: {
         dynamicField: (val, ctx) => {
           capturedContext = ctx
-          return `${ctx.key}_${ctx.type}_${val}`
+          return `${ctx.key}_${val}`
         },
       },
     })
-    ff.validateAndCommit("dynamicField", "testVal", "set")
+    ff.validateAndCommit("dynamicField", "testVal")
 
     assert.ok(capturedContext !== null, "Parser should receive the context argument")
     assert.strictEqual(capturedContext.key, "dynamicField", "Context should contain the correct field key")
-    assert.strictEqual(capturedContext.type, "set", "Context should contain the correct commit type")
-    assert.strictEqual(ff.getData("dynamicField"), "dynamicField_set_testVal", "Value should be transformed using context properties")
+    assert.strictEqual(ff.getData("dynamicField"), "dynamicField_testVal", "Value should be transformed using context properties")
   })
 
   it("should leave the value entirely unchanged if no parser is registered for the field key", async () => {
@@ -611,22 +610,22 @@ describe("FastForm Feature_Validation", () => {
       },
     })
 
-    // Scenario 1: Validate $each using push mutation
-    const isPushValid = ff.validateAndCommit("scores", 105, "push")
-    assert.strictEqual(isPushValid, false, "Should reject push mutation because the new item fails the $each 'max: 100' rule")
-    assert.strictEqual(ff.getData("scores").length, 2, "Array should remain unchanged after rejected push")
+    // Scenario 1: Validate $each using a push-equivalent full-array "set"
+    const isPushValid = ff.validateAndCommit("scores", [...ff.getData("scores"), 105])
+    assert.strictEqual(isPushValid, false, "Should reject because the new item fails the $each 'max: 100' rule")
+    assert.strictEqual(ff.getData("scores").length, 2, "Array should remain unchanged after rejected mutation")
 
     // Scenario 2: Validate $each using deep path set mutation
-    const isDeepSetValid = ff.validateAndCommit("scores.0", 105, "set")
+    const isDeepSetValid = ff.validateAndCommit("scores.0", 105)
     assert.strictEqual(isDeepSetValid, false, "Should reject specific index mutation because it fails the $each rule")
 
     // Scenario 3: Validate $self using bulk set mutation
-    const isBulkSetValid = ff.validateAndCommit("scores", [90, 85, 80, 75], "set")
+    const isBulkSetValid = ff.validateAndCommit("scores", [90, 85, 80, 75])
     assert.strictEqual(isBulkSetValid, false, "Should reject setting 4 items because it fails the $self 'maxItems: 3' rule")
 
-    // Scenario 4: Valid push
-    const isOk = ff.validateAndCommit("scores", 95, "push")
-    assert.strictEqual(isOk, true, "Valid item push should pass both $self and $each rules")
+    // Scenario 4: Valid push-equivalent full-array "set"
+    const isOk = ff.validateAndCommit("scores", [...ff.getData("scores"), 95])
+    assert.strictEqual(isOk, true, "Valid item addition should pass both $self and $each rules")
     assert.strictEqual(ff.getData("scores").length, 3, "Array should be successfully updated")
   })
 
@@ -1510,16 +1509,16 @@ describe("FastForm Controls", () => {
 
       await flushMicrotasks()
 
-      // Attempt to push a duplicate
-      const isOk = ff.validateAndCommit("tags", "js", "push")
+      // Attempt to append a duplicate via full-array "set"
+      const isOk = ff.validateAndCommit("tags", [...ff.getData("tags"), "js"])
 
-      assert.strictEqual(isOk, false, "Should reject pushing a duplicate item")
+      assert.strictEqual(isOk, false, "Should reject appending a duplicate item")
       assert.equal(validationErrors[0].message, i18n.t("settings", "error.duplicateValue"), "Should emit duplicate error")
       assert.deepStrictEqual(ff.getData("tags"), ["js", "ts"], "Array should remain unchanged")
 
-      // Attempt to push a unique item
-      const isValid = ff.validateAndCommit("tags", "golang", "push")
-      assert.strictEqual(isValid, true, "Should allow pushing a unique item")
+      // Attempt to append a unique item via full-array "set"
+      const isValid = ff.validateAndCommit("tags", [...ff.getData("tags"), "golang"])
+      assert.strictEqual(isValid, true, "Should allow appending a unique item")
       assert.deepStrictEqual(ff.getData("tags"), ["js", "ts", "golang"])
     })
   })
@@ -1640,5 +1639,102 @@ describe("FastForm Controls", () => {
       input.dispatchEvent(keydownEvent)
       assert.strictEqual(ff.form.querySelector(".hotkey-wrap").dataset.value, "ctrl+shift+s", "Input value should reflect the formatted key combination")
     })
+  })
+})
+
+describe("FastForm Feature_Validation (post-refactor: unified set semantics)", () => {
+  beforeEach(() => ff.clear())
+
+  it("should run $each over the FULL container on every commit, including sub-path edits, catching pre-existing invalid siblings", () => {
+    ff.render({
+      schema: [{ fields: [{ type: "array", key: "scores", dataType: "number" }] }],
+      data: { scores: [90, 999] }, // index 1 is already invalid (>100), pre-existing bad data
+      rules: { scores: { $each: { validator: "max", args: [100] } } },
+    })
+    // Editing index 0 to a perfectly valid value should still fail,
+    // because $each now re-validates the WHOLE array (including untouched index 1).
+    const isValid = ff.validateAndCommit("scores.0", 95)
+    assert.strictEqual(isValid, false, "Should reject because sibling item (index 1) still violates $each, even though it wasn't the one being edited")
+    assert.deepStrictEqual(ff.getData("scores"), [90, 999], "Data must remain unchanged on rejection")
+  })
+
+  it("should run $self on every commit, including sub-path edits (not only on whole-array set)", () => {
+    ff.render({
+      schema: [{ fields: [{ type: "array", key: "tags" }] }],
+      data: { tags: ["a", "b", "c"] },
+      rules: { tags: { $self: { validator: "maxItems", args: [3] } } },
+    })
+    // Editing a single existing index does not change length, so $self(maxItems:3) should still pass.
+    const isValid = ff.validateAndCommit("tags.0", "z")
+    assert.strictEqual(isValid, true, "In-place edit of one item should not violate maxItems since length is unchanged")
+    assert.deepStrictEqual(ff.getData("tags"), ["z", "b", "c"])
+  })
+
+  it("validateAll() should now catch $each-only rule violations on array fields (previously silently skipped)", () => {
+    ff.render({
+      schema: [{ fields: [{ type: "array", key: "ports" }] }],
+      data: { ports: ["8080", "not-a-number"] }, // pre-existing invalid entry
+      rules: { ports: { $each: "integer" } }, // $each-only, no $self at all
+    })
+    const api = ff.getApi("validation")
+    const allValid = api.validateAll()
+    assert.strictEqual(allValid, false, "validateAll must now detect per-item violations for $each-only rules")
+  })
+
+  it("should correctly append via whole-array set while preserving $each+$self combined evaluation (regression for former push/removeIndex paths)", () => {
+    ff.render({
+      schema: [{ fields: [{ type: "array", key: "scores", dataType: "number" }] }],
+      data: { scores: [90, 85] },
+      rules: {
+        scores: {
+          $self: { validator: "maxItems", args: [3] },
+          $each: { validator: "max", args: [100] },
+        },
+      },
+    })
+    assert.strictEqual(ff.validateAndCommit("scores", [...ff.getData("scores"), 105]), false)
+    assert.strictEqual(ff.getData("scores").length, 2)
+
+    assert.strictEqual(ff.validateAndCommit("scores", [90, 85, 80, 75]), false)
+
+    // Valid append
+    assert.strictEqual(ff.validateAndCommit("scores", [...ff.getData("scores"), 95]), true)
+    assert.strictEqual(ff.getData("scores").length, 3)
+  })
+})
+
+describe("FastForm watchers (regression: container key must stay stable after push/removeIndex removal)", () => {
+  beforeEach(() => ff.clear())
+
+  it("should still trigger a watcher registered on the array's container key after a structural add/delete via whole-array set", async () => {
+    ff.render({
+      schema: [{ fields: [{ type: "array", key: "list" }, { type: "text", key: "summary" }] }],
+      data: { list: ["a"], summary: "" },
+      watchers: [{
+        triggers: ["list"],
+        effect: { $map: { to: "summary", with: (_, ctx) => `count:${ctx.getValue("list").length}` } },
+      }],
+    })
+    await flushMicrotasks()
+    ff.reactiveCommit("list", ["a", "b"])
+    await flushMicrotasks()
+    assert.strictEqual(ff.getData("summary"), "count:2", "Watcher bound to container key 'list' must still fire on structural changes submitted via unified set")
+  })
+})
+
+describe("Control_Array DOM interaction (regression: editing-state isolation after push/removeIndex removal)", () => {
+  beforeEach(() => ff.clear())
+
+  it("deleting one item should not re-render or disturb a sibling item element identity", async () => {
+    ff.render({ schema: [{ fields: [{ type: "array", key: "tags" }] }], data: { tags: ["a", "b", "c"] } })
+    await flushMicrotasks()
+    const items = ff.form.querySelectorAll(".array-item")
+    const survivorEl = items[2] // the element for "c", should survive deleting "b"
+    items[1].querySelector(".array-item-del").dispatchEvent(new window.Event("click", { bubbles: true }))
+    await flushMicrotasks()
+    const itemsAfter = ff.form.querySelectorAll(".array-item")
+    assert.strictEqual(itemsAfter.length, 2)
+    assert.ok(ff.form.querySelector(".array-item-val").closest(".array").contains(survivorEl) === false || itemsAfter[1] === survivorEl,
+      "Surviving item DOM node should be reused rather than the whole list being rebuilt (local patch, not full update())")
   })
 })

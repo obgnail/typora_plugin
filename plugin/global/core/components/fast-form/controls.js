@@ -68,20 +68,8 @@ function registerNumericalDefaultRules({ field, form }) {
 }
 
 function registerItemLengthLimitRule({ field, form }) {
-  const lengthRule = ({ key, value, type }) => {
-    const isSelf = (key === field.key)
-
-    let effectiveLength
-    if (isSelf && type === "set") {
-      effectiveLength = Array.isArray(value) ? value.length : 0
-    } else {
-      const containerData = form.getData(field.key)
-      const currentLen = Array.isArray(containerData) ? containerData.length : 0
-      const deltaMap = { push: 1, removeIndex: -1 }
-      const delta = isSelf ? (deltaMap[type] || 0) : 0
-      effectiveLength = Math.max(0, currentLen + delta)
-    }
-
+  const lengthRule = ({ containerValue }) => {
+    const effectiveLength = Array.isArray(containerValue) ? containerValue.length : 0
     const { minItems, maxItems } = field
     if (typeof minItems === "number" && effectiveLength < minItems) {
       return new Error(i18n.t("global", "error.minItems", { minItems }))
@@ -662,9 +650,7 @@ const Control_Object = {
         return
       }
       const ok = form.validateAndCommit(key, parsedValue)
-      if (ok) {
-        utils.notification.show(i18n.t("global", "success.submit"))
-      }
+      if (ok) utils.notification.show(i18n.t("global", "success.submit"))
     })
   },
   _getSerializer: (format) => Control_Object._serializers[format] || Control_Object._serializers.JSON,
@@ -697,31 +683,11 @@ const Control_Array = {
         return i18n.t("global", "error.pattern")
       }
     }
-    const repeatable = ({ key, value, type }) => {
+    const repeatable = ({ value, containerValue }) => {
       const { allowDuplicates } = form.getControlOptions(field)
       if (allowDuplicates) return
-
-      const currentArray = form.getData(field.key) || []
-      let previewArray = []
-      if (type === "push") {
-        previewArray = [...currentArray, value]
-      } else if (type === "set") {
-        if (key === field.key) {
-          previewArray = Array.isArray(value) ? value : []
-        } else {
-          const parts = key.split(".")
-          const index = parseInt(parts.at(-1), 10)
-          if (!isNaN(index)) {
-            previewArray = [...currentArray]
-            previewArray[index] = value
-          } else {
-            previewArray = currentArray
-          }
-        }
-      } else {
-        return
-      }
-      const count = previewArray.filter(v => v === value).length
+      if (!Array.isArray(containerValue)) return
+      const count = containerValue.filter(v => v === value).length
       if (count > 1) {
         return new Error(i18n.t("global", "error.duplicateValue"))
       }
@@ -777,8 +743,12 @@ const Control_Array = {
       ev.stopPropagation()
       const itemEl = this.parentElement
       const arrayEl = this.closest(".array")
-      const idx = Array.prototype.indexOf(this.closest(".array-list").children, itemEl)
-      const ok = form.validateAndCommit(arrayEl.dataset.key, idx, "removeIndex")
+      const key = arrayEl.dataset.key
+      const idx = [...this.closest(".array-list").children].indexOf(itemEl)
+      if (idx === -1) throw new Error("IndexError")
+      const currentArray = form.getData(key) || []
+      const newArray = currentArray.toSpliced(idx, 1)
+      const ok = form.validateAndCommit(key, newArray)
       if (ok) itemEl.remove()
     }).onEvent("click", ".array-item-add", function () {
       const addEl = this
@@ -810,7 +780,8 @@ const Control_Array = {
     const controlOptions = form.getControlOptionsFromKey(key)
     const val = controlOptions.dataType === "number" ? Number(rawValue) : rawValue
     if (isNewItem) {
-      const ok = form.reactiveCommit(key, val, "push")
+      const currentArray = form.getData(key) || []
+      const ok = form.reactiveCommit(key, [...currentArray, val])
       if (ok) {
         target.textContent = ""
         utils.hide(target)
@@ -819,10 +790,11 @@ const Control_Array = {
     } else {
       const itemEl = target.closest(".array-item")
       const listContainer = arrayEl.querySelector(".array-list")
-      const idx = Array.prototype.indexOf.call(listContainer.children, itemEl)
+      const idx = [...listContainer.children].indexOf(itemEl)
+      if (idx === -1) throw new Error("IndexError")
       target.removeAttribute("contenteditable")
       itemEl.classList.remove("editing")
-      form.validateAndCommit(`${key}.${idx}`, val, "set")
+      form.validateAndCommit(`${key}.${idx}`, val)
     }
   },
 }
@@ -1475,8 +1447,11 @@ const Control_Dict = {
       onConfirmed: (ev) => {
         const row = ev.target.closest(".dict-row")
         const wrap = ev.target.closest(".dict-wrap")
-        row.remove()
-        Control_Dict._collectAndCommit(wrap, form)
+        const ok = Control_Dict._collectAndCommit(wrap, form)
+        if (ok) {
+          row.remove()
+          utils.notification.show(i18n.t("global", "success.deleted"))
+        }
       },
     })).onEvent("click", ".dict-btn-add", function () {
       const wrap = this.parentElement
@@ -1539,7 +1514,7 @@ const Control_Dict = {
       }
       result[k] = handler.parse(rawVal)
     })
-    form.validateAndCommit(wrap.getAttribute("data-key"), result)
+    return form.validateAndCommit(wrap.getAttribute("data-key"), result)
   },
   _types: {
     string: { label: "STR", validate: () => true, parse: String },
@@ -1566,7 +1541,10 @@ const Control_Palette = {
     dimensions: 1,
     allowJagged: true,
   },
-  setup: ({ field }) => defaultBlockLayout(field),
+  setup: (context) => {
+    defaultBlockLayout(context.field)
+    registerItemLengthLimitRule(context)
+  },
   create: ({ field }) => {
     const { key } = getCommonHTMLAttrs(field)
     return `<div class="palette-wrapper" ${key}><div class="palette-content-layer"></div><input type="color" class="palette-shared-input" tabindex="-1"></div>`
@@ -1664,7 +1642,8 @@ const Control_Palette = {
       onConfirmed: (ev) => {
         const wrapper = ev.target.closest(".palette-wrapper")
         ev.target.closest(".palette-row-group").remove()
-        Control_Palette._commit(wrapper, form)
+        const ok = Control_Palette._commit(wrapper, form)
+        if (ok) utils.notification.show(i18n.t("global", "success.deleted"))
       },
     })).onEvent("click", ".palette-btn-add", function () {
       const type = this.dataset.type
@@ -1719,12 +1698,15 @@ const Control_Palette = {
     const newData = (mode === 1)
       ? Array.from(wrapper.querySelectorAll(".palette-grid .palette-item"), getVal)
       : Array.from(wrapper.querySelectorAll(".palette-row-group"), row => Array.from(row.querySelectorAll(".palette-item"), getVal))
-    form.validateAndCommit(key, newData)
+    return form.validateAndCommit(key, newData)
   },
 }
 
 const Control_Table = {
-  setup: ({ field }) => defaultBlockLayout(field),
+  setup: (context) => {
+    defaultBlockLayout(context.field)
+    registerItemLengthLimitRule(context)
+  },
   create: ({ field }) => {
     const isReadonly = !!field.readonly
     const lines = Object.values(field.thMap || {})
@@ -1751,7 +1733,8 @@ const Control_Table = {
       const op = { title: i18n.t("global", "add"), validateForm: true, schema: nestedBoxes, data: defaultValues, ...subFormOptions }
       const { response, data } = await utils.formDialog.modal(op)
       if (response === 0) return
-      const ok = form.validateAndCommit(key, data, "push")
+      const currentArray = form.getData(key) || []
+      const ok = form.validateAndCommit(key, [...currentArray, data])
       if (ok) {
         const row = Control_Table._createTableRow(thMap, data).map(e => `<td>${e}</td>`).join("")
         tableEl.querySelector("tbody").insertAdjacentHTML("beforeend", `<tr>${row}</tr>`)
@@ -1761,6 +1744,7 @@ const Control_Table = {
       const trEl = this.closest("tr")
       const tableEl = trEl.closest(".table")
       const idx = [...tableEl.querySelectorAll("tbody tr")].indexOf(trEl)
+      if (idx === -1) throw new Error("IndexError")
       const key = tableEl.dataset.key
       const rowValue = form.options.data[key][idx]
       const { nestedBoxes, defaultValues, thMap, subFormOptions = {} } = form.getField(key)
@@ -1768,7 +1752,7 @@ const Control_Table = {
       const op = { title: i18n.t("global", "edit"), validateForm: true, schema: nestedBoxes, data: modalValues, ...subFormOptions }
       const { response, data } = await utils.formDialog.modal(op)
       if (response === 0) return
-      const ok = form.validateAndCommit(`${key}.${idx}`, data, "set")
+      const ok = form.validateAndCommit(`${key}.${idx}`, data)
       if (ok) {
         const row = Control_Table._createTableRow(thMap, data)
         const tds = trEl.querySelectorAll("td")
@@ -1783,7 +1767,11 @@ const Control_Table = {
         const trEl = ev.target.closest("tr")
         const tableEl = trEl.closest(".table")
         const idx = [...tableEl.querySelectorAll("tbody tr")].indexOf(trEl)
-        const ok = form.validateAndCommit(tableEl.dataset.key, idx, "removeIndex")
+        if (idx === -1) throw new Error("IndexError")
+        const key = tableEl.dataset.key
+        const currentArray = form.getData(key) || []
+        const newArray = currentArray.toSpliced(idx, 1)
+        const ok = form.validateAndCommit(key, newArray)
         if (ok) {
           trEl.remove()
           utils.notification.show(i18n.t("global", "success.deleted"))

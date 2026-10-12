@@ -400,9 +400,9 @@ const Feature_Watchers = (() => {
           }
           const effectContext = {
             ...evaluateContext,
-            setValue: (key, value, type) => {
+            setValue: (key, value) => {
               transactionalData.set(key, value)
-              form.queueFieldValueUpdate(key, value, type)
+              form.queueFieldValueUpdate(key, value)
             },
             updateUI: (declaration, customContext) => DependencyAnalyzer.applyUiEffects(declaration, customContext || effectContext),
           }

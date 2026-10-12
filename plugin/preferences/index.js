@@ -67,11 +67,9 @@ class PreferencesPlugin extends BasePlugin {
       await this.switchMenu(item.dataset.plugin, { scrollMenuIntoView: false })
     })
     this.entities.form.addEventListener("form-crud", async ev => {
-      const { key, value, type } = ev.detail
-      const handleProperty = this.utils.nestedPropertyHelpers[type]
-      if (!handleProperty) return
+      const { key, value } = ev.detail
       const { fixedName, settings } = await this.getCurrent()
-      handleProperty(settings, key, value)
+      this.utils.nestedPropertyHelpers.set(settings, key, value)
       await this.utils.settings.handle(fixedName, (_, allSettings) => allSettings[fixedName] = settings)
       this._setDialogState(true)
     })

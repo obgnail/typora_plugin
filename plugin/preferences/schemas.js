@@ -43,7 +43,7 @@ const initDSL = (dsl) => {
   const withDefaults = {
     Hint: (builder) => (...args) => builder(...args).Unsafe(false),
     Array: (builder) => (...args) => builder(...args).AllowDuplicates(false),
-    Palette: (builder) => (...args) => builder(...args).Dimensions(1).AllowJagged(true).DefaultColor("#FFFFFF"),
+    Palette: (builder) => (...args) => builder(...args).MinItems(1).Dimensions(1).AllowJagged(true).DefaultColor("#FFFFFF"),
     Table: (builder) => (...args) => builder(...args).SubFormOptions("boxDependencyUnmetAction", "readonly").SubFormOptions("collapsibleBox", false),
   }
   const withI18n = (builder) => (key, ...args) => {
@@ -934,7 +934,9 @@ const schema_pie_menu = () => [
         Text("CALLBACK"),
       ),
     ])
-    .DefaultValues({ ICON: "fa fa-bomb", CALLBACK: "" }),
+    .DefaultValues({ ICON: "fa fa-bomb", CALLBACK: "" })
+    .MinItems(1)
+    .MaxItems(16),
   FRAG.SettingHandler(),
 ]
 
