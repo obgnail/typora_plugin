@@ -922,12 +922,13 @@ const schema_right_outline = () => [
   ),
   ToggleSort("TITLE_BAR_BUTTONS").Options(["header", "image", "table", "fence", "link", "math"]),
   Group("displayHeader",
-    Switch("INCLUDE_HEADINGS.image").ShowIf(When.contains("TITLE_BAR_BUTTONS", "image")),
-    Switch("INCLUDE_HEADINGS.table").ShowIf(When.contains("TITLE_BAR_BUTTONS", "table")),
-    Switch("INCLUDE_HEADINGS.fence").ShowIf(When.contains("TITLE_BAR_BUTTONS", "fence")),
-    Switch("INCLUDE_HEADINGS.link").ShowIf(When.contains("TITLE_BAR_BUTTONS", "link")),
-    Switch("INCLUDE_HEADINGS.math").ShowIf(When.contains("TITLE_BAR_BUTTONS", "math")),
+    Range("HEADER_GROUP_DEPTH.image").Min(0).Max(6).Step(1).ShowIf(When.contains("TITLE_BAR_BUTTONS", "image")),
+    Range("HEADER_GROUP_DEPTH.table").Min(0).Max(6).Step(1).ShowIf(When.contains("TITLE_BAR_BUTTONS", "table")),
+    Range("HEADER_GROUP_DEPTH.fence").Min(0).Max(6).Step(1).ShowIf(When.contains("TITLE_BAR_BUTTONS", "fence")),
+    Range("HEADER_GROUP_DEPTH.link").Min(0).Max(6).Step(1).ShowIf(When.contains("TITLE_BAR_BUTTONS", "link")),
+    Range("HEADER_GROUP_DEPTH.math").Min(0).Max(6).Step(1).ShowIf(When.contains("TITLE_BAR_BUTTONS", "math")),
   ),
+  Range("AUTO_COLLAPSE_DEPTH").Min(1).Max(6).Step(1),
   FRAG.SettingHandler(),
 ]
 

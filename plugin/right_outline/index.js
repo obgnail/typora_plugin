@@ -33,9 +33,9 @@ const buildStateManager = () => {
     currentSignature = null
   }
   const isCollapsed = (cid) => collapsedCids.has(cid)
-  const toggleCollapsed = (cid) => collapsedCids.has(cid) ? collapsedCids.delete(cid) : collapsedCids.add(cid)
+  const setCollapse = (cid, collapse) => collapse ? collapsedCids.add(cid) : collapsedCids.delete(cid)
 
-  return { shouldUpdate, clear, isCollapsed, toggleCollapsed }
+  return { shouldUpdate, clear, isCollapsed, setCollapse }
 }
 
 const buildRenderer = (utils, isCollapsed) => {
@@ -51,7 +51,7 @@ const buildRenderer = (utils, isCollapsed) => {
         nodeEl += `<ul>${li}</ul>`
       }
       const depthAttr = depth ? `data-depth="${depth}"` : ""
-      const collapsedAttr = isCollapsed(cid) ? `class="collapsed"` : ""
+      const collapsedAttr = isCollapsed(cid, depth) ? `class="collapsed"` : ""
       return `<li ${collapsedAttr} ${depthAttr}>${nodeEl}</li>`
     }
     const li = rootNode.children.map(genLi).join("")
@@ -62,8 +62,6 @@ const buildRenderer = (utils, isCollapsed) => {
 
 const buildTreeParser = ({ utils, config }, displayNames) => {
   const TYPE_SELECTORS = {
-    h1: ":scope > h1",
-    h2: ":scope > h2",
     table: ".md-table",
     fence: ".md-fences",
     image: ".md-image",
@@ -78,49 +76,46 @@ const buildTreeParser = ({ utils, config }, displayNames) => {
     "md-math-block": "math",
     "md-inline-math-container": "math",
   }
-
-  const getKindRoot = (types) => {
-    const includeHeadings = types.some(type => config.INCLUDE_HEADINGS[type])
-    const targetTypes = [...types]
-    if (includeHeadings) {
-      targetTypes.push("h1", "h2")
-    }
-
-    const TYPE_COUNTERS = { table: 0, fence: 0, image: 0, link: 0, math: 0 }
+  const HEADER_SELECTORS = [1, 2, 3, 4, 5, 6].map(d => `:scope > h${d}`)
+  const headerDepthOf = tagName => tagName.length === 2 && tagName[0] === "H" ? Number(tagName[1]) : 0
+  const getKindRoot = (type) => {
     const root = { depth: 0, cid: "", text: "root", children: [], parent: null }
-    const helper = { current: root, H1: root }
+    const stack = [root]
+    let idx = 0
 
-    const selector = targetTypes.map(t => TYPE_SELECTORS[t]).join(", ")
-    utils.entities.eWrite.querySelectorAll(selector).forEach(el => {
+    const sel = [TYPE_SELECTORS[type], ...HEADER_SELECTORS.slice(0, config.HEADER_GROUP_DEPTH[type] || 0)].join(", ")
+    utils.entities.eWrite.querySelectorAll(sel).forEach(el => {
       if (el.style.display === "none") return
 
-      const { tagName, classList } = el
-      if (tagName === "H1" || tagName === "H2") {
-        const header = { cid: el.getAttribute("cid"), text: el.textContent, class_: "toc-header-node", children: [] }
-        if (tagName === "H1") {
-          root.children.push({ ...header, parent: root })
-          helper.H1 = header
-        } else {
-          helper.H1.children.push({ ...header, parent: helper.H1 })
+      const depth = headerDepthOf(el.tagName)
+      if (depth) {
+        while (stack.at(-1).depth >= depth) stack.pop()
+        const parent = stack.at(-1)
+        const header = {
+          cid: el.getAttribute("cid"),
+          text: el.textContent,
+          class_: "toc-header-node",
+          children: [],
+          depth,
+          parent,
         }
-        helper.current = header
+        parent.children.push(header)
+        stack.push(header)
         return
       }
-      const matchedClass = Object.keys(TYPE_MAPPINGS).find(cls => classList.contains(cls))
-      const type = matchedClass ? TYPE_MAPPINGS[matchedClass] : null
-      if (type) {
-        const idx = ++TYPE_COUNTERS[type]
-        const parent = helper.current
+      const matchedClass = Object.keys(TYPE_MAPPINGS).find(cls => el.classList.contains(cls))
+      if (matchedClass && TYPE_MAPPINGS[matchedClass] === type) {
+        const parent = stack.at(-1)
         const cid = el.closest("[cid]").getAttribute("cid")
-        const text = displayNames[type]({ idx, cid, el, parent })
-        helper.current.children.push({ cid, text, parent, children: [] })
+        const text = displayNames[type]({ idx: ++idx, cid, el, parent })
+        parent.children.push({ cid, text, parent, depth: parent.depth + 1, children: [] })
       }
     })
     return root
   }
 
   return {
-    getTree: (type) => type === "header" ? utils.getTocTree(config.REMOVE_HEADER_STYLES) : getKindRoot([type]),
+    getTree: (type) => type === "header" ? utils.getTocTree(config.REMOVE_HEADER_STYLES) : getKindRoot(type),
   }
 }
 
@@ -128,45 +123,43 @@ const buildScrollSyncer = ({ utils }, highlighter) => {
   const rafManager = utils.getRafManager()
   let activeCid
 
-  const highlight = () => {
-    rafManager.schedule(() => {
-      const headers = utils.entities.$eWrite.children(File.editor.library.outline.headerStr)
-      if (!headers || !headers.length) return
+  const highlight = () => rafManager.schedule(() => {
+    const headers = utils.entities.$eWrite.children(File.editor.library.outline.headerStr)
+    if (!headers || !headers.length) return
 
-      const contentScrollTop = utils.entities.$eContent.scrollTop()
-      const viewHeight = window.innerHeight
-      const compare = (el) => {
-        if (el.offsetTop < contentScrollTop) return -1
-        if (el.offsetTop > contentScrollTop + viewHeight) return 1
-        return 0
-      }
-      const findActiveIndex = index => {
-        for (index--; headers[index] && compare(headers[index]) === 0;) index--
-        return index + 1
-      }
+    const contentScrollTop = utils.entities.$eContent.scrollTop()
+    const viewHeight = window.innerHeight
+    const compare = (el) => {
+      if (el.offsetTop < contentScrollTop) return -1
+      if (el.offsetTop > contentScrollTop + viewHeight) return 1
+      return 0
+    }
+    const findActiveIndex = index => {
+      for (index--; headers[index] && compare(headers[index]) === 0;) index--
+      return index + 1
+    }
 
-      const isBelowViewBox = 1 === compare(headers[headers.length - 1])
-      let start = isBelowViewBox ? 0 : headers.length - 1
-      let end = headers.length - 1
-      let activeIndex
-      while (1 < end - start && activeIndex === undefined) {
-        const middleIndex = Math.floor((start + end) / 2)
-        const position = compare(headers[middleIndex])
-        if (position === 1) end = middleIndex
-        else if (position === -1) start = middleIndex
-        else activeIndex = findActiveIndex(middleIndex)
-      }
+    const isBelowViewBox = 1 === compare(headers[headers.length - 1])
+    let start = isBelowViewBox ? 0 : headers.length - 1
+    let end = headers.length - 1
+    let activeIndex
+    while (1 < end - start && activeIndex === undefined) {
+      const middleIndex = Math.floor((start + end) / 2)
+      const position = compare(headers[middleIndex])
+      if (position === 1) end = middleIndex
+      else if (position === -1) start = middleIndex
+      else activeIndex = findActiveIndex(middleIndex)
+    }
 
-      if (activeIndex === undefined) activeIndex = start
-      if (activeIndex >= headers.length) return
+    if (activeIndex === undefined) activeIndex = start
+    if (activeIndex >= headers.length) return
 
-      const targetCid = headers[activeIndex].getAttribute("cid")
-      if (activeCid !== targetCid) {
-        activeCid = targetCid
-        highlighter(targetCid)
-      }
-    })
-  }
+    const targetCid = headers[activeIndex].getAttribute("cid")
+    if (activeCid !== targetCid) {
+      activeCid = targetCid
+      highlighter(targetCid)
+    }
+  })
 
   const clearCache = () => {
     activeCid = null
@@ -179,7 +172,7 @@ const buildScrollSyncer = ({ utils }, highlighter) => {
 class RightOutlinePlugin extends BasePlugin {
   ctx = { utils: this.utils, config: this.config }
   stateManager = buildStateManager()
-  renderer = buildRenderer(this.utils, cid => this.stateManager.isCollapsed(cid))
+  renderer = buildRenderer(this.utils, (cid, depth) => this.stateManager.isCollapsed(cid) || (depth != null && depth > this.config.AUTO_COLLAPSE_DEPTH))
   treeParser = buildTreeParser(this.ctx, {
     fence: ({ idx, cid }) => this.utils.getFenceContentByCid(cid)?.slice(0, 20) || `Code ${idx}`,
     table: ({ idx, el }) => el.querySelector(".td-span")?.textContent || `Table ${idx}`,
@@ -259,9 +252,9 @@ class RightOutlinePlugin extends BasePlugin {
     this.entities.panel.addEventListener("click", ev => {
       const toggleLi = ev.target.closest(".toc-toggle")?.closest("li")
       if (toggleLi) {
-        const ref = toggleLi.querySelector(".toc-node")?.dataset.ref
-        if (ref) this.stateManager.toggleCollapsed(ref)
         toggleLi.classList.toggle("collapsed")
+        const ref = toggleLi.querySelector(".toc-node")?.dataset.ref
+        if (ref) this.stateManager.setCollapse(ref, toggleLi.classList.contains("collapsed"))
         return
       }
 
@@ -440,7 +433,7 @@ class RightOutlinePlugin extends BasePlugin {
   _refreshPanel = (type = this._getCurrentType()) => {
     this.entities.header.children.forEach(el => el.classList.toggle("select", el.dataset.type === type))
     const root = this.treeParser.getTree(type)
-    if (this.stateManager.shouldUpdate(type, root)) {
+    if (this.stateManager.shouldUpdate(`${type}:${this.config.AUTO_COLLAPSE_DEPTH}`, root)) {
       this.entities.list.innerHTML = this.renderer.getRootHTML(root, this.config.SORTABLE && type === "header")
       this.scrollSyncer.clearCache()
     }

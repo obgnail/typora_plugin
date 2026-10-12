@@ -354,14 +354,19 @@ REMOVE_HEADER_STYLES = true
 #   math  : Math
 TITLE_BAR_BUTTONS = ["header", "image", "table", "fence", "link", "math"]
 
-# Include H1 and H2 elements in specific elements of the outline
-INCLUDE_HEADINGS = {
-  fence = true,
-  image = true,
-  table = true,
-  link = true,
-  math = true,
+# Include headers as grouping nodes in specific elements of the outline
+#   0  : no headers (flat list)
+#   1-6: include H1 up to H<N> as grouping nodes
+HEADER_GROUP_DEPTH = {
+  fence = 2,
+  image = 2,
+  table = 2,
+  link = 2,
+  math = 2,
 }
+
+# Auto-collapse outline nodes at or deeper than this header level on render
+AUTO_COLLAPSE_DEPTH = 6
 
 # =========== [ Interaction ] ===========
 # Allow drag-and-drop operations on outline titles to rearrange document structure
