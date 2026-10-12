@@ -75,7 +75,9 @@ test("persists aliases, alias resets, removals, and sort preference", async () =
 })
 
 test("deduplicates Windows paths without regard to case", async () => {
-  const store = new RepositoryStore({ storage: createStorage(), platform: "win32" })
+  global.File.isWin = true
+
+  const store = new RepositoryStore({ storage: createStorage() })
   const folder = fixturePath("Notes")
 
   await store.upsert(folder)

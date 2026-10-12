@@ -12,17 +12,12 @@ class UnsupportedRepositoryVersionError extends Error {
 }
 
 class RepositoryStore {
-  constructor({
-    storage,
-    platform = process.platform,
-    now = () => new Date(),
-  } = {}) {
+  constructor({ storage, now = () => new Date() } = {}) {
     if (!storage || typeof storage.get !== "function" || typeof storage.set !== "function") {
       throw new Error("RepositoryStore requires a storage adapter")
     }
 
     this.storage = storage
-    this.platform = platform
     this.now = now
   }
 
@@ -84,7 +79,7 @@ class RepositoryStore {
 
   canonicalKey = folderPath => {
     const normalized = this.normalizePath(folderPath)
-    return this.platform === "win32" ? normalized.toLocaleLowerCase("en-US") : normalized
+    return File.isWin ? normalized.toLocaleLowerCase("en-US") : normalized
   }
 
   _find = (data, folderPath) => {
@@ -106,7 +101,9 @@ class RepositoryStore {
     } catch (error) {
       return this._recoverCorruptData(error)
     }
-    if (raw == null) return { data: this._defaultData(), warnings: [], needsWrite: true }
+    if (raw == null) {
+      return { data: this._defaultData(), warnings: [], needsWrite: true }
+    }
 
     try {
       const data = this._validateData(raw)

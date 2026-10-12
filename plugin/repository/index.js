@@ -41,8 +41,7 @@ class RepositoryPlugin extends BasePlugin {
           </div>
         </div>
       </div>
-    </div>
-  `
+    </div>`
 
   init = () => {
     this.entities = {
@@ -69,9 +68,9 @@ class RepositoryPlugin extends BasePlugin {
   process = () => {
     this.entities.close.addEventListener("click", () => this.utils.hide(this.entities.panel))
     this.utils.createSmartInputHandler(this.entities.search, this.render, { debounceDelay: 100 })
-    this.entities.sort.addEventListener("change", () => void this._changeSort())
-    this.entities.add.addEventListener("click", () => void this._addFolder())
-    this.entities.list.addEventListener("click", event => void this._handleListClick(event))
+    this.entities.sort.addEventListener("change", () => this._changeSort())
+    this.entities.add.addEventListener("click", () => this._addFolder())
+    this.entities.list.addEventListener("click", event => this._handleListClick(event))
     this.entities.panel.addEventListener("keydown", this._handleControlKeydown)
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && this.utils.isShown(this.entities.panel)) {
@@ -79,7 +78,7 @@ class RepositoryPlugin extends BasePlugin {
       }
     })
 
-    const capture = () => void this._captureCurrentMount()
+    const capture = () => this._captureCurrentMount()
     this.utils.eventHub.on(this.utils.eventHub.eventType.fileOpened, capture)
     capture()
 
@@ -116,12 +115,10 @@ class RepositoryPlugin extends BasePlugin {
   render = async () => {
     const token = ++this.renderToken
     const query = this.entities.search.value.trim().toLocaleLowerCase()
-    const items = this._sortRepositories(this.data.repositories)
-      .filter(item => {
-        if (!query) return true
-        return this._displayName(item).toLocaleLowerCase().includes(query)
-          || item.path.toLocaleLowerCase().includes(query)
-      })
+    const items = this._sortRepositories(this.data.repositories).filter(item => {
+      if (!query) return true
+      return this._displayName(item).toLocaleLowerCase().includes(query) || item.path.toLocaleLowerCase().includes(query)
+    })
 
     const availability = await Promise.all(items.map(item => this._isDirectory(item.path)))
     if (token !== this.renderToken) return
@@ -140,7 +137,7 @@ class RepositoryPlugin extends BasePlugin {
     }
 
     const fragment = document.createDocumentFragment()
-    items.forEach((item, index) => fragment.appendChild(this._createItem(item, availability[index])))
+    items.forEach((item, idx) => fragment.appendChild(this._createItem(item, availability[idx])))
     this.entities.list.appendChild(fragment)
   }
 
@@ -238,13 +235,13 @@ class RepositoryPlugin extends BasePlugin {
     input.addEventListener("keydown", event => {
       if (event.key === "Enter") {
         event.preventDefault()
-        void finish(true)
+        finish(true)
       } else if (event.key === "Escape") {
         event.preventDefault()
-        void finish(false)
+        finish(false)
       }
     })
-    input.addEventListener("blur", () => void finish(true))
+    input.addEventListener("blur", () => finish(true))
   }
 
   _deleteItem = async item => {
@@ -257,7 +254,9 @@ class RepositoryPlugin extends BasePlugin {
       defaultId: 1,
       cancelId: 1,
     })
-    if (response === 0) await this._runMutation(() => this.store.remove(item.path))
+    if (response === 0) {
+      await this._runMutation(() => this.store.remove(item.path))
+    }
   }
 
   _openItem = async (item, available) => {
@@ -286,7 +285,9 @@ class RepositoryPlugin extends BasePlugin {
   }
 
   _changeSort = async () => {
-    if (this.loadError) return this._showLoadError()
+    if (this.loadError) {
+      return this._showLoadError()
+    }
     await this._runMutation(() => this.store.setSortBy(this.entities.sort.getValue()))
   }
 
@@ -305,7 +306,9 @@ class RepositoryPlugin extends BasePlugin {
   }
 
   _runMutation = async (mutation, shouldRender = true) => {
-    if (this.loadError) return this._showLoadError()
+    if (this.loadError) {
+      return this._showLoadError()
+    }
     try {
       this._acceptResult(await mutation())
       if (shouldRender) await this.render()
@@ -317,7 +320,7 @@ class RepositoryPlugin extends BasePlugin {
   _acceptResult = result => {
     this.data = result.data
     if (result.warnings?.length) this.pendingWarnings.push(...result.warnings)
-    if (this.entities) this._showPendingWarnings()
+    this._showPendingWarnings()
   }
 
   _showPendingWarnings = () => {
@@ -327,9 +330,7 @@ class RepositoryPlugin extends BasePlugin {
   }
 
   _showLoadError = () => {
-    const message = this.i18n.t(this.loadError instanceof UnsupportedRepositoryVersionError
-      ? "warning.unsupportedVersion"
-      : "warning.load")
+    const message = this.i18n.t(this.loadError instanceof UnsupportedRepositoryVersionError ? "warning.unsupportedVersion" : "warning.load")
     this.utils.notification.show(message, "error", 7000)
   }
 
@@ -346,16 +347,15 @@ class RepositoryPlugin extends BasePlugin {
     }
   }
 
-  _sortRepositories = repositories => {
-    const items = [...repositories]
+  _sortRepositories = items => {
     const byText = getter => (a, b) => getter(a).localeCompare(getter(b), undefined, { sensitivity: "base" })
     if (this.data.preferences.sortBy === "name") {
-      return items.sort(byText(item => this._displayName(item)))
+      return items.toSorted(byText(item => this._displayName(item)))
     }
     if (this.data.preferences.sortBy === "path") {
-      return items.sort(byText(item => item.path))
+      return items.toSorted(byText(item => item.path))
     }
-    return items.sort((a, b) => new Date(b.lastOpenedAt) - new Date(a.lastOpenedAt))
+    return items.toSorted((a, b) => new Date(b.lastOpenedAt) - new Date(a.lastOpenedAt))
   }
 
   _displayName = item => item.alias || this.utils.Package.Path.basename(item.path) || item.path
@@ -394,7 +394,6 @@ class RepositoryPlugin extends BasePlugin {
   }
 
   _syncControlState = () => {
-    if (!this.entities) return
     const disabled = Boolean(this.loadError)
     this.entities.sort.classList.toggle("is-disabled", disabled)
     this.entities.sort.setAttribute("aria-disabled", String(disabled))
