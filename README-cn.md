@@ -35,6 +35,7 @@
 | [collapse_paragraph](#collapse_paragraph)   | 章节折叠                             | ×        |
 | [collapse_list](#collapse_list)             | 列表折叠                             | ×        |
 | [collapse_table](#collapse_table)           | 表格折叠                             | ×        |
+| [collapse_image](#collapse_image)           | 长图折叠                             | ×        |
 | [md_padding](#md_padding)                   | 中英文混排优化                       |          |
 | [slash_commands](#slash_commands)           | 斜杠命令                             |          |
 | [mouse_gestures](#mouse_gestures)           | 鼠标手势                             | ×        |
@@ -63,7 +64,7 @@
 | :------------------------------ | :----------------- | :------- |
 | [markmap](#markmap)             | 集成 Markmap       |          |
 | [echarts](#echarts)             | 集成 Echarts       |          |
-| [vega-lite](#vega-lite)         | 集成 Vega-Lite     |          |
+| [vega_lite](#vega_lite)         | 集成 Vega-Lite     |          |
 | [chart](#chart)                 | 集成 Chart.js      |          |
 | [drawIO](#drawIO)               | 集成 DrawIO        |          |
 | [abc](#abc)                     | 集成 abc.js        |          |
@@ -122,11 +123,13 @@
 
 ## 如何使用：Archlinux 平台
 
-> 注意：此包管理方式目前仅限 Archlinux 生态体系使用。详情请见 [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)。
-
 ```sh
 yay -S typora-plugin
+# or
+yay -S typora-free-with-plugin
 ```
+
+> 详情见 [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin) | [aur/typora-free-with-plugin](https://aur.archlinux.org/packages/typora-free-with-plugin)。
 
 ## 插件使用说明
 
@@ -213,6 +216,10 @@ yay -S typora-plugin
 ### collapse_table
 
 支持对表格节点执行整体的折叠与展开操作。
+
+### collapse_image
+
+支持折叠长图。
 
 ### md_padding
 
@@ -354,7 +361,7 @@ Markdown 规范分析器。检测偏离最佳实践规范的语法并提供自�
 <td width="33.33%" align="center"><a id="markmap"><b>Markmap</b></a><br><img src="./assets/markmap.png" width="100%"></td>
 </tr>
 <tr>
-<td width="33.33%" align="center"><a id="vega-lite"><b>Vega-Lite</b></a><br><img src="./assets/vega_lite.png" width="100%"></td>
+<td width="33.33%" align="center"><a id="vega_lite"><b>Vega-Lite</b></a><br><img src="./assets/vega_lite.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="plantUML"><b>PlantUML</b></a><br><img src="./assets/plantUML.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="drawIO"><b>Draw.io</b></a><br><img src="./assets/drawIO.png" width="100%"></td>
 </tr>

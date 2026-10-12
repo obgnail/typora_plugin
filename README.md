@@ -34,6 +34,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [collapse_paragraph](#collapse_paragraph)   | Chapter Folding                              | ×       |
 | [collapse_list](#collapse_list)             | List Folding                                 | ×       |
 | [collapse_table](#collapse_table)           | Table Folding                                | ×       |
+| [collapse_image](#collapse_image)           | Long Image Collapse                          | ×       |
 | [md_padding](#md_padding)                   | Chinese-English Text Spacer                  |         |
 | [slash_commands](#slash_commands)           | Slash Commands                               |         |
 | [mouse_gestures](#mouse_gestures)           | Mouse Gestures Recognition                   | ×       |
@@ -63,7 +64,7 @@ English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/RE
 | [markmap](#markmap)             | Integrates Markmap       |         |
 | [echarts](#echarts)             | Integrates ECharts       |         |
 | [chart](#chart)                 | Integrates Chart.js      |         |
-| [vega-lite](#vega-lite)         | Integrates Vega-Lite     |         |
+| [vega_lite](#vega_lite)         | Integrates Vega-Lite     |         |
 | [drawIO](#drawIO)               | Integrates DrawIO        |         |
 | [abc](#abc)                     | Integrates abc.js        |         |
 | [calendar](#calendar)           | Integrates tui.calendar  |         |
@@ -121,11 +122,13 @@ Refer to the [Installation Tutorial](https://github.com/obgnail/typora_plugin/is
 
 ## How to Use: Archlinux Platform
 
-> Note: This package management method is currently exclusive to the Archlinux ecosystem. For details, please refer to [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin).
-
 ```sh
 yay -S typora-plugin
+# or
+yay -S typora-free-with-plugin
 ```
+
+> For details, please refer to [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin) | [aur/typora-free-with-plugin](https://aur.archlinux.org/packages/typora-free-with-plugin).
 
 ## Plugin Usage Instructions
 
@@ -212,6 +215,10 @@ Supports expanding and collapsing unordered lists, ordered lists, and task list 
 ### collapse_table
 
 Supports expanding and collapsing table nodes as a whole.
+
+### collapse_image
+
+Supports expanding and collapsing long image.
 
 ### md_padding
 
@@ -353,7 +360,7 @@ Provides a document security module based on standard cryptographic algorithms, 
 <td width="33.33%" align="center"><a id="markmap"><b>Markmap</b></a><br><img src="./assets/markmap.png" width="100%"></td>
 </tr>
 <tr>
-<td width="33.33%" align="center"><a id="vega-lite"><b>Vega-Lite</b></a><br><img src="./assets/vega_lite.png" width="100%"></td>
+<td width="33.33%" align="center"><a id="vega_lite"><b>Vega-Lite</b></a><br><img src="./assets/vega_lite.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="plantUML"><b>PlantUML</b></a><br><img src="./assets/plantUML.png" width="100%"></td>
 <td width="33.33%" align="center"><a id="drawIO"><b>Draw.io</b></a><br><img src="./assets/drawIO.png" width="100%"></td>
 </tr>
