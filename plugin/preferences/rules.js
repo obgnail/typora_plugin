@@ -2,6 +2,8 @@ const self = (rules) => ({ $self: rules })
 const each = (rules) => ({ $each: rules })
 const row = (rules) => ({ $row: rules })
 
+const and = (...rules) => Object.assign(...rules)
+
 const url = "url"
 const regex = "regex"
 const path = "path"
@@ -9,7 +11,7 @@ const required = "required"
 const array = "array"
 const notZero = { name: "notEqual", args: 0 }
 const hotkey = { name: "pattern", args: /^((ctrl|shift|alt)\+)*[\w`]+$/i }
-const codeMirrorKey = { name: "pattern", args: /^((Ctrl|Alt|Shift|Cmd|Mod)-)*[\w\[\]';,\.\/\\`=-]+$/ }
+const codeMirrorKey = { name: "pattern", args: /^((Ctrl|Alt|Shift|Cmd|Mod)-)*[\w\[\]';,.\/\\`=-]+$/ }
 const fileExt = { name: "pattern", args: /^([a-zA-Z0-9]+)?$/ }
 const codingLang = { name: "pattern", args: /^[a-zA-Z0-9#+.\-]+$/ }
 const hexColor = { name: "pattern", args: /^#([a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{4}|[a-f0-9]{3})$/i }
@@ -49,7 +51,6 @@ module.exports = {
   search_multi: {
     ALLOW_EXT: each(fileExt),
     IGNORE_FOLDERS: each(required),
-    HIGHLIGHT_COLORS: minItems(1),
     TIMEOUT: notZero,
     MAX_ENTITIES: notZero,
     MAX_DEPTH: notZero,
@@ -66,7 +67,6 @@ module.exports = {
   },
   markmap: {
     CANDIDATE_COLOR_SCHEMES: each([required, array]),
-    "DEFAULT_TOC_OPTIONS.color": minItems(1),
     "DOWNLOAD_OPTIONS.FOLDER": path,
     "DOWNLOAD_OPTIONS.FILENAME": required,
     "DOWNLOAD_OPTIONS.BACKGROUND_COLOR": [required, hexColor],
@@ -77,7 +77,6 @@ module.exports = {
     DEFAULT_FENCE_BACKGROUND_COLOR: [required, hexColor],
     "DEFAULT_FENCE_OPTIONS.height": required,
     "DEFAULT_FENCE_OPTIONS.backgroundColor": [required, hexColor],
-    "DEFAULT_FENCE_OPTIONS.color": minItems(1),
     FENCE_TEMPLATE: required,
   },
   auto_number: {
@@ -204,8 +203,6 @@ module.exports = {
   },
   kanban: {
     KANBAN_TASK_DESC_MAX_HEIGHT: notZero,
-    KANBAN_COLOR: minItems(1),
-    TASK_COLOR: minItems(1),
     TEMPLATE: required,
   },
   chat: {

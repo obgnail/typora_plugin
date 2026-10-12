@@ -427,17 +427,9 @@ const Feature_StandardDSL = {
       Divider: defineField("divider", { ...BLOCK, divider: INNER, position: INNER, dashed: INNER }),
       Array: defineField("array", { ...BLOCK, allowDuplicates: INNER, dataType: INNER }),
       Dict: defineField("dict", { ...BLOCK, keyPlaceholder: INNER, valuePlaceholder: INNER, allowAddItem: INNER }),
-      Palette: defineField("palette", { ...BLOCK, defaultColor: INNER, dimensions: INNER, allowJagged: INNER }),
-      Table: defineField("table", { ...BLOCK_INPUT, thMap: INNER, nestedBoxes: SCHEMA, defaultValues: INNER, subFormOptions: MERGE_INNER }),
-      Tabs: defineField("tabs", {
-        ...BLOCK,
-        tabs: TABS,
-        tab: TAB_APPEND,
-        tabStyle: INNER,
-        tabPosition: INNER,
-        defaultSelectedTab: INNER,
-        defaultTabLabel: INNER,
-      }),
+      Palette: defineField("palette", { ...BLOCK, ...LIMITS, defaultColor: INNER, dimensions: INNER, allowJagged: INNER }),
+      Table: defineField("table", { ...BLOCK_INPUT, ...LIMITS, thMap: INNER, nestedBoxes: SCHEMA, defaultValues: INNER, subFormOptions: MERGE_INNER }),
+      Tabs: defineField("tabs", { ...BLOCK, tabs: TABS, tab: TAB_APPEND, tabStyle: INNER, tabPosition: INNER, defaultSelectedTab: INNER, defaultTabLabel: INNER }),
     }
     const dsl = { Group: defineBox(), Controls, When, Extend: engine }
     dsl.define = createDefine(dsl)
@@ -867,7 +859,8 @@ const Feature_Validation = {
         let allValid = true
         for (const key of state.compiledRules.keys()) {
           if (isFieldSkippable(key)) continue
-          const changeContext = { key, value: form.getData(key), type: "set" }
+          const changeContext = form.createChangeContext(key, form.getData(key))
+          if (!changeContext) continue
           const errors = form._validate(changeContext)
           if (Array.isArray(errors) && errors.length > 0) {
             allValid = false
@@ -878,11 +871,8 @@ const Feature_Validation = {
       },
     })
     hooks.on("onValidate", (changeContext) => {
-      const { key, value, type } = changeContext
-
-      const context = form.resolveFieldContext(key)
-      if (!context) return []
-      const { field, relativePath } = context
+      const { field, containerValue } = changeContext
+      if (!field) return []
       const rules = state.compiledRules.get(field.key)
       if (!rules) return []
 
@@ -900,10 +890,9 @@ const Feature_Validation = {
         }
       }
 
-      if (type === "push" || (type === "set" && relativePath)) {
-        if (rules.$each.length) exec(rules.$each, value, changeContext)
-      } else if (type === "removeIndex" || (type === "set" && !relativePath)) {
-        if (rules.$self.length) exec(rules.$self, value, changeContext)
+      if (rules.$self.length) exec(rules.$self, containerValue, changeContext)
+      if (rules.$each.length && Array.isArray(containerValue)) {
+        containerValue.forEach(item => exec(rules.$each, item, changeContext))
       }
 
       return errors
@@ -1290,7 +1279,7 @@ const Feature_History = {
     const replay = (entry, value) => {
       state.isReplaying = true
       try {
-        const ok = form.reactiveCommit(entry.key, value, "set")
+        const ok = form.reactiveCommit(entry.key, value)
         if (ok) {
           highlightControl(entry.key)
           utils.notification.show(i18n.t("global", "success.replay"))
@@ -1468,7 +1457,7 @@ const Comparison_Regex = {
 }
 
 // usage:
-//   $map: { to: "fullName", with: (context) => context.getValue("lastName").trim() }
+//   $map: { to: "fullName", with: (_, context) => context.getValue("lastName").trim() }
 //   $map: { from: "firstName", to: "fullName", with: (firstName, context) => `${firstName} ${context.getValue("lastName").trim()}` }
 const Effect_Map = {
   collectAffects: (value) => {

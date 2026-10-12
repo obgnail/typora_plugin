@@ -108,10 +108,10 @@ class FastForm extends HTMLElement {
     }
     const errorHighlightTimers = new Map()
     const highlightError = (changeContext) => {
-      const context = this.resolveFieldContext(changeContext.key)
-      if (!context) return
-      const el = this.options.layout.findControl(context.field.key, this.form)
-      const op = { key: context.field.key, duration: 3000, className: "input-error", timers: errorHighlightTimers }
+      const { field } = changeContext
+      if (!field) return
+      const el = this.options.layout.findControl(field.key, this.form)
+      const op = { key: field.key, duration: 3000, className: "input-error", timers: errorHighlightTimers }
       revealElement(el, op)
     }
     const defaultHooks = {
@@ -208,11 +208,25 @@ class FastForm extends HTMLElement {
 
   getField = (key) => this._runtime.fields[key]
   getData = (key) => utils.nestedPropertyHelpers.get(this.options.data, key)
-  setData = (key, value, type = "set") => utils.nestedPropertyHelpers[type](this.options.data, key, value)
+  setData = (key, value) => utils.nestedPropertyHelpers.set(this.options.data, key, value)
 
-  // type: set/push/removeIndex
-  queueFieldValueUpdate = (key, value, type = "set") => {
-    this._runtime.pendingChanges.set(key, { key, value, type })
+  createChangeContext(key, value) {
+    const context = this.resolveFieldContext(key)
+    if (!context) return null
+    const { field, relativePath } = context
+    let containerValue = value
+    if (relativePath) {
+      const cloned = utils.naiveCloneDeep(this.getData(field.key))
+      utils.nestedPropertyHelpers.set(cloned, relativePath, value)
+      containerValue = cloned
+    }
+    return { key, value, field, relativePath, containerValue }
+  }
+
+  queueFieldValueUpdate = (key, value) => {
+    const changeContext = this.createChangeContext(key, value)
+    if (!changeContext) return
+    this._runtime.pendingChanges.set(key, changeContext)
     if (!this._runtime.isTaskQueued) {
       this._runtime.isTaskQueued = true
       queueMicrotask(this._processPendingChanges)
@@ -237,14 +251,12 @@ class FastForm extends HTMLElement {
   }
 
   _processSingleChange(changeContext) {
-    if (changeContext.type !== "removeIndex") {
-      changeContext.value = this.hooks.invoke("onProcessValue", changeContext.value, changeContext)
-    }
-    const errors = (changeContext.type !== "removeIndex") ? this._validate(changeContext) : []
+    changeContext.value = this.hooks.invoke("onProcessValue", changeContext.value, changeContext)
+    const errors = this._validate(changeContext)
     const isValid = Array.isArray(errors) && errors.length === 0
     if (isValid) {
       this.hooks.invoke("onBeforeCommit", changeContext, this)
-      this.setData(changeContext.key, changeContext.value, changeContext.type)
+      this.setData(changeContext.key, changeContext.value)
       this.hooks.invoke("onCommit", changeContext, this)
       this.hooks.invoke("onAfterCommit", changeContext, this)
     } else {
@@ -260,11 +272,12 @@ class FastForm extends HTMLElement {
     return this.hooks.invoke("onAfterValidate", errors, changeContext)
   }
 
-  validateAndCommit = (key, value, type = "set") => {
+  validateAndCommit = (key, value) => {
     // Flush any pending async changes to prevent race conditions and ensure this synchronous commit operates on the latest state.
     this._processPendingChanges()
 
-    const changeContext = { key, value, type }
+    const changeContext = this.createChangeContext(key, value)
+    if (!changeContext) return false
     const oldValue = this.getData(key)
     const isValid = this._processSingleChange(changeContext)
     if (!isValid) {
@@ -274,8 +287,8 @@ class FastForm extends HTMLElement {
   }
 
   // Synchronized version function of `queueFieldValueUpdate`
-  reactiveCommit = (key, value, type = "set") => {
-    const isValid = this.validateAndCommit(key, value, type)
+  reactiveCommit = (key, value) => {
+    const isValid = this.validateAndCommit(key, value)
     if (isValid) {
       this._updateControl(key)
     }

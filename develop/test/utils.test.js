@@ -365,13 +365,6 @@ describe("Object & Array Utilities", () => {
       utils.nestedPropertyHelpers.set(obj, "a.b.c", 42)
       assert.strictEqual(obj.a.b.c, 42)
     })
-
-    it("push: adds to nested arrays", () => {
-      const obj = { a: { b: [] } }
-      utils.nestedPropertyHelpers.push(obj, "a.b", 1)
-      utils.nestedPropertyHelpers.push(obj, "a.b", 2)
-      assert.deepStrictEqual(obj.a.b, [1, 2])
-    })
   })
 
   describe("utils.chunk", () => {
