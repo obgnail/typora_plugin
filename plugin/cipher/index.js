@@ -83,4 +83,5 @@ class CipherPlugin extends BasePlugin {
 
 module.exports = {
   plugin: CipherPlugin,
+  createCipher,
 }

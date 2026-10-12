@@ -49,17 +49,19 @@ class PreferencesPlugin extends BasePlugin {
     this.PREPROCESSORS = require("./preprocessors.js")(this)
     this.SCHEMAS = require("./schemas.js")(this.entities.form.dsl, this.i18n.allData)
     this.META = { $isBetaTypora: () => this.utils.isBetaVersion }
-
-    this.entities.menu.innerHTML = Object.values(
-      Object.fromEntries(
-        ["global", ...Object.keys(this.utils.getAllSettings())]
-          .filter(name => this._hasMenu(name))
-          .map(name => [name, this.searcher.menuItemHTML(name, this._getPluginName(name))]),
-      ),
-    ).join("")
   }
 
   process = () => {
+    this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+      this.entities.menu.innerHTML = Object.values(
+        Object.fromEntries(
+          ["global", ...Object.keys(this.utils.getAllSettings())]
+            .filter(name => this._hasMenu(name))
+            .map(name => [name, this.searcher.menuItemHTML(name, this._getPluginName(name))]),
+        ),
+      ).join("")
+    })
+
     this.entities.close.addEventListener("click", () => this.call())
     this.entities.menu.addEventListener("click", async ev => {
       const item = ev.target.closest(".plugin-preferences-menu-item")
@@ -74,7 +76,7 @@ class PreferencesPlugin extends BasePlugin {
       this._setDialogState(true)
     })
 
-    this.utils.createSmartInputHandler(this.entities.searchInput, (query) => {
+    this.utils.createSmartInputHandler(this.entities.searchInput, query => {
       this.searcher.applyToMenu(this.entities.menu, query)
       this._applySearch()
       if (!query) this._scrollMenuIntoView()
@@ -203,7 +205,7 @@ function getSearcher(plugin) {
   const BOX_MATCHERS = [box => box.title]
   const FIELD_MATCHERS = [field => field.key, field => field.label]
 
-  const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+  const escapeRegExp = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
   const menuItemHTML = (fixedName, displayName) =>
     `<div class="${SELECTOR_ITEM.slice(1)}" data-plugin="${fixedName}">

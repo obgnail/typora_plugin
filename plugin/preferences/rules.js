@@ -129,6 +129,7 @@ module.exports = {
     "DEFAULT_COLORS.FOREGROUND": [required, hexColor],
     "DEFAULT_COLORS.BACKGROUND": [required, hexColor],
     "DEFAULT_COLORS.BORDER": [required, hexColor],
+    PANEL_WIDTH: required,
     COLOR_TABLE: each([required, array]),
     ACTION_HOTKEYS: row({
       hotkey: [required, hotkey],
