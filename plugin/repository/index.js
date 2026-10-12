@@ -23,32 +23,19 @@ class RepositoryPlugin extends BasePlugin {
   style = () => true
 
   html = () => `
-    <div id="plugin-repository" class="repository-mask plugin-common-hidden">
-      <div class="repository-dialog" role="dialog" aria-modal="true" aria-labelledby="plugin-repository-title">
-        <div class="repository-header">
-          <div id="plugin-repository-title" class="repository-title">${this.pluginName}</div>
-          <div class="repository-button repository-close ion-close-round" role="button" tabindex="0" title="${this.i18n.t("action.close")}" aria-label="${this.i18n.t("action.close")}"></div>
-        </div>
-        <div class="repository-main">
-          <div class="repository-layout">
-            <div class="repository-toolbar">
-              <input class="repository-search" type="search" placeholder="${this.i18n.t("search.placeholder")}" aria-label="${this.i18n.t("search.label")}">
-              <fast-dropdown class="repository-sort" role="button" tabindex="0" aria-label="${this.i18n.t("sort.label")}"></fast-dropdown>
-              <div class="repository-button repository-add" role="button" tabindex="0"><div class="fa fa-folder-open-o" aria-hidden="true"></div>&nbsp;${this.i18n.t("action.add")}</div>
-            </div>
-            <div class="repository-status" aria-live="polite"></div>
-            <div class="repository-list"></div>
-          </div>
-        </div>
+    <fast-window id="plugin-repository" hidden window-title="${this.pluginName}" window-resize="both" window-buttons="close|fa-times">
+      <div class="repository-toolbar">
+        <input class="repository-search" type="search" placeholder="${this.i18n.t("search.placeholder")}">
+        <fast-dropdown class="repository-sort" tabindex="0" icon="fa fa-sort-amount-desc"></fast-dropdown>
+        <div class="repository-add" tabindex="0"><div class="fa fa-folder-open-o" aria-hidden="true"></div><div>${this.i18n.t("action.add")}</div></div>
       </div>
-    </div>`
+      <div class="repository-status" aria-live="polite"></div>
+      <div class="repository-list"></div>
+    </fast-window>`
 
   init = () => {
     this.entities = {
       panel: document.querySelector("#plugin-repository"),
-      dialog: document.querySelector("#plugin-repository .repository-dialog"),
-      title: document.querySelector("#plugin-repository .repository-title"),
-      close: document.querySelector("#plugin-repository .repository-close"),
       search: document.querySelector("#plugin-repository .repository-search"),
       sort: document.querySelector("#plugin-repository .repository-sort"),
       add: document.querySelector("#plugin-repository .repository-add"),
@@ -66,15 +53,17 @@ class RepositoryPlugin extends BasePlugin {
   }
 
   process = () => {
-    this.entities.close.addEventListener("click", () => this.utils.hide(this.entities.panel))
+    this.entities.panel.addEventListener("btn-click", ev => {
+      if (ev.detail.action === "close") this.entities.panel.hide()
+    })
     this.utils.createSmartInputHandler(this.entities.search, this.render, { debounceDelay: 100 })
     this.entities.sort.addEventListener("change", () => this._changeSort())
     this.entities.add.addEventListener("click", () => this._addFolder())
-    this.entities.list.addEventListener("click", event => this._handleListClick(event))
+    this.entities.list.addEventListener("click", ev => this._handleListClick(ev))
     this.entities.panel.addEventListener("keydown", this._handleControlKeydown)
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && this.utils.isShown(this.entities.panel)) {
-        this.utils.hide(this.entities.panel)
+    document.addEventListener("keydown", ev => {
+      if (ev.key === "Escape" && !this.entities.panel.hidden) {
+        this.entities.panel.hide()
       }
     })
 
@@ -92,8 +81,8 @@ class RepositoryPlugin extends BasePlugin {
   call = () => this.toggle()
 
   toggle = async () => {
-    if (this.utils.isShown(this.entities.panel)) {
-      this.utils.hide(this.entities.panel)
+    if (!this.entities.panel.hidden) {
+      this.entities.panel.hide()
       return
     }
 
@@ -108,7 +97,7 @@ class RepositoryPlugin extends BasePlugin {
       }
     }
     await this.render()
-    this.utils.show(this.entities.panel)
+    this.entities.panel.show()
     this.entities.search.focus()
   }
 
@@ -146,7 +135,7 @@ class RepositoryPlugin extends BasePlugin {
     row.className = `repository-item${available ? "" : " is-missing"}`
     row.dataset.path = item.path
     row.dataset.available = String(available)
-    row.title = this.i18n.t(available ? "row.openTitle" : "row.missingTitle")
+    if (!available) row.setAttribute("ty-hint", this.i18n.t("row.missingTitle"))
 
     const main = document.createElement("div")
     main.className = "repository-main"
@@ -178,24 +167,23 @@ class RepositoryPlugin extends BasePlugin {
     return row
   }
 
-  _actionButton = (action, icon, title, disabled = false) => {
+  _actionButton = (action, icon, hint, disabled = false) => {
     const button = document.createElement("div")
     button.dataset.action = action
-    button.className = `repository-button fa ${icon}`
-    button.title = title
-    button.setAttribute("role", "button")
-    button.setAttribute("aria-label", title)
-    this._setButtonDisabled(button, disabled)
+    button.className = `repository-action fa ${icon}`
+    button.setAttribute("ty-hint", hint)
+    this._setControlDisabled(button, disabled)
     return button
   }
 
-  _handleListClick = async event => {
-    const row = event.target.closest(".repository-item")
+  _handleListClick = async ev => {
+    const row = ev.target.closest(".repository-item")
     if (!row) return
     const item = this._findItem(row.dataset.path)
     if (!item) return
+    if (ev.target.closest(".repository-rename-input")) return
 
-    const actionElement = event.target.closest("[data-action]")
+    const actionElement = ev.target.closest("[data-action]")
     if (actionElement?.getAttribute("aria-disabled") === "true") return
     const action = actionElement?.dataset.action
     if (action === "rename") {
@@ -216,7 +204,6 @@ class RepositoryPlugin extends BasePlugin {
     input.className = "repository-rename-input"
     input.value = item.alias
     input.placeholder = this.utils.Package.Path.basename(item.path)
-    input.setAttribute("aria-label", this.i18n.t("alias.label"))
     name.textContent = ""
     name.appendChild(input)
     input.focus()
@@ -232,12 +219,14 @@ class RepositoryPlugin extends BasePlugin {
         await this.render()
       }
     }
-    input.addEventListener("keydown", event => {
-      if (event.key === "Enter") {
-        event.preventDefault()
+    input.addEventListener("keydown", ev => {
+      if (ev.key === "Enter") {
+        ev.preventDefault()
+        ev.stopPropagation()
         finish(true)
-      } else if (event.key === "Escape") {
-        event.preventDefault()
+      } else if (ev.key === "Escape") {
+        ev.preventDefault()
+        ev.stopPropagation()
         finish(false)
       }
     })
@@ -266,7 +255,7 @@ class RepositoryPlugin extends BasePlugin {
     }
     await this._runMutation(() => this.store.upsert(item.path), false)
     this.utils.openFolder(item.path)
-    this.utils.hide(this.entities.panel)
+    this.entities.panel.hide()
   }
 
   _addFolder = async () => {
@@ -299,7 +288,7 @@ class RepositoryPlugin extends BasePlugin {
     try {
       const result = await this.store.upsert(folder)
       this._acceptResult(result)
-      if (this.utils.isShown(this.entities.panel)) await this.render()
+      if (!this.entities.panel.hidden) await this.render()
     } catch (error) {
       this._showOperationError(this.i18n.t("error.autoSave"), error)
     }
@@ -365,41 +354,40 @@ class RepositoryPlugin extends BasePlugin {
     return this.data.repositories.find(item => this.store.canonicalKey(item.path) === key)
   }
 
-  _handleControlKeydown = event => {
-    if (event.target === this.entities.sort) {
-      if (event.target.getAttribute("aria-disabled") === "true") return
-      if (event.key === "Escape") {
-        event.target.close()
-      } else if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault()
-        event.stopPropagation()
-        event.target.state.isOpen ? event.target.close() : event.target.open()
+  _handleControlKeydown = ev => {
+    if (ev.target === this.entities.sort) {
+      if (ev.target.getAttribute("aria-disabled") === "true") return
+      if (ev.key === "Escape") {
+        ev.stopPropagation()
+        ev.target.close()
+      } else if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault()
+        ev.stopPropagation()
+        ev.target.state.isOpen ? ev.target.close() : ev.target.open()
       }
       return
     }
-    const control = event.target.closest?.('.repository-button[role="button"]')
+    const control = ev.target.closest?.(".repository-add, .repository-action")
     if (!control || control.getAttribute("aria-disabled") === "true") return
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault()
-      event.stopPropagation()
+    if (ev.key === "Enter" || ev.key === " ") {
+      ev.preventDefault()
+      ev.stopPropagation()
       control.click()
     }
   }
 
-  _setButtonDisabled = (button, disabled) => {
+  _setControlDisabled = (control, disabled) => {
     const isDisabled = Boolean(disabled)
-    button.classList.toggle("is-disabled", isDisabled)
-    button.setAttribute("aria-disabled", String(isDisabled))
-    button.tabIndex = isDisabled ? -1 : 0
+    control.classList.toggle("is-disabled", isDisabled)
+    control.setAttribute("aria-disabled", String(isDisabled))
+    control.tabIndex = isDisabled ? -1 : 0
   }
 
   _syncControlState = () => {
     const disabled = Boolean(this.loadError)
-    this.entities.sort.classList.toggle("is-disabled", disabled)
-    this.entities.sort.setAttribute("aria-disabled", String(disabled))
-    this.entities.sort.tabIndex = disabled ? -1 : 0
+    this._setControlDisabled(this.entities.sort, disabled)
+    this._setControlDisabled(this.entities.add, disabled)
     if (disabled) this.entities.sort.close()
-    this._setButtonDisabled(this.entities.add, disabled)
   }
 
   _emptyData = () => ({

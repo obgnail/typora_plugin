@@ -21,10 +21,8 @@ test("uses the same modal shell and entrance motion as plugin preferences", () =
   instance.pluginName = "仓库"
   instance.config = {}
 
-  assert.doesNotMatch(instance.html(), /<fast-window/)
+  assert.match(instance.html(), /<fast-window/)
   assert.doesNotMatch(instance.html(), /<(?:header|main)\b/)
-  assert.match(instance.html(), /class="repository-mask plugin-common-hidden"/)
-  assert.match(instance.html(), /class="repository-dialog"/)
 })
 
 test("uses theme-safe controls and the shared dropdown", () => {
