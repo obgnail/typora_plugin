@@ -22,7 +22,7 @@ class TextStylizePlugin extends BasePlugin {
         : `<div data-tool="${name}" ty-hint="${hints[name]}">${this.toolbox.get(name).icon}</div>`,
     )
     return `
-      <fast-window id="plugin-text-stylize" hidden window-resize="none" window-title="${this.pluginName}" window-buttons="close|fa-times">
+      <fast-window id="plugin-text-stylize" hidden window-resize="none" window-title="${this.pluginName}" window-buttons="close|fa-times" width="${this.config.PANEL_WIDTH}">
         <div class="stylize-tools">${els.join("")}</div>
         ${Palette.html(this.config.COLOR_TABLE)}
       </fast-window>`

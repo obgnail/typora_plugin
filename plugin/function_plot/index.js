@@ -56,7 +56,7 @@ class FunctionPlotPlugin extends BasePlugin {
     preview.querySelector(".top-right-legend")?.remove()
   }
 
-  getVersion = () => "1.25.4"
+  getVersion = () => "1.26.0"
 }
 
 module.exports = {

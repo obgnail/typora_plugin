@@ -196,8 +196,6 @@
   line-height: 18px;
   color: var(--pref-text-placeholder);
   white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
 }
 
 .plugin-preferences-menu-item-fixedname:empty {
@@ -275,6 +273,7 @@
 
 .plugin-preferences-main {
   flex: 1;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 24px 32px;
 }

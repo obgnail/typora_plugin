@@ -40,8 +40,10 @@
 }
 
 #plugin-text-stylize .stylize-tools {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 28px);
+  grid-auto-rows: 28px;
+  gap: 2px;
   padding: 8px 10px;
 }
 
@@ -58,10 +60,6 @@
   transition: background-color 0.15s, color 0.15s;
 }
 
-#plugin-text-stylize .stylize-tools > [data-tool] + [data-tool] {
-  margin-left: 2px;
-}
-
 #plugin-text-stylize .stylize-tools > [data-tool]:hover {
   background-color: var(--ts-bg-hover);
   color: var(--ts-text-main);
@@ -75,8 +73,9 @@
 #plugin-text-stylize .stylize-palette {
   position: absolute;
   top: 100%;
-  left: 0;
-  margin-top: 6px;
+  right: 0;
+  width: 480px;
+  margin-top: 8px;
   background: var(--ts-bg-dialog);
   border-radius: 8px;
   box-shadow: var(--ts-shadow-dialog);

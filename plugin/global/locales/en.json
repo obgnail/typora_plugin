@@ -829,6 +829,7 @@
     "$label.DEFAULT_COLORS.FOREGROUND": "Text Color",
     "$label.DEFAULT_COLORS.BACKGROUND": "Background Color",
     "$label.DEFAULT_COLORS.BORDER": "Border Color",
+    "$label.PANEL_WIDTH": "Window Width",
     "$label.DEFAULT_FORMAT_BRUSH": "Format Brush Defaults",
     "$label.TOOLS": "Buttons",
     "$label.COLOR_TABLE": "Palette",
@@ -1030,7 +1031,6 @@
     "$label.RETAIN_ON_BLUR": "Don't Auto-Hide on Blur",
     "$label.HIDE_OTHER_OPTIONS": "Show Plugin Options Only",
     "$label.MENU_MIN_WIDTH": "Min Submenu Width",
-    "$label.FIND_LOST_PLUGINS": "Auto-Find Unlisted Plugins",
     "$label.MENUS": "Custom Menus",
     "$label.MENUS.NAME": "Name",
     "$label.MENUS.LIST": "Plugin List"

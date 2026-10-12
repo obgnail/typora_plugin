@@ -680,6 +680,7 @@ const schema_export_enhance = () => [
 
 const schema_text_stylize = () => [
   FRAG.Base(true),
+  Text("PANEL_WIDTH"),
   Transfer("TOOLS").Options(OPTS.textStylizeTools).MinItems(1),
   Table("ACTION_HOTKEYS")
     .Headers(["hotkey", "action"])
@@ -917,9 +918,6 @@ const schema_right_click_menu = () => [
       NAME: "",
       LIST: [],
     }),
-  Group("advanced",
-    Switch("FIND_LOST_PLUGINS"),
-  ),
   FRAG.SettingHandler(),
 ]
 
