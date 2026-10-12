@@ -16,7 +16,24 @@ function _prepare(shell, cmd, cwd, envVars) {
   }
 }
 
-function _attachHooks(child, hooks, command, stderrFilterFn) {
+const once = (fn) => {
+  let called = false
+  return (...args) => {
+    if (called) return
+    called = true
+    fn(...args)
+  }
+}
+
+const _exitError = (code, signal) => {
+  if (code === 0) return null
+  return code === null
+    ? new Error(`Process terminated by signal ${signal} (Timeout)`)
+    : new Error(`Process exited with code ${code}`)
+}
+
+function _pipeOutput(child, hooks, stderrFilterFn) {
+  child.stdin?.on("error", () => void 0)  // swallow EPIPE when spawn fails
   child.stdout?.setEncoding("utf8")
   child.stderr?.setEncoding("utf8")
   child.stdout?.on("data", data => {
@@ -26,31 +43,39 @@ function _attachHooks(child, hooks, command, stderrFilterFn) {
     const ret = stderrFilterFn ? stderrFilterFn(data) : data
     if (ret) hooks.onStderr?.(ret)
   })
-  child.on("error", err => hooks.onStderr?.(err.toString()))
-  child.on("close", (code, signal) => {
-    let error = null
-    if (code !== 0) {
-      error = code === null
-        ? new Error(`Process terminated by signal ${signal} (Timeout)`)
-        : new Error(`Process exited with code ${code}`)
-    }
-    hooks.onExit?.({ command, code, error })
+}
+
+function _attachHooks(child, hooks, command, stderrFilterFn) {
+  _pipeOutput(child, hooks, stderrFilterFn)
+  const exit = once(payload => hooks.onExit?.(payload))
+  child.on("error", err => {
+    hooks.onStderr?.(err.toString())
+    exit({ command, code: null, error: err })
   })
+  child.on("close", (code, signal) => {
+    exit({ command, code, error: _exitError(code, signal) })
+  })
+}
+
+function _feedStdin(child, shell, config) {
+  const payload = shell.getStdinPayload ? shell.getStdinPayload(config) : `${config.script}\n`
+  try {
+    if (payload) child.stdin.write(payload)
+    child.stdin.end()
+  } catch (e) {
+    // spawn failure is already reported via the "error" event
+  }
 }
 
 function executeShell(shell, cmd, opts = {}) {
   const { cwd, envVars, timeout = 0, hooks = {} } = opts
   const config = _prepare(shell, cmd, cwd, envVars)
   const { command, args, options } = shell.getSpawnConfig(config)
-  const child = spawn(command, args, { ...options, timeout })
+  const child = spawn(command, args, { ...options, timeout, detached: !IS_WIN })
   _attachHooks(child, hooks, cmd, shell.getStderrFilter?.())
-  const payload = shell.getStdinPayload ? shell.getStdinPayload(config) : `${config.script}\n`
-  if (payload) child.stdin.write(payload)
-  child.stdin.end()
+  _feedStdin(child, shell, config)
   return child
 }
-
-const wrapFunction = (fn, wrapper) => (...args) => wrapper(fn, ...args)
 
 const createProcessManager = () => {
   let child = null
@@ -58,20 +83,24 @@ const createProcessManager = () => {
     if (!child || child.killed) return
     try {
       if (IS_WIN) execSync(`taskkill /pid ${child.pid} /T /F`, { stdio: "ignore" })
-      else child.kill()
+      else process.kill(-child.pid, "SIGTERM")
     } catch (e) {
     }
   }
   const run = (shell, cmd, opts = {}) => {
     terminate()
-    const hooks = { ...(opts.hooks || {}) }
-    let currentChild = null
-    hooks.onExit = wrapFunction(hooks.onExit, (originalOnExit, payload) => {
-      if (child === currentChild) child = null
-      originalOnExit?.(payload)
+    const originalOnExit = opts.hooks?.onExit
+    const current = executeShell(shell, cmd, {
+      ...opts,
+      hooks: {
+        ...(opts.hooks || {}),
+        onExit: (payload) => {
+          if (child === current) child = null
+          originalOnExit?.(payload)
+        },
+      },
     })
-    currentChild = executeShell(shell, cmd, { ...opts, hooks })
-    child = currentChild
+    child = current
   }
   return {
     get isRunning() {
@@ -94,6 +123,12 @@ const posixShellMixin = {
     : (p || ""),
 }
 
+const spawnConfig = (command, args = []) => ({ env, cwd }) => ({
+  command,
+  args,
+  options: { cwd, env, shell: false },
+})
+
 const RAW_SHELL_REGISTRY = {}
 const SHELL_REGISTRY = {}
 
@@ -101,9 +136,7 @@ function register({ id, label, supported, factory }) {
   const context = { baseShellMixin, posixShellMixin, IS_WIN, process, fs, path }
   RAW_SHELL_REGISTRY[id] = { label, executor: factory(context) }
 
-  const isSupported = typeof supported === "function"
-    ? supported(context)
-    : typeof supported === "boolean" ? supported : true
+  const isSupported = typeof supported === "function" ? supported(context) : supported !== false
   if (isSupported) {
     SHELL_REGISTRY[id] = RAW_SHELL_REGISTRY[id]
   }
@@ -126,11 +159,7 @@ register({
       }
       : {
         ...posixShellMixin,
-        getSpawnConfig: ({ env, cwd }) => ({
-          command: "bash",
-          args: [],
-          options: { cwd, env, shell: false },
-        }),
+        getSpawnConfig: spawnConfig("bash"),
       }
   },
 })
@@ -141,11 +170,7 @@ register({
   supported: ({ IS_WIN }) => !IS_WIN,
   factory: ({ posixShellMixin }) => ({
     ...posixShellMixin,
-    getSpawnConfig: ({ env, cwd }) => ({
-      command: "sh",
-      args: [],
-      options: { cwd, env, shell: false },
-    }),
+    getSpawnConfig: spawnConfig("sh"),
   }),
 })
 
@@ -155,11 +180,7 @@ register({
   supported: ({ IS_WIN }) => !IS_WIN,
   factory: ({ posixShellMixin }) => ({
     ...posixShellMixin,
-    getSpawnConfig: ({ env, cwd }) => ({
-      command: "zsh",
-      args: [],
-      options: { cwd, env, shell: false },
-    }),
+    getSpawnConfig: spawnConfig("zsh"),
   }),
 })
 
@@ -263,11 +284,7 @@ register({
   factory: ({ baseShellMixin }) => ({
     ...baseShellMixin,
     formatEnvVar: (envName) => `$env:${envName}`,
-    getSpawnConfig: ({ env, cwd }) => ({
-      command: "pwsh",
-      args: ["-NoProfile", "-NonInteractive", "-Command", "-"],
-      options: { cwd, env, shell: false },
-    }),
+    getSpawnConfig: spawnConfig("pwsh", ["-NoProfile", "-NonInteractive", "-Command", "-"]),
     getStdinPayload: ({ script }) => `$ProgressPreference = 'SilentlyContinue'\n${script}\n`,
   }),
 })
@@ -294,11 +311,7 @@ register({
   factory: ({ posixShellMixin }) => ({
     ...posixShellMixin,
     formatEnvVar: (envName) => `$${envName}`,
-    getSpawnConfig: ({ env, cwd }) => ({
-      command: "fish",
-      args: [],
-      options: { cwd, env, shell: false },
-    }),
+    getSpawnConfig: spawnConfig("fish"),
   }),
 })
 
@@ -326,11 +339,7 @@ register({
   factory: ({ baseShellMixin }) => ({
     ...baseShellMixin,
     formatEnvVar: (envName) => `process.env['${envName}']`,
-    getSpawnConfig: ({ env, cwd }) => ({
-      command: "node",
-      args: [],
-      options: { cwd, env, shell: false },
-    }),
+    getSpawnConfig: spawnConfig("node"),
   }),
 })
 
@@ -340,11 +349,7 @@ register({
   factory: ({ baseShellMixin }) => ({
     ...baseShellMixin,
     formatEnvVar: (envName) => `Sys.getenv('${envName}')`,
-    getSpawnConfig: ({ env, cwd }) => ({
-      command: "Rscript",
-      args: ["--vanilla", "-"],
-      options: { cwd, env, shell: false },
-    }),
+    getSpawnConfig: spawnConfig("Rscript", ["--vanilla", "-"]),
   }),
 })
 
@@ -354,11 +359,7 @@ register({
   factory: ({ baseShellMixin }) => ({
     ...baseShellMixin,
     formatEnvVar: (envName) => `ENV["${envName}"]`,
-    getSpawnConfig: ({ env, cwd }) => ({
-      command: "julia",
-      args: ["--startup-file=no", "--color=no"],
-      options: { cwd, env, shell: false },
-    }),
+    getSpawnConfig: spawnConfig("julia", ["--startup-file=no", "--color=no"]),
   }),
 })
 

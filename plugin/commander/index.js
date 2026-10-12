@@ -3,10 +3,13 @@ const { createProcessManager, SHELL_REGISTRY } = require("./engine.js")
 const createShellManager = (registry, formatter) => {
   const shells = Object.entries(registry)
   const executors = Object.fromEntries(shells.map(([id, s]) => [id, s.executor]))
+  const hasShell = (id) => Object.hasOwn(executors, id)
+  const getDefaultValue = () => shells[0]?.[0]
   return {
-    hasShell: (id) => Object.hasOwn(executors, id),
+    hasShell,
     getExecutor: (id) => executors[id],
-    getDefaultValue: () => shells[0]?.[0],
+    getDefaultValue,
+    resolveShell: (id) => hasShell(id) ? id : getDefaultValue(),
     buildDropdownOptions: () => shells.map(([id, s]) => ({ value: id, label: formatter(s) })),
   }
 }
@@ -25,7 +28,7 @@ const createHistoryManager = (maxLimit, storage, formatter) => {
     },
     getAll: () => {
       const prefix = `hist-${Date.now()}`
-      return [...history].reverse().map((item, index) => ({
+      return history.toReversed().map((item, index) => ({
         value: `${prefix}-${index}`,
         label: formatter(item),
         shell: item.shell,
@@ -68,7 +71,7 @@ class CommanderPlugin extends BasePlugin {
     item => item.label,
   )
   historyManager = createHistoryManager(
-    20,
+    this.config.MAX_HISTORY_ENTRIES || 20,
     this.utils.getStorage(`${this.fixedName}.commands`),
     item => `[${item.shell}] ${item.cmd.length > 30 ? item.cmd.substring(0, 30) + "..." : item.cmd}`,
   )
@@ -77,7 +80,7 @@ class CommanderPlugin extends BasePlugin {
       f: { desc: "Current File", get: norm => norm(this.utils.getFilePath()) },
       d: { desc: "Current Dir", get: norm => norm(this.utils.getCurrentDirPath()) },
       m: { desc: "Mount Dir", get: norm => norm(this.utils.getMountFolder()) },
-      c: { desc: "File Content", get: () => this.utils.getCurrentFileContent() },
+      // c: { desc: "File Content", get: () => this.utils.getCurrentFileContent() },
     },
     (env, desc) => `${env} - ${desc}`,
   )
@@ -86,7 +89,7 @@ class CommanderPlugin extends BasePlugin {
     this.shellManager,
     item => `[${item.shell}] ${item.name}`,
   )
-  ACT_VALUE_PREFIX = "call_builtin@"
+  ACT_VALUE_PREFIX = "invoke_builtin@"
   DISPLAY_TYPES = { ALWAYS: "always", ERROR: "error", SILENT: "silent", ECHO: "echo" }
   staticActions = [
     { act_name: this.i18n.t("act.toggle_panel"), act_value: "toggle_panel", act_hotkey: this.config.HOTKEY },
@@ -109,7 +112,7 @@ class CommanderPlugin extends BasePlugin {
             <div class="plugin-commander-toolbar-left">
               <fast-dropdown class="plugin-commander-dropdown plugin-commander-builtin" no-label icon="fa fa-bookmark" ty-hint="${this.i18n.t("tooltip.builtin")}"></fast-dropdown>
               <fast-dropdown class="plugin-commander-dropdown plugin-commander-history plugin-common-hidden" no-label icon="fa fa-history" ty-hint="${this.i18n.t("tooltip.history")}"></fast-dropdown>
-              <fast-dropdown class="plugin-commander-dropdown plugin-commander-env" no-label icon="fa fa-plus-circle" ty-hint="${this.i18n.t("tooltip.env")}"></fast-dropdown>
+              <fast-dropdown class="plugin-commander-dropdown plugin-commander-env" no-label icon="fa fa-usd" ty-hint="${this.i18n.t("tooltip.env")}"></fast-dropdown>
             </div>
             <div class="plugin-commander-toolbar-right">
               <fast-dropdown class="plugin-commander-dropdown plugin-commander-shell" ty-hint="${this.i18n.t("tooltip.shell")}"></fast-dropdown>
@@ -165,17 +168,17 @@ class CommanderPlugin extends BasePlugin {
     if (focus) el.focus()
   }
 
-  _insertCmdAtCursor = (text, formatter = this._defaultSmartPadding) => {
+  _insertCmdAtCursor = (text) => {
     const el = this.entities.cmd
     const { selectionStart: start, selectionEnd: end, value } = el
-    const insertText = formatter?.(text, { value, start, end })
+    const insertText = this._smartPadding(text, { value, start, end })
     el.value = value.substring(0, start) + insertText + value.substring(end)
     el.selectionStart = el.selectionEnd = start + insertText.length
     el.dispatchEvent(new Event("input"))
     el.focus()
   }
 
-  _defaultSmartPadding = (txt, ctx) => {
+  _smartPadding = (txt, ctx) => {
     let prefix = ""
     let suffix = ""
     if (ctx.start > 0 && /\w/.test(ctx.value[ctx.start - 1])) prefix = " "
@@ -184,10 +187,10 @@ class CommanderPlugin extends BasePlugin {
   }
 
   _setRunningState = (isRunning) => {
-    const { btnCommit } = this.entities
-    btnCommit.classList.toggle("fa-play", !isRunning)
-    btnCommit.classList.toggle("fa-stop", isRunning)
-    btnCommit.classList.toggle("running", isRunning)
+    const btn = this.entities.btnCommit
+    btn.classList.toggle("fa-play", !isRunning)
+    btn.classList.toggle("fa-stop", isRunning)
+    btn.classList.toggle("running", isRunning)
   }
 
   process = () => {
@@ -196,22 +199,17 @@ class CommanderPlugin extends BasePlugin {
       this._updateEnvOptions(ev.detail.value)
       this.entities.cmd.focus()
     })
-    this.entities.badgeBuiltin.addEventListener("change", ev => {
+    const onPickCommand = badge => ev => {
       const option = ev.detail.option
       if (!option?.cmd) return
-      this.entities.badgeShell.setValue(option.shell)
-      this.entities.badgeBuiltin.setValue("")
-      this._updateEnvOptions(option.shell)
+      const shell = this.shellManager.resolveShell(option.shell)
+      this.entities.badgeShell.setValue(shell)
+      badge.setValue("")
+      this._updateEnvOptions(shell)
       this._setCmdValue(option.cmd, true)
-    })
-    this.entities.badgeHistory.addEventListener("change", ev => {
-      const option = ev.detail.option
-      if (!option?.cmd) return
-      this.entities.badgeShell.setValue(option.shell)
-      this.entities.badgeHistory.setValue("")
-      this._updateEnvOptions(option.shell)
-      this._setCmdValue(option.cmd, true)
-    })
+    }
+    this.entities.badgeBuiltin.addEventListener("change", onPickCommand(this.entities.badgeBuiltin))
+    this.entities.badgeHistory.addEventListener("change", onPickCommand(this.entities.badgeHistory))
     this.entities.badgeEnv.addEventListener("change", ev => {
       const option = ev.detail.option
       if (!option?.value) return
@@ -252,16 +250,20 @@ class CommanderPlugin extends BasePlugin {
     this._syncHistoryUI()
   }
 
-  _prepareExecutionUI = (shell, cmd, isEchoOrAlways) => {
+  _prepareExecutionUI = (shell, cmd, displayType) => {
+    const { ECHO, ALWAYS } = this.DISPLAY_TYPES
     this._setCmdValue(cmd, false)
     this.entities.badgeShell.setValue(shell)
     this.entities.pre.textContent = ""
     this.entities.pre.classList.remove("error")
-    if (isEchoOrAlways) this.showPanel()
+    if (displayType === ECHO || displayType === ALWAYS) this.showPanel()
     this._setRunningState(true)
   }
 
-  _buildExecutionOptions = (isEchoOrAlways, isError) => {
+  _buildExecutionOptions = (displayType) => {
+    const { ECHO, ALWAYS, ERROR } = this.DISPLAY_TYPES
+    const isEchoOrAlways = displayType === ECHO || displayType === ALWAYS
+    const isError = displayType === ERROR
     const pre = this.entities.pre
     return {
       cwd: this.utils.getCurrentDirPath(),
@@ -280,7 +282,11 @@ class CommanderPlugin extends BasePlugin {
           : null,
         onExit: (payload) => {
           this._setRunningState(false)
-          this.postScript?.(payload)
+          try {
+            this.postScript?.(payload)
+          } catch (e) {
+            console.error("[commander] POST_SCRIPT failed:", e)
+          }
         },
       },
     }
@@ -289,20 +295,13 @@ class CommanderPlugin extends BasePlugin {
   runCommand = (shell, cmd, displayType) => {
     const executor = this.shellManager.getExecutor(shell)
     if (!executor) throw new Error(`No such shell: ${shell}`)
-
-    const { ECHO, ALWAYS, ERROR } = this.DISPLAY_TYPES
-    const isError = displayType === ERROR
-    const isEchoOrAlways = displayType === ECHO || displayType === ALWAYS
-
     this._recordHistory(shell, cmd)
-    this._prepareExecutionUI(shell, cmd, isEchoOrAlways)
-
-    const executionOptions = this._buildExecutionOptions(isEchoOrAlways, isError)
-    this.processManager.run(executor, cmd, executionOptions)
+    this._prepareExecutionUI(shell, cmd, displayType)
+    this.processManager.run(executor, cmd, this._buildExecutionOptions(displayType))
   }
 
   quickExecute = (shell, cmd) => this.runCommand(shell, cmd, this.config.QUICK_RUN_DISPLAY)
-  commitExecute = (shell = this.entities.badgeShell.getValue(), cmd = this.entities.cmd.value) => this.runCommand(shell, cmd, this.config.COMMIT_RUN_DISPLAY)
+  commitExecute = (shell = this.entities.badgeShell.getValue(), cmd = this.entities.cmd.value) => cmd.trim() && this.runCommand(shell, cmd, this.config.COMMIT_RUN_DISPLAY)
 
   hidePanel = () => this.entities.panel.hide()
   showPanel = () => this.entities.panel.show()

@@ -268,7 +268,6 @@ COMMIT_RUN_DISPLAY = "echo"
 #   f: Absolute path of the current file
 #   d: Directory of the current file
 #   m: Current mount directory in Typora's sidebar
-#   c: Current file content
 BUILTIN = [
   { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $env:d" },
   { name = "VSCode", disable = false, shell = "cmd/bash", cmd = "code %f%" },
@@ -276,7 +275,7 @@ BUILTIN = [
 ]
 
 # Post-Execution Script. JavaScript code to execute after the command finishes
-POST_SCRIPT = "({ command, cwd, options, error, code, stdout, stderr }) => void 0"
+POST_SCRIPT = "({ command, code, error }) => void 0"
 
 # Max number of entries retained in command history
 MAX_HISTORY_ENTRIES = 20
