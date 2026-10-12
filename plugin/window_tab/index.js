@@ -512,12 +512,12 @@ class TabDragManager {
 
       const faker = dragged.cloneNode(true)
       faker.style.height = dragged.offsetHeight + "px" // dragBox uses height: 100%, needs to be reset.
-      faker.style.transform = "translate3d(0, 0, 0)"
+      faker.style.transform = "translate(0, 0)"
       faker.setAttribute("dragging", "")
       cloned = document.createElement("div")
       cloned.append(faker)
       cloned.className = "drag-obj"
-      cloned.style.transform = `translate3d(${left}px, ${top}px, 0)`
+      cloned.style.transform = `translate(${left}px, ${top}px)`
       self.entities.tabBar.append(cloned)
     }).on("dragend", ".tab-container", function (ev) {
       rafManager.cancel()
@@ -528,7 +528,7 @@ class TabDragManager {
       }
       const { left, top } = this.getBoundingClientRect()
       const resetAnimation = cloned.animate(
-        [{ transform: cloned.style.transform }, { transform: `translate3d(${left}px, ${top}px, 0)` }],
+        [{ transform: cloned.style.transform }, { transform: `translate(${left}px, ${top}px)` }],
         { duration: 70, easing: "ease-in-out" },
       )
       resetAnimation.onfinish = function () {
@@ -578,7 +578,7 @@ class TabDragManager {
         if (detachment === "lockVertical" || (detachment === "resistant" && top < threshold)) {
           top = 0
         }
-        cloned.style.transform = `translate3d(${left}px, ${top}px, 0)`
+        cloned.style.transform = `translate(${left}px, ${top}px)`
       })
     })
   }
@@ -811,7 +811,7 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   _handleScroll = () => {
-    this.entities.content.addEventListener("scroll", this.utils.debounce(() => this.tab.updateScroll(this.entities.content.scrollTop)), 100)
+    this.entities.content.addEventListener("scroll", this.utils.debounce(() => this.tab.updateScroll(this.entities.content.scrollTop), 100), { passive: true })
   }
 
   _handleDrag = () => new TabDragManager(this).init()
