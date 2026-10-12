@@ -56,6 +56,9 @@ module.exports = {
     MAX_DEPTH: notZero,
   },
   commander: {
+    EXTRA_ENV_VARS: row({
+      key: [required, variable],
+    }),
     BUILTIN: row({
       name: required,
       cmd: required,
@@ -108,6 +111,8 @@ module.exports = {
     COPY_NEXT_LINE: codeMirrorKey,
     INSERT_LINE_PREVIOUS: codeMirrorKey,
     INSERT_LINE_NEXT: codeMirrorKey,
+    JUMP_TO_PREVIOUS_FENCE: codeMirrorKey,
+    JUMP_TO_NEXT_FENCE: codeMirrorKey,
     CUSTOM_HOTKEYS: row({
       HOTKEY: [required, codeMirrorKey],
       CALLBACK: required,
