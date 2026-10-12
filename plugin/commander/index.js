@@ -50,6 +50,12 @@ const createEnvManager = (defs, formatter) => ({
   }),
 })
 
+const customEnvDefs = (defs) => Object.fromEntries(
+  (defs ?? [])
+    .filter(def => def.enable && /^[a-zA-Z_][a-zA-Z0-9_]*$/i.test(def.key))
+    .map(def => [def.key, { desc: def.desc || def.key, get: () => String(def.value) }])
+)
+
 const createBuiltinManager = (rawBuiltins, shellManager, formatter) => {
   const validItems = (rawBuiltins || []).filter(e => !e.disable && shellManager.hasShell(e.shell))
   return {
@@ -81,6 +87,7 @@ class CommanderPlugin extends BasePlugin {
       d: { desc: "Current Dir", get: norm => norm(this.utils.getCurrentDirPath()) },
       m: { desc: "Mount Dir", get: norm => norm(this.utils.getMountFolder()) },
       // c: { desc: "File Content", get: () => this.utils.getCurrentFileContent() },
+      ...customEnvDefs(this.config.EXTRA_ENV_VARS),
     },
     (env, desc) => `${env} - ${desc}`,
   )

@@ -186,18 +186,6 @@
 
 .plugin-commander-commit.running {
   color: var(--cmd-stop-color);
-  animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse-ring {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(0.92);
-  }
 }
 
 .plugin-commander-output {

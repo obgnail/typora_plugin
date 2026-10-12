@@ -257,6 +257,18 @@ QUICK_RUN_DISPLAY = "error"
 #   echo  : Stream output immediately
 COMMIT_RUN_DISPLAY = "echo"
 
+# =========== [ Environment Variables ] ===========
+# Extra environment variables injected into every spawned process
+#   enable: Switch for this variable
+#   key   : Must match ^[a-zA-Z_][a-zA-Z0-9_]*$
+#   value : Coerced to string
+#   desc  : Description, falls back to key if empty
+# Custom vars shadow built-ins (f/d/m) on key conflicts
+# Warning: overriding PATH/HOME etc. may break command resolution
+EXTRA_ENV_VARS = [
+   { enable = false, key = "PROXY", value = "127.0.0.1:7897", desc = "Proxy" },
+]
+
 # =========== [ Built-in Commands ] ===========
 # Predefined command list
 #   name   : Unique identifier for the plugin menu
@@ -2449,7 +2461,7 @@ PANEL_HEIGHT_PERCENT = 70
 RESOURCE_GRAMMARS = ["markdown", "html"]
 
 # Whitelisted file extensions mapped as resources
-RESOURCE_EXT = ["", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".tiff", ".ico", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large", ".gif!small"]
+RESOURCE_EXT = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".tiff", ".ico", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large", ".gif!small"]
 
 # Whitelisted file extensions mapped as Markdown documents
 MARKDOWN_EXT = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]

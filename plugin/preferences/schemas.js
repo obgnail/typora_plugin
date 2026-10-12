@@ -224,6 +224,22 @@ const schema_commander = () => [
     Select("QUICK_RUN_DISPLAY").Options(["echo", "always", "error", "silent"]),
     Select("COMMIT_RUN_DISPLAY").Options(["echo", "always"]),
   ),
+  Table("EXTRA_ENV_VARS")
+    .Headers(["enable", "key", "value"])
+    .NestedBoxes([
+      Group(
+        Switch("enable"),
+        Text("key"),
+        Text("value"),
+        Text("desc"),
+      ),
+    ])
+    .DefaultValues({
+      enable: true,
+      key: "",
+      value: "",
+      desc: "",
+    }),
   Table("BUILTIN")
     .Headers(["name", "shell", "cmd"])
     .NestedBoxes([
