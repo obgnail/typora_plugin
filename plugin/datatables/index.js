@@ -73,7 +73,7 @@ const createTableEnhancer = ({ utils, i18n, config, fixedName }) => {
     File.editor.tableEdit.showTableEdit($(target.parentElement))
   }
 
-  const revertAll = () => tables.keys().forEach(uuid => revert(uuid))
+  const revertAll = () => tables.forEach((_, uuid) => revert(uuid))
 
   return { has: uuid => tables.has(uuid), enhance, revert, revertAll }
 }
