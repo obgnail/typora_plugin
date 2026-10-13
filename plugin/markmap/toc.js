@@ -5,6 +5,7 @@ const CID_SYM = Symbol("NodeCid")
 class TOCMarkmap {
   mm = null
   _ctx = null
+  _rootModifiers = []
 
   constructor(plugin) {
     this.plugin = plugin
@@ -73,6 +74,7 @@ class TOCMarkmap {
     this._onEvent()
     this._onSvgClick()
     this._onSvgHover()
+    this._registerRootModifiers()
     this._registerContextMenu()
     this.panelCtl.bindMove()
     this.panelCtl.bindResize()
@@ -156,6 +158,12 @@ class TOCMarkmap {
       svg.querySelectorAll(selector).forEach(el => el.classList.add(ACTIVE))
       svg.classList.add(DIM)
       hoveredEl = node
+    })
+  }
+
+  _registerRootModifiers = () => {
+    this._rootModifiers.push((root, prevRoot) => {
+      if (this.config.RETAIN_FOLD_STATE_ON_UPDATE && prevRoot) retainFoldState(root, prevRoot)
     })
   }
 
@@ -244,19 +252,20 @@ class TOCMarkmap {
   }
 
   draw = () => {
+    const prevRoot = this._ctx?.root
+
     const { md, tree } = this.plugin.getToc()
-    const options = this.Lib.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm?.options)
-    const oldRoot = this.mm?.state?.data
     this._ctx = this.Lib.transformer.transform(md)
     const { root } = this._ctx
+
     annotate(root, tree)
+
+    const modifiedRoot = this._rootModifiers.reduce((r, modify) => modify(r, prevRoot) ?? r, root)
+    const options = this.Lib.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm?.options)
     if (this.mm) {
-      if (this.config.RETAIN_FOLD_STATE_ON_UPDATE && oldRoot) {
-        retainFoldState(oldRoot, root)
-      }
-      this.mm.setData(root, options)
+      this.mm.setData(modifiedRoot, options)
     } else {
-      this.mm = this.Lib.createMarkmap(this.entities.svg, options, root)
+      this.mm = this.Lib.createMarkmap(this.entities.svg, options, modifiedRoot)
     }
   }
 
@@ -304,14 +313,14 @@ function annotate(mmRoot, tocRoot) {
   }
 }
 
-function retainFoldState(oldRoot, newRoot) {
+function retainFoldState(root, prevRoot) {
   const foldedCids = new Set()
-  traverse(oldRoot, node => {
+  traverse(prevRoot, node => {
     if (node.payload?.fold && node[CID_SYM] != null) {
       foldedCids.add(node[CID_SYM])
     }
   })
-  traverse(newRoot, node => {
+  traverse(root, node => {
     if (foldedCids.has(node[CID_SYM])) {
       if (!node.payload) node.payload = {}
       node.payload.fold = 1
