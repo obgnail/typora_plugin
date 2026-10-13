@@ -196,10 +196,11 @@ class TOCMarkmap {
     if (notify) this.utils.notification.show(this.i18n.t("success.fit"))
   }
 
-  unfold = () => {
+  unfold = async () => {
     const root = this.mm.state.data
     unfoldAll(root)
-    this.mm.setData(root)
+    await this.mm.setData(root)
+    await this.mm.fit()
     this.utils.notification.show(this.i18n.t("success.unfold"))
   }
 
@@ -243,7 +244,7 @@ class TOCMarkmap {
     this.utils.notification.show(this.i18n.t("success.download"))
   }
 
-  draw = () => {
+  draw = async () => {
     const { md, tree } = this.plugin.getToc()
     const options = this.Lib.assignOptions(this.config.DEFAULT_TOC_OPTIONS, this.mm?.options)
     const oldRoot = this.mm?.state?.data
@@ -254,7 +255,8 @@ class TOCMarkmap {
       if (this.config.RETAIN_FOLD_STATE_ON_UPDATE && oldRoot) {
         retainFoldState(oldRoot, root)
       }
-      this.mm.setData(root, options)
+      await this.mm.setData(root, options)
+      await this.mm.fit()
     } else {
       this.mm = this.Lib.createMarkmap(this.entities.svg, options, root)
     }
