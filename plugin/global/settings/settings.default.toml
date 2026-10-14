@@ -707,6 +707,9 @@ TITLE_BAR_BUTTONS = ["close", "expand", "pinTop", "pinRight", "fit", "unfold", "
 # Click node to position: Smoothly scroll the Markdown document to the clicked header node
 CLICK_TO_POSITION = true
 
+# Ctrl+Click node to focus: Render only the clicked subtree; Ctrl+Click the focused root to exit
+CTRL_CLICK_TO_FOCUS = true
+
 # Highlight path on hover: Dim all nodes/links except the path from the root to the hovered node
 HIGHLIGHT_PATH_ON_HOVER = false
 
@@ -738,9 +741,6 @@ AUTO_FIT_WHEN_FOLD = true
 
 # Preserve user fold states during diagram update/redraws
 RETAIN_FOLD_STATE_ON_UPDATE = true
-
-# (Experimental) Auto collapse paragraph: Synchronously fold document paragraph content when folding nodes (Requires 'collapse_paragraph' plugin)
-AUTO_COLLAPSE_PARAGRAPH_ON_FOLD = false
 
 # Initial window width (%)
 WIDTH_PERCENT_WHEN_INIT = 90

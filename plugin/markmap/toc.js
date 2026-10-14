@@ -55,6 +55,14 @@ class TOCMarkmap {
       i18n: this.i18n,
       hooks: { fit: () => this.fit(), isChartActive: () => this.mm != null },
     })
+    this.focusCtl = createFocusCtl({
+      getRoot: () => this._ctx.root,
+      render: root => {
+        this.mm.setData(root)
+        this.fit()
+      },
+      onActiveChange: active => this.entities.panel.classList.toggle("markmap-focused", active),
+    })
     this.actions = {
       pinTop: () => this.panelCtl.pinTop(),
       pinRight: () => this.panelCtl.pinRight(),
@@ -103,30 +111,23 @@ class TOCMarkmap {
 
   _onSvgClick = () => {
     this.entities.svg.addEventListener("click", ev => {
-      const node = ev.target.closest(".markmap-node")
       // `.__data__` is the d3 hierarchy node; `.data` is the decorated tree node (see topology note below).
-      const cid = node?.__data__?.data?.[CID_SYM]
+      const cid = ev.target.closest(".markmap-node")?.__data__?.data?.[CID_SYM]
       if (!cid) return
-
-      const circle = ev.target.closest("circle")
-      if (circle) {
-        if (this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD) {
-          const head = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`)
-          const isFold = node.classList.contains("markmap-fold")
-          this.utils.callPluginFn("collapse_paragraph", "trigger", head, !isFold)
-        }
-        if (this.config.AUTO_FIT_WHEN_FOLD) {
-          this.fit()
-        }
-      } else {
-        if (this.config.CLICK_TO_POSITION) {
-          const { height, top } = this.entities.content.getBoundingClientRect()
-          this.utils.scrollTo(cid, {
-            height: height * this.config.POSITIONING_VIEWPORT_HEIGHT + top,
-            showHiddenEls: !this.config.AUTO_COLLAPSE_PARAGRAPH_ON_FOLD,
-            moveCursor: true,
-          })
-        }
+      if (ev.target.closest("circle")) {
+        if (this.config.AUTO_FIT_WHEN_FOLD) this.fit()
+        return
+      }
+      if (this.config.CTRL_CLICK_TO_FOCUS && this.utils.metaKeyPressed(ev)) {
+        return this.focusCtl.toggle(cid)
+      }
+      if (this.config.CLICK_TO_POSITION) {
+        const { height, top } = this.entities.content.getBoundingClientRect()
+        this.utils.scrollTo(cid, {
+          height: height * this.config.POSITIONING_VIEWPORT_HEIGHT + top,
+          showHiddenEls: true,
+          moveCursor: true,
+        })
       }
     })
   }
@@ -162,9 +163,12 @@ class TOCMarkmap {
   }
 
   _registerRootModifiers = () => {
-    this._rootModifiers.push((root, prevRoot) => {
-      if (this.config.RETAIN_FOLD_STATE_ON_UPDATE && prevRoot) retainFoldState(root, prevRoot)
-    })
+    this._rootModifiers.push(
+      (root, prevRoot) => {
+        if (this.config.RETAIN_FOLD_STATE_ON_UPDATE && prevRoot) retainFoldState(root, prevRoot)
+      },
+      root => this.focusCtl.view(root),
+    )
   }
 
   _registerContextMenu = () => {
@@ -192,8 +196,9 @@ class TOCMarkmap {
   }
 
   close = () => {
+    this.focusCtl.clear()
     this.panelCtl.reset()
-    this.mm.destroy()
+    this.mm?.destroy()
     this.mm = null
     this._ctx = null
   }
@@ -310,6 +315,44 @@ function annotate(mmRoot, tocRoot) {
   // markmap may prepend a virtual root that has no toc counterpart; tail alignment cancels out whichever side carries one.
   for (const [mmNode, tocNode] of zipAligned(mmNodes, tocNodes)) {
     mmNode[CID_SYM] = tocNode.cid
+  }
+}
+
+function createFocusCtl({ getRoot, render, onActiveChange }) {
+  let focusCid = null
+
+  const findSub = (root, cid) => preorder(root).find(node => node[CID_SYM] === cid)
+  const setCid = cid => {
+    const wasActive = focusCid !== null
+    focusCid = cid
+    const isActive = focusCid !== null
+    if (wasActive !== isActive) onActiveChange?.(isActive)
+  }
+  const view = root => {
+    if (focusCid === null) return root
+    const found = findSub(root, focusCid)
+    if (!found) setCid(null)  // cid is monotonic; a focused cid absent from the new root means the file changed — auto-exit focus.
+    return found ?? root
+  }
+  const apply = () => render(view(getRoot()))
+
+  return {
+    focus: cid => {
+      setCid(cid)
+      apply()
+    },
+    exit: () => {
+      if (focusCid === null) return
+      setCid(null)
+      apply()
+    },
+    toggle: cid => {
+      setCid(focusCid === cid ? null : cid)
+      apply()
+    },
+    clear: () => setCid(null),
+    isActive: () => focusCid !== null,
+    view,
   }
 }
 

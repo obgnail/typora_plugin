@@ -1,9 +1,9 @@
 const ATTRIBUTES_TO_SAVE = [
   "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT",
   "HEIGHT_PERCENT_WHEN_PIN_TOP", "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT",
-  "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITION", "HIGHLIGHT_PATH_ON_HOVER",
-  "AUTO_FIT_ON_UPDATE", "AUTO_FIT_WHEN_FOLD", "RETAIN_FOLD_STATE_ON_UPDATE",
-  "AUTO_COLLAPSE_PARAGRAPH_ON_FOLD", "NODE_TEXT_TEMPLATE",
+  "FIX_SKIPPED_LEVEL_HEADERS", "REMOVE_HEADER_STYLES", "CLICK_TO_POSITION", "CTRL_CLICK_TO_FOCUS",
+  "HIGHLIGHT_PATH_ON_HOVER", "AUTO_FIT_ON_UPDATE", "AUTO_FIT_WHEN_FOLD", "RETAIN_FOLD_STATE_ON_UPDATE",
+  "NODE_TEXT_TEMPLATE",
 ]
 
 const arr2Str = arr => arr.join("_")
@@ -45,7 +45,6 @@ const openTOCSettings = async ({ config, utils, i18n, fixedName }) => {
 
 const getSchema = ({ config, utils, i18n }) => {
   const T = key => i18n.t(`$tooltip.${key}`)
-  const pluginEnabled = utils.getPlugin("collapse_paragraph")
   const pixelUnit = i18n._t("settings", "$unit.pixel")
 
   const colorOptions = Object.fromEntries(
@@ -103,7 +102,6 @@ const getSchema = ({ config, utils, i18n }) => {
           C.Switch("RETAIN_FOLD_STATE_ON_UPDATE"),
           C.Switch("AUTO_FIT_ON_UPDATE"),
           C.Switch("AUTO_FIT_WHEN_FOLD"),
-          C.Switch("AUTO_COLLAPSE_PARAGRAPH_ON_FOLD").Tooltip(T("experimental")).Disabled(!pluginEnabled),
         )],
       })
       .Tab({
@@ -113,6 +111,7 @@ const getSchema = ({ config, utils, i18n }) => {
           C.Switch("DEFAULT_TOC_OPTIONS.pan"),
           C.Switch("DEFAULT_TOC_OPTIONS.toggleRecursively"),
           C.Switch("HIGHLIGHT_PATH_ON_HOVER"),
+          C.Switch("CTRL_CLICK_TO_FOCUS"),
           C.Switch("CLICK_TO_POSITION"),
           C.Range("POSITIONING_VIEWPORT_HEIGHT").Tooltip(T("positioningViewPort")).Min(0.1).Max(0.95).Step(0.01).ShowIf(When.true("CLICK_TO_POSITION")),
           C.Range("DEFAULT_TOC_OPTIONS.duration").Min(0).Max(1000).Step(10),

@@ -93,15 +93,6 @@ module.exports = (plugin) => {
         }
       },
     },
-    markmap: {
-      AUTO_COLLAPSE_PARAGRAPH_ON_FOLD: (field, data) => {
-        if (!utils.getPlugin("collapse_paragraph")) {
-          _disableSwitch(field, data, i18n._t("markmap", "$tooltip.experimental"))
-        } else {
-          _enableControl(field)
-        }
-      },
-    },
     right_click_menu: {
       MENUS: (field) => {
         const subField = field.nestedBoxes.find(box => box.fields.some(field => field.key === "LIST"))?.fields[0]

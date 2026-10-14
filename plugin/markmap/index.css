@@ -58,6 +58,14 @@
   cursor: grabbing;
 }
 
+#plugin-markmap.markmap-focused .plugin-markmap-header {
+  background: color-mix(in srgb, var(--primary) 18%, var(--bg-toolbar));
+}
+
+#plugin-markmap.markmap-focused #plugin-markmap-svg {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--primary) 45%, transparent);
+}
+
 @keyframes markmap-slide-up {
   from {
     opacity: 0;
