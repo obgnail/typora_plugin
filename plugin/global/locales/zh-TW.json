@@ -789,8 +789,8 @@
     "act.expand": "展開長圖",
     "act.collapse": "收起長圖",
     "$title.height": "高度",
-    "$label.TRIGGER_HEIGHT_PERCENT": "觸發摺疊高度",
-    "$label.COLLAPSED_HEIGHT_PERCENT": "摺疊後高度"
+    "$label.TRIGGER_HEIGHT": "觸發摺疊高度（像素）",
+    "$label.COLLAPSED_HEIGHT": "摺疊後高度（像素）"
   },
   "truncate_text": {
     "pluginName": "文段截斷",

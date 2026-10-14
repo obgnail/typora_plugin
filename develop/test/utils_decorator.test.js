@@ -56,6 +56,13 @@ describe("Decorator (AOP utility)", () => {
         TypeError,
       )
     })
+
+    it("rejects when options.onFinally is not a function", async () => {
+      await assert.rejects(
+        decorator.decorate(target, "add", { onFinally: "not-a-fn" }),
+        TypeError,
+      )
+    })
   })
 
   describe("beforeCall", () => {
@@ -101,6 +108,40 @@ describe("Decorator (AOP utility)", () => {
       assert.strictEqual(result, 5)
       assert.deepStrictEqual(captured, [{ result: 5, a: 2, b: 3 }])
 
+      undecorate()
+    })
+  })
+
+  describe("onFinally", () => {
+    it("runs after the original function throws", async () => {
+      const calls = []
+      target.fail = () => {
+        throw new Error("export failed")
+      }
+      const { undecorate } = await decorator.decorate(target, "fail", {
+        onFinally: () => calls.push("finally"),
+      })
+
+      assert.throws(() => target.fail(), /export failed/)
+      assert.deepStrictEqual(calls, ["finally"])
+      undecorate()
+    })
+
+    it("waits for a returned promise to reject before running", async () => {
+      let reject
+      const calls = []
+      target.failAsync = () => new Promise((resolve, rejectFn) => {
+        reject = rejectFn
+      })
+      const { undecorate } = await decorator.decorate(target, "failAsync", {
+        onFinally: () => calls.push("finally"),
+      })
+
+      const result = target.failAsync()
+      assert.deepStrictEqual(calls, [])
+      reject(new Error("export failed"))
+      await assert.rejects(result, /export failed/)
+      assert.deepStrictEqual(calls, ["finally"])
       undecorate()
     })
   })

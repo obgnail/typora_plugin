@@ -789,8 +789,8 @@
     "act.expand": "Expand Long Image",
     "act.collapse": "Collapse Long Image",
     "$title.height": "Height",
-    "$label.TRIGGER_HEIGHT_PERCENT": "Collapse Trigger Height",
-    "$label.COLLAPSED_HEIGHT_PERCENT": "Collapsed Height"
+    "$label.TRIGGER_HEIGHT": "Collapse Trigger Height (px)",
+    "$label.COLLAPSED_HEIGHT": "Collapsed Height (px)"
   },
   "truncate_text": {
     "pluginName": "Text Truncation",

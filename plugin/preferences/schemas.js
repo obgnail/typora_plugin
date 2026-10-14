@@ -661,8 +661,8 @@ const schema_collapse_table = () => [
 const schema_collapse_image = () => [
   FRAG.Base(),
   Group("height",
-    Range("TRIGGER_HEIGHT_PERCENT").Min(101).Max(500).Step(1).Unit(UNITS.percent),
-    Range("COLLAPSED_HEIGHT_PERCENT").Min(10).Max(100).Step(1).Unit(UNITS.percent),
+    Integer("TRIGGER_HEIGHT").Unit(UNITS.pixel).Min(1),
+    Integer("COLLAPSED_HEIGHT").Unit(UNITS.pixel).Min(1),
   ),
   FRAG.SettingHandler(),
 ]

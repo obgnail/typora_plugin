@@ -1439,11 +1439,11 @@ ENABLE = false
 NAME = ""
 
 # =========== [ Height ] ===========
-# Collapse an image when its displayed height exceeds this percentage of the editor viewport
-TRIGGER_HEIGHT_PERCENT = 120
+# Collapse an image when its displayed height exceeds this many pixels
+TRIGGER_HEIGHT = 960
 
-# Visible image height after collapsing, expressed as a percentage of the editor viewport
-COLLAPSED_HEIGHT_PERCENT = 70
+# Visible image height after collapsing, in pixels
+COLLAPSED_HEIGHT = 560
 
 
 [image_viewer]

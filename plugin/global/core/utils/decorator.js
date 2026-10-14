@@ -10,7 +10,7 @@ const decoratorChain = {
       this.chains.set(target, new Map())
     }
     const targetMap = this.chains.get(target)
-    const meta = { originalFn, chainedFn: null, decorators: [], beforeHooks: [], afterHooks: [] }
+    const meta = { originalFn, chainedFn: null, decorators: [], beforeHooks: [], afterHooks: [], finallyHooks: [] }
     targetMap.set(property, meta)
     return meta
   },
@@ -18,6 +18,7 @@ const decoratorChain = {
     const sorted = meta.decorators.toSorted((a, b) => a.priority - b.priority)
     meta.beforeHooks = sorted.filter(d => d.before)
     meta.afterHooks = sorted.filter(d => d.after).reverse()
+    meta.finallyHooks = sorted.filter(d => d.onFinally).reverse()
   },
   removeMeta(target, property) {
     if (this.chains.has(target)) {
@@ -30,6 +31,7 @@ const decorate = (target, property, options = {}) => {
   const {
     before,
     after,
+    onFinally,
     modifyArgs = false,
     modifyResult = false,
     timeout = 10000,
@@ -44,6 +46,9 @@ const decorate = (target, property, options = {}) => {
   }
   if (after && typeof after !== "function") {
     return Promise.reject(new TypeError("options.after must be a function"))
+  }
+  if (onFinally && typeof onFinally !== "function") {
+    return Promise.reject(new TypeError("options.onFinally must be a function"))
   }
 
   const objGetter = typeof target === "function" ? target : () => target
@@ -68,31 +73,50 @@ const decorate = (target, property, options = {}) => {
         if (!meta) {
           meta = decoratorChain.initMeta(obj, property, targetFn)
           const chainedFn = function (...args) {
-            const { beforeHooks, afterHooks, originalFn } = meta
+            const { beforeHooks, afterHooks, finallyHooks, originalFn } = meta
             const beforeLen = beforeHooks.length
             const afterLen = afterHooks.length
+            const finallyLen = finallyHooks.length
 
             let executionArgs = args
-            for (let i = 0; i < beforeLen; i++) {
-              const hook = beforeHooks[i]
-              const beforeResult = hook.before.apply(this, executionArgs)
-              if (beforeResult === PREVENT_DEFAULT) return
-              if (hook.modifyArgs) {
-                executionArgs = (beforeResult == null)
-                  ? []
-                  : Array.isArray(beforeResult) ? beforeResult : [beforeResult]
+            let result
+            let deferFinally = false
+            try {
+              for (let i = 0; i < beforeLen; i++) {
+                const hook = beforeHooks[i]
+                const beforeResult = hook.before.apply(this, executionArgs)
+                if (beforeResult === PREVENT_DEFAULT) return
+                if (hook.modifyArgs) {
+                  executionArgs = (beforeResult == null)
+                    ? []
+                    : Array.isArray(beforeResult) ? beforeResult : [beforeResult]
+                }
+              }
+              result = originalFn.apply(this, executionArgs)
+              for (let i = 0; i < afterLen; i++) {
+                const hook = afterHooks[i]
+                const afterResult = hook.after.call(this, result, ...executionArgs)
+                if (hook.modifyResult) {
+                  result = afterResult
+                }
+              }
+              if (typeof result?.then === "function") {
+                const deferredResult = Promise.resolve(result).finally(() => {
+                  for (let i = 0; i < finallyLen; i++) {
+                    finallyHooks[i].onFinally.call(this, result, ...executionArgs)
+                  }
+                })
+                deferFinally = true
+                return deferredResult
+              }
+              return result
+            } finally {
+              if (!deferFinally) {
+                for (let i = 0; i < finallyLen; i++) {
+                  finallyHooks[i].onFinally.call(this, result, ...executionArgs)
+                }
               }
             }
-            let result = originalFn.apply(this, executionArgs)
-            for (let i = 0; i < afterLen; i++) {
-              const hook = afterHooks[i]
-              const afterResult = hook.after.call(this, result, ...executionArgs)
-              if (hook.modifyResult) {
-                result = afterResult
-              }
-            }
-
-            return result
           }
 
           Object.defineProperties(chainedFn, {
@@ -105,7 +129,7 @@ const decorate = (target, property, options = {}) => {
           obj[property] = chainedFn
         }
 
-        meta.decorators.push({ id: decoratorId, before, after, modifyArgs, modifyResult, priority })
+        meta.decorators.push({ id: decoratorId, before, after, onFinally, modifyArgs, modifyResult, priority })
         decoratorChain.recompile(meta)
         const undecorate = () => {
           const currentMeta = decoratorChain.getMeta(obj, property)

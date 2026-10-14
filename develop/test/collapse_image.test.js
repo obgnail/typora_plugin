@@ -6,41 +6,64 @@ const assert = require("node:assert")
 const pluginPath = require.resolve("../../plugin/collapse_image.js")
 
 let CollapseImagePlugin
-let container
 let eWrite
 let eContent
 let eventHub
 let exportHooks
 let resizeObservers
+let mutationObservers
+let imageObservers
 
 const config = () => ({
   ENABLE: true,
   NAME: "",
-  TRIGGER_HEIGHT_PERCENT: 120,
-  COLLAPSED_HEIGHT_PERCENT: 70,
+  TRIGGER_HEIGHT: 960,
+  COLLAPSED_HEIGHT: 560,
 })
 
-const defineHeight = (element, getHeight) => {
-  Object.defineProperty(element, "getBoundingClientRect", {
+const defineHeight = (element, height) => {
+  Object.defineProperty(element, "offsetHeight", {
     configurable: true,
-    value: () => ({ width: 800, height: getHeight(), top: 0, right: 800, bottom: getHeight(), left: 0 }),
+    get: () => {
+      height.reads = (height.reads || 0) + 1
+      return height.value
+    },
   })
+  element.getBoundingClientRect = () => {
+    throw new Error("collapse_image must not read getBoundingClientRect")
+  }
 }
 
-const setViewportHeight = height => {
-  Object.defineProperty(eContent, "clientHeight", { configurable: true, value: height })
-}
-
-const addMarkdownImage = ({ height, src = "image.svg" }) => {
+const addMarkdownImage = ({ height, src = "image.svg", loaded = true }) => {
   const wrapper = document.createElement("span")
-  wrapper.className = "md-image md-img-loaded"
+  wrapper.className = loaded ? "md-image md-img-loaded" : "md-image"
   const image = document.createElement("img")
   image.setAttribute("src", src)
-  defineHeight(image, () => height.value)
+  defineHeight(image, height)
   wrapper.appendChild(image)
   eWrite.appendChild(wrapper)
   return { wrapper, image, height }
 }
+
+const enterViewport = (...images) => imageObservers[0].callback(images.map(target => ({ target, isIntersecting: true })))
+
+const addMutation = (...nodes) => mutationObservers[0].callback([{
+  type: "childList",
+  addedNodes: nodes,
+  removedNodes: [],
+}])
+
+const removeMutation = (...nodes) => mutationObservers[0].callback([{
+  type: "childList",
+  addedNodes: [],
+  removedNodes: nodes,
+}])
+
+const changeSource = image => mutationObservers[0].callback([{
+  type: "attributes",
+  attributeName: "src",
+  target: image,
+}])
 
 const createPlugin = () => new CollapseImagePlugin("collapse_image", config(), {
   t: key => ({ "act.expand": "Expand long image", "act.collapse": "Collapse long image" })[key] || key,
@@ -48,10 +71,8 @@ const createPlugin = () => new CollapseImagePlugin("collapse_image", config(), {
 
 beforeEach(() => {
   document.body.innerHTML = '<content><div id="write"></div></content>'
-  container = document.querySelector("content")
   eWrite = document.querySelector("#write")
-  eContent = container
-  setViewportHeight(600)
+  eContent = document.querySelector("content")
 
   const listeners = new Map()
   eventHub = {
@@ -66,13 +87,40 @@ beforeEach(() => {
   }
   exportHooks = {}
   resizeObservers = []
+  mutationObservers = []
+  imageObservers = []
+  global.MutationObserver = class {
+    constructor(callback) {
+      this.callback = callback
+      mutationObservers.push(this)
+    }
+    observe(target, options) {
+      this.target = target
+      this.options = options
+    }
+    disconnect() {}
+  }
   global.ResizeObserver = class {
     constructor(callback) {
       this.callback = callback
       resizeObservers.push(this)
     }
-    observe() {}
+    observe(target) { this.target = target }
     disconnect() {}
+  }
+  global.IntersectionObserver = class {
+    constructor(callback) {
+      this.callback = callback
+      this.targets = new Set()
+      this.disconnects = 0
+      imageObservers.push(this)
+    }
+    observe(target) { this.targets.add(target) }
+    unobserve(target) { this.targets.delete(target) }
+    disconnect() {
+      this.disconnects++
+      this.targets.clear()
+    }
   }
 
   global.BasePlugin = class {
@@ -88,8 +136,8 @@ beforeEach(() => {
           register: (name, beforeExportToHTML, afterExportToHTML) => {
             exportHooks[name] = { beforeExportToHTML, afterExportToHTML }
           },
-          registerNative: (name, beforeExportToNative, afterExportToNative) => {
-            exportHooks[`${name}:native`] = { beforeExportToNative, afterExportToNative }
+          registerNative: (name, beforeExportToNative, afterExportToNative, afterExportToNativeFinally) => {
+            exportHooks[`${name}:native`] = { beforeExportToNative, afterExportToNative, afterExportToNativeFinally }
           },
         },
       }
@@ -102,99 +150,232 @@ beforeEach(() => {
 })
 
 describe("collapse_image", () => {
-  it("automatically collapses only tall Markdown images", () => {
+  it("measures Markdown images only after they enter the viewport", () => {
     const short = addMarkdownImage({ height: { value: 600 }, src: "short.svg" })
     const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
 
     createPlugin().process()
 
-    assert.ok(!short.wrapper.classList.contains("plugin-collapse-image-collapsed"))
+    assert.equal(short.height.reads || 0, 0)
+    assert.equal(long.height.reads || 0, 0)
+    assert.deepEqual(imageObservers[0].targets, new Set([short.image, long.image]))
+
+    enterViewport(short.image, long.image)
+
+    assert.equal(short.height.reads, 1)
+    assert.equal(long.height.reads, 1)
     assert.equal(short.wrapper.querySelector(".plugin-collapse-image-control"), null)
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
-    assert.equal(long.wrapper.querySelector(".plugin-collapse-image-control")?.textContent, "Expand long image")
+    assert.equal(imageObservers[0].targets.size, 0)
   })
 
-  it("refreshes Markdown images added after plugin lifecycle completes", () => {
+  it("observes Markdown images added after plugin lifecycle completes", () => {
     const plugin = createPlugin()
     plugin.process()
-    plugin.postprocess()
     const long = addMarkdownImage({ height: { value: 1000 }, src: "late.svg" })
 
-    eventHub.emit("fileContentLoaded")
+    addMutation(long.wrapper)
+    enterViewport(long.image)
 
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
   })
 
-  it("toggles a long image by mouse and keyboard without changing its source", () => {
+  it("observes an image when Typora adds its loaded class after insertion", () => {
+    const image = addMarkdownImage({ height: { value: 1000 }, loaded: false })
+    createPlugin().process()
+    assert.equal(imageObservers[0].targets.size, 0)
+
+    image.wrapper.classList.add("md-img-loaded")
+    mutationObservers[0].callback([{
+      type: "attributes",
+      attributeName: "class",
+      oldValue: "md-image",
+      target: image.wrapper,
+    }])
+
+    assert.ok(mutationObservers[0].options.attributeFilter.includes("class"))
+    assert.equal(mutationObservers[0].options.attributeOldValue, true)
+    assert.ok(imageObservers[0].targets.has(image.image))
+    enterViewport(image.image)
+    assert.ok(image.wrapper.classList.contains("plugin-collapse-image-collapsed"))
+  })
+
+  it("re-observes the editor images after size changes without immediately measuring them", () => {
+    const long = addMarkdownImage({ height: { value: 1000 }, src: "resize.svg" })
+    const plugin = createPlugin()
+    plugin.process()
+    enterViewport(long.image)
+    assert.ok(long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
+
+    long.height.value = 500
+    long.height.reads = 0
+    resizeObservers[0].callback([{ target: eContent }])
+
+    assert.strictEqual(resizeObservers[0].target, eContent)
+    assert.equal(long.height.reads, 0)
+    assert.ok(imageObservers[0].targets.has(long.image))
+
+    enterViewport(long.image)
+    assert.equal(long.wrapper.querySelector(".plugin-collapse-image-control"), null)
+  })
+
+  it("toggles a long image by delegated mouse clicks without changing its source", () => {
     const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
     createPlugin().process()
+    enterViewport(long.image)
 
     const control = long.wrapper.querySelector(".plugin-collapse-image-control")
     control.click()
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
     assert.equal(control.textContent, "Collapse long image")
     assert.equal(long.image.getAttribute("src"), "long.svg")
+    assert.equal(control.getAttribute("role"), null)
+    assert.equal(control.getAttribute("tabindex"), null)
 
-    control.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+    control.click()
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
     assert.equal(control.textContent, "Expand long image")
   })
 
-  it("preserves a manual choice until the image stops qualifying or its source changes", () => {
+  it("preserves manual expansion across resize and resets it after an image source change", () => {
+    const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
+    createPlugin().process()
+    enterViewport(long.image)
+    long.wrapper.querySelector(".plugin-collapse-image-control").click()
+
+    resizeObservers[0].callback([{ target: eContent }])
+    enterViewport(long.image)
+    assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
+
+    long.image.setAttribute("src", "replacement.svg")
+    changeSource(long.image)
+    enterViewport(long.image)
+    assert.ok(long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
+  })
+
+  it("does not rescan image heights for its own control-node mutations", () => {
+    const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
+    createPlugin().process()
+    enterViewport(long.image)
+    long.height.reads = 0
+
+    addMutation(long.wrapper.querySelector(".plugin-collapse-image-control"))
+
+    assert.equal(long.height.reads, 0)
+  })
+
+  it("does not re-observe an image when the plugin changes its own wrapper class", () => {
+    const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
+    createPlugin().process()
+    enterViewport(long.image)
+
+    mutationObservers[0].callback([{
+      type: "attributes",
+      attributeName: "class",
+      oldValue: "md-image md-img-loaded",
+      target: long.wrapper,
+    }])
+
+    assert.equal(long.height.reads, 1)
+    assert.equal(imageObservers[0].targets.size, 0)
+  })
+
+  it("forgets records for removed images", () => {
     const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
     const plugin = createPlugin()
     plugin.process()
+    enterViewport(long.image)
 
-    long.wrapper.querySelector(".plugin-collapse-image-control").click()
-    setViewportHeight(500)
-    window.dispatchEvent(new window.Event("resize"))
-    assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
+    long.wrapper.remove()
+    removeMutation(long.wrapper)
 
-    long.height.value = 500
-    window.dispatchEvent(new window.Event("resize"))
-    assert.ok(!long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
-    assert.equal(long.wrapper.querySelector(".plugin-collapse-image-control"), null)
+    assert.equal(plugin.records.has(long.image), false)
+  })
 
-    long.height.value = 1000
-    long.image.setAttribute("src", "replacement.svg")
-    long.image.dispatchEvent(new window.Event("load", { bubbles: false }))
-    assert.ok(long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
-    assert.equal(long.wrapper.querySelector(".plugin-collapse-image-control")?.textContent, "Expand long image")
+  it("does not intercept copying the image or alter its source", () => {
+    const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
+    createPlugin().process()
+    enterViewport(long.image)
+    const before = long.image.getAttribute("src")
+    const copied = long.image.dispatchEvent(new window.Event("copy", { bubbles: true, cancelable: true }))
+
+    assert.ok(copied)
+    assert.equal(long.image.getAttribute("src"), before)
+  })
+
+  it("cleans old observers and reapplies folding after a file reload", () => {
+    const plugin = createPlugin()
+    plugin.process()
+    const first = addMarkdownImage({ height: { value: 1000 }, src: "first.svg" })
+    addMutation(first.wrapper)
+    enterViewport(first.image)
+    assert.ok(first.wrapper.classList.contains("plugin-collapse-image-collapsed"))
+
+    eWrite.replaceChildren()
+    const replacement = addMarkdownImage({ height: { value: 1000 }, src: "replacement.svg" })
+    eventHub.emit("fileContentLoaded")
+    enterViewport(replacement.image)
+
+    assert.ok(imageObservers[0].disconnects > 0)
+    assert.ok(replacement.wrapper.classList.contains("plugin-collapse-image-collapsed"))
   })
 
   it("ignores raw HTML images outside Typora's Markdown image wrapper", () => {
     const raw = document.createElement("img")
     raw.setAttribute("src", "raw.svg")
-    defineHeight(raw, () => 1000)
+    defineHeight(raw, { value: 1000 })
     eWrite.appendChild(raw)
 
     createPlugin().process()
 
+    assert.equal(imageObservers[0].targets.size, 0)
     assert.equal(eWrite.querySelector(".plugin-collapse-image-control"), null)
-    assert.ok(!raw.classList.contains("plugin-collapse-image-collapsed"))
   })
 
-  it("removes the reading aid from exported HTML", () => {
+  it("removes the reading aid from collapsed and expanded exported HTML", () => {
     const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
     createPlugin().process()
 
-    const exported = exportHooks.collapse_image.afterExportToHTML(
-      `<span class="md-image md-img-loaded plugin-collapse-image-collapsed" style="--plugin-collapse-image-height: 420px"><img src="${long.image.getAttribute("src")}"><div class="plugin-collapse-image-control" role="button">Expand long image</div></span>`,
+    const exportHtml = state => exportHooks.collapse_image.afterExportToHTML(
+      `<span class="md-image md-img-loaded plugin-collapse-image-${state}" style="--plugin-collapse-image-height: 560px"><img src="${long.image.getAttribute("src")}"><div class="plugin-collapse-image-control">${state === "collapsed" ? "Expand" : "Collapse"}</div></span>`,
     )
-
-    assert.ok(!exported.includes("plugin-collapse-image"))
-    assert.ok(exported.includes('<img src="long.svg">'))
+    ;["collapsed", "expanded"].forEach(state => {
+      const exported = exportHtml(state)
+      assert.ok(!exported.includes("plugin-collapse-image"))
+      assert.ok(exported.includes('<img src="long.svg">'))
+    })
   })
 
   it("removes and restores the reading aid around native export", () => {
     const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
     createPlugin().process()
+    enterViewport(long.image)
 
     exportHooks["collapse_image:native"].beforeExportToNative()
     assert.ok(!long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
     assert.equal(long.wrapper.querySelector(".plugin-collapse-image-control"), null)
 
-    exportHooks["collapse_image:native"].afterExportToNative()
+    exportHooks["collapse_image:native"].afterExportToNativeFinally()
+    enterViewport(long.image)
+    assert.ok(long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
+    assert.ok(long.wrapper.querySelector(".plugin-collapse-image-control"))
+  })
+
+  it("restores the reading aid when native export fails", () => {
+    const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
+    createPlugin().process()
+    enterViewport(long.image)
+
+    exportHooks["collapse_image:native"].beforeExportToNative()
+    try {
+      throw new Error("export failed")
+    } catch (error) {
+      assert.equal(error.message, "export failed")
+    } finally {
+      exportHooks["collapse_image:native"].afterExportToNativeFinally()
+    }
+    enterViewport(long.image)
+
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
     assert.ok(long.wrapper.querySelector(".plugin-collapse-image-control"))
   })
