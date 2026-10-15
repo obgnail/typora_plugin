@@ -59,13 +59,8 @@ class MarkdownlintPlugin extends BasePlugin {
   width: var(--markdownlint-width);
   z-index: 9993;
 }
-#plugin-markdownlint::part(content-area) {
-  padding: 8px;
-}
-.plugin-markdownlint-table {
-  --table-max-height: 300px;
-  --cell-padding-y: 6px;
-}
+#plugin-markdownlint::part(content-area) { padding: 8px; }
+.plugin-markdownlint-table { --table-max-height: 300px; --cell-padding-y: 6px; }
 #plugin-markdownlint-indicator {
   position: fixed;
   right: ${this.config.BUTTON_RIGHT};
@@ -79,9 +74,7 @@ class MarkdownlintPlugin extends BasePlugin {
   transition: background-color 0.1s ease 0s;
   z-index: 9992;
 }
-#plugin-markdownlint-indicator[lint-check-failed] {
-  background-color: ${this.config.BUTTON_ERROR_COLOR};
-}`
+#plugin-markdownlint-indicator[lint-check-failed] { background-color: ${this.config.BUTTON_ERROR_COLOR}; }`
 
   hotkey = () => [
     { hotkey: this.config.HOTKEY, callback: () => this.call() },
@@ -122,27 +115,23 @@ class MarkdownlintPlugin extends BasePlugin {
       if (this.entities.indicator) this.utils.toggleInvisible(this.entities.indicator, force)
     })
 
-    this.entities.panel.addEventListener("btn-click", ev => this.ACTIONS[ev.detail.action]?.())
+    const invoke = (act, rowData) => {
+      const param = rowData == null ? undefined : (act === "fixSingle" || act === "detailSingle") ? rowData.idx : rowData.line
+      this.ACTIONS[act]?.(param)
+    }
     this.entities.indicator?.addEventListener("mousedown", ev => {
       if (ev.button === 0) this.call()
-      else if (ev.button === 2) this.ACTIONS[this.config.RIGHT_CLICK_INDICATOR_ACTION]?.()
+      else if (ev.button === 1) invoke(this.config.MIDDLE_CLICK_INDICATOR_ACTION)
+      else if (ev.button === 2) invoke(this.config.RIGHT_CLICK_INDICATOR_ACTION)
     })
     this.entities.table.addEventListener("mousedown", ev => {
       ev.preventDefault()
       ev.stopPropagation()
-      if (ev.button === 2) this.ACTIONS[this.config.RIGHT_CLICK_TABLE_ACTION]?.()
+      if (ev.button === 2) invoke(this.config.RIGHT_CLICK_TABLE_ACTION)
     })
-    this.entities.table.addEventListener("row-action", ev => {
-      const { action, rowData } = ev.detail
-      const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
-      this.ACTIONS[action](arg)
-    })
-    this.entities.table.addEventListener("row-click", ev => {
-      const { rowData } = ev.detail
-      const action = this.config.LEFT_CLICK_ROW_ACTION
-      const arg = (action === "fixSingle" || action === "detailSingle") ? rowData.idx : rowData.line
-      this.ACTIONS[action](arg)
-    })
+    this.entities.panel.addEventListener("btn-click", ev => invoke(ev.detail.action))
+    this.entities.table.addEventListener("row-action", ev => invoke(ev.detail.action, ev.detail.rowData))
+    this.entities.table.addEventListener("row-click", ev => invoke(this.config.LEFT_CLICK_ROW_ACTION, ev.detail.rowData))
   }
 
   call = () => {
@@ -166,7 +155,7 @@ class MarkdownlintPlugin extends BasePlugin {
       const regex = "regex"
       const word = { name: "pattern", args: [/^\w+$/] }
       const codingLang = { name: "pattern", args: [/^[a-zA-Z0-9#+.\-]+$/] }
-      const heading = { name: "pattern", args: [/^(\*|\+|\?|#{1,6}\s+\S.*)$/] }
+      const heading = { name: "pattern", args: [/^(?:[*+?]|\^+|[#%]{1,6}\s+\S.*)$/u] }
       const readJSON = ({ value }) => {
         if (!value) return
         value = this.utils.Package.Path.resolve(value)

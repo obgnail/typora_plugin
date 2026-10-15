@@ -439,8 +439,11 @@ LEFT_CLICK_ROW_ACTION = "jumpToLine"
 # Action triggered by right-clicking the table (value must match one of the keys in TITLE_BAR_BUTTONS)
 RIGHT_CLICK_TABLE_ACTION = "toggleSourceMode"
 
-# Action triggered by right-clicking the indicator button (value must match one of the keys in TITLE_BAR_BUTTONS)
+# Action triggered by right-clicking the indicator (value must match one of the keys in TITLE_BAR_BUTTONS)
 RIGHT_CLICK_INDICATOR_ACTION = "fixAll"
+
+# Action triggered by middle-clicking the indicator (value must match one of the keys in TITLE_BAR_BUTTONS)
+MIDDLE_CLICK_INDICATOR_ACTION = "refresh"
 
 
 [md_padding]

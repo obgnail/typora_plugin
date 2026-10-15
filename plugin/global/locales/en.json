@@ -1729,6 +1729,7 @@
     "$label.LEFT_CLICK_ROW_ACTION": "Left-click Table Row",
     "$label.RIGHT_CLICK_TABLE_ACTION": "Right-click Table",
     "$label.RIGHT_CLICK_INDICATOR_ACTION": "Right-Click Indicator",
+    "$label.MIDDLE_CLICK_INDICATOR_ACTION": "Middle-Click Indicator",
     "$label.HOTKEY_FIX_LINT": "Hotkey: Fix All",
     "$label.invokeMarkdownlintSettings": "Configure Linter Rules",
     "$label.RULE_CONFIG": "Linter Rules",
