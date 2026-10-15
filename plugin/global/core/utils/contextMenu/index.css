@@ -7,6 +7,7 @@
   --menu-item-hover-bg: rgba(0, 0, 0, 0.04);
   --menu-radius: 12px;
   --menu-item-radius: 6px;
+  --menu-divider: #555;
 
   display: none;
   position: fixed;
@@ -25,6 +26,12 @@
 .plugin-common-menu.show {
   display: block;
   animation: menu-pop-in 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.plugin-common-menu .menu-separator {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--menu-divider);
 }
 
 .plugin-common-menu .menu-item {
@@ -49,6 +56,11 @@
 .plugin-common-menu .menu-item:hover {
   background-color: var(--menu-item-hover-bg);
   color: var(--menu-text-hover);
+}
+
+.plugin-common-menu .menu-item.disabled {
+  opacity: .45;
+  cursor: default;
 }
 
 @keyframes menu-pop-in {

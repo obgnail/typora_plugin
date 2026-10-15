@@ -844,9 +844,7 @@ class WindowTabPlugin extends BasePlugin {
   }
 
   _handleContextMenu = () => {
-    this.utils.contextMenu.register(this.entities.tabWrapper, ev => {
-      const tabEl = ev.target.closest(".tab-container")
-      if (!tabEl) return null
+    const tabMenu = tabEl => {
       const tabIdx = parseInt(tabEl.dataset.idx, 10)
       const actions = {
         closeTab: () => this.tab.close(tabIdx),
@@ -866,7 +864,8 @@ class WindowTabPlugin extends BasePlugin {
           if (key.startsWith("close")) this._saveOnSwitch()
         },
       }))
-    })
+    }
+    this.utils.contextMenu.register(this.entities.tabWrapper, { ".tab-container": tabMenu })
   }
 
   _adjustQuickOpen = () => {

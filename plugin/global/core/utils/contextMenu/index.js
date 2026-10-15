@@ -13,7 +13,7 @@ class ContextMenu {
     this._menuEl = document.querySelector(".plugin-common-menu")
     this._menuEl.addEventListener("click", (ev) => {
       const target = ev.target.closest(".menu-item")
-      if (!target) return
+      if (!target || target.classList.contains("disabled")) return
       const idx = parseInt(target.dataset.idx, 10)
       try {
         this._currentActions[idx]?.(ev)
@@ -23,9 +23,9 @@ class ContextMenu {
     })
   }
 
-  register = (el, provider) => {
+  register = (el, spec) => {
     if (!el || this.providers.has(el)) return
-    this.providers.set(el, provider)
+    this.providers.set(el, spec)
     el.addEventListener("contextmenu", this._onContextMenu)
   }
 
@@ -36,10 +36,10 @@ class ContextMenu {
   }
 
   _onContextMenu = (ev) => {
-    const provider = this.providers.get(ev.currentTarget)
-    if (!provider) return
+    const spec = this.providers.get(ev.currentTarget)
+    if (!spec) return
 
-    const menuItems = provider(ev)
+    const menuItems = this._resolveItems(spec, ev)
     if (!menuItems || !Array.isArray(menuItems) || menuItems.length === 0) return
 
     ev.preventDefault()
@@ -49,11 +49,28 @@ class ContextMenu {
     this._renderAndShow(menuItems, ev)
   }
 
+  _resolveItems = (spec, ev) => {
+    if (typeof spec === "function") return spec(ev)
+    for (const [selector, provider] of Object.entries(spec)) {
+      if (selector === "default") continue
+      const hit = ev.target.closest(selector)
+      if (hit) return provider?.(hit, ev)
+    }
+    return spec.default?.(ev.target, ev)
+  }
+
   _renderAndShow = (menuItems, ev) => {
     this._currentActions = []
-    this._menuEl.innerHTML = menuItems.map((item, idx) => {
-      this._currentActions.push(item.action)
-      return `<div class="menu-item" data-idx="${idx}">${this.utils.escape(item.label)}</div>`
+    this._menuEl.innerHTML = menuItems.map(item => {
+      if (item.separator) {
+        return `<div class="menu-separator"></div>`
+      }
+      const label = this.utils.escape(item.label)
+      if (item.disabled) {
+        return `<div class="menu-item disabled">${label}</div>`
+      }
+      const idx = this._currentActions.push(item.action) - 1
+      return `<div class="menu-item" data-idx="${idx}">${label}</div>`
     }).join("")
 
     this._menuEl.classList.add("show")
