@@ -34,7 +34,6 @@ ${CONTENT_SELECTOR} {
   min-height: 100%;
   transform: translate3d(0, 0, 0) scale(1);
   transform-origin: 0 0;
-  will-change: transform;
 }
 ${SURFACE_SELECTOR}.plugin-diagram-pan-enabled ${CONTENT_SELECTOR} {
   cursor: grab;
