@@ -1433,6 +1433,19 @@ NAME = ""
 RECORD_COLLAPSE = true
 
 
+[collapse_image]
+# =========== [ Basic ] ===========
+ENABLE = false
+NAME = ""
+
+# =========== [ Height ] ===========
+# Collapse an image when its displayed height exceeds this many pixels
+TRIGGER_HEIGHT = 960
+
+# Visible image height after collapsing, in pixels
+COLLAPSED_HEIGHT = 560
+
+
 [image_viewer]
 # =========== [ Basic ] ===========
 ENABLE = true
