@@ -1,7 +1,9 @@
 class CollapseImagePlugin extends BasePlugin {
   collapsedClass = "plugin-collapse-image-collapsed"
   expandedClass = "plugin-collapse-image-expanded"
-  controlClass = "plugin-collapse-image-control"
+  controlLabelAttribute = "data-plugin-collapse-image-label"
+  collapsedControlHeight = 64
+  expandedControlHeight = 44
   records = new Map()
   imageObserver = null
   resizeObserver = null
@@ -18,7 +20,8 @@ class CollapseImagePlugin extends BasePlugin {
 #write .md-image.${this.collapsedClass} > img {
   display: block;
 }
-#write .${this.controlClass} {
+#write .md-image[${this.controlLabelAttribute}]::after {
+  content: attr(${this.controlLabelAttribute});
   box-sizing: border-box;
   width: 100%;
   min-height: 36px;
@@ -28,7 +31,7 @@ class CollapseImagePlugin extends BasePlugin {
   text-align: center;
   user-select: none;
 }
-#write .${this.collapsedClass} > .${this.controlClass} {
+#write .${this.collapsedClass}[${this.controlLabelAttribute}]::after {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -36,7 +39,7 @@ class CollapseImagePlugin extends BasePlugin {
   padding-top: 36px;
   background: linear-gradient(to bottom, transparent, var(--bg-color) 60%);
 }
-#write .${this.expandedClass} > .${this.controlClass} {
+#write .${this.expandedClass}[${this.controlLabelAttribute}]::after {
   display: block;
 }`
 
@@ -100,38 +103,25 @@ class CollapseImagePlugin extends BasePlugin {
   }
 
   getRecord = image => {
-    // image is the key, record is the value in the records map. If not found, create a new record with image, wrapper, source, manual, control.
+    // image is the key, record is the value in the records map.
     let record = this.records.get(image)
     if (!record) {
-      record = { image, wrapper: image.parentElement, source: this.getSource(image), manual: null, control: null }
+      record = { image, wrapper: image.parentElement, source: this.getSource(image), manual: null }
       // store the record in the records map with image as the key
       this.records.set(image, record)
     }
     return record
   }
 
-  createControl = record => {
-    const control = document.createElement("div")
-    control.className = this.controlClass
-    // append the control to the wrapper of the image, because the wrapper is the parent of the image, and the control should be a sibling of the image
-    record.wrapper.appendChild(control)
-    // add the control to the record
-    record.control = control
-    return control
-  }
-
   clearPresentation = record => {
-    const { wrapper, control } = record
+    const { wrapper } = record
     wrapper.classList.remove(this.collapsedClass, this.expandedClass)
     wrapper.style.removeProperty("--plugin-collapse-image-height")
-    control?.remove()
-    record.control = null
+    wrapper.removeAttribute(this.controlLabelAttribute)
   }
 
   render = (record, collapsed) => {
     const { wrapper } = record
-    // make sure control exists, if not exist, create a new control and add it to the record
-    const control = record.control?.isConnected ? record.control : this.createControl(record)
     // toggle the classes on the wrapper based on the collapsed state
     wrapper.classList.toggle(this.collapsedClass, collapsed)
     wrapper.classList.toggle(this.expandedClass, !collapsed)
@@ -142,7 +132,7 @@ class CollapseImagePlugin extends BasePlugin {
       wrapper.style.removeProperty("--plugin-collapse-image-height")
     }
     const text = this.i18n.t(collapsed ? "act.expand" : "act.collapse")
-    if (control.textContent !== text) control.textContent = text
+    wrapper.setAttribute(this.controlLabelAttribute, text)
   }
 
   refreshImage = image => {
@@ -231,7 +221,7 @@ class CollapseImagePlugin extends BasePlugin {
     record.manual = record.wrapper.classList.contains(this.collapsedClass) ? "expanded" : "collapsed"
     this.refreshImage(record.image)
     // make sure the image is in view after toggling, if it is collapsed, scroll it into view
-    if (record.manual === "collapsed") record.control?.scrollIntoView({ block: "nearest" })
+    if (record.manual === "collapsed") record.wrapper.scrollIntoView({ block: "nearest" })
   }
 
   // onImageLoad is called when an image is loaded. It observes the image and refreshes its presentation.
@@ -239,13 +229,13 @@ class CollapseImagePlugin extends BasePlugin {
 
   // click event handler for the control. It toggles the state of the image when the control is clicked.
   onClick = ev => {
-    // find the closest control element to the click target, if it is not a control or not in the write area, return
-    const control = ev.target.closest?.(`.${this.controlClass}`)
-    if (!control || !this.utils.entities.eWrite.contains(control)) {
+    const wrapper = ev.target.closest?.(".md-image.md-img-loaded")
+    if (ev.target !== wrapper || !this.utils.entities.eWrite.contains(wrapper)) {
       return
     }
-    // find the image element
-    const image = control.closest(".md-image.md-img-loaded")?.querySelector(":scope > img")
+    const controlHeight = wrapper.classList.contains(this.collapsedClass) ? this.collapsedControlHeight : this.expandedControlHeight
+    if (ev.offsetY < wrapper.offsetHeight - controlHeight) return
+    const image = wrapper.querySelector(":scope > img")
     const record = image && this.records.get(image)
     if (record) this.toggle(record)
   }
@@ -275,8 +265,8 @@ class CollapseImagePlugin extends BasePlugin {
   restoreAfterNativeExport = () => this.refresh()
 
   afterExportToHTML = html => html
-    .replace(/<div\b[^>]*\bplugin-collapse-image-control\b[^>]*>[\s\S]*?<\/div>/g, "")
     .replace(/\splugin-collapse-image-(?:collapsed|expanded)\b/g, "")
+    .replace(/\sdata-plugin-collapse-image-label="[^"]*"/g, "")
     .replace(/\sstyle="([^"]*?)"/g, (_, style) => {
       const cleaned = style.split(";").filter(item => !item.trim().startsWith("--plugin-collapse-image-height")).join(";").trim()
       return cleaned ? ` style="${cleaned}"` : ""
