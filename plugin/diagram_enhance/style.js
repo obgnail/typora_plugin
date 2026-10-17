@@ -32,7 +32,7 @@ ${CONTENT_SELECTOR} {
   width: 100%;
   min-width: 100%;
   min-height: 100%;
-  transform: translate3d(0, 0, 0) scale(1);
+  transform: translate(0, 0) scale(1);
   transform-origin: 0 0;
 }
 ${SURFACE_SELECTOR}.plugin-diagram-pan-enabled ${CONTENT_SELECTOR} {
@@ -92,9 +92,6 @@ ${TOOLBAR_SELECTOR} .plugin-diagram-wheel-toggle {
   padding: 0 8px;
   font-size: 12px;
   white-space: nowrap;
-}
-${TOOLBAR_SELECTOR} .plugin-diagram-wheel-toggle > * + * {
-  margin-left: 5px;
 }
 ${TOOLBAR_SELECTOR} .plugin-diagram-wheel-toggle.is-active {
   color: var(--active-file-text-color, #fff);

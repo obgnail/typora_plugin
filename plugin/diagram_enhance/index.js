@@ -31,20 +31,14 @@ const RESIZE_HANDLES = [
 ]
 
 class DiagramEnhancePlugin extends BasePlugin {
-  prepare = () => {
-    this.options = normalizeOptions(this.config)
-    this.states = new WeakMap()
-  }
+  states = new WeakMap()
+  options = normalizeOptions(this.config)
 
   getDynamicActions = (anchorNode, meta) => {
-    const preview = anchorNode?.closest?.(PANEL_SELECTOR)?.querySelector(PREVIEW_SELECTOR)
+    const preview = anchorNode.closest(PANEL_SELECTOR)?.querySelector(PREVIEW_SELECTOR)
     const state = preview && this.states.get(preview)
     meta.state = state
-    return [{
-      act_name: this.i18n.t("act.reset"),
-      act_value: "reset",
-      act_disabled: !state,
-    }]
+    return [{ act_name: this.i18n.t("act.reset"), act_value: "reset", act_disabled: !state }]
   }
 
   call = (action, meta = {}) => {
@@ -54,25 +48,19 @@ class DiagramEnhancePlugin extends BasePlugin {
   style = buildStyle
 
   process = () => {
-    this.write = this.utils.entities.eWrite
+    const writeEl = this.utils.entities.eWrite
 
-    this.utils.exportHelper.register(this.fixedName, this._exportStyle)
-    this.utils.exportHelper.registerNative(
-      this.fixedName,
-      this._beforeNativeExport,
-      this._afterNativeExport,
-    )
+    this._bindInteractionRoot(writeEl)
+    this._scan(writeEl)
 
-    this._bindInteractionRoot(this.write)
-    this._scan(this.write)
-
-    this.observer = new MutationObserver(this._handleMutations)
-    this.observer.observe(this.write, { childList: true, subtree: true })
+    const observer = new MutationObserver(this._handleMutations)
+    observer.observe(writeEl, { childList: true, subtree: true })
 
     document.addEventListener("fullscreenchange", this._syncFullscreenButtons)
-    document.addEventListener("webkitfullscreenchange", this._syncFullscreenButtons)
 
-    this.utils.eventHub.on(this.utils.eventHub.eventType.fileOpened, this._deferScan)
+    this.utils.eventHub.on(this.utils.eventHub.eventType.fileOpened, () => setTimeout(() => this._scan(writeEl), 0))
+    this.utils.exportHelper.register(this.fixedName, this._exportStyle)
+    this.utils.exportHelper.registerNative(this.fixedName, this._beforeNativeExport, this._afterNativeExport)
   }
 
   _bindInteractionRoot = root => {
@@ -111,8 +99,8 @@ class DiagramEnhancePlugin extends BasePlugin {
   _exportStyle = buildExportStyle
 
   _scan = root => {
-    if (root.matches?.(PANEL_SELECTOR)) this._ensurePanel(root)
-    root.querySelectorAll?.(PANEL_SELECTOR).forEach(this._ensurePanel)
+    if (root.matches(PANEL_SELECTOR)) this._ensurePanel(root)
+    root.querySelectorAll(PANEL_SELECTOR).forEach(this._ensurePanel)
   }
 
   _ensurePanel = panel => {
@@ -155,16 +143,14 @@ class DiagramEnhancePlugin extends BasePlugin {
   }
 
   _ensureContent = (preview, state) => {
-    let content = Array.from(preview.children).find(child => child.matches?.(CONTENT_SELECTOR))
+    let content = Array.from(preview.children).find(child => child.matches(CONTENT_SELECTOR))
     if (!content) {
       content = document.createElement("div")
       content.className = "plugin-diagram-content"
       preview.insertBefore(content, preview.firstChild)
     }
 
-    const overlay = node => node === content
-      || node.matches?.(TOOLBAR_SELECTOR)
-      || node.matches?.(HANDLE_SELECTOR)
+    const overlay = node => node === content || node.matches(TOOLBAR_SELECTOR) || node.matches(HANDLE_SELECTOR)
 
     Array.from(preview.childNodes).forEach(node => {
       if (!overlay(node)) content.appendChild(node)
@@ -174,14 +160,13 @@ class DiagramEnhancePlugin extends BasePlugin {
   }
 
   _ensureToolbar = (surface, state) => {
-    let toolbar = Array.from(surface.children).find(child => child.matches?.(TOOLBAR_SELECTOR))
+    let toolbar = Array.from(surface.children).find(child => child.matches(TOOLBAR_SELECTOR))
     if (!toolbar) {
       toolbar = document.createElement("div")
       toolbar.className = "plugin-diagram-toolbar"
       toolbar.setAttribute("role", "toolbar")
       toolbar.setAttribute("aria-label", this.i18n.t("toolbar.label"))
       toolbar.innerHTML = this._toolbarHTML()
-      toolbar.addEventListener("pointerdown", event => event.stopPropagation())
       surface.appendChild(toolbar)
     }
     this._syncToolbar(state)
@@ -206,11 +191,11 @@ class DiagramEnhancePlugin extends BasePlugin {
   }
 
   _handleClick = event => {
-    const surface = event.target.closest?.(SURFACE_SELECTOR)
+    const surface = event.target.closest(SURFACE_SELECTOR)
     const state = surface && this.states.get(surface)
     if (!state) return
 
-    const button = event.target.closest?.(`${TOOLBAR_SELECTOR} [data-action]`)
+    const button = event.target.closest(`${TOOLBAR_SELECTOR} [data-action]`)
     if (!button) {
       if (state.suppressClick) {
         event.preventDefault()
@@ -244,13 +229,13 @@ class DiagramEnhancePlugin extends BasePlugin {
         this._reset(state)
         break
       case "fullscreen":
-        void this._toggleFullscreen(state)
+        this._toggleFullscreen(state)
         break
     }
   }
 
   _handleControlKeydown = event => {
-    const control = event.target.closest?.(`${TOOLBAR_SELECTOR} [data-action]`)
+    const control = event.target.closest(`${TOOLBAR_SELECTOR} [data-action]`)
     if (!control || control.getAttribute("aria-disabled") === "true") return
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault()
@@ -260,7 +245,7 @@ class DiagramEnhancePlugin extends BasePlugin {
   }
 
   _handleWheel = event => {
-    const surface = event.target.closest?.(SURFACE_SELECTOR)
+    const surface = event.target.closest(SURFACE_SELECTOR)
     const state = surface && this.states.get(surface)
     if (!state || !state.wheelZoomEnabled || event.deltaY === 0) return
 
@@ -272,22 +257,21 @@ class DiagramEnhancePlugin extends BasePlugin {
   }
 
   _handlePointerDown = event => {
-    const handle = event.target.closest?.(HANDLE_SELECTOR)
-    const surface = event.target.closest?.(SURFACE_SELECTOR)
+    const surface = event.target.closest(SURFACE_SELECTOR)
     const state = surface && this.states.get(surface)
     if (!state) return
 
+    const handle = event.target.closest(HANDLE_SELECTOR)
     if (handle) {
       this._startResize(event, state, handle)
       return
     }
-    if (event.target.closest?.(TOOLBAR_SELECTOR)) return
+    if (event.target.closest(TOOLBAR_SELECTOR)) return
     if (event.pointerType === "mouse" && (event.button !== 0 || !this.options.enablePan)) return
     if (event.pointerType !== "mouse" && !this.options.enableTouch) return
 
     const point = this._pointerPoint(surface, event)
-    const allowHostFocus = !this.options.doubleClickToEdit
-      || isDoubleClickCandidate(state.lastHostClick, point, Date.now())
+    const allowHostFocus = !this.options.doubleClickToEdit || isDoubleClickCandidate(state.lastHostClick, point, Date.now())
     state.pointers.set(event.pointerId, point)
     surface.setPointerCapture?.(event.pointerId)
 
@@ -311,7 +295,7 @@ class DiagramEnhancePlugin extends BasePlugin {
   }
 
   _handlePointerMove = event => {
-    const surface = event.target.closest?.(SURFACE_SELECTOR)
+    const surface = event.target.closest(SURFACE_SELECTOR)
     const state = surface && this.states.get(surface)
     if (!state) return
 
@@ -356,7 +340,7 @@ class DiagramEnhancePlugin extends BasePlugin {
   }
 
   _handlePointerEnd = event => {
-    const surface = event.target.closest?.(SURFACE_SELECTOR)
+    const surface = event.target.closest(SURFACE_SELECTOR)
     const state = surface && this.states.get(surface)
     if (!state) return
 
@@ -366,7 +350,7 @@ class DiagramEnhancePlugin extends BasePlugin {
       this._finishResize(state)
       state.lastHostClick = null
       state.suppressClick = true
-      setTimeout(() => { state.suppressClick = false }, 0)
+      setTimeout(() => state.suppressClick = false, 0)
       return
     }
 
@@ -385,9 +369,7 @@ class DiagramEnhancePlugin extends BasePlugin {
     if (!hostClickEligible || moved) {
       state.lastHostClick = null
     } else if (this.options.doubleClickToEdit) {
-      state.lastHostClick = gesture.allowHostFocus
-        ? null
-        : { time: Date.now(), point: gesture.startPointer }
+      state.lastHostClick = gesture.allowHostFocus ? null : { time: Date.now(), point: gesture.startPointer }
     }
     state.pointers.delete(event.pointerId)
     surface.releasePointerCapture?.(event.pointerId)
@@ -406,7 +388,7 @@ class DiagramEnhancePlugin extends BasePlugin {
     } else if (state.pointers.size === 0) {
       state.gesture = null
       state.suppressClick = blockHostFocus
-      if (blockHostFocus) setTimeout(() => { state.suppressClick = false }, 0)
+      if (blockHostFocus) setTimeout(() => state.suppressClick = false, 0)
       surface.classList.remove("plugin-diagram-panning")
     }
   }
@@ -492,7 +474,7 @@ class DiagramEnhancePlugin extends BasePlugin {
 
   _applyTransform = state => {
     if (!state.content) return
-    state.content.style.transform = `translate3d(${state.translateX}px, ${state.translateY}px, 0) scale(${state.scale})`
+    state.content.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`
     state.surface.dataset.diagramScale = String(state.scale)
     state.surface.dataset.diagramTranslateX = String(state.translateX)
     state.surface.dataset.diagramTranslateY = String(state.translateY)
@@ -503,19 +485,19 @@ class DiagramEnhancePlugin extends BasePlugin {
   _reset = state => this._setTransform(state, { scale: 1, translateX: 0, translateY: 0 })
 
   _syncToolbar = state => {
-    const toolbar = Array.from(state.surface.children).find(child => child.matches?.(TOOLBAR_SELECTOR))
+    const toolbar = Array.from(state.surface.children).find(child => child.matches(TOOLBAR_SELECTOR))
     if (!toolbar) return
 
-    const percent = toolbar.querySelector('[data-role="percent"]')
+    const percent = toolbar.querySelector("[data-role='percent']")
     const percentText = formatPercent(state.scale)
     if (percent && percent.textContent !== percentText) percent.textContent = percentText
 
-    const zoomIn = toolbar.querySelector('[data-action="zoom-in"]')
-    const zoomOut = toolbar.querySelector('[data-action="zoom-out"]')
+    const zoomIn = toolbar.querySelector("[data-action='zoom-in']")
+    const zoomOut = toolbar.querySelector("[data-action='zoom-out']")
     if (zoomIn) this._setControlDisabled(zoomIn, state.scale >= this.options.maxScale)
     if (zoomOut) this._setControlDisabled(zoomOut, state.scale <= this.options.minScale)
 
-    const wheel = toolbar.querySelector('[data-action="wheel-toggle"]')
+    const wheel = toolbar.querySelector("[data-action='wheel-toggle']")
     if (wheel) {
       wheel.classList.toggle("is-active", state.wheelZoomEnabled)
       wheel.title = this.i18n.t(state.wheelZoomEnabled ? "toolbar.wheelDisable" : "toolbar.wheelEnable")
@@ -525,32 +507,27 @@ class DiagramEnhancePlugin extends BasePlugin {
     this._syncFullscreenButton(state)
   }
 
-  _getFullscreenElement = () => document.fullscreenElement || document.webkitFullscreenElement
-
   _toggleFullscreen = async state => {
     try {
-      const current = this._getFullscreenElement()
+      const current = document.fullscreenElement
       if (current === state.surface) {
-        const exit = document.exitFullscreen || document.webkitExitFullscreen
-        if (exit) await exit.call(document)
+        await document.exitFullscreen()
       } else {
         if (current) {
-          const exit = document.exitFullscreen || document.webkitExitFullscreen
-          if (exit) await exit.call(document)
+          await document.exitFullscreen()
         }
-        const request = state.surface.requestFullscreen || state.surface.webkitRequestFullscreen
-        if (request) await request.call(state.surface)
+        await state.surface.requestFullscreen()
       }
     } catch (error) {
       console.error("[diagram_enhance] Failed to toggle fullscreen", error)
-      this.utils.notification?.show(this.i18n.t("notify.fullscreenFailed"), "error", 5000)
+      this.utils.notification.show(this.i18n.t("notify.fullscreenFailed"), "error", 5000)
     } finally {
       this._syncFullscreenButtons()
     }
   }
 
   _syncFullscreenButtons = () => {
-    this.write?.querySelectorAll(`${PREVIEW_SELECTOR}${SURFACE_SELECTOR}`).forEach(surface => {
+    this.utils.entities.eWrite.querySelectorAll(`${PREVIEW_SELECTOR}${SURFACE_SELECTOR}`).forEach(surface => {
       const state = this.states.get(surface)
       if (state) this._syncFullscreenButton(state)
     })
@@ -559,7 +536,7 @@ class DiagramEnhancePlugin extends BasePlugin {
   _syncFullscreenButton = state => {
     const button = state.surface.querySelector(`${TOOLBAR_SELECTOR} [data-action="fullscreen"]`)
     if (!button) return
-    const active = this._getFullscreenElement() === state.surface
+    const active = document.fullscreenElement === state.surface
     button.title = this.i18n.t(active ? "toolbar.fullscreenExit" : "toolbar.fullscreenEnter")
     button.setAttribute("aria-label", button.title)
     button.setAttribute("aria-pressed", String(active))
@@ -576,7 +553,7 @@ class DiagramEnhancePlugin extends BasePlugin {
 
   _beforeNativeExport = () => {
     this.nativeExportState = []
-    this.write.querySelectorAll(`${PREVIEW_SELECTOR}${SURFACE_SELECTOR}`).forEach(surface => {
+    this.utils.entities.eWrite.querySelectorAll(`${PREVIEW_SELECTOR}${SURFACE_SELECTOR}`).forEach(surface => {
       const state = this.states.get(surface)
       if (!state) return
       this.nativeExportState.push({
@@ -597,8 +574,6 @@ class DiagramEnhancePlugin extends BasePlugin {
     }
     this.nativeExportState = []
   }
-
-  _deferScan = () => setTimeout(() => this._scan(this.write), 0)
 }
 
 module.exports = { plugin: DiagramEnhancePlugin }

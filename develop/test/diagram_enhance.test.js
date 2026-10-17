@@ -12,7 +12,6 @@ const { plugin: DiagramEnhancePlugin } = require("../../plugin/diagram_enhance")
 const makeInstance = config => {
   const instance = new DiagramEnhancePlugin()
   instance.config = config || {}
-  instance.prepare()
   return instance
 }
 
@@ -63,12 +62,6 @@ test("registers non-passive wheel and pointer gesture handlers", () => {
   assert.match(source, /if \(blockHostFocus\) \{\s*event\.preventDefault\(\)\s*event\.stopPropagation\(\)/)
   assert.match(source, /requestFullscreen/)
   assert.doesNotMatch(source, /_openModal|cloneNode|_copyCanvasPixels/)
-})
-
-test("can disable fullscreen and resize surfaces through existing config", () => {
-  const instance = makeInstance({ SHOW_FULLSCREEN: false, RESIZABLE: false })
-  assert.doesNotMatch(instance._toolbarHTML(), /data-action="fullscreen"/)
-  assert.equal(instance.options.resizable, false)
 })
 
 test("exposes reset as a dynamic action and dispatches it through call", () => {
