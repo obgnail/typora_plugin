@@ -9,6 +9,7 @@ class CollapseImagePlugin extends BasePlugin {
   resizeObserver = null
   mutationObserver = null
   onWindowResize = null
+  nativeExportManualStates = null
 
   style = () => `
 #write .md-image.${this.collapsedClass} {
@@ -87,8 +88,8 @@ class CollapseImagePlugin extends BasePlugin {
   // loaded markdown image and is in the write area
   isActiveImage = image => this.utils.entities.eWrite.contains(image) && this.isMarkdownImage(image)
 
-  // get the source of the image, either from currentSrc or src attribute
-  getSource = image => image.currentSrc || image.getAttribute("src") || ""
+  // Typora keeps the original Markdown URL on the wrapper and mutates img.src.
+  getSource = image => image.parentElement?.getAttribute("data-src") || image.getAttribute("src") || image.currentSrc || ""
 
   isLongImage = image => image.offsetHeight > this.config.TRIGGER_HEIGHT
 
@@ -260,9 +261,25 @@ class CollapseImagePlugin extends BasePlugin {
   })
 
   // make sure export cleanly, without any plugin-collapse-image related elements or classes.
-  beforeExportToNative = () => this.records.forEach(this.clearPresentation)
+  beforeExportToNative = () => {
+    const { eWrite } = this.utils.entities
+    this.nativeExportManualStates = new Map()
+    eWrite.querySelectorAll(".md-image.md-img-loaded > img").forEach((image, index) => {
+      const manual = this.records.get(image)?.manual
+      if (manual) this.nativeExportManualStates.set(index, manual)
+    })
+    this.records.forEach(this.clearPresentation)
+  }
 
-  restoreAfterNativeExport = () => this.refresh()
+  restoreAfterNativeExport = () => {
+    const { eWrite } = this.utils.entities
+    eWrite.querySelectorAll(".md-image.md-img-loaded > img").forEach((image, index) => {
+      const manual = this.nativeExportManualStates?.get(index)
+      if (manual) this.getRecord(image).manual = manual
+    })
+    this.nativeExportManualStates = null
+    this.refresh()
+  }
 
   afterExportToHTML = html => html
     .replace(/\splugin-collapse-image-(?:collapsed|expanded)\b/g, "")

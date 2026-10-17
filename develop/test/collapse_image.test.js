@@ -269,6 +269,37 @@ describe("collapse_image", () => {
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
   })
 
+  it("keeps manual expansion when Typora only changes a local image cache query", () => {
+    const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
+    let currentSrc = "long.svg?lastModify=1"
+    Object.defineProperty(long.image, "currentSrc", { configurable: true, get: () => currentSrc })
+    const plugin = createPlugin()
+    plugin.process()
+    enterViewport(long.image)
+    clickControl(long.wrapper)
+    assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
+
+    currentSrc = "long.svg?lastModify=2"
+    plugin.refreshImage(long.image)
+
+    assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
+  })
+
+  it("keeps manual expansion when Typora updates the rendered source URL", () => {
+    const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
+    long.wrapper.setAttribute("data-src", "long.svg")
+    const plugin = createPlugin()
+    plugin.process()
+    enterViewport(long.image)
+    clickControl(long.wrapper)
+    assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
+
+    long.image.setAttribute("src", "long.svg?lastModify=2")
+    plugin.refreshImage(long.image)
+
+    assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
+  })
+
   it("does not rescan image heights for its own wrapper-class mutations", () => {
     const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
     createPlugin().process()
@@ -395,5 +426,26 @@ describe("collapse_image", () => {
 
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-collapsed"))
     assert.equal(long.wrapper.getAttribute("data-plugin-collapse-image-label"), "Expand long image")
+  })
+
+  it("restores manual expansion when native export rebuilds the document", () => {
+    const first = addMarkdownImage({ height: { value: 1000 }, src: "first.svg" })
+    const second = addMarkdownImage({ height: { value: 1000 }, src: "second.svg" })
+    const plugin = createPlugin()
+    plugin.process()
+    enterViewport(first.image, second.image)
+    clickControl(second.wrapper)
+    assert.ok(second.wrapper.classList.contains("plugin-collapse-image-expanded"))
+
+    exportHooks["collapse_image:native"].beforeExportToNative()
+    eWrite.replaceChildren()
+    const replacementFirst = addMarkdownImage({ height: { value: 1000 }, src: "first.svg" })
+    const replacementSecond = addMarkdownImage({ height: { value: 1000 }, src: "second.svg" })
+    eventHub.emit("fileContentLoaded")
+    exportHooks["collapse_image:native"].afterExportToNativeFinally()
+    enterViewport(replacementFirst.image, replacementSecond.image)
+
+    assert.ok(replacementFirst.wrapper.classList.contains("plugin-collapse-image-collapsed"))
+    assert.ok(replacementSecond.wrapper.classList.contains("plugin-collapse-image-expanded"))
   })
 })
