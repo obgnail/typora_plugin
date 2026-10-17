@@ -1160,6 +1160,14 @@ const schema_remote_control = () => [
   FRAG.SettingHandler(),
 ]
 
+const schema_installer = () => [
+  FRAG.Base(true),
+  Group(
+    Text("SOURCE_DIR"),
+  ),
+  FRAG.SettingHandler(),
+]
+
 const schema_updater = () => [
   FRAG.Base(true),
   Group(
@@ -1654,6 +1662,7 @@ const RAW_SCHEMAS = {
   cursor_history: schema_cursor_history,
   remote_control: schema_remote_control,
   updater: schema_updater,
+  installer: schema_installer,
   test: schema_test,
   kanban: schema_kanban,
   chat: schema_chat,
