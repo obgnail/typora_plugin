@@ -56,13 +56,6 @@ describe("Decorator (AOP utility)", () => {
         TypeError,
       )
     })
-
-    it("rejects when options.onFinally is not a function", async () => {
-      await assert.rejects(
-        decorator.decorate(target, "add", { onFinally: "not-a-fn" }),
-        TypeError,
-      )
-    })
   })
 
   describe("beforeCall", () => {
@@ -112,40 +105,6 @@ describe("Decorator (AOP utility)", () => {
     })
   })
 
-  describe("onFinally", () => {
-    it("runs after the original function throws", async () => {
-      const calls = []
-      target.fail = () => {
-        throw new Error("export failed")
-      }
-      const { undecorate } = await decorator.decorate(target, "fail", {
-        onFinally: () => calls.push("finally"),
-      })
-
-      assert.throws(() => target.fail(), /export failed/)
-      assert.deepStrictEqual(calls, ["finally"])
-      undecorate()
-    })
-
-    it("waits for a returned promise to reject before running", async () => {
-      let reject
-      const calls = []
-      target.failAsync = () => new Promise((resolve, rejectFn) => {
-        reject = rejectFn
-      })
-      const { undecorate } = await decorator.decorate(target, "failAsync", {
-        onFinally: () => calls.push("finally"),
-      })
-
-      const result = target.failAsync()
-      assert.deepStrictEqual(calls, [])
-      reject(new Error("export failed"))
-      await assert.rejects(result, /export failed/)
-      assert.deepStrictEqual(calls, ["finally"])
-      undecorate()
-    })
-  })
-
   describe("modifyArguments", () => {
     it("rewrites the arguments passed to the original function", async () => {
       const { undecorate } = await decorator.modifyArguments(target, "add", (a, b) => [a * 10, b * 10])
@@ -188,6 +147,178 @@ describe("Decorator (AOP utility)", () => {
       assert.strictEqual(calls, 1)
 
       undecorate()
+    })
+  })
+
+  describe("decorator.settled", () => {
+    it("runs settled hook with (null, result, ...args) on sync success", async () => {
+      const obj = { add(a, b) { return a + b } }
+      const calls = []
+      await decorator.decorate(obj, "add", {
+        settled: function (error, result, ...args) { calls.push([error, result, args]) },
+      })
+      assert.equal(obj.add(1, 2), 3)
+      assert.deepEqual(calls, [[null, 3, [1, 2]]])
+    })
+
+    it("runs settled hook with the thrown error and re-throws it", async () => {
+      const obj = { fail() { throw new Error("boom") } }
+      const seen = []
+      await decorator.decorate(obj, "fail", {
+        settled: (error, result) => seen.push(error),
+      })
+      assert.throws(() => obj.fail(), /boom/)
+      assert.equal(seen.length, 1)
+      assert.equal(seen[0].message, "boom")
+    })
+
+    it("runs settled hook after async resolution", async () => {
+      const obj = { load() { return Promise.resolve("data") } }
+      const seen = []
+      await decorator.decorate(obj, "load", {
+        settled: (error, result) => seen.push([error, result]),
+      })
+      await assert.doesNotReject(obj.load())
+      assert.deepEqual(seen, [[null, "data"]])
+    })
+
+    it("runs settled hook after async rejection and preserves rejection", async () => {
+      const obj = { load() { return Promise.reject(new Error("async boom")) } }
+      const seen = []
+      await decorator.decorate(obj, "load", {
+        settled: (error, result) => seen.push(error),
+      })
+      await assert.rejects(obj.load(), /async boom/)
+      assert.equal(seen[0].message, "async boom")
+    })
+
+    it("a throwing settled hook does not mask the original result or break other hooks", async () => {
+      const obj = { ok() { return 42 } }
+      const order = []
+      await decorator.decorate(obj, "ok", {
+        settled: () => { throw new Error("hook bug") },
+      })
+      await decorator.decorate(obj, "ok", {
+        settled: () => order.push("second"),
+      })
+      assert.equal(obj.ok(), 42)
+      assert.deepEqual(order, ["second"])
+    })
+
+    it("settled hooks run in reverse priority order (onion model)", async () => {
+      const obj = { run() {} }
+      const order = []
+      await decorator.decorate(obj, "run", { priority: 1, settled: () => order.push("p1") })
+      await decorator.decorate(obj, "run", { priority: 9, settled: () => order.push("p9") })
+      obj.run()
+      assert.deepEqual(order, ["p9", "p1"])
+    })
+
+    it("settled runs even when before hook prevents the call", async () => {
+      const obj = { guarded() { return "ran" } }
+      let settled = false
+      await decorator.decorate(obj, "guarded", {
+        before: () => decorator.PREVENT_DEFAULT,
+        settled: () => { settled = true },
+      })
+      assert.equal(obj.guarded(), undefined)
+      assert.equal(settled, true)
+    })
+
+    it("settled hook is removed by undecorate", async () => {
+      const obj = { ping() { return "pong" } }
+      let ran = 0
+      const { undecorate } = await decorator.decorate(obj, "ping", {
+        settled: () => ran++,
+      })
+      obj.ping()
+      undecorate()
+      obj.ping()
+      assert.equal(ran, 1)
+    })
+
+    it("settledCall convenience API registers a settled hook", async () => {
+      const obj = { go() { return 1 } }
+      const seen = []
+      await decorator.settledCall(obj, "go", (error, result) => seen.push(result))
+      obj.go()
+      assert.deepEqual(seen, [1])
+    })
+  })
+
+  describe("decorator core semantics", () => {
+    it("before/after wrap in order and this-binding is preserved", async () => {
+      const obj = {
+        label: "ctx",
+        who() { return this.label },
+      }
+      const order = []
+      await decorator.decorate(obj, "who", {
+        before() { order.push("before") },
+        after() { order.push("after") },
+      })
+      assert.equal(obj.who(), "ctx")
+      assert.deepEqual(order, ["before", "after"])
+    })
+
+    it("modifyArguments rewrites args; modifyReturn rewrites result", async () => {
+      const obj = { join(a, b) { return `${a}-${b}` } }
+      await decorator.modifyArguments(obj, "join", () => ["x", "y"])
+      assert.equal(obj.join("a", "b"), "x-y")
+
+      const obj2 = { join(a, b) { return `${a}-${b}` } }
+      await decorator.modifyReturn(obj2, "join", r => r.toUpperCase())
+      assert.equal(obj2.join("a", "b"), "A-B")
+    })
+
+    it("undecorate restores originalFn when the last decorator is removed", async () => {
+      const obj = { f() { return "orig" } }
+      const original = obj.f
+      const { undecorate } = await decorator.beforeCall(obj, "f", () => {})
+      assert.notEqual(obj.f, original)
+      undecorate()
+      assert.equal(obj.f, original)
+      assert.equal(decorator.getInfo(obj, "f"), undefined)
+    })
+
+    it("partial undecorate keeps remaining decorators alive", async () => {
+      const obj = { f() { return 1 } }
+      const calls = []
+      const a = await decorator.beforeCall(obj, "f", () => calls.push("a"))
+      await decorator.beforeCall(obj, "f", () => calls.push("b"))
+      a.undecorate()
+      obj.f()
+      assert.deepEqual(calls, ["b"])
+    })
+
+    it("preserves name/length and exposes __original", async () => {
+      const obj = { named(a, b, c) { return a } }
+      await decorator.beforeCall(obj, "named", () => {})
+      assert.equal(obj.named.name, "named")
+      assert.equal(obj.named.length, 3)
+      assert.equal(typeof obj.named.__original, "function")
+    })
+
+    it("resolves lazily when target appears later", async () => {
+      let obj = null
+      const promise = decorator.beforeCall(() => obj, "f", () => {}, { timeout: 500, interval: 10 })
+      setTimeout(() => { obj = { f() { return 7 } } }, 20)
+      const { decorated } = await promise
+      assert.equal(decorated(), 7)
+    })
+
+    it("rejects on invalid option types", async () => {
+      const obj = { f() {} }
+      await assert.rejects(decorator.decorate(obj, "f", { before: 1 }), TypeError)
+      await assert.rejects(decorator.decorate(obj, "f", { settled: "x" }), TypeError)
+      await assert.rejects(decorator.decorate(obj, 123, {}), TypeError)
+    })
+
+    it("accepts symbol properties", async () => {
+      const sym = Symbol("m")
+      const obj = { [sym]() { return "s" } }
+      await decorator.beforeCall(obj, sym, () => {})
+      assert.equal(obj[sym](), "s")
     })
   })
 

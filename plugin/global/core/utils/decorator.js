@@ -9,29 +9,128 @@ const decoratorChain = {
     if (!this.chains.has(target)) {
       this.chains.set(target, new Map())
     }
-    const targetMap = this.chains.get(target)
-    const meta = { originalFn, chainedFn: null, decorators: [], beforeHooks: [], afterHooks: [], finallyHooks: [] }
-    targetMap.set(property, meta)
+    const meta = { originalFn, chainedFn: null, decorators: [], beforeHooks: [], afterHooks: [], settledHooks: [] }
+    this.chains.get(target).set(property, meta)
     return meta
   },
   recompile(meta) {
     const sorted = meta.decorators.toSorted((a, b) => a.priority - b.priority)
     meta.beforeHooks = sorted.filter(d => d.before)
     meta.afterHooks = sorted.filter(d => d.after).reverse()
-    meta.finallyHooks = sorted.filter(d => d.onFinally).reverse()
+    meta.settledHooks = sorted.filter(d => d.settled).reverse()
   },
   removeMeta(target, property) {
-    if (this.chains.has(target)) {
-      this.chains.get(target).delete(property)
-    }
+    this.chains.get(target)?.delete(property)
   },
 }
+
+const capture = fn => {
+  try {
+    return { ok: true, value: fn() }
+  } catch (error) {
+    return { ok: false, error }
+  }
+}
+
+const intercept = (meta, property) => function (...args) {
+  const { beforeHooks, afterHooks, settledHooks, originalFn } = meta
+  let executionArgs = args
+
+  const invoke = () => {
+    for (const { before, modifyArgs } of beforeHooks) {
+      const out = before.apply(this, executionArgs)
+      if (out === PREVENT_DEFAULT) return
+      if (modifyArgs) {
+        executionArgs = out == null ? [] : [out].flat()
+      }
+    }
+    let result = originalFn.apply(this, executionArgs)
+    for (const { after, modifyResult } of afterHooks) {
+      const out = after.call(this, result, ...executionArgs)
+      if (modifyResult) {
+        result = out
+      }
+    }
+    return result
+  }
+
+  if (settledHooks.length === 0) return invoke()
+
+  const release = ({ ok, value, error }) => {
+    for (const { settled } of settledHooks) {
+      try {
+        settled.call(this, ok ? null : error, value, ...executionArgs)
+      } catch (e) {
+        console.error(`settled hook error for ${String(property)}:`, e)
+      }
+    }
+    if (!ok) throw error
+    return value
+  }
+
+  const outcome = capture(invoke)
+  if (outcome.ok && typeof outcome.value?.then === "function") {
+    return Promise.resolve(outcome.value).then(
+      value => release({ ok: true, value }),
+      error => release({ ok: false, error }),
+    )
+  }
+  return release(outcome)
+}
+
+const install = (obj, property) => {
+  const meta = decoratorChain.initMeta(obj, property, obj[property])
+  const chainedFn = intercept(meta, property)
+  Object.defineProperties(chainedFn, {
+    name: { value: meta.originalFn.name, configurable: true },
+    length: { value: meta.originalFn.length, configurable: true },
+    __original: { value: meta.originalFn },
+  })
+  meta.chainedFn = chainedFn
+  obj[property] = chainedFn
+  return meta
+}
+
+const undecorate = (obj, property, id) => {
+  const meta = decoratorChain.getMeta(obj, property)
+  const index = meta?.decorators.findIndex(d => d.id === id) ?? -1
+  if (index === -1) return
+
+  meta.decorators.splice(index, 1)
+  if (meta.decorators.length > 0) {
+    return decoratorChain.recompile(meta)
+  }
+  if (obj[property] === meta.chainedFn) {
+    obj[property] = meta.originalFn
+  }
+  decoratorChain.removeMeta(obj, property)
+}
+
+const waitFor = (probe, timeout, interval, onTimeout) => new Promise((resolve, reject) => {
+  const deadline = Date.now() + timeout
+  const poll = () => {
+    let obj
+    try {
+      obj = probe()
+    } catch (e) {
+      return reject(e)
+    }
+    if (obj != null) {
+      return resolve(obj)
+    }
+    if (Date.now() < deadline) {
+      return void setTimeout(poll, interval)
+    }
+    reject(onTimeout())
+  }
+  poll()
+})
 
 const decorate = (target, property, options = {}) => {
   const {
     before,
     after,
-    onFinally,
+    settled,
     modifyArgs = false,
     modifyResult = false,
     timeout = 10000,
@@ -41,138 +140,43 @@ const decorate = (target, property, options = {}) => {
   if (typeof property !== "string" && typeof property !== "symbol") {
     return Promise.reject(new TypeError("options.property must be a string or symbol"))
   }
-  if (before && typeof before !== "function") {
-    return Promise.reject(new TypeError("options.before must be a function"))
-  }
-  if (after && typeof after !== "function") {
-    return Promise.reject(new TypeError("options.after must be a function"))
-  }
-  if (onFinally && typeof onFinally !== "function") {
-    return Promise.reject(new TypeError("options.onFinally must be a function"))
-  }
-
-  const objGetter = typeof target === "function" ? target : () => target
-  const decoratorId = Symbol(`decorator_${String(property)}`)
-
-  let timer = null
-  return new Promise((resolve, reject) => {
-    const endTime = Date.now() + timeout
-
-    const checkAndDecorate = () => {
-      try {
-        const obj = objGetter()
-        if (obj == null || (typeof obj !== "object" && typeof obj !== "function")) {
-          return false
-        }
-        const targetFn = obj[property]
-        if (typeof targetFn !== "function") {
-          return false
-        }
-
-        let meta = decoratorChain.getMeta(obj, property)
-        if (!meta) {
-          meta = decoratorChain.initMeta(obj, property, targetFn)
-          const chainedFn = function (...args) {
-            const { beforeHooks, afterHooks, finallyHooks, originalFn } = meta
-            const beforeLen = beforeHooks.length
-            const afterLen = afterHooks.length
-            const finallyLen = finallyHooks.length
-
-            let executionArgs = args
-            let result
-            let deferFinally = false
-            try {
-              for (let i = 0; i < beforeLen; i++) {
-                const hook = beforeHooks[i]
-                const beforeResult = hook.before.apply(this, executionArgs)
-                if (beforeResult === PREVENT_DEFAULT) return
-                if (hook.modifyArgs) {
-                  executionArgs = (beforeResult == null)
-                    ? []
-                    : Array.isArray(beforeResult) ? beforeResult : [beforeResult]
-                }
-              }
-              result = originalFn.apply(this, executionArgs)
-              for (let i = 0; i < afterLen; i++) {
-                const hook = afterHooks[i]
-                const afterResult = hook.after.call(this, result, ...executionArgs)
-                if (hook.modifyResult) {
-                  result = afterResult
-                }
-              }
-              if (typeof result?.then === "function") {
-                const deferredResult = Promise.resolve(result).finally(() => {
-                  for (let i = 0; i < finallyLen; i++) {
-                    finallyHooks[i].onFinally.call(this, result, ...executionArgs)
-                  }
-                })
-                deferFinally = true
-                return deferredResult
-              }
-              return result
-            } finally {
-              if (!deferFinally) {
-                for (let i = 0; i < finallyLen; i++) {
-                  finallyHooks[i].onFinally.call(this, result, ...executionArgs)
-                }
-              }
-            }
-          }
-
-          Object.defineProperties(chainedFn, {
-            name: { value: targetFn.name, configurable: true },
-            length: { value: targetFn.length, configurable: true },
-            __original: { value: targetFn, configurable: true, enumerable: false },
-          })
-
-          meta.chainedFn = chainedFn
-          obj[property] = chainedFn
-        }
-
-        meta.decorators.push({ id: decoratorId, before, after, onFinally, modifyArgs, modifyResult, priority })
-        decoratorChain.recompile(meta)
-        const undecorate = () => {
-          const currentMeta = decoratorChain.getMeta(obj, property)
-          if (!currentMeta) return
-          const index = currentMeta.decorators.findIndex(d => d.id === decoratorId)
-          if (index === -1) return
-
-          currentMeta.decorators.splice(index, 1)
-          if (currentMeta.decorators.length === 0) {
-            if (obj[property] === currentMeta.chainedFn) {
-              obj[property] = currentMeta.originalFn
-            }
-            decoratorChain.removeMeta(obj, property)
-          } else {
-            decoratorChain.recompile(currentMeta)
-          }
-        }
-        resolve({ decorated: obj[property], undecorate, id: decoratorId, decorators: meta.decorators.length })
-        return true
-      } catch (e) {
-        console.error(`decorate error for ${String(property)}:`, e)
-        reject(e)
-        return true
-      }
+  for (const [name, hook] of Object.entries({ before, after, settled })) {
+    if (hook !== undefined && typeof hook !== "function") {
+      return Promise.reject(new TypeError(`options.${name} must be a function`))
     }
+  }
 
-    if (checkAndDecorate()) return
+  const getTarget = typeof target === "function" ? target : () => target
+  const probe = () => {
+    const obj = getTarget()
+    const valid = obj != null
+      && (typeof obj === "object" || typeof obj === "function")
+      && typeof obj[property] === "function"
+    return valid ? obj : null
+  }
 
-    timer = setInterval(() => {
-      if (Date.now() > endTime) {
-        clearInterval(timer)
-        reject(new Error(`decorate timeout for ${String(property)} after ${timeout}ms`))
-        return
-      }
-      if (checkAndDecorate()) {
-        clearInterval(timer)
-      }
-    }, interval)
+  return waitFor(
+    probe,
+    timeout,
+    interval,
+    () => new Error(`decorate timeout for ${String(property)} after ${timeout}ms`),
+  ).then(obj => {
+    const meta = decoratorChain.getMeta(obj, property) ?? install(obj, property)
+    const id = Symbol(`decorator_${String(property)}`)
+    meta.decorators.push({ id, before, after, settled, modifyArgs, modifyResult, priority })
+    decoratorChain.recompile(meta)
+    return {
+      id,
+      decorated: meta.chainedFn,
+      decorators: meta.decorators.length,
+      undecorate: () => undecorate(obj, property, id),
+    }
   })
 }
 
 const beforeCall = (target, property, hook, options = {}) => decorate(target, property, { ...options, before: hook })
 const afterCall = (target, property, hook, options = {}) => decorate(target, property, { ...options, after: hook })
+const settledCall = (target, property, hook, options = {}) => decorate(target, property, { ...options, settled: hook })
 const modifyArguments = (target, property, mapper, options = {}) => decorate(target, property, { ...options, before: mapper, modifyArgs: true })
 const modifyReturn = (target, property, mapper, options = {}) => decorate(target, property, { ...options, after: mapper, modifyResult: true })
 const preventCallIf = (target, property, conditionFn, options = {}) => {
@@ -193,6 +197,7 @@ const exposes = {
   decorate,
   beforeCall,
   afterCall,
+  settledCall,
   modifyArguments,
   modifyReturn,
   preventCallIf,

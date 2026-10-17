@@ -8,8 +8,10 @@ afterEach(() => {
   delete global.File
 })
 
+const wait = () => Promise.resolve()
+
 describe("ExportHelper native export", () => {
-  it("restores after a synchronous native export failure", () => {
+  it("restores after a synchronous native export failure", async () => {
     const calls = []
     global.File = {
       editor: {
@@ -25,6 +27,7 @@ describe("ExportHelper native export", () => {
     helper.registerNative("test", () => calls.push("before"), null, () => calls.push("restore"))
     helper.processExportToNative()
 
+    await wait()
     assert.throws(() => File.editor.export.exportToNative(), /export failed/)
     assert.deepStrictEqual(calls, ["before", "export", "restore"])
   })
@@ -46,6 +49,7 @@ describe("ExportHelper native export", () => {
     helper.registerNative("test", () => calls.push("before"), null, () => calls.push("restore"))
     helper.processExportToNative()
 
+    await wait()
     const result = File.editor.export.exportToNative()
     assert.deepStrictEqual(calls, ["before", "export"])
     reject(new Error("export failed"))

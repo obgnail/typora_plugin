@@ -95,8 +95,8 @@ class ExportHelper {
     }
     const before = hook("beforeExportToNative")
     const after = hook("afterExportToNative")
-    const afterFinally = hook("afterExportToNativeFinally")
-    this.utils.decorator.decorate(() => File?.editor?.export, "exportToNative", { before, after, onFinally: afterFinally })
+    const settled = hook("afterExportToNativeFinally")
+    this.utils.decorator.decorate(() => File?.editor?.export, "exportToNative", { before, after, settled })
   }
 
   process = () => {
