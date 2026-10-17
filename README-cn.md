@@ -37,6 +37,7 @@
 | [collapse_table](#collapse_table)           | 表格折叠                             | ×        |
 | [md_padding](#md_padding)                   | 中英文混排优化                       |          |
 | [slash_commands](#slash_commands)           | 斜杠命令                             |          |
+| [latex_completion](#latex_completion)       | 行内与块级公式 LaTeX 补全           |          |
 | [mouse_gestures](#mouse_gestures)           | 鼠标手势                             | ×        |
 | [templater](#templater)                     | 文件模板                             |          |
 | [fence_enhance](#fence_enhance)             | 复制、折叠、格式化代码               |          |
@@ -225,6 +226,10 @@ yay -S typora-plugin
 提供类似 Notion 的斜杠（`/`）唤出式命令菜单。
 
 ![slash_commands](./assets/slash_commands.gif)
+
+### latex_completion
+
+在行内或块级公式中输入 `\` 和命令片段时推荐 LaTeX 命令。输入 `\fra` 可插入 `\frac{}{}`，光标定位到第一个花括号内；输入 `\arrow` 也能找到 `\leftarrow`、`\rightarrow`，匹配的字符以红色标出。行内公式使用 Typora 原生补全菜单；块级候选显示在当前公式块下方，后续正文随之下移，不遮挡编辑区。目录共有 600 条，保留原助手的 232 条命令，并加入经 MathJax 验证的基础与 AMS 符号以及常用模板。候选依次按精确匹配、命令前缀、部分匹配排序，每组内优先显示常用命令；可选扩展包命令只在 MathJax 确认启用该包时显示。可在插件配置中分别关闭整体或块级补全，并调整最多显示的候选数；更改设置后需重启 Typora 才会生效。
 
 ### mouse_gestures
 
