@@ -2232,9 +2232,6 @@ SHOW_PLUGIN_HOTKEY = true
 # Add a ⌘ icon to action options to visually distinguish them
 SHOW_ACTION_OPTIONS_ICON = true
 
-# Prevent the context menu from auto-hiding when it loses focus
-RETAIN_ON_BLUR = false
-
 # Min width constraint for submenus
 #   ""        : Inherit the default width (same as the first-level menu)
 #   "inherit" : Dynamically adapt to the text content's length

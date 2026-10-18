@@ -789,8 +789,8 @@
     "act.expand": "Expand Long Image",
     "act.collapse": "Collapse Long Image",
     "$title.height": "Height",
-    "$label.TRIGGER_HEIGHT": "Collapse Trigger Height (px)",
-    "$label.COLLAPSED_HEIGHT": "Collapsed Height (px)"
+    "$label.TRIGGER_HEIGHT": "Collapse Trigger Height",
+    "$label.COLLAPSED_HEIGHT": "Collapsed Height"
   },
   "truncate_text": {
     "pluginName": "Text Truncation",
@@ -1028,14 +1028,11 @@
   "right_click_menu": {
     "pluginName": "Right-Click Menu",
     "act.disabled": "Unavailable",
-    "act.retain_on_blur": "Keep Menu Open",
     "act.toggle_hotkey": "Show Hotkeys",
     "act.hide_other_options": "Show Plugin Options Only",
-    "actHint.retain_on_blur": "Menu remains open after clicking an item",
     "actHint.disabled": "This option is currently unavailable",
     "$label.SHOW_PLUGIN_HOTKEY": "Display Plugin Hotkey",
     "$label.SHOW_ACTION_OPTIONS_ICON": "Add ⌘ Icon to Actions",
-    "$label.RETAIN_ON_BLUR": "Don't Auto-Hide on Blur",
     "$label.HIDE_OTHER_OPTIONS": "Show Plugin Options Only",
     "$label.MENU_MIN_WIDTH": "Min Submenu Width",
     "$label.MENUS": "Custom Menus",

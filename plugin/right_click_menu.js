@@ -45,6 +45,17 @@ class RightClickMenuPlugin extends BasePlugin {
   defaultDisableHint = this.i18n.t("actHint.disabled")
   supportShortcut = !!document.querySelector(".ty-menu-shortcut")
   menuManager = createMenuManager()
+  ACTIONS = {
+    hide_other_options: () => {
+      this.config.HIDE_OTHER_OPTIONS = !this.config.HIDE_OTHER_OPTIONS
+      this.utils.replaceStyle(this.fixedName, this.style())
+    },
+    toggle_hotkey: () => {
+      this.config.SHOW_PLUGIN_HOTKEY = !this.config.SHOW_PLUGIN_HOTKEY
+      document.querySelectorAll(".plugin-menu-2nd .ty-menu-shortcut, .plugin-menu-3rd .ty-menu-shortcut")
+        .forEach(el => el.classList.toggle("plugin-common-hidden", !this.config.SHOW_PLUGIN_HOTKEY))
+    },
+  }
 
   style = () => `
 .plugin-menu-2nd.ext-context-menu, .plugin-menu-3rd.ext-context-menu { min-width: ${this.config.MENU_MIN_WIDTH}; }
@@ -254,16 +265,13 @@ class RightClickMenuPlugin extends BasePlugin {
       const action = this.dataset.key
       const fixedName = this.parentElement.dataset.plugin
       self.callPluginAction(fixedName, action)
-      const hidden = self._hideMenuIfNeed()
-      if (!hidden) $(`.plugin-menu-item[data-key="${fixedName}"]`).trigger("mouseenter") // refresh 3rd menu
+      self._hideMenuIfNeed()
     })
   }
 
   _hideMenuIfNeed = () => {
-    if (this.config.RETAIN_ON_BLUR) return false
     File.editor.contextMenu.hide()
     this.menuManager.close()
-    return true
   }
 
   callPluginAction = (fixedName, action) => {
@@ -273,26 +281,11 @@ class RightClickMenuPlugin extends BasePlugin {
   }
 
   getDynamicActions = () => this.i18n.fillActions([
-    { act_value: "retain_on_blur", act_state: this.config.RETAIN_ON_BLUR, act_hint: this.i18n.t("actHint.retain_on_blur") },
     { act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY, act_hidden: !this.supportShortcut },
     { act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
   ])
 
-  call = action => {
-    const fns = {
-      retain_on_blur: () => this.config.RETAIN_ON_BLUR = !this.config.RETAIN_ON_BLUR,
-      hide_other_options: () => {
-        this.config.HIDE_OTHER_OPTIONS = !this.config.HIDE_OTHER_OPTIONS
-        this.utils.replaceStyle(this.fixedName, this.style())
-      },
-      toggle_hotkey: () => {
-        this.config.SHOW_PLUGIN_HOTKEY = !this.config.SHOW_PLUGIN_HOTKEY
-        document.querySelectorAll(".plugin-menu-2nd .ty-menu-shortcut, .plugin-menu-3rd .ty-menu-shortcut")
-          .forEach(el => el.classList.toggle("plugin-common-hidden", !this.config.SHOW_PLUGIN_HOTKEY))
-      },
-    }
-    fns[action]?.()
-  }
+  call = action => this.ACTIONS[action]?.()
 }
 
 module.exports = {

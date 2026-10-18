@@ -913,7 +913,6 @@ const schema_right_click_menu = () => [
   Group("style",
     Switch("SHOW_PLUGIN_HOTKEY"),
     Switch("SHOW_ACTION_OPTIONS_ICON"),
-    Switch("RETAIN_ON_BLUR"),
     Switch("HIDE_OTHER_OPTIONS"),
     Text("MENU_MIN_WIDTH"),
   ),

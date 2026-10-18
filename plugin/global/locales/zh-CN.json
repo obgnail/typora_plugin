@@ -789,8 +789,8 @@
     "act.expand": "展开长图",
     "act.collapse": "收起长图",
     "$title.height": "高度",
-    "$label.TRIGGER_HEIGHT": "触发折叠高度（像素）",
-    "$label.COLLAPSED_HEIGHT": "折叠后高度（像素）"
+    "$label.TRIGGER_HEIGHT": "触发折叠高度",
+    "$label.COLLAPSED_HEIGHT": "折叠后高度"
   },
   "truncate_text": {
     "pluginName": "文段截断",
@@ -1028,14 +1028,11 @@
   "right_click_menu": {
     "pluginName": "右键菜单",
     "act.disabled": "不可点击",
-    "act.retain_on_blur": "保持菜单打开",
     "act.toggle_hotkey": "显示快捷键",
     "act.hide_other_options": "隐藏除插件以外的选项",
-    "actHint.retain_on_blur": "右键菜单点击后不会自动消失",
     "actHint.disabled": "功能于此时不可用",
     "$label.SHOW_PLUGIN_HOTKEY": "显示选项快捷键",
     "$label.SHOW_ACTION_OPTIONS_ICON": "动作选项添加 ⌘ 图标",
-    "$label.RETAIN_ON_BLUR": "失焦不再自动隐藏",
     "$label.HIDE_OTHER_OPTIONS": "只显示插件选项",
     "$label.MENU_MIN_WIDTH": "二、三级菜单的最小宽度",
     "$label.MENUS": "自定义右键菜单",
