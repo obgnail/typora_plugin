@@ -253,6 +253,13 @@ describe("collapse_image", () => {
     assert.equal(long.wrapper.textContent, "")
   })
 
+  it("uses the image wrapper's before pseudo-element for its control", () => {
+    const style = createPlugin().style()
+
+    assert.match(style, /\.md-image\[data-plugin-collapse-image-label\]::before/)
+    assert.doesNotMatch(style, /\.md-image\[data-plugin-collapse-image-label\]::after/)
+  })
+
   it("preserves manual expansion across resize and resets it after an image source change", () => {
     const long = addMarkdownImage({ height: { value: 1000 }, src: "long.svg" })
     createPlugin().process()
@@ -280,7 +287,7 @@ describe("collapse_image", () => {
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
 
     currentSrc = "long.svg?lastModify=2"
-    plugin.refreshImage(long.image)
+    plugin._refreshImage(long.image)
 
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
   })
@@ -295,7 +302,7 @@ describe("collapse_image", () => {
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
 
     long.image.setAttribute("src", "long.svg?lastModify=2")
-    plugin.refreshImage(long.image)
+    plugin._refreshImage(long.image)
 
     assert.ok(long.wrapper.classList.contains("plugin-collapse-image-expanded"))
   })
@@ -336,7 +343,7 @@ describe("collapse_image", () => {
     long.wrapper.remove()
     removeMutation(long.wrapper)
 
-    assert.equal(plugin.records.has(long.image), false)
+    assert.equal(plugin._records.has(long.image), false)
   })
 
   it("does not intercept copying the image or alter its source", () => {

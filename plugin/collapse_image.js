@@ -1,28 +1,61 @@
+const MARKDOWN_IMAGE_SELECTOR = ".md-image.md-img-loaded > img"
+const COLLAPSED_CLASS = "plugin-collapse-image-collapsed"
+const EXPANDED_CLASS = "plugin-collapse-image-expanded"
+const CONTROL_LABEL_ATTRIBUTE = "data-plugin-collapse-image-label"
+const COLLAPSED_CONTROL_HEIGHT = 64
+const EXPANDED_CONTROL_HEIGHT = 44
+
+const createImageRecords = ({ getSource, clearPresentation }) => {
+  const records = new Map()
+
+  const get = image => {
+    let record = records.get(image)
+    if (!record) {
+      record = { image, wrapper: image.parentElement, source: getSource(image), manual: null }
+      records.set(image, record)
+    }
+    return record
+  }
+
+  const forget = image => {
+    const record = records.get(image)
+    if (!record) return
+    clearPresentation(record)
+    records.delete(image)
+  }
+
+  return {
+    get,
+    forget,
+    reset: () => {
+      records.forEach(clearPresentation)
+      records.clear()
+    },
+    forEach: callback => records.forEach(callback),
+    has: image => records.has(image),
+  }
+}
+
 class CollapseImagePlugin extends BasePlugin {
-  collapsedClass = "plugin-collapse-image-collapsed"
-  expandedClass = "plugin-collapse-image-expanded"
-  controlLabelAttribute = "data-plugin-collapse-image-label"
-  collapsedControlHeight = 64
-  expandedControlHeight = 44
-  records = new Map()
-  imageObserver = null
-  resizeObserver = null
-  mutationObserver = null
-  onWindowResize = null
-  nativeExportManualStates = null
+  _records = null
+  _imageObserver = null
+  _mutationObserver = null
 
   style = () => `
-#write .md-image.${this.collapsedClass} {
+#write .md-image.${COLLAPSED_CLASS},
+#write .md-image.${EXPANDED_CLASS} {
   position: relative;
   display: block;
+}
+#write .md-image.${COLLAPSED_CLASS} {
   max-height: var(--plugin-collapse-image-height);
   overflow: hidden;
 }
-#write .md-image.${this.collapsedClass} > img {
+#write .md-image.${COLLAPSED_CLASS} > img {
   display: block;
 }
-#write .md-image[${this.controlLabelAttribute}]::after {
-  content: attr(${this.controlLabelAttribute});
+#write .md-image[${CONTROL_LABEL_ATTRIBUTE}]::before {
+  content: attr(${CONTROL_LABEL_ATTRIBUTE});
   box-sizing: border-box;
   width: 100%;
   min-height: 36px;
@@ -32,7 +65,7 @@ class CollapseImagePlugin extends BasePlugin {
   text-align: center;
   user-select: none;
 }
-#write .${this.collapsedClass}[${this.controlLabelAttribute}]::after {
+#write .${COLLAPSED_CLASS}[${CONTROL_LABEL_ATTRIBUTE}]::before {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -40,248 +73,196 @@ class CollapseImagePlugin extends BasePlugin {
   padding-top: 36px;
   background: linear-gradient(to bottom, transparent, var(--bg-color) 60%);
 }
-#write .${this.expandedClass}[${this.controlLabelAttribute}]::after {
-  display: block;
+#write .md-image.${EXPANDED_CLASS} {
+  margin-bottom: ${EXPANDED_CONTROL_HEIGHT}px;
+}
+#write .${EXPANDED_CLASS}[${CONTROL_LABEL_ATTRIBUTE}]::before {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
 }`
 
   process = () => {
-    // from IPugin
-    const { eventHub } = this.utils
-    // make sure function refresh function called once per 100ms at most.
-    this.refreshDebounced = this.utils.debounce(() => this.refresh(), 100)
-    // register event listeners
-    eventHub.on(eventHub.eventType.fileContentLoaded, this.resetForFile)
-    eventHub.on(eventHub.eventType.allPluginsHadInjected, this.refreshDebounced)
-    eventHub.on(eventHub.eventType.fileOpened, this.refreshDebounced)
+    const { eWrite, eContent } = this.utils.entities
+    const { eventHub, exportHelper } = this.utils
+    this._records = createImageRecords({ getSource: this._getSource, clearPresentation: this._clearPresentation })
+    this._refreshDebounced = this.utils.debounce(this._refresh, 100)
 
-    // this.fixedName is the plugin name and is plugin name of js file, e.g., "collapse-image"
-    this.utils.exportHelper.register(this.fixedName, null, this.afterExportToHTML)
-    this.utils.exportHelper.registerNative(this.fixedName, this.beforeExportToNative, null, this.restoreAfterNativeExport)
+    eventHub.on(eventHub.eventType.fileContentLoaded, this._resetForFile)
+    eventHub.on(eventHub.eventType.allPluginsHadInjected, this._refreshDebounced)
+    eventHub.on(eventHub.eventType.fileOpened, this._refreshDebounced)
 
-    const { eWrite } = this.utils.entities
-    eWrite.addEventListener("load", this.onImageLoad, true)
-    eWrite.addEventListener("click", this.onClick)
+    exportHelper.register(this.fixedName, null, this._afterExportToHTML)
+    this._handleNativeExport()
 
-    // Initialize observers
-    if (typeof IntersectionObserver !== "undefined") {
-      this.imageObserver = new IntersectionObserver(this.onIntersections)
-    }
+    eWrite.addEventListener("load", this._onImageLoad, true)
+    eWrite.addEventListener("click", this._onClick)
 
-    // Initialize resize observer or fallback to window resize event
-    if (typeof ResizeObserver !== "undefined") {
-      this.resizeObserver = new ResizeObserver(this.refreshDebounced)
-      this.resizeObserver.observe(this.utils.entities.eContent)
-    } else {
-      this.onWindowResize = this.refreshDebounced
-      window.addEventListener("resize", this.onWindowResize)
-    }
-    // Initialize mutation observer to watch for changes in the DOM that may affect images
-    this.mutationObserver = new MutationObserver(this.onMutations)
-    this.mutationObserver.observe(eWrite, { childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ["src", "class"] })
+    this._imageObserver = new IntersectionObserver(this._onIntersections)
+    new ResizeObserver(this._refreshDebounced).observe(eContent)
 
-    this.refresh()
+    this._mutationObserver = new MutationObserver(this._onMutations)
+    this._mutationObserver.observe(eWrite, { childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ["src", "class"] })
+
+    this._refresh()
   }
 
-  // "image" is dom element of <img> tag
-  isMarkdownImage = image => image?.matches?.(".md-image.md-img-loaded > img")
+    // "image" is dom element of <img> tag
+  _isMarkdownImage = image => image?.matches?.(MARKDOWN_IMAGE_SELECTOR)
 
   // loaded markdown image and is in the write area
-  isActiveImage = image => this.utils.entities.eWrite.contains(image) && this.isMarkdownImage(image)
+  _isActiveImage = image => this.utils.entities.eWrite.contains(image) && this._isMarkdownImage(image)
 
   // Typora keeps the original Markdown URL on the wrapper and mutates img.src.
-  getSource = image => image.parentElement?.getAttribute("data-src") || image.getAttribute("src") || image.currentSrc || ""
+  _getSource = image => image.parentElement?.getAttribute("data-src") || image.getAttribute("src") || image.currentSrc || ""
 
-  isLongImage = image => image.offsetHeight > this.config.TRIGGER_HEIGHT
+  _isLongImage = image => image.offsetHeight > this.config.TRIGGER_HEIGHT
 
-  //
-  forEachMarkdownImage = (node, callback) => {
-    // nodeType 1 is Element
-    if (node?.nodeType !== 1) return
-    // current node is a markdown image, call the callback
-    if (this.isMarkdownImage(node)) callback(node)
-    // find all markdown images in the subtree of the node and call the callback for each
-    node.querySelectorAll?.(".md-image.md-img-loaded > img").forEach(callback)
+  _forEachMarkdownImage = (node, callback) => {
+    if (node?.nodeType !== document.ELEMENT_NODE) return
+    if (this._isMarkdownImage(node)) callback(node)
+    node.querySelectorAll?.(MARKDOWN_IMAGE_SELECTOR).forEach(callback)
   }
 
-  getRecord = image => {
-    // image is the key, record is the value in the records map.
-    let record = this.records.get(image)
-    if (!record) {
-      record = { image, wrapper: image.parentElement, source: this.getSource(image), manual: null }
-      // store the record in the records map with image as the key
-      this.records.set(image, record)
-    }
-    return record
-  }
-
-  clearPresentation = record => {
+  _clearPresentation = record => {
     const { wrapper } = record
-    wrapper.classList.remove(this.collapsedClass, this.expandedClass)
+    wrapper.classList.remove(COLLAPSED_CLASS, EXPANDED_CLASS)
     wrapper.style.removeProperty("--plugin-collapse-image-height")
-    wrapper.removeAttribute(this.controlLabelAttribute)
+    wrapper.removeAttribute(CONTROL_LABEL_ATTRIBUTE)
   }
 
-  render = (record, collapsed) => {
+  _render = (record, collapsed) => {
     const { wrapper } = record
     // toggle the classes on the wrapper based on the collapsed state
-    wrapper.classList.toggle(this.collapsedClass, collapsed)
-    wrapper.classList.toggle(this.expandedClass, !collapsed)
     // set the height of the wrapper to the collapsed height if collapsed, otherwise remove the height property
+    wrapper.classList.toggle(COLLAPSED_CLASS, collapsed)
+    wrapper.classList.toggle(EXPANDED_CLASS, !collapsed)
     if (collapsed) {
       wrapper.style.setProperty("--plugin-collapse-image-height", `${this.config.COLLAPSED_HEIGHT}px`)
     } else {
       wrapper.style.removeProperty("--plugin-collapse-image-height")
     }
-    const text = this.i18n.t(collapsed ? "act.expand" : "act.collapse")
-    wrapper.setAttribute(this.controlLabelAttribute, text)
+    wrapper.setAttribute(CONTROL_LABEL_ATTRIBUTE, this.i18n.t(collapsed ? "act.expand" : "act.collapse"))
   }
 
-  refreshImage = image => {
+  _refreshImage = image => {
     // no need to refresh if the image is not a markdown image
-    if (!this.isMarkdownImage(image)) return
-    // get the record and source of the image, if the source has changed, reset the manual state to null
-    const record = this.getRecord(image)
+    if (!this._isMarkdownImage(image)) return
+    const record = this._records.get(image)
     record.wrapper = image.parentElement
-    const source = this.getSource(image)
+    const source = this._getSource(image)
     if (record.source !== source) {
       record.source = source
       record.manual = null
     }
-    // if the image is not a long image, clear the presentation and reset the manual state to null
-    if (!this.isLongImage(image)) {
+    if (!this._isLongImage(image)) {
       record.manual = null
-      this.clearPresentation(record)
+      this._clearPresentation(record)
       return
     }
     // render the image based on the manual state, if manual state is null, use the default collapsed state from config
-    this.render(record, record.manual !== "expanded")
+    this._render(record, record.manual !== "expanded")
   }
 
   // observeImage is called when the image is in the viewport and should be observed for changes. It adds the image to the observer and refreshes its presentation.
-  observeImage = (image, force = false) => {
-    // not a markdown image or not in the write area, forget it
-    if (!this.isActiveImage(image)) return
-    // if there is no image observer, refresh the image immediately and return
-    if (!this.imageObserver) {
-      this.refreshImage(image)
-      return
-    }
-    // cancel the observation and refresh the image if force is true, otherwise just observe the image
-    if (force) this.imageObserver.unobserve(image)
-    this.imageObserver.observe(image)
+  _observeImage = (image, force = false) => {
+    if (!this._isActiveImage(image)) return
+    if (force) this._imageObserver.unobserve(image)
+    this._imageObserver.observe(image)
   }
 
-  // forgetImage is called when the image is no longer in the DOM or no longer active. It removes the image from the observer and clears its presentation.
-  forgetImage = image => {
-    this.imageObserver?.unobserve(image)
-    const record = this.records.get(image)
-    if (!record) return
-    this.clearPresentation(record)
-    this.records.delete(image)
+// forgetImage is called when the image is no longer in the DOM or no longer active. It removes the image from the observer and clears its presentation.
+  _forgetImage = image => {
+    this._imageObserver.unobserve(image)
+    this._records.forget(image)
   }
 
-  refresh = () => {
-    const { eWrite } = this.utils.entities
-    // all images that are currently in the DOM and loaded
-    const images = [
-      ...eWrite.querySelectorAll(".md-image.md-img-loaded > img"),
-    ]
+  _refresh = () => {
+    const images = [...this.utils.entities.eWrite.querySelectorAll(MARKDOWN_IMAGE_SELECTOR)]
     const active = new Set(images)
-    images.forEach((image) => this.observeImage(image));
-    //  Map: (value, key)
-    this.records.forEach((record, image) => {
-      if (active.has(image)) return
-      this.forgetImage(image)
-    });
+    images.forEach(this._observeImage)
+    this._records.forEach((record, image) => {
+      if (!active.has(image)) this._forgetImage(image)
+    })
   }
 
-  resetForFile = () => {
-    this.imageObserver?.disconnect()
-    this.records.forEach(this.clearPresentation)
-    this.records.clear()
-    this.refresh()
+  _resetForFile = () => {
+    this._imageObserver.disconnect()
+    this._records.reset()
+    this._refresh()
   }
 
-  onIntersections = entries => entries.forEach(entry => {
-    // entry.target is the image element that is being observed
-    const image = entry.target
-    // if the image is no longer active, forget it and return
-    if (!this.isActiveImage(image)) {
-      this.forgetImage(image)
+  _onIntersections = entries => entries.forEach(({ target: image, isIntersecting }) => {
+    if (!this._isActiveImage(image)) {
+      this._forgetImage(image)
       return
     }
-    // if the image is not intersecting (not in the viewport), return
-    if (!entry.isIntersecting) return
-    // refresh the image and unobserve it, because we only need to refresh it once when it comes into view
-    this.refreshImage(image)
-    this.imageObserver?.unobserve(image)
+    if (!isIntersecting) return
+    this._refreshImage(image)
+    this._imageObserver.unobserve(image)
   })
 
-  toggle = record => {
+  _toggle = record => {
     // look the current state of the image, if it is collapsed, expand it, if it is expanded, collapse it
-    record.manual = record.wrapper.classList.contains(this.collapsedClass) ? "expanded" : "collapsed"
-    this.refreshImage(record.image)
-    // make sure the image is in view after toggling, if it is collapsed, scroll it into view
+    record.manual = record.wrapper.classList.contains(COLLAPSED_CLASS) ? "expanded" : "collapsed"
+    this._refreshImage(record.image)
     if (record.manual === "collapsed") record.wrapper.scrollIntoView({ block: "nearest" })
   }
 
   // onImageLoad is called when an image is loaded. It observes the image and refreshes its presentation.
-  onImageLoad = ev => this.observeImage(ev.target, true)
+  _onImageLoad = ev => this._observeImage(ev.target, true)
 
   // click event handler for the control. It toggles the state of the image when the control is clicked.
-  onClick = ev => {
+  _onClick = ev => {
     const wrapper = ev.target.closest?.(".md-image.md-img-loaded")
-    if (ev.target !== wrapper || !this.utils.entities.eWrite.contains(wrapper)) {
-      return
-    }
-    const controlHeight = wrapper.classList.contains(this.collapsedClass) ? this.collapsedControlHeight : this.expandedControlHeight
+    if (ev.target !== wrapper || !this.utils.entities.eWrite.contains(wrapper)) return
+    const controlHeight = wrapper.classList.contains(COLLAPSED_CLASS) ? COLLAPSED_CONTROL_HEIGHT : EXPANDED_CONTROL_HEIGHT
     if (ev.offsetY < wrapper.offsetHeight - controlHeight) return
-    const image = wrapper.querySelector(":scope > img")
-    const record = image && this.records.get(image)
-    if (record) this.toggle(record)
+    const record = this._records.get(wrapper.querySelector(":scope > img"))
+    if (record) this._toggle(record)
   }
 
-  onMutations = mutations => mutations.forEach(mutation => {
+  _onMutations = mutations => mutations.forEach(mutation => {
     if (mutation.type === "attributes") {
       if (mutation.attributeName === "class") {
-        // has the class now?
         const loaded = mutation.target.classList?.contains("md-img-loaded")
-        // was the class before?
         const wasLoaded = mutation.oldValue?.split(/\s+/).includes("md-img-loaded")
         if (loaded === wasLoaded) return
         // if the image is now loaded, observe it, otherwise forget it
-        this.forEachMarkdownImage(mutation.target, loaded ? image => this.observeImage(image, true) : this.forgetImage)
+        this._forEachMarkdownImage(mutation.target, loaded ? image => this._observeImage(image, true) : this._forgetImage)
         return
       }
-      this.forEachMarkdownImage(mutation.target, image => this.observeImage(image, true))
+      this._forEachMarkdownImage(mutation.target, image => this._observeImage(image, true))
       return
     }
-    mutation.addedNodes.forEach(node => this.forEachMarkdownImage(node, this.observeImage))
-    mutation.removedNodes.forEach(node => this.forEachMarkdownImage(node, this.forgetImage))
+    mutation.addedNodes.forEach(node => this._forEachMarkdownImage(node, this._observeImage))
+    mutation.removedNodes.forEach(node => this._forEachMarkdownImage(node, this._forgetImage))
   })
 
-  // make sure export cleanly, without any plugin-collapse-image related elements or classes.
-  beforeExportToNative = () => {
-    const { eWrite } = this.utils.entities
-    this.nativeExportManualStates = new Map()
-    eWrite.querySelectorAll(".md-image.md-img-loaded > img").forEach((image, index) => {
-      const manual = this.records.get(image)?.manual
-      if (manual) this.nativeExportManualStates.set(index, manual)
-    })
-    this.records.forEach(this.clearPresentation)
+  _handleNativeExport = () => {
+    let manualStates = new Map()
+    const getImages = () => [...this.utils.entities.eWrite.querySelectorAll(MARKDOWN_IMAGE_SELECTOR)]
+    const before = () => {
+      manualStates = new Map()
+      getImages().forEach((image, index) => {
+        const manual = this._records.get(image)?.manual
+        if (manual) manualStates.set(index, manual)
+      })
+      this._records.forEach(this._clearPresentation)
+    }
+    const restore = () => {
+      getImages().forEach((image, index) => {
+        const manual = manualStates.get(index)
+        if (manual) this._records.get(image).manual = manual
+      })
+      manualStates.clear()
+      this._refresh()
+    }
+    this.utils.exportHelper.registerNative(this.fixedName, before, null, restore)
   }
 
-  restoreAfterNativeExport = () => {
-    const { eWrite } = this.utils.entities
-    eWrite.querySelectorAll(".md-image.md-img-loaded > img").forEach((image, index) => {
-      const manual = this.nativeExportManualStates?.get(index)
-      if (manual) this.getRecord(image).manual = manual
-    })
-    this.nativeExportManualStates = null
-    this.refresh()
-  }
-
-  afterExportToHTML = html => html
+  _afterExportToHTML = html => html
     .replace(/\splugin-collapse-image-(?:collapsed|expanded)\b/g, "")
     .replace(/\sdata-plugin-collapse-image-label="[^"]*"/g, "")
     .replace(/\sstyle="([^"]*?)"/g, (_, style) => {
