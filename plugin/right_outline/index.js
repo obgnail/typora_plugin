@@ -87,7 +87,7 @@ const buildTreeParser = ({ utils, config }, displayNames) => {
     }
 
     const TYPE_COUNTERS = { table: 0, fence: 0, image: 0, link: 0, math: 0 }
-    const root = { depth: 0, cid: "n0", text: "root", children: [], parent: null }
+    const root = { depth: 0, cid: "", text: "root", children: [], parent: null }
     const helper = { current: root, H1: root }
 
     const selector = targetTypes.map(t => TYPE_SELECTORS[t]).join(", ")

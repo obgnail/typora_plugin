@@ -953,7 +953,7 @@ class utils {
   static getFenceContentByCid = cid => cid && File.editor.fences.queue[cid]?.getValue()
 
   static getTocTree = useBuiltin => {
-    const root = { depth: 0, cid: "n0", text: this.getFileName(), parent: null, children: [] }
+    const root = { depth: 0, cid: "", text: this.getFileName(), parent: null, children: [] }
     const stack = [root]
     const toc = useBuiltin
       ? File.editor.library.outline.getHeaderMatrix(true)
