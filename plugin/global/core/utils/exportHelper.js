@@ -16,7 +16,7 @@ class ExportHelper {
   unregister = name => this.htmlHelpers.delete(name)
 
   /** Export using Pandoc. */
-  registerNative = (name, beforeExportToNative, afterExportToNative) => this.nativeHelpers.set(name, { beforeExportToNative, afterExportToNative })
+  registerNative = (name, beforeExportToNative, afterExportToNative, afterExportToNativeFinally) => this.nativeHelpers.set(name, { beforeExportToNative, afterExportToNative, afterExportToNativeFinally })
   unregisterNative = name => this.nativeHelpers.delete(name)
 
   check = args => ["html", "html-plain", "pdf", "image"].includes(args?.[0]?.type)
@@ -95,7 +95,8 @@ class ExportHelper {
     }
     const before = hook("beforeExportToNative")
     const after = hook("afterExportToNative")
-    this.utils.decorator.decorate(() => File?.editor?.export, "exportToNative", { before, after })
+    const settled = hook("afterExportToNativeFinally")
+    this.utils.decorator.decorate(() => File?.editor?.export, "exportToNative", { before, after, settled })
   }
 
   process = () => {
