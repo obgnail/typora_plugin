@@ -152,7 +152,7 @@ class DiagramEnhancePlugin extends BasePlugin {
 
     const overlay = node => node === content || node.matches(TOOLBAR_SELECTOR) || node.matches(HANDLE_SELECTOR)
 
-    Array.from(preview.childNodes).forEach(node => {
+    Array.from(preview.children).forEach(node => {
       if (!overlay(node)) content.appendChild(node)
     })
 
