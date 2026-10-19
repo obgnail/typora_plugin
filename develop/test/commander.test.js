@@ -157,11 +157,13 @@ describe("commander/engine.js - getSpawnConfig per shell", () => {
     assert.strictEqual(config.command, "zsh")
   })
 
-  it("powershell getSpawnConfig uses -NoProfile -NonInteractive -Command -", () => {
+  it("powershell bootstraps a UTF-8 console via cmd so stdin decodes correctly", () => {
     const { executor } = RAW_SHELL_REGISTRY.powershell
     const config = executor.getSpawnConfig({ env: {}, cwd: "C:\\tmp" })
-    assert.strictEqual(config.command, "powershell")
-    assert.deepStrictEqual(config.args, ["-NoProfile", "-NonInteractive", "-Command", "-"])
+    assert.match(config.command, /cmd(\.exe)?$/i)
+    assert.deepStrictEqual(config.args.slice(0, 3), ["/D", "/S", "/C"])
+    assert.match(config.args[3], /chcp 65001/)
+    assert.match(config.args[3], /powershell -NoProfile -NonInteractive -Command -/)
     assert.strictEqual(config.options.shell, false)
   })
 

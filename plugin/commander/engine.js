@@ -167,12 +167,13 @@ register({
   id: "powershell",
   label: "PowerShell",
   supported: ({ IS_WIN }) => IS_WIN,
-  factory: ({ baseShellMixin }) => ({
+  factory: ({ baseShellMixin, process }) => ({
     ...baseShellMixin,
     formatEnvVar: (envName) => `$env:${envName}`,
+    // bootstrap through cmd to raise its code page to 65001 *before* PowerShell starts
     getSpawnConfig: ({ env, cwd }) => ({
-      command: "powershell",
-      args: ["-NoProfile", "-NonInteractive", "-Command", "-"],
+      command: process.env.ComSpec || "cmd",
+      args: ["/D", "/S", "/C", "chcp 65001 >nul & powershell -NoProfile -NonInteractive -Command -"],
       options: { cwd, env, shell: false },
     }),
     getStdinPayload: ({ script }) => `$OutputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8\n$ProgressPreference = 'SilentlyContinue'\n${script}\n`,
