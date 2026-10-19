@@ -258,6 +258,21 @@ register({
 })
 
 register({
+  id: "pwsh",
+  label: "Pwsh",
+  factory: ({ baseShellMixin }) => ({
+    ...baseShellMixin,
+    formatEnvVar: (envName) => `$env:${envName}`,
+    getSpawnConfig: ({ env, cwd }) => ({
+      command: "pwsh",
+      args: ["-NoProfile", "-NonInteractive", "-Command", "-"],
+      options: { cwd, env, shell: false },
+    }),
+    getStdinPayload: ({ script }) => `$ProgressPreference = 'SilentlyContinue'\n${script}\n`,
+  }),
+})
+
+register({
   id: "nushell",
   label: "Nushell",
   factory: ({ baseShellMixin }) => ({
@@ -269,6 +284,21 @@ register({
       options: { cwd, env, shell: false },
     }),
     getStdinPayload: () => "",
+  }),
+})
+
+register({
+  id: "fish",
+  label: "Fish",
+  supported: ({ IS_WIN }) => !IS_WIN,
+  factory: ({ posixShellMixin }) => ({
+    ...posixShellMixin,
+    formatEnvVar: (envName) => `$${envName}`,
+    getSpawnConfig: ({ env, cwd }) => ({
+      command: "fish",
+      args: [],
+      options: { cwd, env, shell: false },
+    }),
   }),
 })
 

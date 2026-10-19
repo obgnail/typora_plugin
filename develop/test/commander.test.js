@@ -175,6 +175,31 @@ describe("commander/engine.js - getSpawnConfig per shell", () => {
     assert.match(payload, /Get-Date/)
   })
 
+  it("pwsh getSpawnConfig streams UTF-8 script via stdin", () => {
+    const { executor } = RAW_SHELL_REGISTRY.pwsh
+    const config = executor.getSpawnConfig({ env: {}, cwd: "/tmp" })
+    assert.strictEqual(config.command, "pwsh")
+    assert.deepStrictEqual(config.args, ["-NoProfile", "-NonInteractive", "-Command", "-"])
+    assert.strictEqual(config.options.shell, false)
+    const payload = executor.getStdinPayload({ script: "Get-Date" })
+    assert.match(payload, /SilentlyContinue/)
+    assert.match(payload, /Get-Date\n$/)
+  })
+
+  it("fish getSpawnConfig streams script via stdin", () => {
+    const { executor } = RAW_SHELL_REGISTRY.fish
+    const config = executor.getSpawnConfig({ env: {}, cwd: "/tmp" })
+    assert.strictEqual(config.command, "fish")
+    assert.deepStrictEqual(config.args, [])
+    assert.strictEqual(config.options.shell, false)
+    assert.strictEqual(config.options.cwd, "/tmp")
+  })
+
+  it("fish formatEnvVar uses POSIX-style variable syntax", () => {
+    const { executor } = RAW_SHELL_REGISTRY.fish
+    assert.strictEqual(executor.formatEnvVar("MY_VAR"), "$MY_VAR")
+  })
+
   it("gitbash getSpawnConfig uses shell:true and rawCwd (not normalized cwd)", () => {
     const { executor } = RAW_SHELL_REGISTRY.gitbash
     const config = executor.getSpawnConfig({ env: {}, rawCwd: "C:\\Users\\me" })
