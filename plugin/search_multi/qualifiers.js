@@ -47,8 +47,14 @@ const NORMALIZERS = {
     if (operandType === TYPE_REGEX) return operand
     const oneDay = 24 * 60 * 60 * 1000
     const today = new Date()
-    const tomorrow = new Date(today.getTime() + oneDay)
-    const yesterday = new Date(today.getTime() - oneDay)
+    const timestamp = today.getTime()
+    const relative = operand.match(/^(\d+)([dwmy])$/i)  // Relative date: "7d" (days), "2w" (weeks), "1m" (30-day months), "1y" (365-day years) ago
+    if (relative) {
+      const days = { d: 1, w: 7, m: 30, y: 365 }[relative[2].toLowerCase()]
+      return new Date(timestamp - Number(relative[1]) * days * oneDay).toISOString().slice(0, 10)
+    }
+    const tomorrow = new Date(timestamp + oneDay)
+    const yesterday = new Date(timestamp - oneDay)
     const predefined = { today, tomorrow, yesterday }
     const replacement = predefined[operand.toLowerCase()]
     return replacement ? replacement.toISOString().slice(0, 10) : operand
@@ -92,6 +98,7 @@ const VALIDATORS = {
   isDate: (operator, operand, operandType) => {
     const err = VALIDATORS.isComparable(operator, operand, operandType)
     if (err) return err
+    if (!/^\d{4}-\d{2}-\d{2}(T.*)?$/.test(String(operand).trim())) return "Operand must be YYYY-MM-DD, a keyword (today/yesterday/tomorrow), or a relative date (7d/2w/1m/1y)"
     if (isNaN(new Date(operand).getTime())) return "Operand must be a valid date string"
   },
 }
@@ -167,7 +174,7 @@ const createBaseQualifiers = (ctx) => {
     IMG_TAG: /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/,
     IMG_TAG_G: /<img\s+[^>\n]*?src=(["'])([^"'\n]+)\1[^>\n]*>/g,
     EMOJI: /\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/u,
-    INVISIBLE: /[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/,
+    INVISIBLE: /\p{Default_Ignorable_Code_Point}/u,
   }
 
   const { resolveDate, resolveNumber, resolveBoolean } = NORMALIZERS

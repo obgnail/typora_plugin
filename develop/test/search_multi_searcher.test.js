@@ -303,7 +303,7 @@ describe("Searcher: Validation & Error Guards", () => {
     assertError("linenum>=/regex/", /Regex operands are not valid for numerical comparisons/)
   })
   it("should throw on invalid date inputs", () => {
-    assertError("mtime=notadate", /Operand must be a valid date string/)
+    assertError("mtime=notadate", /Operand must be YYYY-MM-DD/)
   })
   it("should throw on invalid regex operators for strings", () => {
     assertError("ext>=/regex/", /Regex operands only support the ":" operator/)

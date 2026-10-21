@@ -197,6 +197,48 @@ describe("NORMALIZERS.resolveDate (via mtime qualifier)", () => {
   })
 })
 
+describe("resolveDate — relative dates", () => {
+  const oneDay = 24 * 60 * 60 * 1000
+  const daysAgoISO = n => new Date(Date.now() - n * oneDay).toISOString().slice(0, 10)
+
+  for (const scope of ["birthtime", "mtime", "atime"]) {
+    it(`${scope} resolves "7d" to 7 days ago`, () => {
+      const result = byScope[scope].normalize("7d", "KEYWORD")
+      assert.strictEqual(result, daysAgoISO(7))
+    })
+  }
+
+  it("resolves weeks, months, years", () => {
+    const normalize = byScope.mtime.normalize
+    assert.strictEqual(normalize("2w", "KEYWORD"), daysAgoISO(14))
+    assert.strictEqual(normalize("1m", "KEYWORD"), daysAgoISO(30))
+    assert.strictEqual(normalize("1y", "KEYWORD"), daysAgoISO(365))
+  })
+
+  it("is case-insensitive for units", () => {
+    assert.strictEqual(byScope.mtime.normalize("7D", "KEYWORD"), daysAgoISO(7))
+  })
+
+  it("still resolves predefined keywords", () => {
+    assert.strictEqual(byScope.mtime.normalize("today", "KEYWORD"), daysAgoISO(0))
+    assert.strictEqual(byScope.mtime.normalize("yesterday", "KEYWORD"), daysAgoISO(1))
+  })
+
+  it("passes through regex operands unchanged", () => {
+    const regex = { pattern: "7d", flags: "" }
+    assert.strictEqual(byScope.mtime.normalize(regex, "REGEX"), regex)
+  })
+
+  it("normalized relative date passes isDate validation", () => {
+    const operand = byScope.mtime.normalize("7d", "KEYWORD")
+    assert.strictEqual(byScope.mtime.validate(">", operand, "KEYWORD"), undefined)
+  })
+
+  it("invalid relative format is still rejected", () => {
+    assert.ok(byScope.mtime.validate(">", "7dd", "KEYWORD"))
+  })
+})
+
 // ─── VALIDATORS (via qualifier.validate) ─────────────────────────────────────
 
 describe("VALIDATORS.isStringOrRegex (via path qualifier)", () => {
@@ -372,6 +414,17 @@ describe("VALIDATORS.isDate (via mtime qualifier)", () => {
   })
   it("returns error string for empty string", () => {
     assert.ok(typeof validate("=", "", undefined) === "string")
+  })
+  it("rejects bare numeric operands for date qualifiers", () => {
+    for (const scope of ["birthtime", "mtime", "atime"]) {
+      const err = byScope[scope].validate(">", "2", "KEYWORD")
+      assert.ok(err && /Ambiguous|date/i.test(err), `${scope} should reject "2"`)
+    }
+  })
+  it("still accepts ISO dates and keywords", () => {
+    assert.strictEqual(byScope.mtime.validate(">", "2026-10-21", "KEYWORD"), undefined)
+    const kw = byScope.mtime.normalize("yesterday", "KEYWORD")
+    assert.strictEqual(byScope.mtime.validate(">", kw, "KEYWORD"), undefined)
   })
 })
 
