@@ -1,0 +1,1162 @@
+[
+  {
+    "key": "\\frac",
+    "snippet": "\\frac{}{}",
+    "cursorOffset": -3
+  },
+  {
+    "key": "\\sum",
+    "snippet": "\\sum_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\int",
+    "snippet": "\\int_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\alpha",
+    "snippet": "\\alpha ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\beta",
+    "snippet": "\\beta ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\gamma",
+    "snippet": "\\gamma ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\delta",
+    "snippet": "\\delta ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\epsilon",
+    "snippet": "\\epsilon ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\zeta",
+    "snippet": "\\zeta ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\eta",
+    "snippet": "\\eta ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\theta",
+    "snippet": "\\theta ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\iota",
+    "snippet": "\\iota ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\kappa",
+    "snippet": "\\kappa ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\lambda",
+    "snippet": "\\lambda ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\mu",
+    "snippet": "\\mu ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\nu",
+    "snippet": "\\nu ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\xi",
+    "snippet": "\\xi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\omicron",
+    "snippet": "\\omicron ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\pi",
+    "snippet": "\\pi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\rho",
+    "snippet": "\\rho ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\sigma",
+    "snippet": "\\sigma ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\tau",
+    "snippet": "\\tau ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\upsilon",
+    "snippet": "\\upsilon ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\phi",
+    "snippet": "\\phi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\chi",
+    "snippet": "\\chi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\psi",
+    "snippet": "\\psi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\omega",
+    "snippet": "\\omega ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Gamma",
+    "snippet": "\\Gamma ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Delta",
+    "snippet": "\\Delta ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Theta",
+    "snippet": "\\Theta ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Lambda",
+    "snippet": "\\Lambda ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Xi",
+    "snippet": "\\Xi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Pi",
+    "snippet": "\\Pi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Sigma",
+    "snippet": "\\Sigma ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Upsilon",
+    "snippet": "\\Upsilon ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Phi",
+    "snippet": "\\Phi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Psi",
+    "snippet": "\\Psi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Omega",
+    "snippet": "\\Omega ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\begin",
+    "snippet": "\\begin{aligned}\n\n\\end{aligned}",
+    "cursorOffset": -14
+  },
+  {
+    "key": "\\beg",
+    "snippet": "\\begin{}{}",
+    "cursorOffset": -2
+  },
+  {
+    "key": "\\sin",
+    "snippet": "\\sin ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\cos",
+    "snippet": "\\cos ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\tan",
+    "snippet": "\\tan ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\cot",
+    "snippet": "\\cot ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\sec",
+    "snippet": "\\sec ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\csc",
+    "snippet": "\\csc ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\arcsin",
+    "snippet": "\\arcsin ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\arccos",
+    "snippet": "\\arccos ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\arctan",
+    "snippet": "\\arctan ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\exp",
+    "snippet": "\\exp ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\log",
+    "snippet": "\\log ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\ln",
+    "snippet": "\\ln ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\lg",
+    "snippet": "\\lg ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\lim",
+    "snippet": "\\lim_{}\\to ",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\prod",
+    "snippet": "\\prod_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\oint",
+    "snippet": "\\oint_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\iint",
+    "snippet": "\\iint_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\iiint",
+    "snippet": "\\iiint_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\binom",
+    "snippet": "\\binom{}{}",
+    "cursorOffset": -3
+  },
+  {
+    "key": "\\choose",
+    "snippet": "\\choose{}{}",
+    "cursorOffset": -3
+  },
+  {
+    "key": "\\hat",
+    "snippet": "\\hat{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\bar",
+    "snippet": "\\bar{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\tilde",
+    "snippet": "\\tilde{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\dot",
+    "snippet": "\\dot{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\ddot",
+    "snippet": "\\ddot{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\partial",
+    "snippet": "\\partial ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\nabla",
+    "snippet": "\\nabla ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\infty",
+    "snippet": "\\infty ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\mathcal",
+    "snippet": "\\mathcal{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\mathbf",
+    "snippet": "\\mathbf{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\mathbb",
+    "snippet": "\\mathbb{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\mathfrak",
+    "snippet": "\\mathfrak{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\mathit",
+    "snippet": "\\mathit{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\mathrm",
+    "snippet": "\\mathrm{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\mathsf",
+    "snippet": "\\mathsf{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\mathtt",
+    "snippet": "\\mathtt{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\cup",
+    "snippet": "\\cup ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\cap",
+    "snippet": "\\cap ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\subset",
+    "snippet": "\\subset ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\supset",
+    "snippet": "\\supset ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\in",
+    "snippet": "\\in ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\notin",
+    "snippet": "\\notin ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\forall",
+    "snippet": "\\forall ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\exists",
+    "snippet": "\\exists ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\neg",
+    "snippet": "\\neg ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\because",
+    "snippet": "\\because ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\therefore",
+    "snippet": "\\therefore ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\leq",
+    "snippet": "\\leq ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\geq",
+    "snippet": "\\geq ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\equiv",
+    "snippet": "\\equiv ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\approx",
+    "snippet": "\\approx ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\neq",
+    "snippet": "\\neq ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\cdot",
+    "snippet": "\\cdot ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\times",
+    "snippet": "\\times ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\div",
+    "snippet": "\\div ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\pm",
+    "snippet": "\\pm ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\mp",
+    "snippet": "\\mp ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\left",
+    "snippet": "\\left( \\right)",
+    "cursorOffset": -7
+  },
+  {
+    "key": "\\abs",
+    "snippet": "\\left| \\right|",
+    "cursorOffset": -7
+  },
+  {
+    "key": "\\norm",
+    "snippet": "\\left\\| \\right\\|",
+    "cursorOffset": -7
+  },
+  {
+    "key": "\\matrix",
+    "snippet": "\\begin{matrix}\\\\\\end{matrix}",
+    "cursorOffset": -17
+  },
+  {
+    "key": "\\pmatrix",
+    "snippet": "\\begin{pmatrix}\\\\\\end{pmatrix}",
+    "cursorOffset": -20
+  },
+  {
+    "key": "\\bmatrix",
+    "snippet": "\\begin{bmatrix}\\\\\\end{bmatrix}",
+    "cursorOffset": -20
+  },
+  {
+    "key": "\\vmatrix",
+    "snippet": "\\begin{vmatrix}\\\\\\end{vmatrix}",
+    "cursorOffset": -20
+  },
+  {
+    "key": "\\cases",
+    "snippet": "\\begin{cases}\\\\\\end{cases}",
+    "cursorOffset": -18
+  },
+  {
+    "key": "\\cdots",
+    "snippet": "\\cdots ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\ldots",
+    "snippet": "\\ldots ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\vdots",
+    "snippet": "\\vdots ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\ddots",
+    "snippet": "\\ddots ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\quad",
+    "snippet": "\\quad ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\qquad",
+    "snippet": "\\qquad ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\hspace",
+    "snippet": "\\hspace{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\vspace",
+    "snippet": "\\vspace{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\,",
+    "snippet": "\\, ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\;",
+    "snippet": "\\; ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\!",
+    "snippet": "\\! ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\dagger",
+    "snippet": "\\dagger ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\ddagger",
+    "snippet": "\\ddagger ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\star",
+    "snippet": "\\star ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\diamond",
+    "snippet": "\\diamond ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\triangle",
+    "snippet": "\\triangle ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\clubsuit",
+    "snippet": "\\clubsuit ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\diamondsuit",
+    "snippet": "\\diamondsuit ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\heartsuit",
+    "snippet": "\\heartsuit ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\spadesuit",
+    "snippet": "\\spadesuit ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\varepsilon",
+    "snippet": "\\varepsilon ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\vartheta",
+    "snippet": "\\vartheta ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\varpi",
+    "snippet": "\\varpi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\varrho",
+    "snippet": "\\varrho ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\varsigma",
+    "snippet": "\\varsigma ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\varphi",
+    "snippet": "\\varphi ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\bigcup",
+    "snippet": "\\bigcup_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\bigcap",
+    "snippet": "\\bigcap_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\bigsqcup",
+    "snippet": "\\bigsqcup_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\bigvee",
+    "snippet": "\\bigvee_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\bigwedge",
+    "snippet": "\\bigwedge_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\bigodot",
+    "snippet": "\\bigodot_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\bigoplus",
+    "snippet": "\\bigoplus_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\bigotimes",
+    "snippet": "\\bigotimes_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\biguplus",
+    "snippet": "\\biguplus_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\coprod",
+    "snippet": "\\coprod_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\bigsqcap",
+    "snippet": "\\bigsqcap_{}^{}",
+    "cursorOffset": -4
+  },
+  {
+    "key": "\\text",
+    "snippet": "\\text{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\rm",
+    "snippet": "\\rm{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\bf",
+    "snippet": "\\bf{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\it",
+    "snippet": "\\it{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\cal",
+    "snippet": "\\cal{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\bb",
+    "snippet": "\\bb{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\tt",
+    "snippet": "\\tt{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\sf",
+    "snippet": "\\sf{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\displaystyle",
+    "snippet": "\\displaystyle ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\textstyle",
+    "snippet": "\\textstyle ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\scriptstyle",
+    "snippet": "\\scriptstyle ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\scriptscriptstyle",
+    "snippet": "\\scriptscriptstyle ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\limits",
+    "snippet": "\\limits ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\nolimits",
+    "snippet": "\\nolimits ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\over",
+    "snippet": "\\over ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\atop",
+    "snippet": "\\atop ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\underline",
+    "snippet": "\\underline{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\overline",
+    "snippet": "\\overline{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\overbrace",
+    "snippet": "\\overbrace{}^{}",
+    "cursorOffset": -3
+  },
+  {
+    "key": "\\underbrace",
+    "snippet": "\\underbrace{}_{}",
+    "cursorOffset": -3
+  },
+  {
+    "key": "\\sqrt",
+    "snippet": "\\sqrt{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\root",
+    "snippet": "\\sqrt[]{}",
+    "cursorOffset": -3
+  },
+  {
+    "key": "\\gets",
+    "snippet": "\\gets ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\to",
+    "snippet": "\\to ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\rightarrow",
+    "snippet": "\\rightarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\leftarrow",
+    "snippet": "\\leftarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\longrightarrow",
+    "snippet": "\\longrightarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\longleftarrow",
+    "snippet": "\\longleftarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\uparrow",
+    "snippet": "\\uparrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\downarrow",
+    "snippet": "\\downarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\updownarrow",
+    "snippet": "\\updownarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Rightarrow",
+    "snippet": "\\Rightarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Leftarrow",
+    "snippet": "\\Leftarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Leftrightarrow",
+    "snippet": "\\Leftrightarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Uparrow",
+    "snippet": "\\Uparrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Downarrow",
+    "snippet": "\\Downarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Updownarrow",
+    "snippet": "\\Updownarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Longrightarrow",
+    "snippet": "\\Longrightarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Longleftarrow",
+    "snippet": "\\Longleftarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Longleftrightarrow",
+    "snippet": "\\Longleftrightarrow ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\mapsto",
+    "snippet": "\\mapsto ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\leftharpoonup",
+    "snippet": "\\leftharpoonup ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\rightharpoonup",
+    "snippet": "\\rightharpoonup ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\leftharpoondown",
+    "snippet": "\\leftharpoondown ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\rightharpoondown",
+    "snippet": "\\rightharpoondown ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\rightleftharpoons",
+    "snippet": "\\rightleftharpoons ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\angle",
+    "snippet": "\\angle ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\parallel",
+    "snippet": "\\parallel ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\perp",
+    "snippet": "\\perp ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\asymp",
+    "snippet": "\\asymp ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\sim",
+    "snippet": "\\sim ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\cong",
+    "snippet": "\\cong ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\simeq",
+    "snippet": "\\simeq ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\propto",
+    "snippet": "\\propto ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\ll",
+    "snippet": "\\ll ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\gg",
+    "snippet": "\\gg ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\doteq",
+    "snippet": "\\doteq ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\smile",
+    "snippet": "\\smile ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\frown",
+    "snippet": "\\frown ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\aleph",
+    "snippet": "\\aleph ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\beth",
+    "snippet": "\\beth ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\gimel",
+    "snippet": "\\gimel ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\daleth",
+    "snippet": "\\daleth ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\ell",
+    "snippet": "\\ell ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\hbar",
+    "snippet": "\\hbar ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Re",
+    "snippet": "\\Re ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\Im",
+    "snippet": "\\Im ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\wp",
+    "snippet": "\\wp ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\mho",
+    "snippet": "\\mho ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\dots",
+    "snippet": "\\dots ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\bma2",
+    "snippet": "\\begin{bmatrix}  & \\\\  & \\end{bmatrix}",
+    "cursorOffset": -17
+  },
+  {
+    "key": "\\bma3",
+    "snippet": "\\begin{bmatrix}  &  & \\\\  &  & \\\\  &  & \\end{bmatrix}",
+    "cursorOffset": -31
+  },
+  {
+    "key": "\\aligned",
+    "snippet": "\\begin{aligned}\n &=  \\\\\n &= \n\\end{aligned}",
+    "cursorOffset": -18
+  },
+  {
+    "key": "\\dff",
+    "snippet": "\\frac{\\mathrm{d}}{\\mathrm{d}x}",
+    "cursorOffset": -5
+  },
+  {
+    "key": "\\pff",
+    "snippet": "\\frac{\\partial }{\\partial x}",
+    "cursorOffset": -12
+  },
+  {
+    "key": "\\dd",
+    "snippet": "\\mathrm{d}",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\set",
+    "snippet": "\\{  \\mid  \\}",
+    "cursorOffset": -8
+  },
+  {
+    "key": "\\boxed",
+    "snippet": "\\boxed{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\red",
+    "snippet": "\\color{red}{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\blue",
+    "snippet": "\\color{blue}{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\rank",
+    "snippet": "\\mathrm{rank}()",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\det",
+    "snippet": "\\det()",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\doubleint",
+    "snippet": "\\iint_{D}  \\mathrm{d}\\sigma",
+    "cursorOffset": -10
+  },
+  {
+    "key": "\\triint",
+    "snippet": "\\iiint_{\\Omega}  \\mathrm{d}V",
+    "cursorOffset": -8
+  },
+  {
+    "key": "\\limn",
+    "snippet": "\\lim_{n \\to \\infty} ",
+    "cursorOffset": 0
+  },
+  {
+    "key": "\\sub",
+    "snippet": "_{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\sup",
+    "snippet": "^{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\vec",
+    "snippet": "\\vec{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\vect",
+    "snippet": "\\overrightarrow{}",
+    "cursorOffset": -1
+  },
+  {
+    "key": "\\pmat",
+    "snippet": "\\begin{pmatrix}  \\\\  \\end{pmatrix}",
+    "cursorOffset": -12
+  }
+]
