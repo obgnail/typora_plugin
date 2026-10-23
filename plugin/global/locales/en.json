@@ -714,6 +714,8 @@
     "$label.COPY_NEXT_LINE": "Duplicate Line Down",
     "$label.INSERT_LINE_PREVIOUS": "Insert Line Above",
     "$label.INSERT_LINE_NEXT": "Insert Line Below",
+    "$label.JUMP_TO_PREVIOUS_FENCE": "Jump to previous fence",
+    "$label.JUMP_TO_NEXT_FENCE": "Jump to next fence",
     "$label.CUSTOM_HOTKEYS": "Custom Hotkeys",
     "$label.CUSTOM_HOTKEYS.DISABLE": "Disable",
     "$label.CUSTOM_HOTKEYS.HOTKEY": "Hotkey",

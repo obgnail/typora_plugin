@@ -369,7 +369,7 @@ RULE_CONFIG = {
   MD024 = { siblings_only = true },
   MD033 = false,
   MD041 = false,
-  MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "Python", "Rust", "SQL", "TypeScript"] },
+  MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "TypeScript", "Python", "Rust", "SQL"] },
 }
 
 # =========== [ UI Elements & Styling ] ===========
@@ -1306,6 +1306,12 @@ INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 # Insert blank line below current cursor
 INSERT_LINE_NEXT = "Ctrl-Enter"
+
+# Jump to previous fence
+JUMP_TO_PREVIOUS_FENCE = "Shift-Ctrl-K"
+
+# Jump to next fence
+JUMP_TO_NEXT_FENCE = "Shift-Ctrl-J"
 
 # Custom hotkey payload mappings (Advanced JS Config)
 #   DISABLE : Switch to disable

@@ -579,6 +579,8 @@ const schema_fence_enhance = () => [
     Text("COPY_NEXT_LINE").ShowIf(DEPS.fenceEnhanceHotkey),
     Text("INSERT_LINE_PREVIOUS").ShowIf(DEPS.fenceEnhanceHotkey),
     Text("INSERT_LINE_NEXT").ShowIf(DEPS.fenceEnhanceHotkey),
+    Text("JUMP_TO_PREVIOUS_FENCE").ShowIf(DEPS.fenceEnhanceHotkey),
+    Text("JUMP_TO_NEXT_FENCE").ShowIf(DEPS.fenceEnhanceHotkey),
   ),
   Table("CUSTOM_HOTKEYS")
     .Headers(["HOTKEY", "CALLBACK"])

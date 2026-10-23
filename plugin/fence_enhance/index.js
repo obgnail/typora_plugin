@@ -294,7 +294,7 @@ class ButtonHelper {
     const evalFn = fnString => {
       const fn = this.utils.safeEval(fnString)
       if (typeof fn !== "function") {
-        throw Error(`custom button param is not function: ${fnString}`)
+        throw new Error(`custom button param is not function: ${fnString}`)
       }
       return fn
     }
@@ -408,8 +408,10 @@ class HotkeyHelper {
       SWAP_NEXT_LINE: () => this.swapLine(false),
       COPY_PREVIOUS_LINE: () => this.copyLine(true),
       COPY_NEXT_LINE: () => this.copyLine(false),
-      INSERT_LINE_NEXT: () => this.newlineAndIndent(false),
       INSERT_LINE_PREVIOUS: () => this.newlineAndIndent(true),
+      INSERT_LINE_NEXT: () => this.newlineAndIndent(false),
+      JUMP_TO_PREVIOUS_FENCE: () => this.jumpToFence(true),
+      JUMP_TO_NEXT_FENCE: () => this.jumpToFence(false),
     }
     for (const [hotkey, callback] of Object.entries(keyMap)) {
       const hk = this.config[hotkey]
@@ -421,7 +423,7 @@ class HotkeyHelper {
       if (DISABLE || !HOTKEY || !CALLBACK) return
       const fn = this.utils.safeEval(CALLBACK)
       if (typeof fn !== "function") {
-        throw Error(`CALLBACK param is not function: ${CALLBACK}`)
+        throw new Error(`CALLBACK param is not function: ${CALLBACK}`)
       }
       hotkeys[HOTKEY] = () => fn(this.getFocusedFence())
     })
@@ -482,6 +484,28 @@ class HotkeyHelper {
     if (previous) this.goLineUp()
     cm.execCommand("goLineEnd")
     cm.execCommand("newlineAndIndent")
+  }
+
+  jumpToFence = (previous = true) => {
+    const fences = [...document.querySelectorAll("#write .md-fences[cid]")]
+    if (!fences.length) return
+
+    const current = this.getFocusedFence()
+    const curIdx = current ? fences.findIndex(f => f.getAttribute("cid") === current.cid) : -1
+
+    let targetIdx = previous ? curIdx - 1 : curIdx + 1
+    if (targetIdx < 0) targetIdx = fences.length - 1
+    if (targetIdx >= fences.length) targetIdx = 0
+    if (targetIdx === curIdx) return
+
+    const targetFence = fences[targetIdx]
+    const targetCid = targetFence.getAttribute("cid")
+    const targetCm = File.editor.fences.queue[targetCid] || File.editor.fences.addCodeBlock(targetCid)
+    if (!targetCm) return
+
+    this.utils.scrollTo(targetFence, { moveCursor: false })
+    targetCm.focus()
+    targetCm.setCursor({ line: 0, ch: 0 })
   }
 }
 
@@ -618,11 +642,10 @@ const indentWrappedLine = ({ utils }) => {
     elt.style.paddingLeft = (codeIndentSize + off) + "px"
   }
   utils.eventHub.on(utils.eventHub.eventType.afterAddCodeBlock, (cid, cm) => {
-    if (cm) {
-      charWidth = charWidth || cm.defaultCharWidth()
-      cm.on("renderLine", callback)
-      setTimeout(() => cm?.refresh(), 100)
-    }
+    if (!cm) return
+    charWidth = charWidth || cm.defaultCharWidth()
+    cm.on("renderLine", callback)
+    setTimeout(() => cm?.refresh(), 100)
   })
 }
 

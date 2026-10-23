@@ -714,6 +714,8 @@
     "$label.COPY_NEXT_LINE": "复制到下一行",
     "$label.INSERT_LINE_PREVIOUS": "在上方插入一行",
     "$label.INSERT_LINE_NEXT": "在下方插入一行",
+    "$label.JUMP_TO_PREVIOUS_FENCE": "跳转到上一个代码块",
+    "$label.JUMP_TO_NEXT_FENCE": "跳转到下一个代码块",
     "$label.CUSTOM_HOTKEYS": "自定义快捷键",
     "$label.CUSTOM_HOTKEYS.DISABLE": "禁用",
     "$label.CUSTOM_HOTKEYS.HOTKEY": "快捷键",
