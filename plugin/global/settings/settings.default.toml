@@ -2324,6 +2324,7 @@ LIST = [
   "bookmark",
   "templater",
   "image_viewer",
+  "installer",
   "preferences",
 ]
 
@@ -2802,6 +2803,17 @@ RATE_LIMIT = {
   requestsPerMinute = 60,
   burstSize = 10,
 }
+
+
+[installer]
+# =========== [ Basic ] ===========
+ENABLE = true
+NAME = ""
+HOTKEY = ""
+
+# =========== [ Install ] ===========
+# Remembered between runs: the plugin package folder used last time
+SOURCE_DIR = ""
 
 
 [updater]
