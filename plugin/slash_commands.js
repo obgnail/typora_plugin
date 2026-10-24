@@ -206,9 +206,9 @@ class SlashCommandsPlugin extends BasePlugin {
   _normalizeAnchor = (anchor) => anchor.containerNode.normalize()
 
   _refresh = () => {
-    const { node } = this.utils.getRangy()
-    if (!node) return
-    const parsedNode = File.editor.simpleParse(node, true)
+    const cursor = this.utils.getRangy()
+    if (!cursor?.node) return
+    const parsedNode = File.editor.simpleParse(cursor.node, true)
     if (!parsedNode) return
 
     parsedNode[0].undo[0] = File.editor.lastCursor
@@ -225,11 +225,12 @@ class SlashCommandsPlugin extends BasePlugin {
   _selectRange = (offset) => {
     const [start, end] = offset
     if (start === 0 && end === 0) return
-    const { range, bookmark } = this.utils.getRangy()
-    bookmark.start += start
-    bookmark.end += end
-    range.moveToBookmark(bookmark)
-    range.select()
+    const cursor = this.utils.getRangy()
+    cursor.select({
+      ...cursor.bookmark,
+      start: cursor.bookmark.start + start,
+      end: cursor.bookmark.end + end,
+    })
   }
 
   _evalFn = (fnString, ...args) => {

@@ -47,7 +47,7 @@ class CJKSymbolPairingPlugin extends BasePlugin {
         if (document.activeElement.tagName === "TEXTAREA") return
 
         if (this.config.AUTO_SURROUND_PAIR && this.utils.isIMEActivated(ev) && this.CODES.has(ev.code)) {
-          this.rangyText = this.utils.getRangyText()
+          this.rangyText = this.utils.getRangy()?.text ?? ""
         }
         if (this.config.AUTO_DELETE_PAIR && ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
           this.deletePair()
@@ -58,10 +58,8 @@ class CJKSymbolPairingPlugin extends BasePlugin {
 
   _selectRange = () => {
     if (this.rangyText) {
-      const { range, bookmark } = this.utils.getRangy()
-      bookmark.end += this.rangyText.length
-      range.moveToBookmark(bookmark)
-      range.select()
+      const cursor = this.utils.getRangy()
+      cursor.select({ ...cursor.bookmark, end: cursor.bookmark.end + this.rangyText.length })
     }
     this.rangyText = ""
   }
@@ -74,24 +72,20 @@ class CJKSymbolPairingPlugin extends BasePlugin {
   }
 
   _getRange = () => {
-    const { node, bookmark } = this.utils.getRangy()
-    if (!node) return {}
+    const cursor = this.utils.getRangy()
+    if (!cursor?.node) return {}
 
     File.editor.undo.endSnap()
-    File.editor.undo.addSnap(node.cid, this.UNDO_SNAP_TYPE.NONE)
-    const el = File.editor.findElemById(node.cid)
-    if (el.hasClass("md-fences")) return {}
-
-    const rawText = el.rawText()
-    return { rawText, bookmark }
+    File.editor.undo.addSnap(cursor.node.cid, this.UNDO_SNAP_TYPE.NONE)
+    const el = File.editor.findElemById(cursor.node.cid)
+    return el.hasClass("md-fences") ? {} : { rawText: el.rawText(), bookmark: cursor.bookmark }
   }
 
   skipSymbol = inputSymbol => {
     const { rawText, bookmark } = this._getRange()
     if (!rawText || !bookmark) return
     if (inputSymbol === rawText.substring(bookmark.start, bookmark.start + 1)) {
-      bookmark.end += 1
-      this.deleteContent(bookmark)
+      this.deleteContent({ ...bookmark, end: bookmark.end + 1 })
     }
   }
 
@@ -99,22 +93,15 @@ class CJKSymbolPairingPlugin extends BasePlugin {
     const { rawText, bookmark } = this._getRange()
     if (!rawText || !bookmark) return
 
-    if (offset) {
-      bookmark.start += offset
-      bookmark.end += offset
-    }
-
-    const current = rawText[bookmark.start - 1]
-    const left = rawText[bookmark.start - 2]
-    const right = rawText[bookmark.end]
+    const shifted = offset ? { ...bookmark, start: bookmark.start + offset, end: bookmark.end + offset } : bookmark
+    const current = rawText[shifted.start - 1]
+    const left = rawText[shifted.start - 2]
+    const right = rawText[shifted.end]
 
     if (left && left === current) {
-      bookmark.start -= 2
-      this._convertSymbol(inputSymbol, bookmark, forceStay)
+      this._convertSymbol(inputSymbol, { ...shifted, start: shifted.start - 2 }, forceStay)
     } else if (right && right === current) {
-      bookmark.start -= 1
-      bookmark.end += 1
-      this._convertSymbol(inputSymbol, bookmark, forceStay)
+      this._convertSymbol(inputSymbol, { ...shifted, start: shifted.start - 1, end: shifted.end + 1 }, forceStay)
     }
   }
 
@@ -124,14 +111,10 @@ class CJKSymbolPairingPlugin extends BasePlugin {
     this._insertText(this.convertMap.get(inputSymbol))
 
     await this.utils.sleep(50)
-    const { range, bookmark } = this.utils.getRangy()
-    const need = (bookmark.start === bookmark.end && bookmark.start !== 1) && !forceStay
-    if (need) {
-      bookmark.start += 1
-      bookmark.end += 1
-    }
-    range.moveToBookmark(bookmark)
-    range.select()
+    const cursor = this.utils.getRangy()
+    const { start, end } = cursor.bookmark
+    const need = (start === end && start !== 1) && !forceStay
+    cursor.select(need ? { ...cursor.bookmark, start: start + 1, end: end + 1 } : cursor.bookmark)
 
     await this.utils.sleep(50)
     const pair = this.pairMap.get(inputSymbol)
@@ -147,8 +130,7 @@ class CJKSymbolPairingPlugin extends BasePlugin {
     if (pair.length === 2) {
       const [left, right] = pair
       if (this.reversePairMap.get(right) === left && this.pairMap.get(left) === right) {
-        bookmark.end += 1
-        this.deleteContent(bookmark)
+        this.deleteContent({ ...bookmark, end: bookmark.end + 1 })
       }
     }
   }

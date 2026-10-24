@@ -1098,20 +1098,21 @@ class utils {
 
   static getRangy = () => {
     const range = File.editor.selection.getRangy()
-    if (!range) return {}
-
+    if (!range) return null
     const selection = window.getSelection()
-    const markElem = File.editor.getMarkElem(selection.anchorNode)
-    const node = File.editor.findNodeByElem(markElem)
-    const bookmark = range.getBookmark(markElem[0])
-    return { range, markElem, node, bookmark }
-  }
-
-  static getRangyText = () => {
-    const { node, bookmark } = this.getRangy()
-    if (!node || !bookmark) return
-    const el = File.editor.findElemById(node.cid)
-    return el.rawText().substring(bookmark.start, bookmark.end)
+    const markEl = File.editor.getMarkElem(selection.anchorNode)
+    const node = File.editor.findNodeByElem(markEl)
+    const bookmark = Object.freeze(range.getBookmark(markEl[0]))
+    return {
+      range, node, bookmark,
+      get text() {
+        return node ? File.editor.findElemById(node.cid).rawText().substring(bookmark.start, bookmark.end) : undefined
+      },
+      select: bk => {
+        range.moveToBookmark(bk)
+        range.select()
+      },
+    }
   }
 
   static getSelectionManager = () => {

@@ -273,10 +273,8 @@ const imageBase64 = ({ utils, i18n }) => {
 
     const bin = await utils.Package.FsExtra.readFile(src)
     const base64 = utils.convertImageToBase64(bin)
-    const { range } = utils.getRangy()
-    const bookmark = range.getBookmark(imageEl)
-    range.moveToBookmark(bookmark)
-    range.select()
+    const cursor = utils.getRangy()
+    cursor.select(cursor.range.getBookmark(imageEl))
     File.editor.imgEdit.insertImageFromURL(base64)
   }
 

@@ -313,11 +313,8 @@ const restoreAnchors = (utils, { range, startAnchor, endAnchor }) => {
 const restoreSelection = (utils, { kind, bookmark, expandedBookmark, innerText, prefixLength }) => {
   setTimeout(() => {
     const start = kind === "inner" ? expandedBookmark.start : bookmark.start
-    const { range, bookmark: bk } = utils.getRangy()
-    bk.start = start + prefixLength
-    bk.end = bk.start + innerText.length
-    range.moveToBookmark(bk)
-    range.select()
+    const cursor = utils.getRangy()
+    cursor.select({ ...cursor.bookmark, start: start + prefixLength, end: start + prefixLength + innerText.length })
   }, TYPORA_DOM_SETTLE_MS)
 }
 
@@ -344,15 +341,15 @@ const setInlineStyle = (utils, ops) => {
   const activeElement = document.activeElement.tagName
   if (File.isLocked || "INPUT" === activeElement || "TEXTAREA" === activeElement || !selection.rangeCount) return
 
-  const { range, node, bookmark } = utils.getRangy()
-  if (!node) return
+  const cursor = utils.getRangy()
+  if (!cursor?.node) return
+  const { node, bookmark } = cursor
   const el = File.editor.findElemById(node.cid)
   const line = el.rawText()
 
   const sel = analyzeSelection(line, bookmark)
   if (sel.kind === "inner") {
-    range.moveToBookmark(sel.expandedBookmark)
-    range.select()
+    cursor.select(sel.expandedBookmark)
   }
 
   const styleObj = resolveStyle(sel.outerText, ops)
