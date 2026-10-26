@@ -1872,6 +1872,9 @@ HOTKEY_INSERT_MERMAID_GRAPH = ""
 # Reformat all tables
 HOTKEY_REFORMAT_ALL_TABLES = ""
 
+# Reindex the numerical footnotes
+HOTKEY_REINDEX_FOOTNOTES = ""
+
 # Convert CRLF to LF
 HOTKEY_CONVERT_CRLF_TO_LF = ""
 

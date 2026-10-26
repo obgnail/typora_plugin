@@ -916,6 +916,7 @@
     "$label.HOTKEY_CONVERT_CRLF_TO_LF": "換行符 CRLF 替換為 LF",
     "$label.HOTKEY_CONVERT_LF_TO_CRLF": "換行符 LF 替換為 CRLF",
     "$label.HOTKEY_REFORMAT_ALL_TABLES": "格式化所有表格",
+    "$label.HOTKEY_REINDEX_FOOTNOTES": "重新編號數字註腳",
     "$label.HOTKEY_FILTER_INVISIBLE_CHARACTERS": "移除不可見字元",
     "$label.HOTKEY_TRAILING_WHITE_SPACE": "新增結尾空格"
   },

@@ -916,6 +916,7 @@
     "$label.HOTKEY_CONVERT_CRLF_TO_LF": "Convert CRLF to LF",
     "$label.HOTKEY_CONVERT_LF_TO_CRLF": "Convert LF to CRLF",
     "$label.HOTKEY_REFORMAT_ALL_TABLES": "Reformat All Tables",
+    "$label.HOTKEY_REINDEX_FOOTNOTES": "Reindex the numerical footnotes",
     "$label.HOTKEY_FILTER_INVISIBLE_CHARACTERS": "Remove Invisible Characters",
     "$label.HOTKEY_TRAILING_WHITE_SPACE": "Add Trailing Whitespace"
   },

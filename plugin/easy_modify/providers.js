@@ -110,6 +110,58 @@ const formatText = ({ utils, i18n }) => {
   ]
 }
 
+const reindexFootnotes = ({ utils }) => [{
+  action: "reindex_footnote",
+  configKey: "HOTKEY_REINDEX_FOOTNOTES",
+  execute: async () => await utils.editCurrentFile(() => {
+    const getRefs = () => {
+      const refs = []
+      document.querySelectorAll(".md-footnote").forEach(el => refs.push({
+        cid: el.closest("[cid]")?.getAttribute("cid"),
+        label: el.dataset.ref,
+      }))
+      return refs
+    }
+    const getDefs = () => {
+      const defs = []
+      File.editor.nodeMap.foot_list.forEach(node => defs.push(node.get("ref")))
+      return defs
+    }
+    const isNumeric = v => /^[1-9]\d*$/.test(v)
+    const buildReindexLabels = (defs, refs) => {
+      const defLabels = new Set(defs)
+      const refLabels = new Set(refs)
+      const commonLabels = [...defLabels].filter(label => refLabels.has(label) && isNumeric(label))
+      let next = 1
+      return new Map(commonLabels.map(label => [label, String(next++)]))
+    }
+
+    const refs = getRefs()
+    const reindexLabels = buildReindexLabels(getDefs(), refs.map(f => f.label))
+    if (reindexLabels.size === 0) return
+
+    const refCids = new Set(refs.map(f => f.cid))
+    const pattern = new RegExp(`\\[\\^(${[...reindexLabels.keys()].join("|")})\\]`, "g")
+    const rename = (match, oldLabel) => {
+      const newLabel = reindexLabels.get(oldLabel)
+      return newLabel ? `[^${newLabel}]` : match
+    }
+
+    const lines = []
+    File.editor.nodeMap.blocks.sortedForEach(node => {
+      if (node.get("type") === "def_footnote") {
+        const oldLabel = node.get("ref")
+        const newLabel = reindexLabels.get(oldLabel)
+        if (newLabel) node.set("ref", newLabel)
+      } else if (refCids.has(node.cid)) {
+        node.attributes.text = node.get("text").replace(pattern, rename)
+      }
+      lines.push(node.toMark())
+    })
+    return lines.join(File.option.preferCRLF ? "\r\n" : "\n")
+  }),
+}]
+
 const reformatTable = () => [{
   action: "reformat_all_tables",
   configKey: "HOTKEY_REFORMAT_ALL_TABLES",
@@ -347,6 +399,7 @@ module.exports = {
   changeHeaders,
   unwrapOutermostBlock,
   formatText,
+  reindexFootnotes,
   trailingWhiteSpace,
   extractRange,
   reformatTable,
