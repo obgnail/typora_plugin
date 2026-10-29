@@ -1,0 +1,658 @@
+[
+  {
+    "key": "\\mit",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\oldstyle",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\bbFont",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\scr",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\frak",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathup",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathnormal",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathbfup",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathbfit",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Bbb",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathbffrak",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathscr",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathbfscr",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathsfup",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathbfsf",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathbfsfup",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathsfit",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathbfsfit",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathbfcal",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symrm",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symup",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symnormal",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symbf",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symbfup",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symit",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symbfit",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symbb",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symfrak",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symbffrak",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symscr",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symbfscr",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symsf",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symsfup",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symbfsf",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symbfsfup",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symsfit",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symbfsfit",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symtt",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symcal",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\symbfcal",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\textup",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\textnormal",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\textsf",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\texttt",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\tiny",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Tiny",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\scriptsize",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\small",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\normalsize",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\large",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Large",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\LARGE",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\huge",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Huge",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\overparen",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\underparen",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\underrightarrow",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\underleftarrow",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\underleftrightarrow",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\overunderset",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\stackrel",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\stackbin",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\overwithdelims",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\atopwithdelims",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\above",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\abovewithdelims",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\brace",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\brack",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\uproot",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\leftroot",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\right",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\middle",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\llap",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\rlap",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\raise",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\lower",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\moveleft",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\moveright",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\enspace",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\thinspace",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\negthinspace",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\hskip",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\kern",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mskip",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mspace",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mkern",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\rule",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Rule",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Space",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\nonscript",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\big",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Big",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\bigg",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Bigg",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\bigl",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Bigl",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\biggl",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Biggl",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\bigr",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Bigr",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\biggr",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Biggr",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\bigm",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Bigm",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\biggm",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\Biggm",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathord",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathop",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathopen",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathclose",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathbin",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathrel",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathpunct",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathinner",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\vcenter",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\buildrel",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\hbox",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mbox",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\fbox",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\framebox",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\strut",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathstrut",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\smash",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\array",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\eqalign",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\displaylines",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\cr",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\newline",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\hline",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\hdashline",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\eqalignno",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\leqalignno",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\hfill",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\hfil",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\hfilll",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\pmod",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mod",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\pod",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\skew",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\pmb",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\not",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\space",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\end",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\label",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\ref",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\nonumber",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mathchoice",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\mmlToken",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\nobreakspace",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\negmedspace",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\negthickspace",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\idotsint",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\dddot",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\ddddot",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\sideset",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\tag",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\notag",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\eqref",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\substack",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\DeclareMathOperator",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\genfrac",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\cfrac",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\shoveleft",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  },
+  {
+    "key": "\\shoveright",
+    "reason": "Requires arguments or parsing context; no validated insertion template"
+  }
+]

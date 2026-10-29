@@ -819,6 +819,15 @@ const schema_mouse_gestures = () => [
   FRAG.SettingHandler(),
 ]
 
+const schema_latex_completion = () => [
+  FRAG.Base(),
+  Group(
+    Integer("MAX_RESULTS").Min(1).Max(50),
+    Switch("ENABLE_BLOCK"),
+  ),
+  FRAG.SettingHandler(),
+]
+
 const schema_slash_commands = () => [
   FRAG.Base(),
   Group("trigger",
@@ -1649,6 +1658,7 @@ const RAW_SCHEMAS = {
   easy_modify: schema_easy_modify,
   action_buttons: schema_action_buttons,
   mouse_gestures: schema_mouse_gestures,
+  latex_completion: schema_latex_completion,
   slash_commands: schema_slash_commands,
   cjk_symbol_pairing: schema_cjk_symbol_pairing,
   right_outline: schema_right_outline,
