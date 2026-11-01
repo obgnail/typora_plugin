@@ -1,10 +1,15 @@
+const splitPath = (p) => {
+  const i = Math.max(p.lastIndexOf("/"), p.lastIndexOf("\\"))
+  return i === -1 ? { title: p } : { title: p.slice(i + 1), subtitle: p.slice(0, i) }
+}
+
 const buildProviders = (utils, context) => [
   {
     prefix: "",
     name: "Tabs",
     fetch: async () => {
       const manager = utils.getPlugin("window_tab")?.tab
-      return (manager?.tabs || []).map(t => ({ title: t.path, action: () => manager.switchByPath(t.path) }))
+      return (manager?.tabs || []).map(t => ({ ...splitPath(t.path), action: () => manager.switchByPath(t.path) }))
     },
   },
   {
@@ -16,7 +21,7 @@ const buildProviders = (utils, context) => [
       const current = utils.getFilePath()
       const mapEntity = (isFolder) => (ent) => {
         if (!ent.path || ent.path === current) return null
-        return { title: ent.path, action: () => isFolder ? utils.openFolder(ent.path) : utils.openFile(ent.path) }
+        return { ...splitPath(ent.path), action: () => isFolder ? utils.openFolder(ent.path) : utils.openFile(ent.path) }
       }
       const folderEnts = (folders || []).map(mapEntity(true))
       const fileEnts = (files || []).map(mapEntity(false))
@@ -33,14 +38,11 @@ const buildProviders = (utils, context) => [
         const staticActions = plugin.staticActions || []
         const dynamicActions = utils.updatePluginDynamicActions(fixedName, anchor) || []
         const actions = [...staticActions, ...dynamicActions].filter(act => !act.act_disabled && !act.act_hidden)
-        if (actions.length === 0) {
-          return [{
-            title: `${plugin.pluginName} ( ${fixedName} )`,
-            action: () => utils.callPluginDynamicAction(fixedName, undefined, anchor),
-          }]
-        }
-        return actions.map(act => ({
-          title: `${plugin.pluginName} - ${act.act_name} ( ${fixedName} - ${act.act_value} )`,
+        const entries = actions.length === 0 ? [{ act_name: plugin.pluginName }] : actions
+        return entries.map(act => ({
+          title: act.act_name,
+          subtitle: `${plugin.pluginName} · ${fixedName}`,
+          hint: act.act_value,
           action: () => utils.callPluginDynamicAction(fixedName, act.act_value, anchor),
         }))
       })
@@ -90,7 +92,7 @@ const buildProviders = (utils, context) => [
       const headers = File?.editor?.nodeMap?.toc?.headers || []
       return headers.reduce((acc, h) => {
         if (h?.attributes && h?.cid) {
-          const jump = () => utils.scrollTo(h.cid)
+          const jump = () => utils.scrollTo(h.cid, { moveCursor: true })
           acc.push({
             title: h.attributes.pattern.replace("{0}", h.attributes.text),
             action: jump,
@@ -122,21 +124,32 @@ const buildProviders = (utils, context) => [
     },
   },
   {
+    prefix: "footnote",
+    name: "Footnotes",
+    fetch: () => {
+      const defs = []
+      File.editor.nodeMap.foot_list.forEach(n => defs.push({ title: n.attributes?.text, action: () => utils.scrollTo(n.id, { moveCursor: true }) }))
+      return defs
+    },
+  },
+  {
     prefix: "?",
     name: "Help",
     fetch: async () => {
       const helps = [
-        { title: "> Show and Run Commands", prefix: ">" },
-        { title: "@ Go to Symbol in Editor", prefix: "@" },
-        { title: "# Search Recent Files", prefix: "#" },
-        { title: ": Go to Line", prefix: ":" },
-        { title: "? Help", prefix: "?" },
+        { title: "Show and Run Commands", prefix: ">" },
+        { title: "Go to Symbol in Editor", prefix: "@" },
+        { title: "Search Recent Files", prefix: "#" },
+        { title: "Go to Line", prefix: ":" },
+        { title: "Help", prefix: "?" },
+        { title: "Go to Footnote in Editor", prefix: "footnote" },
         { title: "Search Open Tabs", prefix: "" },
       ]
       return helps.map(h => ({
         title: h.title,
+        hint: h.prefix,
         action: () => {
-          context.setInput(h.prefix)
+          context.setInput(h.prefix + (/\w+/.test(h.prefix) ? " " : ""))
           return false
         },
       }))

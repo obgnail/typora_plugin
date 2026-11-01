@@ -33,14 +33,19 @@ class Service {
 
   registerProviders(...providers) {
     this.providers.push(...providers)
-    this.prefixes = this.providers.map(p => p.prefix).filter(Boolean).sort((a, b) => b.length - a.length)
+    this.patterns = this.providers
+      .map(p => p.prefix)
+      .filter(Boolean)
+      .sort((p1, p2) => p2.length - p1.length)
+      .map(p => ({ prefix: p, pattern: new RegExp(`^${p.replace(/\W/g, "\\$&")}${/\w$/.test(p) ? "\\b" : ""}`) }))
   }
 
   resolveInput(rawInput) {
     const raw = rawInput.trim()
-    for (const prefix of this.prefixes) {
-      if (raw.startsWith(prefix)) {
-        const query = raw.slice(prefix.length).trim()
+    for (const { prefix, pattern } of this.patterns) {
+      const matched = pattern.exec(raw)
+      if (matched) {
+        const query = raw.slice(matched[0].length).trim()
         return { prefix, query, keywords: this.parseKeywords(query) }
       }
     }
@@ -57,13 +62,13 @@ class Service {
 
     return activeProviders.flatMap((p, index) => {
       const providerItems = results[index]
-      if (p.dynamic || keywords.length === 0) {
-        return providerItems
-      }
-      return providerItems.filter(item => {
-        const title = item.title.toLowerCase()
-        return keywords.every(kw => title.includes(kw))
-      })
+      const items = (p.dynamic || keywords.length === 0)
+        ? providerItems
+        : providerItems.filter(item => {
+          const text = `${item.title} ${item.subtitle || ""} ${item.hint || ""}`.toLowerCase()
+          return keywords.every(kw => text.includes(kw))
+        })
+      return items.map(item => ({ group: p.name, ...item }))
     })
   }
 }
@@ -87,31 +92,44 @@ class View {
       return
     }
 
-    let highlightRegex = null
-    if (state.keywords.length > 0) {
-      const pattern = state.keywords
-        .sort((a, b) => b.length - a.length)
-        .map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-        .join("|")
-      highlightRegex = new RegExp(`(${pattern})`, "gi")
-    }
-
+    const highlightRegex = this._buildHighlightRegex(state.keywords)
+    const showGroups = new Set(state.items.map(item => item.group)).size > 1
+    let lastGroup = null
     this.entities.results.innerHTML = state.items.map((item, idx) => {
-      const title = highlightRegex
-        ? item.title.split(highlightRegex).map((part, i) => i % 2 === 1 ? `<b>${this.utils.escape(part)}</b>` : this.utils.escape(part)).join("")
-        : this.utils.escape(item.title)
-      const activeClass = idx === state.activeIndex ? "active" : ""
-      return `<div class="plugin-command-palette-item ${activeClass}" data-index="${idx}">${title}</div>`
+      const header = (showGroups && item.group && item.group !== lastGroup)
+        ? `<div class="plugin-command-palette-group">${this.utils.escape(item.group)}</div>`
+        : ""
+      lastGroup = item.group
+      return header + this._renderItem(item, idx, idx === state.activeIndex, highlightRegex)
     }).join("")
 
     this.entities.results.querySelector(".active")?.scrollIntoView({ block: "nearest" })
   }
 
+  _buildHighlightRegex(keywords) {
+    if (keywords.length === 0) return null
+    const pattern = keywords.sort((a, b) => b.length - a.length).map(kw => kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")
+    return new RegExp(`(${pattern})`, "gi")
+  }
+
+  _highlight(text, regex) {
+    return regex
+      ? text.split(regex).map((part, i) => i % 2 === 1 ? `<b>${this.utils.escape(part)}</b>` : this.utils.escape(part)).join("")
+      : this.utils.escape(text)
+  }
+
+  _renderItem(item, idx, isActive, highlightRegex) {
+    const title = this._highlight(item.title, highlightRegex)
+    const subtitle = item.subtitle ? `<span class="plugin-command-palette-item-subtitle">${this._highlight(item.subtitle, highlightRegex)}</span>` : ""
+    const hint = item.hint ? `<span class="plugin-command-palette-item-hint">${this._highlight(item.hint, highlightRegex)}</span>` : ""
+    const activeClass = isActive ? " active" : ""
+    return `<div class="plugin-command-palette-item${activeClass}" data-index="${idx}">${title}${subtitle}${hint}</div>`
+  }
+
   _updateActiveIndex(prevIndex, nextIndex) {
-    const children = this.entities.results.children
-    const prevEl = children[prevIndex]
-    const nextEl = children[nextIndex]
-    prevEl?.classList.remove("active")
+    const items = this.entities.results.querySelectorAll(".plugin-command-palette-item")
+    items[prevIndex]?.classList.remove("active")
+    const nextEl = items[nextIndex]
     nextEl?.classList.add("active")
     nextEl?.scrollIntoView({ block: "nearest" })
   }
