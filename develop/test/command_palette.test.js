@@ -156,16 +156,16 @@ describe("Service", () => {
     instance.init()
     // Wipe providers built from buildProviders and register controlled fakes instead.
     instance.service.providers = []
-    instance.service.prefixes = []
+    instance.service.patterns = []
   })
 
-  it("registerProviders sorts prefixes by descending length", () => {
+  it("registerProviders sorts patterns by descending length", () => {
     instance.registerProviders(
       { prefix: ">", fetch: async () => [] },
       { prefix: ">>", fetch: async () => [] },
       { prefix: "#", fetch: async () => [] },
     )
-    assert.deepStrictEqual(instance.service.prefixes, [">>", ">", "#"])
+    assert.deepStrictEqual(instance.service.patterns.map(e => String(e.pattern)), ["/^\\>\\>/", "/^\\>/", "/^\\#/"])
   })
 
   it("resolveInput strips the longest matching prefix first", () => {
@@ -465,7 +465,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     instance.init()
     instance.process()
     instance.service.providers = []
-    instance.service.prefixes = []
+    instance.service.patterns = []
     let resolveFetch
     instance.registerProviders({
       prefix: "",
@@ -487,7 +487,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     instance.init()
     instance.process()
     instance.service.providers = []
-    instance.service.prefixes = []
+    instance.service.patterns = []
     let resolveFirst, resolveSecond
     let callCount = 0
     instance.registerProviders({
@@ -515,7 +515,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     instance.init()
     instance.process()
     instance.service.providers = []
-    instance.service.prefixes = []
+    instance.service.patterns = []
     instance.registerProviders({
       prefix: "", fetch: async () => {
         throw new Error("fail")
@@ -540,7 +540,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     instance.init()
     instance.process()
     instance.service.providers = []
-    instance.service.prefixes = []
+    instance.service.patterns = []
     let rejectFirst
     let callCount = 0
     instance.registerProviders({
@@ -627,7 +627,7 @@ describe("CommandPalettePlugin - keyboard/click handling", () => {
     instance.init()
     instance.process()
     instance.service.providers = []
-    instance.service.prefixes = []
+    instance.service.patterns = []
     instance.registerProviders({
       prefix: "",
       fetch: async () => [{ title: "Item A", action: () => undefined }, { title: "Item B", action: () => undefined }],
@@ -792,13 +792,13 @@ describe("buildProviders", () => {
     const providers = buildProviders(utils, {})
     const items = await getProvider(providers, "Recent Files").fetch()
     const titles = items.map(i => i.title)
-    assert.ok(titles.includes("/dir1"))
-    assert.ok(!titles.includes("/current.md"))
-    assert.ok(titles.includes("/other.md"))
+    assert.ok(titles.includes("dir1"))
+    assert.ok(!titles.includes("current.md"))
+    assert.ok(titles.includes("other.md"))
 
-    items.find(i => i.title === "/dir1").action()
+    items.find(i => i.title === "dir1").action()
     assert.deepStrictEqual(opened, ["folder", "/dir1"])
-    items.find(i => i.title === "/other.md").action()
+    items.find(i => i.title === "other.md").action()
     assert.deepStrictEqual(opened, ["file", "/other.md"])
   })
 
@@ -824,7 +824,8 @@ describe("buildProviders", () => {
     const providers = buildProviders(utils, { getAnchor: () => null })
     const items = await getProvider(providers, "Plugins").fetch()
     assert.strictEqual(items.length, 1)
-    assert.match(items[0].title, /P1 \( p1 \)/)
+    assert.match(items[0].title, /P1/)
+    assert.match(items[0].subtitle, /P1 · p1/)
   })
 
   it("Plugins provider emits one item per action, filtering act_disabled/act_hidden, with correct action call", async () => {
