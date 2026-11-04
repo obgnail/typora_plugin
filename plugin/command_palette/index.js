@@ -164,6 +164,7 @@ class CommandPalettePlugin extends BasePlugin {
     }
 
     const providers = buildProviders(this.utils, {
+      getProviders: () => providers,
       getAnchor: () => this.anchorNode,
       setInput: (input) => this.setInput(input),
     })
@@ -220,11 +221,11 @@ class CommandPalettePlugin extends BasePlugin {
 
     this.entities.results.addEventListener("click", ev => {
       const itemEl = ev.target.closest(".plugin-command-palette-item")
-      if (itemEl) {
-        const index = parseInt(itemEl.dataset.index, 10)
-        this.store.set({ activeIndex: index })
-        this.triggerAction()
-      }
+      if (!itemEl) return
+      ev.stopPropagation()
+      ev.preventDefault()
+      this.store.set({ activeIndex: parseInt(itemEl.dataset.index, 10) })
+      this.triggerAction()
     })
 
     this.entities.overlay.addEventListener("click", ev => {

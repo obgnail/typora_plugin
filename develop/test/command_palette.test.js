@@ -888,14 +888,18 @@ describe("buildProviders", () => {
 
   it("Outline provider skips headers without attributes/cid and builds titles from pattern+text", async () => {
     let scrolledTo = null
+    function get(attr) {
+      return this.attributes?.[attr]
+    }
     global.File.editor.nodeMap.toc.headers = [
       { attributes: { pattern: "H1: {0}", text: "Intro" }, cid: "c1" },
       { attributes: null, cid: "c2" }, // skipped: no attributes
       { attributes: { pattern: "H2: {0}", text: "NoCid" } }, // skipped: no cid
-    ]
+    ].map(e => ({ ...e, get }))
+    global.File.editor.nodeMap.foot_list = []
     const utils = makeUtilsMock({ scrollTo: (cid) => scrolledTo = cid })
     const providers = buildProviders(utils, {})
-    const items = await getProvider(providers, "Outline").fetch()
+    const items = await getProvider(providers, "Symbols").fetch()
     assert.strictEqual(items.length, 1)
     assert.strictEqual(items[0].title, "H1: Intro")
     items[0].action()
@@ -905,7 +909,7 @@ describe("buildProviders", () => {
   it("Go to Line provider returns a placeholder no-op item for non-numeric/<=0 input", async () => {
     const utils = makeUtilsMock()
     const providers = buildProviders(utils, {})
-    const provider = getProvider(providers, "Go to Line")
+    const provider = getProvider(providers, "Lines")
     assert.strictEqual(provider.dynamic, true)
     const items1 = await provider.fetch("abc")
     assert.match(items1[0].title, /Type a line number/)
@@ -923,9 +927,9 @@ describe("buildProviders", () => {
     }
     const utils = makeUtilsMock({ scrollSourceView: (line) => scrolledLine = line })
     const providers = buildProviders(utils, {})
-    const provider = getProvider(providers, "Go to Line")
+    const provider = getProvider(providers, "Lines")
     const items = await provider.fetch("42")
-    assert.strictEqual(items[0].title, "Go to line 42")
+    assert.strictEqual(items[0].title, "Go to Line 42")
     items[0].action()
     assert.strictEqual(toggledSourceMode, true)
     assert.strictEqual(scrolledLine, 42)
@@ -937,7 +941,7 @@ describe("buildProviders", () => {
     global.File.toggleSourceMode = () => toggleCalls++
     const utils = makeUtilsMock({ scrollSourceView: () => undefined })
     const providers = buildProviders(utils, {})
-    const provider = getProvider(providers, "Go to Line")
+    const provider = getProvider(providers, "Lines")
     const items = await provider.fetch("7")
     items[0].action()
     assert.strictEqual(toggleCalls, 0)
@@ -946,10 +950,10 @@ describe("buildProviders", () => {
   it("Help provider returns the fixed help list; each action() calls context.setInput(prefix) and returns false", async () => {
     let setInputArg = null
     const utils = makeUtilsMock()
-    const providers = buildProviders(utils, { setInput: (v) => setInputArg = v })
+    const providers = buildProviders(utils, { setInput: v => setInputArg = v, getProviders: () => providers })
     const items = await getProvider(providers, "Help").fetch()
     assert.ok(items.length >= 5)
-    const result = items[0].action()
+    const result = items[2].action()
     assert.strictEqual(result, false)
     assert.strictEqual(setInputArg, ">")
   })

@@ -7,14 +7,21 @@ const buildProviders = (utils, context) => [
   {
     prefix: "",
     name: "Tabs",
-    fetch: async () => {
+    description: "Search Open Tabs",
+    fetch: () => {
       const manager = utils.getPlugin("window_tab")?.tab
-      return (manager?.tabs || []).map(t => ({ ...splitPath(t.path), action: () => manager.switchByPath(t.path) }))
+      const currentPath = manager?.current?.path
+      return (manager?.tabs || []).map(t => ({
+        ...splitPath(t.path),
+        hint: t.path === currentPath ? "Current" : void 0,
+        action: () => manager.switchByPath(t.path),
+      }))
     },
   },
   {
     prefix: "#",
     name: "Recent Files",
+    description: "Search Recent Files",
     fetch: async () => {
       if (!File.isNode) return []
       const { files, folders } = await utils.getRecentFiles()
@@ -31,7 +38,8 @@ const buildProviders = (utils, context) => [
   {
     prefix: ">",
     name: "Plugins",
-    fetch: async () => {
+    description: "Run Plugin Actions",
+    fetch: () => {
       const anchor = context.getAnchor()
       const plugins = Object.entries(utils.getAllPlugins()).filter(([_, p]) => p.call)
       return plugins.flatMap(([fixedName, plugin]) => {
@@ -51,7 +59,9 @@ const buildProviders = (utils, context) => [
   {
     prefix: ">",
     name: "Commands",
+    description: "Run Commands",
     fetch: async () => {
+      const togglePinWindow = () => ClientCommand[document.body.classList.contains("always-on-top") ? "unpinWindow" : "pinWindow"]()
       const doExport = async (name) => {
         const [htmlLike, others] = JSON.parse(await JSBridge.invoke("setting.loadExports"))
         ClientCommand.export(htmlLike[name])
@@ -60,16 +70,13 @@ const buildProviders = (utils, context) => [
         File.editor.library.toggleSidebar()
         if (File.isNode) ClientCommand.refreshViewMenu()
       }
-      const { all: allThemes } = await JSBridge.invoke("setting.getThemes")
+      const { all: themes } = await JSBridge.invoke("setting.getThemes")
       return [
         { title: "Open in Explorer", action: () => utils.showInFinder(utils.getFilePath()) },
         { title: "Open File In New Window", action: () => File.editor.library.openFileInNewWindow(utils.getFilePath(), false) },
         { title: "Copy File Path", action: () => File.editor.UserOp.setClipboard(null, null, utils.getFilePath()) },
         { title: "Toggle Preference Panel", action: () => File.megaMenu.togglePreferencePanel() },
-        {
-          title: "Toggle Pin Window",
-          action: () => ClientCommand[document.body.classList.contains("always-on-top") ? "unpinWindow" : "pinWindow"](),
-        },
+        { title: "Toggle Pin Window", action: togglePinWindow },
         { title: "Open Setting Folder", action: () => utils.settings.openFolder() },
         { title: "Print", action: () => ClientCommand.print() },
         { title: "Export: HTML", action: () => doExport("html") },
@@ -81,75 +88,57 @@ const buildProviders = (utils, context) => [
         { title: "Mode: Focus", action: () => File.editor.toggleFocusMode() },
         { title: "Mode: Typewriter", action: () => File.editor.toggleTypeWriterMode() },
         { title: "Mode: Debug", action: () => JSBridge.invoke("window.toggleDevTools") },
-        ...allThemes.map(theme => ({ title: `Theme: ${theme.replace(/\.css$/gi, "")}`, action: () => ClientCommand.setTheme(theme) })),
+        ...themes.map(theme => ({ title: `Theme: ${theme.replace(/\.css$/gi, "")}`, action: () => ClientCommand.setTheme(theme) })),
       ]
     },
   },
   {
     prefix: "@",
-    name: "Outline",
-    fetch: async () => {
+    name: "Symbols",
+    description: "Go to Symbol in Editor",
+    fetch: () => {
       const headers = File?.editor?.nodeMap?.toc?.headers || []
-      return headers.reduce((acc, h) => {
+      const foots = File?.editor?.nodeMap?.foot_list || []
+      const symbols = headers.reduce((acc, h) => {
         if (h?.attributes && h?.cid) {
           const jump = () => utils.scrollTo(h.cid, { moveCursor: true })
-          acc.push({
-            title: h.attributes.pattern.replace("{0}", h.attributes.text),
-            action: jump,
-            // preview: jump,
-          })
+          acc.push({ title: h.get("pattern").replace("{0}", h.get("text")), hint: `H${h.get("depth")}`, action: jump, preview: jump })
         }
         return acc
       }, [])
+      foots.forEach(n => {
+        const jump = () => utils.scrollTo(n.id, { moveCursor: true })
+        return symbols.push({ title: `[^${n.get("ref")}]: ${n.get("text")}`, hint: "Footnote", action: jump, preview: jump })
+      })
+      return symbols
     },
   },
   {
     prefix: ":",
-    name: "Go to Line",
+    name: "Lines",
+    description: "Go to Line",
     dynamic: true,
-    fetch: async (query) => {
+    fetch: (query) => {
       const line = parseInt(query, 10)
       if (isNaN(line) || line <= 0) {
-        return [{ title: "Type a line number to navigate", action: () => undefined }]
+        return [{ title: "Type a line number to navigate", action: () => void 0 }]
       }
       const jump = () => {
         if (!File.editor.sourceView.inSourceMode) File.toggleSourceMode()
         utils.scrollSourceView(line)
       }
-      return [{
-        title: `Go to line ${line}`,
-        action: jump,
-        // preview: jump,
-      }]
-    },
-  },
-  {
-    prefix: "footnote",
-    name: "Footnotes",
-    fetch: () => {
-      const defs = []
-      File.editor.nodeMap.foot_list.forEach(n => defs.push({ title: n.attributes?.text, action: () => utils.scrollTo(n.id, { moveCursor: true }) }))
-      return defs
+      return [{ title: `Go to Line ${line}`, action: jump, preview: jump }]
     },
   },
   {
     prefix: "?",
     name: "Help",
-    fetch: async () => {
-      const helps = [
-        { title: "Show and Run Commands", prefix: ">" },
-        { title: "Go to Symbol in Editor", prefix: "@" },
-        { title: "Search Recent Files", prefix: "#" },
-        { title: "Go to Line", prefix: ":" },
-        { title: "Help", prefix: "?" },
-        { title: "Go to Footnote in Editor", prefix: "footnote" },
-        { title: "Search Open Tabs", prefix: "" },
-      ]
-      return helps.map(h => ({
-        title: h.title,
-        hint: h.prefix,
+    fetch: () => {
+      return context.getProviders().filter(p => p.description).map(p => ({
+        title: p.description,
+        hint: p.prefix,
         action: () => {
-          context.setInput(h.prefix + (/\w+/.test(h.prefix) ? " " : ""))
+          context.setInput(p.prefix + (/\w+$/.test(p.prefix) ? " " : ""))
           return false
         },
       }))

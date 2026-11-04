@@ -1023,8 +1023,10 @@ class utils {
       focus = true,
       moveCursor = false,
       showHiddenEls = true,
+      forceExitSourceMode = true,
     } = options
 
+    if (forceExitSourceMode && File.editor.sourceView.inSourceMode) File.toggleSourceMode()
     if (focus) File.editor.focusAndRestorePos()
     if (moveCursor) File.editor.selection.jumpIntoElemEnd(target)
     if (showHiddenEls) ["collapse_paragraph", "collapse_table", "collapse_list", "truncate_text"].forEach(plu => this.callPluginFn(plu, "rollback", target[0]))
