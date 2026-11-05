@@ -6,8 +6,8 @@ const splitPath = (p) => {
 const buildProviders = (utils, context) => [
   {
     prefix: "",
-    name: "Tabs",
-    description: "Search Open Tabs",
+    name: "Tab",
+    description: "Open tab",
     fetch: () => {
       const manager = utils.getPlugin("window_tab")?.tab
       const currentPath = manager?.current?.path
@@ -20,8 +20,8 @@ const buildProviders = (utils, context) => [
   },
   {
     prefix: "#",
-    name: "Recent Files",
-    description: "Search Recent Files",
+    name: "File",
+    description: "Open recent file",
     fetch: async () => {
       if (!File.isNode) return []
       const { files, folders } = await utils.getRecentFiles()
@@ -37,8 +37,8 @@ const buildProviders = (utils, context) => [
   },
   {
     prefix: ">",
-    name: "Plugins",
-    description: "Run Plugin Actions",
+    name: "Action",
+    description: "Run plugin action",
     fetch: () => {
       const anchor = context.getAnchor()
       const plugins = Object.entries(utils.getAllPlugins()).filter(([_, p]) => p.call)
@@ -58,9 +58,9 @@ const buildProviders = (utils, context) => [
   },
   {
     prefix: ">",
-    name: "Commands",
-    description: "Run Commands",
-    fetch: async () => {
+    name: "Command",
+    description: "Run command",
+    fetch: () => {
       const togglePinWindow = () => ClientCommand[document.body.classList.contains("always-on-top") ? "unpinWindow" : "pinWindow"]()
       const doExport = async (name) => {
         const [htmlLike, others] = JSON.parse(await JSBridge.invoke("setting.loadExports"))
@@ -70,7 +70,6 @@ const buildProviders = (utils, context) => [
         File.editor.library.toggleSidebar()
         if (File.isNode) ClientCommand.refreshViewMenu()
       }
-      const { all: themes } = await JSBridge.invoke("setting.getThemes")
       return [
         { title: "Open in Explorer", action: () => utils.showInFinder(utils.getFilePath()) },
         { title: "Open File In New Window", action: () => File.editor.library.openFileInNewWindow(utils.getFilePath(), false) },
@@ -83,40 +82,39 @@ const buildProviders = (utils, context) => [
         { title: "Export: HTML-plain", action: () => doExport("html-plain") },
         { title: "Export: Image", action: () => doExport("image") },
         { title: "Export: PDF", action: () => doExport("pdf") },
-        { title: "Mode: Outline View", action: outlineView },
+        { title: "Mode: Outline Sidebar", action: outlineView },
         { title: "Mode: Source Code", action: () => File.toggleSourceMode() },
         { title: "Mode: Focus", action: () => File.editor.toggleFocusMode() },
         { title: "Mode: Typewriter", action: () => File.editor.toggleTypeWriterMode() },
         { title: "Mode: Debug", action: () => JSBridge.invoke("window.toggleDevTools") },
-        ...themes.map(theme => ({ title: `Theme: ${theme.replace(/\.css$/gi, "")}`, action: () => ClientCommand.setTheme(theme) })),
       ]
     },
   },
   {
     prefix: "@",
-    name: "Symbols",
-    description: "Go to Symbol in Editor",
+    name: "Symbol",
+    description: "Go to symbol",
     fetch: () => {
       const headers = File?.editor?.nodeMap?.toc?.headers || []
       const foots = File?.editor?.nodeMap?.foot_list || []
       const symbols = headers.reduce((acc, h) => {
         if (h?.attributes && h?.cid) {
           const jump = () => utils.scrollTo(h.cid, { moveCursor: true })
-          acc.push({ title: h.get("pattern").replace("{0}", h.get("text")), hint: `H${h.get("depth")}`, action: jump, preview: jump })
+          acc.push({ title: h.get("pattern").replace("{0}", h.get("text")), hint: `H${h.get("depth")}`, preview: jump, action: jump })
         }
         return acc
       }, [])
       foots.forEach(n => {
         const jump = () => utils.scrollTo(n.id, { moveCursor: true })
-        return symbols.push({ title: `[^${n.get("ref")}]: ${n.get("text")}`, hint: "Footnote", action: jump, preview: jump })
+        return symbols.push({ title: `[^${n.get("ref")}]: ${n.get("text")}`, hint: "Footnote", preview: jump, action: jump })
       })
       return symbols
     },
   },
   {
     prefix: ":",
-    name: "Lines",
-    description: "Go to Line",
+    name: "Line",
+    description: "Go to line",
     dynamic: true,
     fetch: (query) => {
       const line = parseInt(query, 10)
@@ -127,7 +125,20 @@ const buildProviders = (utils, context) => [
         if (!File.editor.sourceView.inSourceMode) File.toggleSourceMode()
         utils.scrollSourceView(line)
       }
-      return [{ title: `Go to Line ${line}`, action: jump, preview: jump }]
+      return [{ title: `Go to Line ${line}`, preview: jump, action: jump }]
+    },
+  },
+  {
+    prefix: "theme",
+    name: "Theme",
+    description: "Set theme",
+    fetch: async () => {
+      const { all, current } = await JSBridge.invoke("setting.getThemes")
+      return all.map(t => ({
+        title: t.replace(/\.css$/gi, ""),
+        hint: t === current ? "Current" : void 0,
+        action: () => ClientCommand.setTheme(t),
+      }))
     },
   },
   {
@@ -138,7 +149,7 @@ const buildProviders = (utils, context) => [
         title: p.description,
         hint: p.prefix,
         action: () => {
-          context.setInput(p.prefix + (/\w+$/.test(p.prefix) ? " " : ""))
+          context.setQuery(p.prefix + (/\w+$/.test(p.prefix) ? " " : ""))
           return false
         },
       }))

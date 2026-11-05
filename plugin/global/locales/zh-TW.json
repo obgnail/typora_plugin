@@ -448,7 +448,11 @@
   "command_palette": {
     "pluginName": "命令面板",
     "$label.BACKSPACE_TO_HIDE": "清空並按退格鍵隱藏視窗",
-    "$label.DEBOUNCE_INTERVAL": "輸入防抖"
+    "$label.DEBOUNCE_INTERVAL": "輸入防抖",
+    "$label.DEFAULT_INPUT": "預設輸入",
+    "$label.MATCH_STRATEGY": "匹配策略",
+    "$option.MATCH_STRATEGY.plain": "僅過濾",
+    "$option.MATCH_STRATEGY.ranked": "按匹配質量排序"
   },
   "resize_image": {
     "pluginName": "圖片放縮",

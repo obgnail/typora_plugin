@@ -317,6 +317,8 @@ const schema_command_palette = () => [
   FRAG.Base(true),
   Group(
     Switch("BACKSPACE_TO_HIDE"),
+    Select("MATCH_STRATEGY").Options(["plain", "ranked"]),
+    Text("DEFAULT_INPUT"),
     Integer("DEBOUNCE_INTERVAL").Unit(UNITS.millisecond).Min(10),
   ),
   FRAG.SettingHandler(),

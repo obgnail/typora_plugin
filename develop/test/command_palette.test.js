@@ -86,7 +86,14 @@ function makeDomEntities() {
 function makeInstance({ utilsOverrides = {}, config = {} } = {}) {
   const instance = new CommandPalettePlugin()
   instance.utils = makeUtilsMock(utilsOverrides)
-  instance.config = { HOTKEY: "ctrl+shift+p", DEBOUNCE_INTERVAL: 0, BACKSPACE_TO_HIDE: true, ...config }
+  instance.config = {
+    HOTKEY: "ctrl+shift+p",
+    DEBOUNCE_INTERVAL: 0,
+    BACKSPACE_TO_HIDE: true,
+    DEFAULT_INPUT: ">",
+    MATCH_STRATEGY: "ranked",
+    ...config,
+  }
   return instance
 }
 
@@ -97,7 +104,7 @@ function dispatchKeydown(el, key, extra = {}) {
   return ev
 }
 
-describe("Store (via CommandPalettePlugin.init)", () => {
+describe("State (via CommandPalettePlugin.init)", () => {
   let instance, entities
 
   beforeEach(() => {
@@ -107,40 +114,115 @@ describe("Store (via CommandPalettePlugin.init)", () => {
     instance.init()
   })
 
-  it("get() returns the initial default state", () => {
-    const state = instance.store.get()
-    assert.deepStrictEqual(state, { query: "", keywords: [], items: [], activeIndex: 0, loading: false, sessionId: 0 })
+  it("exposes the initial default fields", () => {
+    const state = instance.state
+    assert.strictEqual(state.query, "")
+    assert.deepStrictEqual(state.keywords, [])
+    assert.deepStrictEqual(state.items, [])
+    assert.strictEqual(state.active, null)
+    assert.strictEqual(state.loading, false)
+    assert.strictEqual(state.sessionId, 0)
   })
 
-  it("set() merges partial state without discarding untouched fields", () => {
-    instance.store.set({ query: "abc" })
-    const state = instance.store.get()
-    assert.strictEqual(state.query, "abc")
-    assert.strictEqual(state.loading, false) // untouched field preserved
+  it("next() sets query/keywords, marks loading, and bumps sessionId", () => {
+    const before = instance.state.sessionId
+    instance.state.next("abc", ["abc"])
+    assert.strictEqual(instance.state.query, "abc")
+    assert.deepStrictEqual(instance.state.keywords, ["abc"])
+    assert.strictEqual(instance.state.loading, true)
+    assert.strictEqual(instance.state.sessionId, before + 1)
   })
 
-  it("set() notifies subscribers with (state, prevState)", () => {
+  it("commit() sets items, defaults active to the first item, and clears loading", () => {
+    const items = [{ title: "A" }, { title: "B" }]
+    instance.state.next("x", ["x"])
+    instance.state.commit(items)
+    assert.strictEqual(instance.state.items, items)
+    assert.strictEqual(instance.state.active, items[0])
+    assert.strictEqual(instance.state.loading, false)
+  })
+
+  it("commit() preserves the previous active item when it still exists in the new items", () => {
+    instance.state.commit([{ group: "g", title: "A" }, { group: "g", title: "B" }])
+    instance.state.select(instance.state.items[1])
+    instance.state.commit([{ group: "g", title: "B" }, { group: "g", title: "C" }])
+    assert.strictEqual(instance.state.active.title, "B")
+  })
+
+  it("commit() falls back to the first item when the previous active is gone", () => {
+    instance.state.commit([{ group: "g", title: "A" }])
+    instance.state.commit([{ group: "g", title: "Z" }])
+    assert.strictEqual(instance.state.active.title, "Z")
+  })
+
+  it("discard() clears items/active and loading", () => {
+    instance.state.commit([{ title: "A" }])
+    instance.state.discard()
+    assert.deepStrictEqual(instance.state.items, [])
+    assert.strictEqual(instance.state.active, null)
+    assert.strictEqual(instance.state.loading, false)
+  })
+
+  it("moveActive() wraps forward and backward", () => {
+    const items = [{ title: "A" }, { title: "B" }]
+    instance.state.commit(items)
+    instance.state.moveActive(1)
+    assert.strictEqual(instance.state.active, items[1])
+    instance.state.moveActive(1)
+    assert.strictEqual(instance.state.active, items[0]) // wraps
+    instance.state.moveActive(-1)
+    assert.strictEqual(instance.state.active, items[1]) // wraps backward
+  })
+
+  it("moveActive() with no active selects first/last depending on direction", () => {
+    const items = [{ title: "A" }, { title: "B" }]
+    instance.state._emit({ items, active: null })
+    instance.state.moveActive(1)
+    assert.strictEqual(instance.state.active, items[0])
+    instance.state._emit({ active: null })
+    instance.state.moveActive(-1)
+    assert.strictEqual(instance.state.active, items[1])
+  })
+
+  it("moveActive() is a no-op when items is empty", () => {
+    instance.state.moveActive(1)
+    assert.strictEqual(instance.state.active, null)
+  })
+
+  it("reset() clears everything and bumps sessionId", () => {
+    instance.state.next("q", ["q"])
+    instance.state.commit([{ title: "A" }])
+    const before = instance.state.sessionId
+    instance.state.reset()
+    assert.strictEqual(instance.state.query, "")
+    assert.deepStrictEqual(instance.state.items, [])
+    assert.strictEqual(instance.state.active, null)
+    assert.strictEqual(instance.state.loading, false)
+    assert.strictEqual(instance.state.sessionId, before + 1)
+  })
+
+  it("transitions notify subscribers with (state, prevState)", () => {
     let received = null
-    instance.store.subscribe((state, prevState) => received = { state, prevState })
-    instance.store.set({ query: "x" })
+    instance.state.subscribe((state, prevState) => received = { state, prevState })
+    instance.state.next("x", ["x"])
     assert.strictEqual(received.state.query, "x")
     assert.strictEqual(received.prevState.query, "")
   })
 
   it("subscribe() returns an unsubscribe function that stops future notifications", () => {
     let count = 0
-    const unsubscribe = instance.store.subscribe(() => count++)
-    instance.store.set({ query: "a" })
+    const unsubscribe = instance.state.subscribe(() => count++)
+    instance.state.next("a", ["a"])
     unsubscribe()
-    instance.store.set({ query: "b" })
+    instance.state.next("b", ["b"])
     assert.strictEqual(count, 1)
   })
 
-  it("notifies multiple subscribers on set()", () => {
+  it("notifies multiple subscribers on a transition", () => {
     let a = 0, b = 0
-    instance.store.subscribe(() => a++)
-    instance.store.subscribe(() => b++)
-    instance.store.set({ query: "x" })
+    instance.state.subscribe(() => a++)
+    instance.state.subscribe(() => b++)
+    instance.state.select({ title: "X" })
     assert.strictEqual(a, 1)
     assert.strictEqual(b, 1)
   })
@@ -274,18 +356,18 @@ describe("View", () => {
   })
 
   it("shows 'Searching...' when items is empty and loading is true", () => {
-    instance.view.render({ items: [], loading: true, activeIndex: 0, keywords: [] }, null)
+    instance.view.render({ items: [], loading: true, active: null, keywords: [] }, null)
     assert.match(entities.results.innerHTML, /Searching\.\.\./)
   })
 
   it("shows 'No matching results' when items is empty and loading is false", () => {
-    instance.view.render({ items: [], loading: false, activeIndex: 0, keywords: [] }, null)
+    instance.view.render({ items: [], loading: false, active: null, keywords: [] }, null)
     assert.match(entities.results.innerHTML, /No matching results/)
   })
 
   it("renders one .plugin-command-palette-item per item and marks the active one", () => {
-    const state = { items: [{ title: "Foo" }, { title: "Bar" }], loading: false, activeIndex: 1, keywords: [] }
-    instance.view.render(state, null)
+    const items = [{ title: "Foo" }, { title: "Bar" }]
+    instance.view.render({ items, loading: false, active: items[1], activeIndex: 1, keywords: [] }, null)
     const nodes = entities.results.querySelectorAll(".plugin-command-palette-item")
     assert.strictEqual(nodes.length, 2)
     assert.strictEqual(nodes[1].classList.contains("active"), true)
@@ -293,31 +375,31 @@ describe("View", () => {
   })
 
   it("HTML-escapes item titles", () => {
-    const state = { items: [{ title: "<img src=x>" }], loading: false, activeIndex: 0, keywords: [] }
-    instance.view.render(state, null)
+    const items = [{ title: "<img src=x>" }]
+    instance.view.render({ items, loading: false, active: items[0], activeIndex: 0, keywords: [] }, null)
     assert.ok(!entities.results.innerHTML.includes("<img"))
     assert.ok(entities.results.innerHTML.includes("&lt;img"))
   })
 
   it("highlights keyword matches with <b>, case-insensitively, and escapes regex special chars in keywords", () => {
-    const state = { items: [{ title: "Alpha (Beta)" }], loading: false, activeIndex: 0, keywords: ["(beta)"] }
-    instance.view.render(state, null)
+    const items = [{ title: "Alpha (Beta)" }]
+    instance.view.render({ items, loading: false, active: items[0], activeIndex: 0, keywords: ["(beta)"] }, null)
     assert.match(entities.results.innerHTML, /<b>\(Beta\)<\/b>/)
   })
 
   it("sorts keywords by descending length before building the highlight regex", () => {
-    const state = { items: [{ title: "abstract" }], loading: false, activeIndex: 0, keywords: ["ab", "abs"] }
-    instance.view.render(state, null)
+    const items = [{ title: "abstract" }]
+    instance.view.render({ items, loading: false, active: items[0], activeIndex: 0, keywords: ["ab", "abs"] }, null)
     // "abs" (longer) should be preferred/highlighted as a whole before "ab" would split it
     assert.match(entities.results.innerHTML, /<b>abs<\/b>tract/)
   })
 
-  it("render() only updates active class (not full HTML) when items/loading are unchanged but activeIndex differs", () => {
+  it("render() only updates active class (not full HTML) when items/loading are unchanged but active differs", () => {
     const items = [{ title: "Foo" }, { title: "Bar" }]
-    const prevState = { items, loading: false, activeIndex: 0, keywords: [] }
+    const prevState = { items, loading: false, active: items[0], activeIndex: 0, keywords: [] }
     instance.view.render(prevState, null)
     const htmlBefore = entities.results.innerHTML
-    const nextState = { items, loading: false, activeIndex: 1, keywords: [] }
+    const nextState = { items, loading: false, active: items[1], activeIndex: 1, keywords: [] }
     instance.view.render(nextState, prevState)
     const nodes = entities.results.querySelectorAll(".plugin-command-palette-item")
     assert.strictEqual(nodes[0].classList.contains("active"), false)
@@ -354,7 +436,7 @@ describe("CommandPalettePlugin - lifecycle", () => {
     assert.strictEqual(instance.style(), true)
   })
 
-  it("init() wires entities, store, service (with providers), and view; view is subscribed to store", () => {
+  it("init() wires entities, state, service (with providers), and view; view is subscribed to state", () => {
     document.body.innerHTML = ""
     makeDomEntities()
     const instance = makeInstance()
@@ -362,11 +444,11 @@ describe("CommandPalettePlugin - lifecycle", () => {
     assert.ok(instance.entities.overlay)
     assert.ok(instance.entities.input)
     assert.ok(instance.entities.results)
-    assert.ok(instance.store)
+    assert.ok(instance.state)
     assert.ok(instance.service.providers.length > 0) // buildProviders() registered several
     assert.ok(instance.view)
-    // Verify the store->view wiring by checking a set() triggers a render side-effect
-    instance.store.set({ items: [{ title: "X" }], activeIndex: 0, loading: false })
+    // Verify the state->view wiring by checking a transition triggers a render side-effect
+    instance.state.commit([{ title: "X" }])
     assert.match(instance.entities.results.innerHTML, /X/)
   })
 
@@ -433,34 +515,34 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     assert.strictEqual(instance.view.getInputValue(), "#")
   })
 
-  it("setInput() updates the view value, focuses input, and calls doSearch()", async () => {
+  it("setQuery() updates the view value, focuses input, and calls doSearch()", async () => {
     instance = makeInstance()
     instance.init()
     instance.process()
     let focused = false
     instance.entities.input.focus = () => focused = true
-    await instance.setInput("abc")
+    await instance.setQuery("abc")
     assert.strictEqual(instance.view.getInputValue(), "abc")
     assert.strictEqual(focused, true)
-    assert.strictEqual(instance.store.get().query, "abc")
+    assert.strictEqual(instance.state.query, "abc")
   })
 
   it("hide() hides overlay, clears input, resets state, and bumps sessionId", async () => {
     instance = makeInstance()
     instance.init()
     instance.process()
-    await instance.setInput("hello")
-    const sessionBefore = instance.store.get().sessionId
+    await instance.setQuery("hello")
+    const sessionBefore = instance.state.sessionId
     instance.hide()
-    const state = instance.store.get()
-    assert.strictEqual(state.query, "")
-    assert.deepStrictEqual(state.items, [])
-    assert.strictEqual(state.loading, false)
-    assert.ok(state.sessionId > sessionBefore)
+    assert.strictEqual(instance.state.query, "")
+    assert.deepStrictEqual(instance.state.items, [])
+    assert.strictEqual(instance.state.active, null)
+    assert.strictEqual(instance.state.loading, false)
+    assert.ok(instance.state.sessionId > sessionBefore)
     assert.strictEqual(instance.view.getInputValue(), "")
   })
 
-  it("doSearch sets loading true immediately, then resolves items/activeIndex/loading", async () => {
+  it("doSearch sets loading true immediately, then resolves items/active/loading", async () => {
     instance = makeInstance()
     instance.init()
     instance.process()
@@ -473,13 +555,12 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
       fetch: () => new Promise(res => resolveFetch = res),
     })
     const promise = instance.doSearch("hello")
-    assert.strictEqual(instance.store.get().loading, true)
+    assert.strictEqual(instance.state.loading, true)
     resolveFetch([{ title: "Result" }])
     await promise
-    const state = instance.store.get()
-    assert.strictEqual(state.loading, false)
-    assert.strictEqual(state.items.length, 1)
-    assert.strictEqual(state.activeIndex, 0)
+    assert.strictEqual(instance.state.loading, false)
+    assert.strictEqual(instance.state.items.length, 1)
+    assert.strictEqual(instance.state.active, instance.state.items[0])
   })
 
   it("doSearch discards a stale (out-of-order) resolution when a newer search has already started", async () => {
@@ -505,9 +586,8 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     await secondSearch
     resolveFirst([{ title: "First Result (stale)" }])
     await firstSearch
-    const state = instance.store.get()
-    assert.strictEqual(state.items.length, 1)
-    assert.strictEqual(state.items[0].title, "Second Result")
+    assert.strictEqual(instance.state.items.length, 1)
+    assert.strictEqual(instance.state.items[0].title, "Second Result")
   })
 
   it("doSearch catches a rejected fetchItems and resets items to [] when still the current session", async () => {
@@ -530,9 +610,8 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
       console.error = originalError
     }
     assert.ok(loggedArgs)
-    const state = instance.store.get()
-    assert.deepStrictEqual(state.items, [])
-    assert.strictEqual(state.loading, false)
+    assert.deepStrictEqual(instance.state.items, [])
+    assert.strictEqual(instance.state.loading, false)
   })
 
   it("doSearch does not clobber newer state when a stale error resolves after a newer search started", async () => {
@@ -563,9 +642,8 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     } finally {
       console.error = originalError
     }
-    const state = instance.store.get()
-    assert.strictEqual(state.items.length, 1)
-    assert.strictEqual(state.items[0].title, "Fresh")
+    assert.strictEqual(instance.state.items.length, 1)
+    assert.strictEqual(instance.state.items[0].title, "Fresh")
   })
 })
 
@@ -584,14 +662,14 @@ describe("CommandPalettePlugin - triggerPreview/triggerAction", () => {
     let previewArg = null
     let focused = false
     instance.entities.input.focus = () => focused = true
-    instance.store.set({ items: [{ title: "X", preview: (s) => previewArg = s }], activeIndex: 0 })
+    instance.state.commit([{ title: "X", preview: (s) => previewArg = s }])
     instance.triggerPreview()
     assert.ok(previewArg)
     assert.strictEqual(focused, true)
   })
 
   it("triggerPreview does not throw when the active item has no preview()", () => {
-    instance.store.set({ items: [{ title: "X" }], activeIndex: 0 })
+    instance.state.commit([{ title: "X" }])
     assert.doesNotThrow(() => instance.triggerPreview())
   })
 
@@ -599,7 +677,7 @@ describe("CommandPalettePlugin - triggerPreview/triggerAction", () => {
     let restored = false
     instance.selectionManager.restore = () => restored = true
     let actionCalled = false
-    instance.store.set({ items: [{ title: "X", action: () => actionCalled = true }], activeIndex: 0 })
+    instance.state.commit([{ title: "X", action: () => actionCalled = true }])
     let hidden = false
     instance.utils.hide = () => hidden = true
     instance.triggerAction()
@@ -609,7 +687,7 @@ describe("CommandPalettePlugin - triggerPreview/triggerAction", () => {
   })
 
   it("triggerAction does NOT hide when action() explicitly returns false", () => {
-    instance.store.set({ items: [{ title: "X", action: () => false }], activeIndex: 0 })
+    instance.state.commit([{ title: "X", action: () => false }])
     let hidden = false
     instance.utils.hide = () => hidden = true
     instance.triggerAction()
@@ -635,23 +713,25 @@ describe("CommandPalettePlugin - keyboard/click handling", () => {
     await instance.doSearch("")
   })
 
-  it("ArrowDown cycles activeIndex forward (wrapping) and triggers preview", () => {
-    assert.strictEqual(instance.store.get().activeIndex, 0)
+  it("ArrowDown moves active forward (wrapping) and triggers preview", () => {
+    const [first, second] = instance.state.items
+    assert.strictEqual(instance.state.active, first)
     dispatchKeydown(instance.entities.input, "ArrowDown")
-    assert.strictEqual(instance.store.get().activeIndex, 1)
+    assert.strictEqual(instance.state.active, second)
     dispatchKeydown(instance.entities.input, "ArrowDown")
-    assert.strictEqual(instance.store.get().activeIndex, 0) // wraps
+    assert.strictEqual(instance.state.active, first) // wraps
   })
 
-  it("ArrowUp cycles activeIndex backward (wrapping)", () => {
+  it("ArrowUp moves active backward (wrapping)", () => {
+    const [first, second] = instance.state.items
     dispatchKeydown(instance.entities.input, "ArrowUp")
-    assert.strictEqual(instance.store.get().activeIndex, 1) // wraps to last
+    assert.strictEqual(instance.state.active, second) // wraps to last
   })
 
-  it("ArrowDown/ArrowUp are no-ops when items is empty", async () => {
-    instance.store.set({ items: [], activeIndex: 0 })
+  it("ArrowDown/ArrowUp are no-ops when items is empty", () => {
+    instance.state.discard()
     dispatchKeydown(instance.entities.input, "ArrowDown")
-    assert.strictEqual(instance.store.get().activeIndex, 0)
+    assert.strictEqual(instance.state.active, null)
   })
 
   it("Escape hides the palette", () => {
@@ -680,19 +760,20 @@ describe("CommandPalettePlugin - keyboard/click handling", () => {
 
   it("Enter with items present and query in sync triggers action directly (no re-search)", async () => {
     let actionCalled = false
-    instance.store.set({
+    instance.state._emit({
       items: [{ title: "Item A", action: () => actionCalled = true }],
-      activeIndex: 0,
+      active: null,
       query: instance.view.getInputValue(),
       loading: false,
     })
+    instance.state.select(instance.state.items[0])
     dispatchKeydown(instance.entities.input, "Enter")
     await Promise.resolve()
     assert.strictEqual(actionCalled, true)
   })
 
   it("Enter with items.length === 0 and not loading is a no-op", () => {
-    instance.store.set({ items: [], loading: false })
+    instance.state.discard()
     let hidden = false
     instance.utils.hide = () => hidden = true
     dispatchKeydown(instance.entities.input, "Enter")
@@ -707,28 +788,26 @@ describe("CommandPalettePlugin - keyboard/click handling", () => {
     assert.strictEqual(hidden, false)
   })
 
-  it("clicking a .plugin-command-palette-item sets activeIndex and triggers action", () => {
+  it("clicking a .plugin-command-palette-item selects it and triggers action", () => {
     let actionCalled = false
-    let capturedIndex = null
-    instance.store.set({
-      items: [
-        { title: "Item A", action: () => undefined },
-        {
-          title: "Item B",
-          action: (state) => {
-            actionCalled = true
-            capturedIndex = state.activeIndex
-            return false
-          },
+    let capturedActive = null
+    const items = [
+      { title: "Item A", action: () => undefined },
+      {
+        title: "Item B",
+        action: (state) => {
+          actionCalled = true
+          capturedActive = state.active
+          return false
         },
-      ],
-      activeIndex: 0,
-    })
+      },
+    ]
+    instance.state.commit(items)
     const itemEl = instance.entities.results.querySelectorAll(".plugin-command-palette-item")[1]
     itemEl.dispatchEvent(new window.MouseEvent("click", { bubbles: true }))
     assert.strictEqual(actionCalled, true)
-    assert.strictEqual(capturedIndex, 1)
-    assert.strictEqual(instance.store.get().activeIndex, 1)
+    assert.strictEqual(capturedActive, items[1])
+    assert.strictEqual(instance.state.active, items[1])
   })
 
   it("clicking the overlay outside the panel hides; clicking inside the panel does not", () => {
@@ -754,7 +833,7 @@ describe("buildProviders", () => {
   it("Tabs provider returns [] when window_tab plugin/tab manager is absent", async () => {
     const utils = makeUtilsMock({ getPlugin: () => undefined })
     const providers = buildProviders(utils, {})
-    const items = await getProvider(providers, "Tabs").fetch()
+    const items = await getProvider(providers, "Tab").fetch()
     assert.deepStrictEqual(items, [])
   })
 
@@ -764,7 +843,7 @@ describe("buildProviders", () => {
       getPlugin: () => ({ tab: { tabs: [{ path: "/a.md" }, { path: "/b.md" }], switchByPath: (p) => switched = p } }),
     })
     const providers = buildProviders(utils, {})
-    const items = await getProvider(providers, "Tabs").fetch()
+    const items = await getProvider(providers, "Tab").fetch()
     assert.strictEqual(items.length, 2)
     items[1].action()
     assert.strictEqual(switched, "/b.md")
@@ -774,7 +853,7 @@ describe("buildProviders", () => {
     global.File.isNode = false
     const utils = makeUtilsMock()
     const providers = buildProviders(utils, {})
-    const items = await getProvider(providers, "Recent Files").fetch()
+    const items = await getProvider(providers, "File").fetch()
     assert.deepStrictEqual(items, [])
   })
 
@@ -790,7 +869,7 @@ describe("buildProviders", () => {
       openFile: (p) => opened = ["file", p],
     })
     const providers = buildProviders(utils, {})
-    const items = await getProvider(providers, "Recent Files").fetch()
+    const items = await getProvider(providers, "File").fetch()
     const titles = items.map(i => i.title)
     assert.ok(titles.includes("dir1"))
     assert.ok(!titles.includes("current.md"))
@@ -811,7 +890,7 @@ describe("buildProviders", () => {
       updatePluginDynamicActions: () => [],
     })
     const providers = buildProviders(utils, { getAnchor: () => null })
-    const items = await getProvider(providers, "Plugins").fetch()
+    const items = await getProvider(providers, "Action").fetch()
     assert.strictEqual(items.length, 1)
     assert.match(items[0].title, /P1/)
   })
@@ -822,7 +901,7 @@ describe("buildProviders", () => {
       updatePluginDynamicActions: () => [],
     })
     const providers = buildProviders(utils, { getAnchor: () => null })
-    const items = await getProvider(providers, "Plugins").fetch()
+    const items = await getProvider(providers, "Action").fetch()
     assert.strictEqual(items.length, 1)
     assert.match(items[0].title, /P1/)
     assert.match(items[0].subtitle, /P1 · p1/)
@@ -845,13 +924,13 @@ describe("buildProviders", () => {
       callPluginDynamicAction: (fixedName, actValue, anchor) => calledWith = [fixedName, actValue, anchor],
     })
     const providers = buildProviders(utils, { getAnchor: () => "ANCHOR" })
-    const items = await getProvider(providers, "Plugins").fetch()
+    const items = await getProvider(providers, "Action").fetch()
     assert.strictEqual(items.length, 2) // Static1 + Dyn1 (Dyn2 filtered out)
     items[0].action()
     assert.deepStrictEqual(calledWith, ["p1", "s1", "ANCHOR"])
   })
 
-  it("Commands provider returns the fixed command list plus one item per theme", async () => {
+  it("Theme provider returns theme", async () => {
     global.JSBridge.invoke = async (method) => {
       if (method === "setting.getThemes") return { all: ["theme1.css", "theme2.css"] }
       if (method === "setting.loadExports") return JSON.stringify([{}, {}])
@@ -859,11 +938,10 @@ describe("buildProviders", () => {
     }
     const utils = makeUtilsMock()
     const providers = buildProviders(utils, {})
-    const items = await getProvider(providers, "Commands").fetch()
+    const items = await getProvider(providers, "Theme").fetch()
     const titles = items.map(i => i.title)
-    assert.ok(titles.includes("Open in Explorer"))
-    assert.ok(titles.includes("Theme: theme1"))
-    assert.ok(titles.includes("Theme: theme2"))
+    assert.ok(titles.includes("theme1"))
+    assert.ok(titles.includes("theme2"))
   })
 
   it("Commands provider's 'Copy File Path' action writes the current file path to the clipboard", async () => {
@@ -871,7 +949,7 @@ describe("buildProviders", () => {
     global.File.editor.UserOp.setClipboard = (a, b, val) => clipboardValue = val
     const utils = makeUtilsMock({ getFilePath: () => "/foo/bar.md" })
     const providers = buildProviders(utils, {})
-    const items = await getProvider(providers, "Commands").fetch()
+    const items = await getProvider(providers, "Command").fetch()
     items.find(i => i.title === "Copy File Path").action()
     assert.strictEqual(clipboardValue, "/foo/bar.md")
   })
@@ -881,16 +959,18 @@ describe("buildProviders", () => {
     global.File.toggleSourceMode = () => toggled = true
     const utils = makeUtilsMock()
     const providers = buildProviders(utils, {})
-    const items = await getProvider(providers, "Commands").fetch()
+    const items = await getProvider(providers, "Command").fetch()
     items.find(i => i.title === "Mode: Source Code").action()
     assert.strictEqual(toggled, true)
   })
 
   it("Outline provider skips headers without attributes/cid and builds titles from pattern+text", async () => {
     let scrolledTo = null
+
     function get(attr) {
       return this.attributes?.[attr]
     }
+
     global.File.editor.nodeMap.toc.headers = [
       { attributes: { pattern: "H1: {0}", text: "Intro" }, cid: "c1" },
       { attributes: null, cid: "c2" }, // skipped: no attributes
@@ -899,7 +979,7 @@ describe("buildProviders", () => {
     global.File.editor.nodeMap.foot_list = []
     const utils = makeUtilsMock({ scrollTo: (cid) => scrolledTo = cid })
     const providers = buildProviders(utils, {})
-    const items = await getProvider(providers, "Symbols").fetch()
+    const items = await getProvider(providers, "Symbol").fetch()
     assert.strictEqual(items.length, 1)
     assert.strictEqual(items[0].title, "H1: Intro")
     items[0].action()
@@ -909,7 +989,7 @@ describe("buildProviders", () => {
   it("Go to Line provider returns a placeholder no-op item for non-numeric/<=0 input", async () => {
     const utils = makeUtilsMock()
     const providers = buildProviders(utils, {})
-    const provider = getProvider(providers, "Lines")
+    const provider = getProvider(providers, "Line")
     assert.strictEqual(provider.dynamic, true)
     const items1 = await provider.fetch("abc")
     assert.match(items1[0].title, /Type a line number/)
@@ -927,7 +1007,7 @@ describe("buildProviders", () => {
     }
     const utils = makeUtilsMock({ scrollSourceView: (line) => scrolledLine = line })
     const providers = buildProviders(utils, {})
-    const provider = getProvider(providers, "Lines")
+    const provider = getProvider(providers, "Line")
     const items = await provider.fetch("42")
     assert.strictEqual(items[0].title, "Go to Line 42")
     items[0].action()
@@ -941,16 +1021,16 @@ describe("buildProviders", () => {
     global.File.toggleSourceMode = () => toggleCalls++
     const utils = makeUtilsMock({ scrollSourceView: () => undefined })
     const providers = buildProviders(utils, {})
-    const provider = getProvider(providers, "Lines")
+    const provider = getProvider(providers, "Line")
     const items = await provider.fetch("7")
     items[0].action()
     assert.strictEqual(toggleCalls, 0)
   })
 
-  it("Help provider returns the fixed help list; each action() calls context.setInput(prefix) and returns false", async () => {
+  it("Help provider returns the fixed help list; each action() calls context.setQuery(prefix) and returns false", async () => {
     let setInputArg = null
     const utils = makeUtilsMock()
-    const providers = buildProviders(utils, { setInput: v => setInputArg = v, getProviders: () => providers })
+    const providers = buildProviders(utils, { setQuery: v => setInputArg = v, getProviders: () => providers })
     const items = await getProvider(providers, "Help").fetch()
     assert.ok(items.length >= 5)
     const result = items[2].action()

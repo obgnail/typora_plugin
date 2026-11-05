@@ -297,9 +297,17 @@ HOTKEY = "ctrl+shift+p"
 BACKSPACE_TO_HIDE = true
 
 # =========== [ Search Strategy ] ===========
+# Initial input when opening the palette
+DEFAULT_INPUT = ">"
+
 # Wait time (ms) after typing stops before triggering a search
 # Short intervals are recommended, since the search runs entirely in memory
 DEBOUNCE_INTERVAL = 70
+
+# Scoring strategy for matching and ordering results
+#   plain : filter only, keep provider order
+#   ranked: sort by match quality
+MATCH_STRATEGY = "ranked"
 
 
 [right_outline]

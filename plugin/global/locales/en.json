@@ -448,7 +448,11 @@
   "command_palette": {
     "pluginName": "Command Palette",
     "$label.BACKSPACE_TO_HIDE": "Hide Window on Empty and Backspace",
-    "$label.DEBOUNCE_INTERVAL": "Debounce Interval"
+    "$label.DEBOUNCE_INTERVAL": "Debounce Interval",
+    "$label.DEFAULT_INPUT": "Default Input",
+    "$label.MATCH_STRATEGY": "Match Strategy",
+    "$option.MATCH_STRATEGY.plain": "Filter Only",
+    "$option.MATCH_STRATEGY.ranked": "Rank by Match Quality"
   },
   "resize_image": {
     "pluginName": "Image Resizer",
