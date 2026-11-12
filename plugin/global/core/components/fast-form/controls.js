@@ -1122,7 +1122,7 @@ const Control_ToggleSort = {
         form.validateAndCommit(wrap.dataset.key, newValue)
       }
       const anim = ghost.animate(
-        [{ transform: ghost.style.transform }, { transform: `translate3d(${startX}px, ${targetY}px, 0)` }],
+        [{ transform: ghost.style.transform }, { transform: `translate(${startX}px, ${targetY}px)` }],
         { duration: 150, easing: "ease-out" },
       )
       anim.onfinish = cleanup
@@ -1137,7 +1137,7 @@ const Control_ToggleSort = {
       const deltaY = ev.clientY - state.startY
       const activeY = state.startTop + deltaY
       rafManager.schedule(() => {
-        if (state.ghost) state.ghost.style.transform = `translate3d(${state.startX}px, ${activeY}px, 0)`
+        if (state.ghost) state.ghost.style.transform = `translate(${state.startX}px, ${activeY}px)`
       })
 
       let newIdx = state.currentIndex
@@ -1188,7 +1188,7 @@ const Control_ToggleSort = {
       top: "0px",
       width: `${sourceEl.offsetWidth}px`,
       height: `${sourceEl.offsetHeight}px`,
-      transform: `translate3d(${sourceEl.offsetLeft}px, ${sourceEl.offsetTop}px, 0)`,
+      transform: `translate(${sourceEl.offsetLeft}px, ${sourceEl.offsetTop}px)`,
     })
     return ghost
   },
@@ -1270,7 +1270,7 @@ const Control_Transfer = {
       dragGhost._originY = originRect.top
       ghostX = rect.left - dragGhost._originX
       ghostY = rect.top - dragGhost._originY
-      dragGhost.style.transform = `translate3d(${ghostX}px, ${ghostY}px, 0)`
+      dragGhost.style.transform = `translate(${ghostX}px, ${ghostY}px)`
 
       // Delay styling to keep ghost visible during drag initiation
       requestAnimationFrame(() => activeDraggable?.classList.add("transfer-card-placeholder"))
@@ -1282,7 +1282,7 @@ const Control_Transfer = {
       const targetX = destRect.left - dragGhost._originX
       const targetY = destRect.top - dragGhost._originY
       const animation = dragGhost.animate(
-        [{ transform: `translate3d(${ghostX}px, ${ghostY}px, 0)` }, { transform: `translate3d(${targetX}px, ${targetY}px, 0)` }],
+        [{ transform: `translate(${ghostX}px, ${ghostY}px)` }, { transform: `translate(${targetX}px, ${targetY}px)` }],
         { duration: 200, easing: "cubic-bezier(0.2, 0, 0, 1)" },
       )
 
@@ -1310,7 +1310,7 @@ const Control_Transfer = {
       rafManager.schedule(() => {
         ghostX = currentX - grabOffsetX - dragGhost._originX
         ghostY = currentY - grabOffsetY - dragGhost._originY
-        dragGhost.style.transform = `translate3d(${ghostX}px, ${ghostY}px, 0)`
+        dragGhost.style.transform = `translate(${ghostX}px, ${ghostY}px)`
       })
 
       const now = Date.now()
@@ -1447,7 +1447,7 @@ const Control_Dict = {
       onConfirmed: (ev) => {
         const row = ev.target.closest(".dict-row")
         const wrap = ev.target.closest(".dict-wrap")
-        const ok = Control_Dict._collectAndCommit(wrap, form)
+        const ok = Control_Dict._collectAndCommit(wrap, form, row)
         if (ok) {
           row.remove()
           utils.notification.show(i18n.t("global", "success.deleted"))
@@ -1492,12 +1492,13 @@ const Control_Dict = {
         <div class="dict-actions"><i class="dict-btn-del fa fa-trash-o"></i></div>
       </div>`
   },
-  _collectAndCommit: (targetEl, form) => {
+  _collectAndCommit: (targetEl, form, excludeRow) => {
     const wrap = targetEl.closest(".dict-wrap")
     if (!wrap) return
     const result = {}
     const typeConfig = Control_Dict._types
     wrap.querySelectorAll(".dict-row").forEach(row => {
+      if (row === excludeRow) return
       const k = row.querySelector(".dict-key").value.trim()
       if (!k) return
 
@@ -1746,7 +1747,7 @@ const Control_Table = {
       const idx = [...tableEl.querySelectorAll("tbody tr")].indexOf(trEl)
       if (idx === -1) throw new Error("IndexError")
       const key = tableEl.dataset.key
-      const rowValue = form.options.data[key][idx]
+      const rowValue = (form.getData(key) || [])[idx]
       const { nestedBoxes, defaultValues, thMap, subFormOptions = {} } = form.getField(key)
       const modalValues = utils.merge(defaultValues, rowValue)  // rowValue may be missing some attributes
       const op = { title: i18n.t("global", "edit"), validateForm: true, schema: nestedBoxes, data: modalValues, ...subFormOptions }
