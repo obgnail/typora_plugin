@@ -6,9 +6,16 @@ const container = require("./container")
 const BasePlugin = require("./plugin")
 
 async function entry() {
+  global.__typoraMacReportRuntime?.({ kind: "framework-stage", stage: "core-entry" })
   if (utils.compareVersion(utils.typoraVersion, "0.9.98") < 0) return
 
   const settings = await utils.settings.read()
+  global.__typoraMacReportRuntime?.({
+    kind: "framework-stage",
+    stage: "settings-read",
+    globalEnabled: settings?.global?.ENABLE,
+    configuredPlugins: settings ? Object.keys(settings).filter(name => settings[name]?.ENABLE).slice(0, 20) : [],
+  })
   if (!settings?.global?.ENABLE) return
 
   global.BasePlugin = BasePlugin
@@ -28,11 +35,13 @@ async function bootstrap(settings) {
   } = utils.mixins
 
   container.setSettings(settings)
+  global.__typoraMacReportRuntime?.({ kind: "framework-stage", stage: "bootstrap-start" })
 
   await invoke([logger, unstableRequire, styleManager], "process")
   await invoke([contextMenu, notification, formDialog, stateRecorder, hotkeyHub, exportHelper], "process")
 
   container.setPlugins(await loadPlugins(settings))
+  global.__typoraMacReportRuntime?.({ kind: "framework-stage", stage: "plugins-loaded" })
 
   await invoke([eventHub], "process")
   await invoke([diagramParser, thirdPartyDiagramParser], "process")
@@ -40,6 +49,7 @@ async function bootstrap(settings) {
   eventHub.emit(eventHub.eventType.allPluginsHadInjected)
 
   await invoke(Object.values(utils.mixins), "postprocess")
+  global.__typoraMacReportRuntime?.({ kind: "framework-stage", stage: "bootstrap-complete" })
 
   // Re-emit events (e.g., afterAddCodeBlock) that may have been missed due to async execution.
   if (File.getMountFolder() != null) {

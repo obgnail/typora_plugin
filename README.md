@@ -1,6 +1,6 @@
 English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/README-cn.md)
 
-> Experimental native macOS/WKWebView development support is documented in [docs/macos.md](docs/macos.md). It requires development re-signing and is not a notarized distribution workflow.
+> Experimental Typora 1.14.15 macOS/WKWebView beta: [installation and compatibility](docs/macos.md) · [security audit](docs/macos-security-audit.md) · [简体中文](docs/macos.zh-CN.md). It uses an isolated ad-hoc-signed copy and is not a notarized distribution workflow.
 
 <div align="center">
   <h1>Typora Plugin</h1>

@@ -1,66 +1,71 @@
-# macOS development port
+# macOS experimental beta
 
-This port targets Typora 1.14.15's native WKWebView build. It is a development installation: modifying `TypeMark` invalidates Typora's vendor signature, and an ad-hoc signature is not a distributable or notarized signature.
+[简体中文](macos.zh-CN.md) · [Security audit](macos-security-audit.md) · [Draft release notes](releases/v0.1.0-macos-beta.md)
 
-## Diagnosed signing failure
+This workflow supports Typora 1.14.15 on macOS arm64 and x86_64. It modifies and ad-hoc signs a private copy of Typora for development; it is not notarized, is not official Typora support, and must not be redistributed as a modified `Typora.app`.
 
-The tested `~/Desktop/Typora-Test.app` had `com.apple.FinderInfo` and `com.apple.fileprovider.fpfs#P` on the app, `Sparkle.framework`, and `Autoupdate.app`. It also had `com.apple.macl` on the outer app. There was no quarantine attribute. Desktop File Provider recreated `FinderInfo` after removal, so a signature could be created and then immediately fail verification. `com.apple.provenance` existed broadly but did not prevent signing or strict verification in a non-File-Provider location.
+## Requirements
 
-Use a local, non-synchronised development directory. Never install into `/Applications/Typora.app`; copy the vendor app and modify only the copy. Do not remove quarantine or provenance merely to make an app launch.
+- vendor Typora 1.14.15 at `/Applications/Typora.app`
+- Node.js 22 or 24 LTS on `PATH`
+- a local, non-synchronised `/private/tmp` destination
+- Typora fully quit before install, update, or uninstall
+
+The installer rejects unsupported versions, non-universal builds, quarantine, File Provider locations, a running Typora process, and `/Applications/Typora.app`. Test-only override flags are not part of these instructions.
+
+## Install
+
+From the extracted beta package:
 
 ```bash
-ditto --noextattr --norsrc /Applications/Typora.app /private/tmp/Typora-Test.app
-plugin/bin/diagnose_macos.sh --app /private/tmp/Typora-Test.app
-plugin/bin/install_macos.sh --app /private/tmp/Typora-Test.app --yes
-codesign --verify --deep --strict --verbose=2 /private/tmp/Typora-Test.app
-open -n /private/tmp/Typora-Test.app
+plugin/bin/install_macos.sh --dry-run
+plugin/bin/install_macos.sh --yes
+codesign --verify --deep --strict --verbose=2 /private/tmp/Typora-Plugin-Beta.app
+open -n /private/tmp/Typora-Plugin-Beta.app
 ```
 
-Quit Typora before installation. The installer refuses `/Applications/Typora.app` unless its separate production override is supplied; that override is not part of this development workflow. It backs up the target's existing `index.html` and plugin directory, installs the bridge LaunchAgent, injects the loader idempotently, and signs nested code before the outer app. To remove the development installation, run `plugin/bin/uninstall_macos.sh --app /private/tmp/Typora-Test.app` while Typora is closed.
+The default target is `/private/tmp/Typora-Plugin-Beta.app`. If absent, the installer copies the vendor app without extended attributes, records an original-state backup, installs the plugin, seeds external configuration at `~/.config/typora_plugin/settings.user.toml`, rotates the bridge token, creates a least-privilege LaunchAgent, and signs nested code before the outer bundle. Repeat installation is idempotent and keeps the original uninstall baseline.
 
-The signer processes nested Mach-O code from the inside out. The main app keeps Typora's three observed JIT-related entitlements and adds `disable-library-validation` only for the ad-hoc development build; otherwise hardened runtime rejects the ad-hoc Sparkle framework because no shared Team ID exists.
+Use `plugin/bin/diagnose_macos.sh --app /private/tmp/Typora-Plugin-Beta.app` for version, architecture, injection, extended-attribute, and signature diagnostics. Transaction backups and bridge logs live under `~/Library/Application Support/typora_plugin/`.
 
-`codesign --verify --deep --strict` validates bundle integrity. `spctl --assess` is a separate Gatekeeper check and is expected to reject or error for an ad-hoc development signature.
+## Uninstall
 
-## Runtime and security
+Quit Typora, then run:
 
-`macos/loader.js` supplies a small CommonJS/path adapter and sends explicit filesystem operations to a Node bridge. It exposes the adapter as `global.reqnode` and deliberately preserves Typora's native `window.require`. The bridge binds only to `127.0.0.1`, uses a 256-bit header token, accepts only `file://` (observed in Typora 1.14.15) or the standard opaque `null` file origin, limits request bodies, resolves symlinks, restricts filesystem roots, and exposes no shell or general network execution.
+```bash
+plugin/bin/uninstall_macos.sh --app /private/tmp/Typora-Plugin-Beta.app --yes
+```
 
-The health endpoint never returns the token. The token is stored mode `0600` and embedded into the installed loader, so the modified app bundle should be treated as user-private.
+This unloads and removes the LaunchAgent, restores the original `index.html` and plugin directory, removes bridge credentials, and re-signs the isolated copy. User configuration and transaction backups are preserved. Repeated uninstall is safe.
 
-The installer seeds `~/.config/typora_plugin/settings.user.toml` only when it does not already exist. This is required because writing the fallback copy inside the app after signing invalidates the sealed resource. With the external config present, deep/strict verification remained valid after editor initialization and 56 authenticated RPC calls.
+## Security model
 
-## Runtime evidence and compatibility
+The Node bridge binds only to `127.0.0.1`, accepts a restricted RPC allowlist, requires a 256-bit token and exact `Origin: null` or `Origin: file://`, limits request/read sizes, and exposes no shell or general network execution. The plugin tree is read-only to RPC; only `~/.config/typora_plugin` is writable. Symlink components are rejected, writes use `O_NOFOLLOW` where available, and private files use restrictive modes.
 
-The development app launched successfully after consistent nested signing and the development library-validation entitlement. Opening a Markdown document produced an authenticated probe and initialized the original framework container. The sanitized Typora 1.14.15 snapshot, captured at `document.readyState === "interactive"`, was:
+WKWebView supplies `null` for local-file origins; accepting it is necessary but is not an identity guarantee. The token is embedded in the private modified app and can be read by another process running as the same macOS user. This is a same-user trust boundary, not a sandbox. Do not share the modified bundle, token, log, or user account with untrusted software. See the [security audit](macos-security-audit.md).
 
-| Object/capability | Observed |
-|---|---|
-| `window.File` | object |
-| `File.editor` / `File.getMountFolder` | available / available |
-| `window.JSBridge` / `JSBridge.invoke` | object / available |
-| `window.SystemJS` / `SystemJS.import` | undefined / unavailable |
-| `window.require` | function (Typora-provided and preserved) |
-| `window.global` / `global.reqnode` | object / available (adapter-provided) |
-| `window.process` / `process.versions` | object / available (adapter-provided) |
+## Verified compatibility
 
-The adapter-provided values do not establish that Node-style globals exist before `loader.js` runs. `SystemJS` was not available when the probe executed.
+Live tests used Typora 1.14.15 in `/private/tmp`, a real Markdown document, authenticated runtime reports, and a 14-second post-startup observation window.
 
-Each row below was run with only that plugin enabled against the same seven-block fixture in an isolated `/private/tmp` copy. A passing report required framework/container enablement, JavaScript construction, plugin UI state, a DOM-backed interaction, and a persistence check when the plugin owns persistent state.
+| Plugin | JavaScript | UI / interaction | Persistence | Shortcut | Result |
+|---|---:|---:|---:|---:|---|
+| `callouts` | Pass | Native alert decorated; fold-hover CSS active | N/A | Not configured | Works |
+| `editor_width_slider` | Pass | Shadow-DOM dialog; width changed to 73% | Pass | Not configured | Works |
+| `collapse_paragraph` | Pass | Command-click collapsed and expanded a section | Pass | Pass | Works |
+| `fence_enhance` | Pass | Toolbar rendered; real CodeMirror fence folded | Pass | Default not configured | Works |
+| `command_palette` | Pass | Overlay search and Escape interaction | N/A | `Control/Command+Shift+P` pass | Works |
+| `markmap` | Pass | Local assets, SVG nodes, and Fit interaction | Session-local | Default not configured | Works |
 
-| Plugin | JS load | UI and interaction | Persistence | Typora 1.14.15 result |
-|---|---:|---:|---:|---|
-| `callouts` | Pass | Native `.md-alert` decorated as a folded plugin callout; hover rule present | N/A | Works |
-| `editor_width_slider` | Pass | Shadow DOM dialog rendered; range input changed editor width to 73% | Pass: `WIDTH_RATIO` re-read as 73 | Works |
-| `collapse_paragraph` | Pass | Command-click collapsed and expanded the heading body | Pass: `RECORD_COLLAPSE` toggle re-read | Works |
-| `fence_enhance` | Pass | Toolbar rendered; fold button collapsed a real CodeMirror fence | Pass: `ENABLE_FOLD` toggle re-read | Works |
-| `command_palette` | Pass | Overlay rendered; input search produced results; Escape closed it | N/A | Works |
-| `markmap` | Pass | Local assets loaded; TOC SVG nodes rendered; fit button invoked | Session-local by design | Works |
+The framework completed repeated cold starts. Compatibility fixes cover the WKWebView module adapter, external settings, UTF-8 spelling normalization, deferred/post-load bootstrap, optional host menu decorators, native alert DOM, and Markmap lazy-load ordering.
 
-Compatibility fixes covered by automated regressions are: Typora 1.14 native alert DOM, preserving native `window.require`, non-throwing CommonJS directory fallback, safe `process`/`buffer` shims, `fs-extra.readdir`, awaited async plugin lifecycle hooks, and inlining/rebasing local Markmap styles because WKWebView rejects `fetch(file://...)` responses.
+## Known limitations and troubleshooting
 
-The complete suite was run under Node.js 22.23.5 LTS with serialized test concurrency: 1,663 tests, 1,662 passed, 0 failed, 1 skipped, no hang (23.1 seconds). Node 25 is not used for the reported suite result.
+- Ad-hoc signing is local development only. `codesign --verify --deep --strict` should pass; Gatekeeper `spctl` is expected to reject a non-notarized build.
+- Do not use Desktop, iCloud, or File Provider locations. Recreated metadata can invalidate a signature.
+- Only Typora 1.14.15 and the six plugins above are claimed compatible. Other plugins are unverified.
+- The bridge needs a user LaunchAgent and free loopback port 45678.
+- If startup fails, inspect `bridge.log`, run the diagnostic script, confirm LTS Node is on `PATH`, and reinstall to rotate credentials and refresh signing.
+- Never remove quarantine automatically, disable SIP, weaken Gatekeeper, or patch Typora's minified source.
 
-The console also reports four Typora-owned `decorate timeout` rejections (`showPreferencePanel`, `closePreferencePanel`, `show`, and `hide`) around ten seconds after launch. Their stacks are in Typora's minified `appsrc/main.js`; all six plugin reports completed successfully before them. They remain a host warning, not a plugin test failure.
-
-In Web Inspector, evaluate `window.__typoraMacProbe`. The loader is injected at the end of `body` with `defer`; Typora's existing deferred `appsrc/main.js` remains first and the adapter does not alter its later `SystemJS.import` call. The probe only executed after an editor document was opened; the welcome window alone is not runtime evidence.
+The final Node 22 LTS result and package checksum are recorded in the draft release notes.

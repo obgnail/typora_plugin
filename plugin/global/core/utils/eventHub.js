@@ -134,10 +134,18 @@ class EventHub {
     // })
     // resizeObserver.observe(content)
 
-    this.utils.decorator.beforeCall(() => File?.megaMenu, "showPreferencePanel", () => this.emit(this.eventType.toggleSettingPage, true))
-    this.utils.decorator.beforeCall(() => File?.megaMenu, "closePreferencePanel", () => this.emit(this.eventType.toggleSettingPage, false))
-    this.utils.decorator.beforeCall(() => File?.megaMenu, "show", () => this.emit(this.eventType.toggleSettingPage, true))
-    this.utils.decorator.beforeCall(() => File?.megaMenu, "hide", () => this.emit(this.eventType.toggleSettingPage, false))
+    // Typora's WKWebView build exposes a different subset of megaMenu methods
+    // from the Electron builds. These hooks are optional host capabilities:
+    // missing methods must not become unhandled lifecycle rejections.
+    const optional = { optional: true }
+    this.utils.decorator.beforeCall(() => File?.megaMenu, "showPreferencePanel", () => this.emit(this.eventType.toggleSettingPage, true), optional)
+    this.utils.decorator.beforeCall(() => File?.megaMenu, "closePreferencePanel", () => this.emit(this.eventType.toggleSettingPage, false), optional)
+    this.utils.decorator.beforeCall(() => File?.megaMenu, "show", () => this.emit(this.eventType.toggleSettingPage, true), optional)
+    this.utils.decorator.beforeCall(() => File?.megaMenu, "hide", () => this.emit(this.eventType.toggleSettingPage, false), optional)
+    this.utils.decorator.afterCall(() => File?.megaMenu, "togglePreferencePanel", () => {
+      const shown = File?.megaMenu?.isPreferencePanelShown?.()
+      if (typeof shown === "boolean") this.emit(this.eventType.toggleSettingPage, shown)
+    }, optional)
 
     const debounceEmit = this.utils.debounce(() => this.emit(this.eventType.fileEdited), 400)
     this.observer = new MutationObserver(mutations => {

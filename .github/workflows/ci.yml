@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  javascript:
     runs-on: ubuntu-latest
 
     defaults:
@@ -21,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [ 20.x, 24.x ]
+        node-version: [ 22.x, 24.x ]
       fail-fast: false
 
     steps:
@@ -40,3 +40,60 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  macos-simulation:
+    name: macOS simulation (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+    defaults:
+      run:
+        working-directory: ./develop
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Use Node.js 22 LTS
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.x
+          cache: npm
+          cache-dependency-path: develop/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Confirm runner architecture
+        run: |
+          test "$(uname -m)" = "${{ matrix.arch }}"
+          sw_vers
+
+      - name: Validate shell syntax
+        working-directory: .
+        run: bash -n plugin/bin/diagnose_macos.sh plugin/bin/install_macos.sh plugin/bin/sign_macos_dev.sh plugin/bin/uninstall_macos.sh develop/scripts/test_macos_installer.sh
+
+      - name: Validate macOS JavaScript syntax
+        working-directory: .
+        run: |
+          for file in plugin/macos/*.js plugin/macos/bin/*.js plugin/index.js plugin/global/core/index.js plugin/global/core/utils/decorator.js plugin/global/core/utils/eventHub.js plugin/markmap/toc.js develop/test/macos_*.test.js develop/test/markmap_macos.test.js develop/test/plugin_entrypoint.test.js; do
+            node --check "$file"
+          done
+
+      - name: Run complete JavaScript suite
+        run: npm test -- --test-concurrency=1
+
+      - name: Run focused macOS tests
+        run: node --require ../plugin/global/core/polyfill.js --test test/macos_bridge.test.js test/macos_html.test.js test/macos_runtime.test.js test/markmap_macos.test.js
+
+      - name: Test installer, repeat install, rollback, and uninstall
+        working-directory: .
+        run: develop/scripts/test_macos_installer.sh
+
+      - name: Clarify simulation boundary
+        run: echo "CI used a synthetic app bundle; interactive Typora/WKWebView compatibility remains a separately recorded manual test."

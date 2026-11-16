@@ -80,9 +80,14 @@ module.exports = async function runMacOSRuntimeTest({ plan, report, container })
       const saved = await plugin.utils.settings.read()
       record("persistence", saved.fence_enhance?.ENABLE_FOLD === false)
     } else if (pluginName === "command_palette") {
-      await plugin.call()
-      const overlay = document.querySelector(".plugin-command-palette-overlay")
+      const shortcut = new KeyboardEvent("keydown", { key: "p", metaKey: true, shiftKey: true, bubbles: true, cancelable: true })
+      window.dispatchEvent(shortcut)
+      const overlay = await waitFor(() => {
+        const element = document.querySelector(".plugin-command-palette-overlay")
+        return element && !element.classList.contains("plugin-common-hidden") ? element : null
+      })
       const input = document.querySelector("#plugin-command-palette-input")
+      record("keyboardShortcut", shortcut.defaultPrevented && !!overlay)
       record("uiRendered", overlay && !overlay.classList.contains("plugin-common-hidden"))
       input.value = ">"
       input.dispatchEvent(new Event("input", { bubbles: true }))
@@ -111,6 +116,13 @@ module.exports = async function runMacOSRuntimeTest({ plan, report, container })
     headings: document.querySelectorAll('#write > [mdtype="heading"]').length,
     quotes: document.querySelectorAll("#write blockquote, #write .md-alert").length,
     fences: document.querySelectorAll("#write .md-fences[cid]").length,
+    megaMenuMethods: (() => {
+      const menu = window.File?.megaMenu
+      if (!menu) return []
+      const own = Object.getOwnPropertyNames(menu)
+      const inherited = Object.getOwnPropertyNames(Object.getPrototypeOf(menu) || {})
+      return Array.from(new Set(own.concat(inherited))).filter(name => typeof menu[name] === "function").sort()
+    })(),
     nodes: Array.from(document.querySelectorAll("#write > [cid]"), node => ({
       tag: node.tagName,
       mdtype: node.getAttribute("mdtype"),

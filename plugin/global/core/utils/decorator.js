@@ -136,6 +136,7 @@ const decorate = (target, property, options = {}) => {
     timeout = 10000,
     interval = 50,
     priority = 0,
+    optional = false,
   } = options
   if (typeof property !== "string" && typeof property !== "symbol") {
     return Promise.reject(new TypeError("options.property must be a string or symbol"))
@@ -155,12 +156,20 @@ const decorate = (target, property, options = {}) => {
     return valid ? obj : null
   }
 
-  return waitFor(
+  const targetPromise = waitFor(
     probe,
     timeout,
     interval,
     () => new Error(`decorate timeout for ${String(property)} after ${timeout}ms`),
-  ).then(obj => {
+  )
+  const resolvedTarget = optional
+    ? targetPromise.catch(error => {
+      if (/^decorate timeout for /.test(error?.message)) return null
+      throw error
+    })
+    : targetPromise
+  return resolvedTarget.then(obj => {
+    if (!obj) return null
     const meta = decoratorChain.getMeta(obj, property) ?? install(obj, property)
     const id = Symbol(`decorator_${String(property)}`)
     meta.decorators.push({ id, before, after, settled, modifyArgs, modifyResult, priority })

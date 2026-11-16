@@ -62,5 +62,7 @@ test("macOS scripts detect platform and protect the production app", () => {
   assert.match(installer, /uname -s/)
   assert.match(installer, /--allow-production/)
   assert.match(installer, /fileprovider/)
-  assert.match(installer, /\.config\/typora_plugin\/settings\.user\.toml/)
+  assert.match(installer, /CONFIG_ROOT="\$HOME\/\.config\/typora_plugin"/)
+  assert.match(installer, /SUPPORTED_VERSION="1\.14\.15"/)
+  assert.match(installer, /\/private\/tmp\/Typora-Plugin-Beta\.app/)
 })

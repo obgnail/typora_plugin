@@ -11,6 +11,9 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 [ -n "$APP" ] && [ -d "$APP" ] || { echo "usage: $0 --app /path/to/Typora-Test.app [--dry-run]" >&2; exit 64; }
+[ ! -L "$APP" ] || { echo "error: refusing to sign an application symlink" >&2; exit 77; }
+APP=$(cd "$(dirname "$APP")" && printf '%s/%s\n' "$(pwd -P)" "$(basename "$APP")")
+[ "$APP" != "/Applications/Typora.app" ] || { echo "error: refusing to sign the production Typora application" >&2; exit 77; }
 
 if /usr/bin/xattr -lr "$APP" 2>/dev/null | grep 'com.apple.fileprovider' >/dev/null; then
   echo "error: $APP is managed by File Provider; FinderInfo will be recreated during signing." >&2
@@ -42,7 +45,7 @@ cat > "$ENTITLEMENTS" <<'PLIST'
 </dict></plist>
 PLIST
 
-sign() { [ -e "$1" ] && run codesign --force --sign - --options runtime --preserve-metadata=identifier "$1"; }
+sign() { if [ -e "$1" ]; then run codesign --force --sign - --options runtime --preserve-metadata=identifier "$1"; fi; }
 sign "$APP/Contents/Resources/TypeMark/lib/bin/x64/rg"
 sign "$APP/Contents/Resources/TypeMark/lib/bin/arm/rg"
 sign "$APP/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/MacOS/fileop"

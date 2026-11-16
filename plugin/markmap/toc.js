@@ -96,7 +96,10 @@ class TOCMarkmap {
     eventHub.on(eventHub.eventType.afterSetSidebarWidth, repositioning)
     eventHub.on(eventHub.eventType.toggleSettingPage, hide => hide && this.mm && this.close())
     eventHub.on(eventHub.eventType.outlineUpdated, () => {
-      if (!this.utils.isShown(panel)) return
+      // WKWebView can publish an outline refresh while the async Markmap
+      // bundle is still loading. A visible panel alone does not mean the
+      // transformer is ready.
+      if (!this.utils.isShown(panel) || !this.Lib.transformer) return
       this.draw()
       if (this.config.AUTO_FIT_ON_UPDATE) this.fit()
     })
@@ -188,9 +191,9 @@ class TOCMarkmap {
     if (this.utils.isShown(this.entities.panel)) {
       this.close()
     } else {
+      await this.plugin.lazyLoad()
       this.utils.show(this.entities.panel)
       this.panelCtl.initRect()
-      await this.plugin.lazyLoad()
       this.draw()
     }
   }

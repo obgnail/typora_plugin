@@ -1,5 +1,7 @@
 [English](https://github.com/obgnail/typora_plugin/blob/master/README.md) | 简体中文
 
+> Typora 1.14.15 macOS/WKWebView 实验性 Beta：[中文安装与兼容说明](docs/macos.zh-CN.md) · [安全审计](docs/macos-security-audit.md) · [English](docs/macos.md)。本流程只修改 `/private/tmp` 中的 ad-hoc 签名副本，不是 Apple 公证的分发方案。
+
 <div align="center">
   <h1>Typora Plugin</h1>
   <img src="assets/typora_plugin.png" alt="typora_plugin" width="400">

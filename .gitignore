@@ -5,3 +5,4 @@
 /develop/node_modules
 /plugin/VERSION.json
 /plugin/global/user_styles/*.css
+/dist

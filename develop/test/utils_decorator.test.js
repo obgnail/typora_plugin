@@ -420,6 +420,17 @@ describe("Decorator (AOP utility)", () => {
         /decorate timeout for add/,
       )
     })
+
+    it("settles without installing when an optional host method is unavailable", async () => {
+      const result = await decorator.decorate(() => null, "macOnlyMethod", {
+        before: () => undefined,
+        optional: true,
+        timeout: 20,
+        interval: 5,
+      })
+
+      assert.strictEqual(result, null)
+    })
   })
 
   describe("error handling inside decorate()", () => {

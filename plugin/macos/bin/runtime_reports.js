@@ -21,6 +21,7 @@ const req = http.request({
   headers: {
     "Content-Type": "application/json",
     "Content-Length": Buffer.byteLength(body),
+    "Origin": "file://",
     "X-Typora-Plugin-Token": token,
   },
 }, response => {
