@@ -19,15 +19,19 @@ class CalloutsPlugin extends BasePlugin {
   }
 
   setCallouts = () => {
-    this.utils.entities.querySelectorAllInWrite("blockquote > p:first-child").forEach(p => {
-      const blockquote = p.parentElement
-      const result = p.textContent.match(/^\[!(?<type>\w+)\](?<fold>[+-]?)/)
-      const ok = !!(result?.groups)
+    this.utils.entities.querySelectorAllInWrite("blockquote, .md-alert").forEach(blockquote => {
+      const p = blockquote.querySelector(":scope > p:first-child")
+      const marker = p?.textContent.match(/^\[!(?<type>\w+)\](?<fold>[+-]?)/)?.groups
+      const nativeType = Array.from(blockquote.classList)
+        .map(name => name.match(/^md-alert-(\w+)$/)?.[1])
+        .find(Boolean)
+      const type = marker?.type || nativeType
+      const fold = marker?.fold || ""
+      const ok = !!type
       blockquote.classList.toggle("plugin-callout", ok)
       if (ok) {
-        const { type, fold } = result.groups
         // Add data-type attribute to spans containing [!type]
-        p.querySelector("span:first-child")?.setAttribute("data-type", type)
+        p?.querySelector("span:first-child")?.setAttribute("data-type", type)
         blockquote.setAttribute("callout-type", type.toLowerCase())
         blockquote.classList.toggle("callout-folded", fold === "-")
       }

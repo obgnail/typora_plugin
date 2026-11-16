@@ -1,5 +1,7 @@
 English | [简体中文](https://github.com/obgnail/typora_plugin/blob/master/README-cn.md)
 
+> Experimental native macOS/WKWebView development support is documented in [docs/macos.md](docs/macos.md). It requires development re-signing and is not a notarized distribution workflow.
+
 <div align="center">
   <h1>Typora Plugin</h1>
   <img src="assets/typora_plugin.png" alt="typora_plugin" width="400">

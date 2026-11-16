@@ -98,9 +98,9 @@ async function loadPlugin(fixedName, config) {
   await loadStyle(instance, instance.style())
   utils.insertElements(instance.html())
   utils.hotkeyHub.register(instance.hotkey())
-  instance.init()
-  instance.process()
-  instance.postprocess()
+  await instance.init()
+  await instance.process()
+  await instance.postprocess()
 
   return instance
 }

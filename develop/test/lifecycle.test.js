@@ -230,6 +230,24 @@ describe("index.js - loadPlugin() lifecycle & state classification", () => {
     assert.equal(plugins.error.target.message, "boom")
   })
 
+  it("'error': a rejected async lifecycle stage is awaited and classified", async () => {
+    mock.method(console, "error", () => undefined)
+
+    class Rejects {
+      prepare() {}
+      style() {}
+      html() {}
+      hotkey() {}
+      init() {}
+      async process() { throw new Error("async boom") }
+      postprocess() {}
+    }
+
+    const plugins = await runWithPlugin({ ENABLE: true, NAME: "Async Bad" }, Rejects)
+    assert.equal(plugins.error.target.message, "async boom")
+    assert.equal(plugins.enable.target, undefined)
+  })
+
   it("'abort': prepare() returning utils.PLUGIN_LOAD_ABORT (the real Symbol) stops before style()", async () => {
     let styleCalled = false
 

@@ -48,6 +48,19 @@ function localizeResources(styles, scripts, localPaths) {
   localize(scripts, "script", "src")
 }
 
+async function inlineLocalStyles(styles, utils) {
+  await Promise.all(styles.map(async item => {
+    const href = item?.type === "stylesheet" && item?.data?.href
+    if (!href?.startsWith("file://")) return
+    const url = new URL(href)
+    const file = decodeURIComponent(url.pathname)
+    const base = href.slice(0, href.lastIndexOf("/") + 1)
+    const css = await utils.Package.FsExtra.readFile(file, "utf8")
+    item.type = "style"
+    item.data = css.replace(/url\((['"]?)(?!data:|https?:|file:|\/)([^)'"\s]+)\1\)/g, (_, quote, relative) => `url("${new URL(relative, base).href}")`)
+  }))
+}
+
 function getPlugins(utils) {
   const localImagePlugin = resolveImageSrcPlugin(utils.isLocalImage, src => utils.toFileProtocol(utils.resolveLocalPath(src)))
   return [...builtInPlugins, localImagePlugin]
@@ -56,6 +69,7 @@ function getPlugins(utils) {
 async function loadResources(utils, transformer) {
   const { styles, scripts } = transformer.getAssets()
   localizeResources(styles, scripts, getLocalResources(utils))
+  await inlineLocalStyles(styles, utils)
   await loadCSS(styles)
   await loadJS(scripts, { getMarkmap: () => markmap })
 }
@@ -111,3 +125,4 @@ async function load(utils) {
 }
 
 module.exports = load
+module.exports.inlineLocalStyles = inlineLocalStyles
