@@ -53,13 +53,10 @@ class PreferencesPlugin extends BasePlugin {
 
   process = () => {
     this.utils.eventHub.on(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-      this.entities.menu.innerHTML = Object.values(
-        Object.fromEntries(
-          ["global", ...Object.keys(this.utils.getAllSettings())]
-            .filter(name => this._hasMenu(name))
-            .map(name => [name, this.searcher.menuItemHTML(name, this._getPluginName(name))]),
-        ),
-      ).join("")
+      this.entities.menu.innerHTML = [...new Set(["global", ...Object.keys(this.utils.getAllSettings())])]
+        .filter(name => this._hasPlugin(name))
+        .map(name => this.searcher.menuItemHTML(name, this._getPluginName(name)))
+        .join("")
     })
 
     this.entities.close.addEventListener("click", () => this.close())
@@ -94,13 +91,16 @@ class PreferencesPlugin extends BasePlugin {
     }
   }
 
-  open = async (fixedName, key) => {
-    if (fixedName && !this._hasMenu(fixedName)) {
-      console.warn(`Unknown plugin "${fixedName}"`)
-    }
+  open = async (fixedName, revealKey) => {
+    fixedName = this._normalizeFixedName(fixedName ?? this.menuStorage.get())
     this.utils.show(this.entities.mask)
     this._resetSearch()
-    await this._switchMenu(fixedName ?? this.menuStorage.get(), { revealKey: key, scrollMenuIntoView: true })
+    if (!await this._switchMenu(fixedName)) return
+    if (revealKey) {
+      $(this.entities.main).stop()
+      if (this._reveal([revealKey]) === 0) console.warn(`key "${revealKey}" not found in "${fixedName}"`)
+    }
+    requestAnimationFrame(this._scrollMenuIntoView)
   }
 
   close = () => {
@@ -126,43 +126,34 @@ class PreferencesPlugin extends BasePlugin {
     return { fixedName, settings }
   }
 
-  _switchMenu = async (fixedName, { revealKey, scrollMenuIntoView = false } = {}) => {
-    if (!this._hasMenu(fixedName)) fixedName = "global"
-
+  _switchMenu = async (fixedName) => {
     const options = await this._getFormOptions(fixedName)
-    if (!options) return
+    if (!options) return false
 
     this.entities.form.dataset.plugin = fixedName
     this.entities.form.render(options)
-
-    this.entities.menu.querySelectorAll(".plugin-preferences-menu-item").forEach(e => e.classList.toggle("active", e.dataset.plugin === fixedName))
     this.entities.title.textContent = this._getPluginName(fixedName)
+    this.entities.menu.querySelectorAll(".plugin-preferences-menu-item").forEach(e => e.classList.toggle("active", e.dataset.plugin === fixedName))
     this.menuStorage.set(fixedName)
 
-    if (revealKey) {
-      $(this.entities.main).stop()
-      requestAnimationFrame(() => {
-        const found = this.entities.form.getApi("reveal")?.reveal([revealKey])
-        if (!found) console.warn(`key "${revealKey}" not found in "${fixedName}"`)
-      })
-    } else if (this._applySearch() === 0) {
-      $(this.entities.main).animate({ scrollTop: 0 }, 300)
-    }
-    if (scrollMenuIntoView) {
-      requestAnimationFrame(this._scrollMenuIntoView)
-    }
+    if (this._applySearch() === 0) this._scrollMainToTop()
+    return true
   }
 
-  _applySearch = (query = this.entities.searchInput.value.trim()) => {
-    this.entities.form.getApi("highlight")?.highlight(query)
-    const count = this.entities.form.getApi("reveal")?.reveal(this.searcher.keysOf(this._getCurrentPlugin(), query))
-    return count ?? 0
+  _applySearch = () => {
+    const plugin = this._getCurrentPlugin()
+    const query = this.entities.searchInput.value.trim()
+    this._highlight(query)
+    return this._reveal(this.searcher.keysOf(plugin, query))
   }
 
   _resetSearch = () => {
     this.entities.searchInput.value = ""
     this.entities.searchInput.dispatchEvent(new Event("input", { bubbles: true }))
   }
+
+  _reveal = (keys) => this.entities.form.getApi("reveal")?.reveal(keys) ?? 0
+  _highlight = (kw) => this.entities.form.getApi("highlight")?.highlight(kw).count ?? 0
 
   _getFormOptions = async (fixedName) => {
     const schema = this.SCHEMAS[fixedName]
@@ -174,8 +165,8 @@ class PreferencesPlugin extends BasePlugin {
       data,
       actions: this.ACTIONS,
       meta: this.META,
-      rules: this.RULES[fixedName] || {},
-      watchers: this.WATCHERS[fixedName] || {},
+      rules: this.RULES[fixedName] ?? {},
+      watchers: this.WATCHERS[fixedName] ?? {},
       controlOptions: { object: { format: this.config.OBJECT_SETTINGS_FORMAT } },
       fieldDependencyUnmetAction: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
       boxDependencyUnmetAction: this.config.DEPENDENCIES_FAILURE_BEHAVIOR,
@@ -190,23 +181,30 @@ class PreferencesPlugin extends BasePlugin {
     const promises = this.SCHEMAS[fixedName].flatMap(box => {
       return box.fields
         .filter(field => field.key && pp?.[field.key])
-        .map(async field => await pp[field.key](field, data, box))
+        .map(field => pp[field.key](field, data, box))
     })
     await Promise.all(promises)
     return data
+  }
+
+  _normalizeFixedName = (fixedName) => {
+    if (this._hasPlugin(fixedName)) return fixedName
+    if (fixedName) console.warn(`Unknown plugin "${fixedName}", fallback to "global"`)
+    return "global"
   }
 
   _getPluginName = (fixedName) => this.utils.getPlugin(fixedName)?.pluginName ?? this.i18n._t(fixedName, "pluginName")
 
   _getSettings = async (fixedName) => {
     const settings = await this.utils.settings.read()
-    return settings[fixedName]
+    return settings[fixedName] ?? {}
   }
 
-  _hasMenu = (fixedName) => Object.hasOwn(this.SCHEMAS, fixedName)
+  _hasPlugin = (fixedName) => Object.hasOwn(this.SCHEMAS, fixedName)
   _setDialogState = (changed = true) => this.entities.dialog.toggleAttribute("has-changed", changed)
   _hasDialogChanged = () => this.entities.dialog.hasAttribute("has-changed")
   _getCurrentPlugin = () => this.entities.form.dataset.plugin
+  _scrollMainToTop = () => $(this.entities.main).animate({ scrollTop: 0 }, 300)
   _scrollMenuIntoView = () => this.entities.menu.querySelector(".plugin-preferences-menu-item.active")?.scrollIntoView({ block: "center" })
 }
 
@@ -237,7 +235,7 @@ function getSearcher(plugin) {
     query = query.trim().toLowerCase()
     if (!query) return { nameHit: false, fixedNameHit: false, matchedKeys: [] }
 
-    const isHit = cnt => cnt?.toLowerCase().includes(query)
+    const isHit = cnt => typeof cnt === "string" && cnt.toLowerCase().includes(query)
     const matchedKeys = (plugin.SCHEMAS[fixedName] ?? []).flatMap(box => {
       const boxHit = MATCHERS.BOX.some(get => isHit(get(box)))
       return (box.fields ?? [])
