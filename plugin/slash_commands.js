@@ -169,6 +169,8 @@ class SlashCommandsPlugin extends BasePlugin {
     const match = textBefore.match(this.REGEX)
     const kw = match?.groups?.kw
     if (kw == null) return
+    if (scope === this.SCOPE.INLINE_MATH && match[0].startsWith("\\")
+      && this.utils.getPlugin("latex_completion")?.hasCandidate(match[0])) return
 
     const [command, ...params] = kw.split(this.config.FUNC_PARAM_SEPARATOR)
     const lowerCommand = command.toLowerCase()
