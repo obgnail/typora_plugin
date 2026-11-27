@@ -81,6 +81,8 @@ const SCORERS = {
   },
 }
 
+const PREVIEW_MODE = { ALWAYS: "always", NAVIGATE: "navigate", NEVER: "never" }
+
 class Service {
   providers = []
 
@@ -122,16 +124,18 @@ class Service {
     const activeProviders = this.providers.filter(p => p.prefix === prefix)
     const results = await Promise.all(activeProviders.map(p => p.fetch(query, keywords)))
     return activeProviders.flatMap((provider, idx) => {
-      let items = results[idx]
-      if (!provider.dynamic && keywords.length > 0) {
-        items = items
-          .map(item => ({ item, score: this.scorer(item, keywords) }))
-          .filter(e => e.score >= 0)
-          .sort((a, b) => b.score - a.score)
-          .map(e => e.item)
-      }
+      const result = results[idx]
+      const items = provider.dynamic || keywords.length === 0 ? result : this._ranked(result, keywords)
       return items.map(item => ({ group: provider.name, ...item }))
     })
+  }
+
+  _ranked(items, keywords) {
+    return items
+      .map(item => ({ item, score: this.scorer(item, keywords) }))
+      .filter(entry => entry.score >= 0)
+      .sort((entry1, entry2) => entry2.score - entry1.score)
+      .map(entry => entry.item)
   }
 }
 
@@ -207,9 +211,20 @@ class View {
   }
 }
 
-const getAnchorManager = (utils) => {
+const getSessionContext = (utils) => {
+  const selection = utils.getSelectionManager()
   let anchor
-  return { save: () => anchor = utils.getAnchorNode(), get: () => anchor }
+  return {
+    capture: () => {
+      selection.save()
+      anchor = utils.getAnchorNode()
+    },
+    restore: () => {
+      selection.restore()
+      if (anchor?.length) utils.scrollTo(anchor[0])
+    },
+    getAnchor: () => anchor,
+  }
 }
 
 class CommandPalettePlugin extends BasePlugin {
@@ -232,11 +247,10 @@ class CommandPalettePlugin extends BasePlugin {
       results: document.querySelector(".plugin-command-palette-results"),
     }
 
-    this.selectionManager = this.utils.getSelectionManager()
-    this.anchorManager = getAnchorManager(this.utils)
+    this.sessionContext = getSessionContext(this.utils)
     const providers = buildProviders(this.utils, {
       getProviders: () => providers,
-      getAnchor: () => this.anchorManager.get(),
+      getAnchor: () => this.sessionContext.getAnchor(),
       setQuery: input => this.setQuery(input),
     })
     this.state = new State()
@@ -248,26 +262,20 @@ class CommandPalettePlugin extends BasePlugin {
   process = () => {
     this.inputHandler = this.utils.createSmartInputHandler(
       this.entities.input,
-      val => this.doSearch(val),
+      val => this.search(val),
       { debounceDelay: this.config.DEBOUNCE_INTERVAL },
     )
 
     this.entities.input.addEventListener("keydown", async ev => {
       if (this.inputHandler.isComposing()) return
       if (ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.view.getInputValue())) {
-        this.hide()
+        this.cancel()
         return
       }
-      if (ev.key === "ArrowDown") {
+      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
         ev.preventDefault()
-        this.state.moveActive(1)
-        this.triggerPreview()
-        return
-      }
-      if (ev.key === "ArrowUp") {
-        ev.preventDefault()
-        this.state.moveActive(-1)
-        this.triggerPreview()
+        this.state.moveActive(ev.key === "ArrowDown" ? 1 : -1)
+        if (this.config.PREVIEW_MODE !== PREVIEW_MODE.NEVER) this._preview()
         return
       }
       if (ev.key === "Enter") {
@@ -277,9 +285,9 @@ class CommandPalettePlugin extends BasePlugin {
         if (state.items.length === 0 && !state.loading) return
         const currentValue = this.view.getInputValue()
         if (state.query !== currentValue || state.loading) {
-          await this.doSearch(currentValue)
+          await this.search(currentValue)
         }
-        this.triggerAction()
+        this.confirm()
       }
     })
 
@@ -289,15 +297,15 @@ class CommandPalettePlugin extends BasePlugin {
       ev.stopPropagation()
       ev.preventDefault()
       this.state.select(this.state.items[parseInt(itemEl.dataset.index, 10)])
-      this.triggerAction()
+      this.confirm()
     })
 
     this.entities.overlay.addEventListener("click", ev => {
-      if (!ev.target.closest(".plugin-command-palette-panel")) this.hide()
+      if (!ev.target.closest(".plugin-command-palette-panel")) this.cancel()
     })
   }
 
-  doSearch = async (rawInput) => {
+  search = async (rawInput) => {
     const { prefix, query, keywords } = this.service.resolveInput(rawInput)
     this.state.next(rawInput, keywords)
     const sessionId = this.state.sessionId
@@ -305,7 +313,7 @@ class CommandPalettePlugin extends BasePlugin {
       const items = await this.service.fetchItems(prefix, query, keywords)
       if (this.state.sessionId !== sessionId) return
       this.state.commit(items)
-      this.triggerPreview()
+      if (this.config.PREVIEW_MODE === PREVIEW_MODE.ALWAYS) this._preview()
     } catch (err) {
       console.error("[Command Palette] Fetch Error:", err)
       if (this.state.sessionId === sessionId) {
@@ -314,42 +322,45 @@ class CommandPalettePlugin extends BasePlugin {
     }
   }
 
-  triggerPreview = () => {
+  setQuery = async (query) => {
+    this.view.setInputValue(query)
+    this.entities.input.focus()
+    await this.search(query)
+  }
+
+  show = async (input) => {
+    this.sessionContext.capture()
+    this.utils.show(this.entities.overlay)
+    await this.setQuery(input ?? ((this.config.RESTORE_LAST_QUERY && this.view.getInputValue()) || this.config.DEFAULT_INPUT))
+  }
+
+  cancel = () => {
+    this.sessionContext.restore()
+    this._close()
+  }
+
+  confirm = () => {
+    const state = this.state
+    if (state.active?.action({ ...state }) !== false) {
+      this._close()
+    }
+  }
+
+  call = async () => this.utils.isShown(this.entities.overlay) ? this.cancel() : await this.show()
+
+  registerProviders = (...providers) => this.service.registerProviders(...providers)
+
+  _preview = () => {
     const state = this.state
     state.active?.preview?.({ ...state })
     this.entities.input.focus()
   }
 
-  triggerAction = () => {
-    const state = this.state
-    this.selectionManager.restore()
-    if (state.active?.action({ ...state }) !== false) {
-      this.hide()
-    }
-  }
-
-  setQuery = async (query) => {
-    this.view.setInputValue(query)
-    this.entities.input.focus()
-    await this.doSearch(query)
-  }
-
-  show = async (input = this.config.DEFAULT_INPUT) => {
-    this.selectionManager.save()
-    this.anchorManager.save()
-    this.utils.show(this.entities.overlay)
-    await this.setQuery(input)
-  }
-
-  hide = () => {
+  _close = () => {
     this.utils.hide(this.entities.overlay)
-    this.view.setInputValue("")
+    this.view.setInputValue(this.config.RESTORE_LAST_QUERY ? this.state.query : "")
     this.state.reset()
   }
-
-  call = async () => this.utils.isShown(this.entities.overlay) ? this.hide() : await this.show()
-
-  registerProviders = (...providers) => this.service.registerProviders(...providers)
 }
 
 module.exports = {

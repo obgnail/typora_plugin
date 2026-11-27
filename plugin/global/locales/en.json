@@ -461,11 +461,16 @@
   "command_palette": {
     "pluginName": "Command Palette",
     "$label.BACKSPACE_TO_HIDE": "Hide Window on Empty and Backspace",
+    "$label.RESTORE_LAST_QUERY": "Restore Last Query on Reopen",
     "$label.DEBOUNCE_INTERVAL": "Debounce Interval",
     "$label.DEFAULT_INPUT": "Default Input",
     "$label.MATCH_STRATEGY": "Match Strategy",
+    "$label.PREVIEW_MODE": "Preview Behavior",
     "$option.MATCH_STRATEGY.plain": "Filter Only",
-    "$option.MATCH_STRATEGY.ranked": "Rank by Match Quality"
+    "$option.MATCH_STRATEGY.ranked": "Rank by Match Quality",
+    "$option.PREVIEW_MODE.always": "Always",
+    "$option.PREVIEW_MODE.navigate": "Only on Arrow-Key Navigation",
+    "$option.PREVIEW_MODE.never": "Never"
   },
   "resize_image": {
     "pluginName": "Image Resizer",

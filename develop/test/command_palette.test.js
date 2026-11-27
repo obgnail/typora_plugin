@@ -92,6 +92,7 @@ function makeInstance({ utilsOverrides = {}, config = {} } = {}) {
     BACKSPACE_TO_HIDE: true,
     DEFAULT_INPUT: ">",
     MATCH_STRATEGY: "ranked",
+    PREVIEW_MODE: "always",
     ...config,
   }
   return instance
@@ -447,7 +448,7 @@ describe("CommandPalettePlugin - lifecycle", () => {
     assert.ok(instance.state)
     assert.ok(instance.service.providers.length > 0) // buildProviders() registered several
     assert.ok(instance.view)
-    // Verify the state->view wiring by checking a transition triggers a render side-effect
+    // Verify the state->view wiring by checking a transition triggers a render side effect
     instance.state.commit([{ title: "X" }])
     assert.match(instance.entities.results.innerHTML, /X/)
   })
@@ -463,7 +464,7 @@ describe("CommandPalettePlugin - lifecycle", () => {
   })
 })
 
-describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
+describe("CommandPalettePlugin - show/hide/call/search", () => {
   let instance, entities
 
   beforeEach(() => {
@@ -515,7 +516,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     assert.strictEqual(instance.view.getInputValue(), "#")
   })
 
-  it("setQuery() updates the view value, focuses input, and calls doSearch()", async () => {
+  it("setQuery() updates the view value, focuses input, and calls search()", async () => {
     instance = makeInstance()
     instance.init()
     instance.process()
@@ -527,13 +528,13 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     assert.strictEqual(instance.state.query, "abc")
   })
 
-  it("hide() hides overlay, clears input, resets state, and bumps sessionId", async () => {
+  it("_close() hides overlay, clears input, resets state, and bumps sessionId", async () => {
     instance = makeInstance()
     instance.init()
     instance.process()
     await instance.setQuery("hello")
     const sessionBefore = instance.state.sessionId
-    instance.hide()
+    instance._close()
     assert.strictEqual(instance.state.query, "")
     assert.deepStrictEqual(instance.state.items, [])
     assert.strictEqual(instance.state.active, null)
@@ -542,7 +543,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     assert.strictEqual(instance.view.getInputValue(), "")
   })
 
-  it("doSearch sets loading true immediately, then resolves items/active/loading", async () => {
+  it("search sets loading true immediately, then resolves items/active/loading", async () => {
     instance = makeInstance()
     instance.init()
     instance.process()
@@ -554,7 +555,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
       dynamic: true,
       fetch: () => new Promise(res => resolveFetch = res),
     })
-    const promise = instance.doSearch("hello")
+    const promise = instance.search("hello")
     assert.strictEqual(instance.state.loading, true)
     resolveFetch([{ title: "Result" }])
     await promise
@@ -563,7 +564,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     assert.strictEqual(instance.state.active, instance.state.items[0])
   })
 
-  it("doSearch discards a stale (out-of-order) resolution when a newer search has already started", async () => {
+  it("search discards a stale (out-of-order) resolution when a newer search has already started", async () => {
     instance = makeInstance()
     instance.init()
     instance.process()
@@ -580,8 +581,8 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
           : new Promise(res => resolveSecond = res)
       },
     })
-    const firstSearch = instance.doSearch("first")
-    const secondSearch = instance.doSearch("second") // bumps sessionId before first resolves
+    const firstSearch = instance.search("first")
+    const secondSearch = instance.search("second") // bumps sessionId before first resolves
     resolveSecond([{ title: "Second Result" }])
     await secondSearch
     resolveFirst([{ title: "First Result (stale)" }])
@@ -590,7 +591,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     assert.strictEqual(instance.state.items[0].title, "Second Result")
   })
 
-  it("doSearch catches a rejected fetchItems and resets items to [] when still the current session", async () => {
+  it("search catches a rejected fetchItems and resets items to [] when still the current session", async () => {
     instance = makeInstance()
     instance.init()
     instance.process()
@@ -605,7 +606,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     let loggedArgs = null
     console.error = (...args) => loggedArgs = args
     try {
-      await instance.doSearch("x")
+      await instance.search("x")
     } finally {
       console.error = originalError
     }
@@ -614,7 +615,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     assert.strictEqual(instance.state.loading, false)
   })
 
-  it("doSearch does not clobber newer state when a stale error resolves after a newer search started", async () => {
+  it("search does not clobber newer state when a stale error resolves after a newer search started", async () => {
     instance = makeInstance()
     instance.init()
     instance.process()
@@ -634,8 +635,8 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
     const originalError = console.error
     console.error = () => undefined
     try {
-      const firstSearch = instance.doSearch("first")
-      const secondSearch = instance.doSearch("second")
+      const firstSearch = instance.search("first")
+      const secondSearch = instance.search("second")
       await secondSearch
       rejectFirst(new Error("stale failure"))
       await firstSearch.catch(() => undefined)
@@ -647,7 +648,7 @@ describe("CommandPalettePlugin - show/hide/call/doSearch", () => {
   })
 })
 
-describe("CommandPalettePlugin - triggerPreview/triggerAction", () => {
+describe("CommandPalettePlugin - _preview/confirm", () => {
   let instance
 
   beforeEach(() => {
@@ -658,39 +659,36 @@ describe("CommandPalettePlugin - triggerPreview/triggerAction", () => {
     instance.process()
   })
 
-  it("triggerPreview calls the active item's preview() with a state snapshot and re-focuses input", () => {
+  it("_preview calls the active item's preview() with a state snapshot and re-focuses input", () => {
     let previewArg = null
     let focused = false
     instance.entities.input.focus = () => focused = true
     instance.state.commit([{ title: "X", preview: (s) => previewArg = s }])
-    instance.triggerPreview()
+    instance._preview()
     assert.ok(previewArg)
     assert.strictEqual(focused, true)
   })
 
-  it("triggerPreview does not throw when the active item has no preview()", () => {
+  it("_preview does not throw when the active item has no preview()", () => {
     instance.state.commit([{ title: "X" }])
-    assert.doesNotThrow(() => instance.triggerPreview())
+    assert.doesNotThrow(() => instance._preview())
   })
 
-  it("triggerAction restores selection, calls action(), and hides when action() does not return false", () => {
-    let restored = false
-    instance.selectionManager.restore = () => restored = true
+  it("confirm calls action() and closes when action() does not return false", () => {
     let actionCalled = false
     instance.state.commit([{ title: "X", action: () => actionCalled = true }])
     let hidden = false
     instance.utils.hide = () => hidden = true
-    instance.triggerAction()
-    assert.strictEqual(restored, true)
+    instance.confirm()
     assert.strictEqual(actionCalled, true)
     assert.strictEqual(hidden, true)
   })
 
-  it("triggerAction does NOT hide when action() explicitly returns false", () => {
+  it("confirm does NOT close when action() explicitly returns false", () => {
     instance.state.commit([{ title: "X", action: () => false }])
     let hidden = false
     instance.utils.hide = () => hidden = true
-    instance.triggerAction()
+    instance.confirm()
     assert.strictEqual(hidden, false)
   })
 })
@@ -710,7 +708,7 @@ describe("CommandPalettePlugin - keyboard/click handling", () => {
       prefix: "",
       fetch: async () => [{ title: "Item A", action: () => undefined }, { title: "Item B", action: () => undefined }],
     })
-    await instance.doSearch("")
+    await instance.search("")
   })
 
   it("ArrowDown moves active forward (wrapping) and triggers preview", () => {
@@ -1036,5 +1034,170 @@ describe("buildProviders", () => {
     const result = items[2].action()
     assert.strictEqual(result, false)
     assert.strictEqual(setInputArg, ">")
+  })
+})
+
+describe("CommandPalettePlugin - PREVIEW_MODE gating", () => {
+  let instance, previewCalls
+
+  const setup = async (mode) => {
+    document.body.innerHTML = ""
+    makeDomEntities()
+    previewCalls = 0
+    instance = makeInstance({ config: { PREVIEW_MODE: mode } })
+    instance.init()
+    instance.process()
+    instance.service.providers = []
+    instance.service.patterns = []
+    instance.registerProviders({
+      prefix: "",
+      fetch: async () => [
+        { title: "A", preview: () => previewCalls++ },
+        { title: "B", preview: () => previewCalls++ },
+      ],
+    })
+  }
+
+  it("search previews the first item when PREVIEW_MODE is 'always'", async () => {
+    await setup("always")
+    await instance.search("")
+    assert.strictEqual(previewCalls, 1)
+  })
+
+  it("search does not preview when PREVIEW_MODE is 'navigate' or 'never'", async () => {
+    for (const mode of ["navigate", "never"]) {
+      await setup(mode)
+      await instance.search("")
+      assert.strictEqual(previewCalls, 0)
+    }
+  })
+
+  it("ArrowDown previews when PREVIEW_MODE is 'always' or 'navigate'", async () => {
+    for (const mode of ["always", "navigate"]) {
+      await setup(mode)
+      await instance.search("")
+      previewCalls = 0
+      dispatchKeydown(instance.entities.input, "ArrowDown")
+      assert.strictEqual(previewCalls, 1)
+    }
+  })
+
+  it("ArrowDown does not preview when PREVIEW_MODE is 'never'", async () => {
+    await setup("never")
+    await instance.search("")
+    dispatchKeydown(instance.entities.input, "ArrowDown")
+    assert.strictEqual(previewCalls, 0)
+  })
+})
+
+describe("CommandPalettePlugin - cancel() restore semantics", () => {
+  let instance
+
+  const setup = async () => {
+    const calls = []
+    const anchorEl = document.createElement("div")
+    document.body.innerHTML = ""
+    makeDomEntities()
+    instance = makeInstance({
+      utilsOverrides: {
+        getSelectionManager: () => ({ save: () => undefined, restore: () => calls.push("restoreSelection") }),
+        getAnchorNode: () => [anchorEl], // jQuery-like: has length and [0]
+        scrollTo: (el) => calls.push(["scrollTo", el]),
+      },
+    })
+    instance.init()
+    instance.process()
+    await instance.show()
+    return { calls, anchorEl }
+  }
+
+  it("cancel() restores selection and scrolls back to the captured anchor, then closes", async () => {
+    const { calls, anchorEl } = await setup()
+    calls.length = 0
+    instance.cancel()
+    assert.strictEqual(calls[0], "restoreSelection")
+    assert.deepStrictEqual(calls[1], ["scrollTo", anchorEl])
+  })
+
+  it("confirm() closes without restoring (the action's jump is kept)", async () => {
+    const { calls } = await setup()
+    calls.length = 0
+    instance.state.commit([{ title: "X", action: () => undefined }])
+    instance.confirm()
+    assert.deepStrictEqual(calls, [])
+  })
+
+  it("cancel() skips scrollTo when no anchor was captured", async () => {
+    const { calls } = await setup()
+    calls.length = 0
+    instance.sessionContext = { capture: () => undefined, restore: () => calls.push("restoreSelection"), getAnchor: () => undefined }
+    // simulate restore() with no anchor: selection restored, no scroll
+    instance.cancel()
+    assert.deepStrictEqual(calls, ["restoreSelection"])
+  })
+})
+
+describe("CommandPalettePlugin - RESTORE_LAST_QUERY", () => {
+  let instance
+
+  const setup = async (restore) => {
+    document.body.innerHTML = ""
+    makeDomEntities()
+    instance = makeInstance({ config: { RESTORE_LAST_QUERY: restore, DEFAULT_INPUT: ">" } })
+    instance.init()
+    instance.process()
+    instance.service.providers = []
+    instance.service.patterns = []
+    instance.registerProviders(
+      {
+        prefix: "@",
+        fetch: async (query) => [{ title: `symbol:${query}`, action: () => undefined }],
+      },
+      {
+        prefix: "",
+        fetch: async (query) => [{ title: `result:${query}`, action: () => undefined }],
+      },
+    )
+    await instance.show()
+  }
+
+  it("restores the last query on reopen when enabled", async () => {
+    await setup(true)
+    await instance.search("@hook")
+    instance.cancel()
+    await instance.show()
+    assert.strictEqual(instance.view.getInputValue(), "@hook")
+    assert.strictEqual(instance.state.items[0].title, "symbol:hook")
+  })
+
+  it("falls back to DEFAULT_INPUT when enabled but nothing was typed (first open)", async () => {
+    await setup(true)
+    assert.strictEqual(instance.view.getInputValue(), ">")
+  })
+
+  it("clears the input on close when disabled", async () => {
+    await setup(false)
+    await instance.search("@hook")
+    instance.cancel()
+    assert.strictEqual(instance.view.getInputValue(), "")
+    await instance.show()
+    assert.strictEqual(instance.view.getInputValue(), ">")
+  })
+
+  it("explicit show(input) overrides the remembered query", async () => {
+    await setup(true)
+    await instance.search("@hook")
+    instance.cancel()
+    await instance.show("?")
+    assert.strictEqual(instance.view.getInputValue(), "?")
+  })
+
+  it("remembers the query after confirm() too", async () => {
+    await setup(true)
+    await instance.search("@hook")
+    instance.state.commit([{ title: "X", action: () => undefined }])
+    instance.confirm()
+    await instance.show()
+    assert.strictEqual(instance.view.getInputValue(), "@hook")
   })
 })

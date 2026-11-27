@@ -338,9 +338,13 @@ const schema_command_palette = () => [
   FRAG.Base(true),
   Group(
     Switch("BACKSPACE_TO_HIDE"),
-    Select("MATCH_STRATEGY").Options(["plain", "ranked"]),
+    Switch("RESTORE_LAST_QUERY"),
     Text("DEFAULT_INPUT"),
     Integer("DEBOUNCE_INTERVAL").Unit(UNITS.millisecond).Min(10),
+  ),
+  Group(
+    Select("MATCH_STRATEGY").Options(["plain", "ranked"]),
+    Select("PREVIEW_MODE").Options(["always", "navigate", "never"]),
   ),
   FRAG.SettingHandler(),
 ]
